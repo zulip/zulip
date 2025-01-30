@@ -3,14 +3,12 @@ import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
 import {FoldDict} from "./fold_dict.ts";
-import * as group_permission_settings from "./group_permission_settings.ts";
 import {$t} from "./i18n.ts";
-import {page_params} from "./page_params.ts";
+import type {UserGroupUpdateEvent} from "./server_event_types.ts";
 import * as settings_config from "./settings_config.ts";
 import type {GroupPermissionSetting, GroupSettingValue, StateData} from "./state_data.ts";
 import {current_user, raw_user_group_schema, realm} from "./state_data.ts";
 import type {UserOrMention} from "./typeahead_helper.ts";
-import type {UserGroupUpdateEvent} from "./types.ts";
 import * as util from "./util.ts";
 
 type UserGroupRaw = z.infer<typeof raw_user_group_schema>;
@@ -22,11 +20,6 @@ export const user_group_schema = raw_user_group_schema.extend({
     direct_subgroup_ids: z.set(z.number()),
 });
 export type UserGroup = z.infer<typeof user_group_schema>;
-
-export type UserGroupForDropdownListWidget = {
-    name: string;
-    unique_id: number;
-};
 
 let user_group_name_dict: FoldDict<UserGroup>;
 let user_group_by_id_dict: Map<number, UserGroup>;
@@ -40,6 +33,11 @@ export function init(): void {
 
 // WE INITIALIZE DATA STRUCTURES HERE!
 init();
+
+// Ideally this should be included in page params.
+// Like we have realm.max_stream_name_length` and
+// `realm.max_stream_description_length` for streams.
+export const max_user_group_name_length = 100;
 
 export function add(user_group_raw: UserGroupRaw): UserGroup {
     // Reformat the user group members structure to be a set.
@@ -83,8 +81,7 @@ export function maybe_get_user_group_from_id(group_id: number): UserGroup | unde
     return user_group_by_id_dict.get(group_id);
 }
 
-export function update(event: UserGroupUpdateEvent): void {
-    const group = get_user_group_from_id(event.group_id);
+export function update(event: UserGroupUpdateEvent, group: UserGroup): void {
     if (event.data.name !== undefined) {
         user_group_name_dict.delete(group.name);
         group.name = event.data.name;
@@ -158,12 +155,22 @@ export function get_realm_user_groups(include_deactivated = false): UserGroup[] 
     });
 }
 
-// This is only used for testing currently, but would be used in
-// future when we use system groups more and probably show them
-// in the UI as well.
-export function get_all_realm_user_groups(): UserGroup[] {
+export function get_all_realm_user_groups(
+    include_deactivated = false,
+    include_internet_group = false,
+): UserGroup[] {
     const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
-    return user_groups;
+    return user_groups.filter((group) => {
+        if (!include_deactivated && group.deactivated) {
+            return false;
+        }
+
+        if (!include_internet_group && group.name === "role:internet") {
+            return false;
+        }
+
+        return true;
+    });
 }
 
 export function get_user_groups_allowed_to_mention(): UserGroup[] {
@@ -356,6 +363,36 @@ export function get_recursive_group_members(target_user_group: UserGroup): Set<n
     return members;
 }
 
+export function is_group_larger_than(target_user_group: UserGroup, max_size: number): boolean {
+    // Optimized function to check if a group's recursive membership
+    // can possibly be large, with runtime `O(max_size +
+    // total_subgroups)`, critically not having runtime scaling with
+    // the total users in the group or its subgroups.
+    if (target_user_group.members.size > max_size) {
+        return true;
+    }
+
+    const members = new Set(target_user_group.members);
+    const subgroup_ids = get_recursive_subgroups(target_user_group);
+    if (subgroup_ids === undefined) {
+        return false;
+    }
+
+    for (const subgroup_id of subgroup_ids) {
+        const subgroup = user_group_by_id_dict.get(subgroup_id);
+        assert(subgroup !== undefined);
+        for (const member of subgroup.members) {
+            members.add(member);
+        }
+
+        if (members.size > max_size) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export function check_group_can_be_subgroup(
     subgroup: UserGroup,
     target_user_group: UserGroup,
@@ -440,6 +477,29 @@ export function is_user_in_group(
     return false;
 }
 
+export function group_has_permission(setting_value: GroupSettingValue, group_id: number): boolean {
+    if (typeof setting_value === "number") {
+        if (setting_value === group_id) {
+            return true;
+        }
+
+        return is_subgroup_of_target_group(setting_value, group_id);
+    }
+
+    const direct_subgroup_ids = setting_value.direct_subgroups;
+    if (direct_subgroup_ids.includes(group_id)) {
+        return true;
+    }
+
+    for (const direct_subgroup_id of direct_subgroup_ids) {
+        if (is_subgroup_of_target_group(direct_subgroup_id, group_id)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export function is_user_in_any_group(
     user_group_ids: number[],
     user_id: number,
@@ -477,19 +537,19 @@ export function format_group_list(user_groups: UserGroup[]): string {
 }
 
 export function is_user_in_setting_group(
-    setting_group: GroupSettingValue,
+    setting_value: GroupSettingValue,
     user_id: number,
 ): boolean {
-    if (typeof setting_group === "number") {
-        return is_user_in_group(setting_group, user_id);
+    if (typeof setting_value === "number") {
+        return is_user_in_group(setting_value, user_id);
     }
 
-    const direct_members = setting_group.direct_members;
+    const direct_members = setting_value.direct_members;
     if (direct_members.includes(user_id)) {
         return true;
     }
 
-    const direct_subgroups = setting_group.direct_subgroups;
+    const direct_subgroups = setting_value.direct_subgroups;
     for (const direct_subgroup_id of direct_subgroups) {
         if (is_user_in_group(direct_subgroup_id, user_id)) {
             return true;
@@ -498,7 +558,10 @@ export function is_user_in_setting_group(
     return false;
 }
 
-function get_display_name_for_system_group_option(setting_name: string, name: string): string {
+export function get_display_name_for_system_group_option(
+    setting_name: string,
+    name: string,
+): string {
     // We use a special label for the "Nobody" system group for clarity.
     if (setting_name === "direct_message_permission_group" && name === "Nobody") {
         return $t({defaultMessage: "Direct messages disabled"});
@@ -543,70 +606,6 @@ export function check_system_user_group_allowed_for_setting(
     }
 
     return true;
-}
-
-export function get_realm_user_groups_for_setting(
-    setting_name: string,
-    setting_type: "realm" | "stream" | "group",
-    for_new_settings_ui = false,
-): UserGroup[] {
-    const group_setting_config = group_permission_settings.get_group_permission_setting_config(
-        setting_name,
-        setting_type,
-    );
-
-    if (group_setting_config === undefined) {
-        return [];
-    }
-
-    const system_user_groups = settings_config.system_user_groups_list
-        .filter((group) =>
-            check_system_user_group_allowed_for_setting(
-                group.name,
-                group_setting_config,
-                for_new_settings_ui,
-            ),
-        )
-        .map((group) => {
-            const user_group = get_user_group_from_name(group.name);
-            if (!user_group) {
-                throw new Error(`Unknown group name: ${group.name}`);
-            }
-            return user_group;
-        });
-
-    if (!page_params.development_environment || group_setting_config.require_system_group) {
-        return system_user_groups;
-    }
-
-    const user_groups_excluding_system_groups = get_realm_user_groups();
-
-    return [...system_user_groups, ...user_groups_excluding_system_groups];
-}
-
-export function get_realm_user_groups_for_dropdown_list_widget(
-    setting_name: string,
-    setting_type: "realm" | "stream" | "group",
-): UserGroupForDropdownListWidget[] {
-    const allowed_setting_groups = get_realm_user_groups_for_setting(setting_name, setting_type);
-
-    return allowed_setting_groups.map((group) => {
-        if (!group.is_system_group) {
-            return {
-                name: group.name,
-                unique_id: group.id,
-            };
-        }
-
-        const display_name = settings_config.system_user_groups_list.find(
-            (system_group) => system_group.name === group.name,
-        )!.dropdown_option_name;
-
-        return {
-            name: get_display_name_for_system_group_option(setting_name, display_name),
-            unique_id: group.id,
-        };
-    });
 }
 
 export function get_display_group_name(group_name: string): string {

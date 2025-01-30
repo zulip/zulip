@@ -2,12 +2,19 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {JSDOM} = require("jsdom");
+
+const katex_tests = require("../../zerver/tests/fixtures/katex_test_cases.json");
+
+const {zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+
+const {window} = new JSDOM();
 
 const copy_and_paste = zrequire("copy_and_paste");
 const stream_data = zrequire("stream_data");
 
+set_global("document", {});
 stream_data.add_sub({
     stream_id: 4,
     name: "Rome",
@@ -116,6 +123,9 @@ run_test("paste_handler_converter", () => {
     assert.equal(copy_and_paste.paste_handler_converter(input), "The `JSDOM` constructor");
 
     // A python code block
+    global.document = window.document;
+    global.window = window;
+    global.Node = window.Node;
     input = `<meta http-equiv="content-type" content="text/html; charset=utf-8"><p>zulip code block in python</p><div class="codehilite zulip-code-block" data-code-language="Python"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s2">"hello"</span><span class="p">)</span>\n<span class="nb">print</span><span class="p">(</span><span class="s2">"world"</span><span class="p">)</span></code></pre></div></meta>`;
     assert.equal(
         copy_and_paste.paste_handler_converter(input),
@@ -126,6 +136,27 @@ run_test("paste_handler_converter", () => {
     input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
     assert.equal(copy_and_paste.paste_handler_converter(input), "`single line`");
+
+    // No code formatting if the given text area has a backtick at the cursor position
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        copy_and_paste.paste_handler_converter(input, {
+            caret: () => 6,
+            val: () => "e.g. `",
+        }),
+        "single line",
+    );
+
+    // Yes code formatting if the given text area has a backtick but not at the cursor position
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        copy_and_paste.paste_handler_converter(input, {
+            caret: () => 0,
+        }),
+        "`single line`",
+    );
 
     // Raw links without custom text
     input =
@@ -209,4 +240,31 @@ run_test("paste_handler_converter", () => {
     input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><style type="text/css"><!--td {border: 1px solid #cccccc;}br {mso-data-placement:same-cell;}--></style><span style="font-size:10pt;font-family:Arial;font-style:normal;text-align:right;" data-sheets-value="{&quot;1&quot;:3,&quot;3&quot;:123}" data-sheets-userformat="{&quot;2&quot;:769,&quot;3&quot;:{&quot;1&quot;:0},&quot;11&quot;:3,&quot;12&quot;:0}">123</span>';
     assert.equal(copy_and_paste.paste_handler_converter(input), "123");
+
+    // Pasting from Excel
+    input = `<html xmlns:v="urn:schemas-microsoft-com:vml"\nxmlns:o="urn:schemas-microsoft-com:office:office"\nxmlns:x="urn:schemas-microsoft-com:office:excel"\nxmlns="http://www.w3.org/TR/REC-html40">\n<head>\n<meta http-equiv=Content-Type content="text/html; charset=utf-8">\n<meta name=ProgId content=Excel.Sheet>\n<meta name=Generator content="Microsoft Excel 15">\n<link id=Main-File rel=Main-File\nhref="file:///C:/Users/ADMINI~1/AppData/Local/Temp/msohtmlclip1/01/clip.htm">\n<link rel=File-List\nhref="file:///C:/Users/ADMINI~1/AppData/Local/Temp/msohtmlclip1/01/clip_filelist.xml">\n<style>\n<!--table\n    {mso-displayed-decimal-separator:"\\.";\n    mso-displayed-thousand-separator:"\\,";}\n@page\n    {margin:.75in .7in .75in .7in;\n    mso-header-margin:.3in;\n    mso-footer-margin:.3in;}\ntr\n    {mso-height-source:auto;}\ncol\n    {mso-width-source:auto;}\nbr\n    {mso-data-placement:same-cell;}\ntd\n    {padding-top:1px;\n    padding-right:1px;\n    padding-left:1px;\n    mso-ignore:padding;\n    color:black;\n    font-size:11.0pt;\n    font-weight:400;\n    font-style:normal;\n    text-decoration:none;\n    font-family:Calibri, sans-serif;\n    mso-font-charset:0;\n    mso-number-format:General;\n    text-align:general;\n    vertical-align:bottom;\n    border:none;\n    mso-background-source:auto;\n    mso-pattern:auto;\n    mso-protection:locked visible;\n    white-space:nowrap;\n    mso-rotate:0;}\n.xl65\n    {mso-number-format:"_\\(\\0022$\\0022* \\#\\,\\#\\#0\\.00_\\)\\;_\\(\\0022$\\0022* \\\\\\(\\#\\,\\#\\#0\\.00\\\\\\)\\;_\\(\\0022$\\0022* \\0022-\\0022??_\\)\\;_\\(\\@_\\)";}\n-->\n</style>\n</head>\n<body link="#0563C1" vlink="#954F72">\n<table border=0 cellpadding=0 cellspacing=0 width=88 style='border-collapse:\n collapse;width:66pt'>\n<!--StartFragment-->\n <col width=88 style='mso-width-source:userset;mso-width-alt:3218;width:66pt'>\n <tr height=20 style='height:15.0pt'>\n  <td height=20 class=xl65 width=88 style='height:15.0pt;width:66pt;font-size:\n  11.0pt;color:black;font-weight:400;text-decoration:none;text-underline-style:\n  none;text-line-through:none;font-family:Calibri, sans-serif;border-top:.5pt solid #5B9BD5;\n  border-right:none;border-bottom:none;border-left:none'><span\n  style='mso-spacerun:yes'> </span>$<span style='mso-spacerun:yes'>\n  </span>20.00 </td>\n </tr>\n <tr height=20 style='height:15.0pt'>\n  <td height=20 class=xl65 style='height:15.0pt;font-size:11.0pt;color:black;\n  font-weight:400;text-decoration:none;text-underline-style:none;text-line-through:\n  none;font-family:Calibri, sans-serif;border-top:.5pt solid #5B9BD5;\n  border-right:none;border-bottom:none;border-left:none'><span\n  style='mso-spacerun:yes'> </span>$<span\n  style='mso-spacerun:yes'>               </span>7.00 </td>\n </tr>\n<!--EndFragment-->\n</table>\n</body>\n</html>`;
+
+    // Pasting from Excel using ^V should paste an image.
+    assert.ok(copy_and_paste.is_single_image(input));
+
+    // Pasting from Excel using ^⇧V should paste formatted text.
+    assert.equal(copy_and_paste.paste_handler_converter(input), "     \n\n$ 20.00\n\n$ 7.00");
+
+    // Math block tests
+    for (const math_block_test of katex_tests.math_block_tests) {
+        input = math_block_test.input;
+        assert.equal(
+            copy_and_paste.paste_handler_converter(input),
+            math_block_test.expected_output,
+        );
+    }
+
+    // Inline Math Expression tests
+    for (const inline_math_expression_test of katex_tests.inline_math_expression_tests) {
+        input = inline_math_expression_test.input;
+        assert.equal(
+            copy_and_paste.paste_handler_converter(input),
+            inline_math_expression_test.expected_output,
+        );
+    }
 });

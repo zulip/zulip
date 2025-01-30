@@ -7,6 +7,9 @@ Organization type: {{ organization_type }}
 Description:
 {{ description }}
 
+How do you plan to use Zulip?
+{{ plan_to_use_zulip }}
+
 Expected users:
 - Total: {{ expected_total_users }}
 - Paid: {{ paid_users_count }}

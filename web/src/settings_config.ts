@@ -1,10 +1,14 @@
 import Handlebars from "handlebars/runtime.js";
 
 import {page_params} from "./base_page_params.ts";
+import type {
+    GroupGroupSettingName,
+    RealmGroupSettingName,
+    StreamGroupSettingName,
+} from "./group_permission_settings.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
 import {realm} from "./state_data.ts";
-import {StreamPostPolicy} from "./stream_types.ts";
 import type {StreamSpecificNotificationSettings} from "./sub_store.ts";
 import type {
     FollowedTopicNotificationSettings,
@@ -652,6 +656,126 @@ export const realm_user_settings_defaults_labels = {
     }),
 };
 
+export const all_group_setting_labels = {
+    realm: {
+        create_multiuse_invite_group: $t({
+            defaultMessage: "Who can create reusable invitation links",
+        }),
+        can_invite_users_group: $t({defaultMessage: "Who can send email invitations to new users"}),
+        can_create_public_channel_group: $t({defaultMessage: "Who can create public channels"}),
+        can_create_web_public_channel_group: $t({
+            defaultMessage: "Who can create web-public channels",
+        }),
+        can_create_private_channel_group: $t({defaultMessage: "Who can create private channels"}),
+        can_add_subscribers_group: $t({defaultMessage: "Who can subscribe users to any channel"}),
+        direct_message_permission_group: $t({
+            defaultMessage: "Who can authorize a direct message conversation",
+        }),
+        direct_message_initiator_group: $t({
+            defaultMessage: "Who can start a direct message conversation",
+        }),
+        can_manage_all_groups: $t({defaultMessage: "Who can administer all user groups"}),
+        can_create_groups: $t({defaultMessage: "Who can create user groups"}),
+        can_move_messages_between_topics_group: $t({
+            defaultMessage: "Who can move messages to another topic",
+        }),
+        can_move_messages_between_channels_group: $t({
+            defaultMessage: "Who can move messages to another channel",
+        }),
+        can_delete_any_message_group: $t({defaultMessage: "Who can delete any message"}),
+        can_delete_own_message_group: $t({defaultMessage: "Who can delete their own messages"}),
+        can_access_all_users_group: $t({
+            defaultMessage: "Who can view all other users in the organization",
+        }),
+        can_add_custom_emoji_group: $t({defaultMessage: "Who can add custom emoji"}),
+    },
+    stream: {
+        can_add_subscribers_group: $t({defaultMessage: "Who can subscribe others to this channel"}),
+        can_send_message_group: $t({defaultMessage: "Who can post to this channel"}),
+        can_administer_channel_group: $t({defaultMessage: "Who can administer this channel"}),
+        can_remove_subscribers_group: $t({
+            defaultMessage: "Who can unsubscribe others from this channel",
+        }),
+    },
+    group: {
+        can_add_members_group: $t({defaultMessage: "Who can add members to this group"}),
+        can_join_group: $t({defaultMessage: "Who can join this group"}),
+        can_leave_group: $t({defaultMessage: "Who can leave this group"}),
+        can_manage_group: $t({defaultMessage: "Who can administer this group"}),
+        can_mention_group: $t({defaultMessage: "Who can mention this group"}),
+        can_remove_members_group: $t({defaultMessage: "Who can remove members from this group"}),
+    },
+};
+
+// Order of subsections and its settings is important here as
+// this object is used for rendering the assigned permissions
+// in group permissions panel.
+export const realm_group_permission_settings: {
+    subsection_heading: string;
+    settings: RealmGroupSettingName[];
+}[] = [
+    {
+        subsection_heading: $t({defaultMessage: "Joining the organization"}),
+        settings: ["can_invite_users_group", "create_multiuse_invite_group"],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Channel permissions"}),
+        settings: [
+            "can_create_public_channel_group",
+            "can_create_web_public_channel_group",
+            "can_create_private_channel_group",
+            "can_add_subscribers_group",
+        ],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Group permissions"}),
+        settings: ["can_manage_all_groups", "can_create_groups"],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Direct message permissions"}),
+        settings: ["direct_message_permission_group", "direct_message_initiator_group"],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Moving messages"}),
+        settings: [
+            "can_move_messages_between_topics_group",
+            "can_move_messages_between_channels_group",
+        ],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Message deletion"}),
+        settings: ["can_delete_any_message_group", "can_delete_own_message_group"],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Guests"}),
+        settings: ["can_access_all_users_group"],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Other permissions"}),
+        settings: ["can_add_custom_emoji_group"],
+    },
+];
+
+// Order of settings is important, as this list is used to
+// render assigned permissions in permissions panel.
+export const stream_group_permission_settings: StreamGroupSettingName[] = [
+    "can_send_message_group",
+    "can_administer_channel_group",
+    "can_add_subscribers_group",
+    "can_remove_subscribers_group",
+];
+
+// Order of settings is important, as this list is used to
+// render assigned permissions in permissions panel.
+export const group_permission_settings: GroupGroupSettingName[] = [
+    "can_manage_group",
+    "can_mention_group",
+    "can_add_members_group",
+    "can_remove_members_group",
+    "can_join_group",
+    "can_leave_group",
+];
+
 // NOTIFICATIONS
 
 export const general_notifications_table_labels = {
@@ -1058,29 +1182,6 @@ export const stream_privacy_policy_values = {
     },
 };
 
-export const stream_post_policy_values = {
-    // These strings should match the strings in the
-    // Stream.POST_POLICIES object in zerver/models/streams.py.
-    everyone: {
-        code: StreamPostPolicy.EVERYONE,
-        description: $t({defaultMessage: "Everyone"}),
-    },
-    non_new_members: {
-        code: StreamPostPolicy.RESTRICT_NEW_MEMBERS,
-        description: $t({defaultMessage: "Admins, moderators and full members"}),
-    },
-    moderators: {
-        code: StreamPostPolicy.MODERATORS,
-        description: $t({
-            defaultMessage: "Admins and moderators",
-        }),
-    },
-    admins: {
-        code: StreamPostPolicy.ADMINS,
-        description: $t({defaultMessage: "Admins only"}),
-    },
-} as const;
-
 export const export_type_values = {
     export_public: {
         value: 1,
@@ -1091,5 +1192,24 @@ export const export_type_values = {
         value: 2,
         description: $t({defaultMessage: "Standard"}),
         default: true,
+    },
+};
+
+export const bot_type_values = {
+    default_bot: {
+        type_id: 1,
+        name: $t({defaultMessage: "Generic bot"}),
+    },
+    incoming_webhook_bot: {
+        type_id: 2,
+        name: $t({defaultMessage: "Incoming webhook"}),
+    },
+    outgoing_webhook_bot: {
+        type_id: 3,
+        name: $t({defaultMessage: "Outgoing webhook"}),
+    },
+    embedded_bot: {
+        type_id: 4,
+        name: $t({defaultMessage: "Embedded bot"}),
     },
 };

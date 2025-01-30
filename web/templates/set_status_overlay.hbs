@@ -4,9 +4,9 @@
             {{> status_emoji_selector .}}
         </div>
     </div>
-    <input type="text" class="user-status modal_text_input" placeholder="{{t 'Your status' }}" maxlength="60"/>
-    <button type="button" class="bootstrap-btn clear_search_button" id="clear_status_message_button" disabled="disabled">
-        <i class="fa fa-remove" aria-hidden="true"></i>
+    <input type="text" class="user-status modal_text_input" id="user-status-input" placeholder="{{t 'Your status' }}" maxlength="60"/>
+    <button type="button" class="clear_search_button" id="clear_status_message_button" disabled="disabled">
+        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
     </button>
 </div>
 <div class="user-status-options">

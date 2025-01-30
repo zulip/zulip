@@ -79,7 +79,7 @@
     }
 
     .white-space-preserve-wrap {
-        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 
     .empty-table-message {
@@ -89,8 +89,9 @@
 
     .fa-check-square-o,
     .fa-square-o {
-        padding: 0 2px;
-        width: 10px;
+        width: 0.7142em; /* Legacy 10px size at 14px/1em. */
+        padding-right: 0.3571em; /* Legacy 5px size at 14px/1em. */
+        padding-left: 0.1428em; /* Legacy 2px size at 14px/1em. */
     }
 
     .zulip-icon-user {
@@ -156,15 +157,10 @@
     #recent_view_search {
         grid-column: search-input-start / clear-search-end;
         grid-row: search-input;
-        padding-right: 20px;
+        padding-right: 28px;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
-    }
-
-    .clear_search_button {
-        grid-area: clear-search;
-        padding: 0;
     }
 
     .button-recent-filters {
@@ -172,9 +168,12 @@
         background-color: var(--color-background-zulip-button);
         border: 1px solid var(--color-border-zulip-button);
         border-radius: 40px;
-        margin: 0 5px 10px 0;
-        padding: 6px 12px;
+        /* Legacy 5px 10px at 14px/1em. */
+        margin: 0 0.3571em 0.7142em 0;
+        /* Legacy 6px 12px at 14px/1em. */
+        padding: 0.4285em 0.8571em;
         line-height: 100%;
+        display: inline-flex;
 
         &:hover {
             background-color: var(--color-background-zulip-button-hover);
@@ -459,7 +458,7 @@
         }
 
         & a {
-            word-break: break-word;
+            overflow-wrap: anywhere;
             hyphens: auto;
         }
     }
@@ -521,7 +520,7 @@
             width: 14px;
             height: 14px;
 
-            .zulip-icon.zulip-icon-triple-users,
+            .zulip-icon.conversation-partners-icon,
             .zulip-icon.zulip-icon-bot {
                 opacity: 0.6;
             }
@@ -577,8 +576,9 @@
 
 #recent-view-filter_widget {
     display: inline-flex;
-    width: 150px;
-    margin: 0 5px 10px 0;
+    width: 10.7142em; /* 150px at 14px em */
+    /* Legacy 5px 10px at 14px/1em. */
+    margin: 0 0.3571em 0.7142em 0;
 
     &:hover {
         background-color: var(--color-background-inbox-search-hover);

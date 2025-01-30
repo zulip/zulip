@@ -1,0 +1,232 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "showroom" %}
+
+{% block title %}
+<title>{{ doc_root_title }} | Zulip Dev</title>
+{% endblock %}
+
+{% block content %}
+<div class="portico-container" data-platform="{{ platform }}">
+    <div class="portico-wrap">
+        {% include 'zerver/portico-header.html' %}
+        <div class="app portico-page">
+            <div class="app-main portico-page-container">
+                <div class="showroom-wrapper">
+                    <div class="showroom-button-grid">
+                        <div class="showroom-component-button-intent-group">
+                            <div class="showroom-component-action-button-label">Action Buttons</div>
+                            <div class="showroom-component-icon-button-label">Icon Buttons</div>
+                        </div>
+                        <div class="showroom-component-button-intent-group">
+                            <div class="showroom-component-button-intent-label">Neutral Variant</div>
+                            <div class="showroom-component-action-button-group">
+                                <button class="action-button action-button-primary-neutral" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                                <button class="action-button action-button-quiet-neutral" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                                <button class="action-button action-button-borderless-neutral" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                            </div>
+                            <div class="showroom-component-icon-button-group">
+                                <button class="icon-button icon-button-neutral" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                </button>
+                                <button class="icon-button icon-button-square icon-button-neutral" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="showroom-component-button-intent-group">
+                            <div class="showroom-component-button-intent-label">Brand Variant</div>
+                            <div class="showroom-component-action-button-group">
+                                <button class="action-button action-button-primary-brand" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                                <button class="action-button action-button-quiet-brand" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                                <button class="action-button action-button-borderless-brand" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                            </div>
+                            <div class="showroom-component-icon-button-group">
+                                <button class="icon-button icon-button-brand" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                </button>
+                                <button class="icon-button icon-button-square icon-button-brand" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="showroom-component-button-intent-group">
+                            <div class="showroom-component-button-intent-label">Info Variant</div>
+                            <div class="showroom-component-action-button-group">
+                                <button class="action-button action-button-primary-info" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                                <button class="action-button action-button-quiet-info" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                                <button class="action-button action-button-borderless-info" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                            </div>
+                            <div class="showroom-component-icon-button-group">
+                                <button class="icon-button icon-button-info" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                </button>
+                                <button class="icon-button icon-button-square icon-button-info" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="showroom-component-button-intent-group">
+                            <div class="showroom-component-button-intent-label">Success Variant</div>
+                            <div class="showroom-component-action-button-group">
+                                <button class="action-button action-button-primary-success" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                                <button class="action-button action-button-quiet-success" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                                <button class="action-button action-button-borderless-success" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                            </div>
+                            <div class="showroom-component-icon-button-group">
+                                <button class="icon-button icon-button-success" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                </button>
+                                <button class="icon-button icon-button-square icon-button-success" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="showroom-component-button-intent-group">
+                            <div class="showroom-component-button-intent-label">Warning Variant</div>
+                            <div class="showroom-component-action-button-group">
+                                <button class="action-button action-button-primary-warning" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                                <button class="action-button action-button-quiet-warning" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                                <button class="action-button action-button-borderless-warning" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                            </div>
+                            <div class="showroom-component-icon-button-group">
+                                <button class="icon-button icon-button-warning" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                </button>
+                                <button class="icon-button icon-button-square icon-button-warning" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="showroom-component-button-intent-group">
+                            <div class="showroom-component-button-intent-label">Danger Variant</div>
+                            <div class="showroom-component-action-button-group">
+                                <button class="action-button action-button-primary-danger" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                                <button class="action-button action-button-quiet-danger" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                                <button class="action-button action-button-borderless-danger" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                    <span class="action-button-label">Button joy</span>
+                                </button>
+                            </div>
+                            <div class="showroom-component-icon-button-group">
+                                <button class="icon-button icon-button-danger" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                </button>
+                                <button class="icon-button icon-button-square icon-button-danger" tabindex=0>
+                                    <i class="zulip-icon zulip-icon-move-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <section class="showroom-controls-section">
+                        <div class="showroom-controls-label">Controls</div>
+                        <div class="showroom-controls">
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Dark Theme</span>
+                                <div role="group" class="tab-picker">
+                                    <input type="radio" data-theme="dark" id="showroom_enable_dark_theme_buttons" class="tab-option" name="showroom-dark-theme-select"/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="showroom_enable_dark_theme_buttons" tabindex="0">
+                                        <span>Enable</span>
+                                    </label>
+                                    <input type="radio" data-theme="light" id="showroom_disable_dark_theme_buttons" class="tab-option" name="showroom-dark-theme-select" checked/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="showroom_disable_dark_theme_buttons" tabindex="0">
+                                        <span>Disable</span>
+                                    </label>
+                                    <span class="slider"></span>
+                                </div>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Select Background</span>
+                                <select class="showroom-control-element select_background">
+                                    {% for background in background_colors %}
+                                        <option value="{{ background.css_var }}" {% if background.css_var == "--color-background" %}selected{% endif %}>{{ background.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Action Button Icon</span>
+                                <div role="group" class="tab-picker">
+                                    <input type="radio" id="enable_button_icon" class="tab-option" name="button-icon-select" checked/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="enable_button_icon" tabindex="0">
+                                        <span>Enable</span>
+                                    </label>
+                                    <input type="radio" id="disable_button_icon" class="tab-option" name="button-icon-select"/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="disable_button_icon" tabindex="0">
+                                        <span>Disable</span>
+                                    </label>
+                                    <span class="slider"></span>
+                                </div>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Select Icon</span>
+                                <select class="showroom-control-element" id="button_select_icon">
+                                    {% for icon in icons %}
+                                        <option value="{{ icon }}" {% if icon == "move-alt" %}selected{% endif %}>{{ icon }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Action Button Text</span>
+                                <div class="showroom-control-setting showroom-control-setting-multiple">
+                                    <input class="showroom-control-element" type="text" id="button_text" />
+                                    <button class="showroom-control-element" id="clear_button_text">Reset</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

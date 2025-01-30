@@ -1664,7 +1664,7 @@ export function set_full_name(person_obj: User, new_full_name: string): void {
 
 export function set_custom_profile_field_data(
     user_id: number,
-    field: {id: number; value: string | null; rendered_value?: string},
+    field: {id: number; value: string | null; rendered_value?: string | undefined},
 ): void {
     if (field.id === undefined) {
         blueslip.error("Trying to set undefined field id");

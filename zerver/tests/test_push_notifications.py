@@ -11,6 +11,7 @@ from unittest import mock, skipUnless
 import aioapns
 import firebase_admin.messaging as firebase_messaging
 import orjson
+import requests
 import responses
 import time_machine
 from django.conf import settings
@@ -74,12 +75,14 @@ from zerver.lib.remote_server import (
     PushNotificationBouncerServerError,
     build_analytics_data,
     get_realms_info_for_push_bouncer,
+    prepare_for_registration_takeover_challenge,
     record_push_notifications_recently_working,
     redis_client,
     send_server_data_to_push_bouncer,
     send_to_push_bouncer,
 )
 from zerver.lib.response import json_response_from_error
+from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import BouncerTestCase, ZulipTestCase
 from zerver.lib.test_helpers import (
     activate_push_notification_service,
@@ -106,6 +109,10 @@ from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
+from zilencer.auth import (
+    REMOTE_SERVER_TAKEOVER_TOKEN_VALIDITY_SECONDS,
+    generate_registration_takeover_verification_secret,
+)
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import RemoteZulipServerAuditLog
 from zilencer.views import DevicesToCleanUpDict
@@ -5138,15 +5145,17 @@ class PushBouncerSignupTest(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        # Set up a MX lookup mock for all the tests, so that they don't have to
+        # Set up a DNS lookup mock for all the tests, so that they don't have to
         # worry about it failing, unless they intentionally want to set it up
         # to happen.
-        self.mxlookup_patcher = mock.patch("DNS.mxlookup", return_value=[(0, "")])
-        self.mxlookup_mock = self.mxlookup_patcher.start()
+        self.dns_resolver_patcher = mock.patch(
+            "zilencer.views.dns_resolver.Resolver.resolve", return_value=["whee"]
+        )
+        self.dns_resolver_mock = self.dns_resolver_patcher.start()
 
     @override
     def tearDown(self) -> None:
-        self.mxlookup_patcher.stop()
+        self.dns_resolver_patcher.stop()
 
     def test_deactivate_remote_server(self) -> None:
         zulip_org_id = str(uuid.uuid4())
@@ -5204,6 +5213,12 @@ class PushBouncerSignupTest(ZulipTestCase):
         )
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_error(result, "invalid-host is not a valid hostname")
+
+        request["hostname"] = "example.com/path"
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(
+            result, "example.com/path contains invalid components (e.g., path, query, fragment)."
+        )
 
     def test_push_signup_invalid_zulip_org_id(self) -> None:
         zulip_org_id = "x" * RemoteZulipServer.UUID_LENGTH
@@ -5344,7 +5359,13 @@ class PushBouncerSignupTest(ZulipTestCase):
             contact_email="server-admin@zulip.com",
         )
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "A server with hostname example.com already exists")
+        self.assert_json_error(
+            result,
+            "A server with hostname example.com already exists. "
+            "If you control the hostname "
+            "and want to transfer the registration to this server, you can run manage.py register_server "
+            "with the --registration-takeover flag.",
+        )
 
     def test_register_contact_email_validation_rules(self) -> None:
         zulip_org_id = str(uuid.uuid4())
@@ -5387,6 +5408,327 @@ class PushBouncerSignupTest(ZulipTestCase):
             resolver.return_value.resolve.return_value = ["whee"]
             result = self.client_post("/api/v1/remotes/server/register", request)
             self.assert_json_success(result)
+
+
+@skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
+class RegistrationTakeoverFlowTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.zulip_org_id = str(uuid.uuid4())
+        self.zulip_org_key = get_random_string(64)
+        self.hostname = "example.com"
+        request = dict(
+            zulip_org_id=self.zulip_org_id,
+            zulip_org_key=self.zulip_org_key,
+            hostname=self.hostname,
+            contact_email="server-admin@zulip.com",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_success(result)
+
+    @responses.activate
+    def test_flow_end_to_end(self) -> None:
+        server = RemoteZulipServer.objects.get(uuid=self.zulip_org_id)
+
+        result = self.client_post(
+            "/api/v1/remotes/server/register/takeover", {"hostname": self.hostname}
+        )
+        self.assert_json_success(result)
+        data = result.json()
+        verification_secret = data["verification_secret"]
+
+        access_token = prepare_for_registration_takeover_challenge(verification_secret)
+        # First we query the host's endpoint for serving the verification_secret.
+        result = self.client_post(f"/api/v1/zulip-services/verify/{access_token}/")
+        self.assert_json_success(result)
+        data = result.json()
+        served_verification_secret = data["verification_secret"]
+        self.assertEqual(served_verification_secret, verification_secret)
+
+        # Now we return to testing the push bouncer and we send it the request that the hosts's
+        # admin will once the host is ready to serve the verification_secret.
+        responses.add(
+            responses.GET,
+            f"https://example.com/api/v1/zulip-services/verify/{access_token}/",
+            json={"verification_secret": verification_secret},
+            status=200,
+        )
+        with self.assertLogs("zilencer.views", level="INFO") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+        self.assert_json_success(result)
+        new_uuid = result.json()["zulip_org_id"]
+        new_key = result.json()["zulip_org_key"]
+        # The uuid of the registration is preserved and delivered in this final response,
+        # but the secret key is rotated.
+        self.assertEqual(new_uuid, self.zulip_org_id)
+        self.assertNotEqual(new_key, self.zulip_org_key)
+        self.assertEqual(
+            mock_log.output,
+            ["INFO:zilencer.views:verify_registration_takeover:host:example.com|success"],
+        )
+
+        # Verify the registration got updated accordingly.
+        server.refresh_from_db()
+        self.assertEqual(str(server.uuid), new_uuid)
+        self.assertEqual(server.api_key, new_key)
+
+        audit_log = RemoteZulipServerAuditLog.objects.filter(server=server).latest("id")
+        self.assertEqual(
+            audit_log.event_type, AuditLogEventType.REMOTE_SERVER_REGISTRATION_TRANSFERRED
+        )
+
+    @override_settings(
+        RATE_LIMITING=True,
+        ABSOLUTE_USAGE_LIMITS_BY_ENDPOINT={
+            "verify_registration_takeover_challenge_ack_endpoint": [(10, 2)]
+        },
+    )
+    @responses.activate
+    def test_rate_limiting(self) -> None:
+        responses.get(
+            "https://example.com/api/v1/zulip-services/verify/sometoken/",
+            json={"verification_secret": "foo"},
+            status=200,
+        )
+
+        result = self.client_post(
+            "/api/v1/remotes/server/register/verify_challenge",
+            {"hostname": self.hostname, "access_token": "sometoken"},
+        )
+        self.assert_json_error(result, "The verification secret is malformed")
+        result = self.client_post(
+            "/api/v1/remotes/server/register/verify_challenge",
+            {"hostname": self.hostname, "access_token": "sometoken"},
+        )
+        self.assert_json_error(result, "The verification secret is malformed")
+
+        # Now the rate limit is hit.
+        with self.assertLogs("zilencer.views", level="WARNING") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": "sometoken"},
+            )
+        self.assert_json_error(
+            result,
+            f"The global limits on recent usage of this endpoint have been reached. Please try again later or reach out to {FromAddress.SUPPORT} for assistance.",
+            status_code=429,
+        )
+        self.assertEqual(
+            mock_log.output,
+            [
+                "WARNING:zilencer.views:Rate limit exceeded for verify_registration_takeover_challenge_ack_endpoint"
+            ],
+        )
+
+    @responses.activate
+    def test_ack_endpoint_errors(self) -> None:
+        time_now = now()
+
+        result = self.client_post(
+            "/api/v1/remotes/server/register/verify_challenge",
+            {"hostname": "unregistered.example.com", "access_token": "sometoken"},
+        )
+        self.assert_json_error(result, "Registration not found for this hostname")
+
+        responses.get(
+            "https://example.com/api/v1/zulip-services/verify/sometoken/",
+            json={"verification_secret": "foo"},
+            status=200,
+        )
+
+        result = self.client_post(
+            "/api/v1/remotes/server/register/verify_challenge",
+            {"hostname": self.hostname, "access_token": "sometoken"},
+        )
+        self.assert_json_error(result, "The verification secret is malformed")
+
+        with time_machine.travel(time_now, tick=False):
+            verification_secret = generate_registration_takeover_verification_secret(self.hostname)
+        responses.get(
+            "https://example.com/api/v1/zulip-services/verify/sometoken/",
+            json={"verification_secret": verification_secret},
+            status=200,
+        )
+        with time_machine.travel(
+            time_now + timedelta(seconds=REMOTE_SERVER_TAKEOVER_TOKEN_VALIDITY_SECONDS + 1),
+            tick=False,
+        ):
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": "sometoken"},
+            )
+            self.assert_json_error(result, "The verification secret has expired")
+
+        with (
+            time_machine.travel(time_now, tick=False),
+            mock.patch("zilencer.auth.REMOTE_SERVER_TAKEOVER_TOKEN_SALT", "foo"),
+        ):
+            verification_secret = generate_registration_takeover_verification_secret(self.hostname)
+        responses.get(
+            "https://example.com/api/v1/zulip-services/verify/sometoken/",
+            json={"verification_secret": verification_secret},
+            status=200,
+        )
+        result = self.client_post(
+            "/api/v1/remotes/server/register/verify_challenge",
+            {"hostname": self.hostname, "access_token": "sometoken"},
+        )
+        self.assert_json_error(result, "The verification secret is invalid")
+
+        # Make sure a valid verification secret for one hostname does not work for another.
+        with time_machine.travel(time_now, tick=False):
+            verification_secret = generate_registration_takeover_verification_secret(
+                "different.example.com"
+            )
+            responses.get(
+                "https://example.com/api/v1/zulip-services/verify/sometoken/",
+                json={"verification_secret": verification_secret},
+                status=200,
+            )
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": "sometoken"},
+            )
+        self.assert_json_error(result, "The verification secret is for a different hostname")
+
+    @responses.activate
+    def test_outgoing_verification_request_errors(self) -> None:
+        access_token = "sometoken"
+        base_url = f"https://{self.hostname}/api/v1/zulip-services/verify/{access_token}/"
+
+        responses.add(
+            method=responses.GET,
+            url=base_url,
+            json={"code": "REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED"},
+            status=400,
+        )
+        with self.assertLogs("zilencer.views", level="INFO") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+        self.assert_json_error(result, "The host reported it has no verification secret.")
+        self.assertEqual(
+            mock_log.output,
+            [
+                "INFO:zilencer.views:verify_registration_takeover:host:example.com|secret_not_prepared"
+            ],
+        )
+
+        # HttpError:
+        responses.add(
+            method=responses.GET,
+            url=base_url,
+            status=403,
+        )
+        with self.assertLogs("zilencer.views", level="INFO") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+        self.assert_json_error(result, "Error response received from the host: 403")
+        self.assertIn(
+            "verify_registration_takeover:host:example.com|exception:", mock_log.output[0]
+        )
+
+        # SSLError:
+        responses.add(
+            method=responses.GET,
+            url=base_url,
+            body=requests.exceptions.SSLError("certificate verification failed"),
+        )
+        with self.assertLogs("zilencer.views", level="INFO") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+        self.assert_json_error(result, "SSL error occurred while communicating with the host.")
+        self.assertIn(
+            "verify_registration_takeover:host:example.com|exception:", mock_log.output[0]
+        )
+
+        # ConnectionError:
+        responses.add(
+            method=responses.GET,
+            url=base_url,
+            body=requests.exceptions.ConnectionError("Fake connection error"),
+        )
+        with self.assertLogs("zilencer.views", level="INFO") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+        self.assert_json_error(
+            result, "Connection error occurred while communicating with the host."
+        )
+        self.assertIn(
+            "verify_registration_takeover:host:example.com|exception:", mock_log.output[0]
+        )
+
+        # Timeout:
+        responses.add(
+            method=responses.GET,
+            url=base_url,
+            body=requests.exceptions.Timeout("The request timed out"),
+        )
+        with self.assertLogs("zilencer.views", level="INFO") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+        self.assert_json_error(result, "The request timed out while communicating with the host.")
+        self.assertIn(
+            "verify_registration_takeover:host:example.com|exception:", mock_log.output[0]
+        )
+
+        # Generic RequestException:
+        responses.add(
+            method=responses.GET,
+            url=base_url,
+            body=requests.exceptions.RequestException("Something else went wrong"),
+        )
+        with self.assertLogs("zilencer.views", level="INFO") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+        self.assert_json_error(result, "An error occurred while communicating with the host.")
+        self.assertIn(
+            "verify_registration_takeover:host:example.com|exception:", mock_log.output[0]
+        )
+
+    def test_initiate_flow_for_unregistered_domain(self) -> None:
+        result = self.client_post(
+            "/api/v1/remotes/server/register/takeover",
+            {"hostname": "unregistered.example.com"},
+        )
+        self.assert_json_error(result, "unregistered.example.com not yet registered")
+
+    def test_serve_verification_secret_endpoint(self) -> None:
+        result = self.client_get(
+            "/api/v1/zulip-services/verify/sometoken/",
+        )
+        self.assert_json_error(result, "Verification secret not prepared")
+
+        valid_access_token = prepare_for_registration_takeover_challenge(verification_secret="foo")
+        result = self.client_get(
+            f"/api/v1/zulip-services/verify/{valid_access_token}/",
+        )
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["verification_secret"], "foo")
+
+        # Trying to access the verification secret with the wrong access_token should fail
+        # in a way indistinguishable from the case where the host is not prepared to serve
+        # a verification secret at all.
+        result = self.client_get(
+            "/api/v1/zulip-services/verify/wrongtoken/",
+        )
+        self.assert_json_error(result, "Verification secret not prepared")
 
 
 class TestUserPushIdentityCompat(ZulipTestCase):

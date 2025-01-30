@@ -21,7 +21,7 @@
         </div>
         <a href="{{preview_url}}" class="button small rounded tippy-zulip-delayed-tooltip" id="preview-stream-button" role="button" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="bottom" {{#unless should_display_preview_button }}style="display: none"{{/unless}}><i class="fa fa-eye"></i></a>
         {{#if is_realm_admin}}
-        <button class="button small rounded button-danger deactivate tippy-zulip-delayed-tooltip" type="button" name="delete_button" data-tippy-content="{{t 'Archive channel'}}">
+        <button class="button small rounded button-danger deactivate tippy-zulip-delayed-tooltip" type="button" data-tippy-content="{{t 'Archive channel'}}">
             <span class="icon-container">
                 <i class="zulip-icon zulip-icon-archive" aria-hidden="true"></i>
             </span>
@@ -58,7 +58,6 @@
                   }}
             </div>
             {{> stream_types .
-              stream_post_policy_values=../stream_post_policy_values
               stream_privacy_policy_values=../stream_privacy_policy_values
               stream_privacy_policy=../stream_privacy_policy
               check_default_stream=../check_default_stream
@@ -68,6 +67,7 @@
               org_level_message_retention_setting=../org_level_message_retention_setting
               is_stream_edit=true
               prefix="id_"
+              group_setting_labels=../group_setting_labels
               }}
             {{/with}}
             <div class="stream_details_box">
@@ -121,10 +121,11 @@
                     </div>
                 {{/each}}
                 <div class="input-group">
-                    <label for="streamcolor" class="settings-field-label">{{t "Channel color" }}</label>
-                    <span class="sub_setting_control">
-                        <input stream_id="{{sub.stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{sub.color}}" tabindex="-1" />
-                    </span>
+                    <label class="settings-field-label">{{t "Channel color" }}</label>
+                    <button class="button small rounded stream-settings-color-selector choose_stream_color" data-stream-id="{{ sub.stream_id }}">
+                        <span class="stream-settings-color-preview" style="background: {{sub.color}};"></span>
+                        <span class="stream-settings-color-selector-label">{{t "Change color"}}</span>
+                    </button>
                 </div>
             </div>
             <div class="subsection-parent">

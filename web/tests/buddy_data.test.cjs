@@ -5,15 +5,21 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {noop, run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
 });
 const timerender = mock_esm("../src/timerender");
+mock_esm("../src/buddy_list", {
+    buddy_list: {
+        rerender_participants: noop,
+    },
+});
 
 const compose_fade_helper = zrequire("compose_fade_helper");
+const activity_ui = zrequire("activity_ui");
 const muted_users = zrequire("muted_users");
 const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
@@ -427,23 +433,19 @@ test("get_conversation_participants", ({override_rewire}) => {
     message_lists.set_current({
         data: {
             filter,
-        },
-        all_messages() {
-            return [
-                {
-                    sender_id: selma.user_id,
-                    id: rome_sub.stream_id,
-                    content: "example content",
-                    topic: "Foo",
-                    type: "stream",
-                },
-            ];
+            participants: {
+                visible: () => new Set([selma.user_id]),
+            },
         },
     });
     override_rewire(narrow_state, "stream_id", () => rome_sub.stream_id);
     override_rewire(narrow_state, "topic", () => "Foo");
 
-    assert.deepEqual(buddy_data.get_conversation_participants(), new Set([selma.user_id]));
+    activity_ui.rerender_user_sidebar_participants();
+    assert.deepEqual(
+        buddy_data.get_conversation_participants_callback()(),
+        new Set([selma.user_id]),
+    );
 });
 
 test("level", ({override}) => {

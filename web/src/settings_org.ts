@@ -12,6 +12,8 @@ import * as channel from "./channel.ts";
 import {csrf_token} from "./csrf.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
+import * as group_permission_settings from "./group_permission_settings.ts";
+import type {UserGroupForDropdownListWidget} from "./group_permission_settings.ts";
 import {$t, $t_html, get_language_name} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
@@ -21,9 +23,9 @@ import * as realm_logo from "./realm_logo.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import {
     type MessageMoveTimeLimitSetting,
-    type RealmGroupSettingName,
+    type RealmGroupSettingNameSupportingAnonymousGroups,
     type SettingOptionValueWithKey,
-    realm_group_setting_name_schema,
+    realm_group_setting_name_supporting_anonymous_groups_schema,
     realm_setting_property_schema,
     realm_user_settings_default_properties_schema,
     simple_dropdown_realm_settings_schema,
@@ -45,7 +47,7 @@ import {group_setting_value_schema} from "./types.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_groups from "./user_groups.ts";
-import type {UserGroup, UserGroupForDropdownListWidget} from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
 import * as util from "./util.ts";
 
 const meta = {
@@ -437,7 +439,7 @@ export function populate_auth_methods(auth_method_to_bool_map: Record<string, bo
             enabled: value,
             disable_configure_auth_method: !can_configure_auth_methods() || cant_be_enabled,
             // The negated character class regexp serves as an allowlist - the replace() will
-            // remove *all* symbols *but* digits (\d) and lowecase letters (a-z),
+            // remove *all* symbols *but* digits (\d) and lowercase letters (a-z),
             // so that we can make assumptions on this string elsewhere in the code.
             // As a result, the only two "incoming" assumptions on the auth method name are:
             // 1) It contains at least one allowed symbol
@@ -519,9 +521,12 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             );
             break;
         case "realm_can_add_custom_emoji_group":
+        case "realm_can_add_subscribers_group":
+        case "realm_can_create_bots_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
+        case "realm_can_create_write_only_bots_group":
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
         case "realm_can_invite_users_group":
@@ -685,10 +690,12 @@ export function discard_realm_default_property_element_changes(elem: HTMLElement
             );
             settings_components.set_input_element_value($elem, property_value);
             break;
+        case "color_scheme":
         case "emojiset":
         case "user_list_style":
             // Because this widget has a radio button structure, it
             // needs custom reset code.
+            assert(typeof property_value === "number" || typeof property_value === "string");
             $elem
                 .find(`input[value='${CSS.escape(property_value.toString())}']`)
                 .prop("checked", true);
@@ -1087,7 +1094,10 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
             continue;
         }
         const get_setting_options = (): UserGroupForDropdownListWidget[] =>
-            user_groups.get_realm_user_groups_for_dropdown_list_widget(setting_name, "realm");
+            group_permission_settings.get_realm_user_groups_for_dropdown_list_widget(
+                setting_name,
+                "realm",
+            );
         set_up_dropdown_widget(
             realm_schema.keyof().parse("realm_" + setting_name),
             get_setting_options,
@@ -1267,11 +1277,12 @@ export let initialize_group_setting_widgets = (): void => {
 
         const opts: {
             $pill_container: JQuery;
-            setting_name: RealmGroupSettingName;
+            setting_name: RealmGroupSettingNameSupportingAnonymousGroups;
             pill_update_callback?: () => void;
         } = {
             $pill_container: $(`#id_realm_${CSS.escape(setting_name)}`),
-            setting_name: realm_group_setting_name_schema.parse(setting_name),
+            setting_name:
+                realm_group_setting_name_supporting_anonymous_groups_schema.parse(setting_name),
         };
         if (setting_name === "direct_message_permission_group") {
             opts.pill_update_callback = check_disable_direct_message_initiator_group_widget;

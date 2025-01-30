@@ -158,7 +158,7 @@ class UserBaseSettings(models.Model):
         USER_LIST_STYLE_WITH_STATUS,
         USER_LIST_STYLE_WITH_AVATAR,
     ]
-    user_list_style = models.PositiveSmallIntegerField(default=USER_LIST_STYLE_WITH_STATUS)
+    user_list_style = models.PositiveSmallIntegerField(default=USER_LIST_STYLE_WITH_AVATAR)
 
     # Show unread counts for
     WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_ALL_STREAMS = 1
@@ -361,7 +361,7 @@ class UserBaseSettings(models.Model):
         web_suggest_update_timezone=bool,
     )
 
-    modern_notification_settings: dict[str, Any] = dict(
+    modern_notification_settings = dict(
         # Add new notification settings here.
         enable_followed_topic_desktop_notifications=bool,
         enable_followed_topic_email_notifications=bool,
@@ -792,20 +792,19 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def allowed_bot_types(self) -> list[int]:
-        from zerver.models.realms import BotCreationPolicyEnum
-
         allowed_bot_types = []
-        if (
-            self.is_realm_admin
-            or self.realm.bot_creation_policy != BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
-        ):
-            allowed_bot_types.append(UserProfile.DEFAULT_BOT)
-        allowed_bot_types += [
-            UserProfile.INCOMING_WEBHOOK_BOT,
-            UserProfile.OUTGOING_WEBHOOK_BOT,
-        ]
-        if settings.EMBEDDED_BOTS_ENABLED:
-            allowed_bot_types.append(UserProfile.EMBEDDED_BOT)
+        if self.has_permission("can_create_bots_group"):
+            allowed_bot_types.extend(
+                [
+                    UserProfile.DEFAULT_BOT,
+                    UserProfile.INCOMING_WEBHOOK_BOT,
+                    UserProfile.OUTGOING_WEBHOOK_BOT,
+                ]
+            )
+            if settings.EMBEDDED_BOTS_ENABLED:
+                allowed_bot_types.append(UserProfile.EMBEDDED_BOT)
+        elif self.has_permission("can_create_write_only_bots_group"):
+            allowed_bot_types.append(UserProfile.INCOMING_WEBHOOK_BOT)
         return allowed_bot_types
 
     def email_address_is_realm_public(self) -> bool:
@@ -818,55 +817,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         from zerver.lib.user_groups import user_has_permission_for_group_setting
         from zerver.models import Realm
 
-        if (
-            policy_name not in Realm.REALM_PERMISSION_GROUP_SETTINGS
-            and policy_name != "invite_to_stream_policy"
-        ):
+        if policy_name not in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             raise AssertionError("Invalid policy")
 
-        if policy_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
-            if realm is None:
-                # realm is passed by the caller only when we optimize
-                # the number of database queries by fetching the group
-                # setting fields using select_related.
-                realm = self.realm
-            allowed_user_group = getattr(realm, policy_name)
-            setting_config = Realm.REALM_PERMISSION_GROUP_SETTINGS[policy_name]
-            return user_has_permission_for_group_setting(allowed_user_group, self, setting_config)
-
-        policy_value = getattr(self.realm, policy_name)
-        if policy_value == Realm.POLICY_NOBODY:
-            return False
-
-        if policy_value == Realm.POLICY_EVERYONE:
-            return True
-
-        if self.is_realm_owner:
-            return True
-
-        if policy_value == Realm.POLICY_OWNERS_ONLY:
-            return False
-
-        if self.is_realm_admin:
-            return True
-
-        if policy_value == Realm.POLICY_ADMINS_ONLY:
-            return False
-
-        if self.is_moderator:
-            return True
-
-        if policy_value == Realm.POLICY_MODERATORS_ONLY:
-            return False
-
-        if self.is_guest:
-            return False
-
-        if policy_value == Realm.POLICY_MEMBERS_ONLY:
-            return True
-
-        assert policy_value == Realm.POLICY_FULL_MEMBERS_ONLY
-        return not self.is_provisional_member
+        if realm is None:
+            # realm is passed by the caller only when we optimize
+            # the number of database queries by fetching the group
+            # setting fields using select_related.
+            realm = self.realm
+        allowed_user_group = getattr(realm, policy_name)
+        setting_config = Realm.REALM_PERMISSION_GROUP_SETTINGS[policy_name]
+        return user_has_permission_for_group_setting(allowed_user_group, self, setting_config)
 
     def can_create_public_streams(self, realm: Optional["Realm"] = None) -> bool:
         return self.has_permission("can_create_public_channel_group", realm)
@@ -882,8 +843,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_manage_default_streams(self) -> bool:
         return self.is_realm_admin
 
-    def can_subscribe_other_users(self) -> bool:
-        return self.has_permission("invite_to_stream_policy")
+    def can_subscribe_others_to_all_accessible_streams(self) -> bool:
+        return self.has_permission("can_add_subscribers_group")
 
     def can_invite_users_by_email(self, realm: Optional["Realm"] = None) -> bool:
         return self.has_permission("can_invite_users_group", realm)

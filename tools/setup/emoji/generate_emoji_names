@@ -14,12 +14,12 @@ from tools.setup.emoji.emoji_setup_utils import get_emoji_code
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji, unqualify_emoji
 
 CLDR_DATA_FILE = os.path.join(
-    ZULIP_PATH, "node_modules", "cldr-annotations-modern", "annotations", "en", "annotations.json"
+    ZULIP_PATH, "node_modules", "cldr-annotations-full", "annotations", "en", "annotations.json"
 )
 CLDR_DERIVED_DATA_FILE = os.path.join(
     ZULIP_PATH,
     "node_modules",
-    "cldr-annotations-derived-modern",
+    "cldr-annotations-derived-full",
     "annotationsDerived",
     "en",
     "annotations.json",
@@ -112,9 +112,9 @@ def convert_non_ascii_chars(name: str) -> str:
     }
     for before, after in replacements.items():
         name = name.replace(before, after)
-    assert (
-        name.isascii()
-    ), f"{name} still contains non-ascii characters. Add them to convert_non_ascii_chars."
+    assert name.isascii(), (
+        f"{name} still contains non-ascii characters. Add them to convert_non_ascii_chars."
+    )
     return name
 
 

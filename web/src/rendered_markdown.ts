@@ -205,14 +205,14 @@ export const update_elements = ($content: JQuery): void => {
 
         const my_user_id = people.my_current_user_id();
         // Mark user group you're a member of.
-        if (user_groups.is_direct_member_of(my_user_id, user_group_id)) {
+        if (user_groups.is_user_in_group(user_group_id, my_user_id)) {
             $(this).addClass("user-mention-me");
         }
 
         if (user_group_id && $(this).find(".highlight").length === 0) {
             // Edit the mention to show the current name for the
             // user group, if its not in search.
-            set_name_in_mention_element(this, user_group.name);
+            set_name_in_mention_element(this, user_groups.get_display_group_name(user_group.name));
         }
     });
 

@@ -1,0 +1,211 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "showroom" %}
+
+{% block title %}
+<title>{{ doc_root_title }} | Zulip Dev</title>
+{% endblock %}
+
+{% block content %}
+<div class="portico-container" data-platform="{{ platform }}">
+    <div class="portico-wrap">
+        {% include 'zerver/portico-header.html' %}
+        <div class="app portico-page">
+            <div class="banner-wrapper" id="showroom_component_banner_navbar_alerts_wrapper"></div>
+            <div class="app-main portico-page-container">
+                <div class="showroom-wrapper">
+                    <div class="banner-wrapper" id="showroom_component_banner_default_wrapper"></div>
+                    <section class="showroom-controls-section">
+                        <div class="showroom-controls-label">Theme Settings</div>
+                        <div class="showroom-controls">
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Dark Theme</span>
+                                <div role="group" class="tab-picker showroom-control-setting">
+                                    <input type="radio" data-theme="dark" id="showroom_enable_dark_theme_banners" class="tab-option" name="showroom-dark-theme-select"/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="showroom_enable_dark_theme_banners" tabindex="0">
+                                        <span>Enable</span>
+                                    </label>
+                                    <input type="radio" data-theme="light" id="showroom_disable_dark_theme_banners" class="tab-option" name="showroom-dark-theme-select" checked/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="showroom_disable_dark_theme_banners" tabindex="0">
+                                        <span>Disable</span>
+                                    </label>
+                                    <span class="slider"></span>
+                                </div>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Select Background</span>
+                                <select class="showroom-control-element showroom-control-setting select_background">
+                                    {% for background in background_colors %}
+                                        <option value="{{ background.css_var }}" {% if background.css_var == "--color-background" %}selected{% endif %}>{{ background.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="showroom-controls-label">Banner Settings</div>
+                        <div class="showroom-controls">
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Alert Banner Type</span>
+                                <select class="showroom-control-element showroom-control-setting" id="banner_select_type"></select>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Banner Intent</span>
+                                <select class="showroom-control-element showroom-control-setting" id="showroom_component_banner_select_intent"></select>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Banner Label</span>
+                                <input class="showroom-control-element showroom-control-setting" type="text" id="banner_label" />
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Banner Close Button</span>
+                                <div role="group" class="tab-picker showroom-control-setting">
+                                    <input type="radio" id="enable_banner_close_button" class="tab-option" name="banner-close-button-select"/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="enable_banner_close_button" tabindex="0">
+                                        <span>Enable</span>
+                                    </label>
+                                    <input type="radio" id="disable_banner_close_button" class="tab-option" name="banner-close-button-select" checked/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="disable_banner_close_button" tabindex="0">
+                                        <span>Disable</span>
+                                    </label>
+                                    <span class="slider"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="showroom-controls-label">Primary Button Settings</div>
+                        <div class="showroom-controls">
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Button</span>
+                                <div role="group" class="tab-picker showroom-control-setting">
+                                    <input type="radio" id="enable_primary_button" class="tab-option" name="primary-button-select"/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="enable_primary_button" tabindex="0">
+                                        <span>Enable</span>
+                                    </label>
+                                    <input type="radio" id="disable_primary_button" class="tab-option" name="primary-button-select" checked/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="disable_primary_button" tabindex="0">
+                                        <span>Disable</span>
+                                    </label>
+                                    <span class="slider"></span>
+                                </div>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Button Icon</span>
+                                <div role="group" class="tab-picker showroom-control-setting">
+                                    <input type="radio" id="enable_primary_button_icon" class="tab-option" name="primary-button-icon-select"/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="enable_primary_button_icon" tabindex="0">
+                                        <span>Enable</span>
+                                    </label>
+                                    <input type="radio" id="disable_primary_button_icon" class="tab-option" name="primary-button-icon-select" checked/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="disable_primary_button_icon" tabindex="0">
+                                        <span>Disable</span>
+                                    </label>
+                                    <span class="slider"></span>
+                                </div>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Select Icon</span>
+                                <select class="showroom-control-element showroom-control-setting" id="primary_button_select_icon">
+                                    {% for icon in icons %}
+                                        <option value="{{ icon }}" {% if icon == "move-alt" %}selected{% endif %}>{{ icon }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Button Text</span>
+                                <input class="showroom-control-element showroom-control-setting" type="text" id="primary_button_text" />
+                            </div>
+                        </div>
+
+                        <div class="showroom-controls-label">Quiet Button Settings</div>
+                        <div class="showroom-controls">
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Button</span>
+                                <div role="group" class="tab-picker showroom-control-setting">
+                                    <input type="radio" id="enable_quiet_button" class="tab-option" name="quiet-button-select"/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="enable_quiet_button" tabindex="0">
+                                        <span>Enable</span>
+                                    </label>
+                                    <input type="radio" id="disable_quiet_button" class="tab-option" name="quiet-button-select" checked/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="disable_quiet_button" tabindex="0">
+                                        <span>Disable</span>
+                                    </label>
+                                    <span class="slider"></span>
+                                </div>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Button Icon</span>
+                                <div role="group" class="tab-picker showroom-control-setting">
+                                    <input type="radio" id="enable_quiet_button_icon" class="tab-option" name="quiet-button-icon-select"/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="enable_quiet_button_icon" tabindex="0">
+                                        <span>Enable</span>
+                                    </label>
+                                    <input type="radio" id="disable_quiet_button_icon" class="tab-option" name="quiet-button-icon-select" checked/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="disable_quiet_button_icon" tabindex="0">
+                                        <span>Disable</span>
+                                    </label>
+                                    <span class="slider"></span>
+                                </div>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Select Icon</span>
+                                <select class="showroom-control-element showroom-control-setting" id="quiet_button_select_icon">
+                                    {% for icon in icons %}
+                                        <option value="{{ icon }}" {% if icon == "move-alt" %}selected{% endif %}>{{ icon }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Button Text</span>
+                                <input class="showroom-control-element showroom-control-setting" type="text" id="quiet_button_text" />
+                            </div>
+                        </div>
+
+                        <div class="showroom-controls-label">Borderless Button Settings</div>
+                        <div class="showroom-controls">
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Button</span>
+                                <div role="group" class="tab-picker showroom-control-setting">
+                                    <input type="radio" id="enable_borderless_button" class="tab-option" name="borderless-button-select"/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="enable_borderless_button" tabindex="0">
+                                        <span>Enable</span>
+                                    </label>
+                                    <input type="radio" id="disable_borderless_button" class="tab-option" name="borderless-button-select" checked/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="disable_borderless_button" tabindex="0">
+                                        <span>Disable</span>
+                                    </label>
+                                    <span class="slider"></span>
+                                </div>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Button Icon</span>
+                                <div role="group" class="tab-picker showroom-control-setting">
+                                    <input type="radio" id="enable_borderless_button_icon" class="tab-option" name="borderless-button-icon-select"/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="enable_borderless_button_icon" tabindex="0">
+                                        <span>Enable</span>
+                                    </label>
+                                    <input type="radio" id="disable_borderless_button_icon" class="tab-option" name="borderless-button-icon-select" checked/>
+                                    <label role="menuitemradio" class="tab-option-content showroom-control-element" for="disable_borderless_button_icon" tabindex="0">
+                                        <span>Disable</span>
+                                    </label>
+                                    <span class="slider"></span>
+                                </div>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Select Icon</span>
+                                <select class="showroom-control-element showroom-control-setting" id="borderless_button_select_icon">
+                                    {% for icon in icons %}
+                                        <option value="{{ icon }}" {% if icon == "move-alt" %}selected{% endif %}>{{ icon }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="showroom-control">
+                                <span class="showroom-control-label">Button Text</span>
+                                <input class="showroom-control-element showroom-control-setting" type="text" id="borderless_button_text" />
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

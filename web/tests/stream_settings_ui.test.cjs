@@ -23,6 +23,15 @@ mock_esm("../src/browser_history", {
 mock_esm("../src/hash_parser", {
     get_current_hash_section: () => denmark_stream_id,
 });
+
+mock_esm("../src/group_permission_settings", {
+    get_group_permission_setting_config() {
+        return {
+            allow_everyone_group: false,
+        };
+    },
+});
+
 set_global("page_params", {});
 
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -31,7 +40,8 @@ const stream_settings_ui = zrequire("stream_settings_ui");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
-set_realm({});
+const realm = {};
+set_realm(realm);
 set_current_user({});
 initialize_user_settings({user_settings: {}});
 
@@ -53,8 +63,9 @@ const initialize_user_groups = () => {
     user_groups.initialize({realm_user_groups: [admins_group, nobody_group]});
 };
 
-run_test("redraw_left_panel", ({mock_template}) => {
+run_test("redraw_left_panel", ({override, mock_template}) => {
     initialize_user_groups();
+    override(realm, "realm_can_add_subscribers_group", admins_group.id);
 
     // set-up sub rows stubs
     const denmark = {
@@ -68,6 +79,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         color: "red",
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
+        can_add_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -82,6 +94,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         color: "red",
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
+        can_add_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -96,6 +109,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         color: "red",
         can_remove_subscribers_group: admins_group.id,
         can_administer_channel_group: nobody_group.id,
+        can_add_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -110,6 +124,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         color: "red",
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
+        can_add_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -124,6 +139,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         color: "red",
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
+        can_add_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -138,6 +154,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         color: "red",
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
+        can_add_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -152,6 +169,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         color: "red",
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
+        can_add_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -166,6 +184,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         color: "red",
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
+        can_add_subscribers_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -337,53 +356,4 @@ run_test("redraw_left_panel", ({mock_template}) => {
     assert.ok(!$(".stream-row-denmark").hasClass("active"));
     assert.ok(!$(".right .settings").visible());
     assert.ok($(".nothing-selected").visible());
-});
-
-run_test("close color container when scrolling", ({mock_template}) => {
-    // Test to see if logic of the colorpicker closing is correct
-    initialize_user_groups();
-
-    const denmark = {
-        elem: "denmark",
-        subscribed: false,
-        name: "Denmark",
-        stream_id: denmark_stream_id,
-        description: "Copenhagen",
-        subscribers: [1],
-        stream_weekly_traffic: null,
-        color: "red",
-        can_remove_subscribers_group: admins_group.id,
-        can_administer_channel_group: nobody_group.id,
-    };
-
-    const populated_subs = [denmark];
-
-    mock_template("stream_settings/browse_streams_list.hbs", false, (data) => {
-        data.subscriptions = populated_subs;
-    });
-
-    stream_settings_ui.render_left_panel_superset();
-
-    const sub_stubs = [];
-
-    for (const data of populated_subs) {
-        const sub_row = `.stream-row-${CSS.escape(data.elem)}`;
-        sub_stubs.push(sub_row);
-
-        $(sub_row).attr("data-stream-id", data.stream_id);
-    }
-
-    $.create("#streams_overlay_container .stream-row", {children: sub_stubs});
-
-    let colorpicker_closed = false;
-
-    $("#stream_settings").on("scroll", () => {
-        // Set colorpicker_closed to true when scrolling to test out the logic
-        colorpicker_closed = true;
-    });
-
-    $("#stream_settings").trigger("scroll");
-
-    // Check that the variable was indeed changed following the logic
-    assert.ok(colorpicker_closed);
 });

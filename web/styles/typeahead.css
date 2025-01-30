@@ -18,7 +18,7 @@
     min-width: max-content;
 
     & > li {
-        word-break: break-word;
+        overflow-wrap: anywhere;
 
         & > a {
             display: flex;
@@ -62,6 +62,10 @@
                 margin-left: -2px;
             }
 
+            &.topic-typeahead-link {
+                gap: 0;
+            }
+
             .typeahead-text-container {
                 display: flex;
                 align-self: center;
@@ -70,6 +74,17 @@
                 white-space: nowrap;
                 gap: 3px;
             }
+
+            .compose-stream-name {
+                overflow: visible;
+                gap: 0;
+            }
+        }
+
+        .stream-to-topic-arrow {
+            cursor: default;
+            color: var(--color-compose-chevron-arrow);
+            text-decoration: none;
         }
     }
 

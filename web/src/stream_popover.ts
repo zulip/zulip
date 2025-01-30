@@ -27,7 +27,7 @@ import * as popover_menus from "./popover_menus.ts";
 import {left_sidebar_tippy_options} from "./popover_menus.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import * as stream_color from "./stream_color.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
@@ -41,28 +41,24 @@ import * as util from "./util.ts";
 
 // In this module, we manage stream popovers
 // that pop up from the left sidebar.
-let stream_popover_instance: tippy.Instance | null = null;
 let stream_widget_value: number | undefined;
 let move_topic_to_stream_topic_typeahead: Typeahead<string> | undefined;
-
-function get_popover_menu_items(sidebar_elem: tippy.Instance | null): JQuery | undefined {
-    if (!sidebar_elem) {
-        blueslip.error("Trying to get menu items when action popover is closed.");
-        return undefined;
-    }
-
-    const $popover = $(sidebar_elem.popper);
-    if (!$popover) {
-        blueslip.error("Cannot find popover data for stream sidebar menu.");
-        return undefined;
-    }
-
-    return $("li:not(.divider):visible > a", $popover);
-}
+const last_propagate_mode_for_conversation = new Map<string, string>();
 
 export function stream_sidebar_menu_handle_keyboard(key: string): void {
-    const items = get_popover_menu_items(stream_popover_instance);
-    popover_menus.popover_items_handle_keyboard(key, items);
+    if (popover_menus.is_color_picker_popover_displayed()) {
+        const $color_picker_popover_instance = popover_menus.get_color_picker_popover();
+        if (!$color_picker_popover_instance) {
+            return;
+        }
+        popover_menus.sidebar_menu_instance_handle_keyboard($color_picker_popover_instance, key);
+        return;
+    }
+    const $stream_actions_popover_instance = popover_menus.get_stream_actions_popover();
+    if (!$stream_actions_popover_instance) {
+        return;
+    }
+    popover_menus.sidebar_menu_instance_handle_keyboard($stream_actions_popover_instance, key);
 }
 
 export function elem_to_stream_id($elem: JQuery): number {
@@ -75,16 +71,10 @@ export function elem_to_stream_id($elem: JQuery): number {
     return stream_id;
 }
 
-export function is_open(): boolean {
-    return Boolean(stream_popover_instance);
-}
-
-export function hide_stream_popover(): void {
-    if (is_open()) {
-        ui_util.hide_left_sidebar_menu_icon();
-        stream_popover_instance!.destroy();
-        stream_popover_instance = null;
-    }
+export function hide_stream_popover(instance: tippy.Instance): void {
+    ui_util.hide_left_sidebar_menu_icon();
+    instance.destroy();
+    popover_menus.popover_instances.stream_actions_popover = null;
 }
 
 function stream_popover_sub(
@@ -104,7 +94,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
 
     // This will allow the user to close the popover by clicking
     // on the reference element if the popover is already open.
-    if (stream_popover_instance?.reference === elt) {
+    if (popover_menus.get_stream_actions_popover()?.reference === elt) {
         return;
     }
 
@@ -127,13 +117,13 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
         delay: [100, 0],
         ...left_sidebar_tippy_options,
         onCreate(instance) {
-            stream_popover_instance = instance;
             const $popover = $(instance.popper);
             $popover.addClass("stream-popover-root");
             instance.setContent(ui_util.parse_html(content));
         },
         onMount(instance) {
             const $popper = $(instance.popper);
+            popover_menus.popover_instances.stream_actions_popover = instance;
             ui_util.show_left_sidebar_menu_icon(elt);
 
             // Go to channel feed instead of first topic.
@@ -141,7 +131,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 e.preventDefault();
                 e.stopPropagation();
                 const sub = stream_popover_sub(e);
-                hide_stream_popover();
+                hide_stream_popover(instance);
                 message_view.show(
                     [
                         {
@@ -156,7 +146,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             // Stream settings
             $popper.on("click", ".open_stream_settings", (e) => {
                 const sub = stream_popover_sub(e);
-                hide_stream_popover();
+                hide_stream_popover(instance);
 
                 // Admin can change any stream's name & description either stream is public or
                 // private, subscribed or unsubscribed.
@@ -172,7 +162,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             // Pin/unpin
             $popper.on("click", ".pin_to_top", (e) => {
                 const sub = stream_popover_sub(e);
-                hide_stream_popover();
+                hide_stream_popover(instance);
                 stream_settings_ui.toggle_pin_to_top_stream(sub);
                 e.stopPropagation();
             });
@@ -180,7 +170,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             // Mark all messages in stream as read
             $popper.on("click", ".mark_stream_as_read", (e) => {
                 const sub = stream_popover_sub(e);
-                hide_stream_popover();
+                hide_stream_popover(instance);
                 unread_ops.mark_stream_as_read(sub.stream_id);
                 e.stopPropagation();
             });
@@ -188,7 +178,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             // Mute/unmute
             $popper.on("click", ".toggle_stream_muted", (e) => {
                 const sub = stream_popover_sub(e);
-                hide_stream_popover();
+                hide_stream_popover(instance);
                 stream_settings_api.set_stream_property(sub, {
                     property: "is_muted",
                     value: !sub.is_muted,
@@ -199,26 +189,9 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             // Unsubscribe
             $popper.on("click", ".popover_sub_unsub_button", (e) => {
                 const sub = stream_popover_sub(e);
-                hide_stream_popover();
+                hide_stream_popover(instance);
                 stream_settings_components.sub_or_unsub(sub);
                 e.preventDefault();
-                e.stopPropagation();
-            });
-
-            // Choose a different color.
-            $popper.on("click", ".choose_stream_color", (e) => {
-                const $popover = $(instance.popper);
-                const $colorpicker = $popover.find(".colorpicker-container").find(".colorpicker");
-                $(".colorpicker-container").show();
-                $colorpicker.spectrum("destroy");
-                $colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
-                // In theory this should clean up the old color picker,
-                // but this seems a bit flaky -- the new colorpicker
-                // doesn't fire until you click a button, but the buttons
-                // have been hidden.  We work around this by just manually
-                // fixing it up here.
-                $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
-                $(e.currentTarget).hide();
                 e.stopPropagation();
             });
 
@@ -226,8 +199,8 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 popover_menus.hide_current_popover_if_visible(instance);
             });
         },
-        onHidden() {
-            hide_stream_popover();
+        onHidden(instance) {
+            hide_stream_popover(instance);
         },
     });
 }
@@ -348,8 +321,12 @@ export async function build_move_topic_to_stream_popover(
 ): Promise<void> {
     const current_stream_name = sub_store.get(current_stream_id)!.name;
     const stream = sub_store.get(current_stream_id);
+    const topic_display_name = util.get_final_topic_display_name(topic_name);
+    const is_empty_string_topic = topic_name === "";
     const args: {
         topic_name: string;
+        topic_display_name: string;
+        is_empty_string_topic: boolean;
         current_stream_id: number;
         notify_new_thread: boolean;
         notify_old_thread: boolean;
@@ -360,6 +337,8 @@ export async function build_move_topic_to_stream_popover(
         stream: sub_store.StreamSubscription | undefined;
     } = {
         topic_name,
+        topic_display_name,
+        is_empty_string_topic,
         current_stream_id,
         stream,
         notify_new_thread: message_edit.notify_new_thread_default,
@@ -384,7 +363,8 @@ export async function build_move_topic_to_stream_popover(
             {
                 "z-stream-or-topic": () =>
                     render_inline_stream_or_topic_reference({
-                        topic_name,
+                        topic_display_name,
+                        is_empty_string_topic,
                         stream,
                         show_colored_icon: true,
                     }),
@@ -396,7 +376,8 @@ export async function build_move_topic_to_stream_popover(
             {
                 "z-stream-or-topic": () =>
                     render_inline_stream_or_topic_reference({
-                        topic_name,
+                        topic_display_name,
+                        is_empty_string_topic,
                         stream,
                         show_colored_icon: true,
                     }),
@@ -411,7 +392,8 @@ export async function build_move_topic_to_stream_popover(
                 "z-stream-or-topic": () =>
                     render_inline_stream_or_topic_reference({
                         stream,
-                        topic_name,
+                        topic_display_name,
+                        is_empty_string_topic,
                         show_colored_icon: true,
                     }),
             },
@@ -471,7 +453,10 @@ export async function build_move_topic_to_stream_popover(
     }
 
     function update_submit_button_disabled_state(select_stream_id: number): void {
-        const {current_stream_id, new_topic_name, old_topic_name} = get_params_from_form();
+        const params = get_params_from_form();
+        const current_stream_id = params.current_stream_id;
+        const new_topic_name = params.new_topic_name?.trim();
+        const old_topic_name = params.old_topic_name.trim();
 
         // Unlike most topic comparisons in Zulip, we intentionally do
         // a case-sensitive comparison, since adjusting the
@@ -480,9 +465,21 @@ export async function build_move_topic_to_stream_popover(
         // disabled in case when user does not have permission to edit
         // topic and thus submit button is disabled if stream is also
         // not changed.
-        util.the($<HTMLButtonElement>("#move_topic_modal button.dialog_submit_button")).disabled =
+        let is_disabled = false;
+        if (
+            realm.realm_mandatory_topics &&
+            (new_topic_name === "" || new_topic_name === "(no topic)")
+        ) {
+            is_disabled = true;
+        }
+        if (
             Number.parseInt(current_stream_id, 10) === select_stream_id &&
-            (new_topic_name === undefined || new_topic_name.trim() === old_topic_name.trim());
+            (new_topic_name === undefined || new_topic_name === old_topic_name)
+        ) {
+            is_disabled = true;
+        }
+        util.the($<HTMLButtonElement>("#move_topic_modal button.dialog_submit_button")).disabled =
+            is_disabled;
     }
 
     function move_topic(): void {
@@ -728,8 +725,8 @@ export async function build_move_topic_to_stream_popover(
             item_click_callback: move_topic_on_update,
             $events_container: $("#move_topic_modal"),
             tippy_props: {
-                // Overlap dropdown search input with stream selection button.
-                offset: [0, -30],
+                // Show dropdown search input below stream selection button.
+                offset: [0, 2],
             },
         }).setup();
 
@@ -742,11 +739,26 @@ export async function build_move_topic_to_stream_popover(
         if (!args.from_message_actions_popover) {
             update_move_messages_count_text("change_all");
         } else {
+            // Generate unique key for this conversation
+            const conversation_key = `${current_stream_id}_${topic_name}`;
             let selected_option = String($("#message_move_select_options").val());
+
+            // If a user has changed the smart defaults of `propagate_mode` to "change_one", we
+            // remember that forced change and apply the same default for `propagate_mode` next
+            // time when the user tries to move the message of the same topic to save the time
+            // of user manually selecting "change_one" every time.
+            const previously_used_propagate_mode =
+                last_propagate_mode_for_conversation.get(conversation_key);
+            if (previously_used_propagate_mode === "change_one") {
+                selected_option = "change_one";
+                $("#message_move_select_options").val(selected_option);
+            }
+
             update_move_messages_count_text(selected_option, message?.id);
 
             $("#message_move_select_options").on("change", function () {
                 selected_option = String($(this).val());
+                last_propagate_mode_for_conversation.set(conversation_key, selected_option);
                 update_move_messages_count_text(selected_option, message?.id);
             });
         }

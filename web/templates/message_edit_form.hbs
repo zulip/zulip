@@ -18,8 +18,14 @@
             <div class="action-buttons">
                 <div class="controls edit-controls">
                     {{#if is_editable}}
-                    <div class="message-edit-feature-group">
+                    <div class="message-edit-feature-group compose-scrolling-buttons-container">
                         {{> compose_control_buttons . }}
+                        <button type="button" class="formatting-control-scroller-button formatting-scroller-forward">
+                            <i class="scroller-forward-icon zulip-icon zulip-icon-compose-scroll-right"></i>
+                        </button>
+                        <button type="button" class="formatting-control-scroller-button formatting-scroller-backward">
+                            <i class="scroller-backward-icon zulip-icon zulip-icon-compose-scroll-left"></i>
+                        </button>
                     </div>
                     {{/if}}
                     <div class="message-edit-buttons-and-timer">

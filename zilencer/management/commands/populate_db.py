@@ -70,6 +70,7 @@ from zerver.models import (
 )
 from zerver.models.alert_words import flush_alert_word
 from zerver.models.clients import get_client
+from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.onboarding_steps import OnboardingStep
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
@@ -300,8 +301,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--test-suite",
             action="store_true",
-            help="Configures populate_db to create a deterministic "
-            "data set for the backend tests.",
+            help="Configures populate_db to create a deterministic data set for the backend tests.",
         )
 
     @override
@@ -1024,6 +1024,9 @@ class Command(ZulipBaseCommand):
                 # to imitate emoji insertions in stream names
                 raw_emojis = ["😎", "😂", "🐱‍👤"]
 
+                admins_system_group = NamedUserGroup.objects.get(
+                    name=SystemGroups.ADMINISTRATORS, realm=zulip_realm, is_system_group=True
+                )
                 zulip_stream_dict: dict[str, dict[str, Any]] = {
                     "devel": {"description": "For developing"},
                     # ビデオゲーム - VideoGames (japanese)
@@ -1033,7 +1036,7 @@ class Command(ZulipBaseCommand):
                     },
                     "announce": {
                         "description": "For announcements",
-                        "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
+                        "can_send_message_group": admins_system_group,
                     },
                     "design": {"description": "For design", "creator": hamlet},
                     "support": {"description": "For support"},

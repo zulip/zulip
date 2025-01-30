@@ -148,7 +148,7 @@ def truncate_name(name: str, name_id: int, max_length: int = 60) -> str:
 
 def get_stream_name(rc_channel: dict[str, Any]) -> str:
     if rc_channel.get("teamMain"):
-        stream_name = f'[TEAM] {rc_channel["name"]}'
+        stream_name = f"[TEAM] {rc_channel['name']}"
     else:
         stream_name = rc_channel["name"]
 
@@ -286,7 +286,7 @@ def build_custom_emoji(
     # Build custom emoji
     for rc_emoji in custom_emoji_data["emoji"]:
         # Subject to change with changes in database
-        emoji_file_id = f'{rc_emoji["name"]}.{rc_emoji["extension"]}'
+        emoji_file_id = f"{rc_emoji['name']}.{rc_emoji['extension']}"
 
         emoji_file_info = emoji_file_data[emoji_file_id]
 
@@ -391,7 +391,7 @@ def process_message_attachment(
 
     upload_file_data = upload_id_to_upload_data_map[upload["_id"]]
     file_name = upload["name"]
-    file_ext = f'.{upload["type"].split("/")[-1]}'
+    file_ext = f".{upload['type'].split('/')[-1]}"
 
     has_image = False
     if file_ext.lower() in IMAGE_EXTENSIONS:
@@ -423,7 +423,7 @@ def process_message_attachment(
         upload_file.write(b"".join(upload_file_data["chunk"]))
 
     attachment_content = (
-        f'{upload_file_data.get("description", "")}\n\n[{file_name}](/user_uploads/{s3_path})'
+        f"{upload_file_data.get('description', '')}\n\n[{file_name}](/user_uploads/{s3_path})"
     )
 
     fileinfo = {

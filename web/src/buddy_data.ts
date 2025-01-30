@@ -1,8 +1,5 @@
-import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip.ts";
-import {ConversationParticipants} from "./conversation_participants.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
@@ -319,11 +316,6 @@ export function get_title_data(user_ids_string: string, is_group: boolean): Titl
     };
 }
 
-export function get_item(user_id: number): BuddyUserInfo {
-    const info = info_for(user_id);
-    return info;
-}
-
 export function get_items_for_users(user_ids: number[]): BuddyUserInfo[] {
     const user_info = user_ids.map((user_id) => info_for(user_id));
     return user_info;
@@ -457,32 +449,18 @@ function get_filtered_user_id_list(
     return filter_user_ids(user_filter_text, [...user_ids_set]);
 }
 
-export function get_conversation_participants(): Set<number> {
-    const participant_ids_set = new Set<number>();
-    if (!narrow_state.stream_id() || !narrow_state.topic() || !message_lists.current) {
-        return participant_ids_set;
-    }
-    for (const message of message_lists.current.all_messages()) {
-        if (people.is_displayable_conversation_participant(message.sender_id)) {
-            participant_ids_set.add(message.sender_id);
+export function get_conversation_participants_callback(): () => Set<number> {
+    return () => {
+        if (!narrow_state.stream_id() || !narrow_state.topic() || !message_lists.current) {
+            return new Set<number>();
         }
-    }
-    const conversation_participants = new ConversationParticipants(
-        message_lists.current.all_messages(),
-    ).visible();
-    if (!_.isEqual(participant_ids_set, conversation_participants)) {
-        /* istanbul ignore next */
-        blueslip.error("Participants calculations disagree", {
-            participant_ids_set,
-            conversation_participants,
-        });
-    }
-    return participant_ids_set;
+        return message_lists.current.data.participants.visible();
+    };
 }
 
 export function get_filtered_and_sorted_user_ids(user_filter_text: string): number[] {
     let user_ids;
-    const conversation_participants = get_conversation_participants();
+    const conversation_participants = get_conversation_participants_callback()();
     user_ids = get_filtered_user_id_list(user_filter_text, conversation_participants);
     user_ids = maybe_shrink_list(user_ids, user_filter_text, conversation_participants);
     return sort_users(user_ids, conversation_participants);

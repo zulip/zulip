@@ -19,7 +19,11 @@ from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.realm_emoji import do_remove_realm_emoji
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.user_groups import check_add_user_group, do_deactivate_user_group
+from zerver.actions.user_groups import (
+    add_subgroups_to_user_group,
+    check_add_user_group,
+    do_deactivate_user_group,
+)
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active
 from zerver.lib.alert_words import get_alert_word_automaton
@@ -296,11 +300,59 @@ class MarkdownMiscTest(ZulipTestCase):
         content = "@*hamletcharacters*"
         group = NamedUserGroup.objects.get(realm=realm, name="hamletcharacters")
         mention_data = MentionData(mention_backend, content, message_sender=None)
-        self.assertCountEqual(mention_data.get_group_members(group.id), [hamlet.id, cordelia.id])
+        self.assertEqual(mention_data.get_group_members(group.id), {hamlet.id, cordelia.id})
 
         change_user_is_active(cordelia, False)
         mention_data = MentionData(mention_backend, content, message_sender=None)
-        self.assertEqual(mention_data.get_group_members(group.id), [hamlet.id])
+        self.assertEqual(mention_data.get_group_members(group.id), {hamlet.id})
+
+    def test_bulk_user_group_mentions(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        mention_backend = MentionBackend(realm.id)
+
+        content = ""
+        for i in range(5):
+            group_name = f"group{i}"
+            check_add_user_group(realm, group_name, [hamlet, cordelia], acting_user=othello)
+            content += f" @*{group_name}*"
+
+        CONSTANT_QUERY_COUNT = 2  # even if it increases in future, make sure it's constant.
+        with self.assert_database_query_count(CONSTANT_QUERY_COUNT):
+            MentionData(mention_backend, content, message_sender=None)
+
+    def test_mention_user_groups_with_common_subgroup(self) -> None:
+        # Mention multiple groups (class-A and class-B) with a common sub-group (good-students)
+        # and make sure each mentioned group has the expected members
+        # (i.e. direct and via sub-groups) in mention_data.
+
+        realm = get_realm("zulip")
+        aaron = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+
+        good_students = check_add_user_group(
+            realm, "good-students", [aaron, hamlet], acting_user=othello
+        )
+        class_A = check_add_user_group(realm, "class-A", [iago], acting_user=othello)
+        class_B = check_add_user_group(realm, "class-B", [cordelia], acting_user=othello)
+
+        add_subgroups_to_user_group(class_A, [good_students], acting_user=othello)
+        add_subgroups_to_user_group(class_B, [good_students], acting_user=othello)
+
+        content = "@*class-A*  @*class-B*"
+        mention_backend = MentionBackend(realm.id)
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+
+        # both groups should have their direct members and the sub-group's members.
+        self.assertEqual(mention_data.get_group_members(class_A.id), {iago.id, aaron.id, hamlet.id})
+        self.assertEqual(
+            mention_data.get_group_members(class_B.id), {cordelia.id, aaron.id, hamlet.id}
+        )
 
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
@@ -753,7 +805,7 @@ class MarkdownEmbedsTest(ZulipTestCase):
 
     @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_static_image_preview_skip_camo(self) -> None:
-        content = f"{ settings.STATIC_URL }/thing.jpeg"
+        content = f"{settings.STATIC_URL}/thing.jpeg"
 
         thumbnail_img = f"""<div class="message_inline_image"><a href="{content}"><img src="{content}"></a></div>"""
         converted = markdown_convert_wrapper(content)
@@ -761,15 +813,15 @@ class MarkdownEmbedsTest(ZulipTestCase):
 
     @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_realm_image_preview_skip_camo(self) -> None:
-        content = f"https://zulip.{ settings.EXTERNAL_HOST }/thing.jpeg"
+        content = f"https://zulip.{settings.EXTERNAL_HOST}/thing.jpeg"
         converted = markdown_convert_wrapper(content)
         self.assertNotIn(converted, get_camo_url(content))
 
     @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_cross_realm_image_preview_use_camo(self) -> None:
-        content = f"https://otherrealm.{ settings.EXTERNAL_HOST }/thing.jpeg"
+        content = f"https://otherrealm.{settings.EXTERNAL_HOST}/thing.jpeg"
 
-        thumbnail_img = f"""<div class="message_inline_image"><a href="{ content }"><img src="{ get_camo_url(content) }"></a></div>"""
+        thumbnail_img = f"""<div class="message_inline_image"><a href="{content}"><img src="{get_camo_url(content)}"></a></div>"""
         converted = markdown_convert_wrapper(content)
         self.assertIn(converted, thumbnail_img)
 
@@ -870,7 +922,7 @@ class MarkdownEmbedsTest(ZulipTestCase):
         self.assertEqual(converted.rendered_content, expected)
 
         urls.append("https://www.google.com/images/srpr/logo4w.png")
-        content = f"{urls[0]}\n\n" f">{urls[1]}\n\n" f"* {urls[2]}\n" f"* {urls[3]}"
+        content = f"{urls[0]}\n\n>{urls[1]}\n\n* {urls[2]}\n* {urls[3]}"
         expected = (
             f'<div class="message_inline_image"><a href="{urls[0]}"><img src="{get_camo_url(urls[0])}"></a></div>'
             f'<blockquote>\n<p><a href="{urls[1]}">{urls[1]}</a></p>\n</blockquote>\n'
@@ -2284,9 +2336,7 @@ class MarkdownMentionTest(ZulipTestCase):
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention silent" '
-            f'data-user-id="{user_id}">'
-            "King Hamlet</span></p>",
+            f'<p><span class="user-mention silent" data-user-id="{user_id}">King Hamlet</span></p>',
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
@@ -2305,9 +2355,7 @@ class MarkdownMentionTest(ZulipTestCase):
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention silent" '
-            f'data-user-id="{user_id}">'
-            "King Hamlet</span></p>",
+            f'<p><span class="user-mention silent" data-user-id="{user_id}">King Hamlet</span></p>',
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
@@ -2326,9 +2374,7 @@ class MarkdownMentionTest(ZulipTestCase):
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention silent" '
-            f'data-user-id="{user_id}">'
-            "King Hamlet</span></p>",
+            f'<p><span class="user-mention silent" data-user-id="{user_id}">King Hamlet</span></p>',
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
@@ -2685,9 +2731,7 @@ class MarkdownMentionTest(ZulipTestCase):
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
-            '<p><span class="user-mention" '
-            f'data-user-id="{test_user.id}">'
-            "@Atomic #123</span></p>",
+            f'<p><span class="user-mention" data-user-id="{test_user.id}">@Atomic #123</span></p>',
         )
         self.assertEqual(rendering_result.mentions_user_ids, {test_user.id})
         content = "@_**Atomic #123**"
@@ -2871,6 +2915,7 @@ class MarkdownMentionTest(ZulipTestCase):
         update_message_and_check_flag("edited", False)
         update_message_and_check_flag("@*support*", True)
         update_message_and_check_flag("@_*support*", False)
+        update_message_and_check_flag("@_*role:administrators*", False)
 
     def test_user_group_mention_invalid(self) -> None:
         sender_user_profile = self.example_user("othello")
@@ -2906,6 +2951,17 @@ class MarkdownMentionTest(ZulipTestCase):
         )
 
         self.assertEqual(rendering_result.mentions_user_group_ids, set())
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=sender_user_profile.realm, is_system_group=True
+        )
+        content = "Please contact @_*role:administrators*"
+        rendering_result = render_message_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            "<p>Please contact "
+            f'<span class="user-group-mention silent" data-user-group-id="{admins_group.id}">Administrators</span></p>',
+        )
 
     def test_deactivated_user_group_mention(self) -> None:
         sender_user_profile = self.example_user("othello")
@@ -2949,27 +3005,6 @@ class MarkdownMentionTest(ZulipTestCase):
         assert_silent_mention("> @_*backend*")
         assert_silent_mention("```quote\n@*backend*\n```")
         assert_silent_mention("```quote\n@_*backend*\n```")
-
-    def test_system_user_group_mention(self) -> None:
-        desdemona = self.example_user("desdemona")
-        iago = self.example_user("iago")
-        hamlet = self.example_user("hamlet")
-        moderators_group = NamedUserGroup.objects.get(
-            realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
-        )
-        content = "@*role:moderators* @**King Hamlet** test message"
-
-        # Owner cannot mention a system user group.
-        msg = Message(sender=desdemona, sending_client=get_client("test"), realm=desdemona.realm)
-        rendering_result = render_message_markdown(msg, content)
-        self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
-        self.assertNotIn(moderators_group, rendering_result.mentions_user_group_ids)
-
-        # Admin belonging to user group also cannot mention a system user group.
-        msg = Message(sender=iago, sending_client=get_client("test"), realm=iago.realm)
-        rendering_result = render_message_markdown(msg, content)
-        self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id})
-        self.assertNotIn(moderators_group, rendering_result.mentions_user_group_ids)
 
 
 class MarkdownStreamMentionTests(ZulipTestCase):

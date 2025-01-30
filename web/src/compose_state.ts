@@ -148,6 +148,15 @@ function cursor_at_start_of_whitespace_in_compose(): boolean {
     return message_content() === "" && cursor_position === 0;
 }
 
+export function focus_in_formatting_buttons(): boolean {
+    const is_focused_formatting_button =
+        document.activeElement?.classList.contains("compose_control_button");
+    if (is_focused_formatting_button) {
+        return true;
+    }
+    return false;
+}
+
 export function focus_in_empty_compose(
     consider_start_of_whitespace_message_empty = false,
 ): boolean {

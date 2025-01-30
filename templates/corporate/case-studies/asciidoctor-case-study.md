@@ -94,7 +94,7 @@ the wrong channel or topic, Zulip allows me to [move those messages
 around](/help/move-content-to-another-channel) so they land in the right spot,”
 Dan says. “Moving messages also sends a subtle hint to the person posting about
 where to post the next time. And I can use [topic
-references](/help/link-to-a-message-or-conversation#link-to-a-channel-or-topic-within-zulip)
+references](/help/link-to-a-message-or-conversation#link-to-a-topic-within-zulip)
 to link to the new topic location, or to a related topic. That’s incredibly
 powerful,” Dan says.
 

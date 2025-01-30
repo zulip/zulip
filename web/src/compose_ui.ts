@@ -4,6 +4,7 @@
 import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 import {
     insertTextIntoField,
     replaceFieldText,
@@ -21,7 +22,6 @@ import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as markdown from "./markdown.ts";
 import * as people from "./people.ts";
-import * as popover_menus from "./popover_menus.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rtl from "./rtl.ts";
@@ -147,6 +147,56 @@ export function rewire_insert_and_scroll_into_view(
     value: typeof insert_and_scroll_into_view,
 ): void {
     insert_and_scroll_into_view = value;
+}
+
+export function maybe_show_scrolling_formatting_buttons(container_selector: string): void {
+    const button_container = document.querySelector(container_selector);
+    const button_bar = document.querySelector(
+        `${container_selector} .compose-control-buttons-container`,
+    );
+
+    if (!button_container || !button_bar) {
+        return;
+    }
+
+    const button_container_width = button_container?.clientWidth;
+    const button_bar_width = button_bar?.scrollWidth;
+    const button_bar_scroll_left = button_bar?.scrollLeft;
+
+    const button_bar_max_left_scroll = button_bar_width - button_container_width;
+
+    assert(
+        typeof button_container_width === "number" &&
+            typeof button_bar_width === "number" &&
+            typeof button_bar_scroll_left === "number",
+    );
+
+    // Set these values as data attributes for ready access by
+    // other scrolling logic
+    //
+    // TODO: Modify eslint config, if we wish to avoid dataset
+    //
+    /* eslint unicorn/prefer-dom-node-dataset: "off" */
+    button_container.setAttribute("data-button-container-width", button_container_width.toString());
+    button_container.setAttribute("data-button-bar-width", button_bar_width.toString());
+    button_container.setAttribute(
+        "data-button-bar-max-left-scroll",
+        button_bar_max_left_scroll.toString(),
+    );
+
+    button_container.classList.remove("can-scroll-forward", "can-scroll-backward");
+
+    if (button_container_width < button_bar_width) {
+        // It's possible that the buttons may be scrolled prior
+        // to the viewport being resized
+        if (button_bar_scroll_left < button_bar_max_left_scroll) {
+            button_container?.classList.add("can-scroll-forward");
+        }
+
+        if (button_bar_scroll_left > 0) {
+            button_container?.classList.add("can-scroll-backward");
+        }
+    }
 }
 
 function get_focus_area(opts: ComposeTriggeredOptions): string {
@@ -480,6 +530,31 @@ export function make_compose_box_original_size(): void {
     $("textarea#compose-textarea").trigger("focus");
 }
 
+export function handle_scrolling_formatting_buttons(event: JQuery.ScrollEvent): void {
+    event.stopPropagation();
+    const $button_bar = $(event.currentTarget);
+    const $button_container = $button_bar.closest(".compose-scrolling-buttons-container");
+    const button_bar_max_left_scroll = Number(
+        $button_container.attr("data-button-bar-max-left-scroll"),
+    );
+    const button_bar_left_scroll = $button_bar.scrollLeft();
+
+    // If we're within 4px of the start or end of the formatting buttons,
+    // go ahead and hide the respective scrolling button
+    const hide_scroll_button_threshhold_px = 4;
+
+    $button_container.addClass("can-scroll-forward can-scroll-backward");
+
+    assert(typeof button_bar_left_scroll === "number");
+
+    if (button_bar_left_scroll >= button_bar_max_left_scroll - hide_scroll_button_threshhold_px) {
+        $button_container.removeClass("can-scroll-forward");
+    }
+    if (button_bar_left_scroll <= hide_scroll_button_threshhold_px) {
+        $button_container.removeClass("can-scroll-backward");
+    }
+}
+
 export function handle_keydown(
     event: JQuery.KeyboardEventBase,
     $textarea: JQuery<HTMLTextAreaElement>,
@@ -658,14 +733,10 @@ export let format_text = (
                 .split("\n")
                 .map((line, i) => mark(line, i))
                 .join("\n");
-            // We always ensure a blank line before and after the list, as we want
+            // We always ensure a blank line after the list, as we want
             // a clean separation between the list and the rest of the text, especially
             // when the markdown is rendered.
 
-            // Add blank line between text before and list if not already present.
-            if (before_lines.length > 0 && before_lines.at(-1) !== "\n") {
-                before_lines += "\n";
-            }
             // Add blank line between list and rest of text if not already present.
             if (after_lines.length > 0 && after_lines.at(0) !== "\n") {
                 after_lines = "\n" + after_lines;
@@ -1217,17 +1288,6 @@ export function show_compose_spinner(): void {
     loading.show_button_spinner($(".compose-submit-button .loader"), true);
     $(".compose-submit-button .zulip-icon-send").hide();
     $(".compose-submit-button").addClass("compose-button-disabled");
-}
-
-export function get_compose_click_target(element: HTMLElement): Element {
-    const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
-    if (
-        compose_control_buttons_popover &&
-        $(compose_control_buttons_popover.popper).has(element).length > 0
-    ) {
-        return compose_control_buttons_popover.reference;
-    }
-    return element;
 }
 
 export function render_and_show_preview(

@@ -280,6 +280,11 @@ def main() -> None:
         action="store_true",
         help="Generate Stripe test fixtures by making requests to Stripe test network",
     )
+    parser.add_argument(
+        "--generate-litellm-fixtures",
+        action="store_true",
+        help="Generate litellm test fixtures using credentials in zproject/dev-secrets.conf",
+    )
     parser.add_argument("args", nargs="*")
     parser.add_argument(
         "--ban-console-output",
@@ -387,6 +392,16 @@ def main() -> None:
         print("-- Forcing serial mode for generating stripe fixtures.", flush=True)
         default_parallel = 1
         os.environ["GENERATE_STRIPE_FIXTURES"] = "1"
+
+    if options.generate_litellm_fixtures:
+        if full_suite:
+            suites = [
+                "zerver.tests.test_message_summary",
+            ]
+            full_suite = False
+        print("-- Forcing serial mode for generating litellm fixtures.", flush=True)
+        default_parallel = 1
+        os.environ["GENERATE_LITELLM_FIXTURES"] = "1"
 
     assert_provisioning_status_ok(options.skip_provision_check)
 

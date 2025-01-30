@@ -6,16 +6,10 @@ import shutil
 import subprocess
 import sys
 import time
-from importlib import import_module
-from io import StringIO
-from typing import Any
 
-from django.apps import apps
 from django.conf import settings
-from django.core.management import call_command
 from django.db import DEFAULT_DB_ALIAS, ProgrammingError, connection, connections
 from django.db.utils import OperationalError
-from django.utils.module_loading import module_has_submodule
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from scripts.lib.zulip_tools import (
@@ -117,6 +111,8 @@ class Database:
         )
 
     def what_to_do_with_migrations(self) -> str:
+        from zerver.lib.migration_status import get_migration_status
+
         status_fn = self.migration_status_path
         settings = self.settings
 
@@ -127,6 +123,7 @@ class Database:
             previous_migration_status = f.read()
 
         current_migration_status = get_migration_status(settings=settings)
+        connections.close_all()
         all_curr_migrations = extract_migrations_as_list(current_migration_status)
         all_prev_migrations = extract_migrations_as_list(previous_migration_status)
 
@@ -293,37 +290,6 @@ def update_test_databases_if_required(rebuild_test_database: bool = False) -> No
 
     if rebuild_test_database:
         run(["tools/setup/generate-fixtures"])
-
-
-def get_migration_status(**options: Any) -> str:
-    verbosity = options.get("verbosity", 1)
-
-    for app_config in apps.get_app_configs():
-        if module_has_submodule(app_config.module, "management"):
-            import_module(".management", app_config.name)
-
-    app_label = options["app_label"] if options.get("app_label") else None
-    db = options.get("database", DEFAULT_DB_ALIAS)
-    out = StringIO()
-    command_args = ["--list"]
-    if app_label:
-        command_args.append(app_label)
-
-    call_command(
-        "showmigrations",
-        *command_args,
-        database=db,
-        no_color=options.get("no_color", False),
-        settings=options.get("settings", os.environ["DJANGO_SETTINGS_MODULE"]),
-        stdout=out,
-        skip_checks=options.get("skip_checks", True),
-        traceback=options.get("traceback", True),
-        verbosity=verbosity,
-    )
-    connections.close_all()
-    out.seek(0)
-    output = out.read()
-    return re.sub(r"\x1b\[(1|0)m", "", output)
 
 
 def extract_migrations_as_list(migration_status: str) -> list[str]:

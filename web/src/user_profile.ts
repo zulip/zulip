@@ -57,6 +57,8 @@ import * as ui_report from "./ui_report.ts";
 import type {UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_group_edit_members from "./user_group_edit_members.ts";
+import * as user_group_picker_pill from "./user_group_picker_pill.ts";
+import * as user_group_pill from "./user_group_pill.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_pill from "./user_pill.ts";
@@ -80,6 +82,7 @@ export type CustomProfileFieldData = {
 let user_streams_list_widget: ListWidgetType<StreamSubscription> | undefined;
 let user_groups_list_widget: ListWidgetType<UserGroup> | undefined;
 let user_profile_subscribe_widget: DropdownWidget | undefined;
+let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
 let toggler: components.Toggle;
 let bot_owner_dropdown_widget: DropdownWidget | undefined;
 let original_values: (Record<string, unknown> & {user_id?: string | undefined}) | undefined;
@@ -210,7 +213,7 @@ function initialize_bot_owner(
 function render_user_profile_subscribe_widget(): void {
     const opts: DropdownWidgetOptions = {
         widget_name: "user_profile_subscribe",
-        get_options: get_user_unsub_streams,
+        get_options: get_user_unsub_streams_for_dropdown,
         item_click_callback: change_state_of_subscribe_button,
         $events_container: $("#user-profile-modal"),
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
@@ -258,14 +261,22 @@ function reset_subscribe_widget(): void {
     }
 }
 
-export function get_user_unsub_streams(): {
+export function get_user_unsub_streams_for_dropdown(): {
     name: string;
     unique_id: number;
     stream: StreamSubscription;
 }[] {
     const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
+    return get_user_unsub_streams(target_user_id);
+}
+
+export function get_user_unsub_streams(user_id: number): {
+    name: string;
+    unique_id: number;
+    stream: StreamSubscription;
+}[] {
     return stream_data
-        .get_streams_for_user(target_user_id)
+        .get_streams_for_user(user_id)
         .can_subscribe.map((stream) => ({
             name: stream.name,
             unique_id: stream.stream_id,
@@ -314,12 +325,12 @@ function format_user_group_list_item_html(group: UserGroup, user: User): string 
                 .filter((subgroup) =>
                     user_groups.is_user_in_group(subgroup.id, user.user_id, false),
                 )
-                .map((subgroup) => subgroup.name),
+                .map((subgroup) => user_groups.get_display_group_name(subgroup.name)),
         );
     }
     return render_user_group_list_item({
         group_id: group.id,
-        name: group.name,
+        name: user_groups.get_display_group_name(group.name),
         group_edit_url: hash_util.group_edit_url(group, "general"),
         is_guest: current_user.is_guest,
         is_direct_member,
@@ -369,6 +380,17 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
         },
         modifier_html(item) {
             return format_user_group_list_item_html(item, user);
+        },
+        filter: {
+            $element: $("#user-profile-groups-tab .group-search"),
+            predicate(item, value) {
+                return item?.name.toLocaleLowerCase().includes(value);
+            },
+            onupdate() {
+                if ($container.find(".empty-table-message").length > 0) {
+                    $container.parent().addClass("empty-list");
+                }
+            },
         },
         $simplebar_container: $("#user-profile-modal .modal__body"),
     });
@@ -529,6 +551,82 @@ export function show_user_profile_access_error_modal(): void {
     });
 }
 
+function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQuery): void {
+    const group_ids_successfully_added: number[] = [];
+
+    function add_user_to_next_group(): void {
+        if (group_ids_successfully_added.length >= group_ids.length) {
+            if (group_ids_successfully_added.length > 0) {
+                ui_report.success(
+                    $t_html({
+                        defaultMessage: "Added successfully!",
+                    }),
+                    $alert_box,
+                    1200,
+                );
+                clear_successful_pills();
+            }
+            return;
+        }
+
+        const group_id = group_ids[group_ids_successfully_added.length]!;
+        const target_user_group = user_groups.get_user_group_from_id(group_id);
+
+        if (!target_user_group) {
+            return;
+        }
+
+        user_group_edit_members.edit_user_group_membership({
+            group: target_user_group,
+            added: [user_id],
+            success(): void {
+                group_ids_successfully_added.push(group_id);
+                add_user_to_next_group();
+            },
+            error(xhr): void {
+                const parsed = z
+                    .object({
+                        result: z.literal("error"),
+                        msg: z.string(),
+                        code: z.string(),
+                    })
+                    .safeParse(xhr?.responseJSON);
+
+                const error_message = people.is_my_user_id(user_id)
+                    ? $t(
+                          {defaultMessage: "Error joining {group_name}: {error}"},
+                          {
+                              group_name: target_user_group.name,
+                              error: parsed.success ? parsed.data.msg : "Unknown error",
+                          },
+                      )
+                    : $t(
+                          {defaultMessage: "Error adding user to {group_name}: {error}"},
+                          {
+                              group_name: target_user_group.name,
+                              error: parsed.success ? parsed.data.msg : "Unknown error",
+                          },
+                      );
+
+                ui_report.client_error(error_message, $alert_box);
+                clear_successful_pills();
+            },
+        });
+    }
+
+    function clear_successful_pills(): void {
+        for (const id of group_ids_successfully_added) {
+            const $pill = $(`#user-group-to-add .pill-container .pill[data-user-group-id="${id}"]`);
+            if ($pill.length > 0) {
+                user_group_pill_widget.removePill($pill[0]!, "close");
+            }
+        }
+    }
+
+    // Start the process
+    add_user_to_next_group();
+}
+
 export function show_user_profile(user: User, default_tab_key = "profile-tab"): void {
     const field_types = realm.custom_profile_field_types;
     const profile_data = realm.custom_profile_fields
@@ -537,16 +635,18 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     original_values = {
         user_id: user.user_id.toString(),
     };
-    const user_streams = stream_data.get_streams_for_user(user.user_id).subscribed;
+    const user_unsub_streams = get_user_unsub_streams(user.user_id);
     // We only show the subscribe widget if the user is an admin, the user has opened their own profile,
     // or if the user profile belongs to a bot whose owner has opened the user profile. However, we don't
     // want to show the subscribe widget for generic bots since they are system bots and for deactivated users.
     // Therefore, we also check for that condition.
     const show_user_subscribe_widget =
-        (people.can_admin_user(user) || settings_data.user_can_subscribe_other_users()) &&
+        (people.can_admin_user(user) || user_unsub_streams.length > 0) &&
         !user.is_system_bot &&
         people.is_person_active(user.user_id);
-    const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
+    const show_user_group_container =
+        user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0 &&
+        people.is_person_active(user.user_id);
     // We currently have the main UI for editing your own profile in
     // settings, so can_manage_profile is artificially false for those.
     const can_manage_profile =
@@ -568,6 +668,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         profile_data,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
         show_user_subscribe_widget,
+        show_user_group_container,
         user_avatar: people.medium_avatar_url_for_person(user),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         user_id: user.user_id,
@@ -601,6 +702,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         default_tab = 3;
     }
 
+    let has_initialized_user_type_fields = false;
     const opts = {
         selected: default_tab,
         child_wants_focus: true,
@@ -619,17 +721,30 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
             );
             switch (key) {
                 case "profile-tab":
-                    initialize_user_type_fields(user);
-                    break;
-                case "user-profile-groups-tab":
-                    render_user_group_list(groups_of_user, user);
-                    break;
-                case "user-profile-streams-tab":
-                    if (show_user_subscribe_widget) {
-                        render_user_profile_subscribe_widget();
+                    if (!has_initialized_user_type_fields) {
+                        initialize_user_type_fields(user);
+                        has_initialized_user_type_fields = true;
                     }
-                    render_user_stream_list(user_streams, user);
                     break;
+                case "user-profile-groups-tab": {
+                    if (!user_groups_list_widget) {
+                        const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
+                        render_user_group_list(groups_of_user, user);
+                    }
+                    break;
+                }
+                case "user-profile-streams-tab": {
+                    if (!user_streams_list_widget) {
+                        const user_streams = stream_data.get_streams_for_user(
+                            user.user_id,
+                        ).subscribed;
+                        if (show_user_subscribe_widget) {
+                            render_user_profile_subscribe_widget();
+                        }
+                        render_user_stream_list(user_streams, user);
+                    }
+                    break;
+                }
                 case "manage-profile-tab":
                     $("#user-profile-modal .modal__footer").show();
                     render_manage_profile_content(user);
@@ -662,6 +777,13 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     }, 0);
     if (show_user_subscribe_widget) {
         reset_subscribe_widget();
+    }
+    if (show_user_group_container) {
+        const $user_group_pill_container = $("#user-group-to-add .pill-container");
+        user_group_pill_widget = user_group_picker_pill.create(
+            $user_group_pill_container,
+            user.user_id,
+        );
     }
 }
 
@@ -787,6 +909,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             processData: false,
             contentType: false,
             success() {
+                $("#bot-edit-form-error").hide();
                 avatar_widget.clear();
                 hide_button_spinner($submit_button);
                 original_values = get_current_values($("#bot-edit-form"));
@@ -990,11 +1113,19 @@ function get_current_values(
 function toggle_submit_button($edit_form: JQuery): void {
     const current_values = get_current_values($edit_form);
     const $submit_button = $("#user-profile-modal .dialog_submit_button");
-    if (!_.isEqual(original_values, current_values)) {
-        $submit_button.prop("disabled", false);
-    } else {
+    const full_name_value = $edit_form.find<HTMLInputElement>("input[name='full_name']").val()!;
+
+    if (full_name_value.trim() === "") {
         $submit_button.prop("disabled", true);
+        return;
     }
+
+    if (_.isEqual(original_values, current_values)) {
+        $submit_button.prop("disabled", true);
+        return;
+    }
+
+    $submit_button.prop("disabled", false);
 }
 
 export function show_edit_user_info_modal(user_id: number, $container: JQuery): void {
@@ -1099,6 +1230,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
             url,
             data,
             success() {
+                $("#edit-user-form-error").hide();
                 hide_button_spinner($submit_button);
                 original_values = get_current_values($("#edit-user-form"));
                 toggle_submit_button($("#edit-user-form"));
@@ -1248,15 +1380,16 @@ export function initialize(): void {
 
         function removal_failure(): void {
             let error_message;
+            const group_name = user_groups.get_display_group_name(target_user_group.name);
             if (people.is_my_user_id(target_user_id)) {
                 error_message = $t(
                     {defaultMessage: "Error leaving group {group_name}"},
-                    {group_name: target_user_group.name},
+                    {group_name},
                 );
             } else {
                 error_message = $t(
                     {defaultMessage: "Error removing user from group {group_name}"},
-                    {group_name: target_user_group.name},
+                    {group_name},
                 );
             }
 
@@ -1271,12 +1404,43 @@ export function initialize(): void {
         });
     });
 
+    $("body").on("click", "#user-profile-modal .add-groups-button", (e) => {
+        e.preventDefault();
+        const user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
+        const $alert_box = $("#user-profile-groups-tab .user-profile-group-list-alert");
+        const item = $("#user-group-to-add .pill-container .input").text().trim();
+        if (item) {
+            $("#user-group-to-add .pill-container .input").addClass("shake");
+            if (
+                $("#user-group-to-add .pill-container .input").hasClass(
+                    "show-outline-on-invalid-input",
+                )
+            ) {
+                $("#user-group-to-add .pill-container").addClass("invalid");
+            }
+            return;
+        }
+
+        const group_ids = user_group_pill.get_group_ids(user_group_pill_widget);
+        add_user_to_groups(group_ids, user_id, $alert_box);
+    });
+
     $("body").on("click", "#user-profile-modal #clear_stream_search", (e) => {
         const $input = $("#user-profile-streams-tab .stream-search");
         $input.val("");
 
         // This is a hack to rerender complete
         // stream list once the text is cleared.
+        $input.trigger("input");
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", "#user-profile-modal #clear_groups_search", (e) => {
+        const $input = $("#user-profile-groups-tab .group-search");
+        $input.val("");
+
         $input.trigger("input");
 
         e.stopPropagation();
@@ -1314,6 +1478,15 @@ export function initialize(): void {
             $("#user-profile-streams-tab #clear_stream_search").show();
         } else {
             $("#user-profile-streams-tab #clear_stream_search").hide();
+        }
+    });
+
+    $("body").on("input", "#user-profile-groups-tab .group-search", () => {
+        const $input = $<HTMLInputElement>("#user-profile-groups-tab input.group-search");
+        if ($input.val()!.trim().length > 0) {
+            $("#user-profile-groups-tab #clear_groups_search").show();
+        } else {
+            $("#user-profile-groups-tab #clear_groups_search").hide();
         }
     });
 

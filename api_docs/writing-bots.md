@@ -526,7 +526,7 @@ The long-term plan for this bot system is to allow the same
 * Run directly using the Zulip `call_on_each_message` API, which is
   how the implementation above works.  This is great for quick
   development with minimal setup.
-* Run in a simple Python webserver server, processing messages
+* Run in a simple Python web server, processing messages
   received from Zulip's outgoing webhooks integration.
 * For bots merged into the mainline Zulip codebase, enabled via a
   button in the Zulip web UI, with no code deployment effort required.

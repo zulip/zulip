@@ -13,7 +13,9 @@ import {current_user} from "./state_data.ts";
 import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_group_components from "./user_group_components.ts";
 import * as user_group_create_members_data from "./user_group_create_members_data.ts";
+import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
+import * as user_pill from "./user_pill.ts";
 
 export let pill_widget: CombinedPillContainer;
 let all_users_list_widget: ListWidgetType<User | UserGroup, User | UserGroup>;
@@ -162,7 +164,7 @@ export function build_widgets(): void {
 
             const item = {
                 group_id: member.id,
-                display_value: member.name,
+                display_value: user_groups.get_display_group_name(member.name),
                 soft_removed: user_group_create_members_data.subgroup_id_in_soft_remove_list(
                     member.id,
                 ),
@@ -177,5 +179,6 @@ export function build_widgets(): void {
         },
         $simplebar_container,
     });
-    pill_widget.appendValue(current_user.email);
+    const current_person = people.get_by_user_id(current_user.user_id);
+    user_pill.append_user(current_person, pill_widget);
 }

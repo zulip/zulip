@@ -24,6 +24,7 @@ from zerver.actions.message_send import (
     internal_send_stream_message,
 )
 from zerver.actions.realm_settings import (
+    clean_deactivated_realm_data,
     do_add_deactivated_redirect,
     do_change_realm_max_invites,
     do_change_realm_org_type,
@@ -37,7 +38,6 @@ from zerver.actions.realm_settings import (
     do_set_realm_authentication_methods,
     do_set_realm_property,
     do_set_realm_user_default_setting,
-    scrub_deactivated_realm,
 )
 from zerver.actions.streams import do_deactivate_stream, merge_streams
 from zerver.actions.user_groups import check_add_user_group
@@ -64,7 +64,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import CommonPolicyEnum, get_realm
+from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
@@ -115,11 +115,11 @@ class RealmTest(ZulipTestCase):
         )
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
-        self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
         realm = get_realm("test_education_non_profit")
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
+        self.assertEqual(realm.can_add_subscribers_group.id, moderators_group.id)
         self.assertEqual(realm.can_create_groups.id, moderators_group.id)
         self.assertEqual(realm.can_invite_users_group.id, admins_group.id)
         self.assertEqual(realm.can_move_messages_between_channels_group.id, moderators_group.id)
@@ -136,11 +136,11 @@ class RealmTest(ZulipTestCase):
         )
         self.assertEqual(realm.can_create_public_channel_group_id, admins_group.id)
 
-        self.assertEqual(realm.invite_to_stream_policy, CommonPolicyEnum.MODERATORS_ONLY)
         realm = get_realm("test_education_for_profit")
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
+        self.assertEqual(realm.can_add_subscribers_group.id, moderators_group.id)
         self.assertEqual(realm.can_create_groups.id, moderators_group.id)
         self.assertEqual(realm.can_invite_users_group.id, admins_group.id)
         self.assertEqual(realm.can_move_messages_between_channels_group.id, moderators_group.id)
@@ -532,7 +532,11 @@ class RealmTest(ZulipTestCase):
         iago.role = UserProfile.ROLE_REALM_OWNER
         iago.save(update_fields=["role"])
         do_deactivate_realm(
-            realm, acting_user=iago, deactivation_reason="owner_request", email_owners=True
+            realm,
+            acting_user=iago,
+            deactivation_reason="owner_request",
+            deletion_delay_days=14,
+            email_owners=True,
         )
         self.assertEqual(realm.deactivated, True)
         self.assert_length(mail.outbox, 2)
@@ -551,6 +555,35 @@ class RealmTest(ZulipTestCase):
                 self.assertIn(
                     "Your Zulip organization, Zulip Dev, was deactivated by Iago on", email.body
                 )
+            self.assertIn(
+                "All data associated with this organization will be permanently deleted on",
+                email.body,
+            )
+
+    def test_do_send_realm_deactivation_email_with_immediate_data_deletion(self) -> None:
+        realm = get_realm("zulip")
+        desdemona = self.example_user("desdemona")
+        with (
+            mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm,
+            self.assertLogs(level="INFO"),
+        ):
+            do_deactivate_realm(
+                realm,
+                acting_user=desdemona,
+                deactivation_reason="owner_request",
+                deletion_delay_days=0,
+                email_owners=True,
+            )
+            self.assertEqual(realm.deactivated, True)
+            mock_scrub_realm.assert_called_once_with(realm, acting_user=None)
+            self.assert_length(mail.outbox, 1)
+            email = mail.outbox[0]
+            self.assertIn("Your Zulip organization Zulip Dev has been deactivated", email.subject)
+            self.assertIn("You have deactivated your Zulip organization, Zulip Dev, on", email.body)
+            self.assertIn(
+                "All data associated with this organization has been permanently deleted.",
+                email.body,
+            )
 
     def test_do_send_realm_reactivation_email(self) -> None:
         realm = get_realm("zulip")
@@ -909,12 +942,10 @@ class RealmTest(ZulipTestCase):
 
     def test_invalid_integer_attribute_values(self) -> None:
         integer_values = [
-            key for key, value in Realm.property_types.items() if value in (int, (int, type(None)))
+            key for key, value in Realm.property_types.items() if value in (int, int | None)
         ]
 
         invalid_values = dict(
-            bot_creation_policy=10,
-            invite_to_stream_policy=10,
             message_retention_days=10,
             video_chat_provider=10,
             giphy_rating=10,
@@ -1071,8 +1102,7 @@ class RealmTest(ZulipTestCase):
         self.assertTrue(zulip.deactivated)
 
         with mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm:
-            scrub_deactivated_realm(zephyr)
-            scrub_deactivated_realm(zulip)
+            clean_deactivated_realm_data()
             mock_scrub_realm.assert_not_called()
 
         with (
@@ -1089,13 +1119,14 @@ class RealmTest(ZulipTestCase):
             self.assertTrue(lear.deactivated)
             mock_scrub_realm.assert_called_once_with(lear, acting_user=None)
 
+        do_reactivate_realm(lear)
+
         with (
             time_machine.travel(timezone_now() + timedelta(days=4), tick=False),
             mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm,
             self.assertLogs(level="INFO"),
         ):
-            scrub_deactivated_realm(get_realm("zephyr"))
-            scrub_deactivated_realm(get_realm("zulip"))
+            clean_deactivated_realm_data()
             mock_scrub_realm.assert_called_once_with(zephyr, acting_user=None)
 
     def test_initial_plan_type(self) -> None:
@@ -1848,9 +1879,7 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
-            bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
                 Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],

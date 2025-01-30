@@ -98,8 +98,16 @@ from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
-from zerver.models.streams import get_stream, get_stream_by_id_in_realm
-from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
+from zerver.models.streams import (
+    get_stream_by_id_for_sending_message,
+    get_stream_by_name_for_sending_message,
+)
+from zerver.models.users import (
+    active_user_ids,
+    get_system_bot,
+    get_user_by_delivery_email,
+    is_cross_realm_bot_email,
+)
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -435,10 +443,7 @@ def get_recipient_info(
         lambda r: not r["enable_offline_push_notifications"]
     )
 
-    # Service bots don't get UserMessage rows.
-    um_eligible_user_ids = get_ids_for(
-        lambda r: not r["is_bot"] or r["bot_type"] not in UserProfile.SERVICE_BOT_TYPES,
-    )
+    um_eligible_user_ids = get_ids_for(lambda r: True)
 
     long_term_idle_user_ids = get_ids_for(
         lambda r: r["long_term_idle"],
@@ -1170,6 +1175,18 @@ def do_send_messages(
             if not send_request.stream.is_recently_active:
                 send_request.stream.is_recently_active = True
                 stream_update_fields.append("is_recently_active")
+                stream_update_event = dict(
+                    type="stream",
+                    op="update",
+                    property="is_recently_active",
+                    value=True,
+                    stream_id=send_request.stream.id,
+                    name=send_request.stream.name,
+                )
+                send_event_on_commit(
+                    send_request.realm, stream_update_event, active_user_ids(send_request.realm.id)
+                )
+
             if len(stream_update_fields) > 0:
                 send_request.stream.save(update_fields=stream_update_fields)
 
@@ -1525,7 +1542,7 @@ def validate_stream_name_with_pm_notification(
     check_stream_name(stream_name)
 
     try:
-        stream = get_stream(stream_name, realm)
+        stream = get_stream_by_name_for_sending_message(stream_name, realm)
         send_pm_if_empty_stream(stream, realm, sender)
     except Stream.DoesNotExist:
         send_pm_if_empty_stream(None, realm, sender, stream_name=stream_name)
@@ -1538,7 +1555,7 @@ def validate_stream_id_with_pm_notification(
     stream_id: int, realm: Realm, sender: UserProfile
 ) -> Stream:
     try:
-        stream = get_stream_by_id_in_realm(stream_id, realm)
+        stream = get_stream_by_id_for_sending_message(stream_id, realm)
         send_pm_if_empty_stream(stream, realm, sender)
     except Stream.DoesNotExist:
         send_pm_if_empty_stream(None, realm, sender, stream_id=stream_id)
@@ -1747,7 +1764,7 @@ def check_message(
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
-        if realm.mandatory_topics and topic_name == "(no topic)":
+        if realm.mandatory_topics and topic_name in ("(no topic)", ""):
             raise JsonableError(_("Topics are required in this organization"))
 
     elif addressee.is_private():

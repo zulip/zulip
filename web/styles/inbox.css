@@ -2,8 +2,6 @@
     display: flex;
     flex-direction: column;
     background: var(--color-background-inbox);
-    /* Ensure inbox font-size is at least 15px. */
-    font-size: max(15px, var(--base-font-size-px));
     padding: 0;
     min-height: 100vh;
 
@@ -37,21 +35,6 @@
             z-index: 1;
         }
 
-        .button-inbox-filter {
-            border: none;
-            height: 30px;
-            border-radius: 5px;
-            background: transparent;
-            color: var(--color-text-default);
-            padding: 5px 10px;
-            margin-left: 10px;
-
-            &:focus {
-                background-color: var(--color-background-button-inbox-focus);
-                outline: 0;
-            }
-        }
-
         .button-inbox-selected {
             background-color: var(--color-background-button-inbox-selected);
         }
@@ -62,10 +45,10 @@
                 /* We need to position the icon relative to the filters dropdown since its width is variable.
                    To avoid icon from taking width since it is no longer absolute/fixed positioned, we set its width to 0. */
                 width: 0;
-                /* (30px filters height - 15px icon height) / 2)  = 7.5px */
-                top: 7.5px;
-                /* (30px left padding - 15px icon width) / 2)  = 7.5px */
-                left: 7.5px;
+                /* (30px searchbox height - 15px icon height) / 2)  = 7.5px at 14px em */
+                top: 0.5357em;
+                /* (30px left padding - 15px icon width) / 2)  = 7.5px  at 14px em */
+                left: 0.5357em;
                 color: var(--color-icons-inbox);
                 opacity: 0.4;
             }
@@ -78,15 +61,15 @@
                 align-items: center;
                 border-radius: 2px;
                 cursor: pointer;
-                font-size: 16px;
+                font-size: 1.1428em; /* 16px at 14px em */
                 color: var(--color-icons-inbox);
                 opacity: 0.4;
                 transition: none 140ms;
                 transition-property: background-color, opacity, transform;
                 padding: 5px;
                 margin: 0;
-                /* = -Width of the button. */
-                margin-right: -28px;
+                /* = -Width of the button, 28px at 14px em */
+                margin-right: -2em;
                 position: relative;
                 top: 0;
                 right: 30px;
@@ -109,7 +92,7 @@
         }
 
         #inbox-search:placeholder-shown + #inbox-clear-search {
-            display: none;
+            visibility: hidden;
         }
 
         #inbox-search {
@@ -118,11 +101,13 @@
             overflow: hidden;
             width: var(--width-inbox-search);
             height: var(--height-inbox-search);
-            padding-right: 28px;
-            padding-left: 30px;
+            /* top/bottom default 1px padding / 14px em */
+            /* left padding 30px / 14px em */
+            /* right padding for 28px / 14px em (close icon) */
+            padding: 0.0714em 2em 0.0714em 2.1428em;
             font-style: normal;
             font-weight: 400;
-            line-height: 17px;
+            line-height: 1.2142em; /* 17px / 14px em */
             border-radius: 4px;
             background-color: var(--color-background-inbox-search);
             color: var(--color-inbox-search-text);
@@ -151,10 +136,10 @@
             border-radius: 5px;
             border: 1px solid hsl(0deg 0% 0% / 20%);
             margin-bottom: var(--max-unmaximized-compose-height);
-            /* margin(5) + search left padding(30) + search right padding (28) + border(2px) = 65px */
+            /* margin(5) + search left padding(30) + search right padding (28) = 63px at 14px em */
             max-width: calc(
                 var(--width-inbox-search) +
-                    var(--width-inbox-filters-dropdown) + 65px
+                    var(--width-inbox-filters-dropdown) + 4.5em
             );
 
             .inbox-focus-border {
@@ -257,17 +242,18 @@
             }
 
             .user-circle {
+                /* 8.5328px at 16px/1em */
+                font-size: 0.5333em;
                 /* TODO: Refactor inbox rows to use grid, to avoid the
                    min-width here that holds the other rows to similar
                    columns. */
-                min-width: 1em;
-                font-size: 0.5333em;
-                margin-right: 5px;
+                /* 16px at 8.5328px/1em */
+                min-width: 1.8751em;
                 top: 0;
             }
 
             .zulip-icon-bot,
-            .zulip-icon-triple-users {
+            .conversation-partners-icon {
                 opacity: 0.7;
                 margin-right: 5px;
             }
@@ -543,16 +529,17 @@
 
 .inbox-container #inbox-pane .inbox-empty-action-link {
     text-decoration: underline;
-    color: hsl(200deg 100% 40%);
+    color: var(--color-text-url);
 }
 
 #inbox-filter_widget {
-    margin-right: 5px;
-    height: 30px;
+    margin-right: 0.3571em; /* 5px / 14px em */
+    height: 2.1428em; /* 30px / 14px em */
     max-width: var(--width-inbox-filters-dropdown);
     border: 1px solid var(--color-border-inbox-search);
     background-color: var(--color-background-inbox-search);
-    gap: 5px;
+    gap: 0.3571em; /* 5px / 14px em */
+    padding: 0.2857em 0.4285em; /* 4px 6px / 14px em */
 
     &:hover {
         background-color: var(--color-background-inbox-search-hover);
@@ -589,7 +576,7 @@
 
 .recent-view-filter-dropdown-list-container .dropdown-list-wrapper,
 .inbox-filter-dropdown-list-container .dropdown-list-wrapper {
-    width: 220px;
+    width: 15.7142em; /* 220px at 14px em */
 }
 
 .recent-view-filter-dropdown-list-container
@@ -617,7 +604,7 @@
 .inbox-filter-dropdown-list-container .dropdown-list-item-description {
     white-space: nowrap;
     font-weight: 400;
-    font-size: 13px;
+    font-size: 0.9285em; /* 13px at 14px em */
     opacity: 0.8;
     padding: 0;
     text-overflow: ellipsis;

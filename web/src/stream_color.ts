@@ -2,23 +2,19 @@ import type {Colord} from "colord";
 import {colord, extend} from "colord";
 import lchPlugin from "colord/plugins/lch";
 import mixPlugin from "colord/plugins/mix";
-import $ from "jquery";
-import type tinycolor from "tinycolor2";
 
-import {$t} from "./i18n.ts";
 import * as settings_data from "./settings_data.ts";
 import * as stream_data from "./stream_data.ts";
-import * as stream_settings_api from "./stream_settings_api.ts";
 
 extend([lchPlugin, mixPlugin]);
 
-export function update_stream_recipient_color($stream_header: JQuery): void {
+export function update_stream_recipient_color($stream_header: JQuery, color?: string): void {
     if ($stream_header.length > 0) {
         const stream_id = Number.parseInt($stream_header.attr("data-stream-id")!, 10);
         if (!stream_id) {
             return;
         }
-        const stream_color = stream_data.get_color(stream_id);
+        const stream_color = color ?? stream_data.get_color(stream_id);
         const recipient_bar_color = get_recipient_bar_color(stream_color);
 
         const $stream_privacy_icon = $stream_header.find(".stream-privacy");
@@ -63,53 +59,9 @@ export function get_recipient_bar_color(color: string): string {
         .toHex();
 }
 
-const stream_color_palette = [
-    ["a47462", "c2726a", "e4523d", "e7664d", "ee7e4a", "f4ae55"],
-    ["76ce90", "53a063", "94c849", "bfd56f", "fae589", "f5ce6e"],
-    ["a6dcbf", "addfe5", "a6c7e5", "4f8de4", "95a5fd", "b0a5fd"],
-    ["c2c2c2", "c8bebf", "c6a8ad", "e79ab5", "bd86e5", "9987e1"],
+export const stream_color_palette = [
+    ["#a47462", "#c2726a", "#e4523d", "#e7664d", "#ee7e4a", "#f4ae55"],
+    ["#76ce90", "#53a063", "#94c849", "#bfd56f", "#fae589", "#f5ce6e"],
+    ["#a6dcbf", "#addfe5", "#a6c7e5", "#4f8de4", "#95a5fd", "#b0a5fd"],
+    ["#c2c2c2", "#c8bebf", "#c6a8ad", "#e79ab5", "#bd86e5", "#9987e1"],
 ];
-
-const subscriptions_table_colorpicker_options = {
-    clickoutFiresChange: true,
-    showPalette: true,
-    showInput: true,
-    palette: stream_color_palette,
-    change: picker_do_change_color,
-};
-
-export function set_colorpicker_color($colorpicker: JQuery, color: string): void {
-    $colorpicker.spectrum({
-        ...subscriptions_table_colorpicker_options,
-        color,
-    });
-}
-
-export const sidebar_popover_colorpicker_options_full = {
-    clickoutFiresChange: false,
-    showPalette: true,
-    showInput: true,
-    flat: true,
-    cancelText: "",
-    chooseText: $t({defaultMessage: "Confirm"}),
-    palette: stream_color_palette,
-    change: picker_do_change_color,
-};
-
-function picker_do_change_color(this: HTMLElement, color: tinycolor.Instance): void {
-    $(".colorpicker").spectrum("destroy");
-    $(".colorpicker").spectrum(sidebar_popover_colorpicker_options_full);
-    const stream_id = Number.parseInt($(this).attr("stream_id")!, 10);
-    const hex_color = color.toHexString();
-    stream_settings_api.set_color(stream_id, hex_color);
-}
-
-export const sidebar_popover_colorpicker_options = {
-    clickoutFiresChange: true,
-    showPaletteOnly: true,
-    showPalette: true,
-    showInput: true,
-    flat: true,
-    palette: stream_color_palette,
-    change: picker_do_change_color,
-};

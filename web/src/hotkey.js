@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import * as activity from "./activity.ts";
 import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";
+import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
 import * as compose from "./compose.js";
 import * as compose_actions from "./compose_actions.ts";
@@ -76,6 +77,18 @@ function do_narrow_action(action) {
 // For message actions and user profile menu.
 const menu_dropdown_hotkeys = new Set(["down_arrow", "up_arrow", "vim_up", "vim_down", "enter"]);
 
+const color_picker_hotkeys = new Set([
+    "down_arrow",
+    "up_arrow",
+    "left_arrow",
+    "right_arrow",
+    "vim_up",
+    "vim_down",
+    "vim_left",
+    "vim_right",
+    "enter",
+]);
+
 // Note that multiple keys can map to the same event_name, which
 // we'll do in cases where they have the exact same semantics.
 // DON'T FORGET: update keyboard_shortcuts.html
@@ -117,14 +130,15 @@ const keydown_unshift_mappings = {
 
 const keydown_ctrl_mappings = {
     219: {name: "escape", message_view_only: false}, // '['
-    13: {name: "ctrl_enter", message_view_only: true}, // enter
 };
 
 const keydown_cmd_or_ctrl_mappings = {
+    13: {name: "action_with_enter", message_view_only: true}, // 'Enter'
     67: {name: "copy_with_c", message_view_only: false}, // 'C'
     75: {name: "search_with_k", message_view_only: false}, // 'K'
     83: {name: "star_message", message_view_only: true}, // 'S'
     190: {name: "narrow_to_compose_target", message_view_only: true}, // '.'
+    222: {name: "open_saved_snippet_dropdown", message_view_only: true}, // '''
 };
 
 const keydown_alt_mappings = {
@@ -405,6 +419,11 @@ export function process_escape_key(e) {
 function handle_popover_events(event_name) {
     const popover_menu_visible_instance = popover_menus.get_visible_instance();
 
+    if (popover_menus.is_stream_actions_popover_displayed()) {
+        stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+
     if (popover_menu_visible_instance) {
         popover_menus.sidebar_menu_instance_handle_keyboard(
             popover_menu_visible_instance,
@@ -425,11 +444,6 @@ function handle_popover_events(event_name) {
 
     if (user_card_popover.user_sidebar.is_open()) {
         user_card_popover.user_sidebar.handle_keyboard(event_name);
-        return true;
-    }
-
-    if (stream_popover.is_open()) {
-        stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
         return true;
     }
 
@@ -532,7 +546,7 @@ export function process_enter_key(e) {
     }
 
     if ($("#preview_message_area").is(":visible")) {
-        compose.enter_with_preview_open();
+        compose.handle_enter_key_with_preview_open();
         return true;
     }
 
@@ -580,10 +594,10 @@ export function process_enter_key(e) {
     return true;
 }
 
-export function process_ctrl_enter_key() {
+export function process_cmd_or_ctrl_enter_key() {
     if ($("#preview_message_area").is(":visible")) {
-        const ctrl_pressed = true;
-        compose.enter_with_preview_open(ctrl_pressed);
+        const cmd_or_ctrl_pressed = true;
+        compose.handle_enter_key_with_preview_open(cmd_or_ctrl_pressed);
         return true;
     }
 
@@ -710,8 +724,8 @@ export function process_hotkey(e, hotkey) {
             return process_escape_key(e);
         case "enter":
             return process_enter_key(e);
-        case "ctrl_enter":
-            return process_ctrl_enter_key(e);
+        case "action_with_enter":
+            return process_cmd_or_ctrl_enter_key(e);
         case "tab":
             return process_tab_key();
         case "shift_tab":
@@ -726,7 +740,7 @@ export function process_hotkey(e, hotkey) {
 
     // modals.any_active() and modals.active_modal() both query the dom to
     // find and retrieve any active modal. Thus, we limit the number of calls
-    // to the DOM by storing these values as constansts to be reused.
+    // to the DOM by storing these values as constants to be reused.
     const is_any_modal_active = modals.any_active();
     const active_modal = is_any_modal_active ? modals.active_modal() : null;
 
@@ -793,6 +807,13 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
+    // We don't treat the color picker like our menu popovers, since it
+    // supports sideways navigation (left and right arrow).
+    if (color_picker_hotkeys.has(event_name) && popover_menus.is_color_picker_popover_displayed()) {
+        color_picker_popover.handle_keyboard(event_name);
+        return true;
+    }
+
     if ((event_name === "up_arrow" || event_name === "down_arrow") && overlays.streams_open()) {
         return stream_settings_ui.switch_rows(event_name);
     }
@@ -832,11 +853,13 @@ export function process_hotkey(e, hotkey) {
         }
     }
 
+    // Handle our normal popovers that are basically vertical lists of menu items.
     if (menu_dropdown_hotkeys.has(event_name) && handle_popover_events(event_name)) {
         return true;
     }
 
-    // Handle hotkeys for active popovers here which can handle keys other than `menu_dropdown_hotkeys`.
+    // Handle the left arrow and right arrow keys to make it easy to
+    // get into fancy sideways navigation on the navbar (top right corner).
     if (
         (navbar_menus.is_navbar_menus_displayed() || navbar_menus.any_focused()) &&
         navbar_menus.handle_keyboard_events(event_name)
@@ -861,6 +884,13 @@ export function process_hotkey(e, hotkey) {
     if (processing_text()) {
         // Note that there is special handling for Enter/Esc too, but
         // we handle this in other functions.
+
+        if (event_name === "open_saved_snippet_dropdown") {
+            const $messagebox = $(":focus").parents(".messagebox");
+            if ($messagebox.length === 1) {
+                $messagebox.find(".saved_snippets_widget")[0].click();
+            }
+        }
 
         if (event_name === "left_arrow" && compose_state.focus_in_empty_compose()) {
             message_edit.edit_last_sent_message();
@@ -920,6 +950,9 @@ export function process_hotkey(e, hotkey) {
         } else if (overlays.streams_open()) {
             stream_settings_ui.toggle_view(event_name);
             return true;
+        } else if (compose_state.focus_in_formatting_buttons()) {
+            // Allow left arrow to scroll the formatting buttons backward
+            return false;
         }
 
         message_edit.edit_last_sent_message();

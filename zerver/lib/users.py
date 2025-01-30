@@ -19,11 +19,7 @@ from zulip_bots.custom_exceptions import ConfigValidationError
 from zerver.lib.avatar import avatar_url, get_avatar_field, get_avatar_for_inaccessible_user
 from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key
 from zerver.lib.create_user import get_dummy_email_address_for_display_regex
-from zerver.lib.exceptions import (
-    JsonableError,
-    OrganizationAdministratorRequiredError,
-    OrganizationOwnerRequiredError,
-)
+from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.string_validation import check_string_is_printable
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
@@ -41,7 +37,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import BotCreationPolicyEnum, get_fake_email_domain, require_unique_names
+from zerver.models.realms import get_fake_email_domain, require_unique_names
 from zerver.models.users import (
     active_non_guest_user_ids,
     active_user_ids,
@@ -188,20 +184,22 @@ def add_service(
     )
 
 
-def check_bot_creation_policy(user_profile: UserProfile, bot_type: int) -> None:
-    # Realm administrators can always add bot
-    if user_profile.is_realm_admin:
+def check_can_create_bot(user_profile: UserProfile, bot_type: int) -> None:
+    if user_has_permission_for_group_setting(
+        user_profile.realm.can_create_bots_group,
+        user_profile,
+        Realm.REALM_PERMISSION_GROUP_SETTINGS["can_create_bots_group"],
+    ):
         return
 
-    if user_profile.realm.bot_creation_policy == BotCreationPolicyEnum.EVERYONE:
-        return
-    if user_profile.realm.bot_creation_policy == BotCreationPolicyEnum.ADMINS_ONLY:
-        raise OrganizationAdministratorRequiredError
-    if (
-        user_profile.realm.bot_creation_policy == BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
-        and bot_type == UserProfile.DEFAULT_BOT
+    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and user_has_permission_for_group_setting(
+        user_profile.realm.can_create_write_only_bots_group,
+        user_profile,
+        Realm.REALM_PERMISSION_GROUP_SETTINGS["can_create_write_only_bots_group"],
     ):
-        raise OrganizationAdministratorRequiredError
+        return
+
+    raise JsonableError(_("Insufficient permission"))
 
 
 def check_valid_bot_type(user_profile: UserProfile, bot_type: int) -> None:

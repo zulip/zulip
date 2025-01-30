@@ -763,8 +763,8 @@ def remote_servers_support(
     modify_plan: ModifyPlan | None = None,
     delete_fixed_price_next_plan: Json[bool] = False,
     remote_server_status: RemoteServerStatus | None = None,
-    temporary_courtesy_plan: Annotated[
-        str, AfterValidator(lambda x: check_date("temporary_courtesy_plan", x))
+    complimentary_access_plan: Annotated[
+        str, AfterValidator(lambda x: check_date("complimentary_access_plan", x))
     ]
     | None = None,
 ) -> HttpResponse:
@@ -834,10 +834,10 @@ def remote_servers_support(
                 fixed_price=fixed_price,
                 sent_invoice_id=sent_invoice_id,
             )
-        elif temporary_courtesy_plan is not None:
+        elif complimentary_access_plan is not None:
             support_view_request = SupportViewRequest(
-                support_type=SupportType.configure_temporary_courtesy_plan,
-                plan_end_date=temporary_courtesy_plan,
+                support_type=SupportType.configure_complimentary_access_plan,
+                plan_end_date=complimentary_access_plan,
             )
         elif billing_modality is not None:
             support_view_request = SupportViewRequest(

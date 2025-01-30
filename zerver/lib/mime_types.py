@@ -20,3 +20,26 @@ if sys.version_info < (3, 11):  # nocoverage
 
 for mime_type, extension in EXTRA_MIME_TYPES:
     add_type(mime_type, extension)
+
+
+INLINE_MIME_TYPES = [
+    "application/pdf",
+    "audio/aac",
+    "audio/flac",
+    "audio/mp4",
+    "audio/mpeg",
+    "audio/wav",
+    "audio/webm",
+    "image/apng",
+    "image/avif",
+    "image/gif",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "text/plain",
+    "video/mp4",
+    "video/webm",
+    # To avoid cross-site scripting attacks, DO NOT add types such
+    # as application/xhtml+xml, application/x-shockwave-flash,
+    # image/svg+xml, text/html, or text/xml.
+]

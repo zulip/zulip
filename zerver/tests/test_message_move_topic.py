@@ -9,16 +9,21 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import (
+    build_message_edit_request,
     check_update_message,
     do_update_message,
     maybe_send_resolve_topic_notifications,
 )
 from zerver.actions.reactions import do_add_reaction
-from zerver.actions.realm_settings import do_change_realm_permission_group_setting
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_property,
+)
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, messages_for_topic
+from zerver.lib.types import StreamMessageEditRequest
 from zerver.lib.user_topics import (
     get_users_with_user_topic_visibility_policy,
     set_topic_visibility_policy,
@@ -93,7 +98,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid propagate_mode without topic edit")
         self.check_topic(id1, topic_name="topic1")
 
-    def test_edit_message_no_topic(self) -> None:
+    def test_edit_message_empty_topic_with_extra_space(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
             self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
@@ -104,7 +109,65 @@ class MessageMoveTopicTest(ZulipTestCase):
                 "topic": " ",
             },
         )
-        self.assert_json_error(result, "Topic can't be empty!")
+        self.assert_json_success(result)
+        self.check_topic(msg_id, "")
+
+    def test_topic_required_in_mandatory_topic_realm(self) -> None:
+        admin_user = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = admin_user.realm
+        self.login_user(admin_user)
+
+        stream = self.make_stream("new_stream")
+        self.subscribe(admin_user, stream.name)
+        self.subscribe(hamlet, stream.name)
+
+        original_topic_name = "topic 1"
+        message_id = self.send_stream_message(
+            hamlet,
+            stream.name,
+            topic_name=original_topic_name,
+        )
+
+        # Verify with mandatory_topics=True:
+        # * A topic can't be moved to an empty topic
+        # * A topic can be moved to a non-empty topic
+        do_set_realm_property(realm, "mandatory_topics", True, acting_user=admin_user)
+
+        for topic_name in ["(no topic)", ""]:
+            result = self.client_patch(
+                f"/json/messages/{message_id}",
+                {
+                    "topic": topic_name,
+                },
+            )
+            self.assert_json_error(result, "Topics are required in this organization.")
+            self.check_topic(message_id, topic_name=original_topic_name)
+
+        new_topic_name = "new valid topic"
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "topic": new_topic_name,
+            },
+        )
+        self.assert_json_success(result)
+        self.check_topic(message_id, new_topic_name)
+
+        # Verify with mandatory_topics=False:
+        # * A topic can be moved to an empty topic
+        # * A topic can be moved to a non-empty topic
+        do_set_realm_property(realm, "mandatory_topics", False, acting_user=admin_user)
+
+        for topic_name in ["(no topic)", "", "non-empty topic"]:
+            result = self.client_patch(
+                f"/json/messages/{message_id}",
+                {
+                    "topic": topic_name,
+                },
+            )
+            self.assert_json_success(result)
+            self.check_topic(message_id, topic_name)
 
     def test_edit_message_invalid_topic(self) -> None:
         self.login("hamlet")
@@ -139,15 +202,20 @@ class MessageMoveTopicTest(ZulipTestCase):
             topic_name: str,
             users_to_be_notified: list[dict[str, Any]],
         ) -> None:
+            message_edit_request = build_message_edit_request(
+                message=message,
+                user_profile=user_profile,
+                propagate_mode="change_later",
+                stream_id=None,
+                topic_name=topic_name,
+                content=None,
+            )
             do_update_message(
                 user_profile=user_profile,
                 target_message=message,
-                new_stream=None,
-                topic_name=topic_name,
-                propagate_mode="change_later",
+                message_edit_request=message_edit_request,
                 send_notification_to_old_thread=False,
                 send_notification_to_new_thread=False,
-                content=None,
                 rendering_result=None,
                 prior_mention_user_ids=set(),
                 mention_data=None,
@@ -1741,13 +1809,19 @@ class MessageMoveTopicTest(ZulipTestCase):
         assert stream.recipient_id is not None
         changed_messages = messages_for_topic(stream.realm_id, stream.recipient_id, original_topic)
         resolve_topic = RESOLVED_TOPIC_PREFIX + original_topic
+        message_edit_request = build_message_edit_request(
+            message=message,
+            user_profile=admin_user,
+            propagate_mode="change_all",
+            stream_id=None,
+            topic_name=resolve_topic,
+            content=None,
+        )
+        assert isinstance(message_edit_request, StreamMessageEditRequest)
         maybe_send_resolve_topic_notifications(
             user_profile=admin_user,
-            stream=stream,
-            old_topic_name=original_topic,
-            new_topic_name=resolve_topic,
+            message_edit_request=message_edit_request,
             changed_messages=changed_messages,
-            pre_truncation_new_topic_name=resolve_topic,
         )
 
         topic_messages = get_topic_messages(admin_user, stream, resolve_topic)
@@ -1756,3 +1830,17 @@ class MessageMoveTopicTest(ZulipTestCase):
             topic_messages[0].content,
             f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
         )
+
+    def test_resolve_empty_string_topic(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        message_id = self.send_stream_message(hamlet, "Denmark", topic_name="")
+        result = self.resolve_topic_containing_message(hamlet, target_message_id=message_id)
+        self.assert_json_error(result, "General chat cannot be marked as resolved")
+
+        # Verification for old clients that don't support empty string topic.
+        message_id = self.send_stream_message(
+            hamlet, "Denmark", topic_name=Message.EMPTY_TOPIC_FALLBACK_NAME
+        )
+        result = self.resolve_topic_containing_message(hamlet, target_message_id=message_id)
+        self.assert_json_error(result, "General chat cannot be marked as resolved")

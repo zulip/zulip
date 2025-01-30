@@ -280,8 +280,8 @@ export function warn_if_mentioning_unsubscribed_user(
         const existing_invites = [...$existing_invites_area].map((user_row) =>
             Number($(user_row).attr("data-user-id")),
         );
-
-        const can_subscribe_other_users = settings_data.user_can_subscribe_other_users();
+        const sub = stream_data.get_sub_by_id(stream_id)!;
+        const can_subscribe_other_users = stream_data.can_subscribe_others(sub);
 
         if (!existing_invites.includes(user_id)) {
             const context = {
@@ -637,9 +637,7 @@ function validate_stream_message(scheduling_message: boolean): boolean {
 
     if (realm.realm_mandatory_topics) {
         const topic = compose_state.topic();
-        // TODO: We plan to migrate the empty topic to only using the
-        // `""` representation for i18n reasons, but have not yet done so.
-        if (topic === "" || topic === "(no topic)") {
+        if (topic === "") {
             compose_banner.show_error_message(
                 $t({defaultMessage: "Topics are required in this organization."}),
                 compose_banner.CLASSNAMES.topic_missing,
@@ -765,8 +763,10 @@ export function check_overflow_text($container: JQuery): number {
     const is_edit_container = $textarea.closest(".message_row").length > 0;
 
     if (text.length > max_length) {
-        $indicator.addClass("over_limit");
-        $textarea.addClass("over_limit");
+        $indicator.removeClass("textarea-approaching-limit");
+        $textarea.removeClass("textarea-approaching-limit");
+        $indicator.addClass("textarea-over-limit");
+        $textarea.addClass("textarea-over-limit");
         $indicator.html(
             render_compose_limit_indicator({
                 remaining_characters,
@@ -778,8 +778,10 @@ export function check_overflow_text($container: JQuery): number {
             set_message_too_long_for_compose(true);
         }
     } else if (remaining_characters <= 900) {
-        $indicator.removeClass("over_limit");
-        $textarea.removeClass("over_limit");
+        $indicator.removeClass("textarea-over-limit");
+        $textarea.removeClass("textarea-over-limit");
+        $indicator.addClass("textarea-approaching-limit");
+        $textarea.addClass("textarea-approaching-limit");
         $indicator.html(
             render_compose_limit_indicator({
                 remaining_characters,
@@ -792,7 +794,8 @@ export function check_overflow_text($container: JQuery): number {
         }
     } else {
         $indicator.text("");
-        $textarea.removeClass("over_limit");
+        $textarea.removeClass("textarea-over-limit");
+        $textarea.removeClass("textarea-approaching-limit");
 
         if (is_edit_container) {
             set_message_too_long_for_edit(false, $container);

@@ -63,9 +63,9 @@ def do_set_realm_property(
     value to update and the user who initiated the update.
     """
     property_type = Realm.property_types[name]
-    assert isinstance(
-        value, property_type
-    ), f"Cannot update {name}: {value} is not an instance of {property_type}"
+    assert isinstance(value, property_type), (
+        f"Cannot update {name}: {value} is not an instance of {property_type}"
+    )
 
     old_value = getattr(realm, name)
     if old_value == value:
@@ -597,7 +597,7 @@ def do_deactivate_realm(
     # for realm exports and realm subdomain changes so that those actions
     # do not email active organization owners.
     if email_owners:
-        do_send_realm_deactivation_email(realm, acting_user)
+        do_send_realm_deactivation_email(realm, acting_user, deletion_delay_days)
 
 
 def do_reactivate_realm(realm: Realm) -> None:
@@ -718,11 +718,20 @@ def scrub_deactivated_realm(realm_to_scrub: Realm) -> None:
         realm_to_scrub.scheduled_deletion_date is not None
         and realm_to_scrub.scheduled_deletion_date <= timezone_now()
     ):
-        assert (
-            realm_to_scrub.deactivated
-        ), "Non-deactivated realm unexpectedly scheduled for deletion."
+        assert realm_to_scrub.deactivated, (
+            "Non-deactivated realm unexpectedly scheduled for deletion."
+        )
         do_scrub_realm(realm_to_scrub, acting_user=None)
         logging.info("Scrubbed realm %s", realm_to_scrub.id)
+
+
+def clean_deactivated_realm_data() -> None:
+    realms_to_scrub = Realm.objects.filter(
+        deactivated=True,
+        scheduled_deletion_date__lte=timezone_now(),
+    )
+    for realm in realms_to_scrub:
+        scrub_deactivated_realm(realm)
 
 
 @transaction.atomic(durable=True)
@@ -873,13 +882,17 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: UserProfile |
     )
 
 
-def do_send_realm_deactivation_email(realm: Realm, acting_user: UserProfile | None) -> None:
+def do_send_realm_deactivation_email(
+    realm: Realm, acting_user: UserProfile | None, deletion_delay_days: int | None
+) -> None:
     shared_context: dict[str, Any] = {
         "realm_name": realm.name,
     }
     deactivation_time = timezone_now()
     owners = set(realm.get_human_owner_users())
     anonymous_deactivation = False
+    data_deleted = False
+    scheduled_data_deletion = None
 
     # The realm was deactivated via the deactivate_realm management command.
     if acting_user is None:
@@ -890,6 +903,14 @@ def do_send_realm_deactivation_email(realm: Realm, acting_user: UserProfile | No
     if acting_user is not None and acting_user not in owners:
         anonymous_deactivation = True
 
+    # If realm data has been deleted or has a date set for it to be deleted,
+    # we include that information in the deactivation email to owners.
+    if deletion_delay_days is not None:
+        if deletion_delay_days == 0:
+            data_deleted = True
+        else:
+            scheduled_data_deletion = realm.scheduled_deletion_date
+
     for owner in owners:
         owner_tz = owner.timezone
         if owner_tz == "":
@@ -897,12 +918,20 @@ def do_send_realm_deactivation_email(realm: Realm, acting_user: UserProfile | No
         local_date = deactivation_time.astimezone(
             zoneinfo.ZoneInfo(canonicalize_timezone(owner_tz))
         ).date()
+        if scheduled_data_deletion:
+            data_deletion_date = scheduled_data_deletion.astimezone(
+                zoneinfo.ZoneInfo(canonicalize_timezone(owner_tz))
+            ).date()
+        else:
+            data_deletion_date = None
 
         if anonymous_deactivation:
             context = dict(
                 acting_user=False,
                 initiated_deactivation=False,
                 event_date=local_date,
+                data_already_deleted=data_deleted,
+                scheduled_deletion_date=data_deletion_date,
                 **shared_context,
             )
         else:
@@ -912,6 +941,8 @@ def do_send_realm_deactivation_email(realm: Realm, acting_user: UserProfile | No
                     acting_user=True,
                     initiated_deactivation=True,
                     event_date=local_date,
+                    data_already_deleted=data_deleted,
+                    scheduled_deletion_date=data_deletion_date,
                     **shared_context,
                 )
             else:
@@ -920,6 +951,8 @@ def do_send_realm_deactivation_email(realm: Realm, acting_user: UserProfile | No
                     initiated_deactivation=False,
                     deactivating_owner=acting_user.full_name,
                     event_date=local_date,
+                    data_already_deleted=data_deleted,
+                    scheduled_deletion_date=data_deletion_date,
                     **shared_context,
                 )
 

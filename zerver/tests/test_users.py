@@ -1874,7 +1874,7 @@ class ActivateTest(ZulipTestCase):
         self.login("iago")
 
         # Organization administrator cannot deactivate organization owner.
-        result = self.client_delete(f'/json/users/{self.example_user("desdemona").id}')
+        result = self.client_delete(f"/json/users/{self.example_user('desdemona').id}")
         self.assert_json_error(result, "Must be an organization owner")
 
         iago = self.example_user("iago")

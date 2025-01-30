@@ -6,10 +6,12 @@ import orjson
 from django.db import connection
 from django.db.models import F, Func, JSONField, Q, QuerySet, Subquery, TextField, Value
 from django.db.models.functions import Cast
+from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
-from zerver.lib.types import EditHistoryEvent
+from zerver.lib.types import EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, Reaction, Stream, UserMessage, UserProfile
+from zerver.models import Message, Reaction, UserMessage, UserProfile
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
@@ -118,26 +120,23 @@ def update_edit_history(
 def update_messages_for_topic_edit(
     acting_user: UserProfile,
     edited_message: Message,
-    propagate_mode: str,
-    orig_topic_name: str,
-    topic_name: str | None,
-    new_stream: Stream | None,
-    old_stream: Stream,
+    message_edit_request: StreamMessageEditRequest,
     edit_history_event: EditHistoryEvent,
     last_edit_time: datetime,
 ) -> tuple[QuerySet[Message], Callable[[], QuerySet[Message]]]:
     # Uses index: zerver_message_realm_recipient_upper_subject
+    old_stream = message_edit_request.orig_stream
     messages = Message.objects.filter(
         realm_id=old_stream.realm_id,
         recipient_id=assert_is_not_none(old_stream.recipient_id),
-        subject__iexact=orig_topic_name,
+        subject__iexact=message_edit_request.orig_topic_name,
     )
-    if propagate_mode == "change_all":
+    if message_edit_request.propagate_mode == "change_all":
         messages = messages.exclude(id=edited_message.id)
-    if propagate_mode == "change_later":
+    if message_edit_request.propagate_mode == "change_later":
         messages = messages.filter(id__gt=edited_message.id)
 
-    if new_stream is not None:
+    if message_edit_request.is_stream_edited:
         # If we're moving the messages between streams, only move
         # messages that the acting user can access, so that one cannot
         # gain access to messages through moving them.
@@ -159,9 +158,9 @@ def update_messages_for_topic_edit(
         #
         # This equates to:
         #    "edit_history" = (
-        #      (COALESCE("zerver_message"."edit_history", '[]'))::jsonb
-        #      ||
         #      ( '[{ ..json event.. }]' )::jsonb
+        #      ||
+        #      (COALESCE("zerver_message"."edit_history", '[]'))::jsonb
         #     )::text
         "edit_history": Cast(
             Func(
@@ -183,10 +182,10 @@ def update_messages_for_topic_edit(
             TextField(),
         ),
     }
-    if new_stream is not None:
-        update_fields["recipient"] = new_stream.recipient
-    if topic_name is not None:
-        update_fields["subject"] = topic_name
+    if message_edit_request.is_stream_edited:
+        update_fields["recipient"] = message_edit_request.target_stream.recipient
+    if message_edit_request.is_topic_edited:
+        update_fields["subject"] = message_edit_request.target_topic_name
 
     # The update will cause the 'messages' query to no longer match
     # any rows; we capture the set of matching ids first, do the
@@ -204,7 +203,10 @@ def update_messages_for_topic_edit(
     return messages, propagate
 
 
-def generate_topic_history_from_db_rows(rows: list[tuple[str, int]]) -> list[dict[str, Any]]:
+def generate_topic_history_from_db_rows(
+    rows: list[tuple[str, int]],
+    allow_empty_topic_name: bool,
+) -> list[dict[str, Any]]:
     canonical_topic_names: dict[str, tuple[int, str]] = {}
 
     # Sort rows by max_message_id so that if a topic
@@ -218,13 +220,19 @@ def generate_topic_history_from_db_rows(rows: list[tuple[str, int]]) -> list[dic
 
     history = []
     for max_message_id, topic_name in canonical_topic_names.values():
+        if topic_name == "" and not allow_empty_topic_name:
+            topic_name = Message.EMPTY_TOPIC_FALLBACK_NAME
         history.append(
             dict(name=topic_name, max_id=max_message_id),
         )
     return sorted(history, key=lambda x: -x["max_id"])
 
 
-def get_topic_history_for_public_stream(realm_id: int, recipient_id: int) -> list[dict[str, Any]]:
+def get_topic_history_for_public_stream(
+    realm_id: int,
+    recipient_id: int,
+    allow_empty_topic_name: bool,
+) -> list[dict[str, Any]]:
     cursor = connection.cursor()
     # Uses index: zerver_message_realm_recipient_subject
     # Note that this is *case-sensitive*, so that we can display the
@@ -247,14 +255,21 @@ def get_topic_history_for_public_stream(realm_id: int, recipient_id: int) -> lis
     rows = cursor.fetchall()
     cursor.close()
 
-    return generate_topic_history_from_db_rows(rows)
+    return generate_topic_history_from_db_rows(rows, allow_empty_topic_name)
 
 
 def get_topic_history_for_stream(
-    user_profile: UserProfile, recipient_id: int, public_history: bool
+    user_profile: UserProfile,
+    recipient_id: int,
+    public_history: bool,
+    allow_empty_topic_name: bool,
 ) -> list[dict[str, Any]]:
     if public_history:
-        return get_topic_history_for_public_stream(user_profile.realm_id, recipient_id)
+        return get_topic_history_for_public_stream(
+            user_profile.realm_id,
+            recipient_id,
+            allow_empty_topic_name,
+        )
 
     cursor = connection.cursor()
     # Uses index: zerver_message_realm_recipient_subject
@@ -282,7 +297,7 @@ def get_topic_history_for_stream(
     rows = cursor.fetchall()
     cursor.close()
 
-    return generate_topic_history_from_db_rows(rows)
+    return generate_topic_history_from_db_rows(rows, allow_empty_topic_name)
 
 
 def get_topic_resolution_and_bare_name(stored_name: str) -> tuple[bool, str]:
@@ -321,3 +336,24 @@ def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) ->
         ).values_list("id", flat=True)
     )
     return participants
+
+
+def maybe_rename_general_chat_to_empty_topic(topic_name: str) -> str:
+    if topic_name == Message.EMPTY_TOPIC_FALLBACK_NAME:
+        topic_name = ""
+    return topic_name
+
+
+def maybe_rename_empty_topic_to_general_chat(
+    topic_name: str, is_channel_message: bool, allow_empty_topic_name: bool
+) -> str:
+    if is_channel_message and topic_name == "" and not allow_empty_topic_name:
+        return Message.EMPTY_TOPIC_FALLBACK_NAME
+    return topic_name
+
+
+def get_topic_display_name(topic_name: str, language: str) -> str:
+    if topic_name == "":
+        with override_language(language):
+            return _(Message.EMPTY_TOPIC_FALLBACK_NAME)
+    return topic_name

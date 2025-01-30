@@ -59,6 +59,7 @@ class PublicURLTest(ZulipTestCase):
     def test_design_testing_pages(self) -> None:
         urls = {
             "/devtools/buttons/": "Button styles browser",
+            "/devtools/banners/": "Banner styles browser",
         }
 
         for url, expected_content in urls.items():

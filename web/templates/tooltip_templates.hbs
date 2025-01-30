@@ -68,8 +68,9 @@
         <span class="tooltip-inner-content italic">{{t "A poll must be an entire message." }}</span>
     </div>
 </template>
-<template id="add-saved-snippet-tooltip">
-    {{t "Add saved snippet" }}
+<template id="insert-saved-snippet-tooltip">
+    {{t "Insert saved snippet" }}
+    {{tooltip_hotkey_hints "Ctrl" "'"}}
 </template>
 <template id="link-tooltip">
     {{t 'Link' }}
@@ -110,50 +111,63 @@
     </div>
 </template>
 <template id="all-message-tooltip-template">
-    <div class="views-tooltip-container">
+    <div class="views-tooltip-container" data-view-code="all_messages">
         <div>{{t 'Combined feed' }}</div>
+        <div class="tootlip-inner-content views-message-count italic hidden-for-spectators"></div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
     </div>
     {{tooltip_hotkey_hints "A"}}
 </template>
 <template id="recent-conversations-tooltip-template">
-    <div class="views-tooltip-container">
+    <div class="views-tooltip-container" data-view-code="recent_topics">
         <div>{{t 'Recent conversations' }}</div>
-        <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
+        <div class="tootlip-inner-content views-message-count italic hidden-for-spectators"></div>
+        <div class="tooltip-inner-content views-tooltip-home-view-note italic hide hidden-for-spectators">{{t 'This is your home view.' }}</div>
     </div>
     {{tooltip_hotkey_hints "T"}}
 </template>
 <template id="starred-message-tooltip-template">
-    <div class="views-tooltip-container">
+    <div class="views-tooltip-container" data-view-code="starred_message">
         <div>{{t 'Starred messages' }}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
     </div>
     {{tooltip_hotkey_hints "*"}}
 </template>
 <template id="my-reactions-tooltip-template">
-    <div class="views-tooltip-container">
+    <div class="views-tooltip-container" data-view-code="recent_topics">
         <div>{{t 'Reactions to your messages' }}</div>
     </div>
 </template>
 <template id="inbox-tooltip-template">
-    <div class="views-tooltip-container">
+    <div class="views-tooltip-container" data-view-code="inbox">
         <div>{{t 'Inbox' }}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
     </div>
     {{tooltip_hotkey_hints "Shift" "I"}}
 </template>
 <template id="drafts-tooltip-template">
-    {{t 'Drafts' }}
+    <div class="views-tooltip-container" data-view-code="drafts">
+        <div>{{t 'Drafts' }}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
+    </div>
     {{tooltip_hotkey_hints "D"}}
+</template>
+<template id="scheduled-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="scheduled_message">
+        <div>{{t 'Scheduled messages'}}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
+    </div>
 </template>
 <template id="show-all-direct-messages-template">
     {{t 'Direct message feed' }}
     {{tooltip_hotkey_hints "Shift" "P"}}
 </template>
 <template id="mentions-tooltip-template">
-    {{t 'Mentions' }}
-</template>
-<template id="starred-tooltip-template">
-    {{t 'Starred messages' }}
+    <div class="views-tooltip-container" data-view-code="mentions">
+        <div>{{t 'Mentions' }}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
+    </div>
 </template>
 <template id="filter-streams-tooltip-template">
     {{t 'Filter channels' }}
@@ -259,4 +273,7 @@
 </template>
 <template id="mobile-push-notification-tooltip-template">
     {{t 'Mobile push notifications are not enabled on this server.' }}
+</template>
+<template id="color-picker-confirm-button-tooltip-template">
+    {{t 'Confirm new color' }}
 </template>

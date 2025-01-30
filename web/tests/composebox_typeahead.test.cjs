@@ -510,6 +510,42 @@ const support = user_group_item({
     deactivated: false,
 });
 
+const admins = user_group_item({
+    name: "Administrators",
+    id: 5,
+    creator_id: null,
+    date_created: 1596710000,
+    description: "Administrators",
+    members: new Set([102, 103]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([]),
+    can_add_members_group: 2,
+    can_join_group: 2,
+    can_leave_group: 2,
+    can_manage_group: 2,
+    can_mention_group: 2,
+    can_remove_members_group: 2,
+    deactivated: false,
+});
+
+const members = user_group_item({
+    name: "Members",
+    id: 6,
+    creator_id: null,
+    date_created: 1596710000,
+    description: "Members",
+    members: new Set([100, 101, 104]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([5]),
+    can_add_members_group: 2,
+    can_join_group: 2,
+    can_leave_group: 2,
+    can_manage_group: 2,
+    can_mention_group: 2,
+    can_remove_members_group: 2,
+    deactivated: false,
+});
+
 const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,
     emoji_code: emoji_dict.emoji_code,
@@ -557,6 +593,8 @@ function test(label, f) {
         user_groups.add(backend);
         user_groups.add(call_center);
         user_groups.add(support);
+        user_groups.add(admins);
+        user_groups.add(members);
 
         muted_users.set_muted_users([]);
 
@@ -793,19 +831,19 @@ test("content_typeahead_selected", ({override}) => {
     query = "#swed";
     ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected(sweden_stream, query, input_element);
-    expected_value = "#**Sweden** ";
+    expected_value = "#**Sweden>";
     assert.equal(actual_value, expected_value);
 
     query = "Hello #swed";
     ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected(sweden_stream, query, input_element);
-    expected_value = "Hello #**Sweden** ";
+    expected_value = "Hello #**Sweden>";
     assert.equal(actual_value, expected_value);
 
     query = "#**swed";
     ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected(sweden_stream, query, input_element);
-    expected_value = "#**Sweden** ";
+    expected_value = "#**Sweden>";
     assert.equal(actual_value, expected_value);
 
     // topic_list
@@ -837,6 +875,32 @@ test("content_typeahead_selected", ({override}) => {
     expected_value = "Hello #**Sweden>testing** ";
     assert.equal(actual_value, expected_value);
 
+    query = "Hello #**Sweden>";
+    ct.get_or_set_token_for_testing("");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "Sweden",
+            type: "topic_list",
+            is_channel_link: false,
+        },
+        query,
+        input_element,
+    );
+    expected_value = "Hello #**Sweden>Sweden** ";
+    assert.equal(actual_value, expected_value);
+
+    ct.get_or_set_token_for_testing("");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "Sweden",
+            type: "topic_list",
+            is_channel_link: true,
+        },
+        query,
+        input_element,
+    );
+    expected_value = "Hello #**Sweden** ";
+    assert.equal(actual_value, expected_value);
     // syntax
     ct.get_or_set_completing_for_tests("syntax");
 
@@ -1028,6 +1092,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     hamletcharacters,
                     backend,
                     call_center,
+                    admins,
+                    members,
                 ];
                 assert.deepEqual(actual_value, expected_value);
 
@@ -1565,7 +1631,9 @@ test("begins_typeahead", ({override, override_rewire}) => {
         // alphabetical
         hamletcharacters, // "Characters of Hamlet"
         backend,
-        call_center, // "folks working in support"
+        call_center, // "folks working in support",
+        admins,
+        members,
     ];
     const mention_everyone = broadcast_item(ct.broadcast_mentions()[1]);
     function mentions_with_silent_marker(mentions, is_silent) {
@@ -1591,7 +1659,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     );
     assert_typeahead_equals(
         "test @_**o",
-        mentions_with_silent_marker([othello_item, cordelia_item], true),
+        mentions_with_silent_marker([othello_item, cordelia_item, admins], true),
     );
     assert_typeahead_equals(
         "test @*o",
@@ -1658,6 +1726,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 twin1_item,
                 twin2_item,
                 othello_item,
+                admins,
             ],
             true,
         ),
@@ -1709,7 +1778,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     );
     assert_typeahead_equals(
         "test @_o",
-        mentions_with_silent_marker([othello_item, cordelia_item], true),
+        mentions_with_silent_marker([othello_item, cordelia_item, admins], true),
     );
     assert_typeahead_equals("test @z", []);
     assert_typeahead_equals("test @_z", []);
@@ -1855,13 +1924,20 @@ test("begins_typeahead", ({override, override_rewire}) => {
     // topic_list
     // includes "more ice"
     function typed_topics(topics) {
-        return topics.map((topic) => ({
-            type: "topic_list",
+        const matches_list = topics.map((topic) => ({
+            is_channel_link: false,
+            stream_data: {
+                ...stream_data.get_sub_by_name("Sweden"),
+                rendered_description: "",
+            },
             topic,
+            type: "topic_list",
         }));
+        return matches_list;
     }
     assert_typeahead_equals("#**Sweden>more ice", typed_topics(["more ice", "even more ice"]));
     assert_typeahead_equals("#**Sweden>totally new topic", typed_topics(["totally new topic"]));
+    assert_typeahead_equals("#**Sweden>\n\nmore ice", typed_topics([]));
 
     // time_jump
     const time_jump = [
@@ -2258,6 +2334,13 @@ test("message people", ({override, override_rewire}) => {
     results = ct.get_person_suggestions("Ha", opts);
     // harry is excluded since it has been deactivated.
     assert.deepEqual(results, [hal_item, hamlet_item]);
+
+    // Test that members group is not include in DM typeahead
+    // as it has more than 20 members.
+    opts.filter_groups_for_dm = true;
+    override_rewire(ct, "max_group_size_for_dm", 4);
+    results = ct.get_person_suggestions("rs", opts);
+    assert.deepEqual(results, [hamletcharacters, admins]);
 });
 
 test("muted users excluded from results", () => {

@@ -39,6 +39,8 @@ mock_esm("../src/settings_notifications", {
 mock_esm("../src/overlays", {
     streams_open: () => true,
 });
+
+const user_group_edit = mock_esm("../src/user_group_edit");
 const user_profile = mock_esm("../src/user_profile");
 
 const {Filter} = zrequire("../src/filter");
@@ -47,7 +49,6 @@ const {buddy_list} = zrequire("buddy_list");
 const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-const settings_config = zrequire("settings_config");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_create = zrequire("stream_create");
 const stream_data = zrequire("stream_data");
@@ -78,6 +79,8 @@ const dev_help = {
     stream_id: 2,
     is_muted: true,
     invite_only: false,
+    can_administer_channel_group: 1,
+    can_remove_subscribers_group: 1,
 };
 
 const frontend = {
@@ -87,6 +90,8 @@ const frontend = {
     stream_id: 101,
     is_muted: true,
     invite_only: false,
+    can_administer_channel_group: 1,
+    can_remove_subscribers_group: 1,
 };
 
 function narrow_to_frontend() {
@@ -113,6 +118,7 @@ test("update_property", ({override}) => {
         "server_supported_permission_settings",
         example_settings.server_supported_permission_settings,
     );
+    override(user_group_edit, "update_setting_in_group_permissions_panel", noop);
     const sub = {...frontend};
     stream_data.add_sub(sub);
 
@@ -215,10 +221,6 @@ test("update_property", ({override}) => {
         assert.equal(args.val, "we write code");
     }
 
-    // Test email address change
-    stream_events.update_property(stream_id, "email_address", "zooly@zulip.com");
-    assert.equal(sub.email_address, "zooly@zulip.com");
-
     // Test pin to top
     {
         override(stream_list, "refresh_pinned_or_unpinned_stream", noop);
@@ -255,21 +257,6 @@ test("update_property", ({override}) => {
         });
     }
 
-    // Test stream stream_post_policy change event
-    {
-        const stub = make_stub();
-        override(stream_settings_ui, "update_stream_post_policy", stub.f);
-        stream_events.update_property(
-            stream_id,
-            "stream_post_policy",
-            settings_config.stream_post_policy_values.admins.code,
-        );
-        assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("sub", "val");
-        assert.equal(args.sub.stream_id, stream_id);
-        assert.equal(args.val, settings_config.stream_post_policy_values.admins.code);
-    }
-
     // Test stream message_retention_days change event
     {
         const stub = make_stub();
@@ -303,6 +290,12 @@ test("update_property", ({override}) => {
         assert.equal(args.setting_name, "can_administer_channel_group");
         assert.equal(args.sub.stream_id, stream_id);
         assert.equal(args.val, 3);
+    }
+
+    // Test deprecated properties for coverage.
+    {
+        stream_events.update_property(stream_id, "stream_post_policy", 2);
+        stream_events.update_property(stream_id, "is_announcement_only", false);
     }
 });
 

@@ -6,20 +6,23 @@ from typing import Any
 
 import pyvips
 from django.db import transaction
+from django.db.models import OuterRef, Subquery
 from typing_extensions import override
 
 from zerver.actions.message_edit import do_update_embedded_data
 from zerver.lib.mime_types import guess_type
 from zerver.lib.thumbnail import (
+    IMAGE_MAX_ANIMATED_PIXELS,
     MarkdownImageMetadata,
     StoredThumbnailFormat,
     get_default_thumbnail_url,
     get_image_thumbnail_path,
+    get_transcoded_format,
     missing_thumbnails,
     rewrite_thumbnailed_images,
 )
 from zerver.lib.upload import save_attachment_contents, upload_backend
-from zerver.models import ArchivedMessage, ImageAttachment, Message
+from zerver.models import ArchivedMessage, Attachment, ImageAttachment, Message
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
 logger = logging.getLogger(__name__)
@@ -37,11 +40,21 @@ class ThumbnailWorker(QueueProcessingWorker):
                 # directly to a thumbnail URL we have not made yet.
                 # This may mean that we may generate 0 thumbnail
                 # images once we get the lock.
-                row = ImageAttachment.objects.select_for_update().get(id=event["id"])
+                row = (
+                    ImageAttachment.objects.select_for_update(of=("self",))
+                    .annotate(
+                        original_content_type=Subquery(
+                            Attachment.objects.filter(path_id=OuterRef("path_id")).values(
+                                "content_type"
+                            )
+                        )
+                    )
+                    .get(id=event["id"])
+                )
             except ImageAttachment.DoesNotExist:  # nocoverage
                 logger.info("ImageAttachment row %d missing", event["id"])
                 return
-            uploaded_thumbnails = ensure_thumbnails(row)
+            uploaded_thumbnails = ensure_thumbnails(row, row.original_content_type)
         end = time.time()
         logger.info(
             "Processed %d thumbnails (%dms)",
@@ -50,8 +63,10 @@ class ThumbnailWorker(QueueProcessingWorker):
         )
 
 
-def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
-    needed_thumbnails = missing_thumbnails(image_attachment)
+def ensure_thumbnails(
+    image_attachment: ImageAttachment, original_content_type: str | None = None
+) -> int:
+    needed_thumbnails = missing_thumbnails(image_attachment, original_content_type)
 
     if not needed_thumbnails:
         return 0
@@ -81,7 +96,16 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
                 # one of them if we're outputting to a static format,
                 # otherwise we load them all.
                 if thumbnail_format.animated:
-                    load_opts = "n=-1"
+                    # We compute how many frames to thumbnail based on
+                    # how many frames it will take us to get to
+                    # IMAGE_MAX_ANIMATED_PIXELS
+                    pixels_per_frame = (
+                        image_attachment.original_width_px * image_attachment.original_height_px
+                    )
+                    if pixels_per_frame * image_attachment.frames < IMAGE_MAX_ANIMATED_PIXELS:
+                        load_opts = "n=-1"
+                    else:
+                        load_opts = f"n={IMAGE_MAX_ANIMATED_PIXELS // pixels_per_frame}"
                 else:
                     load_opts = "n=1"
             resized = pyvips.Image.thumbnail_buffer(
@@ -150,6 +174,8 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> int:
             is_animated=is_animated,
             original_width_px=image_attachment.original_width_px,
             original_height_px=image_attachment.original_height_px,
+            original_content_type=original_content_type,
+            transcoded_image=get_transcoded_format(image_attachment, original_content_type),
         ),
     )
     return written_images

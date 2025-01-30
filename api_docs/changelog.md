@@ -20,6 +20,167 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 344**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added two new realm settings, `can_create_bots_group` which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to create bot users in the organization, and
+  `can_create_write_only_bots_group`  which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to create bot users who can only send messages in the organization
+  in addition to the users who are in `can_create_bots_group`.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `bot_creation_policy` property, as the permission to create bot users
+  in the organization is now controlled by two new realm settings,
+  `can_create_bots_group` and `can_create_write_only_bots_group`.
+
+**Feature level 343**
+
+* [`GET /events`](/api/get-events): Added a new field `stream_ids` to replace
+  `streams` in stream delete event and label `streams` as deprecated.
+
+**Feature level 342**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added
+  `can_add_subscribers_group` field to Stream and Subscription
+  objects.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_add_subscribers_group` parameter to support setting and
+  changing the user group whose members can add other subscribers
+  to the specified stream.
+* [`POST /invites`](/api/send-invites), [`POST
+  /invites/multiuse`](/api/create-invite-link): Users can now always
+  include default channels in an invite's initial subscriptions.
+
+**Feature level 341**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_add_subscribers_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to add subscribers to channels in the organization.
+* [`POST /register`](/api/register-queue): Removed
+  `can_subscribe_other_users` boolean field from the response.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `invite_to_stream_policy` property, as the permission to subscribe
+  other users to channels in the organization is now controlled by the
+  `can_add_subscribers_group` setting.
+
+**Feature level 340**
+
+[`PATCH /user_groups/{user_group_id}`](/api/update-user-group): All
+the permission settings and description can now be updated for
+deactivated groups.
+
+**Feature level 339**
+
+* [`GET /events`](/api/get-events): Added `user` field back in
+  `reaction` events, reverting part of the feature level 328
+  changes. Note that this field was only restored in the events API,
+  and remains deprecated, pending core clients fully migrating away
+  from accessing it.
+
+**Feature level 338**
+
+* [`POST /register`](/api/register-queue): Added `password_max_length`
+  field, which is the maximum allowed password length.
+
+**Feature level 337**
+
+* `POST /calls/bigbluebutton/create`: Added a `voice_only` parameter
+  controlling whether the call should be voice-only, in which case we
+  keep cameras disabled for this call. Now the call creator is a
+  moderator and all other joinees are viewers.
+
+**Feature level 336**
+
+* [Markdown message formatting](/api/message-formatting#image-previews): Added
+  `data-original-content-type` attribute to convey the type of the original
+  image, and optional `data-transcoded-image` attribute for images with formats
+  which are not widely supported by browsers.
+
+**Feature level 335**
+
+* [`GET /streams/{stream_id}/email_address`](/api/get-stream-email-address):
+  Added an optional `sender_id` parameter to specify the ID of a user or bot
+  which should appear as the sender when messages are sent to the channel using
+  the returned channel email address.
+
+**Feature level 334**
+
+* [`POST /register`](/api/register-queue): Added
+  `realm_empty_topic_display_name` field for clients to use
+  while adding support for empty string as topic name.
+
+* [`POST /register`](/api/register-queue): Added `empty_topic_name`
+  [client capability](/api/register-queue#parameter-client_capabilities)
+  to allow client to specify whether it supports empty string as a topic name
+  in `register` response or events involving topic names.
+  Clients that don't support this client capability receive
+  `realm_empty_topic_display_name` field value as the topic name replacing
+  the empty string.
+
+* [`GET /events`](/api/get-events): For clients that don't support
+  the `empty_topic_name` [client capability](/api/register-queue#parameter-client_capabilities),
+  the following fields will have the value of `realm_empty_topic_display_name`
+  field replacing the empty string for channel messages:
+    * `subject` field in the `message` event type
+    * `topic` field in the `delete_message` event type
+    * `orig_subject` and `subject` fields in the `update_message` event type
+    * `topic_name` field in the `user_topic` event type
+    * `topic` field in the `typing` event type
+    * `topic` field in the `update_message_flags` event type when removing `read` flag
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): Added `allow_empty_topic_name`
+  boolean parameter to decide whether the topic names in the fetched messages
+  can be empty strings.
+
+* [`GET /messages/{message_id}/history`](/api/get-message-history):
+  Added `allow_empty_topic_name` boolean parameter to decide whether the
+  topic names in the fetched message history objects can be empty strings.
+
+* [`GET /users/me/{stream_id}/topics`](/api/get-stream-topics):
+  Added `allow_empty_topic_name` boolean parameter to decide whether the
+  topic names in the fetched `topics` array can be empty strings.
+
+* [`POST /register`](/api/register-queue): For clients that don't support
+  the `empty_topic_name` [client capability](/api/register-queue#parameter-client_capabilities),
+  the `topic` field in the `unread_msgs` object and `topic_name` field
+  in the `user_topics` objects will have the value of
+  `realm_empty_topic_display_name` field replacing the empty string
+  for channel messages.
+
+**Feature level 333**
+
+* [Message formatting](/api/message-formatting): System groups can now
+  be silently mentioned.
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_send_message_group`
+  which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to post in the channel.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added `can_send_message_group`
+  which is a [group-setting value](/api/group-setting-values) describing the
+  set of users with permissions to post in the channel.
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): `stream_post_policy` field is
+  deprecated, having been replaced by `can_send_message_group`. Notably,
+  this backwards-compatible `stream_post_policy` value now contains the
+  superset of the true value that best approximates the actual permission
+  setting.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Removed
+  `stream_post_policy` and `is_announcement_only` properties, as the permission
+  to post in the channel is now controlled by `can_send_message_group` setting.
+
 **Feature level 332**
 
 * [`POST /register`](/api/register-queue): Added
@@ -861,7 +1022,7 @@ No changes; feature level used for Zulip 9.0 release.
 
 **Feature level 247**
 
-* [Markdown message formatting](/api/message-formatting#mentions):
+* [Markdown message formatting](/api/message-formatting#mentions-and-silent-mentions):
   Added `channel` to the supported options for [wildcard
   mentions](/help/mention-a-user-or-group#mention-everyone-on-a-stream).
 
@@ -1068,7 +1229,7 @@ No changes; feature level used for Zulip 8.0 release.
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
   [`GET /events`](/api/get-events): Added `can_access_all_users_group_id`
   realm setting, which is the ID of the user group whose members can
-  access all the users in the oragnization.
+  access all the users in the organization.
 
 * [`POST /register`](/api/register-queue): Added `allowed_system_groups`
   field to configuration data object of permission settings passed in

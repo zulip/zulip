@@ -22,12 +22,15 @@ regardless of its type:
 
 * [Who can send messages](/help/channel-posting-policy)
 * [Who can administer the channel](/help/configure-who-can-administer-a-channel)
+* [Who can subscribe other
+  users](/help/configure-who-can-invite-to-channels#configure-who-can-subscribe-other-users-to-a-specific-channel)
 * [Who can unsubscribe other users](/help/configure-who-can-unsubscribe-others)
 
 For the organization as a whole, you can:
 
 * [Restrict channel creation](/help/configure-who-can-create-channels)
-* [Restrict who can add users to channels](/help/configure-who-can-invite-to-channels)
+* [Restrict who can subscribe users to any
+  channel](/help/configure-who-can-invite-to-channels#configure-who-can-subscribe-other-users-to-any-channel)
 
 Any permission, including whether a channel is private, public, or web-public,
 can be modified after the channel is created.

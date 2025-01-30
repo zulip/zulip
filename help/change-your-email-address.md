@@ -6,23 +6,20 @@ Organization administrators can
 [restrict users to certain email domains](/help/restrict-account-creation#configuring-email-domain-restrictions), or
 [prevent users from changing their email](/help/restrict-name-and-email-changes).
 
-### Change your email address
+## Change your email address
 
 {start_tabs}
 
 {settings_tab|account-and-privacy}
 
-2. Under **Account**, click on the button with your email address.
+1. Under **Account**, click on the **pencil** (<i class="fa fa-pencil"></i>)
+   to the right of your current email. If you do not see the **pencil**
+   (<i class="fa fa-pencil"></i>), you do not have permission to change
+   your email address.
 
-3. Enter your new email, and click **Change**.
+1. Enter your new email, and click **Change**.
 
-4. You will receive a confirmation email within a few minutes. Open it and click **Confirm email change**.
+1. You will receive a confirmation email within a few minutes. Open it,
+   and click **Confirm email change**.
 
 {end_tabs}
-
-!!! warn ""
-
-    **Note:** If you are unable to click on the button with your email address, check
-    that your organization allows email changes. Follow the steps at
-    [prevent users from changing their names](/help/restrict-name-and-email-changes)
-    to view your organization's settings.

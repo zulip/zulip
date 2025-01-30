@@ -1224,7 +1224,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         def get_unread_data() -> UnreadMessagesResult:
             raw_unread_data = get_raw_unread_data(user_profile)
-            aggregated_data = aggregate_unread_data(raw_unread_data)
+            aggregated_data = aggregate_unread_data(raw_unread_data, allow_empty_topic_name=True)
             return aggregated_data
 
         with mock.patch("zerver.lib.message.MAX_UNREAD_MESSAGES", 5):
@@ -1814,6 +1814,12 @@ class MessageAccessTests(ZulipTestCase):
         )
         self.assert_length(filtered_messages, 4)
 
+        # Test private message access for service bot
+        service_bot = self.example_user("outgoing_webhook_bot")
+        self.subscribe(service_bot, stream_name)
+        filtered_messages = self.assert_bulk_access(service_bot, more_message_ids, stream, 6, 2)
+        self.assert_length(filtered_messages, 4)
+
         # Verify an exception is thrown if called where the passed
         # stream not matching the messages.
         other_stream = get_stream("Denmark", unsubscribed_user.realm)
@@ -1853,6 +1859,12 @@ class MessageAccessTests(ZulipTestCase):
 
         unsubscribed_user = self.example_user("ZOE")
         filtered_messages = self.assert_bulk_access(unsubscribed_user, message_ids, stream, 4, 1)
+        self.assert_length(filtered_messages, 2)
+
+        # Test public message access for service bot
+        service_bot = self.example_user("outgoing_webhook_bot")
+        self.subscribe(service_bot, stream_name)
+        filtered_messages = self.assert_bulk_access(service_bot, message_ids, stream, 4, 1)
         self.assert_length(filtered_messages, 2)
 
 

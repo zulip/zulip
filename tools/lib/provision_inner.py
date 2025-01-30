@@ -9,7 +9,9 @@
 import argparse
 import glob
 import os
+import pwd
 import shutil
+import subprocess
 import sys
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -91,6 +93,28 @@ def configure_rabbitmq_paths() -> list[str]:
     return paths
 
 
+def is_wsl_instance() -> bool:
+    if "WSL_DISTRO_NAME" in os.environ:
+        return True
+
+    with open("/proc/version") as file:
+        content = file.read().lower()
+        if "microsoft" in content:
+            return True
+
+    result = subprocess.run(["uname", "-r"], capture_output=True, text=True, check=True)
+    if "microsoft" in result.stdout.lower():
+        return True
+
+    return False
+
+
+def is_vagrant_or_digitalocean_instance() -> bool:
+    user_id = os.getuid()
+    user_name = pwd.getpwuid(user_id).pw_name
+    return user_name in ["vagrant", "zulipdev"]
+
+
 def setup_shell_profile(shell_profile: str) -> None:
     shell_profile_path = os.path.expanduser(shell_profile)
 
@@ -106,7 +130,9 @@ def setup_shell_profile(shell_profile: str) -> None:
                 shell_profile_file.writelines(command + "\n")
 
     source_activate_command = "source " + os.path.join(VENV_PATH, "bin", "activate")
-    write_command(source_activate_command)
+    # We want to activate the virtual environment for login shells only on virtualized systems.
+    if is_vagrant_or_digitalocean_instance() or is_wsl_instance():
+        write_command(source_activate_command)
     if os.path.exists("/srv/zulip"):
         write_command("cd /srv/zulip")
 

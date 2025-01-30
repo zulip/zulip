@@ -110,6 +110,7 @@ export function unstar_all_messages_in_topic(stream_id: number, topic: string): 
             {operator: "topic", operand: topic},
             {operator: "is", operand: "starred"},
         ]),
+        allow_empty_topic_name: true,
     };
 
     void channel.get({

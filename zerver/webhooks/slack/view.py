@@ -20,7 +20,7 @@ from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.validator import WildValue, check_none_or, check_string, to_wild_value
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
 
 FILE_LINK_TEMPLATE = "\n*[{file_name}]({file_link})*"
@@ -48,6 +48,8 @@ def get_slack_channel_name(channel_id: str, token: str) -> str:
     slack_channel_data = get_slack_api_data(
         "https://slack.com/api/conversations.info",
         get_param="channel",
+        # Sleeping is not permitted from webhook code.
+        raise_if_rate_limited=True,
         token=token,
         channel=channel_id,
     )
@@ -56,7 +58,12 @@ def get_slack_channel_name(channel_id: str, token: str) -> str:
 
 def get_slack_sender_name(user_id: str, token: str) -> str:
     slack_user_data = get_slack_api_data(
-        "https://slack.com/api/users.info", get_param="user", token=token, user=user_id
+        "https://slack.com/api/users.info",
+        get_param="user",
+        # Sleeping is not permitted from webhook code.
+        raise_if_rate_limited=True,
+        token=token,
+        user=user_id,
     )
     return slack_user_data["name"]
 
@@ -79,7 +86,9 @@ def convert_slack_user_and_channel_mentions(text: str, app_token: str) -> str:
             # a mention isn't triggered for a Zulip channel with the same name.
             channel_info: list[str] = slack_channelmention_match.group(0).split("|")
             channel_name = channel_info[1]
-            tokens[iterator] = f"**#{channel_name}**" if channel_name else "**#[private channel]**"
+            tokens[iterator] = (
+                f"**#{channel_name}**" if channel_name else "**#[private Slack channel]**"
+            )
     text = " ".join(tokens)
     return text
 
@@ -234,7 +243,7 @@ def api_slack_webhook(
             request,
             user_profile,
             "Integration events",
-            "Successfully verified webhook URL with Slack!",
+            get_setup_webhook_message("Slack"),
         )
         return json_success(request=request, data={"challenge": challenge})
 

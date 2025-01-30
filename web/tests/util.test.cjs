@@ -5,11 +5,15 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 const MockDate = require("mockdate");
 
-const {set_global, zrequire} = require("./lib/namespace.cjs");
+const {set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const blueslip = zrequire("blueslip");
+const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
+
+const realm = {};
+set_realm(realm);
 
 set_global("document", {});
 const util = zrequire("util");
@@ -369,12 +373,17 @@ run_test("format_array_as_list", () => {
     );
 
     // when Intl.ListFormat does not exist
-    global.Intl.ListFormat = undefined;
-    assert.equal(util.format_array_as_list(array, "long", "conjunction"), "apple, banana, orange");
-    assert.equal(
-        util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-        "<b>apple</b>, <b>banana</b>, <b>orange</b>",
-    );
+    with_overrides(({override}) => {
+        override(global.Intl, "ListFormat", undefined);
+        assert.equal(
+            util.format_array_as_list(array, "long", "conjunction"),
+            "apple, banana, orange",
+        );
+        assert.equal(
+            util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
+            "<b>apple</b>, <b>banana</b>, <b>orange</b>",
+        );
+    });
 });
 
 run_test("get_remaining_time", () => {
@@ -412,8 +421,14 @@ run_test("get_custom_time_in_minutes", () => {
 });
 
 run_test("check_and_validate_custom_time_input", () => {
+    const input_is_zero = 0;
+    let checked_input = util.check_time_input(input_is_zero);
+    assert.equal(checked_input, 0);
+    assert.equal(util.validate_custom_time_input(checked_input, true), true);
+    assert.equal(util.validate_custom_time_input(checked_input, false), false);
+
     const input_is_nan = "24abc";
-    let checked_input = util.check_time_input(input_is_nan);
+    checked_input = util.check_time_input(input_is_nan);
     assert.equal(checked_input, Number.NaN);
     assert.equal(util.validate_custom_time_input(checked_input), false);
 
@@ -476,4 +491,65 @@ run_test("compare_a_b", () => {
 
     const sorted_by_name = [...unsorted].sort((a, b) => util.compare_a_b(a.name, b.name));
     assert.deepEqual(sorted_by_name, [user2, user4, user3, user1]);
+});
+
+run_test("get_final_topic_display_name", ({override}) => {
+    // When the topic name is not an empty string,
+    // the displayed topic name matches the actual topic name.
+    assert.deepEqual(util.get_final_topic_display_name("not empty string"), "not empty string");
+
+    // When the topic name is an empty string, there are two possible scenarios:
+    // 1. The `realm_empty_topic_display_name` setting has its default value
+    //    "general chat". In this case, the topic is displayed as the translated
+    //    value of "general chat" based on the user's language settings.
+    // 2. The `realm_empty_topic_display_name` setting has been customized by
+    //    an admin. In this case, the topic is displayed using the value of
+    //    `realm_empty_topic_display_name` without any translation.
+    override(realm, "realm_empty_topic_display_name", "general chat");
+    assert.deepEqual(util.get_final_topic_display_name(""), "translated: general chat");
+    override(realm, "realm_empty_topic_display_name", "random topic name");
+    assert.deepEqual(util.get_final_topic_display_name(""), "random topic name");
+});
+
+run_test("get_retry_backoff_seconds", () => {
+    const xhr_500_error = {
+        status: 500,
+    };
+
+    // Shorter backoff scale
+    // First retry should be between 1-2 seconds.
+    let backoff = util.get_retry_backoff_seconds(xhr_500_error, 1, true);
+    assert.ok(backoff >= 1);
+    assert.ok(backoff < 3);
+    // 100th retry should be between 16-32 seconds.
+    backoff = util.get_retry_backoff_seconds(xhr_500_error, 100, true);
+    assert.ok(backoff >= 16);
+    assert.ok(backoff <= 32);
+
+    // Longer backoff scale
+    // First retry should be between 1-2 seconds.
+    backoff = util.get_retry_backoff_seconds(xhr_500_error, 1);
+    assert.ok(backoff >= 1);
+    assert.ok(backoff <= 3);
+    // 100th retry should be between 45-90 seconds.
+    backoff = util.get_retry_backoff_seconds(xhr_500_error, 100);
+    assert.ok(backoff >= 45);
+    assert.ok(backoff <= 90);
+
+    const xhr_rate_limit_error = {
+        status: 429,
+        responseJSON: {
+            code: "RATE_LIMIT_HIT",
+            msg: "API usage exceeded rate limit",
+            result: "error",
+            "retry-after": 28.706807374954224,
+        },
+    };
+    // First retry should be greater than the retry-after value.
+    backoff = util.get_retry_backoff_seconds(xhr_rate_limit_error, 1);
+    assert.ok(backoff >= 28.706807374954224);
+    // 100th retry should be between 45-90 seconds.
+    backoff = util.get_retry_backoff_seconds(xhr_rate_limit_error, 100);
+    assert.ok(backoff >= 45);
+    assert.ok(backoff <= 90);
 });

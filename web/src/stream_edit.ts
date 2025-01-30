@@ -27,7 +27,6 @@ import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_org from "./settings_org.ts";
 import {current_user, realm} from "./state_data.ts";
-import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_edit_subscribers from "./stream_edit_subscribers.ts";
 import * as stream_edit_toggler from "./stream_edit_toggler.ts";
@@ -142,9 +141,6 @@ export function open_edit_panel_empty(): void {
 
 export function update_stream_name(sub: StreamSubscription, new_name: string): void {
     const $edit_container = stream_settings_containers.get_edit_container(sub);
-    if (sub.email_address !== undefined) {
-        $edit_container.find(".email-address").text(sub.email_address);
-    }
     $edit_container.find(".sub-stream-name").text(new_name);
 
     const active_data = stream_settings_components.get_active_data();
@@ -164,18 +160,7 @@ export function update_stream_description(sub: StreamSubscription): void {
 
 function show_subscription_settings(sub: SettingsSubscription): void {
     const $edit_container = stream_settings_containers.get_edit_container(sub);
-
-    const $colorpicker = $edit_container.find(".colorpicker");
-    const color = stream_data.get_color(sub.stream_id);
-    stream_color.set_colorpicker_color($colorpicker, color);
     stream_ui_updates.update_add_subscriptions_elements(sub);
-    const $scroll_container = scroll_util.get_scroll_element($("#stream_settings"));
-
-    $scroll_container.on("scroll", () => {
-        $colorpicker.spectrum("destroy");
-        const color = stream_data.get_color(sub.stream_id);
-        stream_color.set_colorpicker_color($colorpicker, color);
-    });
 
     if (!sub.render_subscribers) {
         return;
@@ -267,7 +252,6 @@ export function show_settings_for(node: HTMLElement): void {
         sub,
         notification_settings,
         other_settings,
-        stream_post_policy_values: settings_config.stream_post_policy_values,
         stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
         stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
         check_default_stream: stream_data.is_default_stream_id(stream_id),
@@ -278,6 +262,7 @@ export function show_settings_for(node: HTMLElement): void {
         is_admin: current_user.is_admin,
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
         can_access_stream_email: stream_data.can_access_stream_email(sub),
+        group_setting_labels: settings_config.all_group_setting_labels.stream,
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
@@ -295,6 +280,7 @@ export function show_settings_for(node: HTMLElement): void {
     settings_org.set_message_retention_setting_dropdown(sub);
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     setup_group_setting_widgets(slim_sub);
+    stream_ui_updates.update_can_add_subscribers_group_label($edit_container);
 
     $("#channels_overlay_container").on(
         "click",
@@ -681,11 +667,22 @@ export function initialize(): void {
         $(".dialog_submit_button").attr("data-stream-id", stream_id);
     });
 
-    $("#channels_overlay_container").on("click", ".stream-row", function (this: HTMLElement) {
-        if ($(this).closest(".check, .subscription_settings").length === 0) {
-            open_edit_panel_for_row(this);
-        }
+    $("#channels_overlay_container").on("click", ".stream-row", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+        open_edit_panel_for_row(this);
     });
+
+    $("#channels_overlay_container").on(
+        "click",
+        ".subscriber-count",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
+            stream_edit_toggler.set_select_tab("subscribers");
+            open_edit_panel_for_row(this);
+        },
+    );
 
     $<HTMLSelectElement>("#channels_overlay_container").on(
         "change",
@@ -726,6 +723,11 @@ export function initialize(): void {
             return true;
         },
     );
+
+    // This takes care of both stream create and edit.
+    $("#channels_overlay_container").on("change", ".stream-privacy-values input", () => {
+        stream_ui_updates.update_can_add_subscribers_group_label($("#channels_overlay_container"));
+    });
 
     $("#channels_overlay_container").on(
         "click",

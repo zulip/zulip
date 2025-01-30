@@ -114,6 +114,7 @@ IGNORED_PHRASES = [
     r"^moving messages$",
     r"^start a conversation$",
     r"^welcome to Zulip!$",
+    r"^general chat$",
     # These are used as example short names (e.g. an uncapitalized context):
     r"^marketing$",
     r"^cookie$",
@@ -176,8 +177,8 @@ IGNORED_PHRASES = [
     r"hours",
     r"days",
     r"weeks",
-    # Used in "Who can unsubscribe others from this channel" label.
-    r"in addition to organization administrators",
+    # Used in "Who can subscribe others to this channel" label.
+    r"must be subscribed",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

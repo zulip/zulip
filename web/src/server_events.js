@@ -13,6 +13,7 @@ import * as sent_messages from "./sent_messages.ts";
 import * as server_events_dispatch from "./server_events_dispatch.js";
 import {server_message_schema} from "./server_message.ts";
 import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 import * as watchdog from "./watchdog.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
@@ -243,24 +244,7 @@ function get_events({dont_block = false} = {}) {
                 blueslip.error("Failed to handle get_events error", undefined, error);
             }
 
-            // We need to respect the server's rate-limiting headers, but beyond
-            // that, we also want to avoid contributing to a thundering herd if
-            // the server is giving us 500s/502s.
-            //
-            // So we do the maximum of the retry-after header and an exponential
-            // backoff with ratio sqrt(2) and half jitter. Starts at 1-2s and ends at
-            // 45-90s after enough failures.
-            const backoff_scale = Math.min(2 ** ((get_events_failures + 1) / 2), 90);
-            const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
-            let rate_limit_delay_secs = 0;
-            if (xhr.status === 429 && xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
-                // Add a bit of jitter to the required delay suggested
-                // by the server, because we may be racing with other
-                // copies of the web app.
-                rate_limit_delay_secs = xhr.responseJSON["retry-after"] + Math.random() * 0.5;
-            }
-
-            const retry_delay_secs = Math.max(backoff_delay_secs, rate_limit_delay_secs);
+            const retry_delay_secs = util.get_retry_backoff_seconds(xhr, get_events_failures);
             get_events_timeout = setTimeout(get_events, retry_delay_secs * 1000);
         },
     });

@@ -26,13 +26,6 @@ initialize_user_settings({user_settings});
     test people.js.
 */
 
-const isaac = {
-    email: "isaac@example.com",
-    delivery_email: "isaac-delivery@example.com",
-    user_id: 30,
-    full_name: "Isaac",
-};
-
 const admins = {
     description: "Administrators",
     name: "role:administrators",
@@ -183,58 +176,14 @@ run_test("user_can_change_logo", ({override}) => {
     assert.equal(can_change_logo(), false);
 });
 
-function test_policy(label, policy, validation_func) {
-    run_test(label, ({override}) => {
-        override(current_user, "is_admin", true);
-        override(realm, policy, settings_config.common_policy_values.by_admins_only.code);
-        assert.equal(validation_func(), true);
-
-        override(current_user, "is_admin", false);
-        assert.equal(validation_func(), false);
-
-        override(current_user, "is_moderator", true);
-        override(realm, policy, settings_config.common_policy_values.by_moderators_only.code);
-        assert.equal(validation_func(), true);
-
-        override(current_user, "is_moderator", false);
-        assert.equal(validation_func(), false);
-
-        override(current_user, "is_guest", true);
-        override(realm, policy, settings_config.common_policy_values.by_members.code);
-        assert.equal(validation_func(), false);
-
-        override(current_user, "is_guest", false);
-        assert.equal(validation_func(), true);
-
-        page_params.is_spectator = true;
-        override(realm, policy, settings_config.common_policy_values.by_members.code);
-        assert.equal(validation_func(), false);
-
-        page_params.is_spectator = false;
-        assert.equal(validation_func(), true);
-
-        override(realm, policy, settings_config.common_policy_values.by_full_members.code);
-        override(current_user, "user_id", 30);
-        isaac.date_joined = new Date(Date.now());
-        settings_data.initialize(isaac.date_joined);
-        override(realm, "realm_waiting_period_threshold", 10);
-        assert.equal(validation_func(), false);
-
-        isaac.date_joined = new Date(Date.now() - 20 * 86400000);
-        settings_data.initialize(isaac.date_joined);
-        assert.equal(validation_func(), true);
-    });
-}
-
-test_policy(
-    "user_can_subscribe_other_users",
-    "realm_invite_to_stream_policy",
-    settings_data.user_can_subscribe_other_users,
-);
-
 test_realm_group_settings(
     "realm_can_add_custom_emoji_group",
     settings_data.user_can_add_custom_emoji,
+);
+
+test_realm_group_settings(
+    "realm_can_add_subscribers_group",
+    settings_data.can_subscribe_others_to_all_accessible_streams,
 );
 
 test_realm_group_settings(
@@ -405,7 +354,8 @@ run_test("can_manage_user_group", ({override}) => {
             can_manage_group: members.id,
         },
     };
-    user_groups.update(event);
+    const students_group = user_groups.get_user_group_from_id(students.id);
+    user_groups.update(event, students_group);
     assert.ok(settings_data.can_manage_user_group(students.id));
 
     override(current_user, "user_id", 3);
@@ -434,8 +384,9 @@ function test_user_group_permission_setting(override, setting_name, permission_f
         group_id: students.id,
         data: {},
     };
+    const students_group = user_groups.get_user_group_from_id(students.id);
     event.data[setting_name] = moderators.id;
-    user_groups.update(event);
+    user_groups.update(event, students_group);
     assert.ok(permission_func(students.id));
 
     override(current_user, "user_id", 1);
@@ -449,7 +400,7 @@ function test_user_group_permission_setting(override, setting_name, permission_f
         direct_members: [5],
         direct_subgroups: [admins.id],
     };
-    user_groups.update(event);
+    user_groups.update(event, students_group);
     assert.ok(permission_func(students.id));
 
     override(current_user, "user_id", 2);
@@ -486,7 +437,8 @@ run_test("can_join_user_group", ({override}) => {
             },
         },
     };
-    user_groups.update(event);
+    const students_group = user_groups.get_user_group_from_id(students.id);
+    user_groups.update(event, students_group);
 
     override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_join_user_group(students.id));
@@ -519,7 +471,8 @@ run_test("can_leave_user_group", ({override}) => {
             },
         },
     };
-    user_groups.update(event);
+    const students_group = user_groups.get_user_group_from_id(students.id);
+    user_groups.update(event, students_group);
 
     override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_leave_user_group(students.id));
@@ -548,21 +501,8 @@ run_test("can_remove_members_user_group", ({override}) => {
 });
 
 run_test("type_id_to_string", () => {
-    page_params.bot_types = [
-        {
-            type_id: 1,
-            name: "Generic bot",
-            allowed: true,
-        },
-        {
-            type_id: 2,
-            name: "Incoming webhook",
-            allowed: true,
-        },
-    ];
-
-    assert.equal(settings_data.bot_type_id_to_string(1), "Generic bot");
-    assert.equal(settings_data.bot_type_id_to_string(2), "Incoming webhook");
+    assert.equal(settings_data.bot_type_id_to_string(1), "translated: Generic bot");
+    assert.equal(settings_data.bot_type_id_to_string(2), "translated: Incoming webhook");
     assert.equal(settings_data.bot_type_id_to_string(5), undefined);
 });
 

@@ -6,6 +6,7 @@ import random
 import re
 import secrets
 import shutil
+import time
 import zipfile
 from collections import defaultdict
 from collections.abc import Iterator
@@ -455,7 +456,7 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     if "email" in user["profile"]:
         return user["profile"]["email"]
     if user["is_mirror_dummy"]:
-        return Address(username=user["name"], domain=f'{user["team_domain"]}.slack.com').addr_spec
+        return Address(username=user["name"], domain=f"{user['team_domain']}.slack.com").addr_spec
     if "bot_id" in user["profile"]:
         return SlackBotEmail.get_email(user["profile"], domain_name)
     if get_user_full_name(user).lower() == "slackbot":
@@ -1501,8 +1502,14 @@ def do_convert_directory(
         raise ValueError("Import does not have the layout we expect from a Slack export!")
 
     # We get the user data from the legacy token method of Slack API, which is depreciated
-    # but we use it as the user email data is provided only in this method
-    user_list = get_slack_api_data("https://slack.com/api/users.list", "members", token=token)
+    # but we use it as the user email data is provided only in this method.
+    # Fetching from this endpoint requires using pagination, as only a subset
+    # of the users might be returned in any single request.
+    # We use the limit value of 200, as that's suggested in Slack's documentation for this
+    # endpoint.
+    user_list = get_slack_api_data(
+        "https://slack.com/api/users.list", "members", token=token, pagination_limit=200
+    )
     fetch_shared_channel_users(user_list, slack_data_dir, token)
 
     custom_emoji_list = get_slack_api_data("https://slack.com/api/emoji.list", "emoji", token=token)
@@ -1611,16 +1618,67 @@ def check_token_access(token: str, required_scopes: set[str]) -> None:
         raise Exception("Unknown token type -- must start with xoxb- or xoxp-")
 
 
-def get_slack_api_data(slack_api_url: str, get_param: str, **kwargs: Any) -> Any:
+def get_slack_api_data(
+    slack_api_url: str,
+    get_param: str,
+    *,
+    pagination_limit: int | None = None,
+    raise_if_rate_limited: bool = False,
+    **kwargs: Any,
+) -> Any:
     if not kwargs.get("token"):
         raise AssertionError("Slack token missing in kwargs")
-    token = kwargs.pop("token")
-    data = requests.get(slack_api_url, headers={"Authorization": f"Bearer {token}"}, params=kwargs)
 
-    if data.status_code == requests.codes.ok:
-        result = data.json()
+    token = kwargs.pop("token")
+    accumulated_result = []
+    cursor: str | None = None
+    while True:
+        if pagination_limit is not None:
+            # If we're fetching with pagination, this might take a while, so we want reasonable logging to show
+            # progress and what's being fetched.
+            logging.info(
+                "Fetching page from %s with cursor: %s and limit: %s",
+                slack_api_url,
+                cursor,
+                pagination_limit,
+            )
+
+        params: dict[str, int | str] = {"limit": pagination_limit} if pagination_limit else {}
+        if cursor:
+            params["cursor"] = cursor
+        params.update(kwargs)
+
+        response = requests.get(
+            slack_api_url, headers={"Authorization": f"Bearer {token}"}, params=params
+        )
+
+        if response.status_code == 429:
+            if raise_if_rate_limited:
+                raise Exception("Exceeded Slack rate limits.")
+            retry_after = int(response.headers.get("retry-after", 1))
+            logging.info("Rate limit exceeded. Retrying in %s seconds...", retry_after)
+            time.sleep(retry_after)
+            continue
+
+        if response.status_code != requests.codes.ok:
+            logging.info("HTTP error: %s, Response: %s", response.status_code, response.text)
+            raise Exception("HTTP error accessing the Slack API.")
+
+        result = response.json()
         if not result["ok"]:
             raise Exception("Error accessing Slack API: {}".format(result["error"]))
-        return result[get_param]
 
-    raise Exception("HTTP error accessing the Slack API.")
+        result_data = result[get_param]
+
+        if pagination_limit is None:
+            # We're not using pagination, so we don't want to loop and should just return the result.
+            return result_data
+
+        accumulated_result.extend(result_data)
+        if not result.get("response_metadata", {}).get("next_cursor"):
+            # Everything has been fetched.
+            break
+
+        cursor = result["response_metadata"]["next_cursor"]
+
+    return accumulated_result

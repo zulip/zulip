@@ -44,15 +44,9 @@ from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
-from zerver.lib.export import (
-    AppMigrations,
-    MigrationStatusJson,
-    Record,
-    do_export_realm,
-    do_export_user,
-    export_usermessages_batch,
-)
+from zerver.lib.export import Record, do_export_realm, do_export_user, export_usermessages_batch
 from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
+from zerver.lib.migration_status import STALE_MIGRATIONS, AppMigrations, MigrationStatusJson
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -358,15 +352,37 @@ class ExportFile(ZulipTestCase):
         # This function asserts that the generated migration_status.json
         # is structurally familiar for it to be used for assertion at
         # import_realm.py. Hence, it doesn't really matter if the individual
-        # apps' migrations in migration_status.json fixture are outdated.
+        # apps' migrations in migration_status.json fixture are outdated as
+        # long as they have the same format.
         exported: MigrationStatusJson = read_json("migration_status.json")
-        fixture: MigrationStatusJson = orjson.loads(
-            self.fixture_data("migration_status.json", "import_fixtures")
+
+        applied_migrations_fixtures = os.listdir(
+            self.fixture_file_name("", "import_fixtures/applied_migrations_fixtures")
         )
-        for app, migrations in fixture["migrations_by_app"].items():
-            self.assertTrue(
-                set(migrations).issubset(set(exported["migrations_by_app"].get(app, []))),
-            )
+
+        for fixture in applied_migrations_fixtures:
+            migration_by_app: AppMigrations = self.get_applied_migrations_fixture(fixture)
+            with self.subTest(migration_fixture=fixture):
+                self.assertTrue(
+                    set(migration_by_app).issubset(set(exported["migrations_by_app"])),
+                    f"""
+                    Please make sure the `{fixture}` fixture represents the actual
+                    `migration_status.json` file. If the format for the same migration
+                    status differs, this fixture is probably stale and needs
+                    updating.
+
+                    If this variation is needed for testing purposes feel free to
+                    exempt the fixture from this test.""",
+                )
+
+        # Make sure export doesn't produce a migration_status.json with stale
+        # migrations.
+        stale_migrations = []
+        for app, stale_migration in STALE_MIGRATIONS:
+            installed_app = exported["migrations_by_app"].get(app)
+            if installed_app:
+                stale_migrations = [mig for mig in installed_app if mig.endswith(stale_migration)]
+        self.assert_length(stale_migrations, 0)
 
 
 class RealmImportExportTest(ExportFile):
@@ -1273,7 +1289,10 @@ class RealmImportExportTest(ExportFile):
         expected_rendered_preview = (
             f'<p>An <a href="/user_uploads/{path_id}">image</a></p>\n'
             f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
-            f'<img data-original-dimensions="128x128" src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
+            "<img"
+            ' data-original-content-type="image/png"'
+            ' data-original-dimensions="128x128"'
+            f' src="/user_uploads/thumbnail/{path_id}/840x560.webp"></a></div>'
         )
         self.assertEqual(
             imported_message_with_thumbnail.rendered_content, expected_rendered_preview
@@ -2051,8 +2070,8 @@ class RealmImportExportTest(ExportFile):
         with (
             self.assertRaises(Exception) as e,
             self.assertLogs(level="INFO"),
-            patch("zerver.lib.export.get_migrations_by_app") as mock_export,
-            patch("zerver.lib.import_realm.get_migrations_by_app") as mock_import,
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
         ):
             mock_export.return_value = self.get_applied_migrations_fixture(
                 "with_unapplied_migrations.json"
@@ -2077,8 +2096,8 @@ class RealmImportExportTest(ExportFile):
         with (
             self.assertRaises(Exception) as e,
             self.assertLogs(level="INFO"),
-            patch("zerver.lib.export.get_migrations_by_app") as mock_export,
-            patch("zerver.lib.import_realm.get_migrations_by_app") as mock_import,
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
         ):
             mock_export.return_value = self.get_applied_migrations_fixture(
                 "with_complete_migrations.json"
@@ -2102,8 +2121,8 @@ class RealmImportExportTest(ExportFile):
         with (
             self.settings(BILLING_ENABLED=False),
             self.assertLogs(level="WARNING") as mock_log,
-            patch("zerver.lib.export.get_migrations_by_app") as mock_export,
-            patch("zerver.lib.import_realm.get_migrations_by_app") as mock_import,
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
         ):
             mock_export.return_value = self.get_applied_migrations_fixture(
                 "with_complete_migrations.json"
@@ -2129,8 +2148,8 @@ class RealmImportExportTest(ExportFile):
         with (
             self.settings(BILLING_ENABLED=False),
             self.assertLogs(level="WARNING") as mock_log,
-            patch("zerver.lib.export.get_migrations_by_app") as mock_export,
-            patch("zerver.lib.import_realm.get_migrations_by_app") as mock_import,
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
         ):
             mock_export.return_value = self.get_applied_migrations_fixture("with_missing_apps.json")
             mock_import.return_value = self.get_applied_migrations_fixture(
@@ -2159,8 +2178,8 @@ class RealmImportExportTest(ExportFile):
         with (
             self.settings(BILLING_ENABLED=False),
             self.assertLogs(level="INFO"),
-            patch("zerver.lib.export.get_migrations_by_app") as mock_export,
-            patch("zerver.lib.import_realm.get_migrations_by_app") as mock_import,
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
         ):
             mock_export.return_value = self.get_applied_migrations_fixture(
                 "with_complete_migrations.json"
@@ -2213,6 +2232,42 @@ class RealmImportExportTest(ExportFile):
             "Server version: 8.0"
         )
         self.assertEqual(expected_error_message, str(e.exception))
+
+    def test_import_realm_with_identical_but_unsorted_migrations(self) -> None:
+        # Two identical migration sets should pass `check_migrations_status`
+        # regardless of how the list of migrations are ordered in
+        # `migrations_status.json`.
+        realm = get_realm("zulip")
+        with (
+            self.assertLogs(level="INFO"),
+            patch("zerver.lib.export.parse_migration_status") as mock_export,
+            patch("zerver.lib.import_realm.parse_migration_status") as mock_import,
+        ):
+            mock_export.return_value = self.get_applied_migrations_fixture(
+                "with_unsorted_migrations_list.json"
+            )
+            mock_import.return_value = self.get_applied_migrations_fixture(
+                "with_complete_migrations.json"
+            )
+            self.export_realm_and_create_auditlog(
+                realm,
+                export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+            )
+            do_import_realm(get_output_dir(), "test-zulip")
+
+    def test_clean_up_migration_status_json(self) -> None:
+        user = self.example_user("hamlet")
+        with (
+            patch("zerver.lib.export.get_migration_status") as mock_export,
+        ):
+            mock_export.return_value = self.fixture_data(
+                "with_stale_migrations.txt", "import_fixtures/showmigrations_fixtures"
+            )
+
+            realm = user.realm
+        self.export_realm_and_create_auditlog(realm)
+
+        self.verify_migration_status_json()
 
 
 class SingleUserExportTest(ExportFile):

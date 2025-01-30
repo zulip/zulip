@@ -110,6 +110,8 @@ type TopicContext = {
     is_topic: boolean;
     stream_id: number;
     topic_name: string;
+    topic_display_name: string;
+    is_empty_string_topic: boolean;
     unread_count: number;
     conversation_key: string;
     topic_url: string;
@@ -126,6 +128,8 @@ const topic_context_properties: (keyof TopicContext)[] = [
     "is_topic",
     "stream_id",
     "topic_name",
+    "topic_display_name",
+    "is_empty_string_topic",
     "unread_count",
     "conversation_key",
     "topic_url",
@@ -438,6 +442,8 @@ function format_topic(
         is_topic: true,
         stream_id,
         topic_name: topic,
+        topic_display_name: util.get_final_topic_display_name(topic),
+        is_empty_string_topic: topic === "",
         unread_count: topic_unread_count,
         conversation_key: get_topic_key(stream_id, topic),
         topic_url: hash_util.by_stream_topic_url(stream_id, topic),
@@ -766,7 +772,8 @@ function filter_should_hide_stream_row({
         return true;
     }
 
-    const text = (sub.name + " " + topic).toLowerCase();
+    const topic_display_name = util.get_final_topic_display_name(topic);
+    const text = (sub.name + " " + topic_display_name).toLowerCase();
 
     if (!row_in_search_results(search_keyword, text)) {
         return true;

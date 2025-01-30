@@ -336,16 +336,28 @@
     }
 }
 
-#message-content-container:has(.new_message_textarea.over_limit),
-#message-content-container:has(.new_message_textarea.over_limit:focus),
-.edit-content-container:has(.message_edit_content.over_limit),
-.edit-content-container:has(.message_edit_content.over_limit:focus) {
+#message-content-container:has(.new_message_textarea.textarea-over-limit),
+.edit-content-container:has(.message_edit_content.textarea-over-limit) {
     box-shadow: 0 0 0 1pt
         var(--color-message-content-container-border-over-limit);
 }
 
-#message-content-container:has(.new_message_textarea.over_limit.flash),
-.edit-content-container:has(.message_edit_content.over_limit.flash) {
+#message-content-container:has(
+        .new_message_textarea.textarea-approaching-limit
+    ),
+.edit-content-container:has(.message_edit_content.textarea-approaching-limit) {
+    box-shadow: 0 0 0 1pt
+        var(--color-message-content-container-border-approaching-limit);
+}
+
+#message-content-container:has(.new_message_textarea.textarea-over-limit.flash),
+#message-content-container:has(
+        .new_message_textarea.textarea-approaching-limit.flash
+    ),
+.edit-content-container:has(.message_edit_content.textarea-over-limit.flash),
+.edit-content-container:has(
+        .message_edit_content.textarea-approaching-limit.flash
+    ) {
     animation: message-limit-flash 0.5s ease-in-out 3;
 }
 
@@ -406,6 +418,18 @@
     padding-right: var(--composebox-buttons-width);
     background-color: var(--color-compose-message-content-background);
     color: var(--color-text-default);
+
+    &.textarea-over-limit {
+        background-color: var(
+            --color-compose-message-content-background-over-limit
+        );
+    }
+
+    &.textarea-approaching-limit {
+        background-color: var(
+            --color-compose-message-content-background-approaching-limit
+        );
+    }
 }
 
 .surround-formatting-buttons-row {
@@ -464,6 +488,109 @@
     margin: 0 1px;
 }
 
+.compose-scrolling-buttons-container {
+    display: grid;
+    /* The scroller buttons are set to a 48px width that does not scale;
+       the idea being that that's a generous target area, and that it
+       would be better not to consume more space at larger font sizes
+       under narrower screen sizes. */
+    grid-template-columns:
+        [scroller-backward-start buttons-start] 48px [scroller-backward-end] minmax(
+            0,
+            1fr
+        )
+        [scroller-forward-start] 48px [scroller-forward-end buttons-end];
+    grid-template-rows: auto;
+}
+
+.compose-scrollable-buttons {
+    grid-area: buttons;
+    overflow-x: scroll;
+    scrollbar-width: none;
+    scroll-behavior: smooth;
+}
+
+.formatting-control-scroller-button {
+    z-index: 5;
+    display: flex;
+    align-items: center;
+
+    border-radius: 0;
+    border: 0;
+
+    color: var(--color-compose-scroll-icon);
+    background: transparent;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+
+    &:focus {
+        outline: 0;
+    }
+}
+
+.formatting-scroller-backward {
+    grid-area: scroller-backward;
+    justify-content: flex-start;
+    border-radius: 0 0 0 3px;
+    background: var(--color-compose-background-scroll-backward);
+
+    &:hover {
+        background: var(--color-compose-background-scroll-backward-hover);
+    }
+
+    &:active {
+        background: var(--color-compose-background-scroll-backward-active);
+
+        .scroller-backward-icon {
+            /* Subtly shift arrow in scroll direction. */
+            margin-left: -2px;
+        }
+    }
+}
+
+.formatting-scroller-forward {
+    grid-area: scroller-forward;
+    justify-content: flex-end;
+    border-radius: 0 0 3px;
+    background: var(--color-compose-background-scroll-forward);
+
+    &:hover {
+        background: var(--color-compose-background-scroll-forward-hover);
+    }
+
+    &:active {
+        background: var(--color-compose-background-scroll-forward-active);
+
+        .scroller-forward-icon {
+            /* Subtly shift arrow in scroll direction. */
+            margin-right: -2px;
+        }
+    }
+}
+
+.can-scroll-backward .formatting-scroller-backward,
+.can-scroll-forward .formatting-scroller-forward {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Hide the scroller buttons when someone has reached
+   the formatting bar via Tab. Scroller-button state
+   silently updates despite their being hidden, and
+   scroller buttons reappear once focus has moved out
+   of the formatting bar. */
+.compose-scrolling-buttons-container:has(
+        .compose-scrollable-buttons:focus-within
+    ) {
+    .formatting-scroller-backward,
+    .formatting-scroller-forward {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
 .message-limit-indicator:not(:empty) {
     font-size: 12px;
     color: var(--color-limit-indicator);
@@ -478,7 +605,7 @@
     margin-top: auto;
     padding: 3px 3px 3px 0;
 
-    &.over_limit {
+    &.textarea-over-limit {
         color: var(--color-limit-indicator-over-limit);
         font-weight: bold;
     }
@@ -552,11 +679,7 @@
     border: 1px solid;
     display: flex;
     align-items: center;
-    /* Banners should carry at least a minimum
-       legacy font-size of 15px, and a line-height
-       of 18px. 1.2em is 18px at 15px/1em. */
-    font-size: max(15px, var(--base-font-size-px));
-    line-height: max(18px, 1.2em);
+    line-height: 1.2em; /* 18px at 15px/1em. */
 
     .main-view-banner-elements-wrapper {
         display: flex;
@@ -684,13 +807,6 @@
            ::before content where the icon sits. */
         display: flex;
         align-items: center;
-
-        /* Set the font-size for the close button
-           on the ::before element, so that it doesn't
-           impact the em units above. */
-        &::before {
-            font-size: 16px;
-        }
     }
 
     .banner_content + .main-view-banner-close-button {
@@ -969,7 +1085,7 @@ textarea.new_message_textarea {
 
     #stream_message_recipient_topic:placeholder-shown
         + #recipient_box_clear_topic_button {
-        display: none;
+        visibility: hidden;
     }
     /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
     & input {
@@ -1131,6 +1247,7 @@ textarea.new_message_textarea {
 
         .popover-menu-hotkey-hint {
             padding: 2px 5px;
+            display: flex;
         }
     }
 
@@ -1198,6 +1315,9 @@ textarea.new_message_textarea {
         height: 1.2727em;
         /* 30px at 22px/1em */
         width: 1.3636em;
+        /* Adhere to the width of formatting buttons,
+           despite flexbox context. */
+        flex: 0 0 auto;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1234,38 +1354,6 @@ textarea.new_message_textarea {
         top: -0.7px;
     }
 
-    .compose_control_menu {
-        padding: 0 1px;
-        /* 18px at 14px/1em */
-        font-size: 1.2857em;
-        /* Constrain icon font to a perfect
-           box (18px at 14px/1em) */
-        line-height: 1;
-        /* Coordinate with the value of
-           --compose-formatting-buttons-row-height */
-        /* 28px at 18px/1em */
-        height: 1.5556em;
-    }
-
-    .compose_control_menu_wrapper {
-        /* Since `compose_control_menu_wrapper` is the reference for the tippy popover, it is
-           important to set it's display correctly so that tippy knows when to hide / show popover
-           on window resize. */
-        display: none;
-        opacity: 0.7;
-        padding: 0;
-        margin: 0;
-
-        &:hover {
-            opacity: 1;
-        }
-
-        .compose_control_menu {
-            opacity: 1;
-            display: none;
-        }
-    }
-
     .divider {
         margin: 0 5px;
         /* Coordinate with the value of
@@ -1292,111 +1380,15 @@ textarea.new_message_textarea {
         position: relative;
         top: 0.7px;
     }
-
-    .compose_help_button {
-        font-size: 20px;
-        line-height: 17px;
-    }
-
-    .show_popover_buttons {
-        display: flex;
-        align-items: center;
-        padding: 0;
-        margin: 0;
-    }
-
-    .show_popover_buttons_2 {
-        display: flex;
-        align-items: center;
-        padding: 0;
-        margin: 0;
-    }
-
-    &.show_in_popover {
-        display: none;
-    }
 }
 
 .less-dense-mode {
     .compose-control-buttons-container {
-        .compose_control_menu_wrapper {
-            /* The media query below handles the hiding and showing of the
-            vdot menu icon, so that it is hidden when all compose buttons fit
-            in the main row below the compose box. So, this is the same as
-            the media query for .show_popover_buttons. */
-            @media (((width < 1418px) and (width >= $xl_min)) or (width < 1178px)) {
-                display: block;
-
-                .compose_control_menu {
-                    display: flex;
-                }
-            }
-        }
-
-        .show_popover_buttons {
-            /* We use this class for the div containing those compose buttons, which
-            we hide and show in a popover instead when they no longer fit in a
-            single row. The media query below handles the hiding and showing of the
-            buttons from the main row of compose buttons below the compose box. */
-            @media (((width < 1418px) and (width >= $xl_min)) or (width < 1178px)) {
-                display: none;
-            }
-        }
-
-        .show_popover_buttons_2 {
-            /* This is similar to show_popover_buttons, but it's only for those
-            compose buttons that we hide, and show in the popover only when the
-            screen gets extremely narrow. */
-            @media ((width < 596px) or ((width < 939px) and (width >= $md_min))) {
-                display: none;
-            }
-        }
-
-        &.show_in_popover {
-            /* This is to show the popover 2 buttons in the popover, only when
-            they are hidden in the main row below the compose box. */
-            @media ((width < 596px) or ((width < 939px) and (width >= $md_min))) {
-                display: flex;
-            }
-        }
-
         .compose_control_button {
             /* Slightly reduce width so that buttons don't overflow the available
             space at mobile widths */
             @media (width < 400px) {
                 width: 1.28em;
-            }
-        }
-    }
-}
-
-.more-dense-mode {
-    .compose-control-buttons-container {
-        .compose_control_menu_wrapper {
-            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
-                display: block;
-
-                .compose_control_menu {
-                    display: flex;
-                }
-            }
-        }
-
-        .show_popover_buttons {
-            @media (((width < $cb1_min) and (width >= $xl_min)) or ((width < $cb2_min) and (width >= $md_min)) or (width < $cb4_min)) {
-                display: none;
-            }
-        }
-
-        .show_popover_buttons_2 {
-            @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
-                display: none;
-            }
-        }
-
-        &.show_in_popover {
-            @media ((width < $cb5_min) or ((width < $cb3_min) and (width >= $md_min))) {
-                display: flex;
             }
         }
     }
@@ -1631,7 +1623,7 @@ textarea.new_message_textarea {
         flex-direction: column;
 
         .dropdown-list-item-name {
-            line-height: 15px;
+            line-height: 1.2em;
         }
 
         .dropdown-list-item-description {

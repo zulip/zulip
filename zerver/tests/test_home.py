@@ -45,9 +45,9 @@ class HomeTest(ZulipTestCase):
     # Keep this list sorted!!!
     expected_page_params_keys = [
         "apps_page_url",
-        "bot_types",
         "corporate_enabled",
         "development_environment",
+        "embedded_bots_enabled",
         "furthest_read_time",
         "insecure_desktop_app",
         "is_spectator",
@@ -82,7 +82,6 @@ class HomeTest(ZulipTestCase):
         "can_create_streams",
         "can_create_web_public_streams",
         "can_invite_others_to_realm",
-        "can_subscribe_other_users",
         "cross_realm_bots",
         "custom_profile_field_types",
         "custom_profile_fields",
@@ -117,6 +116,7 @@ class HomeTest(ZulipTestCase):
         "onboarding_steps",
         "password_min_guesses",
         "password_min_length",
+        "password_max_length",
         "presences",
         "presence_last_update_id",
         "queue_id",
@@ -125,15 +125,17 @@ class HomeTest(ZulipTestCase):
         "realm_authentication_methods",
         "realm_available_video_chat_providers",
         "realm_avatar_changes_disabled",
-        "realm_bot_creation_policy",
         "realm_bot_domain",
         "realm_bots",
         "realm_can_access_all_users_group",
         "realm_can_add_custom_emoji_group",
+        "realm_can_add_subscribers_group",
+        "realm_can_create_bots_group",
         "realm_can_create_groups",
         "realm_can_create_private_channel_group",
         "realm_can_create_public_channel_group",
         "realm_can_create_web_public_channel_group",
+        "realm_can_create_write_only_bots_group",
         "realm_can_delete_any_message_group",
         "realm_can_delete_own_message_group",
         "realm_can_invite_users_group",
@@ -162,6 +164,7 @@ class HomeTest(ZulipTestCase):
         "realm_emails_restricted_to_domains",
         "realm_embedded_bots",
         "realm_emoji",
+        "realm_empty_topic_display_name",
         "realm_enable_guest_user_indicator",
         "realm_enable_read_receipts",
         "realm_enable_spectator_access",
@@ -173,7 +176,6 @@ class HomeTest(ZulipTestCase):
         "realm_inline_image_preview",
         "realm_inline_url_embed_preview",
         "realm_invite_required",
-        "realm_invite_to_stream_policy",
         "realm_is_zephyr_mirror_realm",
         "realm_jitsi_server_url",
         "realm_linkifiers",
@@ -274,7 +276,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         with (
-            self.assert_database_query_count(53),
+            self.assert_database_query_count(54),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page(stream="Denmark")
@@ -357,9 +359,9 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params["is_spectator"], True)
         expected_keys = [
             "apps_page_url",
-            "bot_types",
             "corporate_enabled",
             "development_environment",
+            "embedded_bots_enabled",
             "furthest_read_time",
             "insecure_desktop_app",
             "is_spectator",
@@ -579,7 +581,7 @@ class HomeTest(ZulipTestCase):
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
         with (
-            self.assert_database_query_count(53),
+            self.assert_database_query_count(54),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page()
@@ -611,7 +613,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(48):
+        with self.assert_database_query_count(49):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.

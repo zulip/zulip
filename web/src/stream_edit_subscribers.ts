@@ -27,6 +27,7 @@ import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as subscriber_api from "./subscriber_api.ts";
 import type {CombinedPillContainer} from "./typeahead_helper.ts";
+import * as user_groups from "./user_groups.ts";
 import * as user_sort from "./user_sort.ts";
 
 const remove_user_id_api_response_schema = z.object({
@@ -52,6 +53,7 @@ function format_member_list_elem(person: User, user_can_remove_subscribers: bool
         can_remove_subscribers: user_can_remove_subscribers,
         for_user_group_members: false,
         img_src: people.small_avatar_url_for_person(person),
+        is_bot: person.is_bot,
     });
 }
 
@@ -118,6 +120,7 @@ export function enable_subscriber_management({
     pill_widget = add_subscribers_pill.create({
         $pill_container,
         get_potential_subscribers,
+        get_user_groups: user_groups.get_all_realm_user_groups,
     });
 
     $pill_container.find(".input").on("input", () => {

@@ -18,11 +18,10 @@ from django.utils.timezone import now as timezone_now
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.message import normalize_body_for_import
-from zerver.lib.mime_types import guess_extension
+from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_extension
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
-from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.models import (
     Attachment,
     DirectMessageGroup,
@@ -470,10 +469,10 @@ def build_stream(
         date_created=date_created,
         invite_only=invite_only,
         id=stream_id,
-        stream_post_policy=stream_post_policy,
         history_public_to_subscribers=history_public_to_subscribers,
     )
     stream_dict = model_to_dict(stream, exclude=["realm"])
+    stream_dict["stream_post_policy"] = stream_post_policy
     stream_dict["realm"] = realm_id
     return stream_dict
 

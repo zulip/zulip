@@ -385,23 +385,85 @@ export function is_white_space_pre(paste_html: string): boolean {
     );
 }
 
-function is_single_image(paste_html: string): boolean {
+function is_from_excel(html_fragment: HTMLBodyElement): boolean {
+    const html_tag = html_fragment.parentElement;
+    if (!html_tag || html_tag.nodeName !== "HTML") {
+        return false;
+    }
+
+    const excel_namespaces = [
+        "urn:schemas-microsoft-com:office:excel",
+        "urn:schemas-microsoft-com:office:office",
+    ];
+
+    const has_excel_metadata = [...html_tag.querySelectorAll("meta")].some(
+        (meta) =>
+            (meta.name === "ProgId" && meta.content === "Excel.Sheet") ||
+            (meta.name === "Generator" && meta.content?.includes("Microsoft Excel")),
+    );
+    if (!has_excel_metadata) {
+        return false;
+    }
+
+    if (!html_tag.querySelector("[class^='xl']")) {
+        return false;
+    }
+
+    const html_outer = html_tag.outerHTML;
+
+    if (!html_outer.includes("<!--StartFragment-->")) {
+        return false;
+    }
+
+    if (!excel_namespaces.some((ns) => html_outer.includes(ns))) {
+        return false;
+    }
+
+    return true;
+}
+
+export function is_single_image(paste_html: string): boolean {
     const html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
         .querySelector("body");
     assert(html_fragment !== null);
     return (
-        html_fragment.childNodes.length === 1 &&
-        html_fragment.firstElementChild !== null &&
-        html_fragment.firstElementChild.nodeName === "IMG"
+        is_from_excel(html_fragment) ||
+        (html_fragment.childNodes.length === 1 &&
+            html_fragment.firstElementChild !== null &&
+            html_fragment.firstElementChild.nodeName === "IMG")
     );
 }
 
-export function paste_handler_converter(paste_html: string): string {
+export function paste_handler_converter(
+    paste_html: string,
+    $textarea?: JQuery<HTMLTextAreaElement>,
+): string {
     const copied_html_fragment = new DOMParser()
         .parseFromString(paste_html, "text/html")
         .querySelector("body");
     assert(copied_html_fragment !== null);
+
+    const para_elements = copied_html_fragment.querySelectorAll("p");
+
+    for (const element of para_elements) {
+        const children = [...element.childNodes];
+        /*
+            The aim behind doing this is to convert the intermediate text nodes
+            between two katex spans into spans.
+
+            This is done because filter() function only processes HTMLElements
+        */
+        for (const child of children) {
+            if (child.nodeType === Node.TEXT_NODE) {
+                const span = document.createElement("span");
+                span.classList.add("zulip-paste-parser-text-node");
+                span.textContent = child.textContent;
+                child.replaceWith(span);
+            }
+        }
+    }
+
     const copied_within_single_element = within_single_element(copied_html_fragment);
     const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE"];
     // If the entire selection copied is within a single HTML element (like an
@@ -472,6 +534,170 @@ export function paste_handler_converter(paste_html: string): string {
             return prefix + content + (node.nextSibling && !content.endsWith("\n") ? "\n" : "");
         },
     });
+
+    /*
+        Below lies the the thought process behind the parsing for math blocks and inline math expressions.
+
+        The general structure of the katex-displays i.e. math blocks is:
+        <p>
+            span.katex-display(start expression 1)
+                span.katex
+                    nested stuff we don't really care about while parsing
+                        annotation(contains the expression)
+            span.katex-display(start expression 2)
+                (same as above)
+        '
+        '
+        '
+        </p>
+        A katex-display is present for every expression that is separated by two or more newlines in md.
+        We also have to adjust our markdown for empty katex-displays generated due to excessive newlines between two
+        expressions.
+
+        The trick in case of the math blocks is approving all the katex displays
+        instead of just the first one.
+        This helps prevent the remaining katex display texts being addressed as
+        text nodes and getting appended to the end unnecessarily.
+        Then in the replacement function only process the parent <p> tag's immediate children only once.
+        See : https://github.com/user-attachments/files/18058052/katex-display-logic.pdf for an example.
+
+        We make use of a set to keep track whether the parent p is already processed in both the cases.
+
+        In case of inline math expressions, the structure is same as math blocks.
+        Instead of katex-displays being the immediate children of p, we have span.katex or
+        textnodes(which are converted into spans before parsing) as the immediate children.
+        Newlines in markdown are translated into <br> instead of empty katex-displays here.
+
+        For more information:
+        https://chat.zulip.org/#narrow/channel/9-issues/topic/Replying.20to.20highlighted.20text.2C.20LaTeX.20is.20not.20preserved.20.2331608/near/1991687
+    */
+
+    const processed_math_block_parents = new Set();
+    const processed_inline_math_block_parents = new Set();
+    turndownService.addRule("katex-math-block", {
+        filter(node) {
+            if (
+                node.classList.contains("katex-display") &&
+                !node.closest(".katex-display > .katex-display")
+            ) {
+                return true;
+            }
+
+            return false;
+        },
+        replacement(content: string, node) {
+            assert(node instanceof HTMLElement);
+            let math_block_markdown = "```math\n";
+            const parent = node.parentElement!;
+            if (processed_math_block_parents.has(parent)) {
+                return "";
+            }
+            processed_math_block_parents.add(parent);
+            let consecutive_empty_display_count = 0;
+            for (const child of parent.children) {
+                const annotation_element = child.querySelector(
+                    '.katex-mathml annotation[encoding="application/x-tex"]',
+                );
+                if (annotation_element?.textContent) {
+                    const katex_source = annotation_element.textContent.trim();
+                    math_block_markdown += katex_source + "\n\n";
+                    consecutive_empty_display_count = 0;
+                } else {
+                    // Handling cases where math block is selected directly without any preceding text.
+                    // The initial katex display doesn't have the annotation when selection is done in this manner.
+                    if (
+                        child.classList.contains("katex-display") &&
+                        child.querySelector("math")?.textContent !== ""
+                    ) {
+                        math_block_markdown += content;
+                        continue;
+                    }
+                    if (consecutive_empty_display_count === 0) {
+                        math_block_markdown += "\n\n\n";
+                    } else {
+                        math_block_markdown += "\n\n";
+                    }
+                    consecutive_empty_display_count += 1;
+                }
+            }
+            // Don't add extra newline at the end
+            math_block_markdown = math_block_markdown.slice(0, -1);
+            return (math_block_markdown += "```");
+        },
+    });
+    const inlineTags = new Set(["em", "strong"]);
+
+    function is_inline_tag(node: HTMLElement): boolean {
+        return node.nodeType === 1 && inlineTags.has(node.tagName.toLowerCase());
+    }
+
+    turndownService.addRule("katex-inline-math", {
+        filter(node) {
+            // Allow the intermediate text blocks, so that they don't get appended to the end.
+            if (node.classList.contains("zulip-paste-parser-text-node") || is_inline_tag(node)) {
+                return true;
+            }
+            if (node.classList.contains("katex") && !node.classList.contains("katex-display")) {
+                // Should explicitly be an inline expression
+                const parent = node.parentElement;
+                if (parent?.classList.contains("katex-display")) {
+                    return false;
+                }
+                return true;
+            }
+
+            return false;
+        },
+        replacement(content, node: Node) {
+            let parsed_inline_expression = "";
+            if (node !== null) {
+                const parent = node.parentElement!;
+                if (processed_inline_math_block_parents.has(parent)) {
+                    return "";
+                }
+                processed_inline_math_block_parents.add(parent);
+                for (const child of parent.children) {
+                    let is_strong_ele = false;
+                    let is_emphasized_ele = false;
+                    if (child.nodeName.toLocaleLowerCase() === "strong") {
+                        is_strong_ele = true;
+                        parsed_inline_expression += "**";
+                    }
+                    if (child.nodeName.toLocaleLowerCase() === "em") {
+                        is_emphasized_ele = true;
+                        parsed_inline_expression += "*";
+                    }
+                    if (child.nodeName === "BR") {
+                        parsed_inline_expression += "\n";
+                        continue;
+                    }
+                    const annotation_element = child.querySelector(
+                        `.katex-mathml annotation[encoding="application/x-tex"]`,
+                    );
+                    if (annotation_element?.textContent) {
+                        const katex_source = annotation_element.textContent;
+                        parsed_inline_expression += `$$${katex_source}$$`;
+                        continue;
+                    }
+                    if (child.classList.contains("katex")) {
+                        parsed_inline_expression += `$$${content}$$`;
+                        continue;
+                    }
+                    // It is a text node that is not between two katex spans
+                    parsed_inline_expression += child.textContent;
+                    if (is_strong_ele) {
+                        parsed_inline_expression += "**";
+                    }
+                    if (is_emphasized_ele) {
+                        parsed_inline_expression += "*";
+                    }
+                    continue;
+                }
+            }
+            return parsed_inline_expression;
+        },
+    });
+
     turndownService.addRule("zulipImagePreview", {
         filter(node) {
             // select image previews in Zulip messages
@@ -528,6 +754,9 @@ export function paste_handler_converter(paste_html: string): string {
     // blocks too.
     // - For Zulip code blocks, we extract the language of the code block (if
     // any) correctly.
+    // - We don't do any conversion to code blocks if the user seems to already
+    // be trying to create a codeblock (i.e. the cursor in the composebox is
+    // following a "`").
     // Everything else works the same.
     turndownService.addRule("fencedCodeBlock", {
         filter(node, options) {
@@ -542,7 +771,7 @@ export function paste_handler_converter(paste_html: string): string {
             );
         },
 
-        replacement(_content, node, options) {
+        replacement(content, node, options) {
             assert(node instanceof HTMLElement);
             const codeElement = [...node.children].find((child) => child.nodeName === "CODE");
             assert(codeElement !== undefined);
@@ -552,6 +781,14 @@ export function paste_handler_converter(paste_html: string): string {
             // We convert single line code inside a code block to inline markdown code,
             // and the code for this is taken from upstream's `code` rule.
             if (!code.includes("\n")) {
+                // If the cursor is just after a backtick, then we don't add extra backticks.
+                if (
+                    $textarea &&
+                    $textarea.caret() !== 0 &&
+                    $textarea.val()?.at($textarea.caret() - 1) === "`"
+                ) {
+                    return content;
+                }
                 if (!code) {
                     return "";
                 }
@@ -592,7 +829,6 @@ export function paste_handler_converter(paste_html: string): string {
             );
         },
     });
-
     let markdown_text = turndownService.turndown(paste_html);
 
     // Checks for escaped ordered list syntax.
@@ -770,7 +1006,7 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
             event.preventDefault();
             event.stopPropagation();
             paste_html = maybe_transform_html(paste_html, paste_text);
-            const text = paste_handler_converter(paste_html);
+            const text = paste_handler_converter(paste_html, $textarea);
             if (trimmed_paste_text !== text) {
                 // Pasting formatted text is a two-step process: First
                 // we paste unformatted text, then overwrite it with

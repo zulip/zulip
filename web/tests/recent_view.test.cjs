@@ -187,7 +187,7 @@ mock_esm("../src/unread", {
     topic_has_any_unread_mentions: () => false,
 });
 mock_esm("../src/resize", {
-    update_recent_view_filters_height: noop,
+    update_recent_view: noop,
 });
 const dropdown_widget = mock_esm("../src/dropdown_widget", {
     DataTypes: {NUMBER: "number", STRING: "string"},
@@ -207,8 +207,10 @@ const rt_data = zrequire("recent_view_data");
 const muted_users = zrequire("muted_users");
 const {set_realm} = zrequire("state_data");
 const sub_store = zrequire("sub_store");
+const util = zrequire("util");
 
-set_realm({});
+const REALM_EMPTY_TOPIC_DISPLAY_NAME = "test general chat";
+set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
 
 for (const stream_id of [stream1, stream2, stream3, stream4, stream6]) {
     sub_store.add_hydrated_sub(stream_id, {
@@ -414,6 +416,8 @@ function generate_topic_data(topic_info_array) {
             stream_id,
             stream_url: "https://www.example.com",
             topic,
+            topic_display_name: util.get_final_topic_display_name(topic),
+            is_empty_string_topic: topic === "",
             conversation_key: get_topic_key(stream_id, topic),
             topic_url: "https://www.example.com",
             unread_count,
@@ -451,9 +455,8 @@ function stub_out_filter_buttons() {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        $(".header").css = noop;
         page_params.development_environment = true;
-
+        page_params.is_node_test = true;
         messages = sample_messages.map((message) => ({...message}));
         f(helpers);
     });
@@ -1162,4 +1165,7 @@ test("test_search", () => {
 
     assert.equal(rt.topic_in_search_results("\\", "general", "\\"), true);
     assert.equal(rt.topic_in_search_results("\\", "general", "\\\\"), true);
+
+    // Test for empty string topic name.
+    assert.equal(rt.topic_in_search_results("general chat", "Scotland", ""), true);
 });

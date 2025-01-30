@@ -16,16 +16,17 @@ import * as add_stream_options_popover from "./add_stream_options_popover.ts";
 import * as alert_words from "./alert_words.ts";
 import {all_messages_data} from "./all_messages_data.ts";
 import * as audible_notifications from "./audible_notifications.ts";
+import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
 import * as click_handlers from "./click_handlers.ts";
+import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
 import * as compose from "./compose.js";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
-import * as compose_popovers from "./compose_popovers.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
@@ -104,7 +105,6 @@ import * as scroll_util from "./scroll_util.ts";
 import * as search from "./search.ts";
 import * as server_events from "./server_events.js";
 import * as settings from "./settings.ts";
-import * as settings_data from "./settings_data.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
@@ -266,8 +266,12 @@ export function initialize_kitchen_sink_stuff() {
 
     // Ignore wheel events in the compose area which weren't already handled above.
     $("#compose").on("wheel", (e) => {
-        // Except for the compose banners, which still need scroll events.
-        if ($(e.target).closest("#compose_banners").length > 0) {
+        // Except for the compose banners or formatting buttons,
+        // which still need scroll events.
+        if (
+            $(e.target).closest("#compose_banners, #message-formatting-controls-container").length >
+            0
+        ) {
             return;
         }
         e.stopPropagation();
@@ -443,7 +447,6 @@ export function initialize_everything(state_data) {
     scheduled_messages.initialize(state_data.scheduled_messages);
     scheduled_messages_ui.initialize();
     popover_menus.initialize();
-    compose_popovers.initialize();
     left_sidebar_navigation_area_popovers.initialize();
     user_topic_popover.initialize();
     topic_popover.initialize();
@@ -453,18 +456,6 @@ export function initialize_everything(state_data) {
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
     people.initialize(current_user.user_id, state_data.people);
     starred_messages.initialize(state_data.starred_messages);
-
-    let date_joined;
-    if (!page_params.is_spectator) {
-        const user = people.get_by_user_id(current_user.user_id);
-        date_joined = user.date_joined;
-    } else {
-        // Spectators don't have an account, so we just prevent their
-        // date_joined is now.
-        date_joined = new Date();
-    }
-
-    settings_data.initialize(date_joined);
 
     // The emoji module must be initialized before the right sidebar
     // module, so that we can display custom emoji in statuses.
@@ -525,6 +516,7 @@ export function initialize_everything(state_data) {
     emojisets.initialize();
     scroll_bar.initialize();
     message_viewport.initialize();
+    banners.initialize();
     navbar_alerts.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
@@ -568,6 +560,7 @@ export function initialize_everything(state_data) {
     sidebar_ui.initialize();
     user_profile.initialize();
     stream_popover.initialize();
+    color_picker_popover.initialize();
     add_stream_options_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
@@ -707,6 +700,7 @@ $(() => {
                 // Set this to true when stream typing notifications are implemented.
                 stream_typing_notifications: false,
                 user_settings_object: true,
+                empty_topic_name: true,
             }),
             client_gravatar: false,
         };

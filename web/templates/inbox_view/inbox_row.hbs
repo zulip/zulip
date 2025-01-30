@@ -12,7 +12,7 @@
                                 {{#if is_bot}}
                                 <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
                                 {{else if is_group}}
-                                <span class="zulip-icon zulip-icon-triple-users" aria-hidden="true"></span>
+                                <span class="conversation-partners-icon zulip-icon zulip-icon-dm-groups-3" aria-hidden="true"></span>
                                 {{else}}
                                 <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle" data-presence-indicator-user-id="{{user_ids_string}}"></span>
                                 {{/if}}
@@ -28,7 +28,7 @@
                         {{!-- Invisible user circle element for alignment of topic text with DM user name --}}
                         <span class="user-circle-active user-circle invisible"></span>
                         <div class="inbox-topic-name">
-                            <a tabindex="-1" href="{{topic_url}}">{{topic_name}}</a>
+                            <a tabindex="-1" href="{{topic_url}}" {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{topic_display_name}}</a>
                         </div>
                         <span class="unread_mention_info tippy-zulip-tooltip
                           {{#unless mention_in_unread}}hidden{{/unless}}"

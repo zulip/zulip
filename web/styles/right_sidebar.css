@@ -1,5 +1,7 @@
-/* Width of emoji used by user to display status. */
-$user_status_emoji_width: 24px;
+:root {
+    /* Width of emoji used by user to display status. */
+    --user-status-emoji-width: 24px;
+}
 
 .right-sidebar {
     & a:hover {
@@ -182,7 +184,8 @@ $user_status_emoji_width: 24px;
         font-style: italic;
         color: var(--color-text-empty-list-message);
         /* Overwrite default empty list font size, to look better under the subheaders. */
-        font-size: 14px;
+        /* 14px at 16px/1em */
+        font-size: 0.875em;
         /* Override .empty-list-message !important styling */
         padding: 0 !important;
         margin-left: calc(
@@ -262,6 +265,10 @@ $user_status_emoji_width: 24px;
     text-overflow: ellipsis;
     white-space: nowrap;
     margin-right: 2px;
+}
+
+.buddy-list-heading-user-count-with-parens {
+    opacity: 0.75;
 }
 
 .buddy-list-subsection-header.no-display {
@@ -357,7 +364,7 @@ $user_status_emoji_width: 24px;
 
         .user-name {
             display: inline-block;
-            max-width: calc(100% - $user_status_emoji_width);
+            max-width: calc(100% - var(--user-status-emoji-width));
             overflow-x: hidden;
             text-overflow: ellipsis;
         }
@@ -483,27 +490,8 @@ $user_status_emoji_width: 24px;
             box-sizing: border-box;
         }
 
-        #clear_search_people_button {
-            grid-area: 1 / 2 / 2 / 3;
-            padding: 0;
-            background: none;
-            color: var(--color-text-clear-search-button);
-            display: grid;
-
-            &:hover {
-                color: var(--color-text-clear-search-button-hover);
-            }
-
-            &:focus,
-            &:focus-visible,
-            &:active {
-                box-shadow: none;
-                outline: none;
-            }
-
-            .zulip-icon-close {
-                align-self: center;
-            }
+        .user-list-filter:placeholder-shown + #clear_search_people_button {
+            visibility: hidden;
         }
     }
 

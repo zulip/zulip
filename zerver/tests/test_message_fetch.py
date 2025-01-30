@@ -14,7 +14,7 @@ from typing_extensions import override
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
-from zerver.actions.message_edit import do_update_message
+from zerver.actions.message_edit import build_message_edit_request, do_update_message
 from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.uploads import do_claim_attachments
@@ -334,6 +334,18 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
 
+    def test_negated_is_dm_with_dm_operator(self) -> None:
+        expected_error_message = (
+            "Invalid narrow operator: No message can be both a channel message and direct message"
+        )
+        is_term = NarrowParameter(operator="is", operand="dm", negated=True)
+        self._build_query(is_term)
+
+        topic_term = NarrowParameter(operator="dm", operand=self.othello_email)
+        with self.assertRaises(BadNarrowOperatorError) as error:
+            self._build_query(topic_term)
+        self.assertEqual(expected_error_message, str(error.exception))
+
     def test_combined_channel_dm(self) -> None:
         expected_error_message = (
             "Invalid narrow operator: No message can be both a channel message and direct message"
@@ -350,6 +362,20 @@ class NarrowBuilderTest(ZulipTestCase):
         with self.assertRaises(BadNarrowOperatorError) as error:
             self._build_query(channels_term)
         self.assertEqual(expected_error_message, str(error.exception))
+
+    def test_combined_channel_with_negated_is_dm(self) -> None:
+        dm_term = NarrowParameter(operator="is", operand="dm", negated=True)
+        self._build_query(dm_term)
+
+        channel_term = NarrowParameter(operator="channels", operand="public")
+        self._build_query(channel_term)
+
+    def test_combined_negated_channel_with_is_dm(self) -> None:
+        dm_term = NarrowParameter(operator="is", operand="dm")
+        self._build_query(dm_term)
+
+        channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
+        self._build_query(channel_term)
 
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
@@ -4087,6 +4113,7 @@ class GetOldMessagesTest(ZulipTestCase):
             wide_dict,
             apply_markdown=True,
             client_gravatar=False,
+            allow_empty_topic_name=True,
             can_access_sender=True,
             realm_host=get_realm("zulip").host,
             is_incoming_1_to_1=False,
@@ -4987,15 +5014,20 @@ class MessageHasKeywordsTest(ZulipTestCase):
         rendering_result = render_message_markdown(msg, content)
         mention_backend = MentionBackend(realm_id)
         mention_data = MentionData(mention_backend, content, msg.sender)
+        message_edit_request = build_message_edit_request(
+            message=msg,
+            user_profile=hamlet,
+            propagate_mode="change_one",
+            stream_id=None,
+            topic_name=None,
+            content=content,
+        )
         do_update_message(
             hamlet,
             msg,
-            None,
-            None,
-            "change_one",
+            message_edit_request,
             False,
             False,
-            content,
             rendering_result,
             set(),
             mention_data=mention_data,

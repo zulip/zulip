@@ -183,9 +183,11 @@ export function launch(conf: DialogWidgetConfig): string {
     const $dialog = $(html);
     $("body").append($dialog);
 
-    if (conf.post_render !== undefined) {
-        conf.post_render(modal_unique_id);
-    }
+    setTimeout(() => {
+        if (conf.post_render !== undefined) {
+            conf.post_render(modal_unique_id);
+        }
+    }, 0);
 
     const $submit_button = $dialog.find(".dialog_submit_button");
 
@@ -256,13 +258,19 @@ export function submit_api_request(
         success_continuation,
         error_continuation,
     }: RequestOpts = {},
+    close_on_success = true,
 ): void {
     show_dialog_spinner();
     void request_method({
         url,
         data,
         success(response_data, textStatus, jqXHR) {
-            close();
+            if (close_on_success) {
+                close();
+            } else {
+                hide_dialog_spinner();
+            }
+
             if (success_continuation !== undefined) {
                 success_continuation(response_data, textStatus, jqXHR);
             }

@@ -22,6 +22,12 @@ import zerver.models.realms
 import zerver.models.streams
 
 
+class LegacyBotCreationPolicyEnum(IntEnum):
+    EVERYONE = 1
+    LIMIT_GENERIC_BOTS = 2
+    ADMINS_ONLY = 3
+
+
 class LegacyCommonMessagePolicyEnum(IntEnum):
     MEMBERS_ONLY = 1
     ADMINS_ONLY = 2
@@ -831,7 +837,7 @@ class Migration(migrations.Migration):
                 (
                     "bot_creation_policy",
                     models.PositiveSmallIntegerField(
-                        default=zerver.models.realms.BotCreationPolicyEnum["EVERYONE"]
+                        default=LegacyBotCreationPolicyEnum["EVERYONE"]
                     ),
                 ),
                 ("custom_upload_quota_gb", models.IntegerField(null=True)),
@@ -924,7 +930,7 @@ class Migration(migrations.Migration):
                         max_length=20,
                     ),
                 ),
-                ("user_list_style", models.PositiveSmallIntegerField(default=2)),
+                ("user_list_style", models.PositiveSmallIntegerField(default=3)),
                 (
                     "web_stream_unreads_count_display_policy",
                     models.PositiveSmallIntegerField(default=2),
@@ -1654,7 +1660,7 @@ class Migration(migrations.Migration):
                         max_length=20,
                     ),
                 ),
-                ("user_list_style", models.PositiveSmallIntegerField(default=2)),
+                ("user_list_style", models.PositiveSmallIntegerField(default=3)),
                 (
                     "web_stream_unreads_count_display_policy",
                     models.PositiveSmallIntegerField(default=2),

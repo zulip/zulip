@@ -830,7 +830,7 @@ html {
 
 .confirm-email-change-page .white-box {
     max-width: 500px;
-    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .anonymous_access_form {
@@ -1165,6 +1165,25 @@ button#register_auth_button_gitlab {
 
     .org-url {
         margin-bottom: 5px !important;
+    }
+}
+
+#billing-page-details {
+    .billing-section-title {
+        display: block;
+        margin: 2px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: hsl(0deg 0% 27%);
+        line-height: 20px;
+        text-align: left;
+    }
+
+    .billing-section-content {
+        font-weight: normal;
+        margin: 2px;
+        text-align: left;
+        overflow-wrap: break-word;
     }
 }
 

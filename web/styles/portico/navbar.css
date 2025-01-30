@@ -384,8 +384,6 @@ details summary::-webkit-details-marker {
         "lnum" on;
     color: hsl(0deg 0% 100% / 80%);
 
-    transition: none 0.2;
-    transition-property: backdrop-filter, background, bottom, height; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
     overscroll-behavior: contain;
 }
 

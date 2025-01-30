@@ -286,56 +286,6 @@ p.n-margin {
     box-shadow: inset 0 -1px 0 var(--color-navbar-bottom-border);
 }
 
-#navbar_alerts_wrapper {
-    font-size: 1rem;
-    position: relative;
-
-    .alert {
-        /* Since alerts are only rendered into the DOM when they are first
-           displayed, display: block is the right default for this setting. */
-        display: block;
-        margin: 0;
-        padding-top: 12px;
-        padding-bottom: 12px;
-
-        border: none;
-        border-radius: 0;
-
-        text-align: center;
-        text-shadow: none;
-        color: hsl(0deg 0% 100%);
-
-        &.alert-info {
-            background-color: hsl(170deg 46% 54%);
-
-            &.red {
-                background-color: hsl(0deg 46% 54%);
-            }
-        }
-
-        .close {
-            line-height: 24px;
-            position: absolute;
-            right: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .alert-link {
-            color: hsl(169deg 100% 88%);
-            font-weight: 600;
-        }
-
-        &.red .alert-link {
-            color: hsl(0deg 100% 88%);
-        }
-
-        .buttons .alert-link {
-            margin: 0 5px;
-        }
-    }
-}
-
 .app {
     min-width: 100%;
     min-height: 100%;
@@ -689,11 +639,6 @@ strong {
     white-space: pre-wrap;
 }
 
-.sp-input {
-    width: calc(100% - 14px);
-    box-sizing: initial !important;
-}
-
 .logout {
     white-space: nowrap;
 }
@@ -888,6 +833,14 @@ div.focused-message-list {
     display: block;
 }
 
+/* In conversation view, always show the recipient bar action buttons */
+div.focused-message-list.is-conversation-view .recipient_row {
+    & .recipient_bar_controls {
+        opacity: 1;
+        transition: opacity 0.15s ease-in;
+    }
+}
+
 .rtl {
     direction: rtl;
 }
@@ -895,6 +848,7 @@ div.focused-message-list {
 .topic_edit {
     display: none;
     line-height: 22px;
+    visibility: visible;
 
     .alert {
         display: inline-block;
@@ -934,32 +888,6 @@ div.focused-message-list {
 
 .inline_topic_edit:focus {
     outline: none;
-}
-
-.topic_move_breadcrumb_messages {
-    margin: 0 5px 5px 0;
-    align-self: center;
-    width: 100%;
-    white-space: nowrap;
-
-    & label.checkbox {
-        /* Place the checkboxes on their own lines. */
-        display: block;
-
-        & input {
-            margin: 0;
-            vertical-align: baseline;
-        }
-
-        & + label.checkbox {
-            margin-top: 10px;
-        }
-    }
-
-    & label {
-        display: inline-block;
-        margin-right: 10px;
-    }
 }
 
 .message_length_controller {
@@ -1045,6 +973,10 @@ div.focused-message-list {
     );
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.top-navbar-container-allow-description-extension {
+    overflow: visible;
 }
 
 #streamlist-toggle {
@@ -2110,4 +2042,8 @@ body:not(.hide-left-sidebar) {
         background-color: var(--color-background-image-loader);
         border: 1px solid var(--color-border-personal-menu-avatar);
     }
+}
+
+.empty-topic-display {
+    font-style: italic;
 }

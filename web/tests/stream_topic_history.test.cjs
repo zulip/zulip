@@ -331,7 +331,7 @@ test("server_history_end_to_end", () => {
 
     channel.get = (opts) => {
         assert.equal(opts.url, "/json/users/me/99/topics");
-        assert.deepEqual(opts.data, {});
+        assert.deepEqual(opts.data, {allow_empty_topic_name: true});
         assert.ok(stream_topic_history.is_request_pending_for(stream_id));
         get_success_callback = opts.success;
         get_error_callback = opts.error;
@@ -426,6 +426,7 @@ test("ask_server_for_latest_topic_data", () => {
             narrow: '[{"operator":"stream","operand":1080},{"operator":"topic","operand":"Topic1"}]',
             num_after: 0,
             num_before: 1,
+            allow_empty_topic_name: true,
         });
         success_callback = opts.success;
     };

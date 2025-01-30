@@ -6,7 +6,6 @@ import render_stream_creation_confirmation_banner from "../templates/modal_banne
 import render_stream_info_banner from "../templates/modal_banner/stream_info_banner.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
-import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -41,7 +40,7 @@ import * as stream_list from "./stream_list.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
-import type {StreamPermissionGroupSetting, StreamPostPolicy} from "./stream_types.ts";
+import type {StreamPermissionGroupSetting} from "./stream_types.ts";
 import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -136,10 +135,12 @@ export function update_stream_name(sub: StreamSubscription, new_name: string): v
     }
 
     // Update navbar if needed
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 
     // Update the create stream error if needed
-    stream_create.maybe_update_error_message();
+    if (overlays.streams_open()) {
+        stream_create.maybe_update_error_message();
+    }
 }
 
 export function update_stream_description(
@@ -159,7 +160,7 @@ export function update_stream_description(
     stream_edit.update_stream_description(sub);
 
     // Update navbar if needed
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 }
 
 export function update_stream_privacy(
@@ -194,15 +195,7 @@ export function update_stream_privacy(
     }
 
     // Update navbar if needed
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
-}
-
-export function update_stream_post_policy(
-    sub: StreamSubscription,
-    new_value: StreamPostPolicy,
-): void {
-    stream_data.update_stream_post_policy(sub, new_value);
-    stream_ui_updates.update_setting_element(sub, "stream_post_policy");
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 }
 
 export function update_message_retention_setting(
@@ -235,7 +228,7 @@ export function update_is_default_stream(): void {
 export function update_subscribers_ui(sub: StreamSubscription): void {
     update_left_panel_row(sub);
     stream_edit_subscribers.update_subscribers_list(sub);
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 }
 
 export function add_sub_to_table(sub: StreamSubscription): void {
@@ -260,13 +253,6 @@ export function add_sub_to_table(sub: StreamSubscription): void {
     } else {
         scroll_util.get_content_element($(".streams-list")).append($new_row);
     }
-
-    const settings_html = render_stream_settings({
-        sub: stream_settings_data.get_sub_for_settings(sub),
-    });
-    scroll_util
-        .get_content_element($("#channels_overlay_container .settings"))
-        .append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
         // This `stream_create.get_name()` check tells us whether the
@@ -733,7 +719,6 @@ function setup_page(callback: () => void): void {
             is_owner: current_user.is_owner,
             stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
             stream_privacy_policy,
-            stream_post_policy_values: settings_config.stream_post_policy_values,
             check_default_stream: false,
             zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
             org_level_message_retention_setting:
@@ -743,6 +728,7 @@ function setup_page(callback: () => void): void {
                 realm.realm_org_type === settings_config.all_org_type_values.business.code,
             disable_message_retention_setting:
                 !realm.zulip_plan_is_not_limited || !current_user.is_owner,
+            group_setting_labels: settings_config.all_group_setting_labels.stream,
         };
 
         const rendered = render_stream_settings_overlay(template_data);
@@ -890,7 +876,6 @@ export function launch(
             $overlay: $("#subscription_overlay"),
             on_close() {
                 browser_history.exit_overlay();
-                $(".colorpicker").spectrum("destroy");
             },
         });
         change_state(section, left_side_tab, right_side_tab);

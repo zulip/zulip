@@ -198,6 +198,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     if (!narrow_state.narrowed_by_reply()) {
         compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
     }
+    compose_ui.maybe_show_scrolling_formatting_buttons("#message-formatting-controls-container");
 };
 
 export function rewire_complete_starting_tasks(value: typeof complete_starting_tasks): void {

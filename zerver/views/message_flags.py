@@ -10,11 +10,16 @@ from zerver.actions.message_flags import (
     do_update_message_flags,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.narrow import NarrowParameter, fetch_messages, parse_anchor_value
+from zerver.lib.narrow import (
+    NarrowParameter,
+    fetch_messages,
+    parse_anchor_value,
+    update_narrow_terms_containing_empty_topic_fallback_name,
+)
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
-from zerver.lib.topic import user_message_exists_for_topic
+from zerver.lib.topic import maybe_rename_general_chat_to_empty_topic, user_message_exists_for_topic
 from zerver.lib.typed_endpoint import (
     ApiParamConfig,
     typed_endpoint,
@@ -91,6 +96,8 @@ def update_message_flags_for_narrow(
     )
     num_after = min(num_after, MAX_MESSAGES_PER_UPDATE - num_before)
 
+    narrow = update_narrow_terms_containing_empty_topic_fallback_name(narrow)
+
     query_info = fetch_messages(
         narrow=narrow,
         user_profile=user_profile,
@@ -160,6 +167,7 @@ def mark_topic_as_read(
     assert stream.recipient_id is not None
 
     if topic_name:
+        topic_name = maybe_rename_general_chat_to_empty_topic(topic_name)
         topic_exists = user_message_exists_for_topic(
             user_profile=user_profile,
             recipient_id=stream.recipient_id,

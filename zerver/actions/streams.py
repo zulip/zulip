@@ -21,7 +21,7 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.mention import silent_mention_syntax_for_user
+from zerver.lib.mention import silent_mention_syntax_for_user, silent_mention_syntax_for_user_group
 from zerver.lib.message import get_last_message_id
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.stream_color import pick_colors
@@ -42,8 +42,10 @@ from zerver.lib.streams import (
     get_group_setting_value_dict_for_streams,
     get_occupied_streams,
     get_stream_permission_policy_name,
+    get_stream_post_policy_value_based_on_group_setting,
     render_stream_description,
     send_stream_creation_event,
+    send_stream_deletion_event,
     stream_to_dict,
 )
 from zerver.lib.subscription_info import get_subscribers_query
@@ -71,7 +73,7 @@ from zerver.models import (
     UserGroup,
     UserProfile,
 )
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
@@ -122,9 +124,7 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
     for group in default_stream_groups_for_stream:
         do_remove_streams_from_default_stream_group(stream.realm, group, [stream])
 
-    stream_dict = stream_to_dict(stream)
-    event = dict(type="stream", op="delete", streams=[stream_dict])
-    send_event_on_commit(stream.realm, event, affected_user_ids)
+    send_stream_deletion_event(stream.realm, affected_user_ids, [stream])
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -391,7 +391,9 @@ def send_subscription_add_events(
                 subscribers=stream_subscribers,
                 # Fields from Stream.API_FIELDS
                 is_archived=stream_dict["is_archived"],
+                can_add_subscribers_group=stream_dict["can_add_subscribers_group"],
                 can_administer_channel_group=stream_dict["can_administer_channel_group"],
+                can_send_message_group=stream_dict["can_send_message_group"],
                 can_remove_subscribers_group=stream_dict["can_remove_subscribers_group"],
                 creator_id=stream_dict["creator_id"],
                 date_created=stream_dict["date_created"],
@@ -881,9 +883,7 @@ def send_subscription_remove_events(
             ]
 
             if inaccessible_streams:
-                payload = [stream_to_dict(stream) for stream in inaccessible_streams]
-                event = dict(type="stream", op="delete", streams=payload)
-                send_event_on_commit(realm, event, [user_profile.id])
+                send_stream_deletion_event(realm, [user_profile.id], inaccessible_streams)
 
     send_peer_remove_events(
         realm=realm,
@@ -1298,80 +1298,59 @@ def do_change_stream_permission(
     )
 
 
-def send_change_stream_post_policy_notification(
-    stream: Stream, *, old_post_policy: int, new_post_policy: int, acting_user: UserProfile
+def get_users_string_with_permission(setting_value: int | AnonymousSettingGroupDict) -> str:
+    if isinstance(setting_value, int):
+        setting_group = NamedUserGroup.objects.get(id=setting_value)
+        return silent_mention_syntax_for_user_group(setting_group)
+
+    # Sorting by ID generates a deterministic order with system groups
+    # first, which seems broadly reasonable.
+    groups_with_permission = NamedUserGroup.objects.filter(
+        id__in=setting_value.direct_subgroups
+    ).order_by("id")
+    group_name_syntax_list = [
+        silent_mention_syntax_for_user_group(group) for group in groups_with_permission
+    ]
+
+    # Sorting by ID generates a deterministic order with older users
+    # first, which seems broadly reasonable.
+    users_with_permission = UserProfile.objects.filter(
+        id__in=setting_value.direct_members
+    ).order_by("id")
+    user_name_syntax_list = [silent_mention_syntax_for_user(user) for user in users_with_permission]
+
+    return ", ".join(group_name_syntax_list + user_name_syntax_list)
+
+
+def send_stream_posting_permission_update_notification(
+    stream: Stream,
+    *,
+    old_setting_value: int | AnonymousSettingGroupDict,
+    new_setting_value: int | AnonymousSettingGroupDict,
+    acting_user: UserProfile,
 ) -> None:
     sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
     user_mention = silent_mention_syntax_for_user(acting_user)
+
+    old_setting_description = get_users_string_with_permission(old_setting_value)
+    new_setting_description = get_users_string_with_permission(new_setting_value)
 
     with override_language(stream.realm.default_language):
         notification_string = _(
             "{user} changed the [posting permissions]({help_link}) "
             "for this channel:\n\n"
-            "* **Old permissions**: {old_policy}.\n"
-            "* **New permissions**: {new_policy}.\n"
+            "* **Old**: {old_setting_description}\n"
+            "* **New**: {new_setting_description}\n"
         )
         notification_string = notification_string.format(
             user=user_mention,
             help_link="/help/channel-posting-policy",
-            old_policy=Stream.POST_POLICIES[old_post_policy],
-            new_policy=Stream.POST_POLICIES[new_post_policy],
+            old_setting_description=old_setting_description,
+            new_setting_description=new_setting_description,
         )
         internal_send_stream_message(
             sender, stream, str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME), notification_string
         )
-
-
-@transaction.atomic(durable=True)
-def do_change_stream_post_policy(
-    stream: Stream, stream_post_policy: int, *, acting_user: UserProfile
-) -> None:
-    old_post_policy = stream.stream_post_policy
-    stream.stream_post_policy = stream_post_policy
-    stream.save(update_fields=["stream_post_policy"])
-    RealmAuditLog.objects.create(
-        realm=stream.realm,
-        acting_user=acting_user,
-        modified_stream=stream,
-        event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
-        event_time=timezone_now(),
-        extra_data={
-            RealmAuditLog.OLD_VALUE: old_post_policy,
-            RealmAuditLog.NEW_VALUE: stream_post_policy,
-            "property": "stream_post_policy",
-        },
-    )
-
-    event = dict(
-        op="update",
-        type="stream",
-        property="stream_post_policy",
-        value=stream_post_policy,
-        stream_id=stream.id,
-        name=stream.name,
-    )
-    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
-
-    # Backwards-compatibility code: We removed the
-    # is_announcement_only property in early 2020, but we send a
-    # duplicate event for legacy mobile clients that might want the
-    # data.
-    event = dict(
-        op="update",
-        type="stream",
-        property="is_announcement_only",
-        value=stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
-        stream_id=stream.id,
-        name=stream.name,
-    )
-    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
-
-    send_change_stream_post_policy_notification(
-        stream,
-        old_post_policy=old_post_policy,
-        new_post_policy=stream_post_policy,
-        acting_user=acting_user,
-    )
 
 
 @transaction.atomic(durable=True)
@@ -1606,14 +1585,6 @@ def do_change_stream_group_based_setting(
         old_setting_api_value = get_group_setting_value_for_api(old_user_group)
     new_setting_api_value = get_group_setting_value_for_api(user_group)
 
-    if not hasattr(old_user_group, "named_user_group") and hasattr(user_group, "named_user_group"):
-        # We delete the UserGroup which the setting was set to
-        # previously if it does not have any linked NamedUserGroup
-        # object, as it is not used anywhere else. A new UserGroup
-        # object would be created if the setting is later set to
-        # a combination of users and groups.
-        old_user_group.delete()
-
     RealmAuditLog.objects.create(
         realm=stream.realm,
         acting_user=acting_user,
@@ -1639,3 +1610,48 @@ def do_change_stream_group_based_setting(
         name=stream.name,
     )
     send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+
+    if setting_name == "can_send_message_group":
+        old_stream_post_policy = get_stream_post_policy_value_based_on_group_setting(old_user_group)
+        stream_post_policy = get_stream_post_policy_value_based_on_group_setting(user_group)
+
+        if old_stream_post_policy != stream_post_policy:
+            event = dict(
+                op="update",
+                type="stream",
+                property="stream_post_policy",
+                value=stream_post_policy,
+                stream_id=stream.id,
+                name=stream.name,
+            )
+            send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+
+            # Backwards-compatibility code: We removed the
+            # is_announcement_only property in early 2020, but we send a
+            # duplicate event for legacy mobile clients that might want the
+            # data.
+            event = dict(
+                op="update",
+                type="stream",
+                property="is_announcement_only",
+                value=stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
+                stream_id=stream.id,
+                name=stream.name,
+            )
+            send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+
+        assert acting_user is not None
+        send_stream_posting_permission_update_notification(
+            stream,
+            old_setting_value=old_setting_api_value,
+            new_setting_value=new_setting_api_value,
+            acting_user=acting_user,
+        )
+
+    if not hasattr(old_user_group, "named_user_group") and hasattr(user_group, "named_user_group"):
+        # We delete the UserGroup which the setting was set to
+        # previously if it does not have any linked NamedUserGroup
+        # object, as it is not used anywhere else. A new UserGroup
+        # object would be created if the setting is later set to
+        # a combination of users and groups.
+        old_user_group.delete()

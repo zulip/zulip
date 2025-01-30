@@ -173,7 +173,7 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
 
         const raw_operand = hash[i + 1];
 
-        if (!raw_operand) {
+        if (raw_operand === undefined) {
             return undefined;
         }
 
@@ -181,6 +181,12 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
         if (operator.startsWith("-")) {
             negated = true;
             operator = operator.slice(1);
+        }
+
+        // We allow the empty string as a topic name.
+        // Any other operand being empty string is invalid.
+        if (operator !== "topic" && raw_operand === "") {
+            return undefined;
         }
 
         const operand = decode_operand(operator, raw_operand);
@@ -269,7 +275,7 @@ export function validate_group_settings_hash(hash: string): string {
 
         const group_name = hash_components[2];
         let right_side_tab = hash_components[3];
-        const valid_right_side_tab_values = new Set(["general", "members"]);
+        const valid_right_side_tab_values = new Set(["general", "members", "permissions"]);
         if (
             group.name === group_name &&
             right_side_tab !== undefined &&

@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 import * as blueslip from "./blueslip.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
+import {media_breakpoints_num} from "./css_variables.ts";
 import * as message_viewport from "./message_viewport.ts";
 
 function get_bottom_whitespace_height(): number {
@@ -16,14 +17,15 @@ function get_new_heights(): {
     buddy_list_wrapper_max_height: number;
 } {
     const viewport_height = message_viewport.height();
+    // Add some gap for bottom element to be properly visible.
+    const GAP = 15;
 
     let stream_filters_max_height =
         viewport_height -
         Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
-        Number.parseInt($("#left-sidebar-navigation-area").css("marginTop"), 10) -
-        Number.parseInt($("#left-sidebar-navigation-area").css("marginBottom"), 10) -
-        ($("#left-sidebar-navigation-list").outerHeight(true) ?? 0) -
-        ($("#direct-messages-section-header").outerHeight(true) ?? 0);
+        ($("#left-sidebar-navigation-area").outerHeight(true) ?? 0) -
+        ($("#direct-messages-section-header").outerHeight(true) ?? 0) -
+        GAP;
 
     // Don't let us crush the stream sidebar completely out of view
     stream_filters_max_height = Math.max(80, stream_filters_max_height);
@@ -103,14 +105,10 @@ export function reset_compose_message_max_height(bottom_whitespace_height?: numb
     // We ensure that the last message is not overlapped by compose box.
     $("textarea#compose-textarea").css(
         "max-height",
-        // Because <textarea> max-height includes padding, we subtract
-        // 10 for the padding.
-        bottom_whitespace_height - compose_non_textarea_height - 10,
+        bottom_whitespace_height - compose_non_textarea_height,
     );
     $("#preview_message_area").css(
         "max-height",
-        // Because <div> max-height doesn't include padding, we do not
-        // subtract anything.
         bottom_whitespace_height - compose_non_textarea_height,
     );
     $("#scroll-to-bottom-button-container").css("bottom", compose_height);
@@ -182,9 +180,24 @@ export function resize_sidebars(): void {
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 }
 
-export function update_recent_view_filters_height(): void {
-    const recent_view_filters_height = $("#recent_view_filter_buttons").outerHeight(true) ?? 0;
+export function update_recent_view(): void {
+    const $recent_view_filter_container = $("#recent_view_filter_buttons");
+    const recent_view_filters_height = $recent_view_filter_container.outerHeight(true) ?? 0;
     $("html").css("--recent-topics-filters-height", `${recent_view_filters_height}px`);
+
+    // Update max avatars to prevent participant avatars from overflowing.
+    // These numbers are just based on speculation.
+    const recent_view_filters_width = $recent_view_filter_container.outerWidth(true) ?? 0;
+    if (!recent_view_filters_width) {
+        return;
+    }
+    const num_avatars_narrow_window = 2;
+    const num_avatars_max = 4;
+    if (recent_view_filters_width < media_breakpoints_num.md) {
+        $("html").css("--recent-view-max-avatars", num_avatars_narrow_window);
+    } else {
+        $("html").css("--recent-view-max-avatars", num_avatars_max);
+    }
 }
 
 function resize_navbar_alerts(): void {

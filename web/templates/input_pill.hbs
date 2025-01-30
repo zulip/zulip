@@ -13,15 +13,24 @@
                 <i class="zulip-icon zulip-icon-hashtag stream-privacy-type-icon" aria-hidden="true"></i>
                 {{~/if~}}
             {{/if}}
+            {{#if is_empty_string_topic}}
+            {{sign}}topic: <span class="empty-topic-display">{{topic_display_name}}</span>
+            {{else}}
             {{ display_value }}
+            {{/if}}
         </span>
         {{~#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
         {{~#if deactivated}}&nbsp;({{t 'deactivated'}}){{~/if~}}
         {{~#if has_status~}}
             {{~> status_emoji status_emoji_info~}}
         {{~/if~}}
+        {{~#if is_bot~}}
+            <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+        {{~/if~}}
     </span>
+    {{#unless disabled}}
     <div class="exit">
         <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>
     </div>
+    {{/unless}}
 </div>

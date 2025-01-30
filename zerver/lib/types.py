@@ -2,7 +2,10 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import IntEnum
-from typing import Any, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
+
+if TYPE_CHECKING:
+    from zerver.models import Stream
 
 from django_stubs_ext import StrPromise
 from typing_extensions import NotRequired, TypedDict
@@ -150,7 +153,9 @@ class RawStreamDict(TypedDict):
     are needed to encode the stream for the API.
     """
 
+    can_add_subscribers_group_id: int
     can_administer_channel_group_id: int
+    can_send_message_group_id: int
     can_remove_subscribers_group_id: int
     creator_id: int | None
     date_created: datetime
@@ -193,7 +198,9 @@ class SubscriptionStreamDict(TypedDict):
     """
 
     audible_notifications: bool | None
+    can_add_subscribers_group: int | AnonymousSettingGroupDict
     can_administer_channel_group: int | AnonymousSettingGroupDict
+    can_send_message_group: int | AnonymousSettingGroupDict
     can_remove_subscribers_group: int | AnonymousSettingGroupDict
     color: str
     creator_id: int | None
@@ -224,7 +231,9 @@ class SubscriptionStreamDict(TypedDict):
 
 class NeverSubscribedStreamDict(TypedDict):
     is_archived: bool
+    can_add_subscribers_group: int | AnonymousSettingGroupDict
     can_administer_channel_group: int | AnonymousSettingGroupDict
+    can_send_message_group: int | AnonymousSettingGroupDict
     can_remove_subscribers_group: int | AnonymousSettingGroupDict
     creator_id: int | None
     date_created: int
@@ -251,7 +260,9 @@ class DefaultStreamDict(TypedDict):
     """
 
     is_archived: bool
+    can_add_subscribers_group: int | AnonymousSettingGroupDict
     can_administer_channel_group: int | AnonymousSettingGroupDict
+    can_send_message_group: int | AnonymousSettingGroupDict
     can_remove_subscribers_group: int | AnonymousSettingGroupDict
     creator_id: int | None
     date_created: int
@@ -264,7 +275,7 @@ class DefaultStreamDict(TypedDict):
     message_retention_days: int | None
     name: str
     rendered_description: str
-    stream_id: int  # `stream_id`` represents `id` of the `Stream` object in `API_FIELDS`
+    stream_id: int  # `stream_id` represents `id` of the `Stream` object in `API_FIELDS`
     stream_post_policy: int
     # Computed fields not specified in `Stream.API_FIELDS`
     is_announcement_only: bool
@@ -354,3 +365,27 @@ class AnalyticsDataUploadLevel(IntEnum):
     BASIC = 1
     BILLING = 2
     ALL = 3
+
+
+@dataclass
+class StreamMessageEditRequest:
+    is_content_edited: bool
+    is_topic_edited: bool
+    is_stream_edited: bool
+    is_message_moved: bool
+    topic_resolved: bool
+    topic_unresolved: bool
+    content: str
+    target_topic_name: str
+    target_stream: "Stream"
+    orig_content: str
+    orig_topic_name: str
+    orig_stream: "Stream"
+    propagate_mode: str
+
+
+@dataclass
+class DirectMessageEditRequest:
+    content: str
+    orig_content: str
+    is_content_edited: bool

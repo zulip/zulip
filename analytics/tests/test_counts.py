@@ -1836,7 +1836,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(RealmCount, [], [])
 
-    def test_user_unactive_then_activated_same_day(self) -> None:
+    def test_user_inactive_then_activated_same_day(self) -> None:
         self.add_event(AuditLogEventType.USER_DEACTIVATED, 1)
         self.add_event(AuditLogEventType.USER_REACTIVATED, 0.5)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
@@ -1952,6 +1952,10 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         user3 = do_create_user(
             "email3", "password", self.default_realm, "full_name", acting_user=None
         )
+        do_deactivate_user(user3, acting_user=None)
+        user3.is_mirror_dummy = True
+        user3.save(update_fields=["is_mirror_dummy"])
+
         user4 = do_create_user(
             "email4", "password", self.default_realm, "full_name", acting_user=None
         )

@@ -28,19 +28,15 @@ from zerver.actions.realm_settings import do_change_realm_plan_type
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.bulk_create import bulk_set_users_or_streams_recipient_fields
-from zerver.lib.export import (
-    DATE_FIELDS,
-    Field,
-    MigrationStatusJson,
-    Path,
-    Record,
-    TableData,
-    TableName,
-    get_migrations_by_app,
-)
+from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
+from zerver.lib.migration_status import (
+    MigrationStatusJson,
+    get_migration_status,
+    parse_migration_status,
+)
 from zerver.lib.mime_types import guess_type
 from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
@@ -253,6 +249,25 @@ def fix_stream_permission_group_settings(
     table = get_db_table(Stream)
     for stream in data[table]:
         for setting_name in Stream.stream_permission_group_settings:
+            if setting_name == "can_send_message_group" and "stream_post_policy" in stream:
+                # This block is needed when importing data for Rocket.Chat.
+                # While converting the data into Zulip supported format,
+                # stream_post_policy for read-only Rocket.Chat channel is
+                # set to STREAM_POST_POLICY_MODERATORS and so we need to
+                # set the can_send_message_group setting accordingly.
+                if stream["stream_post_policy"] == Stream.STREAM_POST_POLICY_MODERATORS:
+                    stream[setting_name] = system_groups_name_dict[SystemGroups.MODERATORS]
+                else:
+                    stream[setting_name] = get_stream_permission_default_group(
+                        setting_name, system_groups_name_dict
+                    )
+
+                # Delete the stream_post_policy once can_send_message_group
+                # field is set correctly.
+                del stream["stream_post_policy"]
+
+                continue
+
             stream[setting_name] = get_stream_permission_default_group(
                 setting_name, system_groups_name_dict
             )
@@ -2126,9 +2141,19 @@ ZULIP_CLOUD_ONLY_APP_NAMES = ["zilencer", "corporate"]
 
 
 def check_migration_status(exported_migration_status: MigrationStatusJson) -> None:
+    """
+    This function checks the compatibility of an exported realm with the local
+    server's migration status. It asserts that the two realms have identical
+    migration statuses for both applied and on-disk migrations.
+
+    However, it does not explicitly check the exact details of individual
+    migrations, such as their dependencies, replacements (if any), or whether
+    custom migrations are identical.
+    """
     mismatched_migrations_log: dict[str, str] = {}
+    local_showmigrations = get_migration_status(close_connection_when_done=False)
     local_migration_status = MigrationStatusJson(
-        migrations_by_app=get_migrations_by_app(), zulip_version=ZULIP_VERSION
+        migrations_by_app=parse_migration_status(local_showmigrations), zulip_version=ZULIP_VERSION
     )
 
     # Different major versions are the most common form of mismatch
@@ -2165,9 +2190,18 @@ def check_migration_status(exported_migration_status: MigrationStatusJson) -> No
             logging.warning("This server has '%s' app installed, but exported realm does not.", app)
         elif not local_app_migrations:
             logging.warning("Exported realm has '%s' app installed, but this server does not.", app)
-        elif local_app_migrations != exported_app_migrations:
+        elif set(local_app_migrations) != set(exported_app_migrations):
+            # We sort the list of migrations to ensure the same sets of
+            # migrations don't somehow ordered differently. This has been
+            # reported to happen when importing Zulip Cloud to self-host.
+            #
+            # The order of migrations listed in `migration_status.json`
+            # don't actually matter, migrations specify which other
+            # migrations they depend on.
             diff = list(
-                unified_diff(exported_app_migrations, local_app_migrations, lineterm="", n=1)
+                unified_diff(
+                    sorted(exported_app_migrations), sorted(local_app_migrations), lineterm="", n=1
+                )
             )
             mismatched_migrations_log[f"\n'{app}' app:\n"] = "\n".join(diff[3:])
 

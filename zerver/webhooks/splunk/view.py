@@ -35,7 +35,7 @@ def api_splunk_webhook(
 
     # for the default topic, use search name but truncate if too long
     if len(search_name) >= MAX_TOPIC_NAME_LENGTH:
-        topic_name = f"{search_name[:(MAX_TOPIC_NAME_LENGTH - 3)]}..."
+        topic_name = f"{search_name[: (MAX_TOPIC_NAME_LENGTH - 3)]}..."
     else:
         topic_name = search_name
 

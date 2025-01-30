@@ -31,13 +31,13 @@ import * as pm_list from "./pm_list.ts";
 import * as recent_senders from "./recent_senders.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import type {UpdateMessageEvent} from "./server_event_types.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
-import type {UpdateMessageEvent} from "./types.ts";
 import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as util from "./util.ts";
@@ -192,6 +192,7 @@ export let update_views_filtered_on_message_property = (
                 data: {
                     message_ids: JSON.stringify(message_ids),
                     narrow: JSON.stringify(filter.terms()),
+                    allow_empty_topic_name: true,
                 },
                 success(data) {
                     const messages_to_add: Message[] = [];
@@ -216,6 +217,7 @@ export let update_views_filtered_on_message_property = (
                 url: "/json/messages",
                 data: {
                     message_ids: JSON.stringify(messages_to_fetch),
+                    allow_empty_topic_name: true,
                     // We don't filter by narrow here since we can
                     // apply the filter locally and the fetched message
                     // can be used to update other message lists and

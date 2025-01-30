@@ -16,9 +16,22 @@
 {{else if is_user_group}}
     <i class="typeahead-image zulip-icon zulip-icon-triple-users no-presence-circle" aria-hidden="true"></i>
 {{/if}}
+{{#if is_stream_topic}}
+<div class="typeahead-text-container compose-stream-name">
+    <strong class="typeahead-strong-section">
+        {{~> inline_decorated_stream_name stream=stream_data ~}}
+    </strong>
+    <span role="button" class="conversation-arrow zulip-icon zulip-icon-chevron-right stream-to-topic-arrow"></span>
+</div>
+<div class="typeahead-text-container">
+    <strong class="typeahead-strong-section">
+        {{~ topic ~}}
+    </strong>
+</div>
+{{else}}
 {{!-- Separate container to ensure overflowing text remains in this container. --}}
 <div class="typeahead-text-container{{#if has_secondary_html}} has_secondary_html{{/if}}">
-    <strong class="typeahead-strong-section">
+    <strong class="typeahead-strong-section{{#if is_empty_string_topic}} empty-topic-display{{/if}}">
         {{~#if stream~}}
             {{~> inline_decorated_stream_name stream=stream ~}}
             {{~else~}}
@@ -45,3 +58,4 @@
     </span>
     {{~/if}}
 </div>
+{{/if}}

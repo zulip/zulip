@@ -11,11 +11,12 @@ from django.core.management.base import CommandError, CommandParser
 from typing_extensions import override
 
 from zerver.lib.email_mirror import mirror_email_message
-from zerver.lib.email_mirror_helpers import encode_email_address
+from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import Realm
+from zerver.models import Realm, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
+from zerver.models.users import get_system_bot, get_user_profile_by_email, get_user_profile_by_id
 
 # This command loads an email from a specified file and sends it
 # to the email mirror. Simple emails can be passed in a JSON file,
@@ -52,14 +53,19 @@ Example:
         parser.add_argument(
             "-s",
             "--stream",
-            help="The name of the stream to which you'd like to send "
-            "the message. Default: Denmark",
+            help="The name of the stream to which you'd like to send the message. Default: Denmark",
+        )
+        parser.add_argument(
+            "--sender-id",
+            type=int,
+            help="The ID of a user or bot which should appear as the sender; "
+            "Default: ID of Email gateway bot",
         )
 
         self.add_realm_args(parser, help="Specify which realm to connect to; default is zulip")
 
     @override
-    def handle(self, *args: Any, **options: str | None) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         if options["fixture"] is None:
             self.print_help("./manage.py", "send_to_email_mirror")
             raise CommandError
@@ -73,11 +79,25 @@ Example:
         if realm is None:
             realm = get_realm("zulip")
 
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
+        if options["sender_id"] is None:
+            sender = email_gateway_bot
+        else:
+            sender = get_user_profile_by_id(options["sender_id"])
+
         full_fixture_path = os.path.join(settings.DEPLOY_ROOT, options["fixture"])
 
         # parse the input email into EmailMessage type and prepare to process_message() it
         message = self._parse_email_fixture(full_fixture_path)
-        self._prepare_message(message, realm, stream)
+        creator = get_user_profile_by_email(message["From"])
+        if (
+            sender.id not in [creator.id, email_gateway_bot.id]
+            and sender.bot_owner_id != creator.id
+        ):
+            raise CommandError(
+                "The sender ID must be either the current user's ID, the email gateway bot's ID, or the ID of a bot owned by the user."
+            )
+        self._prepare_message(message, realm, stream, creator, sender)
 
         mirror_email_message(
             message["To"].addresses[0].addr_spec,
@@ -109,8 +129,16 @@ Example:
                     _class=EmailMessage, policy=email.policy.default
                 ).parse(fp)
 
-    def _prepare_message(self, message: EmailMessage, realm: Realm, stream_name: str) -> None:
+    def _prepare_message(
+        self,
+        message: EmailMessage,
+        realm: Realm,
+        stream_name: str,
+        creator: UserProfile,
+        sender: UserProfile,
+    ) -> None:
         stream = get_stream(stream_name, realm)
+        email_token = get_channel_email_token(stream, creator=creator, sender=sender)
 
         # The block below ensures that the imported email message doesn't have any recipient-like
         # headers that are inconsistent with the recipient we want (the stream address).
@@ -125,8 +153,8 @@ Example:
         for header in recipient_headers:
             if header in message:
                 del message[header]
-                message[header] = encode_email_address(stream)
+                message[header] = encode_email_address(stream.name, email_token)
 
         if "To" in message:
             del message["To"]
-        message["To"] = encode_email_address(stream)
+        message["To"] = encode_email_address(stream.name, email_token)

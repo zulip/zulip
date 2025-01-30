@@ -244,6 +244,8 @@ export class Typeahead<ItemType extends string | object> {
     query = "";
     mouse_moved_since_typeahead = false;
     shown = false;
+    // To trigger updater when Esc is pressed only during the stream topic typeahead in composebox.
+    escape_topic_completion = false;
     openInputFieldOnKeyUp: (() => void) | undefined;
     closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
@@ -263,6 +265,8 @@ export class Typeahead<ItemType extends string | object> {
     // after selecting an option, instead of the default call to lookup().
     hideAfterSelect: () => boolean;
     hideOnEmptyAfterBackspace: boolean;
+    // Used for adding a custom classname to the typeahead link.
+    getCustomItemClassname: ((item: ItemType) => string) | undefined;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -292,6 +296,7 @@ export class Typeahead<ItemType extends string | object> {
         // return a string to show in typeahead items or false.
         this.option_label = options.option_label ?? (() => false);
         this.stopAdvance = options.stopAdvance ?? false;
+        this.escape_topic_completion = options.escape_topic_completion ?? false;
         this.advanceKeys = options.advanceKeys ?? [];
         this.openInputFieldOnKeyUp = options.openInputFieldOnKeyUp;
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
@@ -304,7 +309,7 @@ export class Typeahead<ItemType extends string | object> {
         this.updateElementContent = options.updateElementContent ?? true;
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
-
+        this.getCustomItemClassname = options.getCustomItemClassname;
         this.listen();
     }
 
@@ -547,6 +552,9 @@ export class Typeahead<ItemType extends string | object> {
             const $item_html = $i.find("a").html(item_html);
 
             const option_label_html = this.option_label(matching_items, item);
+            if (this.getCustomItemClassname) {
+                $item_html.addClass(this.getCustomItemClassname(item));
+            }
 
             if (option_label_html) {
                 $item_html
@@ -746,6 +754,11 @@ export class Typeahead<ItemType extends string | object> {
                 break;
 
             case "Escape":
+                // TODO: escape_topic_completion should be scoped more narrowly.
+                // See https://github.com/zulip/zulip/pull/32217#discussion_r1934905517
+                if (this.escape_topic_completion) {
+                    this.select(e);
+                }
                 if (!this.shown) {
                     return;
                 }
@@ -876,6 +889,7 @@ type TypeaheadOptions<ItemType> = {
     sorter: (items: ItemType[], query: string) => ItemType[];
     stopAdvance?: boolean;
     tabIsEnter?: boolean;
+    escape_topic_completion?: boolean;
     trigger_selection?: (event: JQuery.KeyDownEvent) => boolean;
     updater?: (
         item: ItemType,
@@ -887,4 +901,5 @@ type TypeaheadOptions<ItemType> = {
     shouldHighlightFirstResult?: () => boolean;
     updateElementContent?: boolean;
     hideAfterSelect?: () => boolean;
+    getCustomItemClassname?: (item: ItemType) => string;
 };

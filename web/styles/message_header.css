@@ -6,17 +6,17 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 600;
-    font-size: calc(15em / 14);
-    line-height: 120%;
     position: relative;
     z-index: 0;
     background-color: var(--color-background);
 
     .message-header-contents {
+        font-size: 1.0714em; /* 15px at 14px em */
+        line-height: 1.2;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 28px;
+        height: 2em; /* 28px at 14px em */
         border: 1px solid var(--color-message-header-contents-border);
         border-bottom-color: var(--color-message-header-contents-border-bottom);
         border-radius: 7px 7px 0 0;
@@ -30,7 +30,7 @@
             -1px -5px 0 5px var(--color-background),
             1px -5px 0 0 var(--color-background);
 
-        & a.message_label_clickable {
+        & .message_label_clickable {
             color: var(--color-text-message-header);
 
             &:hover {
@@ -49,8 +49,8 @@
         .stream_topic {
             display: inline-block;
             padding: 5px 6px 5px 2px;
-            height: 17px;
-            line-height: 17px;
+            height: 1.2142em; /* 17px at 14px em */
+            line-height: 1.2142em; /* 17px at 14px em */
             overflow: hidden;
             text-overflow: ellipsis;
 
@@ -67,12 +67,38 @@
         }
 
         .stream-privacy i {
-            font-size: 15px;
+            font-size: 1.0714em; /* 15px at 14px em */
 
             &.zulip-icon-globe,
             &.zulip-icon-hashtag {
                 position: relative;
                 top: -0.5px;
+            }
+        }
+
+        .recipient_bar_controls {
+            opacity: 0;
+            transition: opacity 0.15s ease-out;
+        }
+
+        .recipient_bar_controls:focus-within {
+            opacity: 1;
+            transition: opacity 0.1s ease-in;
+        }
+
+        /* Show the bar controls on hover with a slight delay */
+        &:hover {
+            .recipient_bar_controls {
+                opacity: 1;
+                transition: opacity 0.15s ease-in 0.1s;
+            }
+        }
+
+        /* Always show controls when header is sticky */
+        &.sticky_header {
+            .recipient_bar_controls {
+                opacity: 1;
+                transition: opacity 0.15s ease-in;
             }
         }
     }
@@ -96,8 +122,8 @@
         display: flex;
         padding: 5px 0 5px 10px;
         font-weight: 600;
-        height: 17px;
-        line-height: 17px;
+        height: 1.2142em; /* 17px at 14px em */
+        line-height: 1.2142em; /* 17px at 14px em */
         color: var(--color-text-message-header);
 
         &:hover {
@@ -106,11 +132,11 @@
         }
 
         .private_message_header_icon {
-            font-size: 15px;
+            font-size: 1.0714em; /* 15px at 14px em */
             position: relative;
             top: 1px;
-            width: 16px;
-            height: 16px;
+            width: 1.0666em; /* 16px at 15px em */
+            height: 1.0666em; /* 16px at 15px em */
         }
 
         .private_message_header_name {
@@ -176,18 +202,13 @@
     align-items: center;
     gap: 5px;
     padding: 5px 2px 5px 10px;
-    height: 17px;
-    line-height: 17px;
+    height: 1.2142em; /* 17px at 14px em */
+    line-height: 1.2142em; /* 17px at 14px em */
     position: relative;
     top: 0.5px;
     text-decoration: none;
     font-weight: 600;
     overflow: hidden;
-
-    .recipient-row-stream-icon {
-        font-size: 12px;
-        line-height: 12px;
-    }
 
     .zulip-icon.zulip-icon-globe {
         position: relative;
@@ -200,14 +221,14 @@
 
     .stream-privacy {
         min-width: unset;
-        width: 16px;
-        height: 16px;
+        width: 1.1428em; /* 16px at 14px em */
+        height: 1.1428em; /* 16px at 14px em */
 
         .hashtag {
             padding-right: 0;
 
             &::after {
-                font-size: 16px;
+                font-size: 1.1428em; /* 16px at 14px em */
             }
         }
     }

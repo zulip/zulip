@@ -17,7 +17,7 @@
             <div class="right_part">
                 <span class="pm_status_icon {{#unless is_group}}show-tooltip{{/unless}}" data-tippy-placement="top" data-user-ids-string="{{user_ids_string}}">
                     {{#if is_group}}
-                    <span class="zulip-icon zulip-icon-triple-users"></span>
+                    <span class="conversation-partners-icon zulip-icon zulip-icon-dm-groups-3"></span>
                     {{else if is_bot}}
                     <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
                     {{else}}
@@ -34,7 +34,7 @@
                 {{#if is_private}}
                 <a href="{{pm_url}}" class="recent-view-table-link {{#if is_group}}recent-view-dm-group{{/if}}">{{{rendered_pm_with}}}</a>
                 {{else}}
-                <a class="white-space-preserve-wrap recent-view-table-link" href="{{topic_url}}">{{topic}}</a>
+                <a class="white-space-preserve-wrap recent-view-table-link {{#if is_empty_string_topic}}empty-topic-display{{/if}}" href="{{topic_url}}">{{topic_display_name}}</a>
                 {{/if}}
             </div>
             <div class="right_part">

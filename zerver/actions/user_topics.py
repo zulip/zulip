@@ -5,6 +5,7 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.topic import maybe_rename_general_chat_to_empty_topic
 from zerver.lib.user_topics import (
     bulk_set_user_topic_visibility_policy_in_database,
     get_topic_mutes,
@@ -25,6 +26,8 @@ def bulk_do_set_user_topic_visibility_policy(
 ) -> None:
     if last_updated is None:
         last_updated = timezone_now()
+
+    topic_name = maybe_rename_general_chat_to_empty_topic(topic_name)
 
     user_profiles_with_changed_user_topic_rows = bulk_set_user_topic_visibility_policy_in_database(
         user_profiles,

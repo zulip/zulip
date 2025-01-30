@@ -55,6 +55,7 @@ exports.test_streams = {
         message_retention_days: null,
         stream_post_policy: 1,
         can_administer_channel_group: 2,
+        can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
     },
@@ -74,6 +75,7 @@ exports.test_streams = {
         message_retention_days: null,
         stream_post_policy: 1,
         can_administer_channel_group: 2,
+        can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
     },
@@ -236,6 +238,11 @@ exports.fixtures = {
         emoji_name: "airplane",
         emoji_code: "2708",
         user_id: test_user.user_id,
+        user: {
+            email: test_user.email,
+            full_name: test_user.full_name,
+            user_id: test_user.user_id,
+        },
     },
 
     reaction__remove: {
@@ -246,19 +253,17 @@ exports.fixtures = {
         emoji_name: "8ball",
         emoji_code: "1f3b1",
         user_id: test_user.user_id,
+        user: {
+            email: test_user.email,
+            full_name: test_user.full_name,
+            user_id: test_user.user_id,
+        },
     },
 
     realm__deactivated: {
         type: "realm",
         op: "deactivated",
         realm_id: 2,
-    },
-
-    realm__update__bot_creation_policy: {
-        type: "realm",
-        op: "update",
-        property: "bot_creation_policy",
-        value: 1,
     },
 
     realm__update__default_code_block_language: {
@@ -294,13 +299,6 @@ exports.fixtures = {
         op: "update",
         property: "invite_required",
         value: false,
-    },
-
-    realm__update__invite_to_stream_policy: {
-        type: "realm",
-        op: "update",
-        property: "invite_to_stream_policy",
-        value: 2,
     },
 
     realm__update__name: {
@@ -357,6 +355,8 @@ exports.fixtures = {
                 Google: {enabled: true, available: true},
             },
             can_add_custom_emoji_group: 3,
+            can_add_subscribers_group: 3,
+            can_create_bots_group: 3,
             can_create_public_channel_group: 3,
             can_invite_users_group: 3,
             can_move_messages_between_topics_group: 3,
@@ -670,14 +670,13 @@ exports.fixtures = {
         op: "delete",
         streams: [
             {
-                ...streams.devel,
-                stream_weekly_traffic: null,
+                stream_id: streams.devel.stream_id,
             },
             {
-                ...streams.test,
-                stream_weekly_traffic: null,
+                stream_id: streams.test.stream_id,
             },
         ],
+        stream_ids: [streams.devel.stream_id, streams.test.stream_id],
     },
 
     stream__update: {
@@ -862,8 +861,8 @@ exports.fixtures = {
     user_group__remove_members: {
         type: "user_group",
         op: "remove_members",
-        group_id: 3,
-        user_ids: [99, 100],
+        group_id: 1,
+        user_ids: [1, 2],
     },
 
     user_group__remove_subgroups: {
@@ -876,11 +875,19 @@ exports.fixtures = {
     user_group__update: {
         type: "user_group",
         op: "update",
-        group_id: 3,
+        group_id: 1,
         data: {
             name: "Frontend",
             description: "All Frontend people",
+            can_manage_group: 2,
         },
+    },
+
+    user_settings__allow_private_data_export: {
+        type: "user_settings",
+        op: "update",
+        property: "allow_private_data_export",
+        value: true,
     },
 
     user_settings__color_scheme_automatic: {

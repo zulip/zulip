@@ -60,32 +60,23 @@ export function show_preview_area() {
 
     const $compose_textarea = $("textarea#compose-textarea");
     const content = $compose_textarea.val();
-    const edit_height = $compose_textarea.height();
 
     $("#compose .markdown_preview").hide();
     $("#compose .undo_markdown_preview").show();
     $("#compose .undo_markdown_preview").trigger("focus");
 
     const $preview_message_area = $("#compose .preview_message_area");
-    // Set the preview area to the edit height to keep from
-    // having the preview jog the size of the compose box.
-    $preview_message_area.css({height: edit_height + "px"});
-    $preview_message_area.show();
-
     compose_ui.render_and_show_preview(
         $("#compose .markdown_preview_spinner"),
         $("#compose .preview_content"),
         content,
     );
+    const edit_height = $compose_textarea.height();
+    $preview_message_area.css({"min-height": edit_height + "px"});
+    $preview_message_area.show();
 }
 
 export function create_message_object(message_content = compose_state.message_content()) {
-    // Topics are optional, and we provide a placeholder if one isn't given.
-    let topic = compose_state.topic();
-    if (topic === "") {
-        topic = compose_state.empty_topic_placeholder();
-    }
-
     // Changes here must also be kept in sync with echo.try_deliver_locally
     const message = {
         type: compose_state.get_message_type(),
@@ -113,7 +104,7 @@ export function create_message_object(message_content = compose_state.message_co
             message.to = people.user_ids_string_to_ids_array(message.to_user_ids);
         }
     } else {
-        message.topic = topic;
+        message.topic = compose_state.topic();
         const stream_id = compose_state.stream_id();
         message.stream_id = stream_id;
         message.to = stream_id;
@@ -275,10 +266,10 @@ export function rewire_send_message(value) {
     send_message = value;
 }
 
-export function enter_with_preview_open(ctrl_pressed = false) {
+export function handle_enter_key_with_preview_open(cmd_or_ctrl_pressed = false) {
     if (
-        (user_settings.enter_sends && !ctrl_pressed) ||
-        (!user_settings.enter_sends && ctrl_pressed)
+        (user_settings.enter_sends && !cmd_or_ctrl_pressed) ||
+        (!user_settings.enter_sends && cmd_or_ctrl_pressed)
     ) {
         // If this enter should send, we attempt to send the message.
         finish();

@@ -136,18 +136,6 @@
             8px minmax(var(--message-box-timestamp-column-width), max-content);
     }
 
-    .message_controls {
-        grid-area: controls;
-
-        @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
-            /* This is intended to target the first message_controls child
-               when there are 3 displayed. */
-            .message_control_button:nth-last-child(3) {
-                display: none;
-            }
-        }
-    }
-
     .message_edit_notice {
         grid-area: edited;
     }
@@ -269,10 +257,16 @@
 
         &.is-me-message {
             grid-template-areas:
+                ".      .         .        . .   "
                 "avatar sender    controls . time"
                 "avatar sender    .        . .   "
                 ".      more      .        . .   "
                 ".      reactions .        . .   ";
+            grid-template-rows:
+                var(--message-box-vertical-margin) var(
+                    --message-box-avatar-height
+                )
+                minmax(0, auto) repeat(3, auto);
 
             .message-avatar {
                 /* Set the line-height to match the height of the avatar image
@@ -283,6 +277,19 @@
                    single-line me message, this margin preserves the
                    overall height of the message box. */
                 margin-bottom: var(--message-box-vertical-margin);
+
+                .inline_profile_picture {
+                    /* We adjust the vertical space in me messages via
+                       the grid definition above. */
+                    margin-top: 0;
+                }
+            }
+
+            .message_controls {
+                /* Because the controls height is smaller than the
+                   available grid row height on me-messages, we
+                   align to center here. */
+                align-self: center;
             }
 
             .message_sender {
@@ -328,7 +335,14 @@
             grid-area: avatar;
             /* The picture should not participate in the baseline group. */
             align-self: start;
-            margin-top: var(--message-box-vertical-margin);
+
+            .inline_profile_picture {
+                /* Setting the margin inside this element prevents
+                   unwanted shifts in the placement of especially
+                   sender-line elements on the .messagebox-content
+                   grid. */
+                margin-top: var(--message-box-vertical-margin);
+            }
         }
 
         .status-message {
@@ -420,9 +434,29 @@
 }
 
 .message_controls {
+    grid-area: controls;
+    /* Let the controls occupy the entire height
+       of the row; inner flexboxes handle the
+       centering of the icons. */
+    align-self: stretch;
+    /* But to better set the height to the typical
+       sender-row line height for better centering
+       in all contexts. */
+    height: var(--message-box-sender-line-height);
     display: flex;
-    align-items: baseline;
-    font-size: 16px;
+    /* The flexbox here matches the height set above. */
+    align-items: stretch;
+    /* Ensure square icons for better centering. */
+    line-height: 1;
+
+    @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
+        /* This is intended to target the first message_controls child
+           when there are 3 displayed. */
+        .message_control_button:nth-last-child(3) {
+            display: none;
+        }
+    }
+
     /* This is a bit tricky; we need to reserve space for the message
        controls even when the message isn't hovered, so that hover
        doesn't disturb the layout.  Usually that would be just
@@ -433,18 +467,31 @@
         visibility: hidden;
         transition: none 0.2s ease;
         transition-property: opacity, visibility;
-        width: var(--message-box-icon-width);
-        height: var(--message-box-icon-height);
-        text-align: center;
+        /* Allow buttons to grow to fill the available space,
+           in concord with the column calculated for the
+           .messagebox-content grid. */
+        flex: 1 0 0;
+        /* Set the height to 100% to effectively flex open
+           on the vertical axis. */
+        height: 100%;
+        /* Control buttons are their own flex containers,
+           to more gracefully center the icons. */
+        display: flex;
+        place-items: center center;
         color: var(--color-message-action-visible);
 
+        .emoji-message-control-button-container {
+            /* This button has an extra div for Tippy purposes,
+               so it becomes its own flex container. */
+            display: flex;
+        }
+
         & .message-controls-icon {
-            vertical-align: middle;
-            /* TODO: Math for these values, possibly with variables.
-               In short, the icon body is 16px square; the current
+            /* The icon body is 16px square at 16px/1em; the clickable
                area for the icon is 26px wide by 25px tall, so these
                values ensure a 26px x 25px clickable area for the icon. */
-            padding: 2.5px 3px;
+            /* 2.5px at 16px/1em; 3px at 16px/1em */
+            padding: 0.1563em 0.1875em;
 
             &::before {
                 /* We specify block display so the
@@ -669,6 +716,18 @@
 
     .message-edit-textbox {
         position: relative;
+
+        .textarea-over-limit {
+            background-color: var(
+                --color-compose-message-content-background-over-limit
+            );
+        }
+
+        .textarea-approaching-limit {
+            background-color: var(
+                --color-compose-message-content-background-approaching-limit
+            );
+        }
     }
 }
 
@@ -730,8 +789,6 @@ of the base style defined for a read-only textarea in dark mode. */
 }
 
 .message-edit-feature-group {
-    display: flex;
-    align-items: baseline;
     border-radius: 0 0 3px 3px;
     background-color: var(--color-message-formatting-controls-container);
     /* margin on either side to let the border of

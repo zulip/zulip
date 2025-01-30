@@ -29,13 +29,18 @@ import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
+import type {UserGroupUpdateEvent} from "./server_event_types.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
-import {current_user, realm} from "./state_data.ts";
+import {current_user, realm, realm_schema} from "./state_data.ts";
+import type {GroupSettingValue} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import {anonymous_group_schema, group_setting_value_schema} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_group_components from "./user_group_components.ts";
 import * as user_group_create from "./user_group_create.ts";
@@ -44,30 +49,6 @@ import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_profile from "./user_profile.ts";
 import * as util from "./util.ts";
-
-type UserGroupPermissionData =
-    | number
-    | {
-          direct_members: number[];
-          direct_subgroups: number[];
-      };
-
-type UserGroupUpdateEvent = {
-    id: number;
-    type: string;
-    group_id: number;
-    data: {
-        name: string;
-        description: string;
-        can_add_members_group: UserGroupPermissionData;
-        can_remove_members_group: UserGroupPermissionData;
-        can_join_group: UserGroupPermissionData;
-        can_leave_group: UserGroupPermissionData;
-        can_manage_group: UserGroupPermissionData;
-        can_mention_group: UserGroupPermissionData;
-        deactivated: boolean;
-    };
-};
 
 type ActiveData = {
     $row: JQuery | undefined;
@@ -155,7 +136,7 @@ function update_group_permission_settings_elements(group: UserGroup): void {
         return;
     }
 
-    // We are concerend with the General tab for changing group permissions.
+    // We are concerned with the General tab for changing group permissions.
     const $group_permission_settings = $("#group_permission_settings");
 
     const $permission_pill_container_elements = $group_permission_settings.find(".pill-container");
@@ -491,7 +472,7 @@ export function handle_member_edit_event(group_id: number, user_ids: number[]): 
 
 export function update_group_details(group: UserGroup): void {
     const $edit_container = get_edit_container(group);
-    $edit_container.find(".group-name").text(group.name);
+    $edit_container.find(".group-name").text(user_groups.get_display_group_name(group.name));
     $edit_container.find(".group-description").text(group.description);
 }
 
@@ -516,7 +497,7 @@ function get_membership_status_context(group: UserGroup): {
         if (is_member) {
             const associated_subgroup_names = user_groups
                 .get_associated_subgroups(group, current_user_id)
-                .map((subgroup) => subgroup.name);
+                .map((subgroup) => user_groups.get_display_group_name(subgroup.name));
             associated_subgroup_names_html = util.format_array_as_list_with_highlighted_elements(
                 associated_subgroup_names,
                 "long",
@@ -539,9 +520,151 @@ function update_membership_status_text(group: UserGroup): void {
     $edit_container.find(".membership-status").html(rendered_membership_status);
 }
 
+function save_discard_widget_handler_for_permissions_panel($subsection: JQuery): void {
+    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".save-button").show();
+    const properties_elements = settings_components.get_subsection_property_elements($subsection);
+    const show_change_process_button = properties_elements.some((elem) => !$(elem).prop("checked"));
+
+    const $save_button_controls = $subsection.find(".subsection-header .save-button-controls");
+    const button_state = show_change_process_button ? "unsaved" : "discarded";
+    settings_components.change_save_button_state($save_button_controls, button_state);
+}
+
+function get_request_data_for_removing_group_permission(
+    current_value: GroupSettingValue,
+    removed_group_id: number,
+): string {
+    const nobody_group = user_groups.get_user_group_from_name("role:nobody")!;
+
+    if (typeof current_value === "number") {
+        return JSON.stringify({
+            new: nobody_group.id,
+            old: current_value,
+        });
+    }
+
+    let new_setting_value: GroupSettingValue = {...anonymous_group_schema.parse(current_value)};
+    new_setting_value.direct_subgroups = new_setting_value.direct_subgroups.filter(
+        (group_id) => group_id !== removed_group_id,
+    );
+
+    if (
+        new_setting_value.direct_subgroups.length === 0 &&
+        new_setting_value.direct_members.length === 0
+    ) {
+        new_setting_value = nobody_group.id;
+    }
+    return JSON.stringify({
+        new: new_setting_value,
+        old: current_value,
+    });
+}
+
+function populate_data_for_removing_realm_permissions(
+    $subsection: JQuery,
+    group: UserGroup,
+): Record<string, string> {
+    const changed_setting_elems = settings_components
+        .get_subsection_property_elements($subsection)
+        .filter((elem) => !$(elem).prop("checked"));
+    const changed_setting_names = changed_setting_elems.map((elem) => $(elem).attr("name")!);
+
+    const data: Record<string, string> = {};
+    for (const setting_name of changed_setting_names) {
+        const current_value = realm[realm_schema.keyof().parse("realm_" + setting_name)];
+        data[setting_name] = get_request_data_for_removing_group_permission(
+            group_setting_value_schema.parse(current_value),
+            group.id,
+        );
+    }
+
+    return data;
+}
+
+function populate_data_for_removing_stream_permissions(
+    $subsection: JQuery,
+    group: UserGroup,
+    sub: StreamSubscription,
+): Record<string, string> {
+    const changed_setting_elems = settings_components
+        .get_subsection_property_elements($subsection)
+        .filter((elem) => !$(elem).prop("checked"));
+    const changed_setting_names = changed_setting_elems.map((elem) => $(elem).attr("name")!);
+
+    const data: Record<string, string> = {};
+    for (const setting_name of changed_setting_names) {
+        const current_value = sub[sub_store.stream_subscription_schema.keyof().parse(setting_name)];
+        data[setting_name] = get_request_data_for_removing_group_permission(
+            group_setting_value_schema.parse(current_value),
+            group.id,
+        );
+    }
+
+    return data;
+}
+
+function populate_data_for_removing_user_group_permissions(
+    $subsection: JQuery,
+    group: UserGroup,
+    user_group: UserGroup,
+): Record<string, string> {
+    const changed_setting_elems = settings_components
+        .get_subsection_property_elements($subsection)
+        .filter((elem) => !$(elem).prop("checked"));
+    const changed_setting_names = changed_setting_elems.map((elem) => $(elem).attr("name")!);
+
+    const data: Record<string, string> = {};
+    for (const setting_name of changed_setting_names) {
+        const current_value = user_group[user_groups.user_group_schema.keyof().parse(setting_name)];
+        data[setting_name] = get_request_data_for_removing_group_permission(
+            group_setting_value_schema.parse(current_value),
+            group.id,
+        );
+    }
+
+    return data;
+}
+
+export function update_setting_in_group_permissions_panel(
+    $setting_elem: JQuery,
+    new_value: GroupSettingValue,
+): void {
+    const active_group_id = get_active_data().id;
+    if (active_group_id === undefined) {
+        return;
+    }
+
+    if ($setting_elem.length === 0) {
+        return;
+    }
+
+    const group_has_permission = user_groups.group_has_permission(
+        group_setting_value_schema.parse(new_value),
+        active_group_id,
+    );
+
+    if (!group_has_permission) {
+        const $subsection = $setting_elem.closest(".settings-subsection-parent");
+        $setting_elem.closest(".input-group").remove();
+
+        if ($subsection.find(".input-group").length === 0) {
+            $subsection.addClass("hide");
+        }
+    }
+}
+
 export function show_settings_for(group: UserGroup): void {
+    const group_assigned_realm_permissions =
+        settings_components.get_group_assigned_realm_permissions(group);
+    const group_assigned_stream_permissions =
+        settings_components.get_group_assigned_stream_permissions(group);
+    const group_assigned_user_group_permissions =
+        settings_components.get_group_assigned_user_group_permissions(group);
+
     const html = render_user_group_settings({
         group,
+        group_name: user_groups.get_display_group_name(group.name),
         date_created_string: timerender.get_localized_date_or_time_for_format(
             // We get timestamp in seconds from the API but timerender
             // needs milliseconds.
@@ -555,6 +678,14 @@ export function show_settings_for(group: UserGroup): void {
         creator: stream_data.maybe_get_creator_details(group.creator_id),
         is_creator: group.creator_id === current_user.user_id,
         ...get_membership_status_context(group),
+        all_group_setting_labels: settings_config.all_group_setting_labels,
+        group_assigned_realm_permissions,
+        group_assigned_stream_permissions,
+        group_assigned_user_group_permissions,
+        group_has_no_permissions:
+            group_assigned_realm_permissions.length === 0 &&
+            group_assigned_stream_permissions.length === 0 &&
+            group_assigned_user_group_permissions.length === 0,
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
@@ -567,6 +698,95 @@ export function show_settings_for(group: UserGroup): void {
     $edit_container.show();
     show_membership_settings(group);
     show_general_settings(group);
+
+    $edit_container
+        .find(".group-assigned-permissions")
+        .on("change", "input", function (this: HTMLElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const $subsection = $(this).closest(".settings-subsection-parent");
+            save_discard_widget_handler_for_permissions_panel($subsection);
+
+            return undefined;
+        });
+
+    $edit_container
+        .find(".group-assigned-permissions")
+        .on(
+            "click",
+            ".subsection-header .subsection-changes-discard button",
+            function (this: HTMLElement, e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const $subsection = $(this).closest(".settings-subsection-parent");
+                $subsection.find(".prop-element").prop("checked", true);
+
+                const $save_button_controls = $subsection.find(
+                    ".subsection-header .save-button-controls",
+                );
+                settings_components.change_save_button_state($save_button_controls, "discarded");
+            },
+        );
+
+    $edit_container
+        .find(".realm-group-permissions")
+        .on(
+            "click",
+            ".subsection-header .subsection-changes-save button",
+            function (this: HTMLElement, e: JQuery.ClickEvent) {
+                e.preventDefault();
+                e.stopPropagation();
+                const $save_button = $(this);
+                const $subsection_elem = $save_button.closest(".settings-subsection-parent");
+                const data = populate_data_for_removing_realm_permissions($subsection_elem, group);
+                settings_org.save_organization_settings(data, $save_button, "/json/realm");
+            },
+        );
+
+    $edit_container
+        .find(".channel-group-permissions")
+        .on(
+            "click",
+            ".subsection-header .subsection-changes-save button",
+            function (this: HTMLElement, e: JQuery.ClickEvent) {
+                e.preventDefault();
+                e.stopPropagation();
+                const $save_button = $(this);
+                const $subsection_elem = $save_button.closest(".settings-subsection-parent");
+                const stream_id = Number.parseInt($subsection_elem.attr("data-stream-id")!, 10);
+                const sub = sub_store.get(stream_id)!;
+                const data = populate_data_for_removing_stream_permissions(
+                    $subsection_elem,
+                    group,
+                    sub,
+                );
+                const url = "/json/streams/" + stream_id;
+                settings_org.save_organization_settings(data, $save_button, url);
+            },
+        );
+
+    $edit_container
+        .find(".user-group-permissions")
+        .on(
+            "click",
+            ".subsection-header .subsection-changes-save button",
+            function (this: HTMLElement, e: JQuery.ClickEvent) {
+                e.preventDefault();
+                e.stopPropagation();
+                const $save_button = $(this);
+                const $subsection_elem = $save_button.closest(".settings-subsection-parent");
+                const group_id = Number.parseInt($subsection_elem.attr("data-group-id")!, 10);
+                const user_group = user_groups.get_user_group_from_id(group_id);
+                const data = populate_data_for_removing_user_group_permissions(
+                    $subsection_elem,
+                    group,
+                    user_group,
+                );
+                const url = "/json/user_groups/" + group_id;
+                settings_org.save_organization_settings(data, $save_button, url);
+            },
+        );
 }
 
 export function setup_group_settings(group: UserGroup): void {
@@ -575,6 +795,7 @@ export function setup_group_settings(group: UserGroup): void {
         values: [
             {label: $t({defaultMessage: "General"}), key: "general"},
             {label: $t({defaultMessage: "Members"}), key: "members"},
+            {label: $t({defaultMessage: "Permissions"}), key: "permissions"},
         ],
         callback(_name, key) {
             $(".group_setting_section").hide();
@@ -680,11 +901,6 @@ export function open_group_edit_panel_for_row(group_row: HTMLElement): void {
     }
     show_group_settings(group);
 }
-
-// Ideally this should be included in page params.
-// Like we have realm.max_stream_name_length` and
-// `realm.max_stream_description_length` for streams.
-export const max_user_group_name_length = 100;
 
 export function set_up_click_handlers(): void {
     $("#groups_overlay").on("click", ".left #clear_search_group_name", (e) => {
@@ -807,18 +1023,16 @@ export function sync_group_permission_setting(property: string, group: UserGroup
     }
 }
 
-export function update_group(event: UserGroupUpdateEvent): void {
+export function update_group(event: UserGroupUpdateEvent, group: UserGroup): void {
     if (!overlays.groups_open()) {
         return;
     }
 
-    const group_id = event.group_id;
-    const group = user_groups.get_user_group_from_id(group_id);
-
     // update left side pane
-    const $group_row = row_for_group_id(group_id);
+    const $group_row = row_for_group_id(group.id);
     if (event.data.name !== undefined) {
-        $group_row.find(".group-name").text(group.name);
+        $group_row.find(".group-name").text(user_groups.get_display_group_name(group.name));
+        user_group_create.maybe_update_error_message();
     }
 
     if (event.data.description !== undefined) {
@@ -835,7 +1049,9 @@ export function update_group(event: UserGroupUpdateEvent): void {
         update_group_details(group);
         if (event.data.name !== undefined) {
             // update settings title
-            $("#groups_overlay .user-group-info-title").text(group.name);
+            $("#groups_overlay .user-group-info-title").text(
+                user_groups.get_display_group_name(group.name),
+            );
         }
         if (event.data.can_mention_group !== undefined) {
             sync_group_permission_setting("can_mention_group", group);
@@ -861,6 +1077,16 @@ export function update_group(event: UserGroupUpdateEvent): void {
             sync_group_permission_setting("can_remove_members_group", group);
             update_group_management_ui();
         }
+    }
+
+    const changed_group_settings = group_permission_settings
+        .get_group_permission_settings()
+        .filter((setting_name) => event.data[setting_name] !== undefined);
+    for (const setting_name of changed_group_settings) {
+        const $elem = $(
+            `#id_group_permission_${CSS.escape(group.id.toString())}_${CSS.escape(setting_name)}`,
+        );
+        update_setting_in_group_permissions_panel($elem, group[setting_name]);
     }
 }
 
@@ -1065,7 +1291,8 @@ export function setup_page(callback: () => void): void {
             upgrade_text_for_wide_organization_logo: realm.upgrade_text_for_wide_organization_logo,
             is_business_type_org:
                 realm.realm_org_type === settings_config.all_org_type_values.business.code,
-            max_user_group_name_length,
+            max_user_group_name_length: user_groups.max_user_group_name_length,
+            all_group_setting_labels: settings_config.all_group_setting_labels,
         };
 
         const groups_overlay_html = render_user_group_settings_overlay(template_data);
@@ -1217,7 +1444,10 @@ function parse_args_for_deactivation_banner(
             assert(typeof group_id === "number");
             const group = user_groups.get_user_group_from_id(group_id);
             const setting_url = hash_util.group_edit_url(group, "general");
-            args.groups_using_group_for_setting.push({group_name: group.name, setting_url});
+            args.groups_using_group_for_setting.push({
+                group_name: user_groups.get_display_group_name(group.name),
+                setting_url,
+            });
             continue;
         }
 
@@ -1244,15 +1474,16 @@ export function initialize(): void {
             const user_group_id = get_user_group_id(this);
             const user_group = user_groups.get_user_group_from_id(user_group_id);
             const template_data = {
-                group_name: user_group.name,
+                group_name: user_groups.get_display_group_name(user_group.name),
                 group_description: user_group.description,
-                max_user_group_name_length,
+                max_user_group_name_length: user_groups.max_user_group_name_length,
+                allow_editing_description: true,
             };
             const change_user_group_info_modal = render_change_user_group_info_modal(template_data);
             dialog_widget.launch({
                 html_heading: $t_html(
                     {defaultMessage: "Edit {group_name}"},
-                    {group_name: user_group.name},
+                    {group_name: user_groups.get_display_group_name(user_group.name)},
                 ),
                 html_body: change_user_group_info_modal,
                 id: "change_group_info_modal",
@@ -1315,17 +1546,13 @@ export function initialize(): void {
             });
         }
 
+        const group_name = user_groups.get_display_group_name(user_group.name);
         const html_body = render_confirm_delete_user({
-            group_name: user_group.name,
+            group_name,
         });
 
-        const user_group_name = user_group.name;
-
         confirm_dialog.launch({
-            html_heading: $t_html(
-                {defaultMessage: "Deactivate {user_group_name}?"},
-                {user_group_name},
-            ),
+            html_heading: $t_html({defaultMessage: "Deactivate {group_name}?"}, {group_name}),
             html_body,
             on_click: deactivate_user_group,
             close_on_submit: false,
@@ -1334,8 +1561,9 @@ export function initialize(): void {
         });
     });
 
-    function save_group_info(this: HTMLElement): void {
-        const group = get_user_group_for_target(this);
+    function save_group_info(e: JQuery.ClickEvent): void {
+        assert(e.currentTarget instanceof HTMLElement);
+        const group = get_user_group_for_target(e.currentTarget);
         assert(group !== undefined);
         const url = `/json/user_groups/${group.id}`;
         let name;

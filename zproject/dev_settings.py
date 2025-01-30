@@ -115,6 +115,7 @@ elif os.path.isfile(_candidate_apns_cert_file):
 
 # Don't require anything about password strength in development
 PASSWORD_MIN_LENGTH = 0
+PASSWORD_MAX_LENGTH = 100
 PASSWORD_MIN_GUESSES = 0
 
 # Two factor authentication: Use the fake backend for development.
@@ -218,3 +219,5 @@ RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 5
 # In a dev environment, 'zulipdev.com:9991' is used to access the landing page.
 # See: https://zulip.readthedocs.io/en/latest/subsystems/realms.html#working-with-subdomains-in-development-environment
 ROOT_DOMAIN_LANDING_PAGE = True
+
+TOPIC_SUMMARIZATION_MODEL = "groq/llama-3.3-70b-versatile"

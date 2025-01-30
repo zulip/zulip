@@ -8,11 +8,6 @@
     /* Basic Tippy popovers scale with the base font-size. */
     font-size: var(--base-font-size-px);
 
-    .sp-input {
-        /* Override incorrect color for text in dark theme. */
-        color: var(--color-text-default) !important;
-    }
-
     .tippy-content {
         /* We set the font-size here to override the
            default value in the upstream tippy.css */
@@ -182,7 +177,6 @@
         color: var(--color-text-item);
 
         &:hover {
-            color: var(--color-text-link);
             text-decoration: none;
         }
 
@@ -223,10 +217,6 @@
     }
 }
 
-.sp-container {
-    z-index: 106;
-}
-
 #stream-actions-menu-popover,
 #stream-card-popover {
     .popover-stream-name {
@@ -249,48 +239,6 @@
 
     .popover-stream-info-menu-description {
         color: var(--color-text-popover-menu);
-    }
-
-    .colorpicker-container {
-        display: none;
-        margin-right: 10px;
-
-        .sp-container {
-            /* The base-font size for the color container is 12px,
-               inherited from the upstream spectrum.css file. */
-            background-color: hsl(0deg 0% 100%);
-            cursor: pointer;
-            border: none;
-
-            .sp-palette-container {
-                border-right: none;
-            }
-
-            & input {
-                box-sizing: inherit; /* IE */
-                box-sizing: initial;
-
-                width: calc(100% - 13px);
-            }
-
-            & button {
-                background-color: hsl(0deg 0% 100%);
-                background-image: none;
-                border: 1px solid hsl(0deg 0% 80%);
-                border-radius: 4px;
-                color: hsl(0deg 0% 25%);
-                /* 12px at 12px/1em */
-                font-size: 1em;
-                padding: 6px;
-                text-transform: capitalize;
-                text-align: center;
-                text-shadow: none;
-            }
-
-            .sp-picker-container {
-                border-left: solid 1px hsl(0deg 0% 88%);
-            }
-        }
     }
 }
 
@@ -321,7 +269,7 @@
     /* 20px at 18px/1em */
     line-height: 1.1111em;
     color: var(--color-text-full-name);
-    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .popover-group-menu-description {
@@ -404,15 +352,6 @@ ul.popover-group-menu-member-list {
     line-height: 1;
 }
 
-.bot-owner-name {
-    text-decoration: underline;
-
-    &:hover {
-        cursor: pointer;
-        color: hsl(200deg 100% 40%);
-    }
-}
-
 .popover-avatar {
     height: 240px;
     width: 240px;
@@ -449,7 +388,7 @@ ul.popover-group-menu-member-list {
     }
 
     .modal__header {
-        justify-content: center;
+        justify-items: center;
     }
 
     .modal__close {
@@ -534,7 +473,6 @@ ul.popover-group-menu-member-list {
     }
 
     .deactivated-user-icon {
-        margin: -1px;
         vertical-align: middle;
     }
 
@@ -586,6 +524,7 @@ ul.popover-group-menu-member-list {
         margin-bottom: 20px;
     }
 
+    .group-tab-element-header,
     .stream-tab-element-header {
         margin: 0;
         display: inline-block;
@@ -625,12 +564,14 @@ ul.popover-group-menu-member-list {
         }
     }
 
+    .group-list-top-section,
     .stream-list-top-section {
         display: flex;
         margin-top: 12px;
         align-items: center;
         margin-bottom: 5px;
 
+        .group-search-container,
         .stream-search-container {
             margin-left: auto;
             display: grid;
@@ -639,19 +580,20 @@ ul.popover-group-menu-member-list {
                 30px;
         }
 
+        .group-search,
         .stream-search {
             grid-column: search-input-start / clear-search-end;
             grid-row: search-input;
-            padding-right: 20px;
+            padding-right: 28px;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
             margin-bottom: 0;
         }
 
-        #clear_stream_search {
-            display: none;
-            grid-area: clear-search;
+        .group-search:placeholder-shown + #clear_groups_search,
+        .stream-search:placeholder-shown + #clear_stream_search {
+            visibility: hidden;
         }
     }
 
@@ -739,40 +681,6 @@ ul.popover-group-menu-member-list {
 }
 
 @media (width < $md_min) {
-    .colorpicker-popover {
-        display: flex !important;
-        justify-content: center;
-        align-items: center;
-
-        /* these are to override JS embedded inline styles. */
-        top: 0 !important;
-        left: 0 !important;
-        margin: 0 !important;
-        width: 100%;
-        height: 100%;
-
-        background-color: hsl(0deg 0% 0% / 70%);
-        border-radius: 0;
-        border: none;
-
-        pointer-events: none;
-
-        .popover-inner {
-            background-color: hsl(0deg 0% 100%);
-            pointer-events: all;
-        }
-
-        @media (width < $sm_min) {
-            .popover-inner {
-                width: 70%;
-            }
-
-            .sp-picker-container {
-                border-left: none !important;
-            }
-        }
-    }
-
     .popover-flex {
         position: absolute;
         top: 0 !important;
@@ -808,6 +716,7 @@ ul.popover-group-menu-member-list {
     }
 
     #user-profile-modal {
+        .group-list-top-section,
         .stream-list-top-section {
             display: block;
 
@@ -815,10 +724,12 @@ ul.popover-group-menu-member-list {
                 width: 100%;
             }
 
+            .group-search,
             .stream-search {
                 margin-bottom: 8px;
             }
 
+            #clear_groups_search,
             #clear_stream_search {
                 padding-top: 1px;
             }
@@ -929,12 +840,14 @@ ul.popover-group-menu-member-list {
 
     #move_topic_to_stream_widget_wrapper {
         display: flex;
+        /* 230px at 16px/1em */
+        max-width: 14.375em;
 
         .dropdown-widget-button {
             outline: none;
             /* 24px at 16px/1em */
             line-height: 1.5em;
-            width: 50%;
+            width: 100%;
         }
 
         .dropdown_widget_value {
@@ -979,10 +892,6 @@ ul.popover-group-menu-member-list {
     }
 
     .topic_stream_edit_header {
-        display: flex;
-        flex-flow: column wrap;
-        justify-content: flex-start;
-
         #select_stream_id {
             border-left: 0;
             padding-left: 0;
@@ -995,6 +904,31 @@ ul.popover-group-menu-member-list {
             position: fixed;
             top: 125px;
             left: 40px;
+        }
+    }
+
+    .topic_move_breadcrumb_messages {
+        margin: 0 5px 5px 0;
+        align-self: center;
+        width: 100%;
+
+        & label.checkbox {
+            /* Place the checkboxes on their own lines. */
+            display: block;
+
+            & input {
+                margin: 0;
+                vertical-align: baseline;
+            }
+
+            & + label.checkbox {
+                margin-top: 10px;
+            }
+        }
+
+        & label {
+            display: inline-block;
+            margin-right: 10px;
         }
     }
 }
@@ -1092,7 +1026,8 @@ ul.popover-group-menu-member-list {
         /* 20px at 18px/1em */
         line-height: 1.1111em;
         color: var(--color-text-full-name);
-        word-break: break-word;
+        overflow-wrap: anywhere;
+        user-select: text;
 
         .zulip-icon.zulip-icon-bot {
             vertical-align: middle;
@@ -1186,7 +1121,7 @@ ul.popover-group-menu-member-list {
         line-height: 1.1111em;
         color: var(--color-text-full-name) !important;
         max-width: 150px;
-        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 
     .user-type {
@@ -1378,6 +1313,13 @@ ul.popover-group-menu-member-list {
     }
 }
 
+.color-picker-popover {
+    --popover-menu-max-width: calc(
+        var(--padding-color-swatch-list) * 2 + var(--size-color-swatch) * 6 +
+            var(--grid-gap-color-swatch) * 5
+    );
+}
+
 .personal-menu-clear-status {
     display: flex;
     align-items: center;
@@ -1561,4 +1503,20 @@ ul.popover-menu-list {
             align-self: baseline;
         }
     }
+}
+
+#groups-to-add {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#user-group-to-add {
+    flex: 1;
+    min-width: 0;
+}
+
+.add-groups-button-wrapper {
+    flex: 0 0 auto;
 }

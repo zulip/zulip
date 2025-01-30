@@ -17,7 +17,7 @@ from django.test import override_settings
 from typing_extensions import override
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror
-from zerver.lib.email_mirror_helpers import encode_email_address
+from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.queue import MAX_REQUEST_RETRIES
 from zerver.lib.rate_limiter import RateLimiterLockingError
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
@@ -574,7 +574,9 @@ class WorkerTest(ZulipTestCase):
     def test_mirror_worker(self, mock_mirror_email: MagicMock) -> None:
         fake_client = FakeClient()
         stream = get_stream("Denmark", get_realm("zulip"))
-        stream_to_address = encode_email_address(stream)
+        hamlet = self.example_user("hamlet")
+        email_token = get_channel_email_token(stream, creator=hamlet, sender=hamlet)
+        stream_to_address = encode_email_address(stream.name, email_token)
         data = [
             dict(
                 msg_base64=base64.b64encode(b"\xf3test").decode(),
@@ -599,7 +601,9 @@ class WorkerTest(ZulipTestCase):
         realm = get_realm("zulip")
         RateLimitedRealmMirror(realm).clear_history()
         stream = get_stream("Denmark", realm)
-        stream_to_address = encode_email_address(stream)
+        hamlet = self.example_user("hamlet")
+        email_token = get_channel_email_token(stream, creator=hamlet, sender=hamlet)
+        stream_to_address = encode_email_address(stream.name, email_token)
         data = [
             dict(
                 msg_base64=base64.b64encode(b"\xf3test").decode(),

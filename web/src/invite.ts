@@ -22,7 +22,6 @@ import * as email_pill from "./email_pill.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as input_pill from "./input_pill.ts";
 import * as invite_stream_picker_pill from "./invite_stream_picker_pill.ts";
-import * as invite_user_group_picker_pill from "./invite_user_group_picker_pill.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
 import * as settings_components from "./settings_components.ts";
@@ -34,6 +33,7 @@ import * as stream_pill from "./stream_pill.ts";
 import * as timerender from "./timerender.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
+import * as user_group_picker_pill from "./user_group_picker_pill.ts";
 import * as user_group_pill from "./user_group_pill.ts";
 import * as util from "./util.ts";
 
@@ -82,10 +82,7 @@ function get_common_invitation_data(): {
 
     let stream_ids: number[] = [];
     let include_realm_default_subscriptions = false;
-    if (
-        $("#invite_select_default_streams").prop("checked") ||
-        !settings_data.user_can_subscribe_other_users()
-    ) {
+    if ($("#invite_select_default_streams").prop("checked")) {
         include_realm_default_subscriptions = true;
     } else {
         stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
@@ -274,7 +271,7 @@ function valid_to(): string {
 
     let time_in_minutes: number;
     if (time_input_value === "custom") {
-        if (!util.validate_custom_time_input(custom_expiration_time_input)) {
+        if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
             return $t({defaultMessage: "Invalid custom time"});
         }
         time_in_minutes = util.get_custom_time_in_minutes(
@@ -377,7 +374,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     e.preventDefault();
 
     const show_group_pill_container =
-        invite_user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0;
+        user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0;
 
     const html_body = render_invite_user_modal({
         is_admin: current_user.is_admin,
@@ -389,7 +386,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         time_choices: settings_config.custom_time_unit_values,
         show_select_default_streams_option: stream_data.get_default_stream_ids().length > 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
-        can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
     });
 
     function invite_user_modal_post_render(): void {
@@ -414,17 +410,13 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         const valid_to_text = valid_to();
         settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
 
-        if (settings_data.user_can_subscribe_other_users()) {
-            set_streams_to_join_list_visibility();
-            const $stream_pill_container = $("#invite_streams_container .pill-container");
-            stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
-        }
+        set_streams_to_join_list_visibility();
+        const $stream_pill_container = $("#invite_streams_container .pill-container");
+        stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
 
         if (show_group_pill_container) {
             const $user_group_pill_container = $("#invite-user-group-container .pill-container");
-            user_group_pill_widget = invite_user_group_picker_pill.create(
-                $user_group_pill_container,
-            );
+            user_group_pill_widget = user_group_picker_pill.create($user_group_pill_container);
         }
 
         $("#invite_streams_container .input, #invite_select_default_streams").on(
@@ -452,7 +444,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                     .find(".selected")
                     .attr("data-tab-key");
             }
-            const valid_custom_time = util.validate_custom_time_input(custom_expiration_time_input);
+            const valid_custom_time = util.validate_custom_time_input(
+                custom_expiration_time_input,
+                false,
+            );
             const $button = $("#invite-user-modal .dialog_submit_button");
             $button.prop(
                 "disabled",
@@ -477,6 +472,9 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         pills.onTextInputHook(toggle_invite_submit_button);
 
         $expires_in.on("change", () => {
+            if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
+                custom_expiration_time_input = 0;
+            }
             settings_components.set_custom_time_inputs_visibility(
                 $expires_in,
                 custom_expiration_time_unit,

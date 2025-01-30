@@ -9,6 +9,7 @@ import render_left_sidebar_topic_actions_popover from "../templates/popovers/lef
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
+import * as message_summary from "./message_summary.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
@@ -28,7 +29,7 @@ function get_conversation(instance: tippy.Instance): {
     let topic_name;
     let url;
 
-    if (instance.reference.classList.contains("inbox-topic-menu")) {
+    if (!instance.reference.classList.contains("topic-sidebar-menu-icon")) {
         const $elt = $(instance.reference);
         stream_id = Number.parseInt($elt.attr("data-stream-id")!, 10);
         topic_name = $elt.attr("data-topic-name")!;
@@ -46,7 +47,7 @@ function get_conversation(instance: tippy.Instance): {
 
 export function initialize(): void {
     popover_menus.register_popover_menu(
-        "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu",
+        "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu, .recipient-row-topic-menu",
         {
             ...popover_menus.left_sidebar_tippy_options,
             onShow(instance) {
@@ -64,11 +65,14 @@ export function initialize(): void {
             onMount(instance) {
                 const $popper = $(instance.popper);
                 const {stream_id, topic_name, url} = get_conversation(instance);
-                const is_topic_empty = popover_menus_data.get_topic_popover_content_context({
+                const context = popover_menus_data.get_topic_popover_content_context({
                     stream_id,
                     topic_name,
                     url,
-                }).is_topic_empty;
+                });
+                const is_topic_empty = context.is_topic_empty;
+                const topic_display_name = context.topic_display_name;
+                const is_empty_string_topic = context.is_empty_string_topic;
 
                 if (!stream_id) {
                     popover_menus.hide_current_popover_if_visible(instance);
@@ -139,7 +143,10 @@ export function initialize(): void {
                 });
 
                 $popper.one("click", ".sidebar-popover-delete-topic-messages", () => {
-                    const html_body = render_delete_topic_modal({topic_name});
+                    const html_body = render_delete_topic_modal({
+                        topic_display_name,
+                        is_empty_string_topic,
+                    });
 
                     confirm_dialog.launch({
                         html_heading: $t_html({defaultMessage: "Delete topic"}),
@@ -149,6 +156,12 @@ export function initialize(): void {
                             message_edit.delete_topic(stream_id, topic_name);
                         },
                     });
+
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
+                $popper.one("click", ".sidebar-popover-summarize-topic", () => {
+                    message_summary.get_narrow_summary(stream_id, topic_name);
 
                     popover_menus.hide_current_popover_if_visible(instance);
                 });

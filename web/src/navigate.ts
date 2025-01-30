@@ -10,9 +10,34 @@ function go_to_row(msg_id: number): void {
     message_lists.current.select_id(msg_id, {then_scroll: true, from_scroll: true});
 }
 
+function is_long_message(message_height: number): boolean {
+    // Here we just need to the message to be long enough
+    // to be hard to completely see just using `up / down`
+    // to warrant use of `page up / down`.
+    // Also, we want to avoid triggering `page up / down`
+    // when pressing `up / down` on short messages to avoid
+    // the selected message being barely visible.
+    return message_height >= 0.5 * message_viewport.height();
+}
+
 export function up(): void {
     assert(message_lists.current !== undefined);
     message_viewport.set_last_movement_direction(-1);
+
+    const $selected_message = message_lists.current.selected_row();
+    if ($selected_message.length > 0) {
+        const viewport_info = message_viewport.message_viewport_info();
+        const message_props = $selected_message.get_offset_to_window();
+        // We scroll up to show the hidden top of long messages.
+        if (
+            is_long_message(message_props.height) &&
+            message_props.top < viewport_info.visible_top
+        ) {
+            page_up();
+            return;
+        }
+    }
+
     const msg_id = message_lists.current.prev();
     if (msg_id === undefined) {
         return;
@@ -36,6 +61,20 @@ export function down(with_centering = false): void {
         }
 
         return;
+    }
+
+    const $selected_message = message_lists.current.selected_row();
+    if ($selected_message.length > 0) {
+        const viewport_info = message_viewport.message_viewport_info();
+        const message_props = $selected_message.get_offset_to_window();
+        // We scroll down to show the hidden bottom of long messages.
+        if (
+            is_long_message(message_props.height) &&
+            message_props.bottom > viewport_info.visible_bottom
+        ) {
+            page_down();
+            return;
+        }
     }
 
     // Normal path starts here.

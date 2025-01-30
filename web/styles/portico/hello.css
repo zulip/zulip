@@ -516,7 +516,6 @@ ul {
     .quote__source strong {
         font-family: var(--font-ops);
         font-weight: 550;
-        font-style: bold;
     }
 
     .quote__source i {

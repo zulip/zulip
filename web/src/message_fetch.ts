@@ -28,6 +28,7 @@ import {narrow_term_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 const response_schema = z.object({
     anchor: z.number(),
@@ -59,6 +60,7 @@ type MessageFetchAPIParams = {
     num_after: number;
     client_gravatar: boolean;
     narrow?: string;
+    allow_empty_topic_name: boolean;
 };
 
 let first_messages_fetch = true;
@@ -98,6 +100,7 @@ const consts = {
     // Parameters for asking for more history in the recent view.
     recent_view_fetch_more_batch_size: 2000,
     recent_view_minimum_load_more_fetch_size: 50000,
+    recent_view_load_more_increment_per_click: 25000,
 };
 
 export function load_messages_around_anchor(
@@ -153,7 +156,7 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
     // messages not tracked in unread.ts during this fetching process.
     message_util.do_unread_count_updates(messages, true);
 
-    const ignore_found_newest = true;
+    const is_contiguous_history = true;
     if (messages.length > 0) {
         if (opts.msg_list) {
             if (opts.validate_filter_topic_post_fetch) {
@@ -161,9 +164,9 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
             }
             // Since this adds messages to the MessageList and renders MessageListView,
             // we don't need to call it if msg_list was not defined by the caller.
-            opts.msg_list.add_messages(messages, {}, ignore_found_newest);
+            opts.msg_list.add_messages(messages, {}, is_contiguous_history);
         } else {
-            opts.msg_list_data.add_messages(messages, ignore_found_newest);
+            opts.msg_list_data.add_messages(messages, is_contiguous_history);
         }
     }
 
@@ -315,27 +318,8 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
     return JSON.stringify(narrow_terms);
 }
 
-function get_parameters_for_message_fetch_api(opts: MessageFetchOptions): MessageFetchAPIParams {
-    if (typeof opts.anchor === "number") {
-        // Messages that have been locally echoed messages have
-        // floating point temporary IDs, which is intended to be a.
-        // completely client-side detail.  We need to round these to
-        // the nearest integer before sending a request to the server.
-        opts.anchor = opts.anchor.toFixed(0);
-    }
-    const data: MessageFetchAPIParams = {
-        anchor: opts.anchor,
-        num_before: opts.num_before,
-        num_after: opts.num_after,
-        client_gravatar: true,
-    };
-    const msg_list_data = opts.msg_list_data;
-
-    if (msg_list_data === undefined) {
-        blueslip.error("Message list data is undefined!");
-    }
-
-    let narrow_data = msg_list_data.filter.public_terms();
+export function get_narrow_for_message_fetch(filter: Filter): string {
+    let narrow_data = filter.public_terms();
     if (page_params.narrow !== undefined) {
         narrow_data = [...narrow_data, ...page_params.narrow];
     }
@@ -349,9 +333,39 @@ function get_parameters_for_message_fetch_api(opts: MessageFetchOptions): Messag
         // will return an error if appropriate.
         narrow_data = [...narrow_data, ...web_public_narrow];
     }
+
+    let narrow_param_string = "";
     if (narrow_data.length > 0) {
-        const narrow_param_string = JSON.stringify(narrow_data);
-        data.narrow = handle_operators_supporting_id_based_api(narrow_param_string);
+        narrow_param_string = JSON.stringify(narrow_data);
+        narrow_param_string = handle_operators_supporting_id_based_api(narrow_param_string);
+    }
+    return narrow_param_string;
+}
+
+function get_parameters_for_message_fetch_api(opts: MessageFetchOptions): MessageFetchAPIParams {
+    if (typeof opts.anchor === "number") {
+        // Messages that have been locally echoed messages have
+        // floating point temporary IDs, which is intended to be a.
+        // completely client-side detail.  We need to round these to
+        // the nearest integer before sending a request to the server.
+        opts.anchor = opts.anchor.toFixed(0);
+    }
+    const data: MessageFetchAPIParams = {
+        anchor: opts.anchor,
+        num_before: opts.num_before,
+        num_after: opts.num_after,
+        client_gravatar: true,
+        allow_empty_topic_name: true,
+    };
+    const msg_list_data = opts.msg_list_data;
+
+    if (msg_list_data === undefined) {
+        blueslip.error("Message list data is undefined!");
+    }
+
+    const narrow = get_narrow_for_message_fetch(msg_list_data.filter);
+    if (narrow !== "") {
+        data.narrow = narrow;
     }
     return data;
 }
@@ -431,28 +445,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
 
             ui_report.show_error($("#connection-error"));
 
-            // We need to respect the server's rate-limiting headers, but beyond
-            // that, we also want to avoid contributing to a thundering herd if
-            // the server is giving us 500s/502s.
-            //
-            // So we do the maximum of the retry-after header and an exponential
-            // backoff with ratio 2 and half jitter. Starts at 1-2s and ends at
-            // 16-32s after 5 failures.
-            const backoff_scale = Math.min(2 ** attempt, 32);
-            const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
-            let rate_limit_delay_secs = 0;
-            const rate_limited_error_schema = z.object({
-                "retry-after": z.number(),
-                code: z.literal("RATE_LIMIT_HIT"),
-            });
-            const parsed = rate_limited_error_schema.safeParse(xhr.responseJSON);
-            if (xhr.status === 429 && parsed?.success && parsed?.data) {
-                // Add a bit of jitter to the required delay suggested by the
-                // server, because we may be racing with other copies of the web
-                // app.
-                rate_limit_delay_secs = parsed.data["retry-after"] + Math.random() * 0.5;
-            }
-            const delay_secs = Math.max(backoff_delay_secs, rate_limit_delay_secs);
+            const delay_secs = util.get_retry_backoff_seconds(xhr, attempt, true);
             setTimeout(() => {
                 load_messages(opts, attempt + 1);
             }, delay_secs * 1000);
@@ -565,14 +558,19 @@ export function maybe_load_older_messages(opts: {
         }
 
         if (fetched_substantial_history && found_first_unread) {
-            recent_view_ui.set_backfill_in_progress(false);
-            return;
+            // Increase bar for `fetched_substantial_history` for next
+            // `Load more` click.
+            opts.cont = () => {
+                consts.recent_view_minimum_load_more_fetch_size +=
+                    consts.recent_view_load_more_increment_per_click;
+                recent_view_ui.set_backfill_in_progress(false);
+            };
+        } else {
+            opts.cont = () =>
+                setTimeout(() => {
+                    maybe_load_older_messages(opts);
+                }, consts.catch_up_backfill_delay);
         }
-
-        opts.cont = () =>
-            setTimeout(() => {
-                maybe_load_older_messages(opts);
-            }, consts.catch_up_backfill_delay);
     }
     do_backfill({
         msg_list: opts.msg_list,

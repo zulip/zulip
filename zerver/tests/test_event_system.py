@@ -845,7 +845,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
             user_profile=reader,
             realm=reader.realm,
         )
-        post_process_state(reader, result, False)
+        post_process_state(reader, result, False, True)
         self.assert_length(result["unread_msgs"]["streams"], 1)
         self.assertEqual(result["unread_msgs"]["streams"][0]["topic"], "case DOES not MATTER")
         self.assert_length(result["unread_msgs"]["streams"][0]["unread_message_ids"], 2)
@@ -979,6 +979,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 self.client_gravatar = client_gravatar
                 self.client_type_name = "whatever"
                 self.events: list[dict[str, Any]] = []
+                self.empty_topic_name = True
 
             def accepts_messages(self) -> bool:
                 return True
@@ -1217,7 +1218,7 @@ class FetchQueriesTest(ZulipTestCase):
         realm = get_realm_with_settings(realm_id=user.realm_id)
 
         with (
-            self.assert_database_query_count(44),
+            self.assert_database_query_count(45),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=realm)
@@ -1251,7 +1252,7 @@ class FetchQueriesTest(ZulipTestCase):
             starred_messages=1,
             stream=5,
             stop_words=0,
-            subscription=6,
+            subscription=7,
             update_display_settings=0,
             update_global_notifications=0,
             update_message_flags=5,

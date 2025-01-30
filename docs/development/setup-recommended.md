@@ -201,8 +201,18 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
 ##### 1. Install Vagrant, Docker, and Git
 
+Install vagrant:
+
 ```console
-$ sudo apt install vagrant docker.io git
+$ wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+$ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+$ sudo apt update && sudo apt install vagrant
+```
+
+Install Docker and Git:
+
+```console
+$ sudo apt install docker.io git
 ```
 
 ```{include} setup/install-docker.md
@@ -615,6 +625,13 @@ help.
 
 On Windows with WSL 2, you do not need to shut down the environment. Simply
 close your terminal window(s).
+
+Alternatively, you can use a command to terminate/shutdown your WSL2 environment with PowerShell using:
+
+```console
+> wsl --terminate <environment_name>
+```
+
 :::
 
 :::{tab-item} Windows (VM)
@@ -1205,7 +1222,6 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [install-advanced]: setup-advanced.md
 [remote-wsl]: https://code.visualstudio.com/docs/remote/wsl-tutorial
-[remote-ssh]: https://code.visualstudio.com/docs/remote/ssh-tutorial
 [rtd-git-guide]: ../git/index.md
 [rtd-testing]: ../testing/testing.md
 [rtd-using-dev-env]: using.md

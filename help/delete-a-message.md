@@ -91,7 +91,7 @@ the `ARCHIVED_DATA_VACUUMING_DELAY_DAYS` setting.
 ## Message notifications
 
 If you delete a message soon after sending it, any [pending email
-notifications](/help/email-notifications#delay-before-sending-emails)
+notifications](/help/email-notifications#configure-delay-for-message-notification-emails)
 for that message will be canceled, and
 [visual desktop notifications](/help/desktop-notifications) will be removed,
 including [mentions and alerts](/help/dm-mention-alert-notifications).

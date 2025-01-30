@@ -273,20 +273,6 @@
         }
     }
 
-    #stream-actions-menu-popover .sp-container {
-        background-color: transparent;
-
-        & button {
-            background-color: hsl(208deg 35% 11%);
-            border: 1px solid hsl(210deg 36% 4%);
-            color: hsl(236deg 31% 90%);
-        }
-
-        .sp-picker-container {
-            border-left: solid 1px hsl(210deg 36% 4%);
-        }
-    }
-
     .stream_header_colorblock.disabled {
         filter: brightness(50%);
     }
@@ -729,7 +715,7 @@
     }
 
     & a:not(:active):focus,
-    button:focus,
+    button:not(.action-button, .icon-button):focus,
     i.fa:focus,
     i.zulip-icon:focus,
     [role="button"]:focus {
@@ -802,20 +788,6 @@
             &:hover {
                 color: inherit;
             }
-        }
-    }
-
-    /* Originally the icon inherits the color of label, but when the setting
-    is disabled, the color of the label is changed and thus the icon becomes
-    too light. So, we set the color explicitly to original color of label to
-    keep the color of the icon same even when the setting is disabled. */
-    #id_realm_enable_spectator_access_label a {
-        color: hsl(236deg 33% 90%);
-    }
-
-    #stream-specific-notify-table .unmute_stream {
-        &:hover {
-            color: hsl(0deg 0% 100%);
         }
     }
 

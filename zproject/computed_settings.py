@@ -153,9 +153,9 @@ if services is not None and set(services).intersection(
     {"submit_usage_statistics", "security_alerts", "mobile_push"}
 ):
     # None of these make sense enabled without ZULIP_SERVICES_URL.
-    assert (
-        ZULIP_SERVICES_URL is not None
-    ), "ZULIP_SERVICES_URL is required when any services are enabled."
+    assert ZULIP_SERVICES_URL is not None, (
+        "ZULIP_SERVICES_URL is required when any services are enabled."
+    )
 
 ANALYTICS_DATA_UPLOAD_LEVEL = max(
     [service_name_to_required_upload_level[service] for service in (services or [])],
@@ -178,6 +178,8 @@ PUPPETEER_TESTS = False
 RUNNING_OPENAPI_CURL_TEST = False
 # This is overridden in test_settings.py for the test suites
 GENERATE_STRIPE_FIXTURES = False
+# This is overridden in test_settings.py for the test suites
+GENERATE_LITELLM_FIXTURES = False
 # This is overridden in test_settings.py for the test suites
 BAN_CONSOLE_OUTPUT = False
 # This is overridden in test_settings.py for the test suites
@@ -1289,3 +1291,6 @@ SCIM_SERVICE_PROVIDER = {
         },
     ],
 }
+
+# Which API key to use will be determined based on TOPIC_SUMMARIZATION_MODEL.
+TOPIC_SUMMARIZATION_API_KEY = get_secret("topic_summarization_api_key", None)

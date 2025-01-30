@@ -27,7 +27,7 @@ export function get_server_history(stream_id: number, on_success: () => void): v
 
     void channel.get({
         url,
-        data: {},
+        data: {allow_empty_topic_name: true},
         success(raw_data) {
             const data = stream_topic_history_response_schema.parse(raw_data);
             const server_history = data.topics;
@@ -56,6 +56,7 @@ export function update_topic_last_message_id(
             anchor: "newest",
             num_before: 1,
             num_after: 0,
+            allow_empty_topic_name: true,
         },
         success(data) {
             const {messages} = z

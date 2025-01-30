@@ -1,6 +1,6 @@
 import type {Meta, UppyFile} from "@uppy/core";
 import {Uppy} from "@uppy/core";
-import Tus from "@uppy/tus";
+import Tus, {type TusBody} from "@uppy/tus";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
@@ -20,8 +20,8 @@ import * as rows from "./rows.ts";
 import {realm} from "./state_data.ts";
 
 let drag_drop_img: HTMLElement | null = null;
-let compose_upload_object: Uppy;
-const upload_objects_by_message_edit_row = new Map<number, Uppy>();
+let compose_upload_object: Uppy<Meta, TusBody>;
+const upload_objects_by_message_edit_row = new Map<number, Uppy<Meta, TusBody>>();
 
 export function compose_upload_cancel(): void {
     compose_upload_object.cancelAll();
@@ -32,7 +32,7 @@ export function feature_check(): XMLHttpRequestUpload {
     return window.XMLHttpRequest && new window.XMLHttpRequest().upload;
 }
 
-export function get_translated_status(file: File | UppyFile<Meta, Record<string, never>>): string {
+export function get_translated_status(file: File | UppyFile<Meta, TusBody>): string {
     const status = $t({defaultMessage: "Uploading {filename}…"}, {filename: file.name});
     return "[" + status + "]()";
 }
@@ -125,9 +125,21 @@ export function edit_config(row: number): Config {
     };
 }
 
-export let hide_upload_banner = (uppy: Uppy, config: Config, file_id: string): void => {
-    config.upload_banner(file_id).remove();
-    if (uppy.getFiles().length === 0) {
+export let hide_upload_banner = (
+    uppy: Uppy<Meta, TusBody>,
+    config: Config,
+    file_id: string,
+    delay = 0,
+): void => {
+    if (delay > 0) {
+        setTimeout(() => {
+            config.upload_banner(file_id).remove();
+        }, delay);
+    } else {
+        config.upload_banner(file_id).remove();
+    }
+
+    if (uppy.getFiles().every((e) => e.progress.uploadComplete)) {
         if (config.mode === "compose") {
             compose_validate.set_upload_in_progress(false);
         } else {
@@ -176,7 +188,11 @@ export function show_error_message(
     }
 }
 
-export let upload_files = (uppy: Uppy, config: Config, files: File[] | FileList): void => {
+export let upload_files = (
+    uppy: Uppy<Meta, TusBody>,
+    config: Config,
+    files: File[] | FileList,
+): void => {
     if (files.length === 0) {
         return;
     }
@@ -254,8 +270,69 @@ export function rewire_upload_files(value: typeof upload_files): void {
     upload_files = value;
 }
 
-export function setup_upload(config: Config): Uppy {
-    const uppy = new Uppy({
+// Borrowed from tus-js-client code at
+// https://github.com/tus/tus-js-client/blob/ca63ba254ea8766438b9d422f6f94284911f1fa5/lib/index.d.ts#L79
+// The library does not export this type, hence requiring a copy here.
+type PreviousUpload = {
+    size: number | null;
+    metadata: Record<string, string>;
+    creationTime: string;
+    urlStorageKey: string;
+    uploadUrl: string | null;
+    parallelUploadUrls: string[] | null;
+};
+
+// Parts of it are inspired from WebStorageUrlStorage at
+// https://github.com/tus/tus-js-client/blob/ca63ba254ea8766438b9d422f6f94284911f1fa5/lib/browser/urlStorage.js#L27
+// While there are no async actions happening in any of the methods in
+// this class, UrlStorage interface for tus-js-client requires a Promise
+// to be returned for each of these methods.
+class InMemoryUrlStorage {
+    urlStorage: Map<string, PreviousUpload>;
+
+    constructor() {
+        this.urlStorage = new Map();
+    }
+
+    async findAllUploads(): Promise<PreviousUpload[]> {
+        return await Promise.resolve([...this.urlStorage.values()]);
+    }
+
+    async findUploadsByFingerprint(fingerprint: string): Promise<PreviousUpload[]> {
+        const results = [];
+
+        for (const [key, value] of this.urlStorage) {
+            if (!key.startsWith(`${fingerprint}::`)) {
+                continue;
+            }
+            results.push(value);
+        }
+
+        return await Promise.resolve(results);
+    }
+
+    async removeUpload(urlStorageKey: string): Promise<void> {
+        this.urlStorage.delete(urlStorageKey);
+        await Promise.resolve();
+    }
+
+    async addUpload(fingerprint: string, upload: PreviousUpload): Promise<string> {
+        const id = Math.round(Math.random() * 1e12);
+        const key = `${fingerprint}::${id}`;
+
+        upload.urlStorageKey = key;
+        this.urlStorage.set(key, upload);
+        return await Promise.resolve(key);
+    }
+}
+
+const zulip_upload_response_schema = z.object({
+    url: z.string(),
+    filename: z.string(),
+});
+
+export function setup_upload(config: Config): Uppy<Meta, TusBody> {
+    const uppy = new Uppy<Meta, TusBody>({
         debug: false,
         autoProceed: true,
         restrictions: {
@@ -274,26 +351,24 @@ export function setup_upload(config: Config): Uppy {
             },
             pluralize: (_n) => 0,
         },
+        onBeforeFileAdded: () => true, // Allow duplicate file uploads
     });
     uppy.use(Tus, {
         // https://uppy.io/docs/tus/#options
         endpoint: "/api/v1/tus/",
         // The tus-js-client fingerprinting feature stores metadata on
-        // previously uploaded files in browser local storage, to
-        // allow resuming the upload / avoiding a repeat upload in
-        // future browser sessions.
-        //
-        // This is not a feature we need across browser sessions. Since these local storage
-        // entries are never garbage-collected, can be accessed via
-        // the browser console even after logging out, and contain
-        // some metadata about previously uploaded files, which seems
-        // like a security risk for using Zulip on a public computer. So we
-        // disable the feature.
-        //
-        // TODO: The better fix would be to define a `urlStorage` that is
-        // backed by a simple JavaScript map, so that the resume/repeat
-        // features are available, but with a duration of the current session.
-        storeFingerprintForResuming: false,
+        // previously uploaded files by default in browser local storage.
+        // Since these local storage entries are never garbage-collected,
+        // they can be accessed via the browser console even after
+        // logging out, and contain some metadata about previously
+        // uploaded files, which seems like a security risk for
+        // using Zulip on a public computer.
+
+        // We use our own implementation of url storage that saves urls
+        // in memory instead. We won't be able to retain this history
+        // across reloads unlike local storage, which is a tradeoff we
+        // are willing to make.
+        urlStorage: new InMemoryUrlStorage(),
         // Number of concurrent uploads
         limit: 5,
     });
@@ -383,17 +458,21 @@ export function setup_upload(config: Config): Uppy {
         upload_files(uppy, config, files);
     });
 
-    uppy.on("upload-success", (file, _response) => {
+    uppy.on("upload-success", (file, response) => {
         assert(file !== undefined);
-        // TODO: Because of https://github.com/transloadit/uppy/issues/5444 we can't get the actual
-        // response with the URL and filename, so we hack it together.
-        const filename = file.name!;
-        // With the S3 backend, the path_id we chose has a multipart-id appended with a '+'; since
-        // our path-ids cannot contain '+', we strip any suffix starting with '+'.
-        const url = new URL(file.tus!.uploadUrl!.replace(/\+.*/, "")).pathname.replace(
-            "/api/v1/tus/",
-            "/user_uploads/",
-        );
+        let upload_response;
+        try {
+            upload_response = zulip_upload_response_schema.parse(
+                JSON.parse(response.body!.xhr.responseText),
+            );
+        } catch {
+            blueslip.warn("Invalid JSON response from tus server", {
+                body: response.body!.xhr.responseText,
+            });
+            return;
+        }
+        const filename = upload_response.filename;
+        const url = upload_response.url;
 
         const filtered_filename = filename.replaceAll("[", "").replaceAll("]", "");
         const syntax_to_insert = "[" + filtered_filename + "](" + url + ")";
@@ -409,14 +488,9 @@ export function setup_upload(config: Config): Uppy {
 
         compose_ui.autosize_textarea($text_area);
 
-        // The uploaded files should be removed since uppy doesn't allow files in the store
-        // to be re-uploaded again.
-        uppy.removeFile(file.id);
         // Hide upload status after waiting 100ms after the 1s transition to 100%
         // so that the user can see the progress bar at 100%.
-        setTimeout(() => {
-            hide_upload_banner(uppy, config, file.id);
-        }, 1100);
+        hide_upload_banner(uppy, config, file.id, 1100);
     });
 
     uppy.on("info-visible", () => {

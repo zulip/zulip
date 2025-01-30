@@ -28,6 +28,7 @@ import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as user_topics from "./user_topics.ts";
 import type {AllVisibilityPolicies} from "./user_topics.ts";
+import * as util from "./util.ts";
 
 type ActionPopoverContext = {
     message_id: number;
@@ -50,9 +51,12 @@ type TopicPopoverContext = {
     stream_name: string;
     stream_id: number;
     stream_muted: boolean;
-    topic_name: string;
+    topic_display_name: string;
+    is_empty_string_topic: boolean;
     topic_unmuted: boolean;
     is_spectator: boolean;
+    is_moderator: boolean;
+    is_development_environment: boolean;
     is_topic_empty: boolean;
     can_move_topic: boolean;
     can_rename_topic: boolean;
@@ -191,7 +195,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     const should_display_uncollapse =
         !message.locally_echoed && !message.is_me_message && message.collapsed;
 
-    const should_display_quote_message = message.content !== "<p>(deleted)</p>" && not_spectator;
+    const should_display_quote_message = not_spectator;
 
     const conversation_time_url = hash_util.by_conversation_and_time_url(message);
 
@@ -255,12 +259,16 @@ export function get_topic_popover_content_context({
         stream_name: sub.name,
         stream_id: sub.stream_id,
         stream_muted: sub.is_muted,
-        topic_name,
+        topic_display_name: util.get_final_topic_display_name(topic_name),
+        is_empty_string_topic: topic_name === "",
         topic_unmuted,
         is_spectator,
         is_topic_empty,
         can_move_topic,
         can_rename_topic,
+        is_moderator: current_user.is_moderator,
+        // Temporary, as we're using this to control whether we show the summarize popover.
+        is_development_environment: page_params.development_environment,
         is_realm_admin: current_user.is_admin,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
         has_starred_messages,

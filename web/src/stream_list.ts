@@ -780,6 +780,10 @@ export function handle_narrow_activated(
             }
         }
     }
+
+    if (is_zoomed_in()) {
+        topic_list.scroll_zoomed_in_topic_into_view();
+    }
 }
 
 export function handle_message_view_deactivated(): void {

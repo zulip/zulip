@@ -10,6 +10,7 @@ import * as buddy_data from "./buddy_data.ts";
 import {buddy_list} from "./buddy_list.ts";
 import * as keydown_util from "./keydown_util.ts";
 import {ListCursor} from "./list_cursor.ts";
+import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
@@ -92,13 +93,16 @@ export function redraw_user(user_id: number): void {
         return;
     }
 
-    const info = buddy_data.get_item(user_id);
-
-    buddy_list.insert_or_move({
-        user_id,
-        item: info,
-    });
+    buddy_list.insert_or_move([user_id]);
     update_presence_indicators();
+}
+
+export function rerender_user_sidebar_participants(): void {
+    if (!narrow_state.stream_id() || !narrow_state.topic()) {
+        return;
+    }
+
+    buddy_list.rerender_participants();
 }
 
 export function check_should_redraw_new_user(user_id: number): boolean {

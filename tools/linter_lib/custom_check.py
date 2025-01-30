@@ -12,6 +12,8 @@ FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
     "zerver/lib/topic.py",
     "zerver/lib/topic_sqlalchemy.py",
+    # This is tied to legacy events.
+    "zerver/lib/event_types.py",
     # This is for backward compatibility.
     "zerver/tests/test_legacy_subject.py",
     # Other migration-related changes require extreme care.
@@ -35,6 +37,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     # This has lots of query data embedded, so it's hard
     # to fix everything until we migrate the DB to "topic".
     "zerver/tests/test_message_fetch.py",
+    "zerver/tests/test_message_topics.py",
 }
 
 shebang_rules: list["Rule"] = [
@@ -111,13 +114,13 @@ markdown_whitespace_rules: list["Rule"] = [
 
 
 js_rules = RuleList(
-    langs=["js", "ts"],
+    langs=["cjs", "js", "ts"],
     rules=[
         {
             "pattern": "subject|SUBJECT",
             "exclude": {
                 "web/src/message_store.ts",
-                "web/src/types.ts",
+                "web/src/server_event_types.ts",
                 "web/src/util.ts",
                 "web/src/message_events_util.ts",
                 "web/src/message_helper.ts",
@@ -223,6 +226,11 @@ js_rules = RuleList(
             "pattern": r"allowHTML|(?i:data-tippy-allowHTML)",
             "description": "Never use Tippy.js allowHTML; for an HTML tooltip, get a DocumentFragment with ui_util.parse_html.",
         },
+        {
+            "pattern": r"\.rewire_",
+            "description": "Never call rewire_* functions directly. Use override_rewire.",
+            "include_only": {"web/tests/"},
+        },
         *whitespace_rules,
     ],
 )
@@ -239,6 +247,12 @@ python_rules = RuleList(
             "exclude": FILES_WITH_LEGACY_SUBJECT,
             "exclude_line": {
                 ("zerver/lib/message.py", "message__subject__iexact=message.topic_name(),"),
+                ("zerver/views/streams.py", "message__subject__iexact=topic_name,"),
+                ("zerver/lib/message_cache.py", 'and obj["subject"] == ""'),
+                (
+                    "zerver/lib/message_cache.py",
+                    'obj["subject"] = Message.EMPTY_TOPIC_FALLBACK_NAME',
+                ),
             },
             "include_only": {
                 "zerver/data_import/",
@@ -372,11 +386,6 @@ python_rules = RuleList(
         {
             "pattern": "get_stream[(]",
             "include_only": {"zerver/views/", "zerver/actions/"},
-            "exclude_line": {
-                # This one in check_message is kinda terrible, since it's
-                # how most instances are written, but better to exclude something than nothing
-                ("zerver/actions/message_send.py", "stream = get_stream(stream_name, realm)"),
-            },
             "description": "Please use access_stream_by_*() to fetch Stream objects",
         },
         {

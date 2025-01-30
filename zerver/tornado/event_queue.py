@@ -28,8 +28,9 @@ from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish_rollback_unsafe, retry_event
+from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
 from zerver.middleware import async_request_timer_restart
-from zerver.models import CustomProfileField
+from zerver.models import CustomProfileField, Message
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.handlers import finish_handler, get_handler_by_id, handler_stats_string
@@ -82,6 +83,7 @@ class ClientDescriptor:
         user_list_incomplete: bool,
         include_deactivated_groups: bool,
         archived_channels: bool,
+        empty_topic_name: bool,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -115,6 +117,7 @@ class ClientDescriptor:
         self.user_list_incomplete = user_list_incomplete
         self.include_deactivated_groups = include_deactivated_groups
         self.archived_channels = archived_channels
+        self.empty_topic_name = empty_topic_name
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -147,6 +150,7 @@ class ClientDescriptor:
             user_list_incomplete=self.user_list_incomplete,
             include_deactivated_groups=self.include_deactivated_groups,
             archived_channels=self.archived_channels,
+            empty_topic_name=self.empty_topic_name,
         )
 
     @override
@@ -186,6 +190,7 @@ class ClientDescriptor:
             user_list_incomplete=d.get("user_list_incomplete", False),
             include_deactivated_groups=d.get("include_deactivated_groups", False),
             archived_channels=d.get("archived_channels", False),
+            empty_topic_name=d.get("empty_topic_name", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -1129,6 +1134,7 @@ def process_message_event(
         *,
         apply_markdown: bool,
         client_gravatar: bool,
+        allow_empty_topic_name: bool,
         can_access_sender: bool,
         is_incoming_1_to_1: bool,
     ) -> dict[str, Any]:
@@ -1136,6 +1142,7 @@ def process_message_event(
             wide_dict,
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
+            allow_empty_topic_name=allow_empty_topic_name,
             can_access_sender=can_access_sender,
             realm_host=realm_host,
             is_incoming_1_to_1=is_incoming_1_to_1,
@@ -1218,6 +1225,7 @@ def process_message_event(
         message_dict = get_client_payload(
             apply_markdown=client.apply_markdown,
             client_gravatar=client.client_gravatar,
+            allow_empty_topic_name=client.empty_topic_name,
             can_access_sender=can_access_sender,
             is_incoming_1_to_1=wide_dict["recipient_id"] == client.user_recipient_id,
         )
@@ -1290,19 +1298,22 @@ def process_deletion_event(event: Mapping[str, Any], users: Iterable[int]) -> No
             if not client.accepts_event(event):
                 continue
 
+            deletion_event = event
+            if deletion_event.get("topic") == "" and not client.empty_topic_name:
+                deletion_event = dict(event)
+                deletion_event["topic"] = Message.EMPTY_TOPIC_FALLBACK_NAME
+
             # For clients which support message deletion in bulk, we
             # send a list of msgs_ids together, otherwise we send a
             # delete event for each message.  All clients will be
             # required to support bulk_message_deletion in the future;
             # this logic is intended for backwards-compatibility only.
             if client.bulk_message_deletion:
-                client.add_event(event)
+                client.add_event(deletion_event)
                 continue
 
-            for message_id in event["message_ids"]:
-                # We use the following rather than event.copy()
-                # because the read-only Mapping type doesn't support .copy().
-                compatibility_event = dict(event)
+            for message_id in deletion_event["message_ids"]:
+                compatibility_event = dict(deletion_event)
                 compatibility_event["message_id"] = message_id
                 del compatibility_event["message_ids"]
                 client.add_event(compatibility_event)
@@ -1445,10 +1456,18 @@ def process_message_update_event(
             )
 
         for client in get_client_descriptors_for_user(user_profile_id):
-            if client.accepts_event(user_event):
+            user_event_copy = user_event.copy()
+            if not client.empty_topic_name:
+                if user_event_copy.get(ORIG_TOPIC) == "":
+                    user_event_copy[ORIG_TOPIC] = Message.EMPTY_TOPIC_FALLBACK_NAME
+
+                if user_event_copy.get(TOPIC_NAME) == "":
+                    user_event_copy[TOPIC_NAME] = Message.EMPTY_TOPIC_FALLBACK_NAME
+
+            if client.accepts_event(user_event_copy):
                 # We need to do another shallow copy, or we risk
                 # sending the same event to multiple clients.
-                client.add_event(user_event)
+                client.add_event(user_event_copy)
 
 
 def process_custom_profile_fields_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
@@ -1604,6 +1623,65 @@ def process_user_group_name_update_event(event: Mapping[str, Any], users: Iterab
                 client.add_event(user_group_event)
 
 
+def process_user_topic_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    empty_topic_name_fallback_event: Mapping[str, Any] | dict[str, Any]
+    if event.get("topic_name") == "":
+        empty_topic_name_fallback_event = dict(event)
+        empty_topic_name_fallback_event["topic_name"] = Message.EMPTY_TOPIC_FALLBACK_NAME
+    else:
+        empty_topic_name_fallback_event = event
+
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
+
+            if client.empty_topic_name:
+                client.add_event(event)
+            else:
+                client.add_event(empty_topic_name_fallback_event)
+
+
+def process_stream_typing_notification_event(
+    event: Mapping[str, Any], users: Iterable[int]
+) -> None:
+    empty_topic_name_fallback_event: Mapping[str, Any] | dict[str, Any]
+    if event.get("topic") == "":
+        empty_topic_name_fallback_event = dict(event)
+        empty_topic_name_fallback_event["topic"] = Message.EMPTY_TOPIC_FALLBACK_NAME
+    else:
+        empty_topic_name_fallback_event = event
+
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
+
+            if client.empty_topic_name:
+                client.add_event(event)
+            else:
+                client.add_event(empty_topic_name_fallback_event)
+
+
+def process_mark_message_unread_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    empty_topic_name_fallback_event = copy.deepcopy(dict(event))
+    for message_id, message_detail in empty_topic_name_fallback_event["message_details"].items():
+        if message_detail["type"] == "stream" and message_detail.get("topic") == "":
+            empty_topic_name_fallback_event["message_details"][message_id]["topic"] = (
+                Message.EMPTY_TOPIC_FALLBACK_NAME
+            )
+
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if not client.accepts_event(event):
+                continue
+
+            if client.empty_topic_name:
+                client.add_event(event)
+            else:
+                client.add_event(empty_topic_name_fallback_event)
+
+
 def process_notification(notice: Mapping[str, Any]) -> None:
     event: Mapping[str, Any] = notice["event"]
     users: list[int] | list[Mapping[str, Any]] = notice["users"]
@@ -1632,6 +1710,16 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         # event sent for updating name separately for clients with different
         # capabilities.
         process_user_group_name_update_event(event, cast(list[int], users))
+    elif event["type"] == "user_topic":
+        process_user_topic_event(event, cast(list[int], users))
+    elif event["type"] == "typing" and event["message_type"] == "stream":
+        process_stream_typing_notification_event(event, cast(list[int], users))
+    elif (
+        event["type"] == "update_message_flags"
+        and event["op"] == "remove"
+        and event["flag"] == "read"
+    ):
+        process_mark_message_unread_event(event, cast(list[int], users))
     elif event["type"] == "cleanup_queue":
         # cleanup_event_queue may generate this event to forward cleanup
         # requests to the right shard.

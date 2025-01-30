@@ -10,7 +10,7 @@ import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
-import type {GroupSettingName} from "./group_permission_settings.ts";
+import type {AssignedGroupPermission, GroupGroupSettingName} from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t} from "./i18n.ts";
 import {
@@ -242,7 +242,6 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 }
 
 export const simple_dropdown_realm_settings_schema = realm_schema.pick({
-    realm_invite_to_stream_policy: true,
     realm_wildcard_mention_policy: true,
     realm_org_type: true,
 });
@@ -803,9 +802,12 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
         case "realm_can_add_custom_emoji_group":
+        case "realm_can_add_subscribers_group":
+        case "realm_can_create_bots_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
+        case "realm_can_create_write_only_bots_group":
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
         case "realm_can_invite_users_group":
@@ -963,6 +965,7 @@ export function check_realm_default_settings_property_changed(elem: HTMLElement)
     const current_val = get_realm_default_setting_property_value(property_name);
     let proposed_val;
     switch (property_name) {
+        case "color_scheme":
         case "emojiset":
         case "user_list_style":
             proposed_val = get_input_element_value(elem, "radio-group");
@@ -1048,10 +1051,13 @@ export function populate_data_for_realm_settings_request(
                 const realm_group_settings = new Set([
                     "can_access_all_users_group",
                     "can_add_custom_emoji_group",
+                    "can_add_subscribers_group",
+                    "can_create_bots_group",
                     "can_create_groups",
                     "can_create_private_channel_group",
                     "can_create_public_channel_group",
                     "can_create_web_public_channel_group",
+                    "can_create_write_only_bots_group",
                     "can_manage_all_groups",
                     "can_delete_any_message_group",
                     "can_delete_own_message_group",
@@ -1500,6 +1506,7 @@ export function disable_group_permission_setting($container: JQuery): void {
 
 export const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
     ["can_add_members_group", null],
+    ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
     ["can_join_group", null],
     ["can_leave_group", null],
@@ -1507,10 +1514,14 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_mention_group", null],
     ["can_remove_members_group", null],
     ["can_remove_subscribers_group", null],
+    ["can_send_message_group", null],
     ["realm_can_add_custom_emoji_group", null],
+    ["realm_can_add_subscribers_group", null],
+    ["realm_can_create_bots_group", null],
     ["realm_can_create_groups", null],
     ["realm_can_create_public_channel_group", null],
     ["realm_can_create_private_channel_group", null],
+    ["realm_can_create_write_only_bots_group", null],
     ["realm_can_delete_any_message_group", null],
     ["realm_can_delete_own_message_group", null],
     ["realm_can_invite_users_group", null],
@@ -1566,7 +1577,7 @@ export function create_group_setting_widget({
     group,
 }: {
     $pill_container: JQuery;
-    setting_name: GroupSettingName;
+    setting_name: GroupGroupSettingName;
     group?: UserGroup;
 }): GroupSettingPillContainer {
     const pill_widget = group_setting_pill.create_pills($pill_container, setting_name, "group");
@@ -1616,22 +1627,14 @@ export function create_group_setting_widget({
     return pill_widget;
 }
 
-export const realm_group_setting_name_schema = z.enum([
-    "can_add_custom_emoji_group",
-    "can_create_groups",
-    "can_create_public_channel_group",
-    "can_create_private_channel_group",
-    "can_delete_any_message_group",
-    "can_delete_own_message_group",
-    "can_invite_users_group",
-    "can_manage_all_groups",
-    "can_move_messages_between_channels_group",
-    "can_move_messages_between_topics_group",
-    "create_multiuse_invite_group",
-    "direct_message_initiator_group",
-    "direct_message_permission_group",
-]);
-export type RealmGroupSettingName = z.infer<typeof realm_group_setting_name_schema>;
+export const realm_group_setting_name_supporting_anonymous_groups_schema =
+    group_permission_settings.realm_group_setting_name_schema.exclude([
+        "can_access_all_users_group",
+        "can_create_web_public_channel_group",
+    ]);
+export type RealmGroupSettingNameSupportingAnonymousGroups = z.infer<
+    typeof realm_group_setting_name_supporting_anonymous_groups_schema
+>;
 
 export function create_realm_group_setting_widget({
     $pill_container,
@@ -1639,7 +1642,7 @@ export function create_realm_group_setting_widget({
     pill_update_callback,
 }: {
     $pill_container: JQuery;
-    setting_name: RealmGroupSettingName;
+    setting_name: RealmGroupSettingNameSupportingAnonymousGroups;
     pill_update_callback?: () => void;
 }): void {
     const pill_widget = group_setting_pill.create_pills($pill_container, setting_name, "realm");
@@ -1770,4 +1773,118 @@ export function set_custom_time_inputs_visibility(
     } else {
         $time_select_elem.parent().find(".custom-time-input-container").hide();
     }
+}
+
+export function get_group_assigned_realm_permissions(group: UserGroup): {
+    subsection_heading: string;
+    assigned_permissions: AssignedGroupPermission[];
+}[] {
+    const group_assigned_realm_permissions = [];
+    const owner_editable_settings = new Set([
+        "can_create_groups",
+        "can_invite_users_group",
+        "can_manage_all_groups",
+        "create_multiuse_invite_group",
+    ]);
+    for (const {subsection_heading, settings} of settings_config.realm_group_permission_settings) {
+        const assigned_permission_objects = [];
+        for (const setting_name of settings) {
+            const setting_value = realm[realm_schema.keyof().parse("realm_" + setting_name)];
+            const can_edit = owner_editable_settings.has(setting_name)
+                ? current_user.is_owner
+                : current_user.is_admin;
+            const assigned_permission_object =
+                group_permission_settings.get_assigned_permission_object(
+                    group_setting_value_schema.parse(setting_value),
+                    setting_name,
+                    group.id,
+                    can_edit,
+                );
+            if (assigned_permission_object !== undefined) {
+                assigned_permission_objects.push(assigned_permission_object);
+            }
+        }
+        if (assigned_permission_objects.length > 0) {
+            group_assigned_realm_permissions.push({
+                subsection_heading,
+                assigned_permissions: assigned_permission_objects,
+            });
+        }
+    }
+    return group_assigned_realm_permissions;
+}
+
+export function get_group_assigned_stream_permissions(group: UserGroup): {
+    stream: StreamSubscription;
+    assigned_permissions: AssignedGroupPermission[];
+    id_prefix: string;
+}[] {
+    const subs = stream_data.get_unsorted_subs();
+    const group_assigned_stream_permissions = [];
+    for (const sub of subs) {
+        const assigned_permission_objects = [];
+        const can_edit_settings = stream_data.can_change_permissions(sub);
+        for (const setting_name of settings_config.stream_group_permission_settings) {
+            const setting_value = sub[stream_subscription_schema.keyof().parse(setting_name)];
+            const assigned_permission_object =
+                group_permission_settings.get_assigned_permission_object(
+                    group_setting_value_schema.parse(setting_value),
+                    setting_name,
+                    group.id,
+                    can_edit_settings,
+                );
+            if (assigned_permission_object !== undefined) {
+                assigned_permission_objects.push(assigned_permission_object);
+            }
+        }
+
+        if (assigned_permission_objects.length > 0) {
+            group_assigned_stream_permissions.push({
+                stream: sub,
+                assigned_permissions: assigned_permission_objects,
+                id_prefix: "id_group_permission_" + sub.stream_id.toString() + "_",
+            });
+        }
+    }
+
+    return group_assigned_stream_permissions;
+}
+
+export function get_group_assigned_user_group_permissions(group: UserGroup): {
+    group_id: number;
+    group_name: string;
+    assigned_permissions: AssignedGroupPermission[];
+    id_prefix: string;
+}[] {
+    const groups = user_groups.get_realm_user_groups();
+    const group_assigned_user_group_permissions = [];
+    for (const user_group of groups) {
+        const can_edit_settings = settings_data.can_manage_user_group(user_group.id);
+        const assigned_permission_objects = [];
+        for (const setting_name of settings_config.group_permission_settings) {
+            const setting_value =
+                user_group[user_groups.user_group_schema.keyof().parse(setting_name)];
+            const assigned_permission_object =
+                group_permission_settings.get_assigned_permission_object(
+                    group_setting_value_schema.parse(setting_value),
+                    setting_name,
+                    group.id,
+                    can_edit_settings,
+                );
+            if (assigned_permission_object !== undefined) {
+                assigned_permission_objects.push(assigned_permission_object);
+            }
+        }
+
+        if (assigned_permission_objects.length > 0) {
+            group_assigned_user_group_permissions.push({
+                group_id: user_group.id,
+                group_name: user_groups.get_display_group_name(user_group.name),
+                id_prefix: "id_group_permission_" + user_group.id.toString() + "_",
+                assigned_permissions: assigned_permission_objects,
+            });
+        }
+    }
+
+    return group_assigned_user_group_permissions;
 }

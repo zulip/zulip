@@ -11,7 +11,7 @@ import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import type {GroupSettingValue, StateData} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
-import type {StreamPermissionGroupSetting, StreamPostPolicy} from "./stream_types.ts";
+import type {StreamPermissionGroupSetting} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
 import type {
     ApiStreamSubscription,
@@ -393,17 +393,6 @@ export function get_colors(): string[] {
     return subscribed_subs().map((sub) => sub.color);
 }
 
-export function update_stream_email_address(sub: StreamSubscription, email: string): void {
-    sub.email_address = email;
-}
-
-export function update_stream_post_policy(
-    sub: StreamSubscription,
-    stream_post_policy: StreamPostPolicy,
-): void {
-    sub.stream_post_policy = stream_post_policy;
-}
-
 export function update_stream_privacy(
     sub: StreamSubscription,
     values: {
@@ -553,12 +542,21 @@ export function can_view_subscribers(sub: StreamSubscription): boolean {
 }
 
 export function can_subscribe_others(sub: StreamSubscription): boolean {
-    // User can add other users to stream if stream is public or user is subscribed to stream
-    // and realm level setting allows user to add subscribers.
-    return (
-        !current_user.is_guest &&
-        (!sub.invite_only || sub.subscribed) &&
-        settings_data.user_can_subscribe_other_users()
+    if (sub.invite_only && !sub.subscribed) {
+        return false;
+    }
+
+    if (settings_data.can_subscribe_others_to_all_accessible_streams()) {
+        return true;
+    }
+
+    if (can_change_permissions(sub)) {
+        return true;
+    }
+
+    return user_groups.is_user_in_setting_group(
+        sub.can_add_subscribers_group,
+        people.my_current_user_id(),
     );
 }
 
@@ -609,41 +607,12 @@ export let can_post_messages_in_stream = function (stream: StreamSubscription): 
         return false;
     }
 
-    if (current_user.is_admin) {
-        return true;
-    }
-
-    if (stream.stream_post_policy === settings_config.stream_post_policy_values.admins.code) {
-        return false;
-    }
-
-    if (current_user.is_moderator) {
-        return true;
-    }
-
-    if (stream.stream_post_policy === settings_config.stream_post_policy_values.moderators.code) {
-        return false;
-    }
-
-    if (
-        current_user.is_guest &&
-        stream.stream_post_policy !== settings_config.stream_post_policy_values.everyone.code
-    ) {
-        return false;
-    }
-
-    const person = people.get_by_user_id(people.my_current_user_id());
-    const current_datetime = Date.now();
-    const person_date_joined = new Date(person.date_joined).getTime();
-    const days = (current_datetime - person_date_joined) / 1000 / 86400;
-    if (
-        stream.stream_post_policy ===
-            settings_config.stream_post_policy_values.non_new_members.code &&
-        days < realm.realm_waiting_period_threshold
-    ) {
-        return false;
-    }
-    return true;
+    const can_send_message_group = stream.can_send_message_group;
+    return settings_data.user_has_permission_for_group_setting(
+        can_send_message_group,
+        "can_send_message_group",
+        "stream",
+    );
 };
 
 export function rewire_can_post_messages_in_stream(

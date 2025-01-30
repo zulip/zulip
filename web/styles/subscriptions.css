@@ -29,18 +29,6 @@
     border-radius: 4px;
 }
 
-.sp-preview {
-    width: 20px;
-    border: none;
-    box-shadow: 0 0 1px hsl(0deg 0% 0%);
-}
-
-.sp-replacer {
-    margin-right: 12px;
-    border: none;
-    box-shadow: 0 0 2px hsl(0deg 0% 0% / 80%);
-}
-
 .stream-email .email-address {
     display: block;
     margin: auto;
@@ -305,6 +293,39 @@ h4.user_group_setting_subsection_title {
     opacity: 1;
 }
 
+.group-assigned-permissions {
+    .subsection-header {
+        display: inline;
+
+        h3 {
+            font-size: 1.5em;
+            font-weight: normal;
+            line-height: 1.5;
+            display: inline;
+
+            .stream-privacy-type-icon {
+                margin-right: 4px;
+            }
+        }
+    }
+
+    .subsection-settings {
+        margin-top: 10px;
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+    }
+
+    .no-permissions-for-group-text {
+        font-size: 1.5em;
+    }
+
+    .inline {
+        display: inline;
+    }
+}
+
 .user-groups-container,
 .subscriptions-container {
     position: relative;
@@ -513,11 +534,8 @@ h4.user_group_setting_subsection_title {
 
 #search_stream_name,
 #search_group_name {
-    padding: 3px 5px;
-    display: inline-block;
-    border-radius: 5px;
     box-shadow: none;
-    padding-right: 20px;
+    padding-right: 28px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -542,10 +560,8 @@ h4.user_group_setting_subsection_title {
     width: 100%;
 }
 
-#clear_search_stream_name,
-#clear_search_group_name {
-    grid-area: clear-search;
-    padding: 0;
+#search_group_name:placeholder-shown + #clear_search_group_name {
+    visibility: hidden;
 }
 
 #search_stream_name:placeholder-shown + #clear_search_stream_name {
@@ -911,6 +927,11 @@ h4.user_group_setting_subsection_title {
                     display: flex;
                 }
             }
+
+            /* We need this rule to center the user-group-x icon better */
+            .deactivate-group-button {
+                padding: 8px 10px 4px;
+            }
         }
     }
 
@@ -945,6 +966,13 @@ h4.user_group_setting_subsection_title {
 
         .button-group {
             margin-left: auto;
+
+            /* This icon is narrower in width, we have to explicitly
+               set it's width to 1em so that it vertically aligns with
+               other buttons near it. */
+            .fa-pencil {
+                width: 1em;
+            }
 
             .deactivate {
                 margin-right: 3px;
@@ -1061,10 +1089,6 @@ h4.user_group_setting_subsection_title {
             border-bottom: none;
         }
 
-        .sp-replacer {
-            box-shadow: none;
-        }
-
         & input[type="radio"] {
             margin-right: 5px;
         }
@@ -1134,10 +1158,6 @@ div.settings-radio-input-parent {
         min-width: 325px;
         max-width: 100%;
         height: 30px;
-    }
-
-    & select.stream_post_policy_setting {
-        margin-bottom: 10px;
     }
 
     .dropdown-widget-button {
@@ -1210,6 +1230,19 @@ div.settings-radio-input-parent {
 .group-setting-label {
     /* Avoid having the clickable area extend to the full width of the containing element */
     width: fit-content;
+}
+
+.stream-settings-color-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.stream-settings-color-preview {
+    width: 33px;
+    height: 33px;
+    margin: -6px 0 -6px -10px;
 }
 
 @media (width < $lg_min) {

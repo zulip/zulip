@@ -417,7 +417,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 self.assertIn(
                     function_schema_type,
                     (int, bool),
-                    f'\nUnexpected content type {actual_param_schema["contentMediaType"]} on function parameter {actual_param.param_name}, which does not match the OpenAPI definition.',
+                    f"\nUnexpected content type {actual_param_schema['contentMediaType']} on function parameter {actual_param.param_name}, which does not match the OpenAPI definition.",
                 )
             function_params.add(
                 (actual_param.request_var_name, schema_type(actual_param_schema, defs_mapping))
@@ -790,7 +790,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
 
     def test_generate_and_render_curl_with_array_example(self) -> None:
         generated_curl_example = self.curl_example(
-            "/messages", "GET", exclude=["use_first_unread_anchor", "message_ids"]
+            "/messages",
+            "GET",
+            exclude=["use_first_unread_anchor", "message_ids", "allow_empty_topic_name"],
         )
         expected_curl_example = [
             "```curl",
@@ -866,7 +868,13 @@ class TestCurlExampleGeneration(ZulipTestCase):
         generated_curl_example = self.curl_example(
             "/messages",
             "GET",
-            exclude=["client_gravatar", "apply_markdown", "use_first_unread_anchor", "message_ids"],
+            exclude=[
+                "client_gravatar",
+                "apply_markdown",
+                "use_first_unread_anchor",
+                "message_ids",
+                "allow_empty_topic_name",
+            ],
         )
         expected_curl_example = [
             "```curl",

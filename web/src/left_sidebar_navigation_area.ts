@@ -81,28 +81,22 @@ export function update_dom_with_unread_counts(
     }
 }
 
-// TODO: Rewrite how we handle activation of narrows when doing the redesign.
-// We don't want to adjust class for all the buttons when switching narrows.
+export let select_top_left_corner_item = function (narrow_to_activate: string): void {
+    $(".top-left-active-filter").removeClass("top-left-active-filter");
+    if (narrow_to_activate !== "") {
+        $(narrow_to_activate).addClass("top-left-active-filter");
+    }
+};
 
-function remove($elem: JQuery): void {
-    $elem.removeClass("active-filter active-sub-filter");
-}
-
-function deselect_top_left_corner_items(): void {
-    remove($(".top_left_all_messages"));
-    remove($(".top_left_starred_messages"));
-    remove($(".top_left_mentions"));
-    remove($(".top_left_recent_view"));
-    remove($(".top_left_inbox"));
-    remove($(".top_left_my_reactions"));
+export function rewire_select_top_left_corner_item(
+    func: (narrow_to_activate: string) => void,
+): void {
+    select_top_left_corner_item = func;
 }
 
 export function handle_narrow_activated(filter: Filter): void {
-    deselect_top_left_corner_items();
-
     let ops: string[];
     let filter_name: string;
-    let $filter_li: JQuery;
 
     // TODO: handle confused filters like "in:all stream:foo"
     ops = filter.operands("in");
@@ -110,17 +104,18 @@ export function handle_narrow_activated(filter: Filter): void {
         filter_name = ops[0];
         if (filter_name === "home") {
             highlight_all_messages_view();
+            return;
         }
     }
     ops = filter.operands("is");
     if (ops[0] !== undefined) {
         filter_name = ops[0];
         if (filter_name === "starred") {
-            $filter_li = $(".top_left_starred_messages");
-            $filter_li.addClass("active-filter");
+            select_top_left_corner_item(".top_left_starred_messages");
+            return;
         } else if (filter_name === "mentioned") {
-            $filter_li = $(".top_left_mentions");
-            $filter_li.addClass("active-filter");
+            select_top_left_corner_item(".top_left_mentions");
+            return;
         }
     }
     const term_types = filter.sorted_term_types();
@@ -128,9 +123,12 @@ export function handle_narrow_activated(filter: Filter): void {
         _.isEqual(term_types, ["sender", "has-reaction"]) &&
         filter.operands("sender")[0] === people.my_current_email()
     ) {
-        $filter_li = $(".top_left_my_reactions");
-        $filter_li.addClass("active-filter");
+        select_top_left_corner_item(".top_left_my_reactions");
+        return;
     }
+
+    // If we don't have a specific handler for this narrow, we just clear all.
+    select_top_left_corner_item("");
 }
 
 function toggle_condensed_navigation_area(): void {
@@ -181,27 +179,24 @@ function do_new_messages_animation($li: JQuery): void {
 }
 
 export function highlight_inbox_view(): void {
-    deselect_top_left_corner_items();
+    select_top_left_corner_item(".top_left_inbox");
 
-    $(".top_left_inbox").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
 }
 
 export function highlight_recent_view(): void {
-    deselect_top_left_corner_items();
+    select_top_left_corner_item(".top_left_recent_view");
 
-    $(".top_left_recent_view").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
 }
 
 export function highlight_all_messages_view(): void {
-    deselect_top_left_corner_items();
+    select_top_left_corner_item(".top_left_all_messages");
 
-    $(".top_left_all_messages").addClass("active-filter");
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);

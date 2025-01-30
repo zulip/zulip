@@ -650,7 +650,7 @@ input[name="licenses"] {
 #upgrade-page-details #upgrade-payment-menthod-wrapper {
     margin-left: 0;
     grid-area: payment-info;
-    width: auto;
+    width: 100%;
 }
 
 /* Used class twice to increase specificity */

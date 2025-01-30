@@ -29,7 +29,9 @@ type PopoverName =
     | "personal_menu"
     | "gear_menu"
     | "help_menu"
-    | "buddy_list";
+    | "buddy_list"
+    | "stream_actions_popover"
+    | "color_picker_popover";
 
 export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     compose_control_buttons: null,
@@ -49,6 +51,8 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     gear_menu: null,
     help_menu: null,
     buddy_list: null,
+    stream_actions_popover: null,
+    color_picker_popover: null,
 };
 
 /* Keyboard UI functions */
@@ -115,10 +119,6 @@ export function is_scheduled_messages_popover_displayed(): boolean {
     return popover_instances.send_later?.state.isVisible ?? false;
 }
 
-export function get_compose_control_buttons_popover(): tippy.Instance | null {
-    return popover_instances.compose_control_buttons;
-}
-
 export function get_starred_messages_popover(): tippy.Instance | null {
     return popover_instances.starred_messages;
 }
@@ -143,7 +143,23 @@ export function is_message_actions_popover_displayed(): boolean {
     return popover_instances.message_actions?.state.isVisible ?? false;
 }
 
-function get_popover_items_for_instance(instance: tippy.Instance): JQuery | undefined {
+export function get_stream_actions_popover(): tippy.Instance | null {
+    return popover_instances.stream_actions_popover;
+}
+
+export function is_stream_actions_popover_displayed(): boolean | undefined {
+    return popover_instances.stream_actions_popover?.state.isVisible;
+}
+
+export function get_color_picker_popover(): tippy.Instance | null {
+    return popover_instances.color_picker_popover;
+}
+
+export function is_color_picker_popover_displayed(): boolean | undefined {
+    return popover_instances.color_picker_popover?.state.isVisible;
+}
+
+export function get_popover_items_for_instance(instance: tippy.Instance): JQuery | undefined {
     const $current_elem = $(instance.popper);
     const class_name = $current_elem.attr("class");
 

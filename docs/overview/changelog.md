@@ -154,6 +154,29 @@ _Unreleased_
 
 ## Zulip Server 9.x series
 
+### Zulip Server 9.4
+
+_Released 2025-01-16_
+
+- CVE-2024-56136: Fixed a bug where servers hosting multiple organizations could
+  leak information to an unauthenticated attacker about which email addresses
+  were in use. Servers hosting only a single organization are unaffected by
+  this vulnerability.
+- Upgraded the Slack integration to support Slack’s Events API (while still
+  supporting their legacy outgoing webhook API). Installations using the Slack
+  integration should consider recreating their integration with the more modern
+  API, as Slack will eventually remove the legacy API and some planned
+  improvements to the integration are only possible with Slack’s modern API.
+- Merged two Traditional Chinese localizations into each other.
+- Improved support for bot avatars in Slack imports.
+- Fixed localization of the integrations page for some languages.
+- Fixed a bug where users would be shown the UI for changing another user’s
+  avatar, even if they did not have that permission.
+- Updated the requirements documentation to suggest allocating swap space for
+  hosts with less than 5GB of RAM.
+- Updated python dependencies.
+- Updated translations.
+
 ### Zulip Server 9.3
 
 _Released 2024-11-22_
@@ -1285,7 +1308,7 @@ _Released 2023-01-23_
 - Use internationalized form of “at” in message timestamps.
 - Updated translations.
 - Fixed the “custom” value for the
-  “[delay before sending message notification emails](https://zulip.com/help/email-notifications#delay-before-sending-emails)”
+  “[delay before sending message notification emails](https://zulip.com/help/email-notifications)”
   setting.
 - Fixed an error which prevented users from changing
   [stream-specific notification settings](https://zulip.com/help/channel-notifications#configure-notifications-for-a-single-channel).
@@ -1600,7 +1623,7 @@ _Released 2022-06-21_
 - CVE-2022-31017: Fixed message edit event exposure in
   protected-history streams.
   Zulip allows a stream to be configured as [private with protected
-  history](https://zulip.com/help/channel-permissions#channel-privacy-settings),
+  history](https://zulip.com/help/channel-permissions#private-channels),
   which means that new subscribers should only see messages sent after
   they join. However, due to a logic bug in Zulip Server 2.1.0 through
   5.2, when a message was edited, the server would incorrectly send an
@@ -3303,7 +3326,7 @@ _Released 2018-11-07_
 - Users can now configure email and mobile push notifications for
   all messages in a stream (useful for low-traffic
   streams/organizations), not just for messages mentioning them.
-- New [stream settings](https://zulip.com/help/channel-permissions)
+- New [stream settings](https://zulip.com/help/channel-permissions#private-channels)
   control whether private stream subscribers can access history
   from before they joined, and allow configuring streams to only
   allow administrators to post.

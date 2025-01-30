@@ -9,7 +9,11 @@ import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as compose_state from "./compose_state.ts";
-import type {LanguageSuggestion, SlashCommandSuggestion} from "./composebox_typeahead.ts";
+import type {
+    LanguageSuggestion,
+    SlashCommandSuggestion,
+    TopicSuggestion,
+} from "./composebox_typeahead.ts";
 import type {InputPillContainer} from "./input_pill.ts";
 import * as people from "./people.ts";
 import type {PseudoMentionUser, User} from "./people.ts";
@@ -104,6 +108,9 @@ export let render_typeahead_item = (args: {
     is_user_group?: boolean;
     stream?: StreamData;
     emoji_code?: string | undefined;
+    is_empty_string_topic?: boolean;
+    topic_object?: TopicSuggestion;
+    is_stream_topic?: boolean;
 }): string => {
     const has_image = args.img_src !== undefined;
     const has_status = args.status_emoji_info !== undefined;
@@ -112,6 +119,7 @@ export let render_typeahead_item = (args: {
     const has_pronouns = args.pronouns !== undefined;
     return render_typeahead_list_item({
         ...args,
+        ...args.topic_object,
         has_image,
         has_status,
         has_secondary,
@@ -189,6 +197,12 @@ export let render_stream = (stream: StreamData): string =>
     render_typeahead_item({
         secondary_html: stream.rendered_description,
         stream,
+    });
+
+export const render_stream_topic = (topic_object: TopicSuggestion): string =>
+    render_typeahead_item({
+        topic_object,
+        is_stream_topic: true,
     });
 
 export function rewire_render_stream(value: typeof render_stream): void {

@@ -59,9 +59,10 @@ The following system groups are maintained by the Zulip server:
 - `role:nobody`: The formal empty group. Used in the API to represent
   disabling a feature.
 
-Client UI for setting a permission is encouraged to display system
-groups using their description, rather than using their names, which
-are chosen to be unique and clear in the API.
+Client UI for setting a permission or displaying a group (when
+silently mentioned, for example) is encouraged to display system
+groups using their description, rather than using their `role:}`
+names, which are chosen to be unique and clear in the API.
 
 System groups should generally not be displayed in UI for
 administering an organization's user groups, since they are not

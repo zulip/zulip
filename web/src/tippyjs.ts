@@ -7,11 +7,15 @@ import render_change_visibility_policy_button_tooltip from "../templates/change_
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
+import * as drafts from "./drafts.ts";
 import {$t} from "./i18n.ts";
 import * as people from "./people.ts";
+import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
+import * as starred_messages from "./starred_messages.ts";
 import * as stream_data from "./stream_data.ts";
 import * as ui_util from "./ui_util.ts";
+import * as unread from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
@@ -188,6 +192,88 @@ export function initialize(): void {
         placement: "right",
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
+        onShow(instance) {
+            const $container = $(instance.popper).find(".views-tooltip-container");
+            let display_count = 0;
+            const sidebar_option = $container.attr("data-view-code");
+
+            switch (sidebar_option) {
+                case user_settings.web_home_view:
+                    $container.find(".views-tooltip-home-view-note").removeClass("hide");
+                    display_count = unread.get_counts().home_unread_messages;
+                    $container.find(".views-message-count").text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You have {display_count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}.",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
+                case "mentions":
+                    display_count = unread.unread_mentions_counter.size;
+                    $container.find(".views-message-count").text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You have {display_count, plural, =0 {no unread mentions} one {# unread mention} other {# unread mentions}}.",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
+                case "starred_message":
+                    display_count = starred_messages.get_count();
+                    $container.find(".views-message-count").text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You have {display_count, plural, =0 {no starred messages} one {# starred message} other {# starred messages}}.",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
+                case "drafts":
+                    display_count = drafts.draft_model.getDraftCount();
+                    $container.find(".views-message-count").text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You have {display_count, plural, =0 {no drafts} one {# draft} other {# drafts}}.",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
+                case "scheduled_message":
+                    display_count = scheduled_messages.get_count();
+                    $container.find(".views-message-count").text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You have {display_count, plural, =0 {no scheduled messages} one {# scheduled message} other {# scheduled messages}}.",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
+            }
+
+            // Since the tooltip is attached to the anchor tag which doesn't
+            // include width of the ellipsis icon, we need to offset the
+            // tooltip so that the tooltip is displayed to right of the
+            // ellipsis icon.
+            if (instance.reference.classList.contains("left-sidebar-navigation-label-container")) {
+                instance.setProps({
+                    offset: [0, 40],
+                });
+            }
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
         popperOptions: {
             modifiers: [
                 {
@@ -209,44 +295,6 @@ export function initialize(): void {
         placement: "right",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
-        popperOptions: {
-            modifiers: [
-                {
-                    name: "flip",
-                    options: {
-                        fallbackPlacements: "bottom",
-                    },
-                },
-            ],
-        },
-    });
-
-    // Variant of .tippy-left-sidebar-tooltip configuration. Here
-    // we need to dynamically check which view is the home view.
-    tippy.delegate("body", {
-        target: ".tippy-views-tooltip",
-        placement: "right",
-        delay: EXTRA_LONG_HOVER_DELAY,
-        appendTo: () => document.body,
-        onShow(instance) {
-            const $container = $(instance.popper).find(".views-tooltip-container");
-            if ($container.data("view-code") === user_settings.web_home_view) {
-                $container.find(".views-tooltip-home-view-note").removeClass("hide");
-            }
-
-            // Since the tooltip is attached the anchor tag which doesn't
-            // include with of the ellipsis icon, we need to offset the
-            // tooltip so that the tooltip is displayed to right of the
-            // ellipsis icon.
-            if (instance.reference.classList.contains("left-sidebar-navigation-label-container")) {
-                instance.setProps({
-                    offset: [0, 40],
-                });
-            }
-        },
-        onHidden(instance) {
-            instance.destroy();
-        },
         popperOptions: {
             modifiers: [
                 {
@@ -422,7 +470,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#change_email_button_container.disabled_setting_tooltip",
+        target: "#email_field_container.disabled_setting_tooltip",
         content: $t({defaultMessage: "Email address changes are disabled in this organization."}),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -607,10 +655,10 @@ export function initialize(): void {
         trigger: "mouseenter",
         onShow(instance) {
             if ($(instance.reference).hasClass("deactivate")) {
-                instance.setContent($t({defaultMessage: "Deactivate"}));
+                instance.setContent($t({defaultMessage: "Deactivate user"}));
                 return undefined;
             } else if ($(instance.reference).hasClass("reactivate")) {
-                instance.setContent($t({defaultMessage: "Reactivate"}));
+                instance.setContent($t({defaultMessage: "Reactivate user"}));
                 return undefined;
             }
             return false;

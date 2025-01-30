@@ -165,6 +165,55 @@ function build_message_view_header(filter: Filter | undefined): void {
 
 export function initialize(): void {
     render_title_area();
+
+    const hide_stream_settings_button_width_threshold = 620;
+    $("body").on("mouseenter mouseleave", ".narrow_description", function (event) {
+        const $view_description_elt = $(this);
+        const window_width = $(window).width()!;
+        let hover_timeout;
+
+        if (event.type === "mouseenter") {
+            if (!$view_description_elt.hasClass("view-description-extended")) {
+                const current_width = $view_description_elt.outerWidth();
+                // Set fixed width for word-wrap to work
+                $view_description_elt.css("width", current_width + "px");
+            }
+            hover_timeout = setTimeout(() => {
+                $view_description_elt.addClass("view-description-extended");
+                $(".top-navbar-container").addClass(
+                    "top-navbar-container-allow-description-extension",
+                );
+
+                if (window_width <= hide_stream_settings_button_width_threshold) {
+                    $(".message-header-stream-settings-button").hide();
+                    // Let it expand naturally on smaller screens
+                    $view_description_elt.css("width", "");
+                }
+            }, 250);
+            $view_description_elt.data("hover_timeout", hover_timeout);
+        } else if (event.type === "mouseleave") {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            hover_timeout = $view_description_elt.data("hover_timeout");
+            if (typeof hover_timeout === "number") {
+                // Clear any pending hover_timeout to prevent unexpected behavior
+                clearTimeout(hover_timeout);
+            }
+            $view_description_elt.addClass("leaving-extended-view-description");
+
+            // Wait for the reverse animation duration before cleaning up
+            setTimeout(() => {
+                $view_description_elt.removeClass("view-description-extended");
+                $view_description_elt.removeClass("leaving-extended-view-description");
+                if (window_width <= hide_stream_settings_button_width_threshold) {
+                    $(".message-header-stream-settings-button").show();
+                    $view_description_elt.css("width", "");
+                } else {
+                    // Reset to flexbox-determined width
+                    $view_description_elt.css("width", "");
+                }
+            }, 100);
+        }
+    });
 }
 
 export function render_title_area(): void {
@@ -175,9 +224,10 @@ export function render_title_area(): void {
 // This function checks if "modified_sub" which is the stream whose values
 // have been updated is the same as the stream which is currently
 // narrowed and rerenders if necessary
-export function maybe_rerender_title_area_for_stream(modified_sub: StreamSubscription): void {
+export function maybe_rerender_title_area_for_stream(modified_stream_id: number): void {
     const current_stream_id = narrow_state.stream_id();
-    if (current_stream_id === modified_sub.stream_id) {
+
+    if (current_stream_id === modified_stream_id) {
         render_title_area();
     }
 }

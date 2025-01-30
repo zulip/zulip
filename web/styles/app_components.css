@@ -32,10 +32,20 @@ kbd {
     background-color: var(--color-kbd-background);
     color: var(--color-kbd-text);
     margin: 0.25em 0.1em;
-    padding: 0.1em 0.4em;
+    padding: 0.2em 0.4em;
     text-shadow: 0 1px 0 hsl(0deg 0% 100%);
     /* Prevent selection */
     user-select: none;
+    position: relative;
+    min-height: 1em;
+    min-width: 1em;
+
+    .zulip-icon::before {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
 }
 
 @media (width < $sm_min) {
@@ -154,18 +164,8 @@ input::placeholder {
     }
 
     &.small {
-        /* This value was 0.8rem in the past. When using rem,
-               the root font size was 16px when the base font-size was
-               14px. Now, we have two modes, one with 14px base
-               font-size and one with 16px base font-size. We multiply
-               by (16 / 14 * 0.8 = 0.9143) so rem equivalent value
-               will remain the same in the legacy 14px mode, while
-               scaling the size up for 16px mode. The font-size will
-               resolve in pixels.
-               TODO: Refactor this part to either use `em` or `rem`
-               and not this temporary hack of using calc() and
-               variables. */
-        font-size: calc(0.9143 * var(--base-font-size-px));
+        /* 16 / 14 * 0.8 = 0.9143, from original 0.8rem */
+        font-size: 0.9143em;
         min-width: inherit;
         padding: 6px 10px;
     }
@@ -407,32 +407,28 @@ input.settings_text_input {
     margin: 0;
 }
 
-/* TODO: Once all layouts using this button
-   are modernized, the Font Awesome icon
-   should be replaced with a Zulip icon,
-   and its formatting should have no extra
-   space around its viewbox in SVG. */
 .clear_search_button {
+    grid-area: 1 / 2 / 2 / 3;
+    padding: 0;
+    background: none;
+    color: var(--color-icons-inbox);
+    opacity: 0.4;
+    display: grid;
+    border: none;
+
     &:hover {
-        color: var(--color-text-clear-search-button-hover);
+        opacity: 1;
     }
 
-    &:disabled {
-        visibility: hidden;
-    }
-
-    &,
     &:focus,
-    &:active,
-    &:disabled:hover {
-        background: none;
-        border: none;
-        text-align: center;
-        color: var(--color-text-clear-search-button);
-        text-shadow: none;
-        outline: none !important;
+    &:focus-visible,
+    &:active {
         box-shadow: none;
-        z-index: 5;
+        outline: none;
+    }
+
+    .zulip-icon-close {
+        align-self: center;
     }
 }
 
@@ -469,16 +465,6 @@ input.settings_text_input {
 
 .dependent-settings-block {
     margin: 15px 0 -5px 23px;
-}
-
-.topic-list-filter {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-
-    & input {
-        padding-right: 20px;
-    }
 }
 
 .stream-selection-header-colorblock {
@@ -1394,4 +1380,25 @@ input.settings_text_input {
 
 .text-error {
     color: hsl(1.06deg 44.66% 50.39%);
+}
+
+.sticky-bottom-option {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    color: var(--color-dropdown-item);
+    border: none;
+    border-top: 1px solid var(--color-border-zulip-button);
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+
+    &:hover {
+        color: var(--color-dropdown-item);
+        background-color: var(--background-color-active-dropdown-item);
+    }
+
+    &:focus {
+        background-color: var(--background-color-active-dropdown-item);
+        outline: none;
+    }
 }

@@ -1259,15 +1259,13 @@ test("remove_reaction_from_view (last person to react)", ({override_rewire}) => 
     };
     const message_id = 507;
 
+    const $reaction_container = $.create("stub-reaction-container");
+
     const $our_reaction = stub_reaction(message_id, "unicode_emoji,1f3b1");
-    override_rewire(reactions, "find_reaction", (message_id_param, local_id) => {
-        assert.equal(message_id_param, message_id);
-        assert.equal(local_id, "unicode_emoji,1f3b1");
-        return $our_reaction;
-    });
+    $our_reaction.parent = () => $reaction_container;
 
     let removed;
-    $our_reaction.remove = () => {
+    $our_reaction.parent().remove = () => {
         removed = true;
     };
 

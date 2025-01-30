@@ -49,6 +49,7 @@ from zerver.lib.streams import (
     get_stream_by_narrow_operand_access_unchecked,
     get_web_public_streams_queryset,
 )
+from zerver.lib.topic import maybe_rename_general_chat_to_empty_topic
 from zerver.lib.topic_sqlalchemy import (
     get_followed_topic_condition_sa,
     get_resolved_topic_condition_sa,
@@ -301,8 +302,13 @@ class NarrowBuilder:
         self.is_dm_narrow = False
 
     def check_not_both_channel_and_dm_narrow(
-        self, is_dm_narrow: bool = False, is_channel_narrow: bool = False
+        self,
+        maybe_negate: ConditionTransform,
+        is_dm_narrow: bool = False,
+        is_channel_narrow: bool = False,
     ) -> None:
+        if maybe_negate is not_:
+            return
         if is_dm_narrow:
             self.is_dm_narrow = True
         if is_channel_narrow:
@@ -389,7 +395,12 @@ class NarrowBuilder:
 
         if operand in ["dm", "private"]:
             # "is:private" is a legacy alias for "is:dm"
-            self.check_not_both_channel_and_dm_narrow(is_dm_narrow=True)
+            if maybe_negate is not_:
+                self.check_not_both_channel_and_dm_narrow(
+                    maybe_negate=lambda cond: cond, is_channel_narrow=True
+                )
+            else:
+                self.check_not_both_channel_and_dm_narrow(maybe_negate, is_dm_narrow=True)
             cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == "starred":
@@ -442,7 +453,7 @@ class NarrowBuilder:
     def by_channel(
         self, query: Select, operand: str | int, maybe_negate: ConditionTransform
     ) -> Select:
-        self.check_not_both_channel_and_dm_narrow(is_channel_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
 
         try:
             # Because you can see your own message history for
@@ -487,7 +498,7 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_channels(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        self.check_not_both_channel_and_dm_narrow(is_channel_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
 
         if operand == "public":
             # Get all both subscribed and non-subscribed public channels
@@ -503,7 +514,7 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_topic(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        self.check_not_both_channel_and_dm_narrow(is_channel_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
 
         if self.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
@@ -579,7 +590,7 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        self.check_not_both_channel_and_dm_narrow(is_dm_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_dm_narrow=True)
 
         try:
             if isinstance(operand, str):
@@ -687,7 +698,7 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        self.check_not_both_channel_and_dm_narrow(is_dm_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_dm_narrow=True)
 
         try:
             if isinstance(operand, str):
@@ -740,7 +751,7 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        self.check_not_both_channel_and_dm_narrow(is_dm_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_dm_narrow=True)
 
         try:
             if isinstance(operand, str):
@@ -898,6 +909,20 @@ def can_narrow_define_conversation(narrow: list[NarrowParameter]) -> bool:
             return True
 
     return False
+
+
+def update_narrow_terms_containing_empty_topic_fallback_name(
+    narrow: list[NarrowParameter] | None,
+) -> list[NarrowParameter] | None:
+    if narrow is None:
+        return narrow
+
+    for term in narrow:
+        if term.operator == "topic":
+            term.operand = maybe_rename_general_chat_to_empty_topic(term.operand)
+            break
+
+    return narrow
 
 
 # This function implements the core logic of the `with` operator,
@@ -1355,6 +1380,16 @@ def post_process_limited_query(
         found_oldest=found_oldest,
         history_limited=history_limited,
     )
+
+
+def clean_narrow_for_message_fetch(
+    narrow: list[NarrowParameter] | None,
+    realm: Realm,
+    maybe_user_profile: UserProfile | AnonymousUser,
+) -> list[NarrowParameter] | None:
+    narrow = update_narrow_terms_containing_empty_topic_fallback_name(narrow)
+    narrow = update_narrow_terms_containing_with_operator(realm, maybe_user_profile, narrow)
+    return narrow
 
 
 @dataclass

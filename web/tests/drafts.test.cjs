@@ -17,8 +17,12 @@ const compose_recipient = zrequire("compose_recipient");
 const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
 const {initialize_user_settings} = zrequire("user_settings");
+const {set_realm} = zrequire("state_data");
 
 initialize_user_settings({user_settings: {}});
+
+const REALM_EMPTY_TOPIC_DISPLAY_NAME = "test general chat";
+set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
 
 const aaron = {
     email: "aaron@zulip.com",
@@ -482,6 +486,15 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         is_sending_saving: false,
         drafts_version: 1,
     };
+    const draft_6 = {
+        topic: "",
+        type: "stream",
+        stream_id: 40,
+        content: "Test stream message 3",
+        updatedAt: date(-11),
+        is_sending_saving: false,
+        drafts_version: 1,
+    };
 
     const expected = [
         {
@@ -491,7 +504,8 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
             stream_id: 30,
             recipient_bar_color: "#ebebeb",
             stream_privacy_icon_color: "#9a9a9a",
-            topic: "topic",
+            topic_display_name: "topic",
+            is_empty_string_topic: false,
             raw_content: "Test stream message",
             time_stamp: "7:55 AM",
             invite_only: undefined,
@@ -525,9 +539,24 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
             stream_id: 40,
             recipient_bar_color: "#ebebeb",
             stream_privacy_icon_color: "#9a9a9a",
-            topic: "topic",
+            topic_display_name: "topic",
+            is_empty_string_topic: false,
             raw_content: "Test stream message 2",
             time_stamp: "Jan 21",
+            invite_only: false,
+            is_web_public: false,
+        },
+        {
+            draft_id: "id6",
+            is_stream: true,
+            stream_name: "stream 2",
+            stream_id: 40,
+            recipient_bar_color: "#ebebeb",
+            stream_privacy_icon_color: "#9a9a9a",
+            topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME,
+            is_empty_string_topic: true,
+            raw_content: "Test stream message 3",
+            time_stamp: "Jan 20",
             invite_only: false,
             is_web_public: false,
         },
@@ -537,7 +566,14 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
 
     const draft_model = drafts.draft_model;
     const ls = localstorage();
-    const data = {id1: draft_1, id2: draft_2, id3: draft_3, id4: draft_4, id5: draft_5};
+    const data = {
+        id1: draft_1,
+        id2: draft_2,
+        id3: draft_3,
+        id4: draft_4,
+        id5: draft_5,
+        id6: draft_6,
+    };
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 
@@ -682,7 +718,8 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
             stream_id: 30,
             recipient_bar_color: "#ebebeb",
             stream_privacy_icon_color: "#9a9a9a",
-            topic: "topic",
+            topic_display_name: "topic",
+            is_empty_string_topic: false,
             raw_content: "Test stream message",
             time_stamp: "7:55 AM",
             invite_only: false,
@@ -695,7 +732,8 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
             stream_id: 40,
             recipient_bar_color: "#ebebeb",
             stream_privacy_icon_color: "#9a9a9a",
-            topic: "topic",
+            topic_display_name: "topic",
+            is_empty_string_topic: false,
             raw_content: "Test stream message 2",
             time_stamp: "Jan 21",
             invite_only: false,

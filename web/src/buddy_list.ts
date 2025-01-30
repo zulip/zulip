@@ -78,7 +78,7 @@ type BuddyListRenderData = {
     total_human_subscribers_count: number;
     other_users_count: number;
     hide_headers: boolean;
-    all_participant_ids: Set<number>;
+    get_all_participant_ids: () => Set<number>;
 };
 
 function get_render_data(): BuddyListRenderData {
@@ -88,7 +88,7 @@ function get_render_data(): BuddyListRenderData {
     const total_human_subscribers_count = get_total_human_subscriber_count(current_sub, pm_ids_set);
     const other_users_count = people.get_active_human_count() - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
-    const all_participant_ids = buddy_data.get_conversation_participants();
+    const get_all_participant_ids = buddy_data.get_conversation_participants_callback();
 
     return {
         current_sub,
@@ -96,7 +96,7 @@ function get_render_data(): BuddyListRenderData {
         total_human_subscribers_count,
         other_users_count,
         hide_headers,
-        all_participant_ids,
+        get_all_participant_ids,
     };
 }
 
@@ -393,8 +393,8 @@ export class BuddyList extends BuddyListConf {
     }
 
     update_section_header_counts(): void {
-        const {total_human_subscribers_count, other_users_count, all_participant_ids} =
-            this.render_data;
+        const {total_human_subscribers_count, other_users_count} = this.render_data;
+        const all_participant_ids = this.render_data.get_all_participant_ids();
         const subscriber_section_user_count =
             total_human_subscribers_count - all_participant_ids.size;
 
@@ -427,7 +427,8 @@ export class BuddyList extends BuddyListConf {
     }
 
     render_section_headers(): void {
-        const {hide_headers, all_participant_ids} = this.render_data;
+        const {hide_headers} = this.render_data;
+        const all_participant_ids = this.render_data.get_all_participant_ids();
 
         // If we're not changing filters, this just means some users were added or
         // removed but otherwise everything is the same, so we don't need to do a full
@@ -549,9 +550,10 @@ export class BuddyList extends BuddyListConf {
         const other_users = [];
         const current_sub = this.render_data.current_sub;
         const pm_ids_set = narrow_state.pm_ids_set();
+        const all_participant_ids = this.render_data.get_all_participant_ids();
 
         for (const item of items) {
-            if (this.render_data.all_participant_ids.has(item.user_id)) {
+            if (all_participant_ids.has(item.user_id)) {
                 participants.push(item);
                 this.participant_user_ids.push(item.user_id);
             } else if (
@@ -612,12 +614,13 @@ export class BuddyList extends BuddyListConf {
     }
 
     display_or_hide_sections(): void {
-        const {all_participant_ids, hide_headers, total_human_subscribers_count} = this.render_data;
+        const {get_all_participant_ids, hide_headers, total_human_subscribers_count} =
+            this.render_data;
 
         // If we're in the mode of hiding headers, that means we're only showing the "others"
         // section, so hide the other two sections.
         $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
-        const hide_participants_list = hide_headers || all_participant_ids.size === 0;
+        const hide_participants_list = hide_headers || get_all_participant_ids().size === 0;
         $("#buddy-list-participants-container").toggleClass("no-display", hide_participants_list);
 
         // This is the case where every subscriber is in the participants list. In this case, we
@@ -835,7 +838,7 @@ export class BuddyList extends BuddyListConf {
                     list_user_id,
                     current_sub,
                     pm_ids_set,
-                    this.render_data.all_participant_ids,
+                    this.render_data.get_all_participant_ids(),
                 ) < 0,
         );
         return i === -1 ? user_id_list.length : i;
@@ -928,52 +931,76 @@ export class BuddyList extends BuddyListConf {
         this.update_padding();
     }
 
-    insert_or_move(opts: {user_id: number; item: BuddyUserInfo}): void {
-        const user_id = opts.user_id;
-        const item = opts.item;
+    insert_or_move(user_ids: number[]): void {
+        // TODO: Further optimize this function by clubbing DOM updates from
+        // multiple insertions/movements into a single update.
 
-        this.maybe_remove_user_id({user_id});
+        const all_participant_ids = this.render_data.get_all_participant_ids();
+        const users = buddy_data.get_items_for_users(user_ids);
+        for (const user of users) {
+            const user_id = user.user_id;
 
-        const new_pos_in_all_users = this.find_position({
-            user_id,
-            user_id_list: this.all_user_ids,
-        });
+            this.maybe_remove_user_id({user_id});
 
-        const current_sub = narrow_state.stream_sub();
-        const pm_ids_set = narrow_state.pm_ids_set();
-        const is_subscribed_user = buddy_data.user_matches_narrow(
-            user_id,
-            pm_ids_set,
-            current_sub?.stream_id,
-        );
-        let user_id_list;
-        if (this.render_data.all_participant_ids.has(user_id)) {
-            user_id_list = this.participant_user_ids;
-        } else if (is_subscribed_user) {
-            user_id_list = this.users_matching_view_ids;
-        } else {
-            user_id_list = this.other_user_ids;
+            const new_pos_in_all_users = this.find_position({
+                user_id,
+                user_id_list: this.all_user_ids,
+            });
+
+            const current_sub = narrow_state.stream_sub();
+            const pm_ids_set = narrow_state.pm_ids_set();
+            const is_subscribed_user = buddy_data.user_matches_narrow(
+                user_id,
+                pm_ids_set,
+                current_sub?.stream_id,
+            );
+            let user_id_list;
+            if (all_participant_ids.has(user_id)) {
+                user_id_list = this.participant_user_ids;
+            } else if (is_subscribed_user) {
+                user_id_list = this.users_matching_view_ids;
+            } else {
+                user_id_list = this.other_user_ids;
+            }
+            const new_pos_in_user_list = this.find_position({
+                user_id,
+                user_id_list,
+            });
+
+            // Order is important here--get the new_user_id
+            // before mutating our list.  An undefined value
+            // corresponds to appending.
+            const new_user_id = user_id_list[new_pos_in_user_list];
+
+            user_id_list.splice(new_pos_in_user_list, 0, user_id);
+            this.all_user_ids.splice(new_pos_in_all_users, 0, user_id);
+
+            const html = this.item_to_html({item: user});
+            this.insert_new_html({
+                html,
+                new_user_id,
+                is_subscribed_user,
+                is_participant_user: all_participant_ids.has(user_id),
+            });
         }
-        const new_pos_in_user_list = this.find_position({
-            user_id,
-            user_id_list,
-        });
 
-        // Order is important here--get the new_user_id
-        // before mutating our list.  An undefined value
-        // corresponds to appending.
-        const new_user_id = user_id_list[new_pos_in_user_list];
+        this.display_or_hide_sections();
+        this.render_section_headers();
+    }
 
-        user_id_list.splice(new_pos_in_user_list, 0, user_id);
-        this.all_user_ids.splice(new_pos_in_all_users, 0, user_id);
+    rerender_participants(): void {
+        const all_participant_ids = this.render_data.get_all_participant_ids();
+        const users_to_remove = this.participant_user_ids.filter(
+            (user_id) => !all_participant_ids.has(user_id),
+        );
+        const users_to_add = [...all_participant_ids].filter(
+            (user_id) => !this.participant_user_ids.includes(user_id),
+        );
 
-        const html = this.item_to_html({item});
-        this.insert_new_html({
-            html,
-            new_user_id,
-            is_subscribed_user,
-            is_participant_user: this.render_data.all_participant_ids.has(user_id),
-        });
+        // We are just moving the users around since we still want to show the
+        // user in buddy list regardless of if they are a participant, so we
+        // call `insert_or_move` on both `users_to_remove` and `users_to_add`.
+        this.insert_or_move([...users_to_remove, ...users_to_add]);
     }
 
     fill_screen_with_content(): void {

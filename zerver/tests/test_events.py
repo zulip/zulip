@@ -51,7 +51,11 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
 )
 from zerver.actions.message_delete import do_delete_messages
-from zerver.actions.message_edit import do_update_embedded_data, do_update_message
+from zerver.actions.message_edit import (
+    build_message_edit_request,
+    do_update_embedded_data,
+    do_update_message,
+)
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.onboarding_steps import do_mark_onboarding_step_as_read
@@ -99,7 +103,6 @@ from zerver.actions.streams import (
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
-    do_change_stream_post_policy,
     do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
@@ -175,8 +178,8 @@ from zerver.lib.event_schema import (
     check_realm_user_add,
     check_realm_user_remove,
     check_realm_user_update,
-    check_saved_snippet_add,
-    check_saved_snippet_remove,
+    check_saved_snippets_add,
+    check_saved_snippets_remove,
     check_scheduled_message_add,
     check_scheduled_message_remove,
     check_scheduled_message_update,
@@ -307,6 +310,7 @@ class BaseAction(ZulipTestCase):
         client_is_old: bool = False,
         include_deactivated_groups: bool = False,
         archived_channels: bool = False,
+        allow_empty_topic_name: bool = True,
     ) -> Iterator[list[dict[str, Any]]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -385,7 +389,9 @@ class BaseAction(ZulipTestCase):
         validate_against_openapi_schema(content, "/events", "get", "200")
         self.assert_length(events, num_events)
         initial_state = copy.deepcopy(hybrid_state)
-        post_process_state(self.user_profile, initial_state, notification_settings_null)
+        post_process_state(
+            self.user_profile, initial_state, notification_settings_null, allow_empty_topic_name
+        )
         before = orjson.dumps(initial_state)
         apply_events(
             self.user_profile,
@@ -400,7 +406,9 @@ class BaseAction(ZulipTestCase):
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
         )
-        post_process_state(self.user_profile, hybrid_state, notification_settings_null)
+        post_process_state(
+            self.user_profile, hybrid_state, notification_settings_null, allow_empty_topic_name
+        )
         after = orjson.dumps(hybrid_state)
 
         if state_change_expected:
@@ -431,7 +439,9 @@ class BaseAction(ZulipTestCase):
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
         )
-        post_process_state(self.user_profile, normal_state, notification_settings_null)
+        post_process_state(
+            self.user_profile, normal_state, notification_settings_null, allow_empty_topic_name
+        )
         self.match_states(hybrid_state, normal_state, events)
 
     def match_states(
@@ -596,16 +606,21 @@ class NormalActionsTest(BaseAction):
             message_sender=self.example_user("cordelia"),
         )
 
+        message_edit_request = build_message_edit_request(
+            message=pm,
+            user_profile=self.user_profile,
+            propagate_mode="change_one",
+            stream_id=None,
+            topic_name=None,
+            content=content,
+        )
         with self.verify_action(state_change_expected=False) as events:
             do_update_message(
                 self.user_profile,
                 pm,
-                None,
-                None,
-                None,
+                message_edit_request,
                 False,
                 False,
-                content,
                 rendering_result,
                 prior_mention_user_ids,
                 mention_data,
@@ -900,16 +915,21 @@ class NormalActionsTest(BaseAction):
             message_sender=iago,
         )
 
+        message_edit_request = build_message_edit_request(
+            message=message,
+            user_profile=self.user_profile,
+            propagate_mode="change_one",
+            stream_id=None,
+            topic_name=None,
+            content=content,
+        )
         with self.verify_action(state_change_expected=False) as events:
             do_update_message(
                 self.user_profile,
                 message,
-                None,
-                None,
-                None,
+                message_edit_request,
                 False,
                 False,
-                content,
                 rendering_result,
                 prior_mention_user_ids,
                 mention_data,
@@ -928,16 +948,22 @@ class NormalActionsTest(BaseAction):
         topic_name = "new_topic"
         propagate_mode = "change_all"
 
+        message_edit_request = build_message_edit_request(
+            message=message,
+            user_profile=self.user_profile,
+            propagate_mode=propagate_mode,
+            stream_id=None,
+            topic_name=topic_name,
+            content=None,
+        )
+
         with self.verify_action(state_change_expected=True) as events:
             do_update_message(
                 self.user_profile,
                 message,
-                None,
-                topic_name,
-                propagate_mode,
+                message_edit_request,
                 False,
                 False,
-                None,
                 None,
                 prior_mention_user_ids,
                 mention_data,
@@ -977,6 +1003,14 @@ class NormalActionsTest(BaseAction):
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
 
+        message_edit_request = build_message_edit_request(
+            message=message,
+            user_profile=self.user_profile,
+            propagate_mode=propagate_mode,
+            stream_id=stream.id,
+            topic_name=None,
+            content=None,
+        )
         with self.verify_action(
             state_change_expected=True,
             # There are 3 events generated for this action
@@ -987,12 +1021,9 @@ class NormalActionsTest(BaseAction):
             do_update_message(
                 self.user_profile,
                 message,
-                stream,
-                None,
-                propagate_mode,
+                message_edit_request,
                 True,
                 True,
-                None,
                 None,
                 set(),
                 None,
@@ -1016,6 +1047,14 @@ class NormalActionsTest(BaseAction):
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
 
+        message_edit_request = build_message_edit_request(
+            message=message,
+            user_profile=self.user_profile,
+            propagate_mode="change_one",
+            stream_id=stream.id,
+            topic_name="final_topic",
+            content=None,
+        )
         with self.verify_action(
             state_change_expected=True,
             # Skip "update_message_flags" to exercise the code path
@@ -1029,12 +1068,9 @@ class NormalActionsTest(BaseAction):
             do_update_message(
                 self.user_profile,
                 message,
-                stream,
-                "final_topic",
-                propagate_mode,
+                message_edit_request,
                 True,
                 True,
-                None,
                 None,
                 set(),
                 None,
@@ -1676,14 +1712,14 @@ class NormalActionsTest(BaseAction):
     def test_saved_replies_events(self) -> None:
         with self.verify_action() as events:
             do_create_saved_snippet("Welcome message", "Welcome", self.user_profile)
-        check_saved_snippet_add("events[0]", events[0])
+        check_saved_snippets_add("events[0]", events[0])
 
         saved_snippet_id = (
             SavedSnippet.objects.filter(user_profile=self.user_profile).order_by("id")[0].id
         )
         with self.verify_action() as events:
             do_delete_saved_snippet(saved_snippet_id, self.user_profile)
-        check_saved_snippet_remove("events[0]", events[0])
+        check_saved_snippets_remove("events[0]", events[0])
 
     def test_away_events(self) -> None:
         client = get_client("website")
@@ -3378,7 +3414,6 @@ class NormalActionsTest(BaseAction):
             with self.verify_action(include_streams=include_streams) as events:
                 do_deactivate_stream(stream, acting_user=None)
             check_stream_delete("events[0]", events[0])
-            self.assertIsNone(events[0]["streams"][0]["stream_weekly_traffic"])
 
     def test_admin_deactivate_unsubscribed_stream(self) -> None:
         self.set_up_db_for_testing_user_access()
@@ -3764,21 +3799,19 @@ class RealmPropertyActionTest(BaseAction):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[1000, 2000],
-            invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
-            bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
             ],
-            jitsi_server_url=["https://jitsi1.example.com", "https://jitsi2.example.com"],
+            jitsi_server_url=["https://jitsi1.example.com", "https://jitsi2.example.com", None],
             giphy_rating=[
                 Realm.GIPHY_RATING_OPTIONS["disabled"]["id"],
             ],
             default_code_block_language=["python", "javascript"],
-            message_content_delete_limit_seconds=[1000, 1100, 1200],
+            message_content_delete_limit_seconds=[1000, 1100, 1200, None],
             message_content_edit_limit_seconds=[1000, 1100, 1200, None],
-            move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
-            move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
+            move_messages_within_stream_limit_seconds=[1000, 1100, 1200, None],
+            move_messages_between_streams_limit_seconds=[1000, 1100, 1200, None],
         )
 
         vals = test_values.get(name)
@@ -4541,14 +4574,6 @@ class SubscribeActionTest(BaseAction):
             )
 
         self.user_profile = self.example_user("hamlet")
-        # Update stream stream_post_policy property
-        with self.verify_action(include_subscribers=include_subscribers, num_events=3) as events:
-            do_change_stream_post_policy(
-                stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=self.example_user("hamlet")
-            )
-        check_stream_update("events[0]", events[0])
-        check_message("events[2]", events[2])
-
         with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
             do_change_stream_message_retention_days(stream, self.example_user("hamlet"), -1)
         check_stream_update("events[0]", events[0])
@@ -4677,7 +4702,17 @@ class SubscribeActionTest(BaseAction):
             is_system_group=True,
             realm=self.user_profile.realm,
         )
-        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+
+        num_events = 1
+        if setting_name == "can_send_message_group":
+            # Updating "can_send_message_group" also sends events
+            # for "stream_post_policy" and "is_announcement_value"
+            # and an event for notification message.
+            num_events = 4
+
+        with self.verify_action(
+            include_subscribers=include_subscribers, num_events=num_events
+        ) as events:
             do_change_stream_group_based_setting(
                 stream,
                 setting_name,
@@ -4687,11 +4722,24 @@ class SubscribeActionTest(BaseAction):
         check_stream_update("events[0]", events[0])
         self.assertEqual(events[0]["value"], moderators_group.id)
 
+        if setting_name == "can_send_message_group":
+            check_stream_update("events[1]", events[1])
+            self.assertEqual(events[1]["property"], "stream_post_policy")
+            self.assertEqual(events[1]["value"], Stream.STREAM_POST_POLICY_MODERATORS)
+
+            check_stream_update("events[2]", events[2])
+            self.assertEqual(events[2]["property"], "is_announcement_only")
+            self.assertFalse(events[2]["value"])
+
+            check_message("events[3]", events[3])
+
         setting_group = self.create_or_update_anonymous_group_for_setting(
             [self.user_profile],
             [moderators_group],
         )
-        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+        with self.verify_action(
+            include_subscribers=include_subscribers, num_events=num_events
+        ) as events:
             do_change_stream_group_based_setting(
                 stream,
                 setting_name,
@@ -4705,6 +4753,17 @@ class SubscribeActionTest(BaseAction):
                 direct_members=[self.user_profile.id], direct_subgroups=[moderators_group.id]
             ),
         )
+
+        if setting_name == "can_send_message_group":
+            check_stream_update("events[1]", events[1])
+            self.assertEqual(events[1]["property"], "stream_post_policy")
+            self.assertEqual(events[1]["value"], Stream.STREAM_POST_POLICY_EVERYONE)
+
+            check_stream_update("events[2]", events[2])
+            self.assertEqual(events[2]["property"], "is_announcement_only")
+            self.assertFalse(events[2]["value"])
+
+            check_message("events[3]", events[3])
 
     def test_user_access_events_on_changing_subscriptions(self) -> None:
         self.set_up_db_for_testing_user_access()

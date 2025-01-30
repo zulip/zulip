@@ -157,6 +157,20 @@ class RateLimitedIPAddr(RateLimitedObject):
         return rules[self.domain]
 
 
+class RateLimitedEndpoint(RateLimitedObject):
+    def __init__(self, endpoint_name: str) -> None:
+        self.endpoint_name = endpoint_name
+        super().__init__()
+
+    @override
+    def key(self) -> str:
+        return f"{type(self).__name__}:{self.endpoint_name}"
+
+    @override
+    def rules(self) -> list[tuple[int, int]]:
+        return settings.ABSOLUTE_USAGE_LIMITS_BY_ENDPOINT[self.endpoint_name]
+
+
 class RateLimiterBackend(ABC):
     @classmethod
     @abstractmethod
@@ -601,6 +615,12 @@ def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
         # service doesn't silently remove this functionality.
         logger.warning("Failed to fetch TOR exit node list: %s", err)
     RateLimitedIPAddr(ip_addr, domain=domain).rate_limit_request(request)
+
+
+def rate_limit_endpoint_absolute(endpoint_name: str) -> None:
+    ratelimited, secs_to_freedom = RateLimitedEndpoint(endpoint_name).rate_limit()
+    if ratelimited:
+        raise RateLimitedError(secs_to_freedom)
 
 
 def should_rate_limit(request: HttpRequest) -> bool:

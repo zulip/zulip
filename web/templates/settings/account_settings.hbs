@@ -7,12 +7,16 @@
             <form class="grid">
                 {{#if user_has_email_set}}
                 <div class="input-group">
-                    <label class="settings-field-label" for="change_email_button">{{t "Email" }}</label>
-                    <div id="change_email_button_container" class="{{#unless user_can_change_email}}disabled_setting_tooltip{{/unless}}">
-                        <button id="change_email_button" type="button" class="button rounded tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Change your email' }}" {{#unless user_can_change_email}}disabled="disabled"{{/unless}}>
-                            {{current_user.delivery_email}}
+                    <label class="settings-field-label {{#unless user_can_change_email}}cursor-text{{/unless}}" for="change_email_button">{{t "Email" }}</label>
+                    <div>
+                        <div id="email_field_container" class="inline-block {{#unless user_can_change_email}}disabled_setting_tooltip{{/unless}}">
+                            <input type="email" value="{{current_user.delivery_email}}" class="settings_text_input" disabled="disabled" />
+                        </div>
+                        <button id="change_email_button" type="button" class="button rounded tippy-zulip-delayed-tooltip {{#unless user_can_change_email}}hide{{/unless}}" data-tippy-content="{{t 'Change your email' }}" aria-label="{{t 'Change your email' }}">
+                            <i class="fa fa-pencil" aria-hidden="true"></i>
                         </button>
                     </div>
+                    <div id="email-change-status"></div>
                 </div>
                 {{else}}
                 {{! Demo organizations before the owner has configured an email address. }}
@@ -83,7 +87,7 @@
                   setting_name="send_read_receipts"
                   is_checked=settings_object.send_read_receipts
                   label=settings_label.send_read_receipts
-                  tooltip_text=send_read_receipts_tooltip
+                  help_icon_tooltip_text=send_read_receipts_tooltip
                   hide_tooltip=realm.realm_enable_read_receipts
                   help_link="/help/read-receipts"
                   }}

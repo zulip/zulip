@@ -3,6 +3,7 @@ import $ from "jquery";
 import {$t_html} from "./i18n.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_sort from "./user_sort.ts";
 import * as util from "./util.ts";
@@ -30,7 +31,8 @@ export const show_user_group_settings_pane = {
         $("#groups_overlay .nothing-selected, #user-group-creation").hide();
         $("#groups_overlay .settings").show();
         set_active_group_id(group.id);
-        $("#groups_overlay .user-group-info-title").text(group.name);
+        const group_name = user_groups.get_display_group_name(group.name);
+        $("#groups_overlay .user-group-info-title").text(group_name);
     },
     create_user_group(container_name = "configure_user_group_settings", group_name?: string) {
         $(".user_group_creation").hide();
@@ -116,7 +118,7 @@ export function build_group_member_matcher(query: string): (member: User | UserG
             return termlet_matchers.every((matcher) => matcher(member));
         }
 
-        const group_name = member.name;
+        const group_name = user_groups.get_display_group_name(member.name).toLowerCase();
         if (group_name.startsWith(query)) {
             return true;
         }

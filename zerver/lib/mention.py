@@ -1,13 +1,17 @@
 import functools
 import re
+from collections import defaultdict
 from dataclasses import dataclass
 from re import Match
 
 from django.conf import settings
-from django.db.models import Prefetch, Q
+from django.db.models import Q
+from django_stubs_ext import StrPromise
 
+from zerver.lib.user_groups import get_root_id_annotated_recursive_subgroups_for_groups
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import NamedUserGroup, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.models.streams import get_linkable_streams
 
 BEFORE_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\[\/<])"
@@ -266,24 +270,45 @@ class MentionData:
 
     def init_user_group_data(self, realm_id: int, content: str) -> None:
         self.user_group_name_info: dict[str, NamedUserGroup] = {}
-        self.user_group_members: dict[int, list[int]] = {}
+        self.user_group_members: dict[int, set[int]] = defaultdict(set)
         user_group_names = possible_user_group_mentions(content)
         if user_group_names:
-            # We are not directly doing 'prefetch_related("direct_members")'
-            # because then we would have to filter out deactivated users
-            # using 'group.direct_members.filter(is_active=True)', and that
-            # would take away the advantage of using 'prefetch_related'
-            # because of not using group.direct_members.all().
-            for group in NamedUserGroup.objects.filter(
-                realm_id=realm_id, name__in=user_group_names, is_system_group=False
-            ).prefetch_related(
-                Prefetch(
-                    "direct_members",
-                    queryset=UserProfile.objects.filter(realm_id=realm_id, is_active=True),
+            named_user_groups = NamedUserGroup.objects.filter(
+                realm_id=realm_id, name__in=user_group_names
+            )
+            # we need user_group_name_info for both groups, deactivated and non-deactivated.
+            self.user_group_name_info = {group.name.lower(): group for group in named_user_groups}
+
+            non_deactivated_group_ids = [
+                group.id for group in named_user_groups if not group.deactivated
+            ]
+
+            # If there are no matching non_deactivated_group_ids
+            # (e.g non-existent user_group_names or only deactivated-groups were mentioned)
+            # then no need to execute the relatively expensive recursive CTE query
+            # triggered by get_root_id_annotated_recursive_subgroups_for_groups.
+            # Also the base case for the recursive CTE requires non-empty matching rows.
+            if len(non_deactivated_group_ids) == 0:
+                return
+
+            # Here we fetch membership for non-deactivated groups in a
+            # single, efficient bulk query. Deactivated group mentions
+            # are non-operative, so we don't need to waste resources
+            # collecting membership data for them. Further possible
+            # optimizations include, in order of value:
+            #
+            # - Skipping fetching membership data for silent mention syntax.
+            # - Filtering groups the current user doesn't have permission to mention
+            #   from what we fetch membership for. This requires care to avoid race bugs
+            #   if the user's permissions change while the message is being sent.
+            for group_root_id, member_id in (
+                get_root_id_annotated_recursive_subgroups_for_groups(
+                    non_deactivated_group_ids, realm_id
                 )
+                .filter(direct_members__is_active=True)
+                .values_list("root_id", "direct_members")  # type: ignore[misc]  # root_id is an annotated field.
             ):
-                self.user_group_name_info[group.name.lower()] = group
-                self.user_group_members[group.id] = [m.id for m in group.direct_members.all()]
+                self.user_group_members[group_root_id].add(member_id)
 
     def get_user_by_name(self, name: str) -> FullNameInfo | None:
         # warning: get_user_by_name is not dependable if two
@@ -306,8 +331,8 @@ class MentionData:
     def get_user_group(self, name: str) -> NamedUserGroup | None:
         return self.user_group_name_info.get(name.lower(), None)
 
-    def get_group_members(self, user_group_id: int) -> list[int]:
-        return self.user_group_members.get(user_group_id, [])
+    def get_group_members(self, user_group_id: int) -> set[int]:
+        return self.user_group_members.get(user_group_id, set())
 
     def get_stream_name_map(self, stream_names: set[str]) -> dict[str, int]:
         return self.mention_backend.get_stream_name_map(stream_names)
@@ -315,3 +340,14 @@ class MentionData:
 
 def silent_mention_syntax_for_user(user_profile: UserProfile) -> str:
     return f"@_**{user_profile.full_name}|{user_profile.id}**"
+
+
+def silent_mention_syntax_for_user_group(user_group: NamedUserGroup) -> str:
+    return f"@_*{user_group.name}*"
+
+
+def get_user_group_mention_display_name(user_group: NamedUserGroup) -> StrPromise | str:
+    if user_group.is_system_group:
+        return SystemGroups.GROUP_DISPLAY_NAME_MAP[user_group.name]
+
+    return user_group.name

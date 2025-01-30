@@ -97,6 +97,8 @@ If set to true, [configures Zulip to allow HTTP access][using-http];
 use if Zulip is deployed behind a reverse proxy that is handling
 SSL/TLS termination.
 
+[using-http]: reverse-proxies.md#configuring-zulip-to-allow-http
+
 #### `nginx_listen_port`
 
 Set to the port number if you [prefer to listen on a port other than
@@ -260,6 +262,8 @@ replicas](postgresql.md#postgresql-warm-standby). This is generally only set if 
 multiple warm standby replicas, in order to avoid taking multiple backups, one
 per replica.
 
+[wal-g]: export-and-import.md#database-only-backup-tools
+
 #### `backups_disk_concurrency`
 
 Number of concurrent disk reads to use when taking backups. Defaults to 1; you
@@ -365,6 +369,16 @@ memcached_exporter to report precise item size distribution.
 Comma-separated list of IP addresses or netmasks of external load balancers
 whose `X-Forwarded-For` and `X-Forwarded-Proto` should be respected. These can
 be individual IP addresses, or CIDR IP address ranges.
+
+#### `rejects_http_requests`
+
+Set to a true value if incoming requests from load loadbalancer's IP addresses
+which do not contain an `X-Forwarded-Proto` should be assumed to have come into
+them over HTTPS. This setting _is a security vulnerability_ unless the load
+balancer unilaterally rejects unencrypted HTTP connections, or responds to them
+with 301 status codes. Note that Zulip's HSTS headers are not sufficient
+protection here, since API clients do not respect them; the load balancer _must
+not_ send any requests to Zulip which came in unencrypted.
 
 ### `[http_proxy]`
 

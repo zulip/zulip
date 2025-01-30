@@ -30,7 +30,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
-from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_stream
+from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
@@ -246,285 +246,183 @@ class MessagePOSTTest(ZulipTestCase):
             sent_message = self.get_last_message()
             self.assertEqual(sent_message.content, content)
 
-    def test_sending_message_as_stream_post_policy_admins(self) -> None:
-        """
-        Sending messages to streams which only the admins can post to.
-        """
-        admin_profile = self.example_user("iago")
-        self.login_user(admin_profile)
+    def test_can_send_message_group_permission(self) -> None:
+        realm = get_realm("zulip")
 
-        stream_name = "Verona"
-        stream = get_stream(stream_name, admin_profile.realm)
-        do_change_stream_post_policy(
-            stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=admin_profile
-        )
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        polonius = self.example_user("polonius")
 
-        # Admins and their owned bots can send to STREAM_POST_POLICY_ADMINS streams
-        self._send_and_verify_message(admin_profile, stream_name)
-        admin_owned_bot = self.create_test_bot(
+        desdemona_owned_bot = self.create_test_bot(
             short_name="whatever1",
             full_name="whatever1",
-            user_profile=admin_profile,
+            user_profile=desdemona,
         )
-        self._send_and_verify_message(admin_owned_bot, stream_name)
-
-        non_admin_profile = self.example_user("hamlet")
-        self.login_user(non_admin_profile)
-
-        # Non admins and their owned bots cannot send to STREAM_POST_POLICY_ADMINS streams
-        self._send_and_verify_message(
-            non_admin_profile,
-            stream_name,
-            "Only organization administrators can send to this channel.",
-        )
-        non_admin_owned_bot = self.create_test_bot(
+        iago_owned_bot = self.create_test_bot(
             short_name="whatever2",
             full_name="whatever2",
-            user_profile=non_admin_profile,
+            user_profile=iago,
         )
-        self._send_and_verify_message(
-            non_admin_owned_bot,
-            stream_name,
-            "Only organization administrators can send to this channel.",
-        )
-
-        moderator_profile = self.example_user("shiva")
-        self.login_user(moderator_profile)
-
-        # Moderators and their owned bots cannot send to STREAM_POST_POLICY_ADMINS streams
-        self._send_and_verify_message(
-            moderator_profile,
-            stream_name,
-            "Only organization administrators can send to this channel.",
-        )
-        moderator_owned_bot = self.create_test_bot(
+        cordelia_owned_bot = self.create_test_bot(
             short_name="whatever3",
             full_name="whatever3",
-            user_profile=moderator_profile,
+            user_profile=cordelia,
         )
-        self._send_and_verify_message(
-            moderator_owned_bot,
-            stream_name,
-            "Only organization administrators can send to this channel.",
+        othello_owned_bot = self.create_test_bot(
+            short_name="whatever4",
+            full_name="whatever4",
+            user_profile=othello,
         )
+        notification_bot = get_system_bot("notification-bot@zulip.com", realm.id)
 
-        # Bots without owner (except cross realm bot) cannot send to announcement only streams
         bot_without_owner = do_create_user(
             email="free-bot@zulip.testserver",
             password="",
-            realm=non_admin_profile.realm,
+            realm=realm,
             full_name="freebot",
             bot_type=UserProfile.DEFAULT_BOT,
             acting_user=None,
         )
+
+        stream_name = "Verona"
+        stream = get_stream(stream_name, realm)
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", nobody_group, acting_user=iago
+        )
+
         self._send_and_verify_message(
-            bot_without_owner,
-            stream_name,
-            "Only organization administrators can send to this channel.",
+            desdemona, stream_name, "You do not have permission to post in this channel."
+        )
+        self._send_and_verify_message(
+            desdemona_owned_bot, stream_name, "You do not have permission to post in this channel."
+        )
+        self._send_and_verify_message(
+            bot_without_owner, stream_name, "You do not have permission to post in this channel."
         )
 
         # Cross realm bots should be allowed
-        notification_bot = get_system_bot("notification-bot@zulip.com", stream.realm_id)
         internal_send_stream_message(
             notification_bot, stream, "Test topic", "Test message by notification bot"
         )
         self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
-        guest_profile = self.example_user("polonius")
-        # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", owners_group, acting_user=iago
+        )
+
         self._send_and_verify_message(
-            guest_profile, stream_name, "Only organization administrators can send to this channel."
-        )
-
-    def test_sending_message_as_stream_post_policy_moderators(self) -> None:
-        """
-        Sending messages to streams which only the moderators can post to.
-        """
-        admin_profile = self.example_user("iago")
-        self.login_user(admin_profile)
-
-        stream_name = "Verona"
-        stream = get_stream(stream_name, admin_profile.realm)
-        do_change_stream_post_policy(
-            stream, Stream.STREAM_POST_POLICY_MODERATORS, acting_user=admin_profile
-        )
-
-        # Admins and their owned bots can send to STREAM_POST_POLICY_MODERATORS streams
-        self._send_and_verify_message(admin_profile, stream_name)
-        admin_owned_bot = self.create_test_bot(
-            short_name="whatever1",
-            full_name="whatever1",
-            user_profile=admin_profile,
-        )
-        self._send_and_verify_message(admin_owned_bot, stream_name)
-
-        moderator_profile = self.example_user("shiva")
-        self.login_user(moderator_profile)
-
-        # Moderators and their owned bots can send to STREAM_POST_POLICY_MODERATORS streams
-        self._send_and_verify_message(moderator_profile, stream_name)
-        moderator_owned_bot = self.create_test_bot(
-            short_name="whatever2",
-            full_name="whatever2",
-            user_profile=moderator_profile,
-        )
-        self._send_and_verify_message(moderator_owned_bot, stream_name)
-
-        non_admin_profile = self.example_user("hamlet")
-        self.login_user(non_admin_profile)
-
-        # Members and their owned bots cannot send to STREAM_POST_POLICY_MODERATORS streams
-        self._send_and_verify_message(
-            non_admin_profile,
-            stream_name,
-            "Only organization administrators and moderators can send to this channel.",
-        )
-        non_admin_owned_bot = self.create_test_bot(
-            short_name="whatever3",
-            full_name="whatever3",
-            user_profile=non_admin_profile,
+            iago, stream_name, "You do not have permission to post in this channel."
         )
         self._send_and_verify_message(
-            non_admin_owned_bot,
-            stream_name,
-            "Only organization administrators and moderators can send to this channel.",
-        )
-
-        # Bots without owner (except cross realm bot) cannot send to STREAM_POST_POLICY_MODERATORS streams.
-        bot_without_owner = do_create_user(
-            email="free-bot@zulip.testserver",
-            password="",
-            realm=non_admin_profile.realm,
-            full_name="freebot",
-            bot_type=UserProfile.DEFAULT_BOT,
-            acting_user=None,
+            iago_owned_bot, stream_name, "You do not have permission to post in this channel."
         )
         self._send_and_verify_message(
-            bot_without_owner,
-            stream_name,
-            "Only organization administrators and moderators can send to this channel.",
+            bot_without_owner, stream_name, "You do not have permission to post in this channel."
         )
 
-        # System bots should be allowed
-        notification_bot = get_system_bot("notification-bot@zulip.com", stream.realm_id)
+        self._send_and_verify_message(desdemona, stream_name)
+        self._send_and_verify_message(desdemona_owned_bot, stream_name)
+
+        # Cross realm bots should be allowed
         internal_send_stream_message(
             notification_bot, stream, "Test topic", "Test message by notification bot"
         )
         self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
-        guest_profile = self.example_user("polonius")
-        # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", hamletcharacters_group, acting_user=iago
+        )
+
         self._send_and_verify_message(
-            guest_profile,
-            stream_name,
-            "Only organization administrators and moderators can send to this channel.",
-        )
-
-    def test_sending_message_as_stream_post_policy_restrict_new_members(self) -> None:
-        """
-        Sending messages to streams which new members cannot post to.
-        """
-        admin_profile = self.example_user("iago")
-        self.login_user(admin_profile)
-
-        do_set_realm_property(admin_profile.realm, "waiting_period_threshold", 10, acting_user=None)
-        admin_profile.date_joined = timezone_now() - timedelta(days=9)
-        admin_profile.save()
-        self.assertTrue(admin_profile.is_provisional_member)
-        self.assertTrue(admin_profile.is_realm_admin)
-
-        stream_name = "Verona"
-        stream = get_stream(stream_name, admin_profile.realm)
-        do_change_stream_post_policy(
-            stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS, acting_user=admin_profile
-        )
-
-        # Admins and their owned bots can send to STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams,
-        # even if the admin is a new user
-        self._send_and_verify_message(admin_profile, stream_name)
-        admin_owned_bot = self.create_test_bot(
-            short_name="whatever1",
-            full_name="whatever1",
-            user_profile=admin_profile,
-        )
-        self._send_and_verify_message(admin_owned_bot, stream_name)
-
-        non_admin_profile = self.example_user("hamlet")
-        self.login_user(non_admin_profile)
-
-        non_admin_profile.date_joined = timezone_now() - timedelta(days=9)
-        non_admin_profile.save()
-        self.assertTrue(non_admin_profile.is_provisional_member)
-        self.assertFalse(non_admin_profile.is_realm_admin)
-
-        # Non admins and their owned bots can send to STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams,
-        # if the user is not a new member
-        self._send_and_verify_message(
-            non_admin_profile, stream_name, "New members cannot send to this channel."
-        )
-        non_admin_owned_bot = self.create_test_bot(
-            short_name="whatever2",
-            full_name="whatever2",
-            user_profile=non_admin_profile,
+            desdemona, stream_name, "You do not have permission to post in this channel."
         )
         self._send_and_verify_message(
-            non_admin_owned_bot, stream_name, "New members cannot send to this channel."
-        )
-
-        non_admin_profile.date_joined = timezone_now() - timedelta(days=11)
-        non_admin_profile.save()
-        self.assertFalse(non_admin_profile.is_provisional_member)
-
-        self._send_and_verify_message(non_admin_profile, stream_name)
-        # We again set bot owner here, as date_joined of non_admin_profile is changed.
-        non_admin_owned_bot.bot_owner = non_admin_profile
-        non_admin_owned_bot.save()
-        self._send_and_verify_message(non_admin_owned_bot, stream_name)
-
-        # Bots without owner (except cross realm bot) cannot send to STREAM_POST_POLICY_ADMINS_ONLY and
-        # STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams
-        bot_without_owner = do_create_user(
-            email="free-bot@zulip.testserver",
-            password="",
-            realm=non_admin_profile.realm,
-            full_name="freebot",
-            bot_type=UserProfile.DEFAULT_BOT,
-            acting_user=None,
+            desdemona_owned_bot, stream_name, "You do not have permission to post in this channel."
         )
         self._send_and_verify_message(
-            bot_without_owner, stream_name, "New members cannot send to this channel."
+            iago, stream_name, "You do not have permission to post in this channel."
+        )
+        self._send_and_verify_message(
+            iago_owned_bot, stream_name, "You do not have permission to post in this channel."
+        )
+        self._send_and_verify_message(
+            bot_without_owner, stream_name, "You do not have permission to post in this channel."
         )
 
-        moderator_profile = self.example_user("shiva")
-        moderator_profile.date_joined = timezone_now() - timedelta(days=9)
-        moderator_profile.save()
-        self.assertTrue(moderator_profile.is_moderator)
-        self.assertFalse(moderator_profile.is_provisional_member)
+        self._send_and_verify_message(hamlet, stream_name)
+        self._send_and_verify_message(cordelia, stream_name)
+        self._send_and_verify_message(cordelia_owned_bot, stream_name)
 
-        # Moderators and their owned bots can send to STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS
-        # streams, even if the moderator is a new user
-        self._send_and_verify_message(moderator_profile, stream_name)
-        moderator_owned_bot = self.create_test_bot(
-            short_name="whatever3",
-            full_name="whatever3",
-            user_profile=moderator_profile,
-        )
-        moderator_owned_bot.date_joined = timezone_now() - timedelta(days=11)
-        moderator_owned_bot.save()
-        self._send_and_verify_message(moderator_owned_bot, stream_name)
-
-        # System bots should be allowed
-        notification_bot = get_system_bot("notification-bot@zulip.com", stream.realm_id)
+        # Cross realm bots should be allowed
         internal_send_stream_message(
             notification_bot, stream, "Test topic", "Test message by notification bot"
         )
         self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
-        guest_profile = self.example_user("polonius")
-        # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
-        self._send_and_verify_message(
-            guest_profile, stream_name, "Guests cannot send to this channel."
+        setting_group = self.create_or_update_anonymous_group_for_setting([othello], [owners_group])
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", setting_group, acting_user=iago
         )
+
+        self._send_and_verify_message(
+            iago, stream_name, "You do not have permission to post in this channel."
+        )
+        self._send_and_verify_message(
+            iago_owned_bot, stream_name, "You do not have permission to post in this channel."
+        )
+        self._send_and_verify_message(
+            hamlet, stream_name, "You do not have permission to post in this channel."
+        )
+        self._send_and_verify_message(
+            cordelia, stream_name, "You do not have permission to post in this channel."
+        )
+        self._send_and_verify_message(
+            cordelia_owned_bot, stream_name, "You do not have permission to post in this channel."
+        )
+        self._send_and_verify_message(
+            bot_without_owner, stream_name, "You do not have permission to post in this channel."
+        )
+
+        self._send_and_verify_message(desdemona, stream_name)
+        self._send_and_verify_message(desdemona_owned_bot, stream_name)
+        self._send_and_verify_message(othello, stream_name)
+        self._send_and_verify_message(othello_owned_bot, stream_name)
+
+        # Cross realm bots should be allowed
+        internal_send_stream_message(
+            notification_bot, stream, "Test topic", "Test message by notification bot"
+        )
+        self.assertEqual(self.get_last_message().content, "Test message by notification bot")
+
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", everyone_group, acting_user=iago
+        )
+        self._send_and_verify_message(othello, stream_name)
+        self._send_and_verify_message(othello_owned_bot, stream_name)
+        self._send_and_verify_message(iago, stream_name)
+        self._send_and_verify_message(iago_owned_bot, stream_name)
+        self._send_and_verify_message(polonius, stream_name)
+        self._send_and_verify_message(bot_without_owner, stream_name)
+
+        # Cross realm bots should be allowed
+        internal_send_stream_message(
+            notification_bot, stream, "Test topic", "Test message by notification bot"
+        )
+        self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
     def test_api_message_with_default_to(self) -> None:
         """
@@ -890,22 +788,6 @@ class MessagePOSTTest(ZulipTestCase):
             {"type": "direct", "content": " ", "to": othello.email},
         )
         self.assert_json_error(result, "Message must not be empty")
-
-    def test_empty_string_topic(self) -> None:
-        """
-        Sending a message that has empty string topic should fail
-        """
-        self.login("hamlet")
-        result = self.client_post(
-            "/json/messages",
-            {
-                "type": "channel",
-                "to": "Verona",
-                "content": "Test message",
-                "topic": "",
-            },
-        )
-        self.assert_json_error(result, "Topic can't be empty!")
 
     def test_missing_topic(self) -> None:
         """
@@ -1500,13 +1382,6 @@ class StreamMessagesTest(ZulipTestCase):
         realm = get_realm("zulip")
         subscribers = self.users_subscribed_to_stream(stream_name, realm)
 
-        # Outgoing webhook bots don't store UserMessage rows; they will be processed later.
-        subscribers = [
-            subscriber
-            for subscriber in subscribers
-            if subscriber.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT
-        ]
-
         old_subscriber_messages = list(map(message_stream_count, subscribers))
 
         non_subscribers = [
@@ -1737,6 +1612,26 @@ class StreamMessagesTest(ZulipTestCase):
                 body="@**all**",
             )
 
+        # Query count increases if can_send_message_group setting is
+        # set to something other than "Everyone" group.
+        stream = get_stream(stream_name, realm)
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", members_group, acting_user=self.example_user("iago")
+        )
+        flush_per_request_caches()
+
+        with self.assert_database_query_count(17):
+            check_send_stream_message(
+                sender=sender,
+                client=sending_client,
+                stream_name=stream_name,
+                topic_name="topic 2",
+                body="@**all**",
+            )
+
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user("iago")
         self.subscribe(user_profile, "Denmark")
@@ -1749,6 +1644,7 @@ class StreamMessagesTest(ZulipTestCase):
             [dct],
             apply_markdown=True,
             client_gravatar=False,
+            allow_empty_topic_name=True,
             realm=user_profile.realm,
             user_recipient_id=None,
         )
@@ -2153,6 +2049,26 @@ class StreamMessagesTest(ZulipTestCase):
         ):
             self.send_stream_message(cordelia, "test_stream", content)
 
+    def test_user_group_mentions_via_subgroup(self) -> None:
+        user_profile = self.example_user("iago")
+        self.subscribe(user_profile, "Denmark")
+        my_group = check_add_user_group(
+            user_profile.realm, "my_group", [user_profile], acting_user=user_profile
+        )
+        my_group_via_subgroup = check_add_user_group(
+            user_profile.realm, "my_group_via_subgroup", [], acting_user=user_profile
+        )
+        add_subgroups_to_user_group(my_group_via_subgroup, [my_group], acting_user=None)
+
+        self.send_stream_message(
+            self.example_user("hamlet"), "Denmark", content="test @*my_group_via_subgroup* mention"
+        )
+
+        message = most_recent_message(user_profile)
+        assert UserMessage.objects.get(
+            user_profile=user_profile, message=message
+        ).flags.mentioned.is_set
+
     def test_user_group_mention_restrictions(self) -> None:
         iago = self.example_user("iago")
         shiva = self.example_user("shiva")
@@ -2302,6 +2218,25 @@ class StreamMessagesTest(ZulipTestCase):
         result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
         self.assert_json_success(result)
 
+        # Test mentioning system groups where can_mention_group is
+        # set to "Nobody" group.
+        self.assertEqual(
+            moderators_system_group.can_mention_group.named_user_group.name, SystemGroups.NOBODY
+        )
+        content = "Test mentioning user group @*role:moderators*"
+
+        with self.assertRaisesRegex(
+            JsonableError,
+            f"You are not allowed to mention user group '{moderators_system_group.name}'.",
+        ):
+            self.send_stream_message(iago, "test_stream", content)
+
+        # silent mentioning system groups is allowed.
+        content = "Test mentioning user group @_*role:moderators*"
+        msg_id = self.send_stream_message(iago, "test_stream", content)
+        result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
+        self.assert_json_success(result)
+
     def test_stream_message_mirroring(self) -> None:
         user = self.mit_user("starnine")
         self.subscribe(user, "Verona")
@@ -2403,7 +2338,20 @@ class StreamMessagesTest(ZulipTestCase):
         # Send a message to the stream
         sender = self.example_user("hamlet")
         self.subscribe(sender, stream.name)
-        self.send_stream_message(sender, stream.name)
+        # One message send event and one stream property update event.
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            self.send_stream_message(sender, stream.name, skip_capture_on_commit_callbacks=True)
+
+        has_stream_update_event = False
+        for event in events:
+            if event["event"]["type"] == "stream":
+                stream_update_event = event["event"]
+                has_stream_update_event = True
+                self.assertEqual(stream_update_event["op"], "update")
+                self.assertEqual(stream_update_event["property"], "is_recently_active")
+                self.assertEqual(stream_update_event["value"], True)
+        self.assertTrue(has_stream_update_event)
+
         # The stream should now be active
         stream.refresh_from_db()
         self.assertEqual(stream.is_recently_active, True)
@@ -3372,3 +3320,23 @@ class CheckMessageTest(ZulipTestCase):
         realm.refresh_from_db()
         ret = check_message(sender, client, addressee, message_content, realm)
         self.assertEqual(ret.message.sender.id, sender.id)
+
+    def test_empty_topic_message(self) -> None:
+        realm = get_realm("zulip")
+        sender = self.example_user("iago")
+        client = make_client(name="test suite")
+        stream = get_stream("Denmark", realm)
+        topic_name = ""
+        message_content = "whatever"
+        addressee = Addressee.for_stream(stream, topic_name)
+
+        do_set_realm_property(realm, "mandatory_topics", True, acting_user=None)
+        realm.refresh_from_db()
+
+        with self.assertRaisesRegex(JsonableError, "Topics are required in this organization"):
+            check_message(sender, client, addressee, message_content, realm)
+
+        do_set_realm_property(realm, "mandatory_topics", False, acting_user=None)
+        realm.refresh_from_db()
+        ret = check_message(sender, client, addressee, message_content, realm)
+        self.assertEqual(ret.message.topic_name(), topic_name)

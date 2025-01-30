@@ -247,7 +247,8 @@
     --left-sidebar-before-unread-count-padding: 3px;
     /* 15px is the approximate width of a single-digit
        unread marker. */
-    --left-sidebar-single-digit-unread-width: 15px;
+    /* 15px at 16px/1em */
+    --left-sidebar-single-digit-unread-width: 0.9375em;
     --left-sidebar-right-margin: 12px;
     /* 289px at 14px/1em */
     --left-sidebar-max-width: calc(
@@ -399,9 +400,12 @@
     --message-box-markdown-aligned-vertical-space: var(
         --markdown-interelement-space-px
     );
-    /* 22px matches to the width of the padded icon. */
-    --message-box-icon-width: 22px;
-    --message-box-icon-height: 25px;
+    /* 22px matches to the width of the padded icon.
+       22px at 16px/1em
+    */
+    --message-box-icon-width: 1.375em;
+    /* 25px at 16px/1em */
+    --message-box-icon-height: 1.6667em;
     --message-box-height-senderless-single-line-message: calc(
         var(--base-line-height-unitless) * var(--base-font-size-px) +
             calc(var(--markdown-interelement-space-px) * 2)
@@ -581,6 +585,35 @@
     */
     --table-header-sortable-column-padding-right: 1em;
 
+    /* Color picker popover values */
+    --size-color-swatch: 1em;
+    --grid-gap-color-swatch: 1em;
+    --padding-color-swatch-list: 0.6666em;
+    --color-background-custom-swatch-gradient: conic-gradient(
+        from 0deg at 50% 50% in oklch longer hue,
+        oklch(70% 0.3 0deg) 0%,
+        oklch(70% 0.3 0deg) 100%
+    );
+
+    /* Banner grid layout variables */
+    --banner-horizontal-padding: 13px;
+    --banner-vertical-padding: 5px;
+    --banner-grid-template-areas-lg: ". . . . . . banner-close-button banner-close-button"
+        ". . banner-label . banner-action-buttons . banner-close-button banner-close-button"
+        ". . . . . . banner-close-button banner-close-button";
+    --banner-grid-template-columns-lg: var(--banner-horizontal-padding) 0 auto
+        minmax(0, 1fr) auto 0 minmax(0, auto) var(--banner-horizontal-padding);
+    --banner-grid-template-rows-lg: 5px auto 5px;
+    --banner-grid-template-areas-md: ". . . . banner-close-button banner-close-button"
+        ". . banner-label banner-label banner-close-button banner-close-button"
+        ". banner-action-buttons banner-action-buttons banner-action-buttons . .";
+    --banner-grid-template-columns-md: var(--banner-horizontal-padding) 0
+        minmax(auto, 1fr) 0 minmax(0, auto) var(--banner-horizontal-padding);
+    --banner-grid-template-rows-md: 5px auto auto 5px;
+    --banner-grid-template-areas-sm: ". . . . banner-close-button banner-close-button"
+        ". . banner-label banner-label banner-close-button banner-close-button"
+        ". banner-action-buttons banner-action-buttons banner-action-buttons banner-action-buttons .";
+
     /* Colors used across the app */
     --color-date: hsl(0deg 0% 15% / 75%);
     --color-background-private-message-header: hsl(46deg 35% 93%);
@@ -646,8 +679,9 @@
     --color-border-popover-menu: hsl(0deg 0% 0% / 40%);
     --color-border-personal-menu-avatar: hsl(0deg 0% 0% / 10%);
     --color-background-unread-counter-prominent: hsl(240deg 10% 50% / 70%);
-    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 25%);
+    --color-background-unread-counter-normal: hsl(240deg 10% 50% / 20%);
     --color-background-unread-counter-quiet: transparent;
+    --box-shadow-unread-counter-normal: inset 0 0 1px hsl(0deg 0% 0% / 30%);
     --color-unread-counter-prominent: hsl(0deg 0% 100%);
     --color-unread-counter-normal: hsl(0deg 0% 0% / 90%);
     --color-unread-counter-quiet: hsl(240deg 15% 50%);
@@ -696,6 +730,7 @@
     --color-invalid-input-box-shadow: 0 0 2px hsl(3deg 57% 33%);
 
     /* Recent view */
+    --recent-view-max-avatars: 4;
     --color-border-recent-view-row: hsl(0deg 0% 87%);
     --color-border-recent-view-table: hsl(0deg 0% 0% / 60%);
     --color-background-recent-view-row: hsl(100deg 11% 96%);
@@ -716,6 +751,10 @@
     /* Compose box colors */
     --color-compose-box-background: hsl(232deg 30% 92%);
     --color-compose-message-content-background: hsl(0deg 0% 100%);
+    --color-compose-message-content-background-over-limit: hsl(3deg 35% 90%);
+    --color-compose-message-content-background-approaching-limit: hsl(
+        50deg 75% 92%
+    );
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
     --color-compose-send-button-background: hsl(240deg 96% 68%);
     --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
@@ -783,9 +822,44 @@
     --color-message-formatting-controls-container: hsl(232deg 30% 96%);
     --color-message-content-container-border: hsl(0deg 0% 0% / 10%);
     --color-message-content-container-border-focus: hsl(0deg 0% 57%);
+    --color-message-content-container-border-over-limit: hsl(0deg 76% 65%);
+    --color-message-content-container-border-approaching-limit: hsl(
+        38deg 70% 50%
+    );
     --color-compose-control-button-background-hover: hsl(0deg 0% 0% / 5%);
     --color-compose-formatting-button-divider: hsl(0deg 0% 75%);
     --color-compose-focus-ring: var(--color-outline-focus);
+    --color-compose-scroll-icon: hsl(0deg 0% 50%);
+    --color-compose-background-scroll-backward: linear-gradient(
+        90deg,
+        hsl(234deg 100% 95%) 50%,
+        hsl(0deg 0% 100% / 0%) 100%
+    );
+    --color-compose-background-scroll-backward-hover: linear-gradient(
+        90deg,
+        hsl(234deg 100% 93%) 50%,
+        hsl(0deg 0% 100% / 0%) 100%
+    );
+    --color-compose-background-scroll-backward-active: linear-gradient(
+        90deg,
+        hsl(234deg 100% 90%) 45%,
+        hsl(0deg 0% 100% / 0%) 100%
+    );
+    --color-compose-background-scroll-forward: linear-gradient(
+        90deg,
+        hsl(0deg 0% 100% / 0%) 0%,
+        hsl(234deg 100% 95%) 50%
+    );
+    --color-compose-background-scroll-forward-hover: linear-gradient(
+        90deg,
+        hsl(0deg 0% 100% / 0%) 0%,
+        hsl(234deg 100% 93%) 50%
+    );
+    --color-compose-background-scroll-forward-active: linear-gradient(
+        90deg,
+        hsl(0deg 0% 100% / 0%) 0%,
+        hsl(234deg 100% 90%) 55%
+    );
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -818,6 +892,21 @@
     --color-text-settings-field-hint: hsl(0deg 0% 57%);
     --color-text-clear-search-button: hsl(0deg 0% 80%);
     --color-text-clear-search-button-hover: hsl(0deg 0% 0%);
+
+    /* Link colors */
+    --color-text-link: hsl(210deg 94% 42%);
+    --color-text-link-decoration: color-mix(
+        in oklch,
+        hsl(210deg 94% 42%) 20%,
+        transparent
+    );
+    --color-text-link-hover: hsl(212deg 100% 50%);
+    --color-text-link-decoration-hover: color-mix(
+        in oklch,
+        hsl(212deg 100% 50%) 70%,
+        transparent
+    );
+    --color-text-link-active: hsl(212deg 100% 30%);
     /* These colors are from Bootstrap. */
     --color-text-generic-link: #08c;
     --color-text-generic-link-interactive: #005580;
@@ -840,6 +929,10 @@
     --color-kbd-border: hsl(0deg 0% 80%);
     --color-kbd-text: hsl(0deg 0% 20%);
     --color-kbd-enter-sends: hsl(0deg 0% 40%);
+
+    /* Settings */
+    --color-realm-enable-spectator-access-link: hsl(0deg 0% 20%);
+    --color-unmute-stream-hover: hsl(0deg 0% 20%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
@@ -883,9 +976,7 @@
     --color-left-sidebar-navigation-icon: hsl(240deg 30% 40%);
     --color-left-sidebar-heads-up-icon: hsl(240deg 30% 40%);
     --color-left-sidebar-heads-up-icon-hover: hsl(240deg 100% 15%);
-    --color-left-sidebar-dm-partners-icon: var(
-        --color-left-sidebar-navigation-icon
-    );
+    --color-left-sidebar-dm-partners-icon: hsl(240deg 30% 60%);
     --background-color-left-sidebar-heads-up-icon-hover: hsl(
         240deg 100% 50% / 7%
     );
@@ -992,9 +1083,9 @@
     );
 
     /* Inbox view constants - Values from Figma design */
-    --height-inbox-search: 26px;
-    --width-inbox-search: 346px;
-    --width-inbox-filters-dropdown: 150px;
+    --height-inbox-search: 1.8571em; /* 26px / 14px em */
+    --width-inbox-search: 24.7142em; /* 346px / 14px em */
+    --width-inbox-filters-dropdown: 10.7142em; /* 150px / 14px em */
     --color-background-inbox-no-unreads-illustration: hsl(147deg 57% 25%);
     --color-background-inbox: var(--color-background);
     --color-icon-search-inbox: hsl(0deg 0% 0%);
@@ -1132,203 +1223,205 @@
     /* Actions buttons */
     --color-inner-shadow-action-button: color-mix(
         in oklch,
-        #000 10%,
+        hsl(0deg 0% 0%) 20%,
         transparent
     );
     /* Action buttons -- Neutral Variant */
-    --color-text-neutral-primary-action-button: #fff;
-    --color-background-neutral-primary-action-button: #777a88;
-    --color-background-neutral-primary-action-button-hover: #707380;
-    --color-background-neutral-primary-action-button-active: #696b78;
-    --color-text-neutral-quiet-action-button: #393c49;
+    --color-text-neutral-primary-action-button: hsl(0deg 0% 100%);
+    --color-background-neutral-primary-action-button: hsl(229deg 7% 50%);
+    --color-background-neutral-primary-action-button-hover: hsl(229deg 7% 47%);
+    --color-background-neutral-primary-action-button-active: hsl(232deg 7% 44%);
+    --color-text-neutral-quiet-action-button: hsl(229deg 12% 25%);
     --color-background-neutral-quiet-action-button: color-mix(
         in oklch,
-        #767988 12%,
+        hsl(230deg 7% 50%) 12%,
         transparent
     );
     --color-background-neutral-quiet-action-button-hover: color-mix(
         in oklch,
-        #767988 17%,
+        hsl(230deg 7% 50%) 17%,
         transparent
     );
     --color-background-neutral-quiet-action-button-active: color-mix(
         in oklch,
-        #767988 22%,
+        hsl(230deg 7% 50%) 22%,
         transparent
     );
-    --color-text-neutral-borderless-action-button: #535663;
+    --color-text-neutral-borderless-action-button: hsl(229deg 9% 36%);
     --color-background-neutral-borderless-action-button-hover: color-mix(
         in oklch,
-        #535663 7%,
+        hsl(229deg 9% 36%) 7%,
         transparent
     );
     --color-background-neutral-borderless-action-button-active: color-mix(
         in oklch,
-        #535663 11%,
+        hsl(229deg 9% 36%) 11%,
         transparent
     );
     /* Action buttons -- Brand Variant */
-    --color-text-brand-primary-action-button: #fff;
-    --color-background-brand-primary-action-button: #805bfe;
-    --color-background-brand-primary-action-button-hover: #7349ec;
-    --color-background-brand-primary-action-button-active: #612fd4;
-    --color-text-brand-quiet-action-button: #4704aa;
+    --color-text-brand-primary-action-button: hsl(0deg 0% 100%);
+    --color-background-brand-primary-action-button: hsl(254deg 99% 68%);
+    --color-background-brand-primary-action-button-hover: hsl(255deg 81% 61%);
+    --color-background-brand-primary-action-button-active: hsl(258deg 66% 51%);
+    --color-text-brand-quiet-action-button: hsl(264deg 95% 34%);
     --color-background-brand-quiet-action-button: color-mix(
         in oklch,
-        #805bfe 12%,
+        hsl(254deg 99% 68%) 12%,
         transparent
     );
     --color-background-brand-quiet-action-button-hover: color-mix(
         in oklch,
-        #805bfe 17%,
+        hsl(254deg 99% 68%) 17%,
         transparent
     );
     --color-background-brand-quiet-action-button-active: color-mix(
         in oklch,
-        #805bfe 22%,
+        hsl(254deg 99% 68%) 22%,
         transparent
     );
-    --color-text-brand-borderless-action-button: #5f3cc5;
+    --color-text-brand-borderless-action-button: hsl(255deg 54% 50%);
     --color-background-brand-borderless-action-button-hover: color-mix(
         in oklch,
-        #2c0070 5%,
+        hsl(264deg 100% 22%) 5%,
         transparent
     );
     --color-background-brand-borderless-action-button-active: color-mix(
         in oklch,
-        #2c0070 10%,
+        hsl(264deg 100% 22%) 10%,
         transparent
     );
     /* Action buttons -- Info Variant */
-    --color-text-info-primary-action-button: #fff;
-    --color-background-info-primary-action-button: #3c6bff;
-    --color-background-info-primary-action-button-hover: #2e59eb;
-    --color-background-info-primary-action-button-active: #1e41d3;
-    --color-text-info-quiet-action-button: #1027a6;
+    --color-text-info-primary-action-button: hsl(0deg 0% 100%);
+    --color-background-info-primary-action-button: hsl(226deg 100% 62%);
+    --color-background-info-primary-action-button-hover: hsl(226deg 83% 55%);
+    --color-background-info-primary-action-button-active: hsl(228deg 75% 47%);
+    --color-text-info-quiet-action-button: hsl(231deg 82% 36%);
     --color-background-info-quiet-action-button: color-mix(
         in oklch,
-        #3c6bff 12%,
+        hsl(226deg 100% 62%) 12%,
         transparent
     );
     --color-background-info-quiet-action-button-hover: color-mix(
         in oklch,
-        #3c6bff 17%,
+        hsl(226deg 100% 62%) 17%,
         transparent
     );
     --color-background-info-quiet-action-button-active: color-mix(
         in oklch,
-        #3c6bff 22%,
+        hsl(226deg 100% 62%) 22%,
         transparent
     );
-    --color-text-info-borderless-action-button: #2347c6;
+    --color-text-info-borderless-action-button: hsl(227deg 70% 46%);
     --color-background-info-borderless-action-button-hover: color-mix(
         in oklch,
-        #06037c 5%,
+        hsl(241deg 95% 25%) 5%,
         transparent
     );
     --color-background-info-borderless-action-button-active: color-mix(
         in oklch,
-        #06037c 9%,
+        hsl(241deg 95% 25%) 9%,
         transparent
     );
     /* Action buttons -- Success Variant */
-    --color-text-success-primary-action-button: #fff;
-    --color-background-success-primary-action-button: #07833c;
-    --color-background-success-primary-action-button-hover: #087736;
-    --color-background-success-primary-action-button-active: #09672e;
-    --color-text-success-quiet-action-button: #054f22;
+    --color-text-success-primary-action-button: hsl(0deg 0% 100%);
+    --color-background-success-primary-action-button: hsl(146deg 90% 27%);
+    --color-background-success-primary-action-button-hover: hsl(145deg 87% 25%);
+    --color-background-success-primary-action-button-active: hsl(
+        144deg 84% 22%
+    );
+    --color-text-success-quiet-action-button: hsl(144deg 88% 16%);
     --color-background-success-quiet-action-button: color-mix(
         in oklch,
-        #07833c 13%,
+        hsl(146deg 90% 27%) 13%,
         transparent
     );
     --color-background-success-quiet-action-button-hover: color-mix(
         in oklch,
-        #07833c 18%,
+        hsl(146deg 90% 27%) 18%,
         transparent
     );
     --color-background-success-quiet-action-button-active: color-mix(
         in oklch,
-        #07833c 23%,
+        hsl(146deg 90% 27%) 23%,
         transparent
     );
-    --color-text-success-borderless-action-button: #07833c;
+    --color-text-success-borderless-action-button: hsl(146deg 90% 27%);
     --color-background-success-borderless-action-button-hover: color-mix(
         in oklch,
-        #09672e 8%,
+        hsl(144deg 84% 22%) 8%,
         transparent
     );
     --color-background-success-borderless-action-button-active: color-mix(
         in oklch,
-        #09672e 12%,
+        hsl(144deg 84% 22%) 12%,
         transparent
     );
     /* Action buttons -- Warning Variant */
     --color-text-warning-primary-action-button: color-mix(
         in oklch,
-        #000 88%,
+        hsl(0deg 0% 0%) 88%,
         transparent
     );
-    --color-background-warning-primary-action-button: #febe3d;
-    --color-background-warning-primary-action-button-hover: #f8b325;
-    --color-background-warning-primary-action-button-active: #eba002;
-    --color-text-warning-quiet-action-button: #764607;
+    --color-background-warning-primary-action-button: hsl(40deg 99% 62%);
+    --color-background-warning-primary-action-button-hover: hsl(40deg 94% 56%);
+    --color-background-warning-primary-action-button-active: hsl(41deg 98% 46%);
+    --color-text-warning-quiet-action-button: hsl(34deg 89% 25%);
     --color-background-warning-quiet-action-button: color-mix(
         in oklch,
-        #eba002 18%,
+        hsl(41deg 98% 46%) 18%,
         transparent
     );
     --color-background-warning-quiet-action-button-hover: color-mix(
         in oklch,
-        #eba002 23%,
+        hsl(41deg 98% 46%) 23%,
         transparent
     );
     --color-background-warning-quiet-action-button-active: color-mix(
         in oklch,
-        #eba002 28%,
+        hsl(41deg 98% 46%) 28%,
         transparent
     );
-    --color-text-warning-borderless-action-button: #a96a05;
+    --color-text-warning-borderless-action-button: hsl(37deg 94% 34%);
     --color-background-warning-borderless-action-button-hover: color-mix(
         in oklch,
-        #a96a05 10%,
+        hsl(37deg 94% 34%) 10%,
         transparent
     );
     --color-background-warning-borderless-action-button-active: color-mix(
         in oklch,
-        #a96a05 14%,
+        hsl(37deg 94% 34%) 14%,
         transparent
     );
     /* Action buttons -- Danger Variant */
-    --color-text-danger-primary-action-button: #fff;
-    --color-background-danger-primary-action-button: #e1392e;
-    --color-background-danger-primary-action-button-hover: #d22720;
-    --color-background-danger-primary-action-button-active: #c0070a;
-    --color-text-danger-quiet-action-button: #ac0508;
+    --color-text-danger-primary-action-button: hsl(0deg 0% 100%);
+    --color-background-danger-primary-action-button: hsl(4deg 75% 53%);
+    --color-background-danger-primary-action-button-hover: hsl(2deg 74% 47%);
+    --color-background-danger-primary-action-button-active: hsl(359deg 93% 39%);
+    --color-text-danger-quiet-action-button: hsl(359deg 94% 35%);
     --color-background-danger-quiet-action-button: color-mix(
         in oklch,
-        #e1392e 13%,
+        hsl(4deg 75% 53%) 13%,
         transparent
     );
     --color-background-danger-quiet-action-button-hover: color-mix(
         in oklch,
-        #e1392e 18%,
+        hsl(4deg 75% 53%) 18%,
         transparent
     );
     --color-background-danger-quiet-action-button-active: color-mix(
         in oklch,
-        #e1392e 23%,
+        hsl(4deg 75% 53%) 23%,
         transparent
     );
-    --color-text-danger-borderless-action-button: #c0070a;
+    --color-text-danger-borderless-action-button: hsl(359deg 93% 39%);
     --color-background-danger-borderless-action-button-hover: color-mix(
         in oklch,
-        #c0070a 9%,
+        hsl(359deg 93% 39%) 9%,
         transparent
     );
     --color-background-danger-borderless-action-button-active: color-mix(
         in oklch,
-        #c0070a 13%,
+        hsl(359deg 93% 39%) 13%,
         transparent
     );
 
@@ -1471,6 +1564,57 @@
         hsl(359deg 93% 39%) 13%,
         transparent
     );
+
+    /* Banners */
+    --color-text-link-banner: hsl(210deg 94% 42%);
+    /* Banners - Neutral Variant */
+    --color-text-neutral-banner: hsl(229deg 12% 25%);
+    --color-border-neutral-banner: color-mix(
+        in oklch,
+        hsl(240deg 2% 30%) 40%,
+        transparent
+    );
+    --color-background-neutral-banner: hsl(240deg 7% 93%);
+    /* Banners - Brand Variant */
+    --color-text-brand-banner: hsl(264deg 95% 34%);
+    --color-border-brand-banner: color-mix(
+        in oklch,
+        hsl(254deg 60% 50%) 40%,
+        transparent
+    );
+    --color-background-brand-banner: hsl(254deg 42% 94%);
+    /* Banners - Info Variant */
+    --color-text-info-banner: hsl(241deg 95% 25%);
+    --color-border-info-banner: color-mix(
+        in oklch,
+        hsl(204deg 49% 29%) 40%,
+        transparent
+    );
+    --color-background-info-banner: hsl(204deg 58% 92%);
+    /* Banners - Success Variant */
+    --color-text-success-banner: hsl(144deg 88% 16%);
+    --color-border-success-banner: color-mix(
+        in oklch,
+        hsl(147deg 57% 25%) 40%,
+        transparent
+    );
+    --color-background-success-banner: hsl(147deg 43% 92%);
+    /* Banners - Warning Variant */
+    --color-text-warning-banner: hsl(34deg 89% 25%);
+    --color-border-warning-banner: color-mix(
+        in oklch,
+        hsl(38deg 44% 27%) 40%,
+        transparent
+    );
+    --color-background-warning-banner: hsl(50deg 75% 92%);
+    /* Banners - Danger Variant */
+    --color-text-danger-banner: hsl(359deg 94% 35%);
+    --color-border-danger-banner: color-mix(
+        in oklch,
+        hsl(3deg 57% 33%) 40%,
+        transparent
+    );
+    --color-background-danger-banner: hsl(0deg 35% 92%);
 }
 
 %dark-theme {
@@ -1569,6 +1713,7 @@
     --color-background-unread-counter-prominent: hsl(240deg 18.37% 34.42%);
     --color-background-unread-counter-normal: hsl(240deg 10% 50% / 35%);
     --color-background-unread-counter-quiet: transparent;
+    --box-shadow-unread-counter-normal: none;
     --color-unread-counter-prominent: hsl(0deg 0% 100%);
     --color-unread-counter-normal: hsl(0deg 0% 100% / 85%);
     --color-unread-counter-quiet: hsl(240deg 15% 65%);
@@ -1629,6 +1774,10 @@
         var(--color-compose-box-background),
         hsl(0deg 0% 0%) 20%
     );
+    --color-compose-message-content-background-over-limit: hsl(3deg 50% 12%);
+    --color-compose-message-content-background-approaching-limit: hsl(
+        50deg 75% 12%
+    );
     --color-compose-send-button-focus-shadow: hsl(0deg 0% 100% / 80%);
     --color-compose-send-control-button: hsl(240deg 30% 70%);
     --color-compose-send-control-button-background: transparent;
@@ -1685,10 +1834,39 @@
     --color-message-formatting-controls-container: hsl(0deg 0% 0% / 8%);
     --color-message-content-container-border: hsl(0deg 0% 0% / 80%);
     --color-message-content-container-border-focus: hsl(0deg 0% 100% / 27%);
-    --color-message-content-container-border-over-limit: hsl(0deg 76% 65%);
     --color-compose-control-button-background-hover: hsl(0deg 0% 100% / 5%);
     --color-compose-formatting-button-divider: hsl(236deg 33% 90% / 25%);
     --color-compose-focus-ring: hsl(0deg 0% 67%);
+    --color-compose-background-scroll-backward: linear-gradient(
+        90deg,
+        hsl(234deg 21% 24%) 35%,
+        hsl(225deg 9% 5% / 0%) 100%
+    );
+    --color-compose-background-scroll-backward-hover: linear-gradient(
+        90deg,
+        hsl(234deg 30% 28%) 35%,
+        hsl(225deg 9% 5% / 0%) 100%
+    );
+    --color-compose-background-scroll-backward-active: linear-gradient(
+        90deg,
+        hsl(234deg 35% 30%) 45%,
+        hsl(225deg 9% 5% / 0%) 100%
+    );
+    --color-compose-background-scroll-forward: linear-gradient(
+        90deg,
+        hsl(225deg 9% 5% / 0%) 0%,
+        hsl(234deg 21% 24%) 65%
+    );
+    --color-compose-background-scroll-forward-hover: linear-gradient(
+        90deg,
+        hsl(225deg 9% 5% / 0%) 0%,
+        hsl(234deg 30% 28%) 65%
+    );
+    --color-compose-background-scroll-forward-active: linear-gradient(
+        90deg,
+        hsl(225deg 9% 5% / 0%) 0%,
+        hsl(234deg 35% 30%) 55%
+    );
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 87%);
@@ -1721,6 +1899,21 @@
     --color-text-settings-field-hint: hsl(0deg 0% 52%);
     --color-text-clear-search-button: hsl(236deg 33% 80%);
     --color-text-clear-search-button-hover: hsl(0deg 0% 100%);
+
+    /* Link colors */
+    --color-text-link: hsl(200deg 100% 50%);
+    --color-text-link-decoration: color-mix(
+        in oklch,
+        hsl(200deg 100% 50%) 20%,
+        transparent
+    );
+    --color-text-link-hover: hsl(200deg 100% 60%);
+    --color-text-link-decoration-hover: color-mix(
+        in oklch,
+        hsl(200deg 100% 60%) 70%,
+        transparent
+    );
+    --color-text-link-active: hsl(200deg 100% 50%);
     --color-text-generic-link: #08c;
     --color-text-generic-link-interactive: hsl(200deg 79% 66%);
 
@@ -1743,6 +1936,10 @@
     --color-kbd-border: hsl(211deg 29% 14%);
     --color-kbd-text: hsl(236deg 33% 90%);
     --color-kbd-enter-sends: hsl(236deg 33% 90%);
+
+    /* Settings */
+    --color-realm-enable-spectator-access-link: hsl(236deg 33% 90%);
+    --color-unmute-stream-hover: hsl(0deg 0% 100%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
@@ -1792,9 +1989,7 @@
     --color-left-sidebar-navigation-icon: hsl(240deg 35% 68%);
     --color-left-sidebar-heads-up-icon: hsl(240deg 35% 68%);
     --color-left-sidebar-heads-up-icon-hover: hsl(240deg 100% 90%);
-    --color-left-sidebar-dm-partners-icon: var(
-        --color-left-sidebar-navigation-icon
-    );
+    --color-left-sidebar-dm-partners-icon: hsl(240deg 35% 58%);
     --background-color-left-sidebar-heads-up-icon-hover: hsl(
         240deg 100% 75% / 20%
     );
@@ -2020,220 +2215,228 @@
     );
     --color-typeahead-option-label: var(--grey-400);
 
+    /* Action buttons */
+    --color-inner-shadow-action-button: color-mix(
+        in oklch,
+        hsl(0deg 0% 100%) 21%,
+        transparent
+    );
     /* Action buttons -- Neutral Variant */
     --color-text-neutral-primary-action-button: color-mix(
         in oklch,
-        #fff 85%,
+        hsl(0deg 0% 100%) 85%,
         transparent
     );
-    --color-background-neutral-primary-action-button: #535663;
-    --color-background-neutral-primary-action-button-hover: #626573;
-    --color-background-neutral-primary-action-button-active: #535663;
-    --color-text-neutral-quiet-action-button: #bbbdc8;
+    --color-background-neutral-primary-action-button: hsl(229deg 9% 36%);
+    --color-background-neutral-primary-action-button-hover: hsl(229deg 8% 42%);
+    --color-background-neutral-primary-action-button-active: hsl(229deg 9% 36%);
+    --color-text-neutral-quiet-action-button: hsl(231deg 11% 76%);
     --color-background-neutral-quiet-action-button: color-mix(
         in oklch,
-        #bbbdc8 12%,
+        hsl(231deg 11% 76%) 12%,
         transparent
     );
     --color-background-neutral-quiet-action-button-hover: color-mix(
         in oklch,
-        #bbbdc8 17%,
+        hsl(231deg 11% 76%) 17%,
         transparent
     );
     --color-background-neutral-quiet-action-button-active: color-mix(
         in oklch,
-        #bbbdc8 12%,
+        hsl(231deg 11% 76%) 12%,
         transparent
     );
-    --color-text-neutral-borderless-action-button: #aaadba;
+    --color-text-neutral-borderless-action-button: hsl(229deg 10% 70%);
     --color-background-neutral-borderless-action-button-hover: color-mix(
         in oklch,
-        #9194a3 14%,
+        hsl(230deg 9% 60%) 14%,
         transparent
     );
     --color-background-neutral-borderless-action-button-active: color-mix(
         in oklch,
-        #9194a3 18%,
+        hsl(230deg 9% 60%) 18%,
         transparent
     );
     /* Action buttons -- Brand Variant */
     --color-text-brand-primary-action-button: color-mix(
         in oklch,
-        #fff 85%,
+        hsl(0deg 0% 100%) 85%,
         transparent
     );
-    --color-background-brand-primary-action-button: #5417c3;
-    --color-background-brand-primary-action-button-hover: #612fd4;
-    --color-background-brand-primary-action-button-active: #5417c3;
-    --color-text-brand-quiet-action-button: #aba5fd;
+    --color-background-brand-primary-action-button: hsl(261deg 79% 43%);
+    --color-background-brand-primary-action-button-hover: hsl(258deg 66% 51%);
+    --color-background-brand-primary-action-button-active: hsl(261deg 79% 43%);
+    --color-text-brand-quiet-action-button: hsl(244deg 96% 82%);
     --color-background-brand-quiet-action-button: color-mix(
         in oklch,
-        #9e94fd 12%,
+        hsl(246deg 96% 79%) 12%,
         transparent
     );
     --color-background-brand-quiet-action-button-hover: color-mix(
         in oklch,
-        #9e94fd 17%,
+        hsl(246deg 96% 79%) 17%,
         transparent
     );
     --color-background-brand-quiet-action-button-active: color-mix(
         in oklch,
-        #9e94fd 12%,
+        hsl(246deg 96% 79%) 12%,
         transparent
     );
-    --color-text-brand-borderless-action-button: #9e94fd;
+    --color-text-brand-borderless-action-button: hsl(246deg 96% 79%);
     --color-background-brand-borderless-action-button-hover: color-mix(
         in oklch,
-        #8a6fff 14%,
+        hsl(251deg 100% 72%) 14%,
         transparent
     );
     --color-background-brand-borderless-action-button-active: color-mix(
         in oklch,
-        #8a6fff 18%,
+        hsl(251deg 100% 72%) 18%,
         transparent
     );
     /* Action buttons -- Info Variant */
     --color-text-info-primary-action-button: color-mix(
         in oklch,
-        #fff 85%,
+        hsl(0deg 0% 100%) 85%,
         transparent
     );
-    --color-background-info-primary-action-button: #1e41d3;
-    --color-background-info-primary-action-button-hover: #2e59eb;
-    --color-background-info-primary-action-button-active: #1e41d3;
-    --color-text-info-quiet-action-button: #97b6fe;
+    --color-background-info-primary-action-button: hsl(228deg 75% 47%);
+    --color-background-info-primary-action-button-hover: hsl(226deg 83% 55%);
+    --color-background-info-primary-action-button-active: hsl(228deg 75% 47%);
+    --color-text-info-quiet-action-button: hsl(222deg 98% 79%);
     --color-background-info-quiet-action-button: color-mix(
         in oklch,
-        #97b6fe 12%,
+        hsl(222deg 98% 79%) 12%,
         transparent
     );
     --color-background-info-quiet-action-button-hover: color-mix(
         in oklch,
-        #97b6fe 17%,
+        hsl(222deg 98% 79%) 17%,
         transparent
     );
     --color-background-info-quiet-action-button-active: color-mix(
         in oklch,
-        #97b6fe 12%,
+        hsl(222deg 98% 79%) 12%,
         transparent
     );
-    --color-text-info-borderless-action-button: #84a8fd;
+    --color-text-info-borderless-action-button: hsl(222deg 97% 75%);
     --color-background-info-borderless-action-button-hover: color-mix(
         in oklch,
-        #4d7bfd 12%,
+        hsl(224deg 98% 65%) 12%,
         transparent
     );
     --color-background-info-borderless-action-button-active: color-mix(
         in oklch,
-        #4d7bfd 17%,
+        hsl(224deg 98% 65%) 17%,
         transparent
     );
     /* Action buttons -- Success Variant */
     --color-text-success-primary-action-button: color-mix(
         in oklch,
-        #fff 85%,
+        hsl(0deg 0% 100%) 85%,
         transparent
     );
-    --color-background-success-primary-action-button: #09672e;
-    --color-background-success-primary-action-button-hover: #087736;
-    --color-background-success-primary-action-button-active: #09672e;
-    --color-text-success-quiet-action-button: #6bd586;
+    --color-background-success-primary-action-button: hsl(144deg 84% 22%);
+    --color-background-success-primary-action-button-hover: hsl(145deg 87% 25%);
+    --color-background-success-primary-action-button-active: hsl(
+        144deg 84% 22%
+    );
+    --color-text-success-quiet-action-button: hsl(135deg 56% 63%);
     --color-background-success-quiet-action-button: color-mix(
         in oklch,
-        #41ae61 12%,
+        hsl(138deg 46% 47%) 12%,
         transparent
     );
     --color-background-success-quiet-action-button-hover: color-mix(
         in oklch,
-        #41ae61 17%,
+        hsl(138deg 46% 47%) 17%,
         transparent
     );
     --color-background-success-quiet-action-button-active: color-mix(
         in oklch,
-        #41ae61 12%,
+        hsl(138deg 46% 47%) 12%,
         transparent
     );
-    --color-text-success-borderless-action-button: #57c273;
+    --color-text-success-borderless-action-button: hsl(136deg 47% 55%);
     --color-background-success-borderless-action-button-hover: color-mix(
         in oklch,
-        #2f9f52 12%,
+        hsl(139deg 54% 40%) 12%,
         transparent
     );
     --color-background-success-borderless-action-button-active: color-mix(
         in oklch,
-        #2f9f52 17%,
+        hsl(139deg 54% 40%) 17%,
         transparent
     );
     /* Action buttons -- Warning Variant */
     --color-text-warning-primary-action-button: color-mix(
         in oklch,
-        #000 90%,
+        hsl(0deg 0% 0%) 90%,
         transparent
     );
-    --color-background-warning-primary-action-button: #db920d;
-    --color-background-warning-primary-action-button-hover: #eba002;
-    --color-background-warning-primary-action-button-active: #db920d;
-    --color-text-warning-quiet-action-button: #f8b325;
+    --color-background-warning-primary-action-button: hsl(39deg 89% 45%);
+    --color-background-warning-primary-action-button-hover: hsl(41deg 98% 46%);
+    --color-background-warning-primary-action-button-active: hsl(39deg 89% 45%);
+    --color-text-warning-quiet-action-button: hsl(40deg 94% 56%);
     --color-background-warning-quiet-action-button: color-mix(
         in oklch,
-        #db920d 12%,
+        hsl(39deg 89% 45%) 12%,
         transparent
     );
     --color-background-warning-quiet-action-button-hover: color-mix(
         in oklch,
-        #db920d 17%,
+        hsl(39deg 89% 45%) 17%,
         transparent
     );
     --color-background-warning-quiet-action-button-active: color-mix(
         in oklch,
-        #db920d 12%,
+        hsl(39deg 89% 45%) 12%,
         transparent
     );
-    --color-text-warning-borderless-action-button: #eba002;
+    --color-text-warning-borderless-action-button: hsl(41deg 98% 46%);
     --color-background-warning-borderless-action-button-hover: color-mix(
         in oklch,
-        #c8850d 12%,
+        hsl(39deg 88% 42%) 12%,
         transparent
     );
     --color-background-warning-borderless-action-button-active: color-mix(
         in oklch,
-        #c8850d 17%,
+        hsl(39deg 88% 42%) 17%,
         transparent
     );
     /* Action buttons -- Danger Variant */
     --color-text-danger-primary-action-button: color-mix(
         in oklch,
-        #fff 85%,
+        hsl(0deg 0% 100%) 85%,
         transparent
     );
-    --color-background-danger-primary-action-button: #d22720;
-    --color-background-danger-primary-action-button-hover: #e1392e;
-    --color-background-danger-primary-action-button-active: #d22720;
-    --color-text-danger-quiet-action-button: #ff8b7c;
+    --color-background-danger-primary-action-button: hsl(2deg 74% 47%);
+    --color-background-danger-primary-action-button-hover: hsl(4deg 75% 53%);
+    --color-background-danger-primary-action-button-active: hsl(2deg 74% 47%);
+    --color-text-danger-quiet-action-button: hsl(7deg 100% 74%);
     --color-background-danger-quiet-action-button: color-mix(
         in oklch,
-        #fd5f50 12%,
+        hsl(5deg 98% 65%) 12%,
         transparent
     );
     --color-background-danger-quiet-action-button-hover: color-mix(
         in oklch,
-        #fd5f50 17%,
+        hsl(5deg 98% 65%) 17%,
         transparent
     );
     --color-background-danger-quiet-action-button-active: color-mix(
         in oklch,
-        #fd5f50 12%,
+        hsl(5deg 98% 65%) 12%,
         transparent
     );
-    --color-text-danger-borderless-action-button: #ff8b7c;
+    --color-text-danger-borderless-action-button: hsl(7deg 100% 74%);
     --color-background-danger-borderless-action-button-hover: color-mix(
         in oklch,
-        #f34c3e 12%,
+        hsl(5deg 88% 60%) 12%,
         transparent
     );
     --color-background-danger-borderless-action-button-active: color-mix(
         in oklch,
-        #f34c3e 17%,
+        hsl(5deg 88% 60%) 17%,
         transparent
     );
 
@@ -2381,6 +2584,56 @@
         hsl(5deg 88% 60%) 17%,
         transparent
     );
+
+    /* Banners */
+    /* Banners - Neutral Variant */
+    --color-text-neutral-banner: hsl(231deg 11% 76%);
+    --color-border-neutral-banner: color-mix(
+        in oklch,
+        hsl(240deg 7% 66%) 40%,
+        transparent
+    );
+    --color-background-neutral-banner: hsl(240deg 7% 17%);
+    /* Banners - Brand Variant */
+    --color-text-brand-banner: hsl(244deg 96% 82%);
+    --color-border-brand-banner: color-mix(
+        in oklch,
+        hsl(253deg 70% 89%) 40%,
+        transparent
+    );
+    --color-background-brand-banner: hsl(254deg 49% 16%);
+    /* Banners - Info Variant */
+    --color-text-info-banner: hsl(221deg 93% 89%);
+    --color-border-info-banner: color-mix(
+        in oklch,
+        hsl(205deg 58% 69%) 40%,
+        transparent
+    );
+    --color-background-info-banner: hsl(204deg 100% 12%);
+    /* Banners - Success Variant */
+    --color-text-success-banner: hsl(135deg 56% 63%);
+    --color-border-success-banner: color-mix(
+        in oklch,
+        hsl(149deg 48% 52%) 40%,
+        transparent
+    );
+    --color-background-success-banner: hsl(146deg 90% 7%);
+    /* Banners - Warning Variant */
+    --color-text-warning-banner: hsl(40deg 94% 56%);
+    --color-border-warning-banner: color-mix(
+        in oklch,
+        hsl(44deg 44% 66%) 40%,
+        transparent
+    );
+    --color-background-warning-banner: hsl(50deg 100% 10%);
+    /* Banners - Danger Variant */
+    --color-text-danger-banner: hsl(7deg 100% 74%);
+    --color-border-danger-banner: color-mix(
+        in oklch,
+        hsl(3deg 73% 74%) 40%,
+        transparent
+    );
+    --color-background-danger-banner: hsl(0deg 52% 18%);
 }
 
 @media screen {

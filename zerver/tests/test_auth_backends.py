@@ -5029,6 +5029,22 @@ class FetchAPIKeyTest(ZulipTestCase):
             )
         self.assert_json_error(result, "Invalid subdomain", 404)
 
+    def test_login_wrong_subdomain(self) -> None:
+        user = self.mit_user("starnine")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=user.email, password=initial_password(user.email)),
+            subdomain="zulip",
+        )
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
+
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=user.email, password="wrongpass"),
+            subdomain="zulip",
+        )
+        self.assert_json_error(result, "Your username or password is incorrect", 401)
+
     def test_password_auth_disabled(self) -> None:
         with mock.patch("zproject.backends.password_auth_enabled", return_value=False):
             result = self.client_post(
@@ -6333,11 +6349,11 @@ class TestLDAP(ZulipLDAPTestCase):
         regex = re.compile(
             r"(uid\=)+[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+(\,ou\=users\,dc\=zulip\,dc\=com)"
         )
-        common_attrs = ["cn", "userPassword", "phoneNumber", "birthDate"]
+        common_attrs = {"cn", "userPassword", "phoneNumber", "birthDate"}
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(
-                value.keys(), [*common_attrs, "uid", "thumbnailPhoto", "userAccountControl"]
+            self.assertEqual(
+                value.keys(), common_attrs | {"uid", "thumbnailPhoto", "userAccountControl"}
             )
 
         ldap_dir = generate_dev_ldap_dir("b", 9)
@@ -6345,14 +6361,14 @@ class TestLDAP(ZulipLDAPTestCase):
         regex = re.compile(r"(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)")
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(value.keys(), [*common_attrs, "uid", "jpegPhoto"])
+            self.assertEqual(value.keys(), common_attrs | {"uid", "jpegPhoto"})
 
         ldap_dir = generate_dev_ldap_dir("c", 8)
         self.assert_length(ldap_dir, 8)
         regex = re.compile(r"(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)")
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(value.keys(), [*common_attrs, "uid", "email"])
+            self.assertEqual(value.keys(), common_attrs | {"uid", "email"})
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_dev_ldap_fail_login(self) -> None:
@@ -7781,7 +7797,7 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
             web_token = jwt.encode(payload, key, algorithm)
             req_data = {"token": web_token}
             result = self.client_post("/api/v1/jwt/fetch_api_key", req_data)
-            self.assert_json_error_contains(result, "Invalid subdomain", 404)
+            self.assert_json_error_contains(result, "Your username or password is incorrect", 401)
 
 
 class LDAPGroupSyncTest(ZulipTestCase):

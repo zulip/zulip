@@ -110,7 +110,7 @@ export function dispatch_normal_event(event) {
             realm.custom_profile_fields = event.fields;
             settings_profile_fields.populate_profile_fields(realm.custom_profile_fields);
             settings_account.add_custom_profile_fields_to_settings();
-            navbar_alerts.maybe_show_empty_required_profile_fields_alert();
+            navbar_alerts.maybe_toggle_empty_required_profile_fields_banner();
             break;
 
         case "default_streams":
@@ -211,18 +211,19 @@ export function dispatch_normal_event(event) {
                 allow_edit_history: noop,
                 allow_message_editing: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
-                bot_creation_policy: settings_bots.update_bot_permissions_ui,
                 can_add_custom_emoji_group: noop,
+                can_add_subscribers_group: noop,
+                can_create_bots_group: noop,
                 can_create_groups: noop,
                 can_create_private_channel_group: noop,
                 can_create_public_channel_group: noop,
+                can_create_write_only_bots_group: noop,
                 can_delete_any_message_group: noop,
                 can_delete_own_message_group: noop,
                 can_manage_all_groups: noop,
                 can_move_messages_between_channels_group: noop,
                 can_move_messages_between_topics_group: noop,
                 create_multiuse_invite_group: noop,
-                invite_to_stream_policy: noop,
                 default_code_block_language: noop,
                 default_language: noop,
                 description: noop,
@@ -295,6 +296,18 @@ export function dispatch_normal_event(event) {
                                 }
 
                                 if (
+                                    Object.keys(
+                                        realm.server_supported_permission_settings.realm,
+                                    ).includes(key)
+                                ) {
+                                    const $elem = $(`#id_group_permission_${CSS.escape(key)}`);
+                                    user_group_edit.update_setting_in_group_permissions_panel(
+                                        $elem,
+                                        value,
+                                    );
+                                }
+
+                                if (
                                     key === "create_multiuse_invite_group" ||
                                     key === "can_invite_users_group"
                                 ) {
@@ -305,6 +318,13 @@ export function dispatch_normal_event(event) {
 
                                 if (key === "can_add_custom_emoji_group") {
                                     settings_emoji.update_custom_emoji_ui();
+                                }
+
+                                if (
+                                    key === "can_create_bots_group" ||
+                                    key === "can_create_write_only_bots_group"
+                                ) {
+                                    settings_bots.update_bot_permissions_ui();
                                 }
 
                                 if (
@@ -375,7 +395,7 @@ export function dispatch_normal_event(event) {
             if (current_user.is_admin) {
                 // Update the UI notice about the user's profile being
                 // incomplete, as we might have filled in the missing field(s).
-                navbar_alerts.show_profile_incomplete(navbar_alerts.check_profile_incomplete());
+                navbar_alerts.toggle_organization_profile_incomplete_banner();
             }
             break;
         }
@@ -598,32 +618,30 @@ export function dispatch_normal_event(event) {
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 case "delete":
-                    for (const stream of event.streams) {
-                        const was_subscribed = sub_store.get(stream.stream_id).subscribed;
-                        const is_narrowed_to_stream = narrow_state.is_for_stream_id(
-                            stream.stream_id,
-                        );
-                        stream_data.delete_sub(stream.stream_id);
-                        stream_settings_ui.remove_stream(stream.stream_id);
-                        message_view_header.maybe_rerender_title_area_for_stream(stream);
+                    for (const stream_id of event.stream_ids) {
+                        const was_subscribed = sub_store.get(stream_id).subscribed;
+                        const is_narrowed_to_stream = narrow_state.is_for_stream_id(stream_id);
+                        stream_data.delete_sub(stream_id);
+                        stream_settings_ui.remove_stream(stream_id);
+                        message_view_header.maybe_rerender_title_area_for_stream(stream_id);
                         if (was_subscribed) {
-                            stream_list.remove_sidebar_row(stream.stream_id);
-                            if (stream.stream_id === compose_state.selected_recipient_id) {
+                            stream_list.remove_sidebar_row(stream_id);
+                            if (stream_id === compose_state.selected_recipient_id) {
                                 compose_state.set_selected_recipient_id("");
                                 compose_recipient.on_compose_select_recipient_update();
                             }
                         }
                         settings_streams.update_default_streams_table();
-                        stream_data.remove_default_stream(stream.stream_id);
-                        if (realm.realm_new_stream_announcements_stream_id === stream.stream_id) {
+                        stream_data.remove_default_stream(stream_id);
+                        if (realm.realm_new_stream_announcements_stream_id === stream_id) {
                             realm.realm_new_stream_announcements_stream_id = -1;
                             settings_org.sync_realm_settings("new_stream_announcements_stream_id");
                         }
-                        if (realm.realm_signup_announcements_stream_id === stream.stream_id) {
+                        if (realm.realm_signup_announcements_stream_id === stream_id) {
                             realm.realm_signup_announcements_stream_id = -1;
                             settings_org.sync_realm_settings("signup_announcements_stream_id");
                         }
-                        if (realm.realm_zulip_update_announcements_stream_id === stream.stream_id) {
+                        if (realm.realm_zulip_update_announcements_stream_id === stream_id) {
                             realm.realm_zulip_update_announcements_stream_id = -1;
                             settings_org.sync_realm_settings(
                                 "zulip_update_announcements_stream_id",
@@ -664,7 +682,6 @@ export function dispatch_normal_event(event) {
                     for (const rec of event.subscriptions) {
                         const sub = sub_store.get(rec.stream_id);
                         if (sub) {
-                            stream_data.update_stream_email_address(sub, rec.email_address);
                             stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
                         } else {
                             blueslip.error("Subscribing to unknown stream", {
@@ -764,6 +781,9 @@ export function dispatch_normal_event(event) {
                 settings_account.update_privacy_settings_box(event.property);
                 if (event.property === "presence_enabled") {
                     activity_ui.redraw_user(current_user.user_id);
+                }
+                if (event.property === "allow_private_data_export") {
+                    settings_exports.refresh_allow_private_data_export_banner();
                 }
                 break;
             }
@@ -990,10 +1010,13 @@ export function dispatch_normal_event(event) {
                         event.direct_subgroup_ids,
                     );
                     break;
-                case "update":
-                    user_groups.update(event);
-                    user_group_edit.update_group(event);
+                case "update": {
+                    const group_id = event.group_id;
+                    const group = user_groups.get_user_group_from_id(group_id);
+                    user_groups.update(event, group);
+                    user_group_edit.update_group(event, group);
                     break;
+                }
                 default:
                     blueslip.error("Unexpected event type user_group/" + event.op);
                     break;

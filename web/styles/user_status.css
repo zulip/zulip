@@ -3,14 +3,18 @@
     width: 384px;
 
     .user-status-content-wrapper {
-        display: flex;
+        display: grid;
+        grid-template:
+            "status-icon search-input clear-search" auto / auto minmax(0, 1fr)
+            auto;
         align-items: center;
         border: 1px solid;
         border-color: hsl(0deg 0% 0% / 60%);
         border-radius: 5px;
+        height: 35px;
 
         & input.user-status {
-            flex: 1 1 0;
+            grid-area: search-input;
             width: 100%;
             border: none;
             outline: none;
@@ -24,8 +28,13 @@
         }
 
         .clear_search_button {
-            position: static;
-            padding: 6px;
+            grid-area: clear-search;
+            width: 40px;
+            padding-left: 5px;
+        }
+
+        #user-status-input:placeholder-shown + .clear_search_button {
+            visibility: hidden;
         }
 
         .status-emoji-wrapper {
@@ -63,7 +72,7 @@
         & button.user-status-value:focus {
             /* Important is required for generic night them styling to not
                have precedence over this. */
-            color: hsl(200deg 100% 40%) !important;
+            color: var(--color-text-url) !important;
         }
 
         .user-status-value {

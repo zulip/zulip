@@ -117,6 +117,27 @@
 
 {end_tabs}
 
+## Review and remove permissions assigned to a group
+
+You can review which permissions are assigned to a group, and remove permissions
+as needed.
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{relative|group|all}
+
+1. Select a user group.
+
+1. Select the **Permissions** tab on the right.
+
+1. Toggle the checkboxes next to any permissions you'd like to remove.
+
+1. Click **Save changes**.
+
+{end_tabs}
+
 ## Deactivate a user group
 
 {start_tabs}
@@ -127,7 +148,7 @@
 
 1. Select a user group.
 
-1. Click the **Deactivate group** (<i class="fa fa-trash-o"></i>) button in the
+1. Click the **Deactivate group** (<i class="zulip-icon zulip-icon-user-group-x"></i>) button in the
    upper right corner of the user group settings panel.
 
 1. Click **Confirm**.

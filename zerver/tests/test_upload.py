@@ -809,7 +809,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Subscribed user who received the message should be able to view file
         self.login_user(cordelia)
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(9):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -870,7 +870,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Originally subscribed user should be able to view file
         self.login_user(polonius)
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(9):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -1964,7 +1964,7 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
             self.assert_json_error(result, "Invalid image format")
             resize_mock.assert_not_called()
 
-    def test_upsupported_format(self) -> None:
+    def test_unsupported_format(self) -> None:
         """Invalid format is not resized"""
         self.login("iago")
         with (

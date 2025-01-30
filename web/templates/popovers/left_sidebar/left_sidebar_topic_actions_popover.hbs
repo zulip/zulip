@@ -1,7 +1,7 @@
 <div class="popover-menu" id="topic-actions-menu-popover" data-simplebar data-simplebar-tab-index="-1">
     <ul role="menu" class="popover-menu-list">
         <li role="none" class="popover-topic-header text-item popover-menu-list-item">
-            <span class="popover-topic-name">{{topic_name}}</span>
+            <span class="popover-topic-name {{#if is_empty_string_topic}}empty-topic-display{{/if}}">{{topic_display_name}}</span>
         </li>
         {{!-- Group 1 --}}
         {{#unless is_spectator}}
@@ -38,6 +38,14 @@
         {{else}}
             {{!-- Group 2 --}}
             <li role="separator" class="popover-menu-separator"></li>
+            {{#if (and is_development_environment (or is_moderator is_realm_admin))}}
+            <li role="none" class="link-item popover-menu-list-item">
+                <a role="menuitem" class="sidebar-popover-summarize-topic popover-menu-link" tabindex="0">
+                    <i class="popover-menu-icon fa fa-magic" aria-hidden="true"></i>
+                    <span class="popover-menu-label">{{t "Summarize recent messages"}}</span>
+                </a>
+            </li>
+            {{/if}}
             {{#if has_starred_messages}}
             <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
                 <a role="menuitem" class="sidebar-popover-unstar-all-in-topic popover-menu-link" tabindex="0">
@@ -86,7 +94,7 @@
                 </a>
             </li>
             {{/if}}
-            {{#if can_rename_topic}}
+            {{#if (and can_rename_topic (not is_empty_string_topic))}}
             <li role="none" class="link-item popover-menu-list-item">
                 <a role="menuitem" class="sidebar-popover-toggle-resolved popover-menu-link" tabindex="0">
                     {{# if topic_is_resolved }}

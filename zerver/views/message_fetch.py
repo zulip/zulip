@@ -21,11 +21,12 @@ from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import (
     NarrowParameter,
     add_narrow_conditions,
+    clean_narrow_for_message_fetch,
     fetch_messages,
     is_spectator_compatible,
     is_web_public_narrow,
     parse_anchor_value,
-    update_narrow_terms_containing_with_operator,
+    update_narrow_terms_containing_empty_topic_fallback_name,
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
@@ -118,6 +119,7 @@ def get_messages_backend(
     ] = False,
     client_gravatar: Json[bool] = True,
     apply_markdown: Json[bool] = True,
+    allow_empty_topic_name: Json[bool] = False,
     client_requested_message_ids: Annotated[
         Json[list[NonNegativeInt] | None], ApiParamConfig("message_ids")
     ] = None,
@@ -144,7 +146,7 @@ def get_messages_backend(
         anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
 
     realm = get_valid_realm_from_request(request)
-    narrow = update_narrow_terms_containing_with_operator(realm, maybe_user_profile, narrow)
+    narrow = clean_narrow_for_message_fetch(narrow, realm, maybe_user_profile)
 
     num_of_messages_requested = num_before + num_after
     if client_requested_message_ids is not None:
@@ -302,6 +304,7 @@ def get_messages_backend(
             search_fields=search_fields,
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
+            allow_empty_topic_name=allow_empty_topic_name,
             allow_edit_history=realm.allow_edit_history,
             user_profile=user_profile,
             realm=realm,
@@ -363,11 +366,12 @@ def messages_in_narrow_backend(
     )
 
     inner_msg_id_col = column("message_id", Integer)
+    updated_narrow = update_narrow_terms_containing_empty_topic_fallback_name(narrow)
     query, is_search = add_narrow_conditions(
         user_profile=user_profile,
         inner_msg_id_col=inner_msg_id_col,
         query=query,
-        narrow=narrow,
+        narrow=updated_narrow,
         is_web_public_query=False,
         realm=user_profile.realm,
     )

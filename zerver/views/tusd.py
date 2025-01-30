@@ -14,7 +14,7 @@ from pydantic.alias_generators import to_pascal
 from confirmation.models import Confirmation, ConfirmationKeyError, get_object_from_key
 from zerver.decorator import get_basic_credentials, validate_api_key
 from zerver.lib.exceptions import AccessDeniedError, JsonableError
-from zerver.lib.mime_types import guess_type
+from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_type
 from zerver.lib.rate_limiter import is_local_addr
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.upload import (
@@ -26,7 +26,6 @@ from zerver.lib.upload import (
     sanitize_name,
     upload_backend,
 )
-from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.models import PreregistrationRealm, Realm, UserProfile
 
 
@@ -137,7 +136,7 @@ def handle_upload_pre_finish_hook(
     request: HttpRequest, user_profile: UserProfile, data: TusUpload
 ) -> HttpResponse:
     # With an S3 backend, the filename we passed in pre_create's
-    # data.id has a randomly-generated "mutlipart-id" appended with a
+    # data.id has a randomly-generated "multipart-id" appended with a
     # `+`.  Our path_ids cannot contain `+`, so we strip any suffix
     # starting with `+`.
     path_id = data.id.partition("+")[0]

@@ -15,9 +15,7 @@ mock_esm("../src/resize", {
     resize_stream_filters_container: noop,
 });
 
-const popovers = mock_esm("../src/popovers", {
-    hide_all: noop,
-});
+const popovers = mock_esm("../src/popovers");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 
 const stream_list = zrequire("stream_list");
@@ -26,10 +24,10 @@ function expand_sidebar() {
     $(".app-main .column-left").addClass("expanded");
 }
 
-function make_cursor_helper() {
+function make_cursor_helper(override_rewire) {
     const events = [];
 
-    stream_list.rewire_stream_cursor({
+    override_rewire(stream_list, "stream_cursor", {
         reset() {
             events.push("reset");
         },
@@ -62,15 +60,16 @@ function clear_search_input() {
     stream_list.clear_search({stopPropagation: noop});
 }
 
-run_test("basics", ({override_rewire}) => {
-    let cursor_helper;
+run_test("basics", ({override, override_rewire}) => {
+    override(popovers, "hide_all", noop);
+
     const $input = $(".stream-list-filter");
     const $section = $(".stream_search_section");
 
     expand_sidebar();
     $section.addClass("notdisplayed");
 
-    cursor_helper = make_cursor_helper();
+    let cursor_helper = make_cursor_helper(override_rewire);
 
     function verify_expanded() {
         assert.ok(!$section.hasClass("notdisplayed"));
@@ -107,7 +106,7 @@ run_test("basics", ({override_rewire}) => {
     assert.deepEqual(cursor_helper.events, ["reset"]);
 
     // Collapse the widget.
-    cursor_helper = make_cursor_helper();
+    cursor_helper = make_cursor_helper(override_rewire);
 
     toggle_filter();
     verify_collapsed();
@@ -120,7 +119,7 @@ run_test("basics", ({override_rewire}) => {
     verify_focused();
 
     (function add_some_text_and_collapse() {
-        cursor_helper = make_cursor_helper();
+        cursor_helper = make_cursor_helper(override_rewire);
         $input.val("foo");
         verify_list_updated(() => {
             toggle_filter();
@@ -169,16 +168,21 @@ run_test("basics", ({override_rewire}) => {
     verify_collapsed();
 });
 
-run_test("expanding_sidebar", () => {
+run_test("expanding_sidebar", ({override, override_rewire}) => {
+    const cursor_helper = make_cursor_helper(override_rewire);
+
     $(".app-main .column-left").removeClass("expanded");
 
     const events = [];
-    popovers.hide_all = () => {
+
+    override(popovers, "hide_all", () => {
         events.push("popovers.hide_all");
-    };
-    sidebar_ui.show_streamlist_sidebar = () => {
+    });
+
+    override(sidebar_ui, "show_streamlist_sidebar", () => {
         events.push("sidebar_ui.show_streamlist_sidebar");
-    };
+    });
+
     $("#streamlist-toggle").show();
 
     stream_list.initiate_search();
@@ -188,4 +192,6 @@ run_test("expanding_sidebar", () => {
         "popovers.hide_all",
         "sidebar_ui.show_streamlist_sidebar",
     ]);
+
+    assert.deepEqual(cursor_helper.events, ["reset"]);
 });

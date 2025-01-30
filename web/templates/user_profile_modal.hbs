@@ -28,7 +28,7 @@
                     {{/if}}
                     {{#if can_manage_profile}}
                         <div class="user-profile-manage-others-edit-button">
-                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{t 'Manage user' }}" aria-hidden="true"></i>
+                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{#if is_bot}}{{t 'Manage bot'}}{{else}}{{t 'Manage user' }}{{/if}}" aria-hidden="true"></i>
                         </div>
                     {{/if}}
                 </h1>
@@ -120,7 +120,7 @@
                             <div class="stream-search-container">
                                 <input type="text" class="stream-search modal_text_input" placeholder="{{t 'Filter channels' }}" />
                                 <button type="button" class="clear_search_button" id="clear_stream_search">
-                                    <i class="fa fa-remove" aria-hidden="true"></i>
+                                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>
@@ -131,8 +131,41 @@
 
                     <div class="tabcontent" id="user-profile-groups-tab">
                         <div class="alert user-profile-group-list-alert"></div>
+                        {{#if show_user_group_container}}
+                            <div class="header-section">
+                                <h3 class="group-tab-element-header">{{t 'Add {full_name} to groups'}}</h3>
+                            </div>
+                            <div id="groups-to-add" class="add-button-container">
+                                <div id="user-group-to-add">
+                                    <div class="add-user-group-container">
+                                        <div class="pill-container">
+                                            <div class="input" contenteditable="true"
+                                              data-placeholder="{{t 'Add user groups' }}">
+                                                {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="add-groups-button-wrapper">
+                                    <button type="button" name="subscribe" class="add-groups-button button small rounded">
+                                        {{t 'Add' }}
+                                    </button>
+                                </div>
+                            </div>
+                        {{/if}}
+                        <div class="group-list-top-section">
+                            <div class="header-section">
+                                <h3 class="group-tab-element-header">{{t 'Group membership' }}</h3>
+                            </div>
+                            <div class="group-search-container">
+                                <input type="text" class="group-search modal_text_input" placeholder="{{t 'Filter groups' }}" />
+                                <button type="button" class="clear_search_button" id="clear_groups_search">
+                                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
                         <div class="subscription-group-list empty-list">
-                            <table class="user-group-list" data-empty="{{t 'No user group subscriptions.'}}"></table>
+                            <table class="user-group-list" data-empty="{{t 'Not a member of any groups.'}}" data-search-results-empty="{{t 'No matching user groups' }}"></table>
                         </div>
                     </div>
                     <div class="tabcontent" id="manage-profile-tab"></div>

@@ -1,5 +1,6 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
@@ -22,7 +23,6 @@ import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
-import * as compose_state from "./compose_state.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -519,6 +519,8 @@ function edit_message($row: JQuery, raw_content: string): void {
         }),
     );
 
+    const $button_bar = $form.find(".compose-scrollable-buttons");
+
     const $message_edit_content = $form.find<HTMLTextAreaElement>("textarea.message_edit_content");
     assert($message_edit_content.length === 1);
     currently_editing_messages.set(message.id, $message_edit_content);
@@ -549,6 +551,13 @@ function edit_message($row: JQuery, raw_content: string): void {
     $form
         .find(".message-edit-feature-group .audio_link")
         .toggle(compose_call.compute_show_audio_chat_button());
+
+    $button_bar.on(
+        "scroll",
+        _.throttle((e: JQuery.ScrollEvent) => {
+            compose_ui.handle_scrolling_formatting_buttons(e);
+        }, 150),
+    );
 
     const $message_edit_countdown_timer = $row.find(".message_edit_countdown_timer");
     const $copy_message = $row.find(".copy_message");
@@ -669,6 +678,7 @@ export function start($row: JQuery, edit_box_open_callback?: () => void): void {
     const msg_list = message_lists.current;
     void channel.get({
         url: "/json/messages/" + message.id,
+        data: {allow_empty_topic_name: true},
         success(data) {
             const {raw_content} = z.object({raw_content: z.string()}).parse(data);
             if (message_lists.current === msg_list) {
@@ -892,12 +902,13 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     const msg_id = rows.id_for_recipient_row($recipient_row);
     const message = message_lists.current.get(msg_id);
     assert(message?.type === "stream");
-    let topic = message.topic;
-    if (topic === compose_state.empty_topic_placeholder()) {
-        topic = "";
-    }
+    const topic = message.topic;
     const $inline_topic_edit_input = $form.find<HTMLInputElement>("input.inline_topic_edit");
     $inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
+    if (topic === "") {
+        const topic_display_name = util.get_final_topic_display_name(topic);
+        $inline_topic_edit_input.attr("placeholder", topic_display_name);
+    }
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
     composebox_typeahead.initialize_topic_edit_typeahead(
         $inline_topic_edit_input,
@@ -962,9 +973,9 @@ export function try_save_inline_topic_edit($row: JQuery): void {
     const message = message_lists.current.get(message_id);
     assert(message?.type === "stream");
     const old_topic = message.topic;
-    const new_topic = $row.find<HTMLInputElement>("input.inline_topic_edit").val();
+    const new_topic = $row.find<HTMLInputElement>("input.inline_topic_edit").val()?.trim();
     assert(new_topic !== undefined);
-    const topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
+    const topic_changed = new_topic !== old_topic;
 
     if (!topic_changed) {
         // this means the inline_topic_edit was opened and submitted without
@@ -980,7 +991,8 @@ export function try_save_inline_topic_edit($row: JQuery): void {
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Merge with another topic?"}),
             html_body: render_confirm_merge_topics_with_rename({
-                topic_name: new_topic,
+                topic_display_name: util.get_final_topic_display_name(new_topic),
+                is_empty_string_topic: new_topic === "",
             }),
             on_click() {
                 do_save_inline_topic_edit($row, message, new_topic);
@@ -1582,6 +1594,7 @@ export function with_first_message_id(
             {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
+        allow_empty_topic_name: true,
     };
 
     void channel.get({
@@ -1617,6 +1630,7 @@ export function is_message_oldest_or_newest(
             {operator: "channel", operand: stream_id},
             {operator: "topic", operand: topic_name},
         ]),
+        allow_empty_topic_name: true,
     };
 
     void channel.get({
@@ -1648,7 +1662,6 @@ export function is_message_oldest_or_newest(
 export function show_preview_area($element: JQuery): void {
     const $row = rows.get_closest_row($element);
     const $msg_edit_content = $row.find<HTMLTextAreaElement>("textarea.message_edit_content");
-    const edit_height = $msg_edit_content.height();
     const content = $msg_edit_content.val();
     assert(content !== undefined);
 
@@ -1661,16 +1674,14 @@ export function show_preview_area($element: JQuery): void {
     $row.find(".markdown_preview").hide();
     $row.find(".undo_markdown_preview").show();
     const $preview_message_area = $row.find(".preview_message_area");
-    // Set the preview area to the edit height to keep from
-    // having the preview jog the size of the message-edit box.
-    $preview_message_area.css({height: edit_height + "px"});
-    $preview_message_area.show();
-
     compose_ui.render_and_show_preview(
         $row.find(".markdown_preview_spinner"),
         $row.find(".preview_content"),
         content,
     );
+    const edit_height = $msg_edit_content.height();
+    $preview_message_area.css({"min-height": edit_height + "px"});
+    $preview_message_area.show();
 }
 
 export function clear_preview_area($element: JQuery): void {

@@ -1,7 +1,9 @@
-/* The height of the settings header (including tab switcher). */
-$settings_header_height: 45px;
-/* The width of the settings sidebar. */
-$settings_sidebar_width: 255px;
+:root {
+    /* The height of the settings header (including tab switcher). */
+    --settings-header-height: 45px;
+    /* The width of the settings sidebar. */
+    --settings-sidebar-width: 255px;
+}
 
 label {
     margin: 0;
@@ -156,7 +158,7 @@ h3,
 }
 
 .wrapped-table {
-    word-break: break-word;
+    overflow-wrap: anywhere;
     word-wrap: break-word;
     white-space: pre-wrap;
     white-space: normal;
@@ -283,7 +285,7 @@ h3,
     too light. So, we set the color explicitly to original color of label to
     keep the color of the icon same even when the setting is disabled. */
     #id_realm_enable_spectator_access_label a {
-        color: hsl(0deg 0% 20%);
+        color: var(--color-realm-enable-spectator-access-link);
     }
 
     .settings_select {
@@ -435,6 +437,12 @@ input[type="checkbox"] {
     }
 }
 
+.preferences-settings-form {
+    .tab-picker {
+        width: 325px;
+    }
+}
+
 .information-density-settings {
     max-width: 325px;
 
@@ -462,7 +470,7 @@ input[type="checkbox"] {
     top: 2px;
 
     &:hover {
-        color: hsl(0deg 0% 20%);
+        color: var(--color-unmute-stream-hover);
         cursor: pointer;
     }
 }
@@ -479,6 +487,12 @@ input[type="checkbox"] {
 
         .toggle-advanced-configurations-icon {
             font-size: 20px;
+        }
+    }
+
+    .advanced-configurations-collapase-view {
+        .admin-permissions-tip {
+            margin-bottom: 1em;
         }
     }
 }
@@ -541,7 +555,7 @@ input[type="checkbox"] {
 }
 
 .alert_word_status_text {
-    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .alert-notification {
@@ -1302,12 +1316,12 @@ label.preferences-radio-choice-label {
     .sidebar-wrapper {
         float: left;
         position: relative;
-        width: $settings_sidebar_width;
+        width: var(--settings-sidebar-width);
         height: 100%;
 
         .tab-container {
             box-sizing: border-box;
-            height: $settings_header_height;
+            height: var(--settings-header-height);
             padding: 6px;
             background-color: var(--color-background-modal-bar);
             border-bottom: 1px solid var(--color-border-modal-bar);
@@ -1340,7 +1354,7 @@ label.preferences-radio-choice-label {
     }
 
     .sidebar {
-        height: calc(100% - $settings_header_height);
+        height: calc(100% - var(--settings-header-height));
         overflow-y: auto;
         border-right: 1px solid var(--color-border-modal);
 
@@ -1474,14 +1488,14 @@ label.preferences-radio-choice-label {
 
     .content-wrapper {
         position: absolute;
-        left: $settings_sidebar_width;
-        width: calc(100% - $settings_sidebar_width);
+        left: var(--settings-sidebar-width);
+        width: calc(100% - var(--settings-sidebar-width));
         height: 100%;
         overflow: hidden;
 
         .settings-header {
             width: 100%;
-            height: $settings_header_height;
+            height: var(--settings-header-height);
             box-sizing: border-box;
             border-bottom: 1px solid var(--color-border-modal-bar);
             background-color: var(--color-background-modal-bar);
@@ -1496,7 +1510,7 @@ label.preferences-radio-choice-label {
         #settings_content {
             position: relative;
             width: 100%;
-            height: calc(100% - $settings_header_height);
+            height: calc(100% - var(--settings-header-height));
 
             float: left;
             overflow: auto;
@@ -1654,6 +1668,10 @@ label.preferences-radio-choice-label {
        with .settings-field-label to display text-input
        combinations uniformly throughout the settings UI. */
     margin-bottom: var(--margin-bottom-field-description);
+}
+
+.cursor-text {
+    cursor: text;
 }
 
 .profile-field-choices {

@@ -6,6 +6,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 
 import {buddy_list} from "./buddy_list.ts";
 import * as channel from "./channel.ts";
+import * as compose_ui from "./compose_ui.ts";
 import {media_breakpoints_num} from "./css_variables.ts";
 import {reorder_left_sidebar_navigation_list} from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
@@ -133,6 +134,12 @@ export function initialize(): void {
             if (!$("body").hasClass("hide-right-sidebar")) {
                 fix_invite_user_button_flicker();
             }
+            // We recheck the scrolling-button status of the compose
+            // box, which may change for users who've chosen to
+            // use full width on wide screens.
+            compose_ui.maybe_show_scrolling_formatting_buttons(
+                "#message-formatting-controls-container",
+            );
             save_sidebar_toggle_status();
             return;
         }
@@ -158,6 +165,12 @@ export function initialize(): void {
                 // left sidebar is hidden. This can cause the pointer to move out of view.
                 message_viewport.scroll_to_selected();
             }
+            // We recheck the scrolling-button status of the compose
+            // box, which may change for users who've chosen to
+            // use full width on wide screens.
+            compose_ui.maybe_show_scrolling_formatting_buttons(
+                "#message-formatting-controls-container",
+            );
             save_sidebar_toggle_status();
             return;
         }

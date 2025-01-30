@@ -13,6 +13,7 @@ from typing_extensions import override
 from zerver.lib.management import ZulipBaseCommand, check_config
 from zerver.lib.remote_server import (
     PushBouncerSession,
+    prepare_for_registration_takeover_challenge,
     send_json_to_push_bouncer,
     send_server_data_to_push_bouncer,
 )
@@ -38,6 +39,11 @@ class Command(ZulipBaseCommand):
             "--rotate-key",
             action="store_true",
             help="Automatically rotate your server's zulip_org_key",
+        )
+        action.add_argument(
+            "--registration-takeover",
+            action="store_true",
+            help="Overwrite pre-existing registration for the hostname",
         )
         action.add_argument(
             "--deactivate",
@@ -72,10 +78,11 @@ class Command(ZulipBaseCommand):
             print("Mobile Push Notification Service registration successfully deactivated!")
             return
 
-        request = {
+        hostname = settings.EXTERNAL_HOST
+        request: dict[str, object] = {
             "zulip_org_id": settings.ZULIP_ORG_ID,
             "zulip_org_key": settings.ZULIP_ORG_KEY,
-            "hostname": settings.EXTERNAL_HOST,
+            "hostname": hostname,
             "contact_email": settings.ZULIP_ADMINISTRATOR,
         }
         if options["rotate_key"]:
@@ -107,12 +114,21 @@ class Command(ZulipBaseCommand):
                 # enough about what happened.
                 return
 
+        if options["registration_takeover"]:
+            org_id, org_key = self.do_registration_takeover_flow(hostname)
+            # We still want to proceed with a regular request to the registration endpoint,
+            # as it'll update the registration with new information such as the contact email.
+            request["zulip_org_id"] = org_id
+            request["zulip_org_key"] = org_key
+            settings.ZULIP_ORG_ID = org_id
+            settings.ZULIP_ORG_KEY = org_key
+            print()
+            print("Proceeding to update the registration with current metadata...")
+
         response = self._request_push_notification_bouncer_url(
             "/api/v1/remotes/server/register", request
         )
 
-        # Makes sure that we have a current state of user count when first
-        # logging in after the RemoteRealm flow.
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         if response.json()["created"]:
@@ -123,6 +139,8 @@ class Command(ZulipBaseCommand):
         else:
             if options["rotate_key"]:
                 print(f"Success! Updating {SECRETS_FILENAME} with the new key...")
+                new_org_key = request["new_org_key"]
+                assert isinstance(new_org_key, str)
                 subprocess.check_call(
                     [
                         "crudini",
@@ -131,17 +149,71 @@ class Command(ZulipBaseCommand):
                         SECRETS_FILENAME,
                         "secrets",
                         "zulip_org_key",
-                        request["new_org_key"],
+                        new_org_key,
                     ]
                 )
             print("Mobile Push Notification Service registration successfully updated!")
 
+        if options["registration_takeover"]:
+            print()
+            print(
+                "Make sure to restart the server next by running /home/zulip/deployments/current/scripts/restart-server "
+                "so that the new credentials are reloaded."
+            )
+
+    def do_registration_takeover_flow(self, hostname: str) -> tuple[str, str]:
+        params = {"hostname": hostname}
+        response = self._request_push_notification_bouncer_url(
+            "/api/v1/remotes/server/register/takeover", params
+        )
+        verification_secret = response.json()["verification_secret"]
+
+        print(
+            "Received a verification secret from the service. Preparing to serve it at the verification URL."
+        )
+        token_for_push_bouncer = prepare_for_registration_takeover_challenge(verification_secret)
+
+        print("Sending ACK to the service and awaiting completion of verification...")
+        response = self._request_push_notification_bouncer_url(
+            "/api/v1/remotes/server/register/verify_challenge",
+            dict(hostname=params["hostname"], access_token=token_for_push_bouncer),
+        )
+
+        org_id = response.json()["zulip_org_id"]
+        org_key = response.json()["zulip_org_key"]
+        # Update the secrets file.
+        print("Success! Updating secrets file with received credentials.")
+        subprocess.check_call(
+            [
+                "crudini",
+                "--inplace",
+                "--set",
+                SECRETS_FILENAME,
+                "secrets",
+                "zulip_org_id",
+                org_id,
+            ]
+        )
+        subprocess.check_call(
+            [
+                "crudini",
+                "--inplace",
+                "--set",
+                SECRETS_FILENAME,
+                "secrets",
+                "zulip_org_key",
+                org_key,
+            ]
+        )
+        print("Mobile Push Notification Service registration successfully transferred.")
+        return org_id, org_key
+
     def _request_push_notification_bouncer_url(self, url: str, params: dict[str, Any]) -> Response:
         assert settings.ZULIP_SERVICES_URL is not None
-        registration_url = settings.ZULIP_SERVICES_URL + url
+        request_url = settings.ZULIP_SERVICES_URL + url
         session = PushBouncerSession()
         try:
-            response = session.post(registration_url, data=params)
+            response = session.post(request_url, data=params)
         except requests.RequestException:
             raise CommandError(
                 "Network error connecting to push notifications service "
@@ -156,6 +228,9 @@ class Command(ZulipBaseCommand):
             except Exception:
                 raise e
 
-            raise CommandError("Error: " + content_dict["msg"])
+            error_message = content_dict["msg"]
+            raise CommandError(
+                f'Error received from the push notification service: "{error_message}"'
+            )
 
         return response

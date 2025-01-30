@@ -220,6 +220,7 @@ INLINE_URL_EMBED_PREVIEW = True
 NAME_CHANGES_DISABLED = False
 AVATAR_CHANGES_DISABLED = False
 PASSWORD_MIN_LENGTH = 6
+PASSWORD_MAX_LENGTH = 100
 PASSWORD_MIN_GUESSES = 10000
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
@@ -335,6 +336,18 @@ DEFAULT_RATE_LIMITING_RULES = {
 # entries in this object, which is merged with
 # DEFAULT_RATE_LIMITING_RULES.
 RATE_LIMITING_RULES: dict[str, list[tuple[int, int]]] = {}
+
+# Rate limits for endpoints which have absolute limits on how much
+# they can be used in a given time period.
+# These will be extremely rare, and most likely for zilencer endpoints
+# only, so we don't need a nice overriding system for them like we do
+# for RATE_LIMITING_RULES.
+ABSOLUTE_USAGE_LIMITS_BY_ENDPOINT = {
+    "verify_registration_takeover_challenge_ack_endpoint": [
+        # 30 requests per day
+        (86400, 30),
+    ],
+}
 
 # Two factor authentication is not yet implementation-complete
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
@@ -476,8 +489,6 @@ INVITES_NEW_REALM_DAYS = 7
 
 # Controls for which links are published in portico footers/headers/etc.
 REGISTER_LINK_DISABLED: bool | None = None
-LOGIN_LINK_DISABLED = False
-FIND_TEAM_LINK_DISABLED = True
 
 # What domains to treat like the root domain
 ROOT_SUBDOMAIN_ALIASES = ["www"]
@@ -685,3 +696,10 @@ MAX_WEB_DATA_IMPORT_SIZE_MB = 1024
 # delete an active organization.
 MIN_DEACTIVATED_REALM_DELETION_DAYS: int | None = 14
 MAX_DEACTIVATED_REALM_DELETION_DAYS: int | None = None
+
+
+TOPIC_SUMMARIZATION_MODEL: str | None = None
+if not PRODUCTION:
+    TOPIC_SUMMARIZATION_MODEL = "huggingface/meta-llama/Meta-Llama-3-8B-Instruct"
+
+TOPIC_SUMMARIZATION_PARAMETERS: dict[str, object] = {}

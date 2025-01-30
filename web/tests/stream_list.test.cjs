@@ -34,11 +34,17 @@ mock_esm("../src/unread", {
     stream_has_any_unread_mentions: () => stream_has_any_unread_mentions,
     stream_has_any_unmuted_mentions: () => noop,
 });
+mock_esm("../src/group_permission_settings", {
+    get_group_permission_setting_config: () => ({
+        allow_everyone_group: true,
+    }),
+});
 
 const {Filter} = zrequire("../src/filter");
 const stream_data = zrequire("stream_data");
 const stream_list = zrequire("stream_list");
 const stream_list_sort = zrequire("stream_list_sort");
+const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const user_settings = {};
@@ -54,6 +60,16 @@ const me = {
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
+const everyone_group = {
+    name: "Everyone",
+    id: 1,
+    description: "",
+    members: new Set([30]),
+    direct_subgroup_ids: new Set([]),
+};
+
+user_groups.initialize({realm_user_groups: [everyone_group]});
+
 const devel = {
     name: "devel",
     stream_id: 100,
@@ -61,6 +77,7 @@ const devel = {
     subscribed: true,
     pin_to_top: true,
     is_recently_active: false,
+    can_send_message_group: everyone_group.id,
 };
 
 const social = {
@@ -69,6 +86,7 @@ const social = {
     color: "green",
     subscribed: true,
     is_recently_active: true,
+    can_send_message_group: everyone_group.id,
 };
 
 // flag to check if subheader is rendered
@@ -292,6 +310,7 @@ const develSub = {
     pin_to_top: true,
     subscribed: true,
     is_recently_active: true,
+    can_send_message_group: everyone_group.id,
 };
 
 const RomeSub = {
@@ -301,6 +320,7 @@ const RomeSub = {
     pin_to_top: true,
     subscribed: true,
     is_recently_active: true,
+    can_send_message_group: everyone_group.id,
 };
 
 const testSub = {
@@ -310,6 +330,7 @@ const testSub = {
     pin_to_top: true,
     subscribed: true,
     is_recently_active: true,
+    can_send_message_group: everyone_group.id,
 };
 
 const announceSub = {
@@ -319,6 +340,7 @@ const announceSub = {
     pin_to_top: false,
     subscribed: true,
     is_recently_active: true,
+    can_send_message_group: everyone_group.id,
 };
 
 const DenmarkSub = {
@@ -328,6 +350,7 @@ const DenmarkSub = {
     pin_to_top: false,
     subscribed: true,
     is_recently_active: true,
+    can_send_message_group: everyone_group.id,
 };
 
 const carSub = {
@@ -337,6 +360,7 @@ const carSub = {
     pin_to_top: false,
     subscribed: true,
     is_recently_active: false,
+    can_send_message_group: everyone_group.id,
 };
 
 function initialize_stream_data() {
@@ -672,6 +696,7 @@ test_ui("separators_only_pinned", () => {
 
 test_ui("rename_stream", ({mock_template, override}) => {
     override(user_settings, "web_stream_unreads_count_display_policy", 3);
+    override(current_user, "user_id", me.user_id);
 
     create_stream_subheader({mock_template});
     initialize_stream_data();
@@ -722,6 +747,7 @@ test_ui("refresh_pin", ({override, override_rewire, mock_template}) => {
         stream_id: 100,
         color: "blue",
         pin_to_top: false,
+        can_send_message_group: everyone_group.id,
     };
 
     stream_data.add_sub(sub);

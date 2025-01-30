@@ -6,8 +6,8 @@ User groups offer a flexible way to manage permissions.
 
 !!! tip ""
 
-    Learn about [channel permissions](/help/channel-permissions), including
-    **public** and **private** channels.
+    Learn about channel [types and permissions](/help/channel-permissions),
+    including **public** and **private** channels.
 
 ## Manage organization permissions
 

@@ -128,6 +128,9 @@ test.set_verbose(files.length === 1);
         namespace.mock_esm("../../src/page_params", zpage_params);
         require("../../src/page_params.ts");
 
+        // Make sure we re-register our Handlebars helpers.
+        require("../../src/templates.ts");
+
         try {
             await run_one_module(file);
             blueslip.reset();

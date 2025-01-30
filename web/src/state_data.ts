@@ -212,7 +212,6 @@ const current_user_schema = z.object({
     can_create_streams: z.boolean(),
     can_create_web_public_streams: z.boolean(),
     can_invite_others_to_realm: z.boolean(),
-    can_subscribe_other_users: z.boolean(),
     delivery_email: z.string(),
     email: z.string(),
     full_name: z.string(),
@@ -238,6 +237,24 @@ const custom_profile_field_types_schema = z.object({
 
 export type CustomProfileFieldTypes = z.infer<typeof custom_profile_field_types_schema>;
 
+export const realm_domain_schema = z.object({
+    domain: z.string(),
+    allow_subdomains: z.boolean(),
+});
+
+export const realm_playground_schema = z.object({
+    id: z.number(),
+    name: z.string(),
+    pygments_language: z.string(),
+    url_template: z.string(),
+});
+
+export const realm_linkifier_schema = z.object({
+    pattern: z.string(),
+    url_template: z.string(),
+    id: z.number(),
+});
+
 // Sync this with zerver.lib.events.do_events_register.
 export const realm_schema = z.object({
     custom_profile_fields: z.array(custom_profile_field_schema),
@@ -257,6 +274,7 @@ export const realm_schema = z.object({
     max_topic_length: z.number(),
     password_min_guesses: z.number(),
     password_min_length: z.number(),
+    password_max_length: z.number(),
     realm_allow_edit_history: z.boolean(),
     realm_allow_message_editing: z.boolean(),
     realm_authentication_methods: z.record(
@@ -273,14 +291,16 @@ export const realm_schema = z.object({
         big_blue_button: z.optional(z.object({name: z.string(), id: z.number()})),
     }),
     realm_avatar_changes_disabled: z.boolean(),
-    realm_bot_creation_policy: z.number(),
     realm_bot_domain: z.string(),
     realm_can_access_all_users_group: z.number(),
     realm_can_add_custom_emoji_group: group_setting_value_schema,
+    realm_can_add_subscribers_group: group_setting_value_schema,
+    realm_can_create_bots_group: group_setting_value_schema,
     realm_can_create_groups: group_setting_value_schema,
     realm_can_create_public_channel_group: group_setting_value_schema,
     realm_can_create_private_channel_group: group_setting_value_schema,
     realm_can_create_web_public_channel_group: z.number(),
+    realm_can_create_write_only_bots_group: group_setting_value_schema,
     realm_can_delete_any_message_group: group_setting_value_schema,
     realm_can_delete_own_message_group: group_setting_value_schema,
     realm_can_invite_users_group: group_setting_value_schema,
@@ -306,12 +326,7 @@ export const realm_schema = z.object({
     realm_direct_message_initiator_group: group_setting_value_schema,
     realm_direct_message_permission_group: group_setting_value_schema,
     realm_disallow_disposable_email_addresses: z.boolean(),
-    realm_domains: z.array(
-        z.object({
-            domain: z.string(),
-            allow_subdomains: z.boolean(),
-        }),
-    ),
+    realm_domains: z.array(realm_domain_schema),
     realm_email_auth_enabled: z.boolean(),
     realm_email_changes_disabled: z.boolean(),
     realm_emails_restricted_to_domains: z.boolean(),
@@ -321,6 +336,7 @@ export const realm_schema = z.object({
             config: z.record(z.string()),
         }),
     ),
+    realm_empty_topic_display_name: z.string(),
     realm_enable_guest_user_indicator: z.boolean(),
     realm_enable_read_receipts: z.boolean(),
     realm_enable_spectator_access: z.boolean(),
@@ -346,16 +362,9 @@ export const realm_schema = z.object({
     realm_inline_image_preview: z.boolean(),
     realm_inline_url_embed_preview: z.boolean(),
     realm_invite_required: z.boolean(),
-    realm_invite_to_stream_policy: z.number(),
     realm_is_zephyr_mirror_realm: z.boolean(),
     realm_jitsi_server_url: z.nullable(z.string()),
-    realm_linkifiers: z.array(
-        z.object({
-            pattern: z.string(),
-            url_template: z.string(),
-            id: z.number(),
-        }),
-    ),
+    realm_linkifiers: z.array(realm_linkifier_schema),
     realm_logo_source: z.string(),
     realm_logo_url: z.string(),
     realm_mandatory_topics: z.boolean(),
@@ -373,14 +382,7 @@ export const realm_schema = z.object({
     realm_org_type: z.number(),
     realm_password_auth_enabled: z.boolean(),
     realm_plan_type: z.number(),
-    realm_playgrounds: z.array(
-        z.object({
-            id: z.number(),
-            name: z.string(),
-            pygments_language: z.string(),
-            url_template: z.string(),
-        }),
-    ),
+    realm_playgrounds: z.array(realm_playground_schema),
     realm_presence_disabled: z.boolean(),
     realm_push_notifications_enabled: z.boolean(),
     realm_push_notifications_enabled_end_timestamp: z.number().nullable(),

@@ -723,6 +723,18 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## set big_blue_button_secret in zulip-secrets.conf.
 # BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 
+################
+## LLM Summarization
+##
+## The model name that will used by LiteLLM library to configure
+## parameters to be sent to API.
+## The Llama-3-8B-instruct model is free to use and only requires submitting
+## a small form on the HuggingFace page for the model to gain access.
+# TOPIC_SUMMARIZATION_MODEL = "huggingface/meta-llama/Meta-Llama-3-8B-Instruct"
+
+## Other configuration parameters, passed through to litellm's `completion` call
+## See https://docs.litellm.ai/docs/completion/input
+# TOPIC_SUMMARIZATION_PARAMETERS = {}
 
 ################
 ## Miscellaneous settings.
@@ -771,6 +783,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## Password strength requirements; learn about configuration at
 ## https://zulip.readthedocs.io/en/latest/production/security-model.html.
 # PASSWORD_MIN_LENGTH = 6
+# PASSWORD_MAX_LENGTH = 100
 # PASSWORD_MIN_GUESSES = 10000
 
 ## Controls whether Zulip sends "new login" email notifications.

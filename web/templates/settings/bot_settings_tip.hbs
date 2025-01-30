@@ -1,7 +1,7 @@
-{{#if (eq realm_bot_creation_policy permission_type.admins_only.code)}}
-    <div class='tip'>{{t "This organization is configured so that only administrators can add bots." }}</div>
-{{else if (eq realm_bot_creation_policy permission_type.restricted.code) }}
-    <div class='tip'>{{t "This organization is configured so that only administrators can add generic bots." }}</div>
-{{else}}
-    <div class='tip'>{{t "This organization is configured so that anyone can add bots." }}</div>
-{{/if}}
+{{#unless can_create_any_bots}}
+    {{#if can_create_incoming_webhooks}}
+        <div class='tip'>{{t "You can create bots that can only send messages." }}</div>
+    {{else}}
+        <div class='tip'>{{t "You do not have permission to create bots." }}</div>
+    {{/if}}
+{{/unless}}

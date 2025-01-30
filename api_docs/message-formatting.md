@@ -68,6 +68,7 @@ generate an image preview element with the following format.
 <div class="message_inline_image">
     <a href="/user_uploads/path/to/image.png" title="image.png">
         <img data-original-dimensions="1920x1080"
+          data-original-content-type="image/png"
           src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">
     </a>
 </div>
@@ -83,7 +84,10 @@ desired. For example:
 ``` html
 <div class="message_inline_image">
     <a href="/user_uploads/path/to/image.png" title="image.png">
-        <img class="image-loading-placeholder" data-original-dimensions="1920x1080" src="/path/to/spinner.png">
+        <img class="image-loading-placeholder"
+          data-original-dimensions="1920x1080"
+          data-original-content-type="image/png"
+          src="/path/to/spinner.png">
     </a>
 </div>
 ```
@@ -122,6 +126,14 @@ previews:
   change over time.
 - Download button type elements should provide the original image
   (encoded via the `href` of the containing `a` tag).
+- The content-type of the original image is provided on a
+  `data-original-content-type` attribute, so clients can decide if
+  they are capable of rendering the original image.
+- For images whose formats which are not widely-accepted by browsers
+  (e.g., HEIC and TIFF), the image may contain a
+  `data-transcoded-image` attribute, which specifies a high-resolution
+  thumbnail format which clients may use instead of the original
+  image.
 - Lightbox elements for viewing an image should be designed to
   immediately display any already-downloaded thumbnail while fetching
   the original-quality image or an appropriate higher-quality
@@ -143,6 +155,11 @@ previews:
   format match what they requested.
 - No other processing of the URLs is recommended.
 
+**Changes**: In Zulip 10.0 (feature level 336), added
+`data-original-content-type` attribute to convey the type of the
+original image, and optional `data-transcoded-image` attribute for
+images with formats which are not widely supported by browsers.
+
 **Changes**: In Zulip 9.2 (feature levels 278-279, and 287+), added
 `data-original-dimensions` to the `image-loading-placeholder` spinner
 images, containing the dimensions of the original image.
@@ -159,15 +176,111 @@ point to the original image.
 
 Clients that correctly implement the current API should handle
 Thumbor-based older thumbnails correctly, as long as they do not
-assume that `data-original-dimension` is present. Clients should not
+assume that `data-original-dimensions` is present. Clients should not
 assume that messages sent prior to the introduction of thumbnailing
 have been re-rendered to use the new format or have thumbnails
 available.
 
-## Mentions
+## Mentions and silent mentions
 
-**Changes**: In Zulip 9.0 (feature level 247), `channel` was added
-to the supported [wildcard][help-mention-all] options used in the
+Zulip markup supports [mentioning](/help/mention-a-user-or-group)
+users, user groups, and a few special "wildcard" mentions (the three
+spellings of a channel wildcard mention: `@**all**`, `@**everyone**`,
+`@**channel**` and the topic wildcard mention `@**topic**`).
+
+Mentions result in a message being highlighted for the target user(s),
+both in the UI and in notifications, and may also result in the target
+user(s) following the conversation, [depending on their
+settings](/help/follow-a-topic#follow-topics-where-you-are-mentioned).
+
+Silent mentions of users or groups have none of those side effects,
+but nonetheless uniquently identify the user or group
+identified. (There's no such thing as a silent wildcard mention).
+
+Permissions for mentioning users work as follows:
+
+- Any user can mention any other user, though mentions by [muted
+users](/help/mute-a-user) are automatically marked as read and thus do
+not trigger notifications or otherwise get highlighted like unread
+mentions.
+
+- Wildcard mentions are permitted except where [organization-level
+restrictions](/help/restrict-wildcard-mentions) apply.
+
+- User groups can be mentioned if and only if the acting user is in
+the `can_mention_group` group for that group. All user groups can be
+silently mentioned by any user.
+
+- System groups, when (silently) mentioned, should be displayed using
+their description, not their `role:nobody` style API names; see the
+main [system group
+documentation](/api/group-setting-values#system-groups) for
+details. System groups can only be silently mentioned right now,
+because they happen to all use the empty `Nobody` group for
+`can_mention_group`; clients should just use `can_mention_group` to
+determine which groups to offer in typeahead in similar contexts.
+
+- Requests to send or edit a message that are impermissible due to
+including a mention where the acting user does not have permission to
+mention the target will return an error. Mention syntax that does not
+correspond to a real user or group is ignored.
+
+Sample markup for `@**Example User**`:
+
+``` html
+<span class="user-mention" data-user-id="31">@Example User</span>
+```
+
+Sample markup for `@_**Example User**`:
+
+``` html
+<span class="user-mention silent" data-user-id="31">Example User</span>
+```
+
+Sample markup for `@**topic**`:
+
+``` html
+<span class="topic-mention">@topic</span>
+```
+
+Sample markup for `@**channel**`:
+
+``` html
+<span class="user-mention channel-wildcard-mention"
+  data-user-id="*">@channel</span>
+```
+
+Sample markup for `@*support*`, assuming "support" is a valid group:
+``` html
+<span class="user-group-mention"
+  data-user-group-id="17">@support</span>
+```
+
+Sample markup for `@_*support*`, assuming "support" is a valid group:
+``` html
+<span class="user-group-mention silent"
+  data-user-group-id="17">support</span>
+```
+
+Sample markup for `@_*role:administrators*`:
+``` html
+<span class="user-group-mention silent"
+  data-user-group-id="5">Administrators</span>
+```
+
+When processing mentions, clients should look up the user or group
+referenced by ID, and update the textual name for the mention to the
+current name for the user or group with that ID. Note that for system
+groups, this requires special logic to look up the user-facing name
+for that group; see [system
+groups](/api/group-setting-values#system-groups) for details.
+
+**Changes**: Prior to Zulip 10.0 (feature level 333), it was not
+possible to silently mention [system
+groups](/api/group-setting-values#system-groups).
+
+In Zulip 9.0 (feature level 247), `channel` was added to the supported
+[wildcard][help-mention-all] options used in the
 [mentions][help-mentions] Markdown message formatting feature.
 
 ## Spoilers

@@ -5,10 +5,10 @@ import assert from "minimalistic-assert";
 import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
+import * as compose_ui from "./compose_ui.ts";
 import type {MessageListData} from "./message_list_data.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import {MessageListView} from "./message_list_view.ts";
-import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as narrow_banner from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -193,11 +193,11 @@ export class MessageList {
     add_messages(
         messages: Message[],
         append_to_view_opts: {messages_are_new?: boolean} = {},
-        ignore_found_newest = false,
+        is_contiguous_history = false,
     ): RenderInfo | undefined {
         // This adds all messages to our data, but only returns
         // the currently viewable ones.
-        const info = this.data.add_messages(messages, ignore_found_newest);
+        const info = this.data.add_messages(messages, is_contiguous_history);
 
         const top_messages = info.top_messages;
         const bottom_messages = info.bottom_messages;
@@ -216,6 +216,7 @@ export class MessageList {
 
         if (interior_messages.length > 0) {
             this.view.rerender_preserving_scrolltop(true);
+            this.update_user_sidebar_participants();
             return {need_user_to_scroll: true};
         }
         if (top_messages.length > 0) {
@@ -244,11 +245,7 @@ export class MessageList {
             this.select_id(first_unread_message_id, {then_scroll: true, use_closest: true});
         }
 
-        // Rebuild message list, since we might need to shuffle around the participant users.
-        if (this === message_lists.current && narrow_state.stream_sub() && narrow_state.topic()) {
-            activity_ui.build_user_sidebar();
-        }
-
+        this.update_user_sidebar_participants();
         return render_info;
     }
 
@@ -503,14 +500,16 @@ export class MessageList {
 
     remove_and_rerender(message_ids: number[]): void {
         const should_rerender = this.data.remove(message_ids);
+        this.update_user_sidebar_participants();
         if (!should_rerender) {
             return;
         }
         this.rerender();
-        // Rebuild message list if we're deleting messages from the current list,
-        // since we might need to remove a participant user.
+    }
+
+    update_user_sidebar_participants(): void {
         if (this.is_current_message_list()) {
-            activity_ui.build_user_sidebar();
+            activity_ui.rerender_user_sidebar_participants();
         }
     }
 
@@ -524,6 +523,7 @@ export class MessageList {
         // autosize will not change the height of the textarea if the `$row` is not
         // rendered in DOM yet. So, we call `autosize.update` post render.
         autosize($row.find(".message_edit_content"));
+        compose_ui.maybe_show_scrolling_formatting_buttons(".message-edit-feature-group");
     }
 
     hide_edit_message($row: JQuery): void {
@@ -540,7 +540,6 @@ export class MessageList {
     show_edit_topic_on_recipient_row($recipient_row: JQuery, $form: JQuery): void {
         $recipient_row.find(".topic_edit_form").append($form);
         $recipient_row.find(".on_hover_topic_edit").hide();
-        $recipient_row.find(".edit_message_button").hide();
         $recipient_row.find(".stream_topic").hide();
         $recipient_row.find(".topic_edit").show();
         $recipient_row.find(".always_visible_topic_edit").hide();
@@ -551,7 +550,6 @@ export class MessageList {
     hide_edit_topic_on_recipient_row($recipient_row: JQuery): void {
         $recipient_row.find(".stream_topic").show();
         $recipient_row.find(".on_hover_topic_edit").show();
-        $recipient_row.find(".edit_message_button").show();
         $recipient_row.find(".topic_edit_form").empty();
         $recipient_row.find(".topic_edit").hide();
         $recipient_row.find(".always_visible_topic_edit").show();
@@ -616,6 +614,11 @@ export class MessageList {
         // But in any case, we need to rerender the list for user muting,
         // to make sure only the right messages are hidden.
         this.rerender();
+
+        // While this can have changed the conversation's visible
+        // participants, we don't need to call
+        // this.update_user_sidebar_participants, because changing a
+        // muted user's state already does a full sidebar redraw.
     }
 
     all_messages(): Message[] {

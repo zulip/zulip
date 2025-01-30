@@ -469,7 +469,7 @@ def populate_remote_server(customer_profile: CustomerProfile) -> dict[str, str]:
         end_date = datetime.strptime(customer_profile.end_date, TIMESTAMP_FORMAT).replace(
             tzinfo=timezone.utc
         )
-        billing_session.migrate_customer_to_legacy_plan(renewal_date, end_date)
+        billing_session.create_complimentary_access_plan(renewal_date, end_date)
 
         if not communicate_with_stripe:
             # We need to communicate with stripe to upgrade here.
@@ -567,7 +567,7 @@ def populate_remote_realms(customer_profile: CustomerProfile) -> dict[str, str]:
         end_date = datetime.strptime(customer_profile.end_date, TIMESTAMP_FORMAT).replace(
             tzinfo=timezone.utc
         )
-        billing_session.migrate_customer_to_legacy_plan(renewal_date, end_date)
+        billing_session.create_complimentary_access_plan(renewal_date, end_date)
     elif customer_profile.tier is not None:
         billing_session.do_change_plan_type(
             tier=customer_profile.tier, is_sponsored=customer_profile.is_sponsored

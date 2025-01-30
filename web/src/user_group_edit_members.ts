@@ -81,7 +81,7 @@ function format_member_list_elem(person: User): string {
 function format_subgroup_list_elem(group: UserGroup): string {
     return render_user_group_subgroup_entry({
         group_id: group.id,
-        display_value: group.name,
+        display_value: user_groups.get_display_group_name(group.name),
         can_remove_members: settings_data.can_remove_members_from_user_group(current_group_id),
     });
 }
@@ -444,7 +444,10 @@ function remove_member({
         });
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Leave {group_name}"}, {group_name: group.name}),
+            html_heading: $t_html(
+                {defaultMessage: "Leave {group_name}"},
+                {group_name: user_groups.get_display_group_name(group.name)},
+            ),
             html_body,
             on_click: do_remove_user_from_group,
         });

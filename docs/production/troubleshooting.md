@@ -155,7 +155,7 @@ If one of these services is not installed or functioning correctly,
 Zulip will not work. Below we detail some common configuration
 problems and how to resolve them:
 
-- If your browser reports no webserver is running, that is likely
+- If your browser reports no web server is running, that is likely
   because nginx is not configured properly and thus failed to start.
   nginx will fail to start if you configured SSL incorrectly or did
   not provide SSL certificates. To fix this, configure them properly

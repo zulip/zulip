@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
+const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -17,11 +18,16 @@ const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const resolved_topic = zrequire("../shared/src/resolved_topic");
 const settings_config = zrequire("settings_config");
-const settings_data = mock_esm("../src/settings_data");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("/compose_recipient");
 const user_groups = zrequire("user_groups");
+
+mock_esm("../src/group_permission_settings", {
+    get_group_permission_setting_config: () => ({
+        allow_everyone_group: true,
+    }),
+});
 
 const realm = {};
 set_realm(realm);
@@ -83,7 +89,7 @@ const everyone = {
     id: 2,
     members: new Set([30]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set([3]),
 };
 const admin = {
     name: "role:administrators",
@@ -111,7 +117,11 @@ function stub_message_row($textarea) {
 }
 
 test_ui("validate_stream_message_address_info", ({mock_template}) => {
-    mock_banners();
+    // For this test we basically only use FakeComposeBox
+    // to set up the DOM environment. We don't assert about
+    // any side effects on the DOM, since the scope of this
+    // test is mostly to make sure the template gets rendered.
+    new FakeComposeBox();
 
     const party_sub = {
         stream_id: 101,
@@ -123,7 +133,6 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
 
     party_sub.subscribed = false;
     stream_data.add_sub(party_sub);
-    $("#compose_banners .user_not_subscribed").length = 0;
     let user_not_subscribed_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", true, (data, html) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.user_not_subscribed);
@@ -137,7 +146,9 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
     party_sub.stream_id = 102;
     stream_data.add_sub(party_sub);
     user_not_subscribed_rendered = false;
+
     assert.ok(!compose_validate.validate_stream_message_address_info(party_sub));
+
     assert.ok(user_not_subscribed_rendered);
 });
 
@@ -307,11 +318,6 @@ test_ui("validate", ({mock_template, override}) => {
     });
     assert.ok(!compose_validate.validate());
     assert.ok(missing_topic_error_rendered);
-
-    missing_topic_error_rendered = false;
-    compose_state.topic("(no topic)");
-    assert.ok(!compose_validate.validate());
-    assert.ok(missing_topic_error_rendered);
 });
 
 test_ui("get_invalid_recipient_emails", ({override, override_rewire}) => {
@@ -433,6 +439,7 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
         stream_id: 101,
         name: "special",
         subscribed: true,
+        can_send_message_group: everyone.id,
     };
     stream_data.add_sub(special_sub);
 
@@ -471,18 +478,15 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
     assert.ok(wildcards_not_allowed_rendered);
 });
 
-test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template, override}) => {
-    // This test is in continuation with test_validate but it has been separated out
-    // for better readability. Their relative position of execution should not be changed.
-    // Although the position with respect to test_validate_stream_message does not matter
-    // as different stream is used for this test.
+test_ui("test_stream_posting_permission", ({mock_template, override}) => {
     mock_banners();
-    override(current_user, "is_admin", false);
+
+    override(current_user, "user_id", 30);
     const sub_stream_102 = {
         stream_id: 102,
         name: "stream102",
         subscribed: true,
-        stream_post_policy: settings_config.stream_post_policy_values.admins.code,
+        can_send_message_group: admin.id,
     };
 
     stream_data.add_sub(sub_stream_102);
@@ -505,132 +509,70 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template, 
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
 
+    override(current_user, "user_id", 32);
+
+    banner_rendered = false;
+    assert.ok(compose_validate.validate());
+    assert.ok(!banner_rendered);
+
+    sub_stream_102.can_send_message_group = everyone.id;
+    override(current_user, "user_id", 30);
+    banner_rendered = false;
+    assert.ok(compose_validate.validate());
+    assert.ok(!banner_rendered);
+
     // Reset error message.
     compose_state.set_stream_id(social_sub.stream_id);
 
-    override(current_user, "is_admin", false);
-    override(current_user, "is_guest", true);
+    const anonymous_setting_group = {
+        direct_subgroups: [admin.id],
+        direct_members: [31],
+    };
+    sub_stream_102.can_send_message_group = anonymous_setting_group;
 
     compose_state.topic("topic102");
     compose_state.set_stream_id(sub_stream_102.stream_id);
+    override(current_user, "user_id", 30);
     banner_rendered = false;
     assert.ok(!compose_validate.validate());
     assert.ok(banner_rendered);
+
+    override(current_user, "user_id", 31);
+    banner_rendered = false;
+    assert.ok(compose_validate.validate());
+    assert.ok(!banner_rendered);
+
+    override(current_user, "user_id", 32);
+    banner_rendered = false;
+    assert.ok(compose_validate.validate());
+    assert.ok(!banner_rendered);
 });
 
-test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_template, override}) => {
-    mock_banners();
+test_ui("test_check_overflow_text", ({override}) => {
+    const fake_compose_box = new FakeComposeBox();
 
-    override(current_user, "is_admin", false);
-    override(current_user, "is_moderator", false);
-    override(current_user, "is_guest", false);
-
-    const sub = {
-        stream_id: 104,
-        name: "stream104",
-        subscribed: true,
-        stream_post_policy: settings_config.stream_post_policy_values.moderators.code,
-    };
-
-    stream_data.add_sub(sub);
-    compose_state.topic("topic104");
-    compose_state.set_stream_id(sub.stream_id);
-    let banner_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
-        assert.equal(
-            data.banner_text,
-            $t({
-                defaultMessage: "You do not have permission to post in this channel.",
-            }),
-        );
-        banner_rendered = true;
-        return "<banner-stub>";
-    });
-    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
-    assert.ok(!compose_validate.validate());
-    assert.ok(banner_rendered);
-    // Reset error message.
-    compose_state.set_stream_id(social_sub.stream_id);
-
-    override(current_user, "is_guest", true);
-    assert.ok(!compose_validate.validate());
-    assert.ok(banner_rendered);
-});
-
-test_ui(
-    "test_validate_stream_message_post_policy_full_members_only",
-    ({mock_template, override}) => {
-        mock_banners();
-        override(current_user, "is_admin", false);
-        override(current_user, "is_guest", true);
-        const sub = {
-            stream_id: 103,
-            name: "stream103",
-            subscribed: true,
-            stream_post_policy: settings_config.stream_post_policy_values.non_new_members.code,
-        };
-
-        stream_data.add_sub(sub);
-        compose_state.topic("topic103");
-        compose_state.set_stream_id(sub.stream_id);
-        let banner_rendered = false;
-        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-            assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
-            assert.equal(
-                data.banner_text,
-                $t({
-                    defaultMessage: "You do not have permission to post in this channel.",
-                }),
-            );
-            banner_rendered = true;
-            return "<banner-stub>";
-        });
-        $("#send_message_form").set_find_results(
-            ".message-textarea",
-            $("textarea#compose-textarea"),
-        );
-        assert.ok(!compose_validate.validate());
-        assert.ok(banner_rendered);
-    },
-);
-
-test_ui("test_check_overflow_text", ({mock_template, override}) => {
     override(realm, "max_message_length", 10000);
 
-    const $elem = $("#send_message_form");
-    const $textarea = $(".message-textarea");
-    const $indicator = $(".message-limit-indicator");
-    stub_message_row($textarea);
-    $elem.set_find_results(".message-textarea", $textarea);
-    $elem.set_find_results(".message-limit-indicator", $indicator);
+    // RED
+    {
+        fake_compose_box.set_textarea_val("a".repeat(10005));
+        compose_validate.check_overflow_text(fake_compose_box.$send_message_form);
+        fake_compose_box.assert_message_size_is_over_the_limit("-5\n");
+    }
 
-    // Indicator should show red colored text
-    let limit_indicator_html;
-    mock_template("compose_limit_indicator.hbs", true, (_data, html) => {
-        limit_indicator_html = html;
-    });
-    $textarea.val("a".repeat(10000 + 1));
-    compose_validate.check_overflow_text($elem);
-    assert.ok($indicator.hasClass("over_limit"));
-    assert.equal(limit_indicator_html, "-1\n");
-    assert.ok($textarea.hasClass("over_limit"));
-    assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
+    // ORANGE
+    {
+        fake_compose_box.set_textarea_val("a".repeat(9100));
+        compose_validate.check_overflow_text(fake_compose_box.$send_message_form);
+        fake_compose_box.assert_message_size_is_under_the_limit("900\n");
+    }
 
-    // Indicator should show orange colored text
-    $textarea.val("a".repeat(9100));
-    compose_validate.check_overflow_text($elem);
-    assert.ok(!$indicator.hasClass("over_limit"));
-    assert.equal(limit_indicator_html, "900\n");
-    assert.ok(!$textarea.hasClass("over_limit"));
-    assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
-
-    // Indicator must be empty
-    $textarea.val("a".repeat(9100 - 1));
-    compose_validate.check_overflow_text($elem);
-    assert.ok(!$indicator.hasClass("over_limit"));
-    assert.equal($indicator.text(), "");
-    assert.ok(!$textarea.hasClass("over_limit"));
+    // ALL CLEAR
+    {
+        fake_compose_box.set_textarea_val("a".repeat(9100 - 1));
+        compose_validate.check_overflow_text(fake_compose_box.$send_message_form);
+        fake_compose_box.assert_message_size_is_under_the_limit();
+    }
 });
 
 test_ui("needs_subscribe_warning", () => {
@@ -743,7 +685,8 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
     compose_state.set_stream_id("");
-    override(settings_data, "user_can_subscribe_other_users", () => true);
+
+    override(realm, "realm_can_add_subscribers_group", everyone.id);
 
     let mentioned_details = {
         user: {
@@ -788,6 +731,8 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     const sub = {
         stream_id: 111,
         name: "random",
+        can_add_subscribers_group: admin.id,
+        can_administer_channel_group: admin.id,
     };
     stream_data.add_sub(sub);
     compose_state.set_stream_id(sub.stream_id);
@@ -833,7 +778,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
 test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     mock_banners();
     $("#compose_banners .topic_resolved").length = 0;
-    override(settings_data, "user_can_move_messages_to_another_topic", () => true);
+    override(realm, "realm_can_move_messages_between_topics_group", everyone.id);
 
     let error_shown = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {

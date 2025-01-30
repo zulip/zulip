@@ -544,29 +544,44 @@ export function get_time_limit_setting_in_appropriate_unit(
     return {value: time_limit_in_days, unit: "day"};
 }
 
-export function should_display_profile_incomplete_alert(timestamp: number): boolean {
-    const today = new Date(Date.now());
-    const time = new Date(timestamp * 1000);
-    const days_old = difference_in_calendar_days(today, time, display_time_zone);
+export function get_time_in_timezone(date: Date, timezone: string): number {
+    return Date.parse(date.toLocaleString("en-US", {timeZone: timezone}));
+}
 
-    if (days_old >= 15) {
+export function get_offset_difference_at_date(
+    timezone1: string,
+    timezone2: string,
+    reference_date: Date,
+): number {
+    const date1 = get_time_in_timezone(reference_date, timezone1);
+    const date2 = get_time_in_timezone(reference_date, timezone2);
+    return date1 - date2;
+}
+
+export function are_timezones_on_same_clock_now(timezone1: string, timezone2: string): boolean {
+    // America/Los_Angeles is clearly the same as America/Los_Angeles:
+    if (timezone1 === timezone2) {
         return true;
     }
-    return false;
-}
 
-export function browser_canonicalize_timezone(uncanonicalized_timezone: string): string {
+    // We still want this function to return true if the timezones are
+    // on the same clock for now, even though they may eventually diverge
+    // during Daylight Savings. This avoids nagging the user.  The only
+    // tradeoff is if the user stays logged on while the clocks change,
+    // but that should be rare.
+    const now = new Date();
+
     try {
-        // we use the runtime's default locale, to match _browser_time_zone_.
-        const canonicalized_timezone = new Intl.DateTimeFormat(undefined, {
-            timeZone: uncanonicalized_timezone,
-        }).resolvedOptions().timeZone;
-        return canonicalized_timezone;
+        return get_offset_difference_at_date(timezone1, timezone2, now) === 0;
     } catch {
-        return "";
+        // This should only happen during testing, but we just catch any error
+        // related to invalid time zones.
+        return false;
     }
 }
 
-export function is_browser_timezone_same_as(uncanonicalized_target_timezone: string): boolean {
-    return browser_time_zone() === browser_canonicalize_timezone(uncanonicalized_target_timezone);
+export function is_browser_timezone_same_as(zulip_time_zone: string): boolean {
+    // We delegate most of this check to facilitate testing.
+    // We don't want to mock browser_time_zone.
+    return are_timezones_on_same_clock_now(browser_time_zone(), zulip_time_zone);
 }

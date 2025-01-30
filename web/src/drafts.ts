@@ -564,7 +564,8 @@ export type FormattedDraft =
           stream_name?: string | undefined;
           recipient_bar_color: string;
           stream_privacy_icon_color: string;
-          topic: string;
+          topic_display_name: string;
+          is_empty_string_topic: boolean;
           raw_content: string;
           stream_id: number | undefined;
           time_stamp: string;
@@ -621,7 +622,7 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
             invite_only = sub.invite_only;
             is_web_public = sub.is_web_public;
         }
-        const draft_topic = draft.topic || compose_state.empty_topic_placeholder();
+        const draft_topic_display_name = util.get_final_topic_display_name(draft.topic);
         const draft_stream_color = stream_data.get_color(draft.stream_id);
 
         return {
@@ -631,7 +632,8 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
             recipient_bar_color: stream_color.get_recipient_bar_color(draft_stream_color),
             stream_privacy_icon_color:
                 stream_color.get_stream_privacy_icon_color(draft_stream_color),
-            topic: draft_topic,
+            topic_display_name: draft_topic_display_name,
+            is_empty_string_topic: draft.topic === "",
             raw_content: draft.content,
             stream_id: draft.stream_id,
             time_stamp,

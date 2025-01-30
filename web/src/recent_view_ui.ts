@@ -57,7 +57,7 @@ let filters_dropdown_widget: dropdown_widget.DropdownWidget;
 export let is_backfill_in_progress = false;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
-const MAX_AVATAR = 4;
+let max_avatars = 4;
 const MAX_EXTRA_SENDERS = 10;
 
 // Use this to set the focused element.
@@ -369,6 +369,12 @@ export function get_focused_row_message(): Message | undefined {
 
         const $topic_rows = $("#recent-view-content-tbody tr");
         const $topic_row = $topic_rows.eq(row_focus);
+        if ($topic_row.length === 0) {
+            // There are less items in the table than `row_focus`.
+            // We don't reset `row_focus` here since that is not the
+            // purpose of this function.
+            return undefined;
+        }
         const topic_id = $topic_row.attr("id");
         assert(topic_id !== undefined);
         const conversation_id = topic_id.slice(recent_conversation_key_prefix.length);
@@ -534,6 +540,52 @@ export function get_pm_tooltip_data(user_ids_string: string): buddy_data.TitleDa
     };
 }
 
+type AvatarsContext = {
+    senders: people.SenderInfo[];
+    other_sender_names_html: string;
+    other_senders_count: number;
+};
+
+function get_avatars_context(all_senders: number[]): AvatarsContext {
+    // Show the all avatars rather than `max_avatars` + 1.
+    const max_space_for_avatars = max_avatars + 1;
+    if (all_senders.length <= max_space_for_avatars) {
+        return {
+            senders: people.sender_info_for_recent_view_row(all_senders),
+            other_sender_names_html: "",
+            other_senders_count: 0,
+        };
+    }
+    const senders = all_senders.slice(-max_avatars);
+    const extra_sender_ids = all_senders.slice(0, -max_avatars);
+    const displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
+    const other_senders_count = Math.max(0, all_senders.length - max_avatars);
+    // Collect extra sender fullname for tooltip
+    const displayed_other_names = people.get_display_full_names(displayed_other_senders.reverse());
+    if (extra_sender_ids.length > MAX_EXTRA_SENDERS) {
+        // We display only 10 extra senders in tooltips,
+        // and just display remaining number of senders.
+        const remaining_senders = extra_sender_ids.length - MAX_EXTRA_SENDERS;
+        // Pluralization syntax from:
+        // https://formatjs.io/docs/core-concepts/icu-syntax/#plural-format
+        displayed_other_names.push(
+            $t(
+                {
+                    defaultMessage:
+                        "and {remaining_senders, plural, one {1 other} other {# others}}.",
+                },
+                {remaining_senders},
+            ),
+        );
+    }
+
+    return {
+        senders: people.sender_info_for_recent_view_row(senders),
+        other_sender_names_html: displayed_other_names.map((name) => _.escape(name)).join("<br />"),
+        other_senders_count,
+    };
+}
+
 type ConversationContext = {
     full_last_msg_date_time: string;
     conversation_key: string;
@@ -564,6 +616,8 @@ type ConversationContext = {
           invite_only: boolean;
           is_web_public: boolean;
           topic: string;
+          topic_display_name: string;
+          is_empty_string_topic: boolean;
           topic_url: string;
           mention_in_unread: boolean;
           visibility_policy: number | false;
@@ -587,9 +641,6 @@ function format_conversation(conversation_data: ConversationData): ConversationC
     const last_msg_time = timerender.relative_time_string_from_date(time);
     const is_private = last_msg.type === "private";
     let all_senders;
-    let senders;
-    let displayed_other_senders;
-    let extra_sender_ids;
 
     let stream_context;
     let dm_context;
@@ -605,6 +656,8 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const is_web_public = stream_info.is_web_public;
         // Topic info
         const topic = last_msg.topic;
+        const topic_display_name = util.get_final_topic_display_name(topic);
+        const is_empty_string_topic = topic === "";
         const topic_url = hash_util.by_stream_topic_url(stream_id, topic);
 
         // We hide the row according to filters or if it's muted.
@@ -622,11 +675,6 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // we provide our handlebars with senders in opposite order.
         // Display in most recent sender first order.
         all_senders = recent_senders.get_topic_recent_senders(stream_id, topic).reverse();
-        senders = all_senders.slice(-MAX_AVATAR);
-
-        // Collect extra sender fullname for tooltip
-        extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
-        displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
 
         stream_context = {
             stream_id,
@@ -636,6 +684,8 @@ function format_conversation(conversation_data: ConversationData): ConversationC
             invite_only,
             is_web_public,
             topic,
+            topic_display_name,
+            is_empty_string_topic,
             topic_url,
             mention_in_unread,
             visibility_policy,
@@ -683,10 +733,6 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // styling, but it's important to not destroy the information of "who's actually
         // talked".
         all_senders = recent_senders.get_pm_recent_senders(user_ids_string).participants.reverse();
-        senders = all_senders.slice(-MAX_AVATAR);
-        // Collect extra senders fullname for tooltip.
-        extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
-        displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
 
         dm_context = {
             user_ids_string,
@@ -699,37 +745,15 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         };
     }
 
-    extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
-    const displayed_other_names = people.get_display_full_names(displayed_other_senders.reverse());
-
-    if (extra_sender_ids.length > MAX_EXTRA_SENDERS) {
-        // We display only 10 extra senders in tooltips,
-        // and just display remaining number of senders.
-        const remaining_senders = extra_sender_ids.length - MAX_EXTRA_SENDERS;
-        // Pluralization syntax from:
-        // https://formatjs.io/docs/core-concepts/icu-syntax/#plural-format
-        displayed_other_names.push(
-            $t(
-                {
-                    defaultMessage:
-                        "and {remaining_senders, plural, one {1 other} other {# others}}.",
-                },
-                {remaining_senders},
-            ),
-        );
-    }
-
     const shared_context = {
         full_last_msg_date_time,
         conversation_key,
         unread_count,
         last_msg_time,
-        senders: people.sender_info_for_recent_view_row(senders),
-        other_senders_count: Math.max(0, all_senders.length - MAX_AVATAR),
-        other_sender_names_html: displayed_other_names.map((name) => _.escape(name)).join("<br />"),
         last_msg_url: hash_util.by_conversation_and_time_url(last_msg),
         is_spectator: page_params.is_spectator,
         column_indexes: COLUMNS,
+        ...get_avatars_context(all_senders),
     };
     if (is_private) {
         assert(dm_context !== undefined);
@@ -780,7 +804,8 @@ export function topic_in_search_results(
     if (keyword === "") {
         return true;
     }
-    const text = (stream_name + " " + topic).toLowerCase();
+    const topic_display_name = util.get_final_topic_display_name(topic);
+    const text = (stream_name + " " + topic_display_name).toLowerCase();
     return typeahead.query_matches_string_in_any_order(keyword, text, " ");
 }
 
@@ -1284,6 +1309,10 @@ function get_list_data_for_widget(): ConversationData[] {
 export function complete_rerender(): void {
     if (!recent_view_util.is_visible()) {
         return;
+    }
+
+    if (!page_params.is_node_test) {
+        max_avatars = Number.parseInt($("html").css("--recent-view-max-avatars"), 10);
     }
 
     // Show topics list
