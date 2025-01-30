@@ -192,7 +192,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
 
         # Re-thumbnail with a non-overlapping set of sizes
         with self.thumbnail_formats(ThumbnailFormat("jpg", 100, 75, animated=False)):
-            ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id), "image/gif")
+            ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id))
 
         # We generate a new size but leave the old ones
         self.assert_length(ImageAttachment.objects.get(path_id=path_id).thumbnail_metadata, 3)
@@ -227,7 +227,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
         )
 
         # Complete thumbnailing the second image first -- replacing only that spinner
-        ensure_thumbnails(ImageAttachment.objects.get(path_id=second_path_id), "image/jpeg")
+        ensure_thumbnails(ImageAttachment.objects.get(path_id=second_path_id))
         self.assert_message_content_is(
             message_id,
             (
@@ -247,7 +247,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
         )
 
         # Finish the other thumbnail
-        ensure_thumbnails(ImageAttachment.objects.get(path_id=first_path_id), "image/png")
+        ensure_thumbnails(ImageAttachment.objects.get(path_id=first_path_id))
         self.assert_message_content_is(
             message_id,
             (
@@ -283,7 +283,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
 
         # Completing rendering after it is deleted should work, and
         # update the rendered content in the archived message
-        ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id), "image/png")
+        ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id))
         expected = (
             f'<p><a href="/user_uploads/{path_id}">image</a></p>\n'
             f'<div class="message_inline_image"><a href="/user_uploads/{path_id}" title="image">'
@@ -313,7 +313,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
             ) as thumb_mock,
             self.assertLogs("zerver.worker.thumbnail", "ERROR") as thumbnail_logs,
         ):
-            ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id), "image/png")
+            ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id))
             thumb_mock.assert_called_once()
         self.assert_length(thumbnail_logs.output, 1)
         self.assertTrue(
@@ -360,7 +360,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
                 ThumbnailFormat("webp", 200, 150, animated=False),
             ),
         ):
-            ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id), "image/png")
+            ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id))
 
         # Called once per format
         self.assertEqual(thumb_mock.call_count, 2)
@@ -410,7 +410,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
 
         # Thumbnail the image.  The message does not exist yet, so
         # nothing is re-written.
-        ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id), "image/png")
+        ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id))
 
         # Send the message; this should re-check the ImageAttachment
         # data, find the thumbnails, and update the rendered_content
