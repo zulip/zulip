@@ -114,6 +114,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
     const stream_unread = unread.unread_count_info_for_stream(stream_id);
     const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
     const has_unread_messages = stream_unread_count > 0;
+    const is_stream_archived = stream_data.is_stream_archived(stream_id);
     const content = render_left_sidebar_stream_actions_popover({
         stream: {
             ...sub_store.get(stream_id),
@@ -123,6 +124,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
         has_unread_messages,
         show_go_to_channel_feed,
         show_go_to_list_of_topics,
+        is_stream_archived,
     });
 
     popover_menus.toggle_popover_menu(elt, {
