@@ -106,6 +106,48 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_error(result, "Bad name or username")
         self.assert_num_bots_equal(0)
 
+    def test_bot_role_inference(self) -> None:
+        self.login("iago")
+        admin_bot_info = dict(
+            full_name="My adminTestBot name",
+            short_name="adminTestBot",
+            bot_type=1,
+        )
+        admin_result = self.client_post("/json/bots", admin_bot_info)
+        self.assert_json_success(admin_result)
+        admin_bot_user_id = admin_result.json()["user_id"]
+        self.logout()
+        self.login("AARON")
+        member_bot_info = dict(
+            full_name="My MemberTestBot name",
+            short_name="memberTestBot",
+            bot_type=1,
+        )
+        member_result = self.client_post("/json/bots", member_bot_info)
+        self.assert_json_success(member_result)
+        member_bot_user_id = member_result.json()["user_id"]
+        response = self.client_get("/json/users")
+        self.assert_json_success(response)
+        users = response.json()["members"]
+
+        admin_bot = next((user for user in users if user["user_id"] == admin_bot_user_id), None)
+        member_bot = next((user for user in users if user["user_id"] == member_bot_user_id), None)
+
+        self.assertIsNotNone(admin_bot, "Admin bot not found in users list.")
+        self.assertIsNotNone(member_bot, "Member bot not found in users list")
+
+        assert admin_bot is not None  # For type checking
+        assert member_bot is not None  # For type checking
+
+        self.assertEqual(admin_bot.get("role"), 200, "Admin bot role mismatch.")
+        self.assertEqual(member_bot.get("role"), 400, "Member bot role mismatch.")
+        self.assertEqual(admin_bot["full_name"], "My adminTestBot name", "Admin bot name mismatch.")
+        self.assertEqual(admin_bot["bot_type"], 1, "Admin bot type mismatch.")
+        self.assertEqual(
+            member_bot["full_name"], "My MemberTestBot name", "Member bot name mismatch."
+        )
+        self.assertEqual(member_bot["bot_type"], 1, "Member bot type mismatch.")
+
     @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_add_bot_with_invalid_fake_email_domain(self) -> None:
         self.login("hamlet")
