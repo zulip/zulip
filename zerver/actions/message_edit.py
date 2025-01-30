@@ -53,6 +53,7 @@ from zerver.lib.streams import (
     access_stream_by_id_for_message,
     can_access_stream_history,
     check_stream_access_based_on_can_send_message_group,
+    notify_stream_is_recently_active_update,
 )
 from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -86,7 +87,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.streams import get_stream_by_id_in_realm
-from zerver.models.users import active_user_ids, get_system_bot
+from zerver.models.users import get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -1526,14 +1527,6 @@ def check_update_message(
         if is_stream_active != new_stream.is_recently_active:
             new_stream.is_recently_active = is_stream_active
             new_stream.save(update_fields=["is_recently_active"])
-            event = dict(
-                type="stream",
-                op="update",
-                property="is_recently_active",
-                value=is_stream_active,
-                stream_id=stream_id,
-                name=new_stream.name,
-            )
-            send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+            notify_stream_is_recently_active_update(new_stream, is_stream_active)
 
     return updated_message_result

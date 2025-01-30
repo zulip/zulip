@@ -65,7 +65,12 @@ from zerver.lib.stream_subscription import (
     num_subscribers_for_stream_id,
 )
 from zerver.lib.stream_topic import StreamTopicTarget
-from zerver.lib.streams import access_stream_for_send_message, ensure_stream, subscribed_to_stream
+from zerver.lib.streams import (
+    access_stream_for_send_message,
+    ensure_stream,
+    notify_stream_is_recently_active_update,
+    subscribed_to_stream,
+)
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -102,12 +107,7 @@ from zerver.models.streams import (
     get_stream_by_id_for_sending_message,
     get_stream_by_name_for_sending_message,
 )
-from zerver.models.users import (
-    active_user_ids,
-    get_system_bot,
-    get_user_by_delivery_email,
-    is_cross_realm_bot_email,
-)
+from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -1179,17 +1179,7 @@ def do_send_messages(
             if not send_request.stream.is_recently_active:
                 send_request.stream.is_recently_active = True
                 stream_update_fields.append("is_recently_active")
-                stream_update_event = dict(
-                    type="stream",
-                    op="update",
-                    property="is_recently_active",
-                    value=True,
-                    stream_id=send_request.stream.id,
-                    name=send_request.stream.name,
-                )
-                send_event_on_commit(
-                    send_request.realm, stream_update_event, active_user_ids(send_request.realm.id)
-                )
+                notify_stream_is_recently_active_update(send_request.stream, True)
 
             if len(stream_update_fields) > 0:
                 send_request.stream.save(update_fields=stream_update_fields)

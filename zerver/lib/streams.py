@@ -1540,6 +1540,19 @@ def get_subscribed_private_streams_for_user(user_profile: UserProfile) -> QueryS
     return subscribed_private_streams
 
 
+def notify_stream_is_recently_active_update(stream: Stream, value: bool) -> None:
+    event = dict(
+        type="stream",
+        op="update",
+        property="is_recently_active",
+        value=value,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+
+    send_event_on_commit(stream.realm, event, active_user_ids(stream.realm_id))
+
+
 @transaction.atomic(durable=True)
 def update_stream_active_status_for_realm(realm: Realm, date_days_ago: datetime) -> int:
     recent_messages_subquery = Message.objects.filter(
@@ -1554,15 +1567,7 @@ def update_stream_active_status_for_realm(realm: Realm, date_days_ago: datetime)
 
     # Send events to notify the users about the change in the stream's active status.
     for stream in streams_to_mark_inactive:
-        event = dict(
-            type="stream",
-            op="update",
-            property="is_recently_active",
-            value=False,
-            stream_id=stream.id,
-            name=stream.name,
-        )
-        send_event_on_commit(stream.realm, event, active_user_ids(stream.realm_id))
+        notify_stream_is_recently_active_update(stream, False)
 
     count = streams_to_mark_inactive.update(is_recently_active=False)
     return count
