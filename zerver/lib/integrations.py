@@ -399,7 +399,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "github",
         ["version-control"],
         display_name="GitHub",
-        logo="images/integrations/logos/github.svg",
         function="zerver.webhooks.github.view.api_github_webhook",
         stream_name="github",
         config_options=[
@@ -561,7 +560,6 @@ INTEGRATIONS: dict[str, Integration] = {
     "jitsi": Integration(
         "jitsi",
         ["communication"],
-        logo="images/integrations/logos/jitsi.svg",
         display_name="Jitsi Meet",
         doc="zerver/integrations/jitsi.md",
     ),
@@ -619,7 +617,6 @@ INTEGRATIONS: dict[str, Integration] = {
     "zoom": Integration(
         "zoom",
         ["communication"],
-        logo="images/integrations/logos/zoom.svg",
         doc="zerver/integrations/zoom.md",
     ),
 }
