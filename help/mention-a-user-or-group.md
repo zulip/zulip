@@ -10,9 +10,9 @@
 
 {!start-composing.md!}
 
-2. Type `@` followed by a few letters from a name or email address.
+1. Type `@` followed by a few letters from a name or email address.
 
-3. Pick the appropriate user or user group from the autocomplete.
+1. Pick the appropriate user or user group from the autocomplete.
 
 {end_tabs}
 
