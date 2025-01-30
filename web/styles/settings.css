@@ -690,6 +690,14 @@ input[type="checkbox"] {
     }
 }
 
+.settings-profile-user-field.editable-date-field {
+    display: grid;
+    grid-template-areas: "datepicker close-button";
+    grid-template-columns: minmax(0, 1fr) 1.4285em; /* 20px at 14px em */
+    align-items: center;
+    width: 325px;
+}
+
 .control-label-disabled {
     color: hsl(0deg 0% 50%);
 }
@@ -1542,9 +1550,7 @@ label.preferences-radio-choice-label {
             opacity: 0.5;
             display: none;
             cursor: pointer;
-            position: relative;
-            top: 2px;
-            left: -20px;
+            grid-area: close-button;
 
             &:hover {
                 opacity: 1;
@@ -1553,6 +1559,10 @@ label.preferences-radio-choice-label {
 
         .datepicker {
             cursor: default;
+            padding-right: 1.4285em; /* 20px at 14px em */
+            /* full input width minus right padding and
+               6px left padding from .settings_text_input */
+            max-width: calc(325px - 1.4285em - 6px);
         }
 
         & input[disabled].datepicker {
