@@ -2,8 +2,11 @@
 
 {!admin-only.md!}
 
-Channel descriptions can be used to explain the purpose of a channel and link to
-usage guidelines, resources, or related channels.
+Channel descriptions can be used to explain the purpose of a channel, and link
+to usage guidelines, resources, or related channels. They appear in the
+navigation bar at the top of the web and desktop apps when you view the channel.
+You can hover over long channel descriptions with the mouse to view them in
+full.
 
 Channel descriptions support Zulip's standard [Markdown
 formatting][markdown-formatting], with the exception that image previews are
