@@ -1,6 +1,5 @@
 import * as blueslip from "./blueslip.ts";
 import type {Option} from "./dropdown_widget.ts";
-import {$t} from "./i18n.ts";
 import type {StateData} from "./state_data.ts";
 import * as util from "./util.ts";
 
@@ -11,7 +10,6 @@ export type SavedSnippet = {
     date_created: number;
 };
 
-export const ADD_SAVED_SNIPPET_OPTION_ID = -1;
 let saved_snippets_dict: Map<number, SavedSnippet>;
 
 export function get_saved_snippet_by_id(saved_snippet_id: number): SavedSnippet | undefined {
@@ -43,14 +41,6 @@ export function get_options_for_dropdown_widget(): Option[] {
         has_delete_icon: true,
     }));
 
-    // Option for creating a new saved snippet.
-    options.unshift({
-        unique_id: ADD_SAVED_SNIPPET_OPTION_ID,
-        name: $t({defaultMessage: "Add a new saved snippet"}),
-        description: "",
-        bold_current_selection: true,
-        has_delete_icon: false,
-    });
     return options;
 }
 

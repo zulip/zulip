@@ -1623,7 +1623,7 @@ textarea.new_message_textarea {
         flex-direction: column;
 
         .dropdown-list-item-name {
-            line-height: 15px;
+            line-height: 1.2em;
         }
 
         .dropdown-list-item-description {

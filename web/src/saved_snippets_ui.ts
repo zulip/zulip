@@ -10,7 +10,7 @@ import * as compose_ui from "./compose_ui.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as rows from "./rows.ts";
 import * as saved_snippets from "./saved_snippets.ts";
 import type {StateData} from "./state_data.ts";
@@ -63,6 +63,7 @@ function item_click_callback(
     event: JQuery.ClickEvent,
     dropdown: tippy.Instance,
     widget: dropdown_widget.DropdownWidget,
+    is_sticky_bottom_option_clicked: boolean,
 ): void {
     event.preventDefault();
     event.stopPropagation();
@@ -84,10 +85,7 @@ function item_click_callback(
     }
 
     dropdown.hide();
-    const current_value = widget.current_value;
-    assert(typeof current_value === "number");
-
-    // Get target textarea where the "Add saved snippet" button is clicked.
+    // Get target textarea where the "Insert saved snippet" button is clicked.
     const $target_element = $(dropdown.reference);
     let $target_textarea: JQuery<HTMLTextAreaElement>;
     let edit_message_id: string | undefined;
@@ -97,9 +95,9 @@ function item_click_callback(
     } else {
         $target_textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
     }
-    if (current_value === saved_snippets.ADD_SAVED_SNIPPET_OPTION_ID) {
+    if (is_sticky_bottom_option_clicked) {
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Add a new saved snippet"}),
+            html_heading: $t_html({defaultMessage: "Create a new saved snippet"}),
             html_body: render_add_saved_snippet_modal({
                 prepopulated_content: $target_textarea.val(),
             }),
@@ -112,6 +110,8 @@ function item_click_callback(
             post_render: saved_snippet_modal_post_render,
         });
     } else {
+        const current_value = widget.current_value;
+        assert(typeof current_value === "number");
         const saved_snippet = saved_snippets.get_saved_snippet_by_id(current_value);
         assert(saved_snippet !== undefined);
         const content = saved_snippet.content;
@@ -129,6 +129,9 @@ export const initialize = (params: StateData["saved_snippets"]): void => {
         item_click_callback,
         $events_container: $("body"),
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
+        sticky_bottom_option: $t({
+            defaultMessage: "Create a new saved snippet",
+        }),
         focus_target_on_hidden: false,
         prefer_top_start_placement: true,
         tippy_props: {
