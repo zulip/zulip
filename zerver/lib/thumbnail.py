@@ -9,14 +9,13 @@ from typing import TypeVar
 import pyvips
 from bs4 import BeautifulSoup
 from bs4.formatter import EntitySubstitution, HTMLFormatter
-from django.db.models import OuterRef, Subquery
 from django.utils.translation import gettext as _
 from typing_extensions import override
 
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.mime_types import INLINE_MIME_TYPES
 from zerver.lib.queue import queue_event_on_commit
-from zerver.models import Attachment, ImageAttachment
+from zerver.models import ImageAttachment
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
@@ -293,14 +292,14 @@ def resize_emoji(
 
 
 def missing_thumbnails(
-    image_attachment: ImageAttachment, original_content_type: str | None = None
+    image_attachment: ImageAttachment,
 ) -> list[ThumbnailFormat]:
     seen_thumbnails: set[StoredThumbnailFormat] = set()
     for existing_thumbnail in image_attachment.thumbnail_metadata:
         seen_thumbnails.add(StoredThumbnailFormat(**existing_thumbnail))
 
     potential_output_formats = list(THUMBNAIL_OUTPUT_FORMATS)
-    if original_content_type is None or original_content_type not in INLINE_MIME_TYPES:
+    if image_attachment.content_type not in INLINE_MIME_TYPES:
         if image_attachment.original_width_px >= image_attachment.original_height_px:
             additional_format = ThumbnailFormat(
                 TRANSCODED_IMAGE_FORMAT.extension,
@@ -368,6 +367,7 @@ def maybe_thumbnail(
                 original_height_px=height,
                 frames=image.get_n_pages(),
                 thumbnail_metadata=[],
+                content_type=content_type,
             )
             queue_event_on_commit("thumbnail", {"id": image_row.id})
             return image_row
@@ -415,15 +415,9 @@ def get_user_upload_previews(
 
     upload_preview_data: dict[str, MarkdownImageMetadata] = {}
 
-    image_attachments = (
-        ImageAttachment.objects.filter(realm_id=realm_id, path_id__in=path_ids)
-        .annotate(
-            original_content_type=Subquery(
-                Attachment.objects.filter(path_id=OuterRef("path_id")).values("content_type")
-            )
-        )
-        .order_by("id")
-    )
+    image_attachments = ImageAttachment.objects.filter(
+        realm_id=realm_id, path_id__in=path_ids
+    ).order_by("id")
     if lock:
         image_attachments = image_attachments.select_for_update(of=("self",))
     for image_attachment in image_attachments:
@@ -436,7 +430,7 @@ def get_user_upload_previews(
                 is_animated=False,
                 original_width_px=image_attachment.original_width_px,
                 original_height_px=image_attachment.original_height_px,
-                original_content_type=image_attachment.original_content_type,
+                original_content_type=image_attachment.content_type,
             )
 
             # We re-queue the row for thumbnailing to make sure that
@@ -454,10 +448,8 @@ def get_user_upload_previews(
                 is_animated=is_animated,
                 original_width_px=image_attachment.original_width_px,
                 original_height_px=image_attachment.original_height_px,
-                original_content_type=image_attachment.original_content_type,
-                transcoded_image=get_transcoded_format(
-                    image_attachment, image_attachment.original_content_type
-                ),
+                original_content_type=image_attachment.content_type,
+                transcoded_image=get_transcoded_format(image_attachment),
             )
     return upload_preview_data
 
@@ -484,7 +476,7 @@ def get_default_thumbnail_url(image_attachment: ImageAttachment) -> tuple[str, b
 
 
 def get_transcoded_format(
-    image_attachment: ImageAttachment, original_content_type: str | None
+    image_attachment: ImageAttachment,
 ) -> StoredThumbnailFormat | None:
     # Returns None if the original content-type is judged to be
     # renderable inline.  Otherwise, we return the largest thumbnail
@@ -492,7 +484,7 @@ def get_transcoded_format(
     # not in INLINE_MIME_TYPES get an extra large-resolution thumbnail
     # added to their list of formats, this is thus either None or a
     # high-resolution thumbnail.
-    if original_content_type is None or original_content_type in INLINE_MIME_TYPES:
+    if image_attachment.content_type is None or image_attachment.content_type in INLINE_MIME_TYPES:
         return None
 
     thumbs_by_size = sorted(
