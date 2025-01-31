@@ -651,6 +651,21 @@ export function update_setting_in_group_permissions_panel(
         if ($subsection.find(".input-group").length === 0) {
             $subsection.addClass("hide");
         }
+
+        // Hide the "Organization permissions", "Channel permissions" or
+        // "User group permissions", if there are no assigned permissions
+        // for that section.
+        if ($subsection.closest(".group-permissions-section").find(".input-group").length === 0) {
+            $subsection.closest(".group-permissions-section").addClass("hide");
+        }
+
+        // Show the text mentioning group has no permissions if required.
+        if ($subsection.closest(".group-assigned-permissions").find(".input-group").length === 0) {
+            $subsection
+                .closest(".group-assigned-permissions")
+                .find(".no-permissions-for-group-text")
+                .removeClass("hide");
+        }
     }
 }
 
