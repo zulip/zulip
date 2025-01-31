@@ -1002,7 +1002,13 @@ export function process_hotkey(e, hotkey) {
             );
             return true;
         case "query_streams":
-            stream_list.initiate_search();
+            if (pm_list.is_zoomed_in()) {
+                pm_list.focus_pm_search_filter();
+            } else if (stream_list.is_zoomed_in()) {
+                topic_list.focus_topic_search_filter();
+            } else {
+                stream_list.initiate_search();
+            }
             return true;
         case "query_users":
             activity_ui.initiate_search();
