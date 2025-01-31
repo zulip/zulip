@@ -129,9 +129,9 @@ Plurals are a complex detail of human language. In English, there are
 only two variants for how a word like "banana" might be spelled
 depending on the number of objects being discussed: "1 banana" and "2
 bananas". But languages vary greatly in how plurals work. For example,
-in Russian, the conjugation of word numbers
+in Russian, the form a noun takes
 [depends](https://en.wikipedia.org/wiki/Russian_declension#Declension_of_cardinal_numerals)
-on complex details like the last digit of the quantity.
+in part on the last digit of its quantity.
 
 To solve this problem, Zulip expresses plural strings using the
 standard [ICU MessageFormat][] syntax, which defines how the string
