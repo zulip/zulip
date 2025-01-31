@@ -1048,16 +1048,7 @@ export function initiate_search(): void {
 
     const $filter = $(".stream-list-filter").expectOne();
 
-    if (
-        // Check if left column is a overlay and is not visible.
-        $("#streamlist-toggle").is(":visible") &&
-        !sidebar_ui.left_sidebar_expanded_as_overlay
-    ) {
-        popovers.hide_all();
-        sidebar_ui.show_streamlist_sidebar();
-    } else if (!sidebar_ui.left_sidebar_expanded_as_overlay) {
-        $("body").removeClass("hide-left-sidebar");
-    }
+    sidebar_ui.show_left_sidebar();
     $filter.trigger("focus");
 
     stream_cursor.reset();

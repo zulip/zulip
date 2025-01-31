@@ -62,6 +62,7 @@ function clear_search_input() {
 
 run_test("basics", ({override, override_rewire}) => {
     override(popovers, "hide_all", noop);
+    override(sidebar_ui, "show_left_sidebar", noop);
 
     const $input = $(".stream-list-filter");
     const $section = $(".stream_search_section");
@@ -179,8 +180,8 @@ run_test("expanding_sidebar", ({override, override_rewire}) => {
         events.push("popovers.hide_all");
     });
 
-    override(sidebar_ui, "show_streamlist_sidebar", () => {
-        events.push("sidebar_ui.show_streamlist_sidebar");
+    override(sidebar_ui, "show_left_sidebar", () => {
+        events.push("popovers.hide_all", "sidebar_ui.show_streamlist_sidebar");
     });
 
     $("#streamlist-toggle").show();
