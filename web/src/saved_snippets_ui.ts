@@ -85,7 +85,7 @@ function item_click_callback(
     }
 
     dropdown.hide();
-    // Get target textarea where the "Insert saved snippet" button is clicked.
+    // Get target textarea where the "Add saved snippet" button is clicked.
     const $target_element = $(dropdown.reference);
     let $target_textarea: JQuery<HTMLTextAreaElement>;
     let edit_message_id: string | undefined;
