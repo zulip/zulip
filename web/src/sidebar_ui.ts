@@ -14,6 +14,7 @@ import * as message_lists from "./message_lists.ts";
 import * as message_viewport from "./message_viewport.ts";
 import {page_params} from "./page_params.ts";
 import * as popover_menus from "./popover_menus.ts";
+import * as popovers from "./popovers.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as resize from "./resize.ts";
 import * as settings_config from "./settings_config.ts";
@@ -71,6 +72,21 @@ export function show_streamlist_sidebar(): void {
     $(".app-main .column-left").addClass("expanded");
     resize.resize_stream_filters_container();
     left_sidebar_expanded_as_overlay = true;
+}
+
+// We use this to display left sidebar without setting
+// toggle status
+export function show_left_sidebar(): void {
+    if (
+        // Check if left column is a overlay and is not visible.
+        $("#streamlist-toggle").is(":visible") &&
+        !left_sidebar_expanded_as_overlay
+    ) {
+        popovers.hide_all();
+        show_streamlist_sidebar();
+    } else if (!left_sidebar_expanded_as_overlay) {
+        $("body").removeClass("hide-left-sidebar");
+    }
 }
 
 export function hide_streamlist_sidebar(): void {
