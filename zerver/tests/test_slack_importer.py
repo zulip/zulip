@@ -1322,6 +1322,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(attachment[0]["file_name"], "apple.png")
         self.assertEqual(attachment[0]["is_realm_public"], True)
         self.assertEqual(attachment[0]["is_web_public"], False)
+        self.assertEqual(attachment[0]["content_type"], "image/png")
 
         self.assertEqual(zerver_message[9]["has_image"], True)
         self.assertEqual(zerver_message[9]["has_attachment"], True)
