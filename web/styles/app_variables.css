@@ -527,6 +527,8 @@
     /* Overlay heights for streams modal */
     --overlay-container-height: 95vh;
     --overlay-container-max-height: 1000px;
+    /* The width of the settings sidebar. */
+    --settings-sidebar-width: 18.2142em; /* 255px at 14px/em */
     /* .subscriptions-header and .settings-header */
     --settings-overlay-header-height: 3.2142em; /* 45px at 14px/em */
     /* .display-type and .list-toggler-container
