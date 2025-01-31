@@ -9,7 +9,7 @@ message you're composing.
 
 {!start-composing.md!}
 
-1. Click the **Insert saved snippet** (<i class="zulip-icon
+1. Click the **Add saved snippet** (<i class="zulip-icon
    zulip-icon-message-square-text"></i>) icon at the bottom of the compose box to
    open the saved snippets menu.
 
@@ -33,7 +33,7 @@ message you're composing.
    compose box. You can [preview](/help/preview-your-message-before-sending) what
    it will look like once sent.
 
-1. Click the **Insert saved snippet** (<i class="zulip-icon
+1. Click the **Add saved snippet** (<i class="zulip-icon
    zulip-icon-message-square-text"></i>) icon at the bottom of the compose box to
    open the saved snippets menu.
 
@@ -60,7 +60,7 @@ message you're composing.
 
 {!start-composing.md!}
 
-1. Click the **Insert saved snippet** (<i class="zulip-icon
+1. Click the **Add saved snippet** (<i class="zulip-icon
    zulip-icon-message-square-text"></i>) icon at the bottom of the compose box to
    open the saved snippets menu.
 
