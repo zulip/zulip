@@ -2057,8 +2057,10 @@ def create_image_attachments_and_maybe_enqueue_thumbnailing(
         path_id = attachment["path_id"]
         content_type = attachment["content_type"]
 
-        # We don't have to go to S3 to obtain the file. We still have the export
-        # data on disk and stored the absolute path to it.
+        # Since we have it, use the on-disk version of the file to
+        # examine the header and determine if it needs thumbnailing;
+        # the actual thumbnail worker will still need to re-fetch the
+        # image from S3.
         local_filename = path_maps["new_attachment_path_to_local_data_path"][path_id]
         pyvips_source = pyvips.Source.new_from_file(local_filename)
         maybe_thumbnail(pyvips_source, content_type, path_id, realm.id)
