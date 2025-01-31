@@ -70,13 +70,10 @@
 
         <div class="group_setting_section" data-group-section="permissions">
             <div class="group-assigned-permissions">
-                {{#if group_has_no_permissions}}
-                    <span class="no-permissions-for-group-text">
-                        {{t 'This group has no assigned permissions.'}}
-                    </span>
-                {{else}}
-                    {{> group_permission_settings .}}
-                {{/if}}
+                <span class="no-permissions-for-group-text {{#unless group_has_no_permissions}}hide{{/unless}}">
+                    {{t 'This group has no assigned permissions.'}}
+                </span>
+                {{> group_permission_settings .}}
             </div>
         </div>
     </div>

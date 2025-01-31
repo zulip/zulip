@@ -1,5 +1,5 @@
 <div class="group-permissions">
-    <div class="realm-group-permissions {{#unless group_assigned_realm_permissions.length}}hide{{/unless}}">
+    <div class="realm-group-permissions group-permissions-section {{#unless group_assigned_realm_permissions.length}}hide{{/unless}}">
         <h3>{{t "Organization permissions"}}</h3>
 
         {{#each group_assigned_realm_permissions}}
@@ -24,7 +24,7 @@
         {{/each}}
     </div>
 
-    <div class="channel-group-permissions {{#unless group_assigned_stream_permissions.length}}hide{{/unless}}">
+    <div class="channel-group-permissions group-permissions-section {{#unless group_assigned_stream_permissions.length}}hide{{/unless}}">
         <h3>{{t "Channel permissions"}}</h3>
 
         {{#each group_assigned_stream_permissions}}
@@ -52,7 +52,7 @@
         {{/each}}
     </div>
 
-    <div class="user-group-permissions {{#unless group_assigned_user_group_permissions.length}}hide{{/unless}}">
+    <div class="user-group-permissions group-permissions-section {{#unless group_assigned_user_group_permissions.length}}hide{{/unless}}">
         <h3>{{t "User group permissions"}}</h3>
 
         {{#each group_assigned_user_group_permissions}}
