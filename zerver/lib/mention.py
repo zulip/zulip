@@ -13,7 +13,7 @@ from zerver.lib.user_groups import get_root_id_annotated_recursive_subgroups_for
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.groups import SystemGroups
-from zerver.models.streams import get_linkable_streams
+from zerver.models.streams import Stream
 
 BEFORE_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\[\/<])"
 
@@ -162,7 +162,7 @@ class MentionBackend:
         q_list = {Q(name=name) for name in unseen_stream_names}
         if acting_user is None:
             rows = (
-                get_linkable_streams(
+                Stream.objects.filter(
                     realm_id=self.realm_id,
                 )
                 .filter(
@@ -180,7 +180,7 @@ class MentionBackend:
             authorization = filter_stream_authorization(
                 acting_user,
                 list(
-                    get_linkable_streams(
+                    Stream.objects.filter(
                         realm_id=self.realm_id,
                     ).filter(
                         functools.reduce(lambda a, b: a | b, q_list),
