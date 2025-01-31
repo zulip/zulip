@@ -71,7 +71,7 @@
     justify-content: center;
 }
 
-@container (width >= 44em) and (width < 63em) {
+@container banner (width >= 44em) and (width < 63em) {
     .navbar-alert-banner[data-process="desktop-notifications"] {
         grid-template: var(--banner-grid-template-rows-md) / var(
                 --banner-grid-template-columns-md
@@ -81,7 +81,7 @@
     }
 }
 
-@container (width < 44em) {
+@container banner (width < 44em) {
     .banner {
         grid-template: var(--banner-grid-template-rows-md) / var(
                 --banner-grid-template-columns-md
@@ -99,7 +99,7 @@
     }
 }
 
-@container (width < 25em) {
+@container banner (width < 25em) {
     .banner {
         grid-template-areas: var(--banner-grid-template-areas-sm);
     }
