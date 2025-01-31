@@ -354,7 +354,7 @@ def fetch_initial_state_data(
         # can be removed once there are no longer clients relying on it.
         state["realm_url"] = state["realm_uri"] = realm.url
         state["realm_bot_domain"] = realm.get_bot_domain()
-        state["realm_available_video_chat_providers"] = realm.VIDEO_CHAT_PROVIDERS
+        state["realm_available_video_chat_providers"] = realm.get_enabled_video_chat_providers()
         state["settings_send_digest_emails"] = settings.SEND_DIGEST_EMAILS
 
         state["realm_digest_emails_enabled"] = (

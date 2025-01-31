@@ -99,6 +99,11 @@ class OrgTypeDict(TypedDict):
     onboarding_zulip_guide_url: str | None
 
 
+class VideoChatProviderDict(TypedDict):
+    name: str
+    id: int
+
+
 class CommonPolicyEnum(IntEnum):
     MEMBERS_ONLY = 1
     ADMINS_ONLY = 2
@@ -554,7 +559,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     UPLOAD_QUOTA_STANDARD_FREE = 50
     custom_upload_quota_gb = models.IntegerField(null=True)
 
-    VIDEO_CHAT_PROVIDERS = {
+    VIDEO_CHAT_PROVIDERS: dict[str, VideoChatProviderDict] = {
         "disabled": {
             "name": "None",
             "id": 0,
@@ -564,18 +569,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             "id": 1,
         },
         # ID 2 was used for the now-deleted Google Hangouts.
-        # ID 3 reserved for optional Zoom, see below.
-        # ID 4 reserved for optional BigBlueButton, see below.
-    }
-
-    if settings.VIDEO_ZOOM_CLIENT_ID is not None and settings.VIDEO_ZOOM_CLIENT_SECRET is not None:
-        VIDEO_CHAT_PROVIDERS["zoom"] = {
+        "zoom": {
             "name": "Zoom",
             "id": 3,
-        }
-
-    if settings.BIG_BLUE_BUTTON_SECRET is not None and settings.BIG_BLUE_BUTTON_URL is not None:
-        VIDEO_CHAT_PROVIDERS["big_blue_button"] = {"name": "BigBlueButton", "id": 4}
+        },
+        "big_blue_button": {
+            "name": "BigBlueButton",
+            "id": 4,
+        },
+    }
 
     video_chat_provider = models.PositiveSmallIntegerField(
         default=VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
@@ -936,6 +938,20 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     def get_bot_domain(self) -> str:
         return get_fake_email_domain(self.host)
+
+    def get_enabled_video_chat_providers(self) -> dict[str, VideoChatProviderDict]:
+        enabled_video_chat_providers: dict[str, VideoChatProviderDict] = {}
+        for provider in self.VIDEO_CHAT_PROVIDERS:
+            if provider == "zoom" and (
+                settings.VIDEO_ZOOM_CLIENT_ID is None or settings.VIDEO_ZOOM_CLIENT_SECRET is None
+            ):
+                continue
+            if provider == "big_blue_button" and (
+                settings.BIG_BLUE_BUTTON_SECRET is None or settings.BIG_BLUE_BUTTON_URL is None
+            ):
+                continue
+            enabled_video_chat_providers[provider] = self.VIDEO_CHAT_PROVIDERS[provider]
+        return enabled_video_chat_providers
 
     @property
     def max_invites(self) -> int:
