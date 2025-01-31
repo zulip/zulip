@@ -57,8 +57,9 @@ You can see all your direct messages in one place.
 
 {tab|desktop-web}
 
-1. Click on the **Direct message feed** (<i class="fa fa-align-right"></i>)
-   icon next to **DIRECT MESSAGES** in the left sidebar.
+1. Click on the **Direct message feed** (<i class="zulip-icon
+   zulip-icon-all-messages"></i>) icon next to **DIRECT MESSAGES** in the left
+   sidebar.
 
 1. Read your direct messages, starting from your first unread message. You can
    scroll using your mouse, the arrow keys, <kbd>End</kbd>, or page up/down.
