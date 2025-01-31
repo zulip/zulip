@@ -8,6 +8,7 @@ from django.conf import settings
 from django.db.models import Q
 from django_stubs_ext import StrPromise
 
+from zerver.lib.streams import filter_stream_authorization
 from zerver.lib.user_groups import get_root_id_annotated_recursive_subgroups_for_groups
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import NamedUserGroup, UserProfile
@@ -140,7 +141,9 @@ class MentionBackend:
 
         return result
 
-    def get_stream_name_map(self, stream_names: set[str]) -> dict[str, int]:
+    def get_stream_name_map(
+        self, stream_names: set[str], acting_user: UserProfile | None
+    ) -> dict[str, int]:
         if not stream_names:
             return {}
 
@@ -153,9 +156,11 @@ class MentionBackend:
             else:
                 unseen_stream_names.append(stream_name)
 
-        if unseen_stream_names:
-            q_list = {Q(name=name) for name in unseen_stream_names}
+        if not unseen_stream_names:
+            return result
 
+        q_list = {Q(name=name) for name in unseen_stream_names}
+        if acting_user is None:
             rows = (
                 get_linkable_streams(
                     realm_id=self.realm_id,
@@ -168,10 +173,24 @@ class MentionBackend:
                     "name",
                 )
             )
-
             for row in rows:
                 self.stream_cache[row["name"]] = row["id"]
                 result[row["name"]] = row["id"]
+        else:
+            authorization = filter_stream_authorization(
+                acting_user,
+                list(
+                    get_linkable_streams(
+                        realm_id=self.realm_id,
+                    ).filter(
+                        functools.reduce(lambda a, b: a | b, q_list),
+                    )
+                ),
+                is_subscribing_other_users=False,
+            )
+            for stream in authorization.authorized_streams:
+                self.stream_cache[stream.name] = stream.id
+                result[stream.name] = stream.id
 
         return result
 
@@ -334,8 +353,10 @@ class MentionData:
     def get_group_members(self, user_group_id: int) -> set[int]:
         return self.user_group_members.get(user_group_id, set())
 
-    def get_stream_name_map(self, stream_names: set[str]) -> dict[str, int]:
-        return self.mention_backend.get_stream_name_map(stream_names)
+    def get_stream_name_map(
+        self, stream_names: set[str], acting_user: UserProfile | None
+    ) -> dict[str, int]:
+        return self.mention_backend.get_stream_name_map(stream_names, acting_user=acting_user)
 
 
 def silent_mention_syntax_for_user(user_profile: UserProfile) -> str:

@@ -15,7 +15,6 @@ from zerver.lib.exceptions import (
     JsonableError,
     OrganizationOwnerRequiredError,
 )
-from zerver.lib.markdown import markdown_convert
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_subscribed_stream_ids_for_user,
@@ -128,6 +127,8 @@ def get_default_value_for_history_public_to_subscribers(
 
 
 def render_stream_description(text: str, realm: Realm) -> str:
+    from zerver.lib.markdown import markdown_convert
+
     return markdown_convert(text, message_realm=realm, no_previews=True).rendered_content
 
 
