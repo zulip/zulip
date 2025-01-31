@@ -497,7 +497,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         else:
             if message_content_disabled_by_realm:
                 verify_body_include = [
-                    "This email does not include message content because your organization has disabled",
+                    "This email does not include message content because your organization",
                     "http://zulip.testserver/help/hide-message-content-in-emails",
                     "View or reply in Zulip Dev Zulip",
                     " Manage email preferences: http://zulip.testserver/#settings/notifications",
