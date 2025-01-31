@@ -2740,15 +2740,18 @@ def do_convert(
         # the fetches are somewhat expensive and these types of syntax
         # are uncommon enough that it's a useful optimization.
 
+        message_sender = None
+        if message is not None:
+            message_sender = message.sender
+
         if mention_data is None:
             mention_backend = MentionBackend(message_realm.id)
-            message_sender = None
-            if message is not None:
-                message_sender = message.sender
             mention_data = MentionData(mention_backend, content, message_sender)
 
         stream_names = possible_linked_stream_names(content)
-        stream_name_info = mention_data.get_stream_name_map(stream_names)
+        stream_name_info = mention_data.get_stream_name_map(
+            stream_names, acting_user=message_sender
+        )
 
         if content_has_emoji_syntax(content):
             active_realm_emoji = get_name_keyed_dict_for_active_realm_emoji(message_realm.id)
