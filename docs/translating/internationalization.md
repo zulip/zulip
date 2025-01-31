@@ -58,7 +58,7 @@ have to be careful in exactly what you tag, and how you split things up:
   after the variable.
 - **Strings with numerals** (e.g., "5 bananas") work quite differently between
   languages, so double-check your work when tagging strings with numerals for
-  translation.
+  translation. See the [plurals](#plurals-and-lists) section below for details.
 
 Note also that we have a "sentence case" [capitalization
 policy](translating.md#capitalization) that we enforce using linters that check
@@ -83,6 +83,9 @@ A few general notes:
 We use the [FormatJS][] library for translations in the Zulip web app,
 both in [Handlebars][] templates and JavaScript.
 
+FormatJS uses the standard [ICU MessageFormat][], which includes
+useful features such as [plural translations](#plurals-and-lists).
+
 To mark a string translatable in JavaScript files, pass it to the
 `intl.formatMessage` function, which we alias to `$t` in `intl.js`:
 
@@ -98,16 +101,12 @@ variables can be interpolated by enclosing them in braces (like
 $t({defaultMessage: "English text with a {variable}"}, {variable: "Variable value"})
 ```
 
-FormatJS uses the standard [ICU MessageFormat][], which includes
-useful features such as plural translations.
-
 `$t` does not escape any variables, so if your translated string is
 eventually going to be used as HTML, use `$t_html` instead.
 
 ```js
-$("#foo").html(
-    $t_html({defaultMessage: "HTML with a {variable}"}, {variable: "Variable value"})
-);
+html_content = $t_html({defaultMessage: "HTML with a {variable}"}, {variable: "Variable value"});
+$("#foo").html(html_content);
 ```
 
 The only HTML tags allowed directly in translated strings are the
@@ -115,7 +114,7 @@ simple HTML tags enumerated in `default_html_elements`
 (`web/src/i18n.ts`) with no attributes. This helps to avoid
 exposing HTML details to translators. If you need to include more
 complex markup such as a link, you can define a custom HTML tag
-locally to the translation:
+locally to the translation, or use a Handlebars template:
 
 ```js
 $t_html(
@@ -123,6 +122,48 @@ $t_html(
     {"z-link": (content_html) => `<a href="/login/">${content_html.join("")}</a>`},
 )
 ```
+
+#### Plurals and lists
+
+Plurals are a complex detail of human language. In English, there are
+only two variants for how a word like "banana" might be spelled
+depending on the number of objects being discussed: "1 banana" and "2
+bananas". But languages vary greatly in how plurals work. For example,
+in Russian, the conjugation of word numbers
+[depends](https://en.wikipedia.org/wiki/Russian_declension#Declension_of_cardinal_numerals)
+on complex details like the last digit of the quantity.
+
+To solve this problem, Zulip expresses plural strings using the
+standard [ICU MessageFormat][] syntax, which defines how the string
+varies depending on whether there's one item or many in English:
+
+```js
+"{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}"
+```
+
+Translators are then able to write a translation using this same
+syntax, potentially using a different set of cases, like this Russian
+translation, which varies the string based on whether there was 1,
+few, or many items:
+
+```js
+"{N, plural, one {Готово! {N} сообщение помечено как прочитанное.} few {Готово! {N} сообщений помечены как прочитанные.} many {Готово! {N} сообщений помечены как прочитанные.} other {Готово! {N} сообщений помечены как прочитанные.}}"
+```
+
+You don't need to understand how to write Russian plurals. As a
+developer, you just need to write the correct ICU plurals for English,
+which will always just have singular and plural variants, and
+translators can take care of the rest.
+
+Nonetheless, even the English format takes some concentration to
+read. So when designing UI, we generally try to avoid unnecessarily
+writing strings that require plurals in favor of other ways to present
+information, like displaying an icon with a number next to it.
+
+Languages differ greatly in how to construct a list of the form "foo,
+bar, and baz". Some languages don't use commas! The web application
+has a handy `util.format_array_as_list` function for correctly doing
+this using the `Intl` module; use `git grep` to find examples.
 
 #### Handlebars templates
 
