@@ -1098,7 +1098,13 @@ class SlackImporter(ZulipTestCase):
         user_data = [
             {"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
             {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},
-            {"id": "U061A1R2R", "name": "jon", "deleted": False, "real_name": "Jon"},
+            {
+                "id": "U061A1R2R",
+                "name": "jon",
+                "deleted": False,
+                "real_name": "Jon",
+                "profile": {"email": "jon@example.com"},
+            },
         ]
 
         slack_user_id_to_zulip_user_id = {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
@@ -1193,6 +1199,24 @@ class SlackImporter(ZulipTestCase):
                 "ts": "1553607595.000700",
                 "pm_name": "DJ47BL849",
             },
+            {
+                "text": "Look!",
+                "user": "U061A1R2R",
+                "ts": "1553607596.000700",
+                "has_image": True,
+                "channel_name": "random",
+                "files": [
+                    {
+                        "url_private": "https://files.slack.com/apple.png",
+                        "title": "Apple",
+                        "name": "apple.png",
+                        "mimetype": "image/png",
+                        "timestamp": 9999,
+                        "created": 8888,
+                        "size": 3000000,
+                    }
+                ],
+            },
         ]
 
         slack_recipient_name_to_zulip_recipient_id = {
@@ -1236,10 +1260,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 9)
-
-        self.assertEqual(uploads, [])
-        self.assertEqual(attachment, [])
+        self.assert_length(zerver_message, 10)
 
         # Test reactions
         self.assertEqual(reaction[0]["user_profile"], 24)
@@ -1293,6 +1314,18 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[6]["sender"], 24)
         self.assertEqual(zerver_message[7]["sender"], 43)
         self.assertEqual(zerver_message[8]["sender"], 5)
+
+        # Test uploads
+        self.assert_length(uploads, 1)
+        self.assertEqual(uploads[0]["path"], "https://files.slack.com/apple.png")
+        self.assert_length(attachment, 1)
+        self.assertEqual(attachment[0]["file_name"], "apple.png")
+        self.assertEqual(attachment[0]["is_realm_public"], True)
+        self.assertEqual(attachment[0]["is_web_public"], False)
+
+        self.assertEqual(zerver_message[9]["has_image"], True)
+        self.assertEqual(zerver_message[9]["has_attachment"], True)
+        self.assertTrue(zerver_message[9]["content"].startswith("Look!\n[Apple](/user_uploads/"))
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_threads(
