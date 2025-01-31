@@ -245,7 +245,7 @@ export class Typeahead<ItemType extends string | object> {
     mouse_moved_since_typeahead = false;
     shown = false;
     // To trigger updater when Esc is pressed only during the stream topic typeahead in composebox.
-    escape_topic_completion = false;
+    select_on_escape_condition: () => boolean;
     openInputFieldOnKeyUp: (() => void) | undefined;
     closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
@@ -296,7 +296,7 @@ export class Typeahead<ItemType extends string | object> {
         // return a string to show in typeahead items or false.
         this.option_label = options.option_label ?? (() => false);
         this.stopAdvance = options.stopAdvance ?? false;
-        this.escape_topic_completion = options.escape_topic_completion ?? false;
+        this.select_on_escape_condition = options.select_on_escape_condition ?? (() => false);
         this.advanceKeys = options.advanceKeys ?? [];
         this.openInputFieldOnKeyUp = options.openInputFieldOnKeyUp;
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
@@ -754,9 +754,7 @@ export class Typeahead<ItemType extends string | object> {
                 break;
 
             case "Escape":
-                // TODO: escape_topic_completion should be scoped more narrowly.
-                // See https://github.com/zulip/zulip/pull/32217#discussion_r1934905517
-                if (this.escape_topic_completion) {
+                if (this.select_on_escape_condition()) {
                     this.select(e);
                 }
                 if (!this.shown) {
@@ -889,7 +887,7 @@ type TypeaheadOptions<ItemType> = {
     sorter: (items: ItemType[], query: string) => ItemType[];
     stopAdvance?: boolean;
     tabIsEnter?: boolean;
-    escape_topic_completion?: boolean;
+    select_on_escape_condition?: () => boolean;
     trigger_selection?: (event: JQuery.KeyDownEvent) => boolean;
     updater?: (
         item: ItemType,
