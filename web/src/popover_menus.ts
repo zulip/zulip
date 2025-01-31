@@ -7,6 +7,7 @@ import * as tippy from "tippy.js";
 
 import * as blueslip from "./blueslip.ts";
 import {media_breakpoints_num} from "./css_variables.ts";
+import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
 import * as popovers from "./popovers.ts";
@@ -399,7 +400,11 @@ function get_props_for_popover_centering(
 export function toggle_popover_menu(
     target: tippy.ReferenceElement,
     popover_props: Partial<tippy.Props>,
-    options?: {show_as_overlay_on_mobile: boolean; show_as_overlay_always: boolean},
+    options?: {
+        show_as_overlay_on_mobile: boolean;
+        show_as_overlay_always: boolean;
+        show_as_overlay_if_reference_hidden_at_trigger?: boolean;
+    },
 ): tippy.Instance {
     const instance = target._tippy;
     if (instance) {
@@ -411,11 +416,22 @@ export function toggle_popover_menu(
 
     // If the window is mobile-sized, we will render the
     // popover centered on the screen as an overlay.
-    if (
+    let show_as_overlay =
         (options?.show_as_overlay_on_mobile === true &&
             window.innerWidth <= media_breakpoints_num.md) ||
-        options?.show_as_overlay_always === true
-    ) {
+        options?.show_as_overlay_always === true;
+    // Show the popover as over if the reference element is hidden.
+    if (!show_as_overlay && options?.show_as_overlay_if_reference_hidden_at_trigger) {
+        const target_props = $(target).get_offset_to_window();
+        const viewport_info = message_viewport.message_viewport_info();
+        if (
+            target_props.top < viewport_info.visible_top ||
+            target_props.bottom > viewport_info.visible_bottom
+        ) {
+            show_as_overlay = true;
+        }
+    }
+    if (show_as_overlay) {
         mobile_popover_props = {
             ...get_props_for_popover_centering(popover_props),
         };
