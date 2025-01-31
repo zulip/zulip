@@ -188,7 +188,7 @@ def update_realm(
             raise JsonableError(_("At least one authentication method must be enabled."))
 
     if video_chat_provider is not None and video_chat_provider not in {
-        p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
+        p["id"] for p in realm.get_enabled_video_chat_providers().values()
     }:
         raise JsonableError(
             _("Invalid video_chat_provider {video_chat_provider}").format(
