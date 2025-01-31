@@ -1023,23 +1023,43 @@ class RealmTest(ZulipTestCase):
             get_realm("zulip").video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
         )
 
-        req = {
-            "video_chat_provider": orjson.dumps(
-                Realm.VIDEO_CHAT_PROVIDERS["big_blue_button"]["id"]
-            ).decode()
-        }
+        big_blue_button_provider_id = Realm.VIDEO_CHAT_PROVIDERS["big_blue_button"]["id"]
+        req = {"video_chat_provider": f"{big_blue_button_provider_id}"}
+        with self.settings(BIG_BLUE_BUTTON_SECRET=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {big_blue_button_provider_id}"
+            )
+
+        with self.settings(BIG_BLUE_BUTTON_URL=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {big_blue_button_provider_id}"
+            )
+
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
         self.assertEqual(
             get_realm("zulip").video_chat_provider,
-            Realm.VIDEO_CHAT_PROVIDERS["big_blue_button"]["id"],
+            big_blue_button_provider_id,
         )
 
-        req = {
-            "video_chat_provider": orjson.dumps(Realm.VIDEO_CHAT_PROVIDERS["zoom"]["id"]).decode()
-        }
+        zoom_provider_id = Realm.VIDEO_CHAT_PROVIDERS["zoom"]["id"]
+        req = {"video_chat_provider": f"{zoom_provider_id}"}
+        with self.settings(VIDEO_ZOOM_CLIENT_ID=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, f"Invalid video_chat_provider {zoom_provider_id}")
+
+        with self.settings(VIDEO_ZOOM_CLIENT_SECRET=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, f"Invalid video_chat_provider {zoom_provider_id}")
+
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
+        self.assertEqual(
+            get_realm("zulip").video_chat_provider,
+            zoom_provider_id,
+        )
 
     def test_data_deletion_schedule_when_deactivating_realm(self) -> None:
         self.login("desdemona")
