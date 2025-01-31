@@ -326,6 +326,22 @@ contributor?](#what-makes-a-great-zulip-contributor) below.
   assignee ends up submitting a pull request first, no worries! You can help by
   providing feedback on their work, or submit your own PR if you think a
   different approach is needed (as described above).
+- **Can I work on an old issue?** Of course! Open issues marked as “help wanted”
+  are generally eligible to be worked on. If you find that the context around
+  the issue has changed (e.g., the UI looks different), do your best to apply
+  the current patterns, and comment on any differences from the spec in your PR
+  description.
+
+  If picking up a bug, start by checking if you can replicate it. If it no longer
+  replicates, post a comment on the issue explaining how you tested the
+  behavior, and what you saw, with screenshots as appropriate. And if you _can_
+  replicate it, fixing it is great!
+
+  If you're starting a major project where the issue was filed more than a
+  couple of years ago, it's a good idea to post to the development community
+  discussion thread for that issue to check if the thinking around it has
+  changed.
+
 - **Can I come up with my own feature idea and work on it?** We welcome
   suggestions of features or other improvements that you feel would be valuable. If you
   have a new feature you'd like to add, you can start a conversation [in our
