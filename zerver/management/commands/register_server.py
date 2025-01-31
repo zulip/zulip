@@ -237,6 +237,7 @@ that registration and saving the updated secret in
                 "code" in content_dict
                 and content_dict["code"] == "HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR"
             ):
+                docs_url = content_dict["docs_url"]
                 print(
                     "--------------------------------\n"
                     "The hostname is already in use by another server. If you control the hostname \n"
@@ -246,7 +247,7 @@ that registration and saving the updated secret in
                     "\n"
                     "For more information, see: \n"
                     "\n"
-                    "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#moving-your-registration-to-a-new-server"
+                    f"{docs_url}"
                 )
                 raise CommandError
 
