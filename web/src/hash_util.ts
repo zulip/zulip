@@ -332,6 +332,10 @@ export function decode_stream_topic_from_url(
         if (terms.length === 2) {
             return {stream_id, topic_name: terms[1].operand};
         }
+        if (terms[2]?.operator === "with") {
+            // For with operators, we currently discard the message ID.
+            return {stream_id, topic_name: terms[1].operand};
+        }
         if (terms[2]?.operator !== "near") {
             return null;
         }
