@@ -69,8 +69,8 @@ const BIG_REALM_COUNT = 250;
 export function get_status(user_id: number): PresenceStatus["status"] {
     if (people.is_my_user_id(user_id)) {
         if (user_settings.presence_enabled) {
-            // if the current user is sharing presence, they always see themselves as online.
-            return "active";
+            // if the current user is sharing presence, and is not idle, they always see themselves as active.
+            return presence_info.get(user_id)?.status === "idle" ? "idle" : "active";
         }
         // if the current user is not sharing presence, they always see themselves as offline.
         return "offline";
