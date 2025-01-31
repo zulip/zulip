@@ -50,7 +50,7 @@ If using Zulip in a browser or desktop, there are several ways to access an exis
 {tab|desktop-web}
 
 1. In the left sidebar, click the **Direct message feed**
-   (<i class="fa fa-align-right"></i>) icon to the right of the
+   (<i class="zulip-icon zulip-icon-all-messages"></i>) icon to the right of the
    **Direct messages** label, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
    keyboard shortcut.
 
