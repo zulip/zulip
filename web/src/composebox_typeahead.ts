@@ -1095,21 +1095,6 @@ export function content_typeahead_selected(
         };
     }
 
-    // We only want to consider escape key for the stream+topic typeahead completion case.
-    if (event?.key === "Escape" && item.type !== "topic_list") {
-        setTimeout(() => {
-            // Select any placeholder text configured to be highlighted.
-            if (highlight.start && highlight.end) {
-                $textbox.range(highlight.start, highlight.end);
-            } else {
-                $textbox.caret(beginning.length);
-            }
-            // Also, trigger autosize to check if compose box needs to be resized.
-            compose_ui.autosize_textarea($textbox);
-        }, 0);
-        return beginning + rest;
-    }
-
     switch (item.type) {
         case "emoji":
             // leading and trailing spaces are required for emoji,
@@ -1386,7 +1371,7 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
             },
             updater: content_typeahead_selected,
             stopAdvance: true, // Do not advance to the next field on a Tab or Enter
-            escape_topic_completion: true,
+            select_on_escape_condition: () => completing === "topic_list",
             automated: compose_automated_selection,
             option_label(_matching_items, item): string | false {
                 if (item.type === "topic_list" && item.is_channel_link) {
