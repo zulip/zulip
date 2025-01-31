@@ -409,12 +409,12 @@ test("marked", ({override}) => {
         {
             input: "This is a #**Denmark>some topic** stream_topic link",
             expected:
-                '<p>This is a <a class="stream-topic" data-stream-id="1" href="/#narrow/channel/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> stream_topic link</p>',
+                '<p>This is a <a class="stream-topic" data-stream-id="1" href="#narrow/channel/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> stream_topic link</p>',
         },
         {
             input: "This has two links: #**Denmark>some topic** and #**social>other topic**.",
             expected:
-                '<p>This has two links: <a class="stream-topic" data-stream-id="1" href="/#narrow/channel/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> and <a class="stream-topic" data-stream-id="2" href="/#narrow/channel/2-social/topic/other.20topic">#social &gt; other topic</a>.</p>',
+                '<p>This has two links: <a class="stream-topic" data-stream-id="1" href="#narrow/channel/1-Denmark/topic/some.20topic">#Denmark &gt; some topic</a> and <a class="stream-topic" data-stream-id="2" href="#narrow/channel/2-social/topic/other.20topic">#social &gt; other topic</a>.</p>',
         },
         {
             input: "This is not a #**Denmark>** stream_topic link",
@@ -423,7 +423,7 @@ test("marked", ({override}) => {
         {
             input: "Look at #**Denmark>message_link@100**",
             expected:
-                '<p>Look at <a class="message-link" href="/#narrow/channel/1-Denmark/topic/message_link/near/100">#Denmark &gt; message_link @ 💬</a></p>',
+                '<p>Look at <a class="message-link" href="#narrow/channel/1-Denmark/topic/message_link/near/100">#Denmark &gt; message_link @ 💬</a></p>',
         },
         {
             input: "Look at #**Unknown>message_link@100**",
@@ -633,7 +633,7 @@ test("marked", ({override}) => {
         {
             input: "#**Bobby <h1>Tables</h1>**",
             expected:
-                '<p><a class="stream-topic" data-stream-id="4" href="/#narrow/channel/4-Bobby-.3Ch1/topic/Tables.3C.2Fh1.3E">#Bobby &lt;h1 &gt; Tables&lt;/h1&gt;</a></p>',
+                '<p><a class="stream-topic" data-stream-id="4" href="#narrow/channel/4-Bobby-.3Ch1/topic/Tables.3C.2Fh1.3E">#Bobby &lt;h1 &gt; Tables&lt;/h1&gt;</a></p>',
         },
         {
             input: "#**& &amp; &amp;amp;**",
@@ -643,7 +643,7 @@ test("marked", ({override}) => {
         {
             input: "#**& &amp; &amp;amp;>& &amp; &amp;amp;**",
             expected:
-                '<p><a class="stream-topic" data-stream-id="5" href="/#narrow/channel/5-.26-.26-.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; &gt; &amp; &amp; &amp;amp;</a></p>',
+                '<p><a class="stream-topic" data-stream-id="5" href="#narrow/channel/5-.26-.26-.26amp.3B/topic/.26.20.26.20.26amp.3B">#&amp; &amp; &amp;amp; &gt; &amp; &amp; &amp;amp;</a></p>',
         },
     ];
 
