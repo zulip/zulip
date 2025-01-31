@@ -2112,12 +2112,22 @@ class StreamTopicMessagePattern(StreamTopicMessageProcessor):
 
 
 def possible_linked_stream_names(content: str) -> set[str]:
+    """Returns all stream names referenced in syntax that could be
+    channel/topic/message links.
+
+    Does not attempt to filter references in code blocks, but this
+    should always be a superset of actual link syntax.
+    """
     return {
         *re.findall(STREAM_LINK_REGEX, content, re.VERBOSE),
         *(
             match.group("stream_name")
             for match in re.finditer(STREAM_TOPIC_LINK_REGEX, content, re.VERBOSE)
         ),
+        # In theory, we should include
+        # `STREAM_TOPIC_MESSAGE_LINK_REGEX` here, but the way channel
+        # names are separated, STREAM_TOPIC_LINK_REGEX will have
+        # already found them.
     }
 
 
