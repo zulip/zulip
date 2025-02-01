@@ -28,6 +28,12 @@ export type SettingsSubscription = StreamSubscription & {
     subscriber_count: number;
 };
 
+export const FILTERS = {
+    ALL_CHANNELS: "all_channels",
+    NON_ARCHIVED_CHANNELS: "non_archived_channels",
+    ARCHIVED_CHANNELS: "archived_channels",
+};
+
 export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscription {
     return {
         ...sub,
@@ -66,7 +72,7 @@ function get_subs_for_settings(subs: StreamSubscription[]): SettingsSubscription
     // delegating, so that we can more efficiently compute subscriber counts
     // (in bulk).  If that plan appears to have been aborted, feel free to
     // inline this.
-    return subs.filter((sub) => !sub.is_archived).map((sub) => get_sub_for_settings(sub));
+    return subs.map((sub) => get_sub_for_settings(sub));
 }
 
 export function get_updated_unsorted_subs(): SettingsSubscription[] {

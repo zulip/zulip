@@ -642,9 +642,19 @@ h4.user_group_setting_subsection_title {
     padding: 8px 10px;
     display: grid;
     grid-template:
-        "search-input clear-search more-options-button" auto / minmax(0, 1fr)
+        "search-input clear-search dropdown-widget" auto / minmax(0, 1fr)
         30px;
     border-bottom: 1px solid var(--color-border-modal-bar);
+}
+
+#stream_settings_filter_widget {
+    margin-left: 10px;
+    gap: 3px;
+    width: auto;
+}
+
+.stream_settings_filter_container.hide_filter {
+    display: none;
 }
 
 #user_group_visibility_settings_widget {
