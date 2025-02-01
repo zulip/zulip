@@ -2230,6 +2230,7 @@ class WebhookTestCase(ZulipTestCase):
     CHANNEL_NAME: str | None = None
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
     URL_TEMPLATE: str
+    LEGACY_URL_TEMPLATES: list[str] | None = None
     WEBHOOK_DIR_NAME: str | None = None
     # This last parameter is a workaround to handle webhooks that do not
     # name the main function api_{WEBHOOK_DIR_NAME}_webhook.
@@ -2242,6 +2243,7 @@ class WebhookTestCase(ZulipTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
+        self.legacy_urls: list[str] = []
         self.url = self.build_webhook_url()
 
         if self.WEBHOOK_DIR_NAME is not None:
@@ -2354,37 +2356,38 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
             headers = get_fixture_http_headers(self.WEBHOOK_DIR_NAME, fixture_name)
             headers = standardize_headers(headers)
             extra.update(headers)
-        try:
-            msg = self.send_webhook_payload(
-                self.test_user,
-                self.url,
-                payload,
-                **extra,
-            )
-        except EmptyResponseError:
-            if expect_noop:
-                return
-            else:
-                raise AssertionError(
-                    "No message was sent. Pass expect_noop=True if this is intentional."
+        for url in [*self.legacy_urls, self.url]:
+            try:
+                msg = self.send_webhook_payload(
+                    self.test_user,
+                    url,
+                    payload,
+                    **extra,
                 )
+            except EmptyResponseError:
+                if expect_noop:
+                    return
+                else:
+                    raise AssertionError(
+                        "No message was sent. Pass expect_noop=True if this is intentional."
+                    )
 
-        if expect_noop:
-            raise Exception(
-                """
+            if expect_noop:
+                raise Exception(
+                    """
 While no message is expected given expect_noop=True,
 your test code triggered an endpoint that did write
 one or more new messages.
 """.strip()
-            )
-        assert expected_message is not None and expected_topic_name is not None
+                )
+            assert expected_message is not None and expected_topic_name is not None
 
-        self.assert_channel_message(
-            message=msg,
-            channel_name=self.CHANNEL_NAME,
-            topic_name=expected_topic_name,
-            content=expected_message,
-        )
+            self.assert_channel_message(
+                message=msg,
+                channel_name=self.CHANNEL_NAME,
+                topic_name=expected_topic_name,
+                content=expected_message,
+            )
 
     def assert_channel_message(
         self,
@@ -2434,13 +2437,21 @@ one or more new messages.
 
         return msg
 
-    def build_webhook_url(self, *args: str, **kwargs: str) -> str:
-        url = self.URL_TEMPLATE
+    def build_webhook_url(self, *args: str, url_template: str | None = None, **kwargs: str) -> str:
+        if self.LEGACY_URL_TEMPLATES is not None and url_template is None:
+            for legacy_url_template in self.LEGACY_URL_TEMPLATES:
+                self.legacy_urls.append(
+                    self.build_webhook_url(*args, url_template=legacy_url_template, **kwargs)
+                )
+            index = len(self.legacy_urls) // 2
+            self.legacy_urls = self.legacy_urls[index:]
+
+        url = self.URL_TEMPLATE if url_template is None else url_template
         if url.find("api_key") >= 0:
             api_key = get_api_key(self.test_user)
-            url = self.URL_TEMPLATE.format(api_key=api_key, stream=self.CHANNEL_NAME)
+            url = url.format(api_key=api_key, stream=self.CHANNEL_NAME)
         else:
-            url = self.URL_TEMPLATE.format(stream=self.CHANNEL_NAME)
+            url = url.format(stream=self.CHANNEL_NAME)
 
         has_arguments = kwargs or args
         if has_arguments and url.find("?") == -1:

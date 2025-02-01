@@ -203,6 +203,7 @@ class WebhookIntegration(Integration):
         doc: str | None = None,
         stream_name: str | None = None,
         legacy: bool = False,
+        legacy_names: list[str] | None = None,
         config_options: Sequence[WebhookConfigOption] = [],
         dir_name: str | None = None,
     ) -> None:
@@ -227,6 +228,11 @@ class WebhookIntegration(Integration):
         if url is None:
             url = self.DEFAULT_URL.format(name=name)
         self.url = url
+        self.urls = [url]
+        if legacy_names is not None:
+            self.urls.extend(
+                self.DEFAULT_URL.format(name=legacy_name) for legacy_name in legacy_names
+            )
 
         if doc is None:
             doc = self.DEFAULT_DOC_PATH.format(name=name, ext="md")
@@ -247,8 +253,8 @@ class WebhookIntegration(Integration):
         return function(request)
 
     @property
-    def url_object(self) -> URLPattern:
-        return path(self.url, self.view)
+    def url_objects(self) -> list[URLPattern]:
+        return [path(url, self.view) for url in self.urls]
 
 
 def split_fixture_path(path: str) -> tuple[str, str]:
@@ -352,6 +358,13 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
     WebhookIntegration("ansibletower", ["deployment"], display_name="Ansible Tower"),
     WebhookIntegration("appfollow", ["customer-support"], display_name="AppFollow"),
+    WebhookIntegration(
+        "appoptics",
+        ["monitoring"],
+        display_name="AppOptics",
+        legacy_names=["librato"],
+        secondary_line_text="(or Librato)",
+    ),
     WebhookIntegration("appveyor", ["continuous-integration"], display_name="AppVeyor"),
     WebhookIntegration("azuredevops", ["version-control"], display_name="AzureDevOps"),
     WebhookIntegration("beanstalk", ["version-control"], stream_name="commits"),
@@ -382,12 +395,18 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("buildbot", ["continuous-integration"]),
     WebhookIntegration("canarytoken", ["monitoring"], display_name="Thinkst Canarytokens"),
     WebhookIntegration("circleci", ["continuous-integration"], display_name="CircleCI"),
-    WebhookIntegration("clubhouse", ["project-management"]),
     WebhookIntegration("codeship", ["continuous-integration", "deployment"]),
     WebhookIntegration("crashlytics", ["monitoring"]),
     WebhookIntegration("dialogflow", ["customer-support"]),
     WebhookIntegration("delighted", ["customer-support", "marketing"]),
     WebhookIntegration("dropbox", ["productivity"]),
+    WebhookIntegration(
+        "dropboxsign",
+        ["productivity", "hr"],
+        display_name="Dropbox Sign",
+        legacy_names=["hellosign"],
+        secondary_line_text="(or HelloSign)",
+    ),
     WebhookIntegration("errbit", ["monitoring"]),
     WebhookIntegration("flock", ["customer-support"]),
     WebhookIntegration("freshdesk", ["customer-support"]),
@@ -433,7 +452,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("greenhouse", ["hr"]),
     WebhookIntegration("groove", ["customer-support"]),
     WebhookIntegration("harbor", ["deployment", "productivity"]),
-    WebhookIntegration("hellosign", ["productivity", "hr"], display_name="HelloSign"),
     WebhookIntegration("helloworld", ["misc"], display_name="Hello World"),
     WebhookIntegration("heroku", ["deployment"]),
     WebhookIntegration("homeassistant", ["misc"], display_name="Home Assistant"),
@@ -448,7 +466,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("jira", ["project-management"]),
     WebhookIntegration("jotform", ["misc"]),
     WebhookIntegration("json", ["misc"], display_name="JSON formatter"),
-    WebhookIntegration("librato", ["monitoring"]),
     WebhookIntegration("lidarr", ["entertainment"]),
     WebhookIntegration("linear", ["project-management"]),
     WebhookIntegration("mention", ["marketing"]),
@@ -473,6 +490,12 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         ["communication", "meta-integration"],
         display_name="Slack-compatible webhook",
         logo="images/integrations/logos/slack.svg",
+    ),
+    WebhookIntegration(
+        "shortcut",
+        ["project-management"],
+        legacy_names=["clubhouse"],
+        secondary_line_text="(or Clubhouse)",
     ),
     WebhookIntegration("slack", ["communication"]),
     WebhookIntegration("sonarqube", ["continuous-integration"], display_name="SonarQube"),
@@ -680,6 +703,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     ],
     "ansibletower": [ScreenshotConfig("job_successful_multiple_hosts.json")],
     "appfollow": [ScreenshotConfig("review.json")],
+    "appoptics": [ScreenshotConfig("three_conditions_alert.json", payload_as_query_param=True)],
     "appveyor": [ScreenshotConfig("appveyor_build_success.json")],
     "azuredevops": [ScreenshotConfig("code_push.json")],
     "basecamp": [ScreenshotConfig("doc_active.json")],
@@ -704,12 +728,18 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "buildbot": [ScreenshotConfig("started.json")],
     "canarytoken": [ScreenshotConfig("canarytoken_real.json")],
     "circleci": [ScreenshotConfig("github_job_completed.json")],
-    "clubhouse": [ScreenshotConfig("story_create.json")],
     "codeship": [ScreenshotConfig("error_build.json")],
     "crashlytics": [ScreenshotConfig("issue_message.json")],
     "delighted": [ScreenshotConfig("survey_response_updated_promoter.json")],
     "dialogflow": [ScreenshotConfig("weather_app.json", extra_params={"email": "iago@zulip.com"})],
     "dropbox": [ScreenshotConfig("file_updated.json")],
+    "dropboxsign": [
+        ScreenshotConfig(
+            "signatures_signed_by_one_signatory.json",
+            payload_as_query_param=True,
+            payload_param_name="json",
+        )
+    ],
     "errbit": [ScreenshotConfig("error_message.json")],
     "flock": [ScreenshotConfig("messages.json")],
     "freshdesk": [
@@ -729,13 +759,6 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "greenhouse": [ScreenshotConfig("candidate_stage_change.json", image_name="000.png")],
     "groove": [ScreenshotConfig("ticket_started.json")],
     "harbor": [ScreenshotConfig("scanning_completed.json")],
-    "hellosign": [
-        ScreenshotConfig(
-            "signatures_signed_by_one_signatory.json",
-            payload_as_query_param=True,
-            payload_param_name="json",
-        )
-    ],
     "helloworld": [ScreenshotConfig("hello.json")],
     "heroku": [ScreenshotConfig("deploy.txt")],
     "homeassistant": [ScreenshotConfig("reqwithtitle.json", image_name="003.png")],
@@ -744,7 +767,6 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "jira": [ScreenshotConfig("created_v1.json")],
     "jotform": [ScreenshotConfig("response.multipart")],
     "json": [ScreenshotConfig("json_github_push__1_commit.json")],
-    "librato": [ScreenshotConfig("three_conditions_alert.json", payload_as_query_param=True)],
     "lidarr": [ScreenshotConfig("lidarr_album_grabbed.json")],
     "linear": [ScreenshotConfig("issue_create_complex.json")],
     "mention": [ScreenshotConfig("webfeeds.json")],
@@ -768,6 +790,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
         ScreenshotConfig("event_for_exception_python.json"),
         ScreenshotConfig("issue_assigned_to_team.json", "002.png"),
     ],
+    "shortcut": [ScreenshotConfig("story_create.json")],
     "slack": [ScreenshotConfig("message_with_normal_text.json")],
     "sonarqube": [ScreenshotConfig("error.json")],
     "sonarr": [ScreenshotConfig("sonarr_episode_grabbed.json")],
