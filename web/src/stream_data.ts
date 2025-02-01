@@ -355,6 +355,10 @@ export function subscribed_stream_ids(): number[] {
     return subscribed_subs().map((sub) => sub.stream_id);
 }
 
+export function get_archived_subs(): StreamSubscription[] {
+    return [...stream_info.values()].filter((sub) => sub.is_archived);
+}
+
 export function muted_stream_ids(): number[] {
     return subscribed_subs()
         .filter((sub) => sub.is_muted)
