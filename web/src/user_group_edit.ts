@@ -6,10 +6,13 @@ import {z} from "zod";
 import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
 import render_confirm_join_group_direct_member from "../templates/confirm_dialog/confirm_join_group_direct_member.hbs";
 import render_group_info_banner from "../templates/modal_banner/user_group_info_banner.hbs";
+import render_settings_checkbox from "../templates/settings/settings_checkbox.hbs";
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
 import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.hbs";
 import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
+import render_stream_group_permission_settings from "../templates/user_group_settings/stream_group_permission_settings.hbs";
 import render_user_group_membership_status from "../templates/user_group_settings/user_group_membership_status.hbs";
+import render_user_group_permission_settings from "../templates/user_group_settings/user_group_permission_settings.hbs";
 import render_user_group_settings from "../templates/user_group_settings/user_group_settings.hbs";
 import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
 
@@ -22,6 +25,11 @@ import * as compose_banner from "./compose_banner.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
+import type {
+    GroupGroupSettingName,
+    RealmGroupSettingName,
+    StreamGroupSettingName,
+} from "./group_permission_settings.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
@@ -626,8 +634,86 @@ function populate_data_for_removing_user_group_permissions(
     return data;
 }
 
-export function update_setting_in_group_permissions_panel(
-    $setting_elem: JQuery,
+export function add_assigned_permission_to_permissions_panel(
+    setting_name: string,
+    $subsection_elem: JQuery,
+    subsection_settings: string[],
+    rendered_checkbox_html: string,
+): void {
+    const $setting_elem = $subsection_elem.find(`.prop-element[name="${CSS.escape(setting_name)}"`);
+    if ($setting_elem.length > 0) {
+        // If there is already a checkbox for that permission, there can
+        // still be changes in permission whether the permission can be
+        // removed from the panel or not. So, just replace it with the
+        // newly rendered checkbox.
+        $setting_elem.closest(".input-group").replaceWith($(rendered_checkbox_html));
+        return;
+    }
+
+    if ($subsection_elem.hasClass("hide")) {
+        $subsection_elem.removeClass("hide");
+    }
+
+    if ($subsection_elem.closest(".group-permissions-section").hasClass("hide")) {
+        $subsection_elem.closest(".group-permissions-section").removeClass("hide");
+    }
+
+    if (!$(".group-assigned-permissions .no-permissions-for-group-text").hasClass("hide")) {
+        $(".group-assigned-permissions .no-permissions-for-group-text").addClass("hide");
+    }
+
+    let insert_position = 0;
+    for (const name of subsection_settings) {
+        if (name === setting_name) {
+            break;
+        }
+        if ($subsection_elem.find(`.prop-element[name="${CSS.escape(name)}"`).length > 0) {
+            insert_position = insert_position + 1;
+        }
+    }
+
+    if (insert_position === 0) {
+        $subsection_elem.find(".subsection-settings").prepend($(rendered_checkbox_html));
+    } else if (insert_position === $subsection_elem.find(".input-group").length) {
+        $subsection_elem.find(".subsection-settings").append($(rendered_checkbox_html));
+    } else {
+        const next_setting_elem = $subsection_elem.find(".subsection-settings .input-group")[
+            insert_position
+        ]!;
+        $(rendered_checkbox_html).insertBefore(next_setting_elem);
+    }
+}
+
+function remove_setting_checkbox_from_permissions_panel($setting_elem: JQuery): void {
+    if ($setting_elem.length === 0) {
+        return;
+    }
+
+    const $subsection = $setting_elem.closest(".settings-subsection-parent");
+    $setting_elem.closest(".input-group").remove();
+
+    if ($subsection.find(".input-group").length === 0) {
+        $subsection.addClass("hide");
+    }
+
+    // Hide the "Organization permissions", "Channel permissions" or
+    // "User group permissions", if there are no assigned permissions
+    // for that section.
+    if ($subsection.closest(".group-permissions-section").find(".input-group").length === 0) {
+        $subsection.closest(".group-permissions-section").addClass("hide");
+    }
+
+    // Show the text mentioning group has no permissions if required.
+    if ($subsection.closest(".group-assigned-permissions").find(".input-group").length === 0) {
+        $subsection
+            .closest(".group-assigned-permissions")
+            .find(".no-permissions-for-group-text")
+            .removeClass("hide");
+    }
+}
+
+export function update_realm_setting_in_permissions_panel(
+    setting_name: RealmGroupSettingName,
     new_value: GroupSettingValue,
 ): void {
     const active_group_id = get_active_data().id;
@@ -635,38 +721,206 @@ export function update_setting_in_group_permissions_panel(
         return;
     }
 
-    if ($setting_elem.length === 0) {
+    const $setting_elem = $(`#id_group_permission_${CSS.escape(setting_name)}`);
+    const can_edit = settings_config.owner_editable_realm_group_permission_settings.has(
+        setting_name,
+    )
+        ? current_user.is_owner
+        : current_user.is_admin;
+
+    const assigned_permission_object = group_permission_settings.get_assigned_permission_object(
+        new_value,
+        setting_name,
+        active_group_id,
+        can_edit,
+    );
+
+    const group_has_permission = assigned_permission_object !== undefined;
+
+    if (!group_has_permission) {
+        remove_setting_checkbox_from_permissions_panel($setting_elem);
         return;
     }
 
-    const group_has_permission = user_groups.group_has_permission(
-        group_setting_value_schema.parse(new_value),
+    const subsection_obj = settings_config.realm_group_permission_settings.find((subsection) =>
+        subsection.settings.includes(setting_name),
+    )!;
+    const subsection_settings = subsection_obj.settings;
+    const $subsection_elem = $(`.${CSS.escape(subsection_obj.subsection_key)}`);
+
+    const new_setting_checkbox_html = render_settings_checkbox({
+        setting_name,
+        prefix: "id_group_permission_",
+        is_checked: true,
+        label: settings_config.all_group_setting_labels.realm[setting_name],
+        is_disabled: !assigned_permission_object.can_edit,
+        tooltip_message: assigned_permission_object.tooltip_message,
+    });
+
+    add_assigned_permission_to_permissions_panel(
+        setting_name,
+        $subsection_elem,
+        subsection_settings,
+        new_setting_checkbox_html,
+    );
+}
+
+export function update_stream_setting_in_permissions_panel(
+    setting_name: StreamGroupSettingName,
+    new_value: GroupSettingValue,
+    sub: StreamSubscription,
+): void {
+    const active_group_id = get_active_data().id;
+    if (active_group_id === undefined) {
+        return;
+    }
+
+    const $setting_elem = $(
+        `#id_group_permission_${CSS.escape(sub.stream_id.toString())}_${CSS.escape(setting_name)}`,
+    );
+    const can_edit = stream_data.can_change_permissions(sub);
+
+    const assigned_permission_object = group_permission_settings.get_assigned_permission_object(
+        new_value,
+        setting_name,
         active_group_id,
+        can_edit,
     );
 
+    const group_has_permission = assigned_permission_object !== undefined;
+
     if (!group_has_permission) {
-        const $subsection = $setting_elem.closest(".settings-subsection-parent");
-        $setting_elem.closest(".input-group").remove();
-
-        if ($subsection.find(".input-group").length === 0) {
-            $subsection.addClass("hide");
-        }
-
-        // Hide the "Organization permissions", "Channel permissions" or
-        // "User group permissions", if there are no assigned permissions
-        // for that section.
-        if ($subsection.closest(".group-permissions-section").find(".input-group").length === 0) {
-            $subsection.closest(".group-permissions-section").addClass("hide");
-        }
-
-        // Show the text mentioning group has no permissions if required.
-        if ($subsection.closest(".group-assigned-permissions").find(".input-group").length === 0) {
-            $subsection
-                .closest(".group-assigned-permissions")
-                .find(".no-permissions-for-group-text")
-                .removeClass("hide");
-        }
+        remove_setting_checkbox_from_permissions_panel($setting_elem);
+        return;
     }
+
+    const subsection_settings = settings_config.stream_group_permission_settings;
+    const $subsection_elem = $(
+        `.settings-subsection-parent[data-stream-id="${CSS.escape(sub.stream_id.toString())}"]`,
+    );
+    const setting_id_prefix = "id_group_permission_" + sub.stream_id.toString() + "_";
+
+    if ($subsection_elem.length === 0) {
+        const rendered_subsection_html = render_stream_group_permission_settings({
+            stream: sub,
+            setting_labels: settings_config.all_group_setting_labels.stream,
+            id_prefix: setting_id_prefix,
+            assigned_permissions: [
+                {
+                    setting_name,
+                    can_edit: assigned_permission_object.can_edit,
+                    tooltip_message: assigned_permission_object.tooltip_message,
+                },
+            ],
+        });
+
+        if ($(".channel-group-permissions").hasClass("hide")) {
+            $(".channel-group-permissions").removeClass("hide");
+        }
+
+        if (!$(".group-assigned-permissions .no-permissions-for-group-text").hasClass("hide")) {
+            $(".group-assigned-permissions .no-permissions-for-group-text").addClass("hide");
+        }
+
+        $(".channel-group-permissions").append($(rendered_subsection_html));
+        return;
+    }
+
+    const rendered_checkbox_html = render_settings_checkbox({
+        setting_name,
+        prefix: setting_id_prefix,
+        is_checked: true,
+        label: settings_config.all_group_setting_labels.stream[setting_name],
+        is_disabled: !assigned_permission_object.can_edit,
+        tooltip_message: assigned_permission_object.tooltip_message,
+    });
+
+    add_assigned_permission_to_permissions_panel(
+        setting_name,
+        $subsection_elem,
+        subsection_settings,
+        rendered_checkbox_html,
+    );
+}
+
+export function update_group_setting_in_permissions_panel(
+    setting_name: GroupGroupSettingName,
+    new_value: GroupSettingValue,
+    group: UserGroup,
+): void {
+    const active_group_id = get_active_data().id;
+    if (active_group_id === undefined) {
+        return;
+    }
+
+    const $setting_elem = $(
+        `#id_group_permission_${CSS.escape(group.id.toString())}_${CSS.escape(setting_name)}`,
+    );
+    const can_edit = settings_data.can_manage_user_group(group.id);
+
+    const assigned_permission_object = group_permission_settings.get_assigned_permission_object(
+        new_value,
+        setting_name,
+        active_group_id,
+        can_edit,
+    );
+
+    const group_has_permission = assigned_permission_object !== undefined;
+
+    if (!group_has_permission) {
+        remove_setting_checkbox_from_permissions_panel($setting_elem);
+        return;
+    }
+
+    const subsection_settings = settings_config.group_permission_settings;
+    const $subsection_elem = $(
+        `.settings-subsection-parent[data-group-id="${CSS.escape(group.id.toString())}"]`,
+    );
+
+    const setting_id_prefix = "id_group_permission_" + group.id.toString() + "_";
+
+    if ($subsection_elem.length === 0) {
+        const rendered_subsection_html = render_user_group_permission_settings({
+            group_name: user_groups.get_display_group_name(group.name),
+            group_id: group.id,
+            setting_labels: settings_config.all_group_setting_labels.group,
+            id_prefix: setting_id_prefix,
+            assigned_permissions: [
+                {
+                    setting_name,
+                    can_edit: assigned_permission_object.can_edit,
+                    tooltip_message: assigned_permission_object.tooltip_message,
+                },
+            ],
+        });
+
+        if ($(".user-group-permissions").hasClass("hide")) {
+            $(".user-group-permissions").removeClass("hide");
+        }
+
+        if (!$(".group-assigned-permissions .no-permissions-for-group-text").hasClass("hide")) {
+            $(".group-assigned-permissions .no-permissions-for-group-text").addClass("hide");
+        }
+
+        $(".user-group-permissions").append($(rendered_subsection_html));
+        return;
+    }
+
+    const rendered_checkbox_html = render_settings_checkbox({
+        setting_name,
+        prefix: setting_id_prefix,
+        is_checked: true,
+        label: settings_config.all_group_setting_labels.group[setting_name],
+        is_disabled: !assigned_permission_object.can_edit,
+        tooltip_message: assigned_permission_object.tooltip_message,
+    });
+
+    add_assigned_permission_to_permissions_panel(
+        setting_name,
+        $subsection_elem,
+        subsection_settings,
+        rendered_checkbox_html,
+    );
 }
 
 export function show_settings_for(group: UserGroup): void {
@@ -1102,10 +1356,11 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
         .get_group_permission_settings()
         .filter((setting_name) => event.data[setting_name] !== undefined);
     for (const setting_name of changed_group_settings) {
-        const $elem = $(
-            `#id_group_permission_${CSS.escape(group.id.toString())}_${CSS.escape(setting_name)}`,
+        update_group_setting_in_permissions_panel(
+            setting_name,
+            group_setting_value_schema.parse(event.data[setting_name]),
+            group,
         );
-        update_setting_in_group_permissions_panel($elem, group[setting_name]);
     }
 }
 

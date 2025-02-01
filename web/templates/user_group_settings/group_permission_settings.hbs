@@ -3,7 +3,7 @@
         <h3>{{t "Organization permissions"}}</h3>
 
         {{#each group_assigned_realm_permissions}}
-            <div class="settings-subsection-parent {{#unless assigned_permissions.length}}hide{{/unless}}">
+            <div class="settings-subsection-parent {{subsection_key}} {{#unless assigned_permissions.length}}hide{{/unless}}">
                 <div class="subsection-header">
                     <h3>{{subsection_heading}}</h3>
                     {{> ../settings/settings_save_discard_widget show_only_indicator=false }}

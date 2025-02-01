@@ -590,7 +590,7 @@ run_test("realm settings", ({override}) => {
         },
     });
     override(settings_org, "populate_auth_methods", noop);
-    override(user_group_edit, "update_setting_in_group_permissions_panel", noop);
+    override(user_group_edit, "update_realm_setting_in_permissions_panel", noop);
     dispatch(event);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
     assert_same(realm.realm_allow_message_editing, true);

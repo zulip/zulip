@@ -118,7 +118,7 @@ test("update_property", ({override}) => {
         "server_supported_permission_settings",
         example_settings.server_supported_permission_settings,
     );
-    override(user_group_edit, "update_setting_in_group_permissions_panel", noop);
+    override(user_group_edit, "update_stream_setting_in_permissions_panel", noop);
     const sub = {...frontend};
     stream_data.add_sub(sub);
 
