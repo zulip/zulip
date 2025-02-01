@@ -1,4 +1,7 @@
+import assert from "minimalistic-assert";
+
 import * as hash_util from "./hash_util.ts";
+import {localstorage} from "./localstorage.ts";
 import * as peer_data from "./peer_data.ts";
 import type {User} from "./people.ts";
 import * as settings_config from "./settings_config.ts";
@@ -26,6 +29,39 @@ export type SettingsSubscription = StreamSubscription & {
     is_old_stream: boolean;
     subscriber_count: number;
 };
+
+export const channel_visibility_filter_key = "stream_settings_channels_visibility";
+const ls = localstorage();
+
+export function save_data_to_ls(filter_id: string): void {
+    assert(filter_id !== undefined);
+    ls.set(channel_visibility_filter_key, filter_id);
+}
+
+export const FILTERS = {
+    ALL_CHANNELS: "all_channels",
+    NON_ARCHIVED_CHANNELS: "non_archived_channels",
+    ARCHIVED_CHANNELS: "archived_channels",
+};
+
+export function get_current_channel_visibility_filter(): string {
+    const filter_setting = ls.get(channel_visibility_filter_key);
+
+    const archived_channels = stream_data.get_archived_subs();
+    if (
+        archived_channels.length > 0 &&
+        typeof filter_setting === "string" &&
+        Object.values(FILTERS).includes(filter_setting)
+    ) {
+        return filter_setting;
+    }
+
+    if (filter_setting !== FILTERS.NON_ARCHIVED_CHANNELS) {
+        save_data_to_ls(FILTERS.NON_ARCHIVED_CHANNELS);
+    }
+
+    return FILTERS.NON_ARCHIVED_CHANNELS;
+}
 
 export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscription {
     return {
@@ -63,7 +99,7 @@ function get_subs_for_settings(subs: StreamSubscription[]): SettingsSubscription
     // delegating, so that we can more efficiently compute subscriber counts
     // (in bulk).  If that plan appears to have been aborted, feel free to
     // inline this.
-    return subs.filter((sub) => !sub.is_archived).map((sub) => get_sub_for_settings(sub));
+    return subs.map((sub) => get_sub_for_settings(sub));
 }
 
 export function get_updated_unsorted_subs(): SettingsSubscription[] {
