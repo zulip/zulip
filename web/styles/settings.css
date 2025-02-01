@@ -1846,7 +1846,7 @@ label.preferences-radio-choice-label {
     }
 }
 
-@media (width < 830px) and (width > $md_min) {
+@media (width > $md_min) {
     #attachments-settings .upload-file-name {
         min-width: 10em;
     }
