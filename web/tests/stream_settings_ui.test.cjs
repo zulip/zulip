@@ -201,6 +201,11 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         populated_subs = data.subscriptions;
     });
 
+    const filters_dropdown_widget = {
+        render: function render() {},
+    };
+    stream_settings_ui.set_filters_for_tests(filters_dropdown_widget);
+
     stream_settings_ui.render_left_panel_superset();
 
     const sub_stubs = [];
@@ -214,6 +219,11 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
     }
 
     $.create("#channels_overlay_container .stream-row", {children: sub_stubs});
+
+    const $no_streams_message = $(".no-streams-to-show");
+    const $child_element = $(".subscribed_streams_tab_empty_text");
+    $no_streams_message.children = () => $child_element;
+    $child_element.hide = () => [];
 
     let ui_called = false;
     scroll_util.reset_scrollbar = ($elem) => {
@@ -352,6 +362,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
     test_filter({input: "d", show_subscribed: true}, [poland]);
     assert.ok($(".stream-row-denmark").hasClass("active"));
 
+    $(".stream-row.active").attr("data-stream-id", 101);
     stream_settings_ui.switch_stream_tab("subscribed");
     assert.ok(!$(".stream-row-denmark").hasClass("active"));
     assert.ok(!$(".right .settings").visible());
