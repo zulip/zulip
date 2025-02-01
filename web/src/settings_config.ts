@@ -716,14 +716,17 @@ export const all_group_setting_labels = {
 // in group permissions panel.
 export const realm_group_permission_settings: {
     subsection_heading: string;
+    subsection_key: string;
     settings: RealmGroupSettingName[];
 }[] = [
     {
         subsection_heading: $t({defaultMessage: "Joining the organization"}),
+        subsection_key: "org-join-settings",
         settings: ["can_invite_users_group", "create_multiuse_invite_group"],
     },
     {
         subsection_heading: $t({defaultMessage: "Channel permissions"}),
+        subsection_key: "org-stream-permissions",
         settings: [
             "can_create_public_channel_group",
             "can_create_web_public_channel_group",
@@ -733,14 +736,17 @@ export const realm_group_permission_settings: {
     },
     {
         subsection_heading: $t({defaultMessage: "Group permissions"}),
+        subsection_key: "org-group-permissions",
         settings: ["can_manage_all_groups", "can_create_groups"],
     },
     {
         subsection_heading: $t({defaultMessage: "Direct message permissions"}),
+        subsection_key: "org-direct-message-permissions",
         settings: ["direct_message_permission_group", "direct_message_initiator_group"],
     },
     {
         subsection_heading: $t({defaultMessage: "Moving messages"}),
+        subsection_key: "org-moving-msgs",
         settings: [
             "can_move_messages_between_topics_group",
             "can_move_messages_between_channels_group",
@@ -748,14 +754,17 @@ export const realm_group_permission_settings: {
     },
     {
         subsection_heading: $t({defaultMessage: "Message deletion"}),
+        subsection_key: "org-msg-deletion",
         settings: ["can_delete_any_message_group", "can_delete_own_message_group"],
     },
     {
         subsection_heading: $t({defaultMessage: "Guests"}),
+        subsection_key: "org-guests-permissions",
         settings: ["can_access_all_users_group"],
     },
     {
         subsection_heading: $t({defaultMessage: "Other permissions"}),
+        subsection_key: "org-other-permissions",
         settings: [
             "can_create_write_only_bots_group",
             "can_create_bots_group",

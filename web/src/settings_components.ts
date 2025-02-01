@@ -1776,11 +1776,16 @@ export function set_custom_time_inputs_visibility(
 }
 
 export function get_group_assigned_realm_permissions(group: UserGroup): {
+    subsection_key: string;
     subsection_heading: string;
     assigned_permissions: AssignedGroupPermission[];
 }[] {
     const group_assigned_realm_permissions = [];
-    for (const {subsection_heading, settings} of settings_config.realm_group_permission_settings) {
+    for (const {
+        subsection_heading,
+        subsection_key,
+        settings,
+    } of settings_config.realm_group_permission_settings) {
         const assigned_permission_objects = [];
         for (const setting_name of settings) {
             const setting_value = realm[realm_schema.keyof().parse("realm_" + setting_name)];
@@ -1802,6 +1807,7 @@ export function get_group_assigned_realm_permissions(group: UserGroup): {
         }
         group_assigned_realm_permissions.push({
             subsection_heading,
+            subsection_key,
             assigned_permissions: assigned_permission_objects,
         });
     }

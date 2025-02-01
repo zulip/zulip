@@ -83,6 +83,7 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
 import * as theme from "./theme.ts";
+import {group_setting_value_schema} from "./types.ts";
 import * as typing_events from "./typing_events.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
@@ -300,10 +301,9 @@ export function dispatch_normal_event(event) {
                                         realm.server_supported_permission_settings.realm,
                                     ).includes(key)
                                 ) {
-                                    const $elem = $(`#id_group_permission_${CSS.escape(key)}`);
-                                    user_group_edit.update_setting_in_group_permissions_panel(
-                                        $elem,
-                                        value,
+                                    user_group_edit.update_realm_setting_in_permissions_panel(
+                                        key,
+                                        group_setting_value_schema.parse(value),
                                     );
                                 }
 
