@@ -20,7 +20,6 @@ import {csrf_token} from "./csrf.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as email_pill from "./email_pill.ts";
 import {$t, $t_html} from "./i18n.ts";
-import * as input_pill from "./input_pill.ts";
 import * as invite_stream_picker_pill from "./invite_stream_picker_pill.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
@@ -391,12 +390,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     function invite_user_modal_post_render(): void {
         const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
         const $pill_container = $("#invitee_emails_container .pill-container");
-        pills = input_pill.create({
-            $container: $pill_container,
-            create_item_from_text: email_pill.create_item_from_email,
-            get_text_from_item: email_pill.get_email_from_item,
-            get_display_value_from_item: email_pill.get_email_from_item,
-        });
+        pills = email_pill.create_pills($pill_container);
 
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 
