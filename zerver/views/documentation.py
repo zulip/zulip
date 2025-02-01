@@ -24,6 +24,7 @@ from zerver.lib.integrations import (
     INTEGRATIONS,
     META_CATEGORY,
     HubotIntegration,
+    PythonAPIIntegration,
     WebhookIntegration,
     get_all_event_types_for_integration,
 )
@@ -388,6 +389,13 @@ def integration_doc(request: HttpRequest, *, integration_name: PathOnly[str]) ->
             context["all_event_types"] = all_event_types
     if isinstance(integration, HubotIntegration):
         context["hubot_docs_url"] = integration.hubot_docs_url
+    if isinstance(integration, PythonAPIIntegration):
+        context["config_file_path"] = (
+            f"/usr/local/share/zulip/integrations/{integration.directory_name}/zulip_{integration.directory_name}_config.py"
+        )
+        context["integration_path"] = (
+            f"/usr/local/share/zulip/integrations/{integration.directory_name}"
+        )
 
     doc_html_str = render_markdown_path(integration.doc, context, integration_doc=True)
 
