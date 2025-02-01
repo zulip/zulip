@@ -76,6 +76,7 @@ export function create_pills(
         create_item_from_text: create_item_from_email,
         get_text_from_item: get_email_from_item,
         get_display_value_from_item: get_display_email_from_item,
+        split_text_on_comma: false,
     });
     return pill_container;
 }
