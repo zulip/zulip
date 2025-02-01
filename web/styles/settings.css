@@ -1323,21 +1323,11 @@ label.preferences-radio-choice-label {
 
             .tab-switcher {
                 display: flex;
+                justify-content: center;
 
                 .ind-tab {
                     width: auto;
-                }
-            }
-
-            @container settings-overlay (width >= $settings_overlay_sidebar_collapse_breakpoint) {
-                .tab-switcher .ind-tab {
                     min-width: 6.7857em; /* 95px at 14px em */
-                }
-            }
-
-            @container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
-                .tab-switcher {
-                    justify-content: center;
                 }
             }
         }
