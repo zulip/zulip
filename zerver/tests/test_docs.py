@@ -86,9 +86,9 @@ class DocPageTest(ZulipTestCase):
             )
         return result
 
-    def _test(self, url: str, expected_strings: Sequence[str]) -> None:
+    def _test(self, url: str, expected_strings: Sequence[str]) -> "TestHttpResponse":
         # Test the URL on the root subdomain
-        self._check_basic_fetch(
+        response = self._check_basic_fetch(
             url=url,
             subdomain="",
             expected_strings=expected_strings,
@@ -96,7 +96,7 @@ class DocPageTest(ZulipTestCase):
         )
 
         if not self._is_landing_page(url):
-            return
+            return response
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             # Test the URL on the root subdomain with the landing page setting
@@ -119,6 +119,7 @@ class DocPageTest(ZulipTestCase):
                     ],
                     result,
                 )
+        return response
 
     def test_zephyr_disallows_robots(self) -> None:
         sample_urls = [
