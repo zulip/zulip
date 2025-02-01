@@ -383,7 +383,8 @@ h4.user_group_setting_subsection_title {
     .left,
     .right {
         position: relative;
-        display: inline-block;
+        display: inline-flex;
+        flex-direction: column;
         vertical-align: top;
         width: 50%;
         height: calc(100% - 45px);
@@ -1305,11 +1306,11 @@ div.settings-radio-input-parent {
     #subscription_overlay .right,
     #settings_page .content-wrapper.right {
         position: absolute;
-        display: block;
+        display: inline-flex;
+        flex-direction: column;
         margin: 0;
         width: 100%;
         height: calc(100% - 45px);
-
         border: none;
     }
 
