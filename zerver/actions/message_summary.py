@@ -6,6 +6,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
+from zerver.lib.markdown import markdown_convert
 from zerver.lib.message import messages_for_ids
 from zerver.lib.narrow import (
     LARGER_THAN_MAX_MESSAGE_ID,
@@ -149,7 +150,7 @@ def do_summarize_narrow(
         f"Succinctly summarize this conversation based only on the information provided, "
         f"in up to {max_summary_length} sentences, for someone who is familiar with the context. "
         f"Mention key conclusions and actions, if any. Refer to specific people as appropriate. "
-        f"Don't use an intro phrase."
+        f"Don't use an intro phrase. You can use Zulip's CommonMark based formatting."
     )
     messages = [
         make_message(intro, "system"),
@@ -204,4 +205,9 @@ def do_summarize_narrow(
         user_profile, COUNT_STATS["ai_credit_usage::day"], None, timezone_now(), credits_used
     )
 
-    return response["choices"][0]["message"]["content"]
+    summary = response["choices"][0]["message"]["content"]
+    # TODO: This may want to fetch `MentionData`, in order to be able
+    # to process channel or user mentions that might be in the
+    # content. Requires a prompt that supports it.
+    rendered_summary = markdown_convert(summary, message_realm=user_profile.realm).rendered_content
+    return rendered_summary

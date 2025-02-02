@@ -8,6 +8,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import {Filter} from "./filter.ts";
 import {$t} from "./i18n.ts";
 import * as message_fetch from "./message_fetch.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as util from "./util.ts";
@@ -57,11 +58,13 @@ export function get_narrow_summary(channel_id: number, topic_name: string): void
                 {
                     success_continuation(response_data) {
                         const data = z.object({summary: z.string()}).parse(response_data);
-                        const message = data.summary;
-                        $("#topic-summary-modal .modal__content").html(
-                            render_topic_summary({
-                                message,
-                            }),
+                        const summary_markdown = data.summary;
+                        const summary_html = render_topic_summary({
+                            summary_markdown,
+                        });
+                        $("#topic-summary-modal .modal__content").html(summary_html);
+                        rendered_markdown.update_elements(
+                            $("#topic-summary-modal .modal__content"),
                         );
                     },
                 },
