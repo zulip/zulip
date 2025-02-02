@@ -39,7 +39,7 @@ class MessagesSummaryTestCase(ZulipTestCase):
             self.user, self.channel_name, content=content, topic_name=self.topic_name
         )
 
-        content = "Sounds awesome! This will greatly help me when catching up."
+        content = "Sounds awesome! This will **greatly** help me when catching up."
         self.send_stream_message(
             self.user, self.channel_name, content=content, topic_name=self.topic_name
         )
