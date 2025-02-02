@@ -281,10 +281,20 @@ h3,
         color: var(--color-realm-enable-spectator-access-link);
     }
 
+    /* The height and width of this should match input fields in settings
+       menu. We try to keep the padding and height the same, and both without
+       border-box box-sizing.
+
+       These styles should be kept in sync with the styles for .settings_select
+       in subscriptions.css */
     .settings_select {
-        height: 30px;
-        width: var(--modal-input-width);
+        box-sizing: unset;
+        /* Subtract 1px border on each side and 25+6 padding */
+        width: calc(var(--modal-input-width) - 33px);
         max-width: 100%;
+        padding-top: 4px;
+        padding-bottom: 4px;
+        height: 1.4em; /* To match height of input elements */
     }
 
     .account-settings-heading {

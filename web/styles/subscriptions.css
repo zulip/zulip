@@ -1265,10 +1265,14 @@ div.settings-radio-input-parent {
     }
 
     .settings_select {
-        /* Match with select elements in settings page */
-        min-width: var(--modal-input-width);
+        /* Match with select elements in settings page. See there
+           for comments about these values. */
+        box-sizing: unset;
+        width: calc(var(--modal-input-width) - 33px);
         max-width: 100%;
-        height: 30px;
+        padding-top: 4px;
+        padding-bottom: 4px;
+        height: 1.4em;
     }
 
     .dropdown-widget-button {
