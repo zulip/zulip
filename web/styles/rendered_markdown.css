@@ -919,6 +919,7 @@
     &::-webkit-scrollbar-thumb {
         background-color: hsl(0deg 0% 0% / 30%);
         border-radius: 20px;
+        cursor: auto;
         transition: background-color 0.2s ease;
     }
 
