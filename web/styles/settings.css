@@ -1666,7 +1666,11 @@ label.preferences-radio-choice-label {
     }
 
     .choice-row {
+        display: grid;
+        grid-template-columns: 20px 210px 40px;
         margin-top: 8px;
+        column-gap: 6px;
+        align-items: center;
 
         & input {
             width: 190px;
