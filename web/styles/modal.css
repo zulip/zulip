@@ -93,7 +93,7 @@
     align-items: center;
     gap: 10px;
     /* This line-height is to increase the vertical clickable areas on the icons. */
-    line-height: 28px;
+    line-height: 1.2727em; /* 28px at 22px font-size at 14px em */
 
     .user-profile-name {
         white-space: nowrap;
