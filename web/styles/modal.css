@@ -402,9 +402,8 @@
 }
 
 .modal_select {
-    height: 30px;
     width: var(--modal-input-width);
-    padding: 0 25px 0 6px;
+    padding: 4px 25px 4px 6px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
