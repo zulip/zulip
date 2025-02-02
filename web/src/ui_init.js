@@ -56,6 +56,7 @@ import * as information_density from "./information_density.ts";
 import * as invite from "./invite.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigation_area_popovers.ts";
+import * as left_sidebar_tooltips from "./left_sidebar_tooltips.ts";
 import * as lightbox from "./lightbox.ts";
 import * as linkifiers from "./linkifiers.ts";
 import * as local_message from "./local_message.ts";
@@ -444,6 +445,7 @@ export function initialize_everything(state_data) {
     tippyjs.initialize();
     compose_tooltips.initialize();
     message_list_tooltips.initialize();
+    left_sidebar_tooltips.initialize();
     // This populates data for scheduled messages.
     scheduled_messages.initialize(state_data.scheduled_messages);
     scheduled_messages_ui.initialize();
