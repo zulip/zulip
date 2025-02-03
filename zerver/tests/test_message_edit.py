@@ -396,8 +396,23 @@ class EditMessageTest(ZulipTestCase):
 
     def test_edit_message_no_content(self) -> None:
         self.login("hamlet")
+        # Check message edit in stream for no content.
         msg_id = self.send_stream_message(
             self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
+        )
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": " ",
+            },
+        )
+        self.assert_json_success(result)
+        content = Message.objects.filter(id=msg_id).values_list("content", flat=True)[0]
+        self.assertEqual(content, "(deleted)")
+
+        # Check message edit in DMs for no content.
+        msg_id = self.send_personal_message(
+            from_user=self.example_user("hamlet"), to_user=self.example_user("cordelia")
         )
         result = self.client_patch(
             f"/json/messages/{msg_id}",
