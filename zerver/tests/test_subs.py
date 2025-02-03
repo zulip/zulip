@@ -1628,6 +1628,9 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(user_profile, stream.name)
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
 
+        # Subscribe Cordelia to verify that the archive notification is marked as read for all subscribers.
+        cordelia = self.example_user("cordelia")
+        self.subscribe(cordelia, stream.name)
         result = self.client_delete(f"/json/streams/{stream.id}")
         self.assert_json_success(result)
         subscription_exists = (
@@ -1638,6 +1641,14 @@ class StreamAdminTest(ZulipTestCase):
             .exists()
         )
         self.assertTrue(subscription_exists)
+        # Assert that a notification message was sent for the archive.
+        message = self.get_last_message()
+        expected_content = f"Channel {stream.name} has been archived."
+        self.assertEqual(message.content, expected_content)
+
+        # Assert that the message is read.
+        for um in UserMessage.objects.filter(message=message):
+            self.assertTrue(um.flags & UserMessage.flags.read)
 
     def test_deactivate_stream_via_user_group_permissions(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1647,6 +1658,10 @@ class StreamAdminTest(ZulipTestCase):
         user_profile_group = check_add_user_group(
             user_profile.realm, "user_profile_group", [user_profile], acting_user=user_profile
         )
+
+        # Subscribe Cordelia to verify that the archive notification is marked as read for all subscribers.
+        cordelia = self.example_user("cordelia")
+        self.subscribe(cordelia, stream.name)
         do_change_stream_group_based_setting(
             stream,
             "can_administer_channel_group",
@@ -1663,6 +1678,14 @@ class StreamAdminTest(ZulipTestCase):
             .exists()
         )
         self.assertTrue(subscription_exists)
+        # Assert that a notification message was sent for the archive.
+        message = self.get_last_message()
+        expected_content = f"Channel {stream.name} has been archived."
+        self.assertEqual(message.content, expected_content)
+
+        # Assert that the message is read.
+        for um in UserMessage.objects.filter(message=message):
+            self.assertTrue(um.flags & UserMessage.flags.read)
 
     def test_deactivate_stream_removes_default_stream(self) -> None:
         stream = self.make_stream("new_stream")
