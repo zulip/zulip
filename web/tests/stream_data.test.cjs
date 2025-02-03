@@ -1543,3 +1543,80 @@ test("has_metadata_access", ({override}) => {
     social.subscribed = true;
     assert.equal(stream_data.has_metadata_access(social), true);
 });
+
+test("has_content_access", ({override}) => {
+    const social = {
+        subscribed: false,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: false,
+        can_add_subscribers_group: nobody_group.id,
+        can_administer_channel_group: nobody_group.id,
+    };
+
+    assert.equal(stream_data.has_content_access(social), true);
+
+    social.is_web_public = true;
+    assert.equal(stream_data.has_content_access(social), true);
+    page_params.is_spectator = true;
+    assert.equal(stream_data.has_content_access(social), true);
+
+    social.is_web_public = false;
+    page_params.is_spectator = true;
+    assert.equal(stream_data.has_content_access(social), false);
+    page_params.is_spectator = false;
+    assert.equal(stream_data.has_content_access(social), true);
+
+    // Permission to administer a private channel should not give
+    // content access when unsubscribed.
+    assert.equal(stream_data.has_content_access(social), true);
+    social.invite_only = true;
+    social.subscribed = false;
+    assert.equal(stream_data.has_content_access(social), false);
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.has_content_access(social), false);
+    override(current_user, "is_admin", false);
+
+    // Channel admins should not have content access to a private
+    // channel when unsubscribed.
+    social.can_administer_channel_group = me_group.id;
+    social.subscribed = true;
+    assert.equal(stream_data.has_content_access(social), true);
+    social.subscribed = false;
+    assert.equal(stream_data.has_content_access(social), false);
+    social.can_administer_channel_group = nobody_group.id;
+
+    // Guest should not have content access to a channel they are not
+    // subscribed to.
+    social.invite_only = false;
+    override(current_user, "is_guest", true);
+    social.subscribed = true;
+    assert.equal(stream_data.has_content_access(social), true);
+    social.subscribed = false;
+    assert.equal(stream_data.has_content_access(social), false);
+    // Unless it's a web-public channel
+    social.is_web_public = true;
+    assert.equal(stream_data.has_content_access(social), true);
+    social.is_web_public = false;
+    assert.equal(stream_data.has_content_access(social), false);
+    override(current_user, "is_guest", false);
+    assert.equal(stream_data.has_content_access(social), true);
+    social.invite_only = true;
+
+    assert.equal(stream_data.has_content_access(social), false);
+    social.subscribed = true;
+    assert.equal(stream_data.has_content_access(social), true);
+
+    social.invite_only = true;
+    assert.equal(stream_data.has_content_access(social), true);
+    social.subscribed = false;
+    assert.equal(stream_data.has_content_access(social), false);
+
+    assert.equal(stream_data.has_content_access(social), false);
+    social.can_add_subscribers_group = me_group.id;
+    assert.equal(stream_data.has_content_access(social), true);
+    social.can_add_subscribers_group = nobody_group.id;
+});
