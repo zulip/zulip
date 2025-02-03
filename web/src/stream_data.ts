@@ -625,7 +625,7 @@ export function can_view_subscribers(sub: StreamSubscription): boolean {
 }
 
 export function can_subscribe_others(sub: StreamSubscription): boolean {
-    if (sub.invite_only && !sub.subscribed) {
+    if (!has_content_access(sub)) {
         return false;
     }
 
@@ -633,7 +633,7 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
         return true;
     }
 
-    if (can_change_permissions(sub)) {
+    if (can_administer_accessible_channel(sub)) {
         return true;
     }
 
