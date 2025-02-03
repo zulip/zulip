@@ -109,7 +109,6 @@ export let render_typeahead_item = (args: {
     is_user_group?: boolean;
     stream?: StreamData;
     emoji_code?: string | undefined;
-    is_empty_string_topic?: boolean;
     topic_object?: TopicSuggestion;
     is_stream_topic?: boolean;
 }): string => {

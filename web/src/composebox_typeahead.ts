@@ -85,7 +85,9 @@ export type LanguageSuggestion = {
 
 export type TopicSuggestion = {
     topic: string;
+    topic_display_name: string;
     type: "topic_list";
+    is_empty_string_topic: boolean;
     // is_channel_link will be used when we want to only render the stream as an
     // option in the topic typeahead while having #**stream_name> as the token.
     is_channel_link: boolean;
@@ -223,7 +225,8 @@ function get_topic_matcher(query: string): (topic: string) => boolean {
     query = typeahead.clean_query_lowercase(query);
 
     return function (topic: string): boolean {
-        return typeahead.query_matches_string_in_order(query, topic, " ");
+        const topic_display_name = util.get_final_topic_display_name(topic);
+        return typeahead.query_matches_string_in_order(query, topic_display_name, " ");
     };
 }
 
@@ -980,6 +983,8 @@ export function get_candidates(
                 const matches = topic_list.filter((item) => matcher(item));
                 const matches_list: TopicSuggestion[] = matches.map((topic) => ({
                     topic,
+                    topic_display_name: util.get_final_topic_display_name(topic),
+                    is_empty_string_topic: topic === "",
                     type: "topic_list",
                     is_channel_link: false,
                     is_shortcut_syntax_used,
@@ -994,13 +999,15 @@ export function get_candidates(
                 const topic_suggestion_candidates = typeahead_helper.sorter(
                     token,
                     matches_list,
-                    (x) => x.topic,
+                    (x) => x.topic_display_name,
                 );
 
                 // Add link to channel if and only if nothing is typed after '>'
                 if (token.length === 0) {
                     topic_suggestion_candidates.unshift({
                         topic: sub.name,
+                        topic_display_name: sub.name,
+                        is_empty_string_topic: false,
                         type: "topic_list",
                         is_channel_link: true,
                         is_shortcut_syntax_used,
