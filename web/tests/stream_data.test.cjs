@@ -1096,6 +1096,8 @@ test("get_invite_stream_data", ({override}) => {
         invite_only: false,
         subscribed: true,
         is_web_public: false,
+        can_administer_channel_group: nobody_group.id,
+        can_add_subscribers_group: nobody_group.id,
     };
 
     people.init();
@@ -1116,6 +1118,8 @@ test("get_invite_stream_data", ({override}) => {
             invite_only: false,
             subscribed: true,
             is_web_public: false,
+            can_administer_channel_group: nobody_group.id,
+            can_add_subscribers_group: nobody_group.id,
         },
     ];
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
@@ -1126,6 +1130,8 @@ test("get_invite_stream_data", ({override}) => {
         invite_only: true,
         subscribed: true,
         is_web_public: false,
+        can_administer_channel_group: nobody_group.id,
+        can_add_subscribers_group: nobody_group.id,
     };
     stream_data.add_sub(inviter);
 
@@ -1135,6 +1141,8 @@ test("get_invite_stream_data", ({override}) => {
         invite_only: true,
         subscribed: true,
         is_web_public: false,
+        can_administer_channel_group: nobody_group.id,
+        can_add_subscribers_group: nobody_group.id,
     });
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 
@@ -1145,6 +1153,8 @@ test("get_invite_stream_data", ({override}) => {
         invite_only: true,
         subscribed: false,
         is_web_public: false,
+        can_administer_channel_group: nobody_group.id,
+        can_add_subscribers_group: nobody_group.id,
     };
 
     stream_data.add_sub(tokyo);
@@ -1156,6 +1166,8 @@ test("get_invite_stream_data", ({override}) => {
         invite_only: false,
         subscribed: false,
         is_web_public: false,
+        can_administer_channel_group: nobody_group.id,
+        can_add_subscribers_group: nobody_group.id,
     };
 
     stream_data.add_sub(random);
@@ -1166,6 +1178,8 @@ test("get_invite_stream_data", ({override}) => {
         invite_only: false,
         subscribed: false,
         is_web_public: false,
+        can_administer_channel_group: nobody_group.id,
+        can_add_subscribers_group: nobody_group.id,
     });
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 });
@@ -1325,9 +1339,21 @@ test("can_subscribe_others", ({override}) => {
     people.initialize_current_user(test_user.user_id);
     assert.equal(stream_data.can_subscribe_others(sub), true);
 
-    sub.can_remove_subscribers_group = everyone_group.id;
+    // A user belonging to `can_add_subscribers_group` can subscribe
+    // others without being subscribed to a private channel.
     sub.subscribed = false;
     sub.invite_only = true;
+    assert.equal(stream_data.can_subscribe_others(sub), true);
+    sub.can_add_subscribers_group = nobody_group.id;
+
+    // User with administrator privileges cannot subscribe others to a
+    // private channel they are not subscribed to.
+    override(current_user, "is_admin", true);
+    people.initialize_current_user(admin_user_id);
+    assert.equal(stream_data.can_subscribe_others(sub), false);
+    override(current_user, "is_admin", false);
+    sub.can_administer_channel_group = students.id;
+    people.initialize_current_user(test_user.user_id);
     assert.equal(stream_data.can_subscribe_others(sub), false);
 });
 
