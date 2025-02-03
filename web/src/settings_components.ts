@@ -1829,9 +1829,21 @@ export function get_group_assigned_stream_permissions(group: UserGroup): {
     const group_assigned_stream_permissions = [];
     for (const sub of subs) {
         const assigned_permission_objects = [];
-        const can_edit_settings = stream_data.can_change_permissions(sub);
+        const can_edit_settings_with_metadata_access = stream_data.can_change_permissions(
+            sub,
+            false,
+        );
+        const can_edit_settings_with_content_access = stream_data.can_change_permissions(sub, true);
         for (const setting_name of settings_config.stream_group_permission_settings) {
             const setting_value = sub[stream_subscription_schema.keyof().parse(setting_name)];
+            let can_edit_settings = can_edit_settings_with_metadata_access;
+            if (
+                settings_config.stream_group_permission_settings_requiring_content_access.includes(
+                    setting_name,
+                )
+            ) {
+                can_edit_settings = can_edit_settings_with_content_access;
+            }
             const assigned_permission_object =
                 group_permission_settings.get_assigned_permission_object(
                     group_setting_value_schema.parse(setting_value),
