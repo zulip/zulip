@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 349**
+
+* [`POST /users/me/subscriptions`](/api/subscribe): Users belonging to
+  `can_add_subscribers_group` should be able to add subscribers to a
+  private channel without being subscribed to it.
+
 **Feature level 348**
 
 * [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),

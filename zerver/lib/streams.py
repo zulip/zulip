@@ -904,6 +904,13 @@ def filter_stream_authorization(
         if not stream.invite_only and not user_profile.is_guest:
             continue
 
+        if stream.invite_only:
+            user_recursive_group_ids = set(
+                get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+            )
+            if is_user_in_can_add_subscribers_group(stream, user_recursive_group_ids):
+                continue
+
         unauthorized_streams.append(stream)
 
     authorized_streams = [
