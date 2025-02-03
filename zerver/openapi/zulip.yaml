@@ -10445,7 +10445,13 @@ paths:
         channel depends on the [channel's type: private, public, or
         web-public](/help/channel-permissions).
 
-        **Changes**: Removed `stream_post_policy` and `is_announcement_only`
+        **Changes**: Before Zulip 10.0 (feature level 349), a user cannot
+        subscribe other users to a private channel without being subscribed
+        to that channel themselves. Now, If a user is part of
+        `can_add_subscribers_group`, they can subscribe themselves or other
+        users to a private channel without being subscribed to that channel.
+
+        Removed `stream_post_policy` and `is_announcement_only`
         parameters in Zulip 10.0 (feature level 333), as permission to post
         in the channel is now controlled by `can_send_message_group`.
 

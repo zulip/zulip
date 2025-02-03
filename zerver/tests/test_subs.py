@@ -5346,6 +5346,20 @@ class SubscriptionAPITest(ZulipTestCase):
             self.test_user,
             ["private_stream"],
             {"principals": orjson.dumps([invitee_user_id]).decode()},
+        )
+        self.assert_json_success(result)
+        do_change_stream_group_based_setting(
+            private_stream, "can_add_subscribers_group", nobody_group, acting_user=None
+        )
+        self.unsubscribe(user_profile, "private_stream")
+
+        do_change_stream_group_based_setting(
+            private_stream, "can_administer_channel_group", members_group, acting_user=None
+        )
+        result = self.subscribe_via_post(
+            self.test_user,
+            ["private_stream"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
             allow_fail=True,
         )
         self.assert_json_error(result, "Unable to access channel (private_stream).")
