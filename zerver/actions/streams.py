@@ -143,6 +143,7 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
             topic_name=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
             content=_("Channel {channel_name} has been archived.").format(channel_name=stream.name),
             archived_channel_notice=True,
+            limit_unread_user_ids=set(),
         )
 
 
