@@ -493,6 +493,7 @@ export function initialize_everything(state_data) {
 
     realm_logo.initialize();
     message_lists.initialize();
+    // Needs to be initialized before activity to register window.focus event.
     recent_view_ui.initialize({
         on_click_participant(avatar_element, participant_user_id) {
             const user = people.get_by_user_id(participant_user_id);

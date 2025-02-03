@@ -11,6 +11,7 @@ import render_recent_view_row from "../templates/recent_view_row.hbs";
 import render_recent_view_body from "../templates/recent_view_table.hbs";
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
+import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
@@ -1375,6 +1376,30 @@ export function complete_rerender(): void {
     setup_dropdown_filters_widget();
 }
 
+export function update_recent_view_rendered_time(): void {
+    if (activity.client_is_active || !recent_view_util.is_visible() || !topics_widget) {
+        return;
+    }
+
+    // Since we render relative time in recent view, it needs to be
+    // updated otherwise it will show stale time. But, we don't want
+    // to update it every minute due to performance reasons. So, we
+    // only update it when the user comes back from idle which has
+    // maximum chance of user seeing incorrect rendered time.
+    for (const conversation_data of topics_widget.get_rendered_list()) {
+        const last_msg = message_store.get(conversation_data.last_msg_id);
+        assert(last_msg !== undefined);
+        const time = new Date(last_msg.timestamp * 1000);
+        const updated_time = timerender.relative_time_string_from_date(time);
+        const $row = get_topic_row(conversation_data);
+        const rendered_time = $row.find(".recent_topic_timestamp").text().trim();
+        if (updated_time === rendered_time) {
+            continue;
+        }
+        $row.find(".recent_topic_timestamp a").text(updated_time);
+    }
+}
+
 export function show(): void {
     // We remove event handler before hiding, so they need to
     // be attached again, checking for topics_widget to be defined
@@ -1954,4 +1979,5 @@ export function initialize({
             revive_current_focus();
         }
     });
+    $(window).on("focus", update_recent_view_rendered_time);
 }
