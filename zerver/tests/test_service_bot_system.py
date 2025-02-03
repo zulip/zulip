@@ -629,3 +629,21 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             user_profile=self.bot_profile, message=message_id
         )
         self.assertIn("read", bot_user_message.flags_list())
+
+    @for_all_bot_types
+    @patch_queue_publish("zerver.actions.message_send.queue_event_on_commit")
+    def test_flag_messages_service_bots_has_not_process(
+        self, mock_queue_event_on_commit: mock.Mock
+    ) -> None:
+        sender = self.user_profile
+        recipients = [self.user_profile, self.bot_profile, self.second_bot_profile]
+
+        message_id = self.send_group_direct_message(
+            sender, recipients, content=f"@**{self.bot_profile.full_name}** baz"
+        )
+
+        bot_user_message = UserMessage.objects.get(
+            user_profile=self.bot_profile, message=message_id
+        )
+        self.assertNotIn("read", bot_user_message.flags_list())
+        self.assertEqual(mock_queue_event_on_commit.call_count, 2)
