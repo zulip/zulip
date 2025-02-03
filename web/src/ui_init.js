@@ -47,6 +47,7 @@ import * as emojisets from "./emojisets.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
 import * as giphy_state from "./giphy_state.ts";
+import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hashchange from "./hashchange.ts";
 import * as hotkey from "./hotkey.js";
 import * as i18n from "./i18n.ts";
@@ -685,6 +686,8 @@ export function initialize_everything(state_data) {
     message_edit_history.initialize();
     hotkey.initialize();
     desktop_integration.initialize();
+
+    group_permission_settings.initialize();
 
     $("#app-loading").addClass("loaded");
 }

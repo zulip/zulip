@@ -687,6 +687,10 @@ export const all_group_setting_labels = {
         can_access_all_users_group: $t({
             defaultMessage: "Who can view all other users in the organization",
         }),
+        can_create_write_only_bots_group: $t({
+            defaultMessage: "Who can create bots that send messages into Zulip",
+        }),
+        can_create_bots_group: $t({defaultMessage: "Who can create any bot"}),
         can_add_custom_emoji_group: $t({defaultMessage: "Who can add custom emoji"}),
     },
     stream: {
@@ -752,7 +756,11 @@ export const realm_group_permission_settings: {
     },
     {
         subsection_heading: $t({defaultMessage: "Other permissions"}),
-        settings: ["can_add_custom_emoji_group"],
+        settings: [
+            "can_create_write_only_bots_group",
+            "can_create_bots_group",
+            "can_add_custom_emoji_group",
+        ],
     },
 ];
 
