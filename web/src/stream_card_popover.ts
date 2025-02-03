@@ -51,10 +51,12 @@ export function initialize(): void {
                 // modals.close_active_if_any() is mainly used to handle navigation to channel settings
                 // using the popover that is opened when clicking on channel pills in the invite user modal.
                 modals.close_active_if_any();
-                const can_change_name_description = stream_data.can_edit_description(sub);
-                const can_change_stream_permissions = stream_data.can_change_permissions(sub);
+                const can_change_stream_permissions = stream_data.can_change_permissions(
+                    sub,
+                    false,
+                );
                 let stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
-                if (!can_change_stream_permissions && !can_change_name_description) {
+                if (!can_change_stream_permissions) {
                     stream_edit_hash = hash_util.channels_settings_edit_url(sub, "personal");
                 }
                 browser_history.go_to_location(stream_edit_hash);
