@@ -1232,6 +1232,7 @@ test("can_unsubscribe_others", ({override}) => {
         stream_id: 1,
         can_remove_subscribers_group: admins_group.id,
         can_administer_channel_group: nobody_group.id,
+        can_add_subscribers_group: nobody_group.id,
     };
     stream_data.add_sub(sub);
 
