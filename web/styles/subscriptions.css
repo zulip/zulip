@@ -325,6 +325,90 @@ h4.user_group_setting_subsection_title {
     }
 }
 
+.subscriptions-container {
+    container: subscriptions / inline-size;
+}
+
+/* There's an awkward width of modal that is wider than the
+   @media breakpoint that collapses the left pane, but still
+   narrow enough (965px at 14px em) that the sort buttons need
+   a second row to be visible without overlapping other UI. */
+@container settings-overlay (width >= $settings_overlay_sidebar_collapse_breakpoint) {
+    @container subscriptions (width < calc(60em + 70px)) {
+        #subscription_overlay .subscriptions-container {
+            .left {
+                .list-toggler-container {
+                    height: 5em;
+                    justify-content: end;
+                    flex-wrap: wrap;
+                }
+
+                .tab-switcher {
+                    margin-right: 0;
+                }
+
+                .tab-switcher:first-child {
+                    /* This forces the other buttons to the next row */
+                    width: 100%;
+                    display: flex;
+                    justify-content: end;
+                }
+            }
+
+            .right .display-type {
+                height: 5em;
+            }
+
+            .streams-list {
+                /* Calculated from several heights and padding/margin measurements
+                in .list-toggler-container and .stream_filter, with some added
+                fiddling to see what worked best at 12px - 20px font sizes.
+                Notably this height is shorter than the similar calculation
+                below because the toggler is taller.
+                When we redesign this area we should make this less brittle. */
+                height: calc(100% - 5.4em - 40px);
+            }
+        }
+    }
+}
+
+/* Copy all the above styles for the breakpoint where the overlay
+   becomes 40% left pane and 60% right pane, since that automatically
+   qualifies the modal for collapsing the buttons into two rows, and
+   especially for smaller font-sizes this will happen before the
+   breakpoint for the subscriptions container width. */
+@media (width < $lg_min) {
+    @container settings-overlay (width >= $settings_overlay_sidebar_collapse_breakpoint) {
+        #subscription_overlay .subscriptions-container {
+            .left {
+                .list-toggler-container {
+                    height: 5em;
+                    justify-content: end;
+                    flex-wrap: wrap;
+                }
+
+                .tab-switcher {
+                    margin-right: 0;
+                }
+
+                .tab-switcher:first-child {
+                    width: 100%;
+                    display: flex;
+                    justify-content: end;
+                }
+            }
+
+            .right .display-type {
+                height: 5em;
+            }
+
+            .streams-list {
+                height: calc(100% - 5.4em - 40px);
+            }
+        }
+    }
+}
+
 .user-groups-container,
 .subscriptions-container {
     position: relative;
@@ -547,7 +631,11 @@ h4.user_group_setting_subsection_title {
     position: relative;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
-    height: calc(100% - 6.0714em); /* 85px at 14px em */
+    /* Calculated from several heights and padding/margin measurements
+    in .list-toggler-container and .stream_filter, with some added
+    fiddling to see what worked best at 12px - 20px font sizes.
+    When we redesign this area we should make this less brittle. */
+    height: calc(100% - 3.4em - 40px);
     width: 100%;
 }
 
