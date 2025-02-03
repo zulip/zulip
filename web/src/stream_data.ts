@@ -294,6 +294,12 @@ export function slug_to_stream_id(slug: string): number | undefined {
         return stream.stream_id;
     }
 
+    // Neither format found a channel, so it's inaccessible or doesn't
+    // exist. But at least we have a stream ID; give that to the caller.
+    if (newFormatStreamId) {
+        return newFormatStreamId;
+    }
+
     // Unexpected shape, or the old shape and we don't know of a stream with
     // the given name.
     return undefined;

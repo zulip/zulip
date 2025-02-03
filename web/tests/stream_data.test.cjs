@@ -217,18 +217,17 @@ test("basics", () => {
     assert.equal(stream_data.slug_to_stream_id("social"), 2);
     assert.equal(hash_util.decode_operand("channel", "social"), "2");
 
-    // These aren't prepended with valid ids nor valid channel names. We
-    // don't get any stream id from the slug, and the decoded operand (the
-    // only caller of `slug_to_stream_id`) returns an empty string (which we
-    // don't display anywhere, since the channel is invalid).
-    assert.equal(stream_data.slug_to_stream_id("999-social"), undefined);
-    assert.equal(hash_util.decode_operand("channel", "999-social"), "");
+    // These aren't prepended with valid ids nor valid channel names. Return
+    // the channel ID, since almost all URLs are the modern format and the
+    // most likely explanation is an inaccessible channel.
+    assert.equal(stream_data.slug_to_stream_id("999-social"), 999);
+    assert.equal(hash_util.decode_operand("channel", "999-social"), "999");
 
-    assert.equal(stream_data.slug_to_stream_id("99-whatever"), undefined);
-    assert.equal(hash_util.decode_operand("channel", "99-whatever"), "");
+    assert.equal(stream_data.slug_to_stream_id("99-whatever"), 99);
+    assert.equal(hash_util.decode_operand("channel", "99-whatever"), "99");
 
-    assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), undefined);
-    assert.equal(hash_util.decode_operand("channel", "25-or-6-to-4"), "");
+    assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), 25);
+    assert.equal(hash_util.decode_operand("channel", "25-or-6-to-4"), "25");
 
     // If this is the name of a stream, its id is returned.
     const stream_starting_with_25 = {
@@ -242,8 +241,8 @@ test("basics", () => {
     assert.equal(stream_data.slug_to_stream_id("2something"), undefined);
     assert.equal(hash_util.decode_operand("channel", "2something"), "");
 
-    assert.equal(stream_data.slug_to_stream_id("99"), undefined);
-    assert.equal(hash_util.decode_operand("channel", "99"), "");
+    assert.equal(stream_data.slug_to_stream_id("99"), 99);
+    assert.equal(hash_util.decode_operand("channel", "99"), "99");
     // If this is the name of a stream, its id is returned.
     const stream_99 = {
         name: "99",
