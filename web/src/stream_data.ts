@@ -671,7 +671,7 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
         return false;
     }
 
-    if (current_user.is_admin) {
+    if (can_administer_accessible_channel(sub)) {
         return true;
     }
 
