@@ -337,11 +337,11 @@
             <div class="m-10 inline-block organization-permissions-parent">
                 {{> group_setting_value_pill_input
                   setting_name="realm_can_create_write_only_bots_group"
-                  label=(t 'Who can create bots that send messages into Zulip')}}
+                  label=group_setting_labels.can_create_write_only_bots_group}}
 
                 {{> group_setting_value_pill_input
                   setting_name="realm_can_create_bots_group"
-                  label=(t 'Who can create any bot')}}
+                  label=group_setting_labels.can_create_bots_group}}
 
                 {{> group_setting_value_pill_input
                   setting_name="realm_can_add_custom_emoji_group"

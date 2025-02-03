@@ -1,5 +1,6 @@
 import {z} from "zod";
 
+import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
 import {page_params} from "./page_params.ts";
 import * as settings_config from "./settings_config.ts";
@@ -61,11 +62,13 @@ export const realm_group_setting_name_schema = z.enum([
 ]);
 export type RealmGroupSettingName = z.infer<typeof realm_group_setting_name_schema>;
 
-export type StreamGroupSettingName =
-    | "can_add_subscribers_group"
-    | "can_administer_channel_group"
-    | "can_remove_subscribers_group"
-    | "can_send_message_group";
+export const stream_group_setting_name_schema = z.enum([
+    "can_add_subscribers_group",
+    "can_administer_channel_group",
+    "can_remove_subscribers_group",
+    "can_send_message_group",
+]);
+export type StreamGroupSettingName = z.infer<typeof stream_group_setting_name_schema>;
 
 export function get_realm_user_groups_for_setting(
     setting_name: string,
@@ -229,4 +232,87 @@ export function get_assigned_permission_object(
 
     // The group does not have permission.
     return undefined;
+}
+
+export function check_group_permission_settings_data(): void {
+    const all_realm_group_settings = z
+        .array(realm_group_setting_name_schema)
+        .parse(Object.keys(realm.server_supported_permission_settings.realm));
+    const realm_group_settings_with_subsection_data: RealmGroupSettingName[] = [];
+    for (const subsection_obj of settings_config.realm_group_permission_settings) {
+        for (const setting_name of subsection_obj.settings) {
+            realm_group_settings_with_subsection_data.push(setting_name);
+        }
+    }
+
+    if (
+        !all_realm_group_settings.every((setting_name) =>
+            realm_group_settings_with_subsection_data.includes(setting_name),
+        )
+    ) {
+        blueslip.error("Settings missing in 'settings_config.realm_group_permission_settings'");
+        return;
+    }
+
+    const realm_group_setting_label_object_keys = Object.keys(
+        settings_config.all_group_setting_labels.realm,
+    );
+    if (
+        !all_realm_group_settings.every((setting_name) =>
+            realm_group_setting_label_object_keys.includes(setting_name),
+        )
+    ) {
+        blueslip.error("Settings missing in 'settings_config.all_group_setting_labels.realm'");
+        return;
+    }
+
+    const all_stream_group_settings = z
+        .array(stream_group_setting_name_schema)
+        .parse(Object.keys(realm.server_supported_permission_settings.stream));
+    if (
+        !all_stream_group_settings.every((setting_name) =>
+            settings_config.stream_group_permission_settings.includes(setting_name),
+        )
+    ) {
+        blueslip.error("Settings missing in 'settings_config.stream_group_permission_settings'");
+        return;
+    }
+
+    const stream_group_setting_label_object_keys = Object.keys(
+        settings_config.all_group_setting_labels.stream,
+    );
+    if (
+        !all_stream_group_settings.every((setting_name) =>
+            stream_group_setting_label_object_keys.includes(setting_name),
+        )
+    ) {
+        blueslip.error("Settings missing in 'settings_config.all_group_setting_labels.stream'");
+        return;
+    }
+
+    const all_group_group_settings = get_group_permission_settings();
+    if (
+        !all_group_group_settings.every((setting_name) =>
+            settings_config.group_permission_settings.includes(setting_name),
+        )
+    ) {
+        blueslip.error("Settings missing in 'settings_config.group_permission_settings'");
+        return;
+    }
+
+    const group_group_setting_label_object_keys = Object.keys(
+        settings_config.all_group_setting_labels.group,
+    );
+    if (
+        !all_group_group_settings.every((setting_name) =>
+            group_group_setting_label_object_keys.includes(setting_name),
+        )
+    ) {
+        blueslip.error("Settings missing in 'settings_config.all_group_setting_labels.group'");
+        return;
+    }
+}
+
+export function initialize(): void {
+    check_group_permission_settings_data();
 }
