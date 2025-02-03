@@ -477,6 +477,59 @@ export function is_new_stream_announcements_stream_muted(): boolean {
     return is_muted(realm.realm_new_stream_announcements_stream_id);
 }
 
+// This function will be true for every case since the server should be
+// preventing a StreamSubscription from reaching clients without
+// metadata access.
+// This function can be used to allow callers to log blueslip errors
+// when the client seems to have a group it shouldn't have access to,
+// in order to find server bugs.
+export function has_metadata_access(sub: StreamSubscription): boolean {
+    if (sub.is_web_public) {
+        return true;
+    }
+
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    if (!current_user.is_guest && !sub.invite_only) {
+        return true;
+    }
+
+    if (sub.subscribed) {
+        return true;
+    }
+
+    if (can_administer_accessible_channel(sub)) {
+        return true;
+    }
+
+    // Users that can add other subscribers to a private channel
+    // have content access to that channel. Having content access
+    // should give them metadata access to that private channel even
+    // when unsubscribed.
+    const can_add_subscribers = user_groups.is_user_in_setting_group(
+        sub.can_add_subscribers_group,
+        people.my_current_user_id(),
+    );
+    if (can_add_subscribers) {
+        return true;
+    }
+
+    return false;
+}
+
+function can_administer_accessible_channel(sub: StreamSubscription): boolean {
+    if (current_user.is_admin) {
+        return true;
+    }
+
+    return user_groups.is_user_in_setting_group(
+        sub.can_administer_channel_group,
+        people.my_current_user_id(),
+    );
+}
+
 export function can_toggle_subscription(sub: StreamSubscription): boolean {
     // You can always remove your subscription if you're subscribed.
     //
