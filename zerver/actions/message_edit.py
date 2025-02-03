@@ -1262,16 +1262,6 @@ def build_message_edit_request(
     topic_name: str | None = None,
     content: str | None = None,
 ) -> StreamMessageEditRequest | DirectMessageEditRequest:
-    if not message.is_stream_message():
-        # We have already validated the code to have content
-        # as not None.
-        assert content is not None
-        return DirectMessageEditRequest(
-            content=content,
-            orig_content=message.content,
-            is_content_edited=True,
-        )
-
     is_content_edited = False
     new_content = message.content
     if content is not None:
@@ -1279,6 +1269,15 @@ def build_message_edit_request(
         if content.rstrip() == "":
             content = "(deleted)"
         new_content = normalize_body(content)
+
+    if not message.is_stream_message():
+        # We have already validated that at least one of content, topic, or stream
+        # must be modified, and for DMs, only the content can be edited.
+        return DirectMessageEditRequest(
+            content=new_content,
+            orig_content=message.content,
+            is_content_edited=True,
+        )
 
     is_topic_edited = False
     topic_resolved = False
