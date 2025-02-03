@@ -1621,7 +1621,7 @@ class StreamAdminTest(ZulipTestCase):
             {hamlet.id, polonius.id}, subscriber_ids_with_stream_history_access(stream4)
         )
 
-    def test_deactivate_stream_backend(self) -> None:
+    def test_deactivate_stream_as_realm_admin(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         stream = self.make_stream("new_stream_1")
@@ -1639,7 +1639,11 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assertTrue(subscription_exists)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+    def test_deactivate_stream_via_user_group_permissions(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        stream = self.make_stream("new_stream_1")
+        self.subscribe(user_profile, stream.name)
         user_profile_group = check_add_user_group(
             user_profile.realm, "user_profile_group", [user_profile], acting_user=user_profile
         )
