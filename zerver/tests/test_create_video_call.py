@@ -10,33 +10,14 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_encoding import append_url_query_string
 
 
-class TestVideoCall(ZulipTestCase):
+class ZoomVideoCallTest(ZulipTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
         self.user = self.example_user("hamlet")
         self.login_user(self.user)
-        # Signing for bbb
-        self.signer = Signer()
-        self.signed_bbb_a_object = self.signer.sign_object(
-            {
-                "meeting_id": "a",
-                "name": "a",
-                "lock_settings_disable_cam": True,
-                "moderator": self.user.id,
-            }
-        )
-        # For testing viewer role (different creator / moderator from self)
-        self.signed_bbb_a_object_different_creator = self.signer.sign_object(
-            {
-                "meeting_id": "a",
-                "name": "a",
-                "lock_settings_disable_cam": True,
-                "moderator": self.example_user("cordelia").id,
-            }
-        )
 
-    def test_register_video_request_no_settings(self) -> None:
+    def test_register_zoom_request_no_settings(self) -> None:
         with self.settings(VIDEO_ZOOM_CLIENT_ID=None):
             response = self.client_get("/calls/zoom/register")
             self.assert_json_error(
@@ -44,7 +25,7 @@ class TestVideoCall(ZulipTestCase):
                 "Zoom credentials have not been configured",
             )
 
-    def test_register_video_request(self) -> None:
+    def test_register_zoom_request(self) -> None:
         response = self.client_get("/calls/zoom/register")
         self.assertEqual(response.status_code, 302)
 
@@ -141,7 +122,7 @@ class TestVideoCall(ZulipTestCase):
         response = self.client_post("/json/calls/zoom/create")
         self.assert_json_error(response, "Invalid Zoom access token")
 
-    def test_create_video_realm_redirect(self) -> None:
+    def test_create_zoom_realm_redirect(self) -> None:
         response = self.client_get(
             "/calls/zoom/complete",
             {"code": "code", "state": '{"realm":"zephyr","sid":"somesid"}'},
@@ -150,7 +131,7 @@ class TestVideoCall(ZulipTestCase):
         self.assertIn("http://zephyr.testserver/", response["Location"])
         self.assertIn("somesid", response["Location"])
 
-    def test_create_video_sid_error(self) -> None:
+    def test_create_zoom_sid_error(self) -> None:
         response = self.client_get(
             "/calls/zoom/complete",
             {"code": "code", "state": '{"realm":"zulip","sid":"bad"}'},
@@ -158,7 +139,7 @@ class TestVideoCall(ZulipTestCase):
         self.assert_json_error(response, "Invalid Zoom session identifier")
 
     @responses.activate
-    def test_create_video_credential_error(self) -> None:
+    def test_create_zoom_credential_error(self) -> None:
         responses.add(responses.POST, "https://zoom.us/oauth/token", status=400)
 
         response = self.client_get(
@@ -168,7 +149,7 @@ class TestVideoCall(ZulipTestCase):
         self.assert_json_error(response, "Invalid Zoom credentials")
 
     @responses.activate
-    def test_create_video_refresh_error(self) -> None:
+    def test_create_zoom_refresh_error(self) -> None:
         responses.add(
             responses.POST,
             "https://zoom.us/oauth/token",
@@ -187,7 +168,7 @@ class TestVideoCall(ZulipTestCase):
         self.assert_json_error(response, "Invalid Zoom access token")
 
     @responses.activate
-    def test_create_video_request_error(self) -> None:
+    def test_create_zoom_request_error(self) -> None:
         responses.add(
             responses.POST,
             "https://zoom.us/oauth/token",
@@ -238,6 +219,32 @@ class TestVideoCall(ZulipTestCase):
             content_type="application/json",
         )
         self.assert_json_success(response)
+
+
+class BigBlueButtonVideoCallTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
+        self.signer = Signer()
+        self.signed_bbb_a_object = self.signer.sign_object(
+            {
+                "meeting_id": "a",
+                "name": "a",
+                "lock_settings_disable_cam": True,
+                "moderator": self.user.id,
+            }
+        )
+        # For testing viewer role (different creator / moderator from self)
+        self.signed_bbb_a_object_different_creator = self.signer.sign_object(
+            {
+                "meeting_id": "a",
+                "name": "a",
+                "lock_settings_disable_cam": True,
+                "moderator": self.example_user("cordelia").id,
+            }
+        )
 
     def test_create_bigbluebutton_link(self) -> None:
         with (
