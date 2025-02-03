@@ -519,6 +519,50 @@ export function has_metadata_access(sub: StreamSubscription): boolean {
     return false;
 }
 
+export function has_content_access(sub: StreamSubscription): boolean {
+    if (sub.is_web_public) {
+        return true;
+    }
+
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    if (sub.subscribed) {
+        return true;
+    }
+
+    if (!has_metadata_access(sub)) {
+        return false;
+    }
+
+    if (current_user.is_guest) {
+        /* istanbul ignore next */
+        return false;
+    }
+
+    // This is after the is_guest check, because this setting has
+    // allow_everyone_group=false.  TODO: Consider adding a
+    // is_user_in_setting_group wrapper abstraction that handles this detail automatically.
+    const can_add_subscribers = user_groups.is_user_in_setting_group(
+        sub.can_add_subscribers_group,
+        people.my_current_user_id(),
+    );
+    if (can_add_subscribers) {
+        return true;
+    }
+
+    if (sub.invite_only) {
+        return false;
+    }
+
+    // We do not do an admin check here since having admin permissions
+    // to a private channel does not give user access to that channel's
+    // content.
+
+    return true;
+}
+
 function can_administer_accessible_channel(sub: StreamSubscription): boolean {
     if (current_user.is_admin) {
         return true;
