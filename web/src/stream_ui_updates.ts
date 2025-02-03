@@ -72,7 +72,7 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
         );
         const sub = sub_store.get(stream_id);
         assert(sub !== undefined);
-        if (!stream_data.can_change_permissions(sub)) {
+        if (!stream_data.can_change_permissions(sub, true)) {
             // We do not want to enable the already disabled web-public option
             // in stream-edit panel if user is not allowed to change stream
             // privacy at all.
@@ -281,22 +281,22 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     const $general_settings_container = $stream_settings.find($("#stream_permission_settings"));
     $general_settings_container
         .find("input, button")
-        .prop("disabled", !sub.can_change_stream_permissions);
+        .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
     const $advanced_configurations_container = $stream_settings.find(
         $("#stream-advanced-configurations"),
     );
     $advanced_configurations_container
         .find("input, select, button")
-        .prop("disabled", !sub.can_change_stream_permissions);
+        .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
     const $permission_pill_container_elements =
         $advanced_configurations_container.find(".pill-container");
     $permission_pill_container_elements
         .find(".input")
-        .prop("contenteditable", sub.can_change_stream_permissions);
+        .prop("contenteditable", sub.can_change_stream_permissions_requiring_metadata_access);
 
-    if (!sub.can_change_stream_permissions) {
+    if (!sub.can_change_stream_permissions_requiring_metadata_access) {
         $general_settings_container.find(".default-stream").addClass("control-label-disabled");
         $permission_pill_container_elements
             .closest(".input-group")
@@ -326,6 +326,20 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .prop("disabled", disable_message_retention_setting);
 
     update_web_public_stream_privacy_option_state($("#stream_permission_settings"));
+
+    if (!sub.can_change_stream_permissions_requiring_content_access) {
+        const $stream_privacy_values = $stream_settings
+            .find($(".stream-privacy-values"))
+            .find("input, button");
+        $stream_privacy_values.prop("disabled", true);
+
+        for (const setting_name of settings_config.stream_group_permission_settings_requiring_content_access) {
+            const $setting_element = $advanced_configurations_container.find("#id_" + setting_name);
+            $setting_element.find(".input").prop("contenteditable", false);
+            $setting_element.closest(".input-group").addClass("group_setting_disabled");
+            settings_components.disable_opening_typeahead_on_clicking_label($setting_element);
+        }
+    }
 }
 
 export function update_announce_stream_option(): void {

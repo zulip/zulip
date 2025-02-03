@@ -789,6 +789,10 @@ export const stream_group_permission_settings: StreamGroupSettingName[] = [
     "can_remove_subscribers_group",
 ];
 
+export const stream_group_permission_settings_requiring_content_access: StreamGroupSettingName[] = [
+    "can_add_subscribers_group",
+];
+
 // Order of settings is important, as this list is used to
 // render assigned permissions in permissions panel.
 export const group_permission_settings: GroupGroupSettingName[] = [

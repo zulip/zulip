@@ -475,8 +475,14 @@ test("admin_options", ({override}) => {
         return stream_settings_data.get_sub_for_settings(sub).is_realm_admin;
     }
 
-    function can_change_stream_permissions(sub) {
-        return stream_settings_data.get_sub_for_settings(sub).can_change_stream_permissions;
+    function can_change_stream_permissions_requiring_content_access(sub) {
+        return stream_settings_data.get_sub_for_settings(sub)
+            .can_change_stream_permissions_requiring_content_access;
+    }
+
+    function can_change_stream_permissions_requiring_metadata_access(sub) {
+        return stream_settings_data.get_sub_for_settings(sub)
+            .can_change_stream_permissions_requiring_metadata_access;
     }
 
     // Test with can_administer_channel_group set to nobody.
@@ -484,7 +490,17 @@ test("admin_options", ({override}) => {
     override(current_user, "is_admin", false);
     let sub = make_sub(nobody_group.id);
     assert.ok(!is_realm_admin(sub));
-    assert.ok(!can_change_stream_permissions(sub));
+    assert.ok(!can_change_stream_permissions_requiring_metadata_access(sub));
+    assert.ok(!can_change_stream_permissions_requiring_content_access(sub));
+
+    // Non admin user not subscribed to a private channel should not
+    // have either of the permissions.
+    sub = make_sub(nobody_group.id);
+    sub.invite_only = true;
+    sub.subscribed = false;
+    assert.ok(!is_realm_admin(sub));
+    assert.ok(!can_change_stream_permissions_requiring_metadata_access(sub));
+    assert.ok(!can_change_stream_permissions_requiring_content_access(sub));
 
     // just a sanity check that we leave "normal" fields alone
     assert.equal(sub.color, "blue");
@@ -492,50 +508,52 @@ test("admin_options", ({override}) => {
     // the remaining cases are for admin users
     override(current_user, "is_admin", true);
 
-    // admins can make public streams become private
+    // admins have both access to public streams.
     sub = make_sub(nobody_group.id);
     assert.ok(is_realm_admin(sub));
-    assert.ok(can_change_stream_permissions(sub));
+    assert.ok(can_change_stream_permissions_requiring_metadata_access(sub));
+    assert.ok(can_change_stream_permissions_requiring_content_access(sub));
 
-    // admins can only make private streams become public
-    // if they are subscribed
+    // admins have content access to private streams only if they are
+    // subscribed. They do have metadata access without subscribing.
     sub = make_sub(nobody_group.id);
     sub.invite_only = true;
     sub.subscribed = false;
     assert.ok(is_realm_admin(sub));
-    assert.ok(!can_change_stream_permissions(sub));
+    assert.ok(can_change_stream_permissions_requiring_metadata_access(sub));
+    assert.ok(!can_change_stream_permissions_requiring_content_access(sub));
 
     sub = make_sub(nobody_group.id);
     sub.invite_only = true;
     sub.subscribed = true;
     assert.ok(is_realm_admin(sub));
-    assert.ok(can_change_stream_permissions(sub));
+    assert.ok(can_change_stream_permissions_requiring_metadata_access(sub));
+    assert.ok(can_change_stream_permissions_requiring_content_access(sub));
 
     // Test with can_administer_channel_group set to moderators.
     override(current_user, "is_admin", false);
     people.initialize_current_user(moderator_user_id);
     sub = make_sub(moderators_group.id);
     assert.ok(!is_realm_admin(sub));
-    assert.ok(can_change_stream_permissions(sub));
+    assert.ok(can_change_stream_permissions_requiring_metadata_access(sub));
+    assert.ok(can_change_stream_permissions_requiring_content_access(sub));
 
-    // Users in setting group can make public streams become private
-    sub = make_sub(moderators_group.id);
-    assert.ok(!is_realm_admin(sub));
-    assert.ok(can_change_stream_permissions(sub));
-
-    // Users in setting group can only make private streams become
-    // public if they are subscribed
+    // Users in moderators group have content access to private streams
+    // only if they are subscribed. They do have metadata access
+    // without subscribing.
     sub = make_sub(moderators_group.id);
     sub.invite_only = true;
     sub.subscribed = false;
     assert.ok(!is_realm_admin(sub));
-    assert.ok(!can_change_stream_permissions(sub));
+    assert.ok(can_change_stream_permissions_requiring_metadata_access(sub));
+    assert.ok(!can_change_stream_permissions_requiring_content_access(sub));
 
     sub = make_sub(moderators_group.id);
     sub.invite_only = true;
     sub.subscribed = true;
     assert.ok(!is_realm_admin(sub));
-    assert.ok(can_change_stream_permissions(sub));
+    assert.ok(can_change_stream_permissions_requiring_metadata_access(sub));
+    assert.ok(can_change_stream_permissions_requiring_content_access(sub));
 });
 
 test("stream_settings", ({override}) => {

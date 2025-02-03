@@ -778,7 +778,15 @@ export function update_stream_setting_in_permissions_panel(
     const $setting_elem = $(
         `#id_group_permission_${CSS.escape(sub.stream_id.toString())}_${CSS.escape(setting_name)}`,
     );
-    const can_edit = stream_data.can_change_permissions(sub);
+
+    let can_edit = stream_data.can_change_permissions(sub, false);
+    if (
+        settings_config.stream_group_permission_settings_requiring_content_access.includes(
+            setting_name,
+        )
+    ) {
+        can_edit = stream_data.can_change_permissions(sub, true);
+    }
 
     const assigned_permission_object = group_permission_settings.get_assigned_permission_object(
         new_value,
