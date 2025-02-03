@@ -58,7 +58,7 @@ from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import (
     MarkdownImageMetadata,
-    get_user_upload_previews,
+    generate_user_upload_previews,
     rewrite_thumbnailed_images,
 )
 from zerver.lib.timeout import unsafe_timeout
@@ -2755,7 +2755,7 @@ def do_convert(
         else:
             active_realm_emoji = {}
 
-        user_upload_previews = get_user_upload_previews(message_realm.id, content)
+        user_upload_previews = generate_user_upload_previews(message_realm.id, content)
         _md_engine.zulip_db_data = DbData(
             realm_alert_words_automaton=realm_alert_words_automaton,
             mention_data=mention_data,
