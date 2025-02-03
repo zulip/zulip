@@ -185,10 +185,10 @@ run_test("test_parse_narrow", () => {
 
     assert.equal(hash_util.parse_narrow(["narrow", "BOGUS"]), undefined);
 
-    // For nonexistent streams, we get an empty string. We don't use this
-    // anywhere, and just show "Invalid stream" in the navbar.
+    // For unknown channel IDs, we still parse it; it could be a valid channel we do
+    // not have access to. We'll end up showing "Invalid stream" in the navbar.
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "42-bogus"]), [
-        {negated: false, operator: "stream", operand: ""},
+        {negated: false, operator: "stream", operand: "42"},
     ]);
 
     // Empty string as a topic name is valid.
