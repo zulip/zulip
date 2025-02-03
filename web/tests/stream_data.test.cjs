@@ -1278,6 +1278,10 @@ test("can_unsubscribe_others", ({override}) => {
     people.initialize_current_user(admin_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     override(current_user, "is_admin", false);
+    sub.can_administer_channel_group = admins_group.id;
+    people.initialize_current_user(admin_user_id);
+    assert.equal(stream_data.can_unsubscribe_others(sub), true);
+    sub.can_administer_channel_group = nobody_group.id;
     people.initialize_current_user(moderator_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
     people.initialize_current_user(test_user.user_id);
