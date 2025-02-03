@@ -92,6 +92,14 @@ const students = {
     direct_subgroup_ids: new Set([]),
 };
 
+const me_group = {
+    name: "Me Group",
+    id: 6,
+    members: new Set([me.user_id]),
+    is_system_group: false,
+    direct_subgroup_ids: new Set([]),
+};
+
 function test(label, f) {
     run_test(label, (helpers) => {
         helpers.override(current_user, "is_admin", false);
@@ -108,6 +116,7 @@ function test(label, f) {
                 everyone_group,
                 nobody_group,
                 students,
+                me_group,
             ],
         });
         f(helpers);
@@ -1458,4 +1467,78 @@ test("can_access_stream_email", ({override}) => {
 
     page_params.is_spectator = true;
     assert.equal(stream_data.can_access_stream_email(social), false);
+});
+
+test("has_metadata_access", ({override}) => {
+    const social = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        invite_only: true,
+        history_public_to_subscribers: false,
+        can_add_subscribers_group: nobody_group.id,
+        can_administer_channel_group: nobody_group.id,
+    };
+
+    assert.equal(stream_data.has_metadata_access(social), true);
+
+    social.is_web_public = true;
+    assert.equal(stream_data.has_metadata_access(social), true);
+    page_params.is_spectator = true;
+    assert.equal(stream_data.has_metadata_access(social), true);
+
+    social.is_web_public = false;
+    page_params.is_spectator = true;
+    assert.equal(stream_data.has_metadata_access(social), false);
+    page_params.is_spectator = false;
+
+    override(current_user, "is_admin", false);
+    assert.equal(stream_data.has_metadata_access(social), true);
+
+    // A user without the permission to administer a channel should not
+    // have metadata access to a private channel when unsubscribed.
+    assert.equal(stream_data.has_metadata_access(social), true);
+    social.subscribed = false;
+    assert.equal(stream_data.has_metadata_access(social), false);
+
+    // Realm admins should have metadata access to a private channel
+    // when unsubscribed.
+    assert.equal(stream_data.has_metadata_access(social), false);
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.has_metadata_access(social), true);
+    override(current_user, "is_admin", false);
+
+    // Channel admins should have metadata access to a private channel
+    // when unsubscribed.
+    assert.equal(stream_data.has_metadata_access(social), false);
+    social.can_administer_channel_group = me_group.id;
+    assert.equal(stream_data.has_metadata_access(social), true);
+    social.can_administer_channel_group = nobody_group.id;
+
+    // Users that can add other subscribers to a private channel
+    // have content access to that channel. Having content access
+    // should give them metadata access to that private channel even
+    // when unsubscribed.
+    assert.equal(stream_data.has_metadata_access(social), false);
+    social.can_add_subscribers_group = me_group.id;
+    assert.equal(stream_data.has_metadata_access(social), true);
+    social.can_add_subscribers_group = nobody_group.id;
+
+    // Non-admin and non-guest user should have access to public
+    // channel.
+    assert.equal(stream_data.has_metadata_access(social), false);
+    social.invite_only = false;
+    override(current_user, "is_admin", false);
+    assert.equal(stream_data.has_metadata_access(social), true);
+
+    // Guest should not have metadata access to a channel they are not
+    // subscribed to.
+    assert.equal(stream_data.has_metadata_access(social), true);
+    override(current_user, "is_guest", true);
+    social.subscribed = false;
+    assert.equal(stream_data.has_metadata_access(social), false);
+    social.subscribed = true;
+    assert.equal(stream_data.has_metadata_access(social), true);
 });
