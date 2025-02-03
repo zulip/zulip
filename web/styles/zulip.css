@@ -2047,13 +2047,3 @@ body:not(.hide-left-sidebar) {
 .empty-topic-display {
     font-style: italic;
 }
-
-.dialog-widget-footer-minor-text {
-    font-size: smaller;
-    font-style: italic;
-    margin-right: auto;
-}
-
-#topic-summary-modal {
-    width: 45rem;
-}
