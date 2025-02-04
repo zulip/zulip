@@ -454,6 +454,21 @@ export function paste_handler_converter(
 
             This is done because filter() function only processes HTMLElements
         */
+        let katex_node_count = 0;
+        for (const child of children) {
+            if (
+                child instanceof HTMLElement &&
+                (child.classList.contains("katex") || child.classList.contains("katex-display"))
+            ) {
+                katex_node_count += 1;
+            }
+        }
+        // We do the text node to span conversions only if
+        // the children are sandwiched between katex nodes.
+        if (katex_node_count < 2) {
+            continue;
+        }
+
         for (const child of children) {
             if (child.nodeType === Node.TEXT_NODE) {
                 const span = document.createElement("span");
