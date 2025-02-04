@@ -202,7 +202,12 @@ export function maybe_show_scrolling_formatting_buttons(container_selector: stri
 function get_focus_area(opts: ComposeTriggeredOptions): string {
     // Set focus to "Topic" when narrowed to a stream+topic
     // and "Start new conversation" button clicked.
-    if (opts.message_type === "stream" && opts.stream_id && !opts.topic) {
+    if (
+        opts.message_type === "stream" &&
+        opts.stream_id &&
+        !opts.topic &&
+        realm.realm_mandatory_topics
+    ) {
         return "input#stream_message_recipient_topic";
     } else if (
         (opts.message_type === "stream" && opts.stream_id !== undefined) ||
