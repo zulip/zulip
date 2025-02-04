@@ -52,6 +52,24 @@ Options:
   --no-dist-upgrade
       Skip the initial `apt-get dist-upgrade`.
 
+  --push-notifications
+      With this option, the Zulip installer registers your server for the Mobile
+      Push Notification Service, and sets up the initial default configuration.
+      You will be immediately prompted to agree to the Terms of Service, and your
+      server will be registered at the end of the installation process.
+  --no-push-notifications
+      Disable push notifications registration (the default if neither
+      flag is provided).
+
+  --no-submit-usage-statistics
+      If you enable push notifications, by default your server
+      will submit basic metadata (required for billing and for
+      determining free plan eligibility), as well as aggregate usage
+      statistics. You can disable submitting usage statistics by passing
+      this flag.
+      If push notifications are not enabled, data won't be submitted, so
+      this flag is redundant.
+
 EOF
 }
 
@@ -69,7 +87,8 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,puppet-classes:,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,puppet-classes:,no-overwrite-settings,no-dist-upgrade,push-notifications,no-push-notifications,no-submit-usage-statistics -n "$0" -- "$@")"
+
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -140,6 +159,26 @@ while true; do
             NO_DIST_UPGRADE=1
             shift
             ;;
+        --push-notifications)
+            if [ -n "$NO_PUSH_NOTIFICATIONS" ]; then
+                echo "error: --push-notifications and --no-push-notifications are incompatible." >&2
+                exit 1
+            fi
+            PUSH_NOTIFICATIONS=1
+            shift
+            ;;
+        --no-push-notifications)
+            if [ -n "$PUSH_NOTIFICATIONS" ]; then
+                echo "error: --push-notifications and --no-push-notifications are incompatible." >&2
+                exit 1
+            fi
+            NO_PUSH_NOTIFICATIONS=1
+            shift
+            ;;
+        --no-submit-usage-statistics)
+            NO_SUBMIT_USAGE_STATISTICS=1
+            shift
+            ;;
         --)
             shift
             break
@@ -204,6 +243,69 @@ case "$POSTGRESQL_VERSION" in
         exit 1
         ;;
 esac
+
+if [ -z "$PUSH_NOTIFICATIONS" ] && [ -z "$NO_PUSH_NOTIFICATIONS" ]; then
+    # Unless specified, we default to --no-push-notifications
+    NO_PUSH_NOTIFICATIONS=1
+fi
+
+# We set these to Python-style True/False string values, for easy
+# insertion into the settings.py file.
+if [ -n "$PUSH_NOTIFICATIONS" ]; then
+    SERVICE_MOBILE_PUSH="True"
+
+    # --push-notifications also enables SUBMIT_USAGE_STATISTICS, unless the user
+    # explicitly opted out by passing --no-submit-usage-statistics.
+    if [ -n "$NO_SUBMIT_USAGE_STATISTICS" ]; then
+        SERVICE_SUBMIT_USAGE_STATISTICS="False"
+    else
+        SERVICE_SUBMIT_USAGE_STATISTICS="True"
+    fi
+else
+    SERVICE_MOBILE_PUSH="False"
+    # SUBMIT_USAGE_STATISTICS without PUSH_NOTIFICATIONS is an unusual
+    # configuration that we don't need to offer in the installer.
+    SERVICE_SUBMIT_USAGE_STATISTICS="False"
+fi
+
+# If user asked for push notifications, prompt for ToS acceptance.
+if [ -n "$PUSH_NOTIFICATIONS" ]; then
+    echo
+    echo "You chose to register your server for the Mobile Push Notifications Service."
+    echo "Doing so will share basic metadata with the service's maintainers, including:"
+    echo
+    echo "* The server's configured hostname: $EXTERNAL_HOST"
+    echo "* The server's configured contact email address: $ZULIP_ADMINISTRATOR"
+    echo "* Basic metadata about each organization hosted by the server; see:"
+    echo "    <https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-basic-metadata>"
+    if [ -z "$NO_SUBMIT_USAGE_STATISTICS" ]; then
+        echo "* The server's usage statistics; see:"
+        echo "    <https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-usage-statistics>"
+    fi
+    echo
+    echo "For details on why a centralized push notification service is necessary, see:"
+    echo "    <https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#why-a-push-notification-service-is-necessary>"
+    echo
+    echo "Use of this service is governed by the Zulip Terms of Service:"
+    echo "    <https://zulip.com/policies/terms>"
+    echo
+    read -r -p "Do you want to agree to the Zulip Terms of Service and proceed? [Y/n] " tos_prompt
+    echo
+
+    # Normalize the user’s response to lowercase.
+    case "${tos_prompt,,}" in
+        "" | y | yes)
+            echo "Great! Push notifications will be enabled; continuing with installation..."
+            PUSH_NOTIFICATIONS_SERVICE_TOS_AGREED=1
+            sleep 2
+            ;;
+        *)
+            echo "In order to enable push notifications, you must agree to the Terms of Service."
+            echo "If you do not want to enable push notifications, run the command without the --push-notifications flag."
+            exit 1
+            ;;
+    esac
+fi
 
 # Do set -x after option parsing is complete
 set -x
@@ -485,6 +587,19 @@ if has_class "zulip::app_frontend_base"; then
         if [ -n "$ZULIP_ADMINISTRATOR" ]; then
             sed -i "s/^ZULIP_ADMINISTRATOR =.*/ZULIP_ADMINISTRATOR = '$ZULIP_ADMINISTRATOR'/" /etc/zulip/settings.py
         fi
+
+        # Set SERVICE settings based on what the user provided.
+        if grep -q -E "^#?\s*ZULIP_SERVICE_PUSH_NOTIFICATIONS = " /etc/zulip/settings.py; then
+            sed -i -E "s/^#?\s*ZULIP_SERVICE_PUSH_NOTIFICATIONS = .*/ZULIP_SERVICE_PUSH_NOTIFICATIONS = $SERVICE_MOBILE_PUSH/" /etc/zulip/settings.py
+        else
+            echo "ZULIP_SERVICE_PUSH_NOTIFICATIONS = $SERVICE_MOBILE_PUSH" >>/etc/zulip/settings.py
+        fi
+
+        if grep -q -E "^#?\s*ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = " /etc/zulip/settings.py; then
+            sed -i -E "s/^#?\s*ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = .*/ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = $SERVICE_SUBMIT_USAGE_STATISTICS/" /etc/zulip/settings.py
+        else
+            echo "ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = $SERVICE_SUBMIT_USAGE_STATISTICS" >>/etc/zulip/settings.py
+        fi
     fi
     ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
     "$ZULIP_PATH"/scripts/setup/generate_secrets.py --production
@@ -601,9 +716,48 @@ database user, and then run:
    su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
    su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
 EOF
+
+    if [ -n "$PUSH_NOTIFICATIONS" ]; then
+        echo
+        echo "Since you specified you want to enable the push notification service, you'll also need to "
+        echo "manually register your server by running:"
+        echo
+        echo "   su zulip -c '/home/zulip/deployments/current/manage.py register_server'"
+        echo
+    fi
     exit 0
 else
     /home/zulip/deployments/current/scripts/setup/create-database
     su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database --quiet'
+
+    if [ -n "$PUSH_NOTIFICATIONS" ]; then
+        if [ -z "$PUSH_NOTIFICATIONS_SERVICE_TOS_AGREED" ]; then
+            # This should be impossible as the installation should have aborted early if the user
+            # passed --push-notifications without accepting the ToS. But we include this as a precaution
+            # to not allow future bugs to cause ToS acceptance to be skipped.
+            SKIP_TOS_AGREEMENT_OPTION=""
+        else
+            SKIP_TOS_AGREEMENT_OPTION="--agree_to_terms_of_service"
+        fi
+        set +x
+        echo "Services enabled, attempting to register server..."
+        set -x
+
+        # Without PYTHONUNBUFFERED=1, stdout/stderr might end up displayed not in chronological order, resulting
+        # in confusing output to the user.
+        su zulip -c "PYTHONUNBUFFERED=1 /home/zulip/deployments/current/manage.py register_server ${SKIP_TOS_AGREEMENT_OPTION}" \
+            || {
+                set +x
+                echo
+                echo "WARNING: Server registration for push notifications failed."
+                echo "This does not affect the rest of your Zulip installation."
+                echo
+                echo "To enable push notifications after resolving the issue, run:"
+                echo "  su zulip -c '/home/zulip/deployments/current/manage.py register_server'"
+                echo
+                set -x
+            }
+    fi
+
     su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
 fi

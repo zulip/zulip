@@ -15,15 +15,18 @@ mobile apps.
 
 :::{important}
 
-These instructions are for Zulip Server 9.0+. If you are running an older
-version of Zulip ([check](https://zulip.com/help/view-zulip-version) if you are
-unsure), see the [Zulip 8.x
-documentation](https://zulip.readthedocs.io/en/8.4/production/mobile-push-notifications.html).
+The Zulip Server 10.0+ [installer](install.md#step-2-install-zulip)
+includes a `--push-notifications` flag that automates this
+registration process.
 
+These instructions apply to Zulip 9.0+. If you are running an older
+version of Zulip ([check](https://zulip.com/help/view-zulip-version)
+if you are unsure), see the [Zulip 8.x
+documentation](https://zulip.readthedocs.io/en/8.4/production/mobile-push-notifications.html).
 :::
 
-You can enable the mobile push notification service for your Zulip server as
-follows:
+You can enable the mobile push notification service for your Zulip
+server as follows:
 
 1. Make sure your server has outgoing HTTPS access to the public Internet. If
    that is restricted by a proxy, you will need to [configure Zulip to use your
