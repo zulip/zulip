@@ -1,5 +1,5 @@
 <div class="group-permissions">
-    <div class="realm-group-permissions group-permissions-section {{#unless group_assigned_realm_permissions.length}}hide{{/unless}}">
+    <div class="realm-group-permissions group-permissions-section {{#if group_has_no_realm_permissions}}hide{{/if}}">
         <h3>{{t "Organization permissions"}}</h3>
 
         {{#each group_assigned_realm_permissions}}
@@ -28,27 +28,12 @@
         <h3>{{t "Channel permissions"}}</h3>
 
         {{#each group_assigned_stream_permissions}}
-            <div class="settings-subsection-parent {{#unless assigned_permissions.length}}hide{{/unless}}" data-stream-id="{{stream.stream_id}}">
-                <div class="subsection-header">
-                    <h3>
-                        {{> ../inline_decorated_stream_name stream=stream }}
-                    </h3>
-                    {{> ../settings/settings_save_discard_widget show_only_indicator=false }}
-                </div>
-
-                <div class="subsection-settings">
-                    {{#each assigned_permissions}}
-                        {{> ../settings/settings_checkbox
-                          setting_name=setting_name
-                          prefix=../id_prefix
-                          is_checked=true
-                          label=(lookup ../../all_group_setting_labels.stream setting_name)
-                          is_disabled=(not can_edit)
-                          tooltip_message=tooltip_message
-                          }}
-                    {{/each}}
-                </div>
-            </div>
+            {{> stream_group_permission_settings
+              stream=stream
+              assigned_permissions=assigned_permissions
+              setting_labels=../all_group_setting_labels.stream
+              id_prefix=id_prefix
+              }}
         {{/each}}
     </div>
 
@@ -56,25 +41,13 @@
         <h3>{{t "User group permissions"}}</h3>
 
         {{#each group_assigned_user_group_permissions}}
-            <div class="settings-subsection-parent {{#unless assigned_permissions.length}}hide{{/unless}}" data-group-id="{{group_id}}">
-                <div class="subsection-header">
-                    <h3>{{group_name}}</h3>
-                    {{> ../settings/settings_save_discard_widget show_only_indicator=false }}
-                </div>
-
-                <div class="subsection-settings">
-                    {{#each assigned_permissions}}
-                        {{> ../settings/settings_checkbox
-                          setting_name=setting_name
-                          prefix=../id_prefix
-                          is_checked=true
-                          label=(lookup ../../all_group_setting_labels.group setting_name)
-                          is_disabled=(not can_edit)
-                          tooltip_message=tooltip_message
-                          }}
-                    {{/each}}
-                </div>
-            </div>
+            {{> user_group_permission_settings
+              group_id=group_id
+              group_name=group_name
+              assigned_permissions=assigned_permissions
+              setting_labels=../all_group_setting_labels.group
+              id_prefix=id_prefix
+              }}
         {{/each}}
     </div>
 </div>

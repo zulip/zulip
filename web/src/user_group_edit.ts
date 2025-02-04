@@ -672,6 +672,9 @@ export function update_setting_in_group_permissions_panel(
 export function show_settings_for(group: UserGroup): void {
     const group_assigned_realm_permissions =
         settings_components.get_group_assigned_realm_permissions(group);
+    const group_has_no_realm_permissions = group_assigned_realm_permissions.every(
+        (subsection_obj) => subsection_obj.assigned_permissions.length === 0,
+    );
     const group_assigned_stream_permissions =
         settings_components.get_group_assigned_stream_permissions(group);
     const group_assigned_user_group_permissions =
@@ -695,10 +698,11 @@ export function show_settings_for(group: UserGroup): void {
         ...get_membership_status_context(group),
         all_group_setting_labels: settings_config.all_group_setting_labels,
         group_assigned_realm_permissions,
+        group_has_no_realm_permissions,
         group_assigned_stream_permissions,
         group_assigned_user_group_permissions,
         group_has_no_permissions:
-            group_assigned_realm_permissions.length === 0 &&
+            group_has_no_realm_permissions &&
             group_assigned_stream_permissions.length === 0 &&
             group_assigned_user_group_permissions.length === 0,
     });
