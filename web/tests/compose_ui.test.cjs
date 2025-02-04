@@ -1280,7 +1280,7 @@ run_test("right-to-left", () => {
 });
 
 const get_focus_area = compose_ui._get_focus_area;
-run_test("get_focus_area", () => {
+run_test("get_focus_area", ({override}) => {
     assert.equal(get_focus_area({message_type: "private"}), "#private_message_recipient");
     assert.equal(
         get_focus_area({
@@ -1293,9 +1293,15 @@ run_test("get_focus_area", () => {
         get_focus_area({message_type: "stream"}),
         "#compose_select_recipient_widget_wrapper",
     );
+    override(realm, "realm_mandatory_topics", true);
     assert.equal(
         get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
         "input#stream_message_recipient_topic",
+    );
+    override(realm, "realm_mandatory_topics", false);
+    assert.equal(
+        get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
+        "textarea#compose-textarea",
     );
     assert.equal(
         get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4, topic: "more"}),
