@@ -99,6 +99,7 @@ from zerver.actions.scheduled_messages import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_mobile_push_notifications_enabled,
     do_change_stream_description,
     do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
@@ -4515,6 +4516,14 @@ class SubscribeActionTest(BaseAction):
             )
         check_stream_update("events[0]", events[0])
         check_message("events[1]", events[1])
+
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_change_mobile_push_notifications_enabled(
+                stream,
+                mobile_push_notifications_enabled=True,
+                acting_user=self.example_user("hamlet"),
+            )
+        check_stream_update("events[0]", events[0])
 
         # Update stream privacy - make stream web-public
         with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:

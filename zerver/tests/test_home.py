@@ -201,6 +201,7 @@ class HomeTest(ZulipTestCase):
         "realm_presence_disabled",
         "realm_push_notifications_enabled",
         "realm_push_notifications_enabled_end_timestamp",
+        "realm_mobile_push_notifications_enabled",
         "realm_require_unique_names",
         "realm_send_welcome_emails",
         "realm_signup_announcements_stream_id",

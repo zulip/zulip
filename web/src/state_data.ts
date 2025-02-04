@@ -371,6 +371,7 @@ export const realm_schema = z.object({
     realm_message_content_allowed_in_email_notifications: z.boolean(),
     realm_message_content_edit_limit_seconds: z.number().nullable(),
     realm_message_content_delete_limit_seconds: z.number().nullable(),
+    realm_mobile_push_notifications_enabled: z.boolean(),
     realm_message_retention_days: z.number(),
     realm_move_messages_between_streams_limit_seconds: z.number().nullable(),
     realm_move_messages_within_stream_limit_seconds: z.number().nullable(),

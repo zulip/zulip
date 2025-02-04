@@ -1169,6 +1169,15 @@ div.settings-radio-input-parent {
         height: 30px;
     }
 
+    .mobile_push_notifications_enabled_setting {
+        margin: 20px 0;
+        width: fit-content;
+
+        .inline {
+            display: inline;
+        }
+    }
+
     .default-stream {
         margin: 20px 0;
         width: fit-content;

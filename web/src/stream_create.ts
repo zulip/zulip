@@ -364,6 +364,10 @@ function create_stream(): void {
         announce = true;
     }
 
+    const mobile_push_notifications_enabled = util.the(
+        $<HTMLInputElement>("#stream_creation_form input[name=mobile_push_notifications_enabled]"),
+    ).checked;
+
     // TODO: We can eliminate the user_ids -> principals conversion
     //       once we upgrade the backend to accept user_ids.
     const user_ids = stream_create_subscribers.get_principals();
@@ -390,6 +394,7 @@ function create_stream(): void {
         is_default_stream: JSON.stringify(default_stream),
         message_retention_days: JSON.stringify(message_retention_selection),
         announce: JSON.stringify(announce),
+        mobile_push_notifications_enabled: JSON.stringify(mobile_push_notifications_enabled),
         principals,
         ...group_setting_values,
     };
@@ -510,6 +515,12 @@ export function show_new_stream_modal(): void {
         true,
         true,
     );
+
+    // Setting for choosing default value of push notifications is visible to administrators only. The below block
+    // sets the default state of setting if it is visible.
+    if (current_user.is_admin && realm.realm_mobile_push_notifications_enabled) {
+        $("#stream_creation_form #id_mobile_push_notifications_enabled").prop("checked", false);
+    }
 
     // set default state for "announce stream" and "default stream" option.
     $("#stream_creation_form .default-stream input").prop("checked", false);

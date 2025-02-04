@@ -408,6 +408,7 @@ def send_subscription_add_events(
                 rendered_description=stream_dict["rendered_description"],
                 stream_id=stream_dict["stream_id"],
                 stream_post_policy=stream_dict["stream_post_policy"],
+                mobile_push_notifications_enabled=stream_dict["mobile_push_notifications_enabled"],
                 # Computed fields not present in Stream.API_FIELDS
                 is_announcement_only=stream_dict["is_announcement_only"],
             )
@@ -720,6 +721,10 @@ def bulk_add_subscriptions(
                 if sub.active:
                     already_subscribed.append(sub_info)
                 else:
+                    if not stream.mobile_push_notifications_enabled:
+                        sub_info.sub.push_notifications = None
+                    else:
+                        sub_info.sub.push_notifications = True
                     subs_to_activate.append(sub_info)
 
         used_colors = used_colors_for_user_ids.get(user_profile.id, set())
@@ -729,15 +734,24 @@ def bulk_add_subscriptions(
             stream = recipient_id_to_stream[recipient_id]
             color = user_color_map[recipient_id]
 
+            if not stream.mobile_push_notifications_enabled:
+                push_notification = None
+            else:
+                push_notification = True
+
             sub = Subscription(
                 user_profile=user_profile,
                 is_user_active=user_profile.is_active,
                 active=True,
                 color=color,
                 recipient_id=recipient_id,
+                push_notifications=push_notification,
             )
             sub_info = SubInfo(user_profile, sub, stream)
             subs_to_add.append(sub_info)
+
+    subs = [info.sub for info in subs_to_activate]
+    Subscription.objects.bulk_update(subs, ["push_notifications"])
 
     if len(subs_to_add) == 0 and len(subs_to_activate) == 0:
         # We can return early if users are already subscribed to all the streams.
@@ -1655,3 +1669,38 @@ def do_change_stream_group_based_setting(
         # object would be created if the setting is later set to
         # a combination of users and groups.
         old_user_group.delete()
+
+@transaction.atomic(durable=True)
+def do_change_mobile_push_notifications_enabled(
+    stream: Stream,
+    mobile_push_notifications_enabled: bool,
+    *,
+    acting_user: UserProfile,
+) -> None:
+    old_mobile_push_notifications_enabled = stream.mobile_push_notifications_enabled
+
+    stream.mobile_push_notifications_enabled = mobile_push_notifications_enabled
+    stream.save(update_fields=["mobile_push_notifications_enabled"])
+
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=AuditLogEventType.CHANNEL_MOBILE_PUSH_NOTIFICATIONS_ENABLED_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_mobile_push_notifications_enabled,
+            RealmAuditLog.NEW_VALUE: mobile_push_notifications_enabled,
+        },
+    )
+
+    event = dict(
+        op="update",
+        type="stream",
+        property="mobile_push_notifications_enabled",
+        value=mobile_push_notifications_enabled,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+
+    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))

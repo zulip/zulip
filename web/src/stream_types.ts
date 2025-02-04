@@ -29,6 +29,7 @@ export const stream_schema = z.object({
     is_archived: z.boolean(),
     is_web_public: z.boolean(),
     message_retention_days: z.number().nullable(),
+    mobile_push_notifications_enabled: z.boolean(),
     name: z.string(),
     rendered_description: z.string(),
     stream_id: z.number(),
