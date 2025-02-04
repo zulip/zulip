@@ -510,6 +510,7 @@ export function hide_user_profile(): void {
 
 function on_user_profile_hide(): void {
     user_streams_list_widget = undefined;
+    user_groups_list_widget = undefined;
     user_profile_subscribe_widget = undefined;
     const base = get_current_hash_category();
     // After closing the user profile, if the hash consists of `#user`
