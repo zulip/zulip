@@ -764,6 +764,13 @@ export const realm_group_permission_settings: {
     },
 ];
 
+export const owner_editable_realm_group_permission_settings = new Set([
+    "can_create_groups",
+    "can_invite_users_group",
+    "can_manage_all_groups",
+    "create_multiuse_invite_group",
+]);
+
 // Order of settings is important, as this list is used to
 // render assigned permissions in permissions panel.
 export const stream_group_permission_settings: StreamGroupSettingName[] = [
