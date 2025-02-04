@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 347**
+
+* [Markdown message formatting](/api/message-formatting#links-to-channels-topics-and-messages):
+  Links to topic without a specified message now use the `with`
+  operator to follow moves of topics.
+
 **Feature level 346**
 
 * [Markdown message formatting](/api/message-formatting#links-to-channels-topics-and-messages):

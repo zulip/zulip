@@ -499,6 +499,11 @@ export function process_enter_key(e) {
             return true;
         }
 
+        // Don't send the message if topic box is focused.
+        if (compose.is_topic_input_focused()) {
+            return true;
+        }
+
         return false;
     }
 

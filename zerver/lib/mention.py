@@ -8,11 +8,13 @@ from django.conf import settings
 from django.db.models import Q
 from django_stubs_ext import StrPromise
 
+from zerver.lib.streams import filter_stream_authorization
+from zerver.lib.topic import get_first_message_for_user_in_topic
 from zerver.lib.user_groups import get_root_id_annotated_recursive_subgroups_for_groups
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.groups import SystemGroups
-from zerver.models.streams import get_linkable_streams
+from zerver.models.streams import Stream
 
 BEFORE_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\[\/<])"
 
@@ -66,6 +68,23 @@ class PossibleMentions:
     message_has_stream_wildcards: bool
 
 
+@dataclass(frozen=True)
+class ChannelTopicInfo:
+    channel_name: str
+    topic_name: str
+
+
+@dataclass
+class ChannelInfo:
+    channel_id: int
+    recipient_id: int
+    history_public_to_subscribers: bool
+    # TODO: Track whether the current user has only metadata access or
+    # content access, so that we can allow mentioning channels with
+    # only metadata access, while still enforcing content access to
+    # mention topics or messages within channels.
+
+
 class MentionBackend:
     # Be careful about reuse: MentionBackend contains caches which are
     # designed to only have the lifespan of a sender user (typically a
@@ -77,7 +96,8 @@ class MentionBackend:
     def __init__(self, realm_id: int) -> None:
         self.realm_id = realm_id
         self.user_cache: dict[tuple[int, str], FullNameInfo] = {}
-        self.stream_cache: dict[str, int] = {}
+        self.stream_cache: dict[str, ChannelInfo] = {}
+        self.topic_cache: dict[ChannelTopicInfo, int | None] = {}
 
     def get_full_name_info_list(
         self, user_filters: list[UserFilter], message_sender: UserProfile | None
@@ -140,7 +160,9 @@ class MentionBackend:
 
         return result
 
-    def get_stream_name_map(self, stream_names: set[str]) -> dict[str, int]:
+    def get_stream_name_map(
+        self, stream_names: set[str], acting_user: UserProfile | None
+    ) -> dict[str, int]:
         if not stream_names:
             return {}
 
@@ -149,15 +171,17 @@ class MentionBackend:
 
         for stream_name in stream_names:
             if stream_name in self.stream_cache:
-                result[stream_name] = self.stream_cache[stream_name]
+                result[stream_name] = self.stream_cache[stream_name].channel_id
             else:
                 unseen_stream_names.append(stream_name)
 
-        if unseen_stream_names:
-            q_list = {Q(name=name) for name in unseen_stream_names}
+        if not unseen_stream_names:
+            return result
 
+        q_list = {Q(name=name) for name in unseen_stream_names}
+        if acting_user is None:
             rows = (
-                get_linkable_streams(
+                Stream.objects.filter(
                     realm_id=self.realm_id,
                 )
                 .filter(
@@ -166,12 +190,73 @@ class MentionBackend:
                 .values(
                     "id",
                     "name",
+                    "recipient_id",
+                    "history_public_to_subscribers",
                 )
             )
-
             for row in rows:
-                self.stream_cache[row["name"]] = row["id"]
+                self.stream_cache[row["name"]] = ChannelInfo(
+                    row["id"], row["recipient_id"], row["history_public_to_subscribers"]
+                )
                 result[row["name"]] = row["id"]
+        else:
+            authorization = filter_stream_authorization(
+                acting_user,
+                list(
+                    Stream.objects.filter(
+                        realm_id=self.realm_id,
+                    ).filter(
+                        functools.reduce(lambda a, b: a | b, q_list),
+                    )
+                ),
+                is_subscribing_other_users=False,
+            )
+            for stream in authorization.authorized_streams:
+                assert stream.recipient_id is not None
+                self.stream_cache[stream.name] = ChannelInfo(
+                    stream.id, stream.recipient_id, stream.history_public_to_subscribers
+                )
+                result[stream.name] = stream.id
+
+        return result
+
+    def get_topic_info_map(
+        self, channel_topics: set[ChannelTopicInfo], acting_user: UserProfile | None
+    ) -> dict[ChannelTopicInfo, int | None]:
+        if not channel_topics:
+            return {}
+
+        result: dict[ChannelTopicInfo, int | None] = {}
+        unseen_channel_topic: list[ChannelTopicInfo] = []
+
+        for channel_topic in channel_topics:
+            if channel_topic in self.topic_cache:
+                result[channel_topic] = self.topic_cache[channel_topic]
+            else:
+                unseen_channel_topic.append(channel_topic)
+
+        for channel_topic in unseen_channel_topic:
+            channel_info = self.stream_cache.get(channel_topic.channel_name)
+
+            if channel_info is None:
+                # The acting user does not have access to content in this channel.
+                continue
+
+            recipient_id = channel_info.recipient_id
+            topic_name = channel_topic.topic_name
+            history_public_to_subscribers = channel_info.history_public_to_subscribers
+
+            topic_latest_message = get_first_message_for_user_in_topic(
+                self.realm_id,
+                acting_user,
+                recipient_id,
+                topic_name,
+                history_public_to_subscribers,
+                acting_user_has_channel_content_access=True,
+            )
+
+            self.topic_cache[channel_topic] = topic_latest_message
+            result[channel_topic] = topic_latest_message
 
         return result
 
@@ -252,6 +337,7 @@ class MentionData:
     ) -> None:
         self.mention_backend = mention_backend
         realm_id = mention_backend.realm_id
+        self.message_sender = message_sender
         mentions = possible_mentions(content)
         possible_mentions_info = get_possible_mentions_info(
             mention_backend, mentions.mention_texts, message_sender
@@ -334,8 +420,19 @@ class MentionData:
     def get_group_members(self, user_group_id: int) -> set[int]:
         return self.user_group_members.get(user_group_id, set())
 
-    def get_stream_name_map(self, stream_names: set[str]) -> dict[str, int]:
-        return self.mention_backend.get_stream_name_map(stream_names)
+    def get_stream_name_map(
+        self, stream_names: set[str], acting_user: UserProfile | None
+    ) -> dict[str, int]:
+        return self.mention_backend.get_stream_name_map(
+            stream_names, acting_user=self.message_sender
+        )
+
+    def get_topic_info_map(
+        self, channel_topics: set[ChannelTopicInfo]
+    ) -> dict[ChannelTopicInfo, int | None]:
+        return self.mention_backend.get_topic_info_map(
+            channel_topics, acting_user=self.message_sender
+        )
 
 
 def silent_mention_syntax_for_user(user_profile: UserProfile) -> str:
