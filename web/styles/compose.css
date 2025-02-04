@@ -1047,6 +1047,7 @@ textarea.new_message_textarea {
 
     /* Styles for input in the recipient_box */
     #stream_message_recipient_topic {
+        color: var(--color-compose-recipient-box-text-color);
         /* Override grid's effective `max-content` min-width */
         overflow: hidden;
         text-overflow: ellipsis;
