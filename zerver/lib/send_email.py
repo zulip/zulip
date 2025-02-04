@@ -10,13 +10,14 @@ from email.message import EmailMessage
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any
+from typing import Any, Dict
 
 import backoff
 import css_inline
+import markdown
 import orjson
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives, get_connection
+from django.core.mail import EmailMessage, EmailMultiAlternatives, get_connection
 from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail.backends.smtp import EmailBackend
 from django.core.mail.message import sanitize_address
