@@ -272,4 +272,13 @@ run_test("paste_handler_converter", () => {
             inline_math_expression_test.expected_output,
         );
     }
+
+    // Span conversion check
+    for (const span_conversion_test of katex_tests.text_node_to_span_conversion_tests) {
+        input = span_conversion_test.input;
+        assert.equal(
+            copy_and_paste.paste_handler_converter(input),
+            span_conversion_test.expected_output,
+        );
+    }
 });
