@@ -37,7 +37,7 @@ from zerver.lib.stream_subscription import (
 )
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
-    can_access_stream_user_ids,
+    can_access_stream_metadata_user_ids,
     check_basic_stream_access,
     get_group_setting_value_dict_for_streams,
     get_occupied_streams,
@@ -118,7 +118,7 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
         raise JsonableError(_("Channel is already deactivated"))
 
     # Get the affected user ids *before* we deactivate everybody.
-    affected_user_ids = can_access_stream_user_ids(stream)
+    affected_user_ids = can_access_stream_metadata_user_ids(stream)
 
     was_public = stream.is_public()
     was_web_public = stream.is_web_public
@@ -1273,11 +1273,11 @@ def do_change_stream_permission(
             stream.id, include_deactivated_users=False
         ).values_list("user_profile_id", flat=True)
 
-        old_can_access_stream_user_ids = set(stream_subscriber_user_ids) | {
+        old_can_access_stream_metadata_user_ids = set(stream_subscriber_user_ids) | {
             user.id for user in stream.realm.get_admin_users_and_bots()
         }
         non_guest_user_ids = set(active_non_guest_user_ids(stream.realm_id))
-        notify_stream_creation_ids = non_guest_user_ids - old_can_access_stream_user_ids
+        notify_stream_creation_ids = non_guest_user_ids - old_can_access_stream_metadata_user_ids
 
         recent_traffic = get_streams_traffic({stream.id}, realm)
         setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
@@ -1312,7 +1312,9 @@ def do_change_stream_permission(
     )
     # we do not need to send update events to the users who received creation event
     # since they already have the updated stream info.
-    notify_stream_update_ids = can_access_stream_user_ids(stream) - notify_stream_creation_ids
+    notify_stream_update_ids = (
+        can_access_stream_metadata_user_ids(stream) - notify_stream_creation_ids
+    )
     send_event_on_commit(stream.realm, event, notify_stream_update_ids)
 
     old_policy_name = get_stream_permission_policy_name(
@@ -1431,7 +1433,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
         stream_id=stream.id,
         name=old_name,
     )
-    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
     with override_language(stream.realm.default_language):
         internal_send_stream_message(
@@ -1505,7 +1507,7 @@ def do_change_stream_description(
         value=new_description,
         rendered_description=stream.rendered_description,
     )
-    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
 
     send_change_stream_description_notification(
         stream,
@@ -1590,7 +1592,7 @@ def do_change_stream_message_retention_days(
         stream_id=stream.id,
         name=stream.name,
     )
-    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
     send_change_stream_message_retention_days_notification(
         user_profile=acting_user,
         stream=stream,
@@ -1644,7 +1646,7 @@ def do_change_stream_group_based_setting(
         stream_id=stream.id,
         name=stream.name,
     )
-    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+    send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
 
     if setting_name == "can_send_message_group":
         old_stream_post_policy = get_stream_post_policy_value_based_on_group_setting(old_user_group)
@@ -1659,7 +1661,7 @@ def do_change_stream_group_based_setting(
                 stream_id=stream.id,
                 name=stream.name,
             )
-            send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+            send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
 
             # Backwards-compatibility code: We removed the
             # is_announcement_only property in early 2020, but we send a
@@ -1673,7 +1675,7 @@ def do_change_stream_group_based_setting(
                 stream_id=stream.id,
                 name=stream.name,
             )
-            send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))
+            send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
 
         assert acting_user is not None
         send_stream_posting_permission_update_notification(

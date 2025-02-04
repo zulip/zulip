@@ -24,6 +24,7 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import AnonymousSettingGroupDict, APIStreamDict
 from zerver.lib.user_groups import (
+    get_recursive_group_members,
     get_recursive_membership_groups,
     get_role_based_system_groups_dict,
     user_has_permission_for_group_setting,
@@ -179,6 +180,18 @@ def get_default_values_for_stream_permission_group_settings(
     return group_setting_values
 
 
+def get_user_ids_with_metadata_access_via_permission_groups(stream: Stream) -> set[int]:
+    stream_admin_user_ids = set(
+        get_recursive_group_members(stream.can_administer_channel_group).values_list(
+            "id", flat=True
+        )
+    )
+    stream_add_subscribers_group_user_ids = set(
+        get_recursive_group_members(stream.can_add_subscribers_group).values_list("id", flat=True)
+    )
+    return stream_admin_user_ids | stream_add_subscribers_group_user_ids
+
+
 @transaction.atomic(savepoint=False)
 def create_stream_if_needed(
     realm: Realm,
@@ -264,9 +277,15 @@ def create_stream_if_needed(
                 realm, stream, notify_user_ids, setting_groups_dict=setting_groups_dict
             )
         else:
-            realm_admin_ids = [user.id for user in stream.realm.get_admin_users_and_bots()]
+            realm_admin_ids = {user.id for user in stream.realm.get_admin_users_and_bots()}
             send_stream_creation_event(
-                realm, stream, realm_admin_ids, setting_groups_dict=setting_groups_dict
+                realm,
+                stream,
+                list(
+                    realm_admin_ids
+                    | get_user_ids_with_metadata_access_via_permission_groups(stream)
+                ),
+                setting_groups_dict=setting_groups_dict,
             )
 
     return stream, created
@@ -746,7 +765,7 @@ def public_stream_user_ids(stream: Stream) -> set[int]:
     return set(active_non_guest_user_ids(stream.realm_id)) | guest_subscriptions_ids
 
 
-def can_access_stream_user_ids(stream: Stream) -> set[int]:
+def can_access_stream_metadata_user_ids(stream: Stream) -> set[int]:
     # return user ids of users who can access the attributes of a
     # stream, such as its name/description.  Useful for sending events
     # to all users with access to a stream's attributes.
@@ -755,10 +774,13 @@ def can_access_stream_user_ids(stream: Stream) -> set[int]:
         # except unsubscribed guest users
         return public_stream_user_ids(stream)
     else:
-        # for a private stream, it's subscribers plus realm admins.
-        return private_stream_user_ids(stream.id) | {
-            user.id for user in stream.realm.get_admin_users_and_bots()
-        }
+        # for a private stream, it's subscribers plus channel admins
+        # and users belonging to `can_add_subscribers_group`.
+        return (
+            private_stream_user_ids(stream.id)
+            | {user.id for user in stream.realm.get_admin_users_and_bots()}
+            | get_user_ids_with_metadata_access_via_permission_groups(stream)
+        )
 
 
 def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool:
