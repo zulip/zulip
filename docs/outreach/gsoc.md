@@ -31,7 +31,7 @@ amazed at what you can accomplish.
 
 ## Focus areas
 
-For 2024, we are particularly interested in GSoC contributors who have
+For 2025, we are particularly interested in GSoC contributors who have
 strong skills at full-stack feature development, Typescript, visual design,
 HTML/CSS, Flutter, or performance optimization. So if you're an applicant with
 those skills and are looking for an organization to join, we'd love to
@@ -81,22 +81,17 @@ Django, TypeScript/JavaScript, and CSS.
   significant existing work to start from and polish, rather than
   projects that have not been seriously attempted previously.
 
-  Recent sweeps through the Zulip server and web app tracker have
-  identified about 100 open pull requests where a previous contributor
+  We maintain a [completion candidate label][completion-candidate]
+  for pull requests where a previous contributor
   (sometimes via GSoC!) did significant work towards something
   valuable, and there's significant feedback from maintainers, but the
   project was never finished, and requires significant further effort
-  from a new contributor in order to progress. These are tracked via
-  the [completion candidate label][completion-candidate]. One of our
+  from a new contributor in order to progress. One of our
   goals for this summer's GSoC is to complete many of these
   issues. Start by picking something that's interesting to you, and
   you feel you have the skills required to complete. Read the code and
-  the feedback, and then create your own PR for the issue. Remember to
-  carefully test your work (there may be problems that the reviewers
-  missed, or that were introduced by rebasing across other changes!),
-  and credit the original contributor [as documented in our commit
-  guidelines](../contributing/commit-discipline.md). We expect to have
-  a more detailed guide on this process available this Spring.
+  the feedback, and then create your own PR for the issue. See the [guide on
+  continuing unfinished work][continuing-work] for details.
   **Skills required**: Varies with project; a common skill will be
   good reading comprehension and organization/communication skills, to
   walk maintainers through how you resolved problems, addressed any
@@ -108,64 +103,7 @@ Django, TypeScript/JavaScript, and CSS.
   Experts: Tim Abbott and various others depending on project area
 
 [completion-candidate]: https://github.com/zulip/zulip/pulls?q=is%3Aopen+is%3Apr+label%3A%22completion+candidate%22
-
-- Help **migrate our JavaScript codebase to Typescript**. Zulip is in
-  the process of porting the main web app JavaScript codebase to
-  TypeScript; at present, about 40% of the project is written in
-  TypeScript. We've resolved most of the roadblocks to completing this
-  migration, so it's mostly a matter of carefully translating modules,
-  putting in the effort with preparatory commits to make it any
-  refactoring easy to verify. Our goal is to leave the resulting code
-  more readable than it was before, always test the module works after
-  the migration, and avoid introducing logic bugs during this large
-  refactor. [This topic in the Zulip development
-  community][typescript-migration] is a good place to coordinate work
-  on this project. Multiple students are possible; 175 or 350 hours;
-  difficult. **Skills required**: TypeScript and refactoring
-  expertise; we're specifically interested in students who are a type
-  theory nerd and are invested in writing types precisely (Often using
-  [Zod](https://zod.dev/) to parse and verify data received from the
-  server) and checking their work carefully.
-
-  Experts: Zixuan James Li, Evy Kassirer, Anders Kaseorg
-
-[typescript-migration]: https://chat.zulip.org/#narrow/channel/6-frontend/topic/typescript.20migration
-
-- Contribute to Zulip's [**migration to user groups for
-  permissions**][user-group-permissions]. This migration is intended to replace
-  every setting in Zulip that currently allows organizations to assign
-  permissions based on role (admin, moderator, etc.) with a setting based on
-  arbitrary "user groups", making it much more customizable. This is very
-  important for large organizations using Zulip, including businesses and
-  open-source projects. Much of the basic design, API structure, and scaffolding
-  is complete, but there is a lot of work that remains to complete this vision.
-  The project can likely support a couple students; there is considerable work
-  to be done on the settings UI, both for user groups and for channel and
-  organization-level settings, dozens of existing settings to migrate, and [many
-  new settings][organization-settings-label] that users have long requested that
-  we've delayed adding in order to avoid having to migrate them. 175 or 350
-  hours; moderate difficulty. **Skills required**: Python, JavaScript, and CSS.
-  Attention to detail around code reuse/duplication, thoughtful testing, and
-  splitting large migrations into reviewable chunks.
-
-  Experts: Sahil Batra
-
-- Improve the framework and UI in **Zulip's overlays for managing
-  channels and groups**. These two components have very parallel design
-  patterns and implementations (the groups one is quite new!). Coupled
-  with the user groups permissions migration, the goal of this project
-  is to make these important settings panels ergonomic for the large
-  number of new settings that we expect to migrate or add via the
-  groups migration. See the [user groups
-  settings][group-settings-issues] and [channel
-  settings][channel-settings-issues] area labels for starter projects.
-
-  Experts: Purushottam Tiwari, Sahil Batra
-
-[group-settings-issues]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22area%3A+settings+%28user+groups%29%22
-[channel-settings-issues]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+stream+settings%22
-[user-group-permissions]: https://github.com/zulip/zulip/issues/19525
-[organization-settings-label]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+settings+%28admin%2Forg%29%22
+[continuing-work]: ../contributing/continuing-unfinished-work.md
 
 - Migrate Zulip's **[direct message recipient data
   structures](https://github.com/zulip/zulip/issues/25713)** to a new
@@ -268,7 +206,7 @@ Django, TypeScript/JavaScript, and CSS.
   do careful manual testing of third-party products. Fluent English, usability
   sense and/or technical writing skills are all pluses.
 
-  Experts: Zixuan James Li, Lauryn Menard
+  Experts: Niloth, Lauryn Menard
 
 - **Make Zulip integrations easier for nontechnical users to set up**.
   This includes adding a backend permissions system for managing bot
@@ -290,7 +228,7 @@ Django, TypeScript/JavaScript, and CSS.
   has a bunch of good starter issues to demonstrate your skills if
   you're interested in this area.
 
-  Experts: Zixuan James Li, Lauryn Menard
+  Experts: Niloth, Lauryn Menard
 
   [all-settings-issues]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+settings+%28admin%2Forg%29%22%2C%22area%3A+settings+%28user%29%22%2C%22area%3A+stream+settings%22%2C%22area%3A+settings+UI%22
 
