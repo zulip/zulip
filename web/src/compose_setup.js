@@ -604,7 +604,14 @@ export function initialize() {
     });
 
     $("input#stream_message_recipient_topic").on("focus", () => {
+        const $input = $("input#stream_message_recipient_topic");
+        compose_recipient.update_topic_displayed_text($input.val(), true);
         compose_recipient.update_compose_area_placeholder_text();
+
+        $("input#stream_message_recipient_topic").one("blur", () => {
+            compose_recipient.update_topic_displayed_text($input.val());
+            compose_recipient.update_compose_area_placeholder_text();
+        });
     });
 
     $("input#stream_message_recipient_topic").on("input", () => {

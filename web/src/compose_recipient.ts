@@ -348,7 +348,10 @@ export function initialize(): void {
     $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
 }
 
-export function update_topic_displayed_text(topic_name: string | undefined): void {
+export function update_topic_displayed_text(
+    topic_name: string | undefined,
+    has_topic_focus = false,
+): void {
     if (topic_name === undefined) {
         topic_name = "";
     }
@@ -366,7 +369,7 @@ export function update_topic_displayed_text(topic_name: string | undefined): voi
     // Remove any stale references to the empty topic display
     $input.removeClass("empty-topic-display");
 
-    if (is_empty_string_topic) {
+    if (is_empty_string_topic && !has_topic_focus) {
         topic_placeholder_text = util.get_final_topic_display_name("");
         $input.addClass("empty-topic-display");
     }
