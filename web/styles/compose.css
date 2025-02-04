@@ -1091,7 +1091,7 @@ textarea.new_message_textarea {
         }
     }
 
-    #stream_message_recipient_topic:placeholder-shown
+    #stream_message_recipient_topic:not(.empty-topic-display):placeholder-shown
         + #recipient_box_clear_topic_button {
         visibility: hidden;
     }
