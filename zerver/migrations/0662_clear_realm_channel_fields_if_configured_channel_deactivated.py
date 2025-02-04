@@ -26,7 +26,7 @@ def clear_realm_channel_fields_if_configured_channel_deactivated(
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0660_add_imageattachment_content_type"),
+        ("zerver", "0661_archivetransaction_protect_from_deletion"),
     ]
 
     operations = [
