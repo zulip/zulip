@@ -1,3 +1,4 @@
+import time
 from typing import Any
 
 import orjson
@@ -26,6 +27,30 @@ MAX_MESSAGES_SUMMARIZED = 100
 # rather than here in the code.
 OUTPUT_COST_PER_GIGATOKEN = 720
 INPUT_COST_PER_GIGATOKEN = 720
+
+
+ai_time_start = 0.0
+ai_total_time = 0.0
+ai_total_requests = 0
+
+
+def get_ai_time() -> float:
+    return ai_total_time
+
+
+def ai_stats_start() -> None:
+    global ai_time_start
+    ai_time_start = time.time()
+
+
+def get_ai_requests() -> int:
+    return ai_total_requests
+
+
+def ai_stats_finish() -> None:
+    global ai_total_time, ai_total_requests
+    ai_total_requests += 1
+    ai_total_time += time.time() - ai_time_start
 
 
 def format_zulip_messages_for_model(zulip_messages: list[dict[str, Any]]) -> str:
@@ -143,6 +168,8 @@ def do_summarize_narrow(
         make_message(prompt),
     ]
 
+    # Stats for database queries are tracked separately.
+    ai_stats_start()
     # We import litellm here to avoid a DeprecationWarning.
     # See these issues for more info:
     # https://github.com/BerriAI/litellm/issues/6232
@@ -185,4 +212,5 @@ def do_summarize_narrow(
         user_profile, COUNT_STATS["ai_credit_usage::day"], None, timezone_now(), credits_used
     )
 
+    ai_stats_finish()
     return response["choices"][0]["message"]["content"]
