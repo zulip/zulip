@@ -2,6 +2,7 @@ import warnings
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
+
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
