@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
 from zerver.actions.message_send import (
@@ -13,6 +14,7 @@ from zerver.actions.message_send import (
     internal_prep_group_direct_message,
     internal_prep_stream_message,
 )
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.lib.topic import messages_for_topic
 from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
@@ -456,6 +458,10 @@ def send_zulip_update_announcements_to_realm(
             timezone_now() - level_none_to_initial_auditlog.event_time < timedelta(days=7)
         ):
             new_zulip_update_announcements_level = latest_zulip_update_announcements_level
+    elif realm.zulip_update_announcements_stream.deactivated:  # nocoverage
+        # `zulip_update_announcements_stream` should be set to None when its channel is
+        # deactivated. If this condition occurs, there's a bug that needs investigation.
+        raise JsonableError(_("`zulip_update_announcements_stream` is unexpectedly deactivated."))
     else:
         # Wait for 24 hours after sending group DM to allow admins to change the
         # stream for zulip update announcements from it's default value if desired.
