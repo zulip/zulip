@@ -891,7 +891,11 @@ export function get_focused_row_message(): {message?: Message | undefined} & (
 
     const $all_rows = get_all_rows();
     const focused_row = $all_rows.get(row_focus);
-    assert(focused_row !== undefined);
+    if (!focused_row) {
+        // Likely `row_focus` or `current_focus_id` wasn't updated correctly.
+        // TODO: Debug this further.
+        return {message: undefined};
+    }
     const $focused_row = $(focused_row);
     if (is_row_a_header($focused_row)) {
         const is_dm_header = $focused_row.attr("id") === "inbox-dm-header";
