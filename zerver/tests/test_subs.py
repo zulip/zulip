@@ -736,6 +736,62 @@ class TestCreateStreams(ZulipTestCase):
         for setting_name in Stream.stream_permission_group_settings:
             self.do_test_permission_setting_on_stream_creation(setting_name)
 
+    def test_default_permission_settings_on_stream_creation(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+        subscriptions = [{"name": "new_stream", "description": "New stream"}]
+
+        self.login("hamlet")
+        with self.capture_send_event_calls(expected_num_events=4) as events:
+            result = self.subscribe_via_post(
+                hamlet,
+                subscriptions,
+            )
+        self.assert_json_success(result)
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+
+        stream = get_stream("new_stream", realm)
+        self.assertEqual(
+            list(
+                stream.can_administer_channel_group.direct_members.all().values_list(
+                    "id", flat=True
+                )
+            ),
+            [hamlet.id],
+        )
+        self.assertEqual(
+            list(
+                stream.can_administer_channel_group.direct_subgroups.all().values_list(
+                    "id", flat=True
+                )
+            ),
+            [],
+        )
+
+        self.assertEqual(stream.can_add_subscribers_group_id, nobody_group.id)
+        self.assertEqual(stream.can_remove_subscribers_group_id, admins_group.id)
+        self.assertEqual(stream.can_send_message_group_id, everyone_group.id)
+
+        # Check setting values sent in stream creation events.
+        event_stream = events[0]["event"]["streams"][0]
+        self.assertEqual(
+            event_stream["can_administer_channel_group"],
+            AnonymousSettingGroupDict(direct_members=[hamlet.id], direct_subgroups=[]),
+        )
+
+        self.assertEqual(event_stream["can_add_subscribers_group"], nobody_group.id)
+        self.assertEqual(event_stream["can_remove_subscribers_group"], admins_group.id)
+        self.assertEqual(event_stream["can_send_message_group"], everyone_group.id)
+
     def test_acting_user_is_creator(self) -> None:
         """
         If backend calls provide an acting_user while trying to
