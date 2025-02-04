@@ -61,11 +61,23 @@ follows:
 
 ```bash
 sudo -s  # If not already root
-./zulip-server-*/scripts/setup/install --certbot \
+./zulip-server-*/scripts/setup/install --push-notifications --certbot \
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME
 ```
 
-This takes a few minutes to run, as it installs Zulip's dependencies. It is
+This command will immediately prompt you to agree to Zulip's [Terms of
+Service][terms], so that your server can be registered for the [Mobile Push
+Notification Service](mobile-push-notifications.md). To skip registering for
+access to push notifications at this time, remove the `--push-notifications`
+flag.
+
+:::{note}
+When registering for push notifications, you can configure whether your server
+will submit aggregate usage statistics. See `--no-submit-usage-statistics`
+[installer option](#installer-options) for details.
+:::
+
+The installer takes a few minutes to run, as it installs Zulip's dependencies. It is
 designed to be idempotent: if the script fails, once you've corrected the cause
 of the failure, you can just rerun the script. For more information, see
 [installer details](deployment.md#zulip-installer-details) and
@@ -88,6 +100,24 @@ of the failure, you can just rerun the script. For more information, see
   cron job to renew the certificate automatically. If you prefer to acquire an
   SSL certificate another way, it's easy to [provide it to
   Zulip][doc-ssl-manual].
+
+- `--push-notifications`/`--no-push-notifications`: With this option, the Zulip
+  installer registers your server for the [Mobile Push Notification
+  Service](mobile-push-notifications.md), and sets up the initial default
+  configuration. You will be immediately prompted to agree to the [Terms of
+  Service][terms], and your server will be registered at the end of the
+  installation process. You can learn more [about the
+  service](mobile-push-notifications.md) and why it's [necessary for push
+  notifications](mobile-push-notifications.md#why-a-push-notification-service-is-necessary).
+
+- `--no-submit-usage-statistics`: If you enable push notifications, by default
+  your server will submit [basic
+  metadata](mobile-push-notifications.md#uploading-basic-metadata) (required for
+  billing and for determining free plan eligibility), as well as [aggregate
+  usage statistics](mobile-push-notifications.md#uploading-usage-statistics).
+  You can disable submitting usage statistics by passing this flag. If push
+  notifications are not enabled, no data will be submitted, so this flag is
+  redundant.
 
 - `--self-signed-cert`: With this option, the Zulip installer
   generates a self-signed SSL certificate for the server. This isn't
@@ -152,3 +182,4 @@ Learning more:
   server.
 
 [realm-admin-docs]: https://zulip.com/help/moving-to-zulip
+[terms]: https://zulip.com/policies/terms
