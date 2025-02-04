@@ -25,6 +25,8 @@ are:
 - Fedora 38 (beta)
 - RHEL 7 (beta)
 
+If you are installing into a local container, such as a Linux Container, see [Developing on a remote machine](remote.md).
+
 **Note**: You should not use the `root` user to run the installation.
 If you are using a [remote server](remote.md), see
 the
