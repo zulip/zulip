@@ -75,7 +75,7 @@ from zerver.lib.streams import (
     access_stream_by_id,
     access_stream_by_name,
     can_access_stream_history,
-    can_access_stream_user_ids,
+    can_access_stream_metadata_user_ids,
     create_stream_if_needed,
     create_streams_if_needed,
     do_get_streams,
@@ -286,6 +286,7 @@ class TestCreateStreams(ZulipTestCase):
         stream_names = ["new1", "new2", "new3"]
         stream_descriptions = ["des1", "des2", "des3"]
         realm = get_realm("zulip")
+        iago = self.example_user("iago")
 
         # Test stream creation events.
         with self.capture_send_event_calls(expected_num_events=1) as events:
@@ -298,15 +299,34 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "Public stream")
         self.assertEqual(events[0]["event"]["streams"][0]["stream_weekly_traffic"], None)
 
+        aaron_group = check_add_user_group(
+            realm, "aaron_group", [self.example_user("aaron")], acting_user=iago
+        )
+        prospero_group = check_add_user_group(
+            realm, "prospero_group", [self.example_user("prospero")], acting_user=iago
+        )
         with self.capture_send_event_calls(expected_num_events=1) as events:
-            ensure_stream(realm, "Private stream", invite_only=True, acting_user=None)
+            create_stream_if_needed(
+                realm,
+                "Private stream",
+                invite_only=True,
+                can_administer_channel_group=aaron_group,
+                can_add_subscribers_group=prospero_group
+            )
 
         self.assertEqual(events[0]["event"]["type"], "stream")
         self.assertEqual(events[0]["event"]["op"], "create")
         # Send private stream creation event to only realm admins.
-        self.assert_length(events[0]["users"], 2)
-        self.assertTrue(self.example_user("iago").id in events[0]["users"])
-        self.assertTrue(self.example_user("desdemona").id in events[0]["users"])
+        self.assert_length(events[0]["users"], 4)
+        self.assertCountEqual(
+            [
+                iago.id,
+                self.example_user("desdemona").id,
+                self.example_user("aaron").id,
+                self.example_user("prospero").id,
+            ],
+            events[0]["users"],
+        )
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "Private stream")
         self.assertEqual(events[0]["event"]["streams"][0]["stream_weekly_traffic"], None)
 
@@ -2042,6 +2062,24 @@ class StreamAdminTest(ZulipTestCase):
         stream_private = self.make_stream(
             "stream_private_name1", realm=user_profile.realm, invite_only=True
         )
+        aaron_group = check_add_user_group(
+            realm, "aaron_group", [self.example_user("aaron")], acting_user=user_profile
+        )
+        do_change_stream_group_based_setting(
+            stream_private,
+            "can_administer_channel_group",
+            aaron_group,
+            acting_user=None,
+        )
+        prospero_group = check_add_user_group(
+            realm, "prospero_group", [self.example_user("prospero")], acting_user=user_profile
+        )
+        do_change_stream_group_based_setting(
+            stream_private,
+            "can_add_subscribers_group",
+            prospero_group,
+            acting_user=None,
+        )
         self.subscribe(self.example_user("cordelia"), "stream_private_name1")
         with self.capture_send_event_calls(expected_num_events=2) as events:
             stream_id = get_stream("stream_private_name1", realm).id
@@ -2051,13 +2089,16 @@ class StreamAdminTest(ZulipTestCase):
             )
         self.assert_json_success(result)
         notified_user_ids = set(events[0]["users"])
-        self.assertEqual(notified_user_ids, can_access_stream_user_ids(stream_private))
+        self.assertEqual(notified_user_ids, can_access_stream_metadata_user_ids(stream_private))
         self.assertIn(self.example_user("cordelia").id, notified_user_ids)
         # An important corner case is that all organization admins are notified.
         self.assertIn(self.example_user("iago").id, notified_user_ids)
         # The current user, Hamlet was made an admin and thus should be notified too.
         self.assertIn(user_profile.id, notified_user_ids)
-        self.assertNotIn(self.example_user("prospero").id, notified_user_ids)
+        # Channel admin should be notified.
+        self.assertIn(self.example_user("aaron").id, notified_user_ids)
+        # User belonging to `can_add_subscribers_group` should be notified.
+        self.assertIn(self.example_user("prospero").id, notified_user_ids)
 
     def test_rename_stream_requires_admin(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -2297,15 +2338,6 @@ class StreamAdminTest(ZulipTestCase):
             '<p>See <a href="https://zulip.com/team/">https://zulip.com/team/</a></p>',
         )
 
-        user_profile_group = check_add_user_group(
-            realm, "user_profile_group", [user_profile], acting_user=user_profile
-        )
-        do_change_stream_group_based_setting(
-            stream,
-            "can_administer_channel_group",
-            user_profile_group,
-            acting_user=None,
-        )
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         result = self.client_patch(
             f"/json/streams/{stream_id}", {"description": "Test description"}
@@ -6463,7 +6495,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(46):
+        with self.assert_database_query_count(48):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[1]],
