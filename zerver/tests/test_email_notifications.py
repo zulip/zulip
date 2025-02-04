@@ -26,8 +26,218 @@ from zerver.models import Realm, ScheduledEmail, UserProfile
 from zerver.models.realms import get_realm
 from zilencer.models import RemoteZulipServer
 
+import os
+from django.test import TestCase
+from zerver.lib.send_email import send_custom_email
+from zerver.models import UserProfile
 
-class TestCustomEmails(ZulipTestCase):
+class TestCustomEmails(TestCase):
+    def setUp(self):
+        UserProfile.objects.create(email="admin@example.com", is_realm_admin=True)
+        UserProfile.objects.create(email="user@example.com", is_realm_admin=False)
+        self.markdown_content = """From: sender@example.com
+Subject: Test Subject
+
+This is a test email body."""
+        self.markdown_file = 'test_email.md'
+        with open(self.markdown_file, 'w') as file:
+            file.write(self.markdown_content)
+    
+    def tearDown(self):
+        # Remove the markdown file after tests
+        os.remove(self.markdown_file)
+
+    def test_send_custom_email_to_all(self):
+        send_custom_email(
+            UserProfile.objects.all(),
+            dry_run=False,
+            options={"markdown_template_path": self.markdown_file}
+        )
+        
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertIn("user@example.com", mail.outbox[0].to)
+        self.assertIn("admin@example.com", mail.outbox[1].to)
+        self.assertEqual(mail.outbox[0].subject, "Test Subject")
+        self.assertEqual(mail.outbox[0].from_email, "sender@example.com")
+
+    def test_send_custom_email_to_admins_only(self):
+        send_custom_email(
+            UserProfile.objects.all(),
+            dry_run=False,
+            options={"markdown_template_path": self.markdown_file},
+            admins_only=True
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("admin@example.com", mail.outbox[0].to)
+        self.assertNotIn("user@example.com", mail.outbox[0].to)
+        self.assertEqual(mail.outbox[0].subject, "Test Subject")
+        self.assertEqual(mail.outbox[0].from_email, "sender@example.com")
+
+    def test_send_custom_email_argument(self):
+        hamlet = UserProfile.objects.create(email="hamlet@example.com", is_realm_admin=False)
+        email_subject = "subject_test"
+        reply_to = "reply_to_test"
+        from_name = "from_name_test"
+
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as markdown_template:
+            markdown_template.write("From: {}\nSubject: {}\n\n# Some heading\n\nSome content\n{{ realm_name }}".format(from_name, email_subject))
+            markdown_template.flush()
+            send_custom_email(
+                UserProfile.objects.filter(id=hamlet.id),
+                dry_run=False,
+                options={
+                    "markdown_template_path": markdown_template.name,
+                    "reply_to": reply_to,
+                },
+            )
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.subject, email_subject)
+        self.assertEqual(msg.reply_to[0], reply_to)
+        self.assertIn("# Some heading", msg.body)
+        self.assertIn("Some content", msg.body)
+        self.assertNotIn("{{ realm_name }}", msg.body)
+
+    def test_send_custom_email_headers(self):
+        hamlet = UserProfile.objects.create(email="hamlet@example.com", is_realm_admin=False)
+        markdown_template_path = (
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.md"
+        )
+        send_custom_email(
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
+                "markdown_template_path": markdown_template_path,
+            },
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.subject, "Test subject")
+        self.assertFalse(msg.reply_to)
+        self.assertIn("Test body", msg.body)
+
+    def test_send_custom_email_context(self):
+        hamlet = UserProfile.objects.create(email="hamlet@example.com", is_realm_admin=False)
+        markdown_template_path = (
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.md"
+        )
+        send_custom_email(
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
+                "markdown_template_path": markdown_template_path,
+            },
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.extra_headers.get("X-Auto-Response-Suppress"), "All")
+        self.assertIsNone(msg.extra_headers.get("List-Unsubscribe"))
+
+        mail.outbox = []
+        markdown_template_path = (
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
+        )
+
+        def add_context(context: dict[str, object], user: UserProfile) -> None:
+            context["unsubscribe_link"] = "some@email"
+            context["custom"] = str(user.id)
+
+        send_custom_email(
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
+                "markdown_template_path": markdown_template_path,
+            },
+            add_context=add_context,
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.extra_headers.get("X-Auto-Response-Suppress"), "All")
+        self.assertEqual(msg.extra_headers.get("List-Unsubscribe"), "<some@email>")
+        self.assertIn(f"Test body with {hamlet.id} value", msg.body)
+
+    def test_send_custom_email_no_argument(self):
+        hamlet = UserProfile.objects.create(email="hamlet@example.com", is_realm_admin=False)
+        from_name = "from_name_test"
+        email_subject = "subject_test"
+        markdown_template_path = (
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_no_headers_test.md"
+        )
+
+        from zerver.lib.send_email import NoEmailArgumentError
+
+        self.assertRaises(
+            NoEmailArgumentError,
+            send_custom_email,
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
+                "markdown_template_path": markdown_template_path,
+                "from_name": from_name,
+            },
+        )
+
+        self.assertRaises(
+            NoEmailArgumentError,
+            send_custom_email,
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
+                "markdown_template_path": markdown_template_path,
+                "subject": email_subject,
+            },
+        )
+
+    def test_send_custom_email_doubled_arguments(self):
+        hamlet = UserProfile.objects.create(email="hamlet@example.com", is_realm_admin=False)
+        from_name = "from_name_test"
+        email_subject = "subject_test"
+        markdown_template_path = (
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.md"
+        )
+
+        from zerver.lib.send_email import DoubledEmailArgumentError
+
+        self.assertRaises(
+            DoubledEmailArgumentError,
+            send_custom_email,
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
+                "markdown_template_path": markdown_template_path,
+                "subject": email_subject,
+            },
+        )
+
+        self.assertRaises(
+            DoubledEmailArgumentError,
+            send_custom_email,
+            UserProfile.objects.filter(id=hamlet.id),
+            dry_run=False,
+            options={
+                "markdown_template_path": markdown_template_path,
+                "from_name": from_name,
+            },
+        )
+
+    def test_send_custom_email_dry_run(self):
+        hamlet = UserProfile.objects.create(email="hamlet@example.com", is_realm_admin=False)
+        email_subject = "subject_test"
+        reply_to = "reply_to_test"
+        from_name = "from_name_test"
+        markdown_template_path = "templates/zerver/tests/markdown/test_nested_code_blocks.md"
+        with patch("builtins.print") as _:
+            send_custom_email(
+                UserProfile.objects.filter(id=hamlet.id),
+                dry_run=True,
+                options={
+                    "markdown_template_path": markdown_template_path,
+                    "reply_to": reply_to,
+                    "subject": email_subject,
+                    "from_name": from_name,
+                },
+            )
+            self.assertEqual(len(mail.outbox), 0)
     def test_send_custom_email_argument(self) -> None:
         hamlet = self.example_user("hamlet")
         email_subject = "subject_test"

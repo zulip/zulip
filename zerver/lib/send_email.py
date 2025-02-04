@@ -12,6 +12,15 @@ from email.policy import default
 from email.utils import formataddr, parseaddr
 from typing import Any
 
+import email
+from email import policy
+from email.parser import BytesParser
+from django.core.mail import EmailMultiAlternatives
+from django.db.models.functions import Lower
+from zerver.models import UserProfile
+from django.db.models import QuerySet
+from typing import Dict, Callable, Optional, Any
+
 import backoff
 import css_inline
 import orjson
@@ -593,27 +602,46 @@ def custom_email_sender(
     return send_one_email
 
 
+
+def parse_email_headers_from_markdown(markdown_path: str) -> Dict[str, str]:
+    with open(markdown_path, 'r') as file:
+        headers = ""
+        body = ""
+        in_headers = True
+        for line in file:
+            if in_headers:
+                if line.strip() == "":
+                    in_headers = False
+                elif line.startswith("From:") or line.startswith("Subject:"):
+                    headers += line
+                else:
+                    body += line
+            else:
+                body += line
+        msg = BytesParser(policy=policy.default).parsebytes(headers.encode())
+        return {
+            'from': msg['From'],
+            'subject': msg['Subject'],
+            'body': body
+        }
+
 def send_custom_email(
     users: QuerySet[UserProfile],
     *,
     dry_run: bool,
-    options: dict[str, str],
-    add_context: Callable[[dict[str, object], UserProfile], None] | None = None,
+    options: Dict[str, str],
+    add_context: Callable[[Dict[str, object], UserProfile], None] | None = None,
     distinct_email: bool = False,
+    admins_only: bool = False
 ) -> QuerySet[UserProfile]:
-    """
-    Helper for `manage.py send_custom_email`.
-
-    Can be used directly with from a management shell with
-    send_custom_email(user_profile_list, dict(
-        markdown_template_path="/path/to/markdown/file.md",
-        subject="Email subject",
-        from_name="Sender Name")
-    )
-    """
-    email_sender = custom_email_sender(**options, dry_run=dry_run)
+    parsed_email = parse_email_headers_from_markdown(options["markdown_template_path"])
+    subject = parsed_email['subject']
+    from_email = parsed_email['from']
+    body = parsed_email['body']
 
     users = users.select_related("realm")
+    if admins_only:
+        users = users.filter(is_realm_admin=True)
     if distinct_email:
         users = (
             users.annotate(lower_email=Lower("delivery_email"))
@@ -622,8 +650,9 @@ def send_custom_email(
         )
     else:
         users = users.order_by("id")
+
     for user_profile in users:
-        context: dict[str, object] = {
+        context: Dict[str, object] = {
             "realm": user_profile.realm,
             "realm_string_id": user_profile.realm.string_id,
             "realm_url": user_profile.realm.url,
@@ -631,13 +660,22 @@ def send_custom_email(
         }
         if add_context is not None:
             add_context(context, user_profile)
-        email_sender(
-            to_user_id=user_profile.id,
-            context=context,
+
+        email_message = EmailMultiAlternatives(
+            subject,
+            body,
+            from_email,
+            [user_profile.delivery_email],
         )
 
         if dry_run:
+            print(f"Dry run: would send email to {user_profile.delivery_email}")
+        else:
+            email_message.send(fail_silently=False)
+
+        if dry_run:
             break
+
     return users
 
 
