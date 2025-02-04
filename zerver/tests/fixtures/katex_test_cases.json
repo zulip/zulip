@@ -45,5 +45,13 @@
             "expected_output":"I *think* $$e^{i\\pi} = -1$$ is the **coolest** thing I've seen since $$x^2 + y^2 = z^2$$ blew my mind."
 
         }
+    ],
+    "text_node_to_span_conversion_tests":[
+        {
+        "original_markup":"A paragraph with some `code` and a [link](https://example.com/).",
+        "description":"Check conversion of intermediate text nodes and ensure it doesn't distubt pasting/quoting",
+        "input":"<p>A paragraph with some <code>code</code> and a <a href=\"https://example.com/\">link</a>.</p>",
+        "expected_output":"A paragraph with some `code` and a [link](https://example.com/)."
+        }
     ]
 }
