@@ -238,28 +238,28 @@ export function check_group_permission_settings_data(): void {
     const all_realm_group_settings = z
         .array(realm_group_setting_name_schema)
         .parse(Object.keys(realm.server_supported_permission_settings.realm));
-    const realm_group_settings_with_subsection_data: RealmGroupSettingName[] = [];
+    const realm_group_settings_with_subsection_data = new Set<RealmGroupSettingName>([]);
     for (const subsection_obj of settings_config.realm_group_permission_settings) {
         for (const setting_name of subsection_obj.settings) {
-            realm_group_settings_with_subsection_data.push(setting_name);
+            realm_group_settings_with_subsection_data.add(setting_name);
         }
     }
 
     if (
         !all_realm_group_settings.every((setting_name) =>
-            realm_group_settings_with_subsection_data.includes(setting_name),
+            realm_group_settings_with_subsection_data.has(setting_name),
         )
     ) {
         blueslip.error("Settings missing in 'settings_config.realm_group_permission_settings'");
         return;
     }
 
-    const realm_group_setting_label_object_keys = Object.keys(
-        settings_config.all_group_setting_labels.realm,
+    const realm_group_setting_label_object_keys = new Set(
+        Object.keys(settings_config.all_group_setting_labels.realm),
     );
     if (
         !all_realm_group_settings.every((setting_name) =>
-            realm_group_setting_label_object_keys.includes(setting_name),
+            realm_group_setting_label_object_keys.has(setting_name),
         )
     ) {
         blueslip.error("Settings missing in 'settings_config.all_group_setting_labels.realm'");
@@ -269,21 +269,24 @@ export function check_group_permission_settings_data(): void {
     const all_stream_group_settings = z
         .array(stream_group_setting_name_schema)
         .parse(Object.keys(realm.server_supported_permission_settings.stream));
+    const stream_group_permission_settings = new Set(
+        settings_config.stream_group_permission_settings,
+    );
     if (
         !all_stream_group_settings.every((setting_name) =>
-            settings_config.stream_group_permission_settings.includes(setting_name),
+            stream_group_permission_settings.has(setting_name),
         )
     ) {
         blueslip.error("Settings missing in 'settings_config.stream_group_permission_settings'");
         return;
     }
 
-    const stream_group_setting_label_object_keys = Object.keys(
-        settings_config.all_group_setting_labels.stream,
+    const stream_group_setting_label_object_keys = new Set(
+        Object.keys(settings_config.all_group_setting_labels.stream),
     );
     if (
         !all_stream_group_settings.every((setting_name) =>
-            stream_group_setting_label_object_keys.includes(setting_name),
+            stream_group_setting_label_object_keys.has(setting_name),
         )
     ) {
         blueslip.error("Settings missing in 'settings_config.all_group_setting_labels.stream'");
@@ -291,21 +294,22 @@ export function check_group_permission_settings_data(): void {
     }
 
     const all_group_group_settings = get_group_permission_settings();
+    const group_group_permission_settings = new Set(settings_config.group_permission_settings);
     if (
         !all_group_group_settings.every((setting_name) =>
-            settings_config.group_permission_settings.includes(setting_name),
+            group_group_permission_settings.has(setting_name),
         )
     ) {
         blueslip.error("Settings missing in 'settings_config.group_permission_settings'");
         return;
     }
 
-    const group_group_setting_label_object_keys = Object.keys(
-        settings_config.all_group_setting_labels.group,
+    const group_group_setting_label_object_keys = new Set(
+        Object.keys(settings_config.all_group_setting_labels.group),
     );
     if (
         !all_group_group_settings.every((setting_name) =>
-            group_group_setting_label_object_keys.includes(setting_name),
+            group_group_setting_label_object_keys.has(setting_name),
         )
     ) {
         blueslip.error("Settings missing in 'settings_config.all_group_setting_labels.group'");
