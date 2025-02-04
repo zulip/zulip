@@ -51,6 +51,20 @@ log_to_file(logger, settings.EMAIL_LOG_PATH)
 def get_inliner_instance() -> css_inline.CSSInliner:
     return css_inline.CSSInliner()
 
+import markdown
+
+def render_markdown_simple(text: str) -> str:
+    """
+    Converts markdown text to HTML using the markdown library.
+
+    Args:
+    - text (str): The markdown text to convert.
+
+    Returns:
+    - str: The converted HTML.
+    """
+    md = markdown.Markdown()
+    return md.convert(text)
 
 class FromAddress:
     SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
@@ -546,7 +560,7 @@ def custom_email_sender(
 
     from zerver.lib.templates import render_markdown_path
 
-    rendered_input = render_markdown_path(plain_text_template_path.replace("templates/", ""))
+    rendered_input = render_markdown_simple(parsed_email_template.get_payload())
 
     # And then extend it with our standard email headers.
     with (
