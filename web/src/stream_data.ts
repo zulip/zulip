@@ -607,13 +607,16 @@ export function can_preview(sub: StreamSubscription): boolean {
     return sub.subscribed || !sub.invite_only || sub.previously_subscribed;
 }
 
-export function can_change_permissions(
-    sub: StreamSubscription,
-    require_content_access = true,
-): boolean {
-    if (require_content_access && !has_content_access(sub)) {
+export function can_change_permissions_requiring_content_access(sub: StreamSubscription): boolean {
+    if (!has_content_access(sub)) {
         return false;
-    } else if (!require_content_access && !has_metadata_access(sub)) {
+    }
+
+    return can_administer_accessible_channel(sub);
+}
+
+export function can_change_permissions_requiring_metadata_access(sub: StreamSubscription): boolean {
+    if (!has_metadata_access(sub)) {
         return false;
     }
 

@@ -779,13 +779,13 @@ export function update_stream_setting_in_permissions_panel(
         `#id_group_permission_${CSS.escape(sub.stream_id.toString())}_${CSS.escape(setting_name)}`,
     );
 
-    let can_edit = stream_data.can_change_permissions(sub, false);
+    let can_edit = stream_data.can_change_permissions_requiring_metadata_access(sub);
     if (
         settings_config.stream_group_permission_settings_requiring_content_access.includes(
             setting_name,
         )
     ) {
-        can_edit = stream_data.can_change_permissions(sub, true);
+        can_edit = stream_data.can_change_permissions_requiring_content_access(sub);
     }
 
     const assigned_permission_object = group_permission_settings.get_assigned_permission_object(

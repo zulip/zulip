@@ -72,7 +72,7 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
         );
         const sub = sub_store.get(stream_id);
         assert(sub !== undefined);
-        if (!stream_data.can_change_permissions(sub, true)) {
+        if (!stream_data.can_change_permissions_requiring_content_access(sub)) {
             // We do not want to enable the already disabled web-public option
             // in stream-edit panel if user is not allowed to change stream
             // privacy at all.
