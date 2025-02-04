@@ -317,6 +317,22 @@ def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
     ).exists()
 
 
+def is_user_in_can_administer_channel_group(
+    stream: Stream, user_recursive_group_ids: set[int]
+) -> bool:
+    group_allowed_to_administer_channel_id = stream.can_administer_channel_group_id
+    assert group_allowed_to_administer_channel_id is not None
+    return group_allowed_to_administer_channel_id in user_recursive_group_ids
+
+
+def is_user_in_can_add_subscribers_group(
+    stream: Stream, user_recursive_group_ids: set[int]
+) -> bool:
+    group_allowed_to_add_subscribers_id = stream.can_add_subscribers_group_id
+    assert group_allowed_to_add_subscribers_id is not None
+    return group_allowed_to_add_subscribers_id in user_recursive_group_ids
+
+
 def check_stream_access_based_on_can_send_message_group(
     sender: UserProfile, stream: Stream
 ) -> None:
@@ -815,15 +831,10 @@ def get_streams_to_which_user_cannot_add_subscribers(
         if allow_default_streams and stream.id in default_stream_ids:
             continue
 
-        group_allowed_to_administer_channel_id = stream.can_administer_channel_group_id
-        assert group_allowed_to_administer_channel_id is not None
-        if group_allowed_to_administer_channel_id in user_recursive_group_ids:
+        if is_user_in_can_administer_channel_group(stream, user_recursive_group_ids):
             continue
 
-        group_allowed_to_add_subscribers_id = stream.can_add_subscribers_group_id
-        assert group_allowed_to_add_subscribers_id is not None
-
-        if group_allowed_to_add_subscribers_id not in user_recursive_group_ids:
+        if not is_user_in_can_add_subscribers_group(stream, user_recursive_group_ids):
             result.append(stream)
 
     return result
