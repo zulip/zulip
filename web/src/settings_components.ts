@@ -1800,12 +1800,10 @@ export function get_group_assigned_realm_permissions(group: UserGroup): {
                 assigned_permission_objects.push(assigned_permission_object);
             }
         }
-        if (assigned_permission_objects.length > 0) {
-            group_assigned_realm_permissions.push({
-                subsection_heading,
-                assigned_permissions: assigned_permission_objects,
-            });
-        }
+        group_assigned_realm_permissions.push({
+            subsection_heading,
+            assigned_permissions: assigned_permission_objects,
+        });
     }
     return group_assigned_realm_permissions;
 }
