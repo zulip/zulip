@@ -47,4 +47,5 @@ need to be a subscriber in order to change this configuration.
 * [User roles](/help/user-roles)
 * [User groups](/help/user-groups)
 * [Configure who can unsubscribe other users from a channel](/help/configure-who-can-unsubscribe-others)
-* [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
+* [Subscribe users to a channel](/help/subscribe-users-to-a-channel)
+* [Unsubscribe users from a channel](/help/unsubscribe-users-from-a-channel)

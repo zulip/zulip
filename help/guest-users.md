@@ -6,12 +6,13 @@ invited to a company's Zulip chat.
 
 Guest users **can**:
 
-- View and send messages in channels they have been added to, including viewing
-  message history in the same way as other channel subscribers.
+- View and send messages in channels they have been subscribed to, including
+  viewing message history in the same way as other channel subscribers.
 
 Guest users **cannot**:
 
-- See private or public channels, unless they have been specifically added to the channel.
+- See private or public channels, unless they have been specifically subscribed
+  to the channel.
 - Create new channels or user groups.
 - Add or manage bots.
 - Add custom emoji.

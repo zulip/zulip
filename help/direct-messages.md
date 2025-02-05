@@ -6,8 +6,8 @@ usually with just one or two others.
 
 If you find yourself frequently conversing with the same person or group, it
 often works better to [create a private channel](/help/create-a-channel) for your
-conversations. This lets you organize your discussion into topics, and add or
-remove participants as needed.
+conversations. This lets you organize your discussion into topics, and subscribe
+or unsubscribe people as needed.
 
 ## Send a DM
 

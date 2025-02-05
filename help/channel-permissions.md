@@ -39,8 +39,8 @@ can be modified after the channel is created.
 
 [Private channels](#private-channels) (indicated by <i class="zulip-icon
 zulip-icon-lock"></i>) are for conversations that should be accessible only to
-users who are specifically added to the channel. There are two types of private
-channels in Zulip:
+users who are specifically subscribed to the channel. There are two types of
+private channels in Zulip:
 
 - In private channels with **shared history**, new subscribers can access the
   channel's full message history. For example, a newly added team member can get
@@ -58,7 +58,8 @@ Organization administrators and [channel
 administrators](/help/configure-who-can-administer-a-channel) can always:
 
 - See and modify the channel's [name](/help/rename-a-channel) and [description](/help/change-the-channel-description).
-- See who is subscribed to the channel, and [unsubscribe](/help/add-or-remove-users-from-a-channel#remove-users-from-a-channel) them.
+- See who is subscribed to the channel, and
+  [unsubscribe](/help/unsubscribe-users-from-a-channel) them.
 - See the channel's permissions settings.
 - See how much message traffic the channel gets (but not its contents).
 - [Archive](/help/archive-a-channel) the channel.
@@ -105,7 +106,8 @@ Public channels (indicated by <i class="zulip-icon
 You can configure other permissions for public channels, such as [who is allowed
 to post](/help/channel-posting-policy).
 
-Guest users can't see public (or private) channels, unless they have been specifically added to the channel.
+Guest users can't see public (or private) channels, unless they have been specifically
+subscribed to the channel.
 
 ## Web-public channels
 
