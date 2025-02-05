@@ -42,18 +42,18 @@ Sample HTML formats are as follows:
  #announce &gt; Zulip updates
 </a>
 
+<!-- Syntax: #**announce>Zulip updates**
+     Generated only if topic had no messages or the link was rendered
+     before Zulip 10.0 (feature level 347) -->
+<a class="stream-topic" data-stream-id="9"
+  href="/#narrow/channel/9-announce/topic/Zulip.20updates">
+ #announce &gt; Zulip updates
+</a>
+
 <!-- Syntax: #**announce>Zulip updates@214** -->
 <a class="message-link"
   href="/#narrow/channel/9-announce/topic/Zulip.20updates/near/214">
  #announce &gt; Zulip updates @ 💬
-</a>
-
-<!-- Syntax: #**announce>Zulip updates**
-     Generated only if topic is empty or the link was rendered before
-     Zulip 10.0 (feature level 347) -->
-<a class="stream-topic" data-stream-id="9"
-  href="/#narrow/channel/9-announce/topic/Zulip.20updates">
- #announce &gt; Zulip updates
 </a>
 ```
 
@@ -86,18 +86,18 @@ are as follows:
  #announce &gt; <em>general chat</em>
 </a>
 
+<!-- Syntax: #**announce>**
+     Generated only if topic had no messages or the link was rendered
+     before Zulip 10.0 (feature level 347) -->
+<a class="stream-topic" data-stream-id="9"
+  href="/#narrow/channel/9-announce/topic/">
+ #announce &gt; <em>general chat</em>
+</a>
+
 <!-- Syntax: #**announce>@214** -->
 <a class="message-link"
   href="/#narrow/channel/9-announce/topic//near/214">
  #announce &gt; <em>general chat</em> @ 💬
-</a>
-
-<!-- Syntax: #**announce>**
-     Generated only if topic is empty or the link was rendered before
-     Zulip 10.0 (feature level 347) -->
-<a class="stream-topic" data-stream-id="9"
-  href="/#narrow/channel/9-announce/topic/">
- #announce &gt; <em>general chat</em>
 </a>
 ```
 
