@@ -393,13 +393,11 @@ def update_stream_backend(
             continue
 
         setting_value = request_settings_dict[setting_name]
-        new_setting_value = parse_group_setting_value(setting_value.new, setting_name)
+        new_setting_value = parse_group_setting_value(setting_value.new)
 
         expected_current_setting_value = None
         if setting_value.old is not None:
-            expected_current_setting_value = parse_group_setting_value(
-                setting_value.old, setting_name
-            )
+            expected_current_setting_value = parse_group_setting_value(setting_value.old)
 
         current_value = getattr(stream, setting_name)
         current_setting_api_value = get_group_setting_value_for_api(current_value)
@@ -603,7 +601,7 @@ def add_subscriptions_backend(
         assert setting_name in request_settings_dict
         if request_settings_dict[setting_name] is not None:
             setting_request_value = request_settings_dict[setting_name]
-            setting_value = parse_group_setting_value(setting_request_value, setting_name)
+            setting_value = parse_group_setting_value(setting_request_value)
             group_settings_map[setting_name] = access_user_group_for_setting(
                 setting_value,
                 user_profile,
