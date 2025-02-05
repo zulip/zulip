@@ -1783,6 +1783,10 @@ label.preferences-radio-choice-label {
         display: none;
     }
 
+    .hidden-subscriber-email {
+        display: none;
+    }
+
     .upload-size {
         display: none;
     }
