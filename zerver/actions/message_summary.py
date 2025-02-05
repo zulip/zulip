@@ -194,6 +194,7 @@ def do_summarize_narrow(
     input_tokens = response["usage"]["prompt_tokens"]
     output_tokens = response["usage"]["completion_tokens"]
 
+    # Divide by 1 billion to get actual cost in USD.
     credits_used = (output_tokens * settings.OUTPUT_COST_PER_GIGATOKEN) + (
         input_tokens * settings.INPUT_COST_PER_GIGATOKEN
     )

@@ -8,6 +8,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json
 
+from analytics.lib.counts import COUNT_STATS
 from zerver.actions.message_summary import do_summarize_narrow
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.narrow import NarrowParameter
@@ -28,6 +29,13 @@ def get_messages_summary(
 
     if not (user_profile.is_moderator or user_profile.is_realm_admin):  # nocoverage
         return json_success(request, {"summary": "Feature limited to moderators for now."})
+
+    if settings.MAX_PER_USER_MONTHLY_AI_COST is not None:
+        used_credits = COUNT_STATS["ai_credit_usage::day"].current_month_accumulated_count_for_user(
+            user_profile
+        )
+        if used_credits >= settings.MAX_PER_USER_MONTHLY_AI_COST * 1000000000:
+            raise JsonableError(_("Reached monthly limit for AI credits."))
 
     summary = do_summarize_narrow(user_profile, narrow)
     if summary is None:  # nocoverage

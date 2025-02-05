@@ -706,3 +706,4 @@ TOPIC_SUMMARIZATION_PARAMETERS: dict[str, object] = {}
 # are arbitrarily, but typically will be USD.
 INPUT_COST_PER_GIGATOKEN: int = 0
 OUTPUT_COST_PER_GIGATOKEN: int = 0
+MAX_PER_USER_MONTHLY_AI_COST: float | None = 0.5
