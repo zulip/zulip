@@ -11,7 +11,6 @@
         border: 1px solid;
         border-color: hsl(0deg 0% 0% / 60%);
         border-radius: 5px;
-        height: 35px;
 
         & input.user-status {
             grid-area: search-input;
