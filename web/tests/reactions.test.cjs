@@ -336,6 +336,8 @@ test("sending", ({override, override_rewire}) => {
     });
 
     let emoji_name = "smile"; // should be a current reaction
+    let emoji_code = "1f642";
+    let reaction_type = "unicode_emoji";
 
     override_rewire(reactions, "add_reaction", noop);
     override_rewire(reactions, "remove_reaction", noop);
@@ -343,7 +345,7 @@ test("sending", ({override, override_rewire}) => {
     {
         const stub = make_stub();
         channel.del = stub.f;
-        reactions.toggle_emoji_reaction(message, emoji_name);
+        reactions.toggle_emoji_reaction(message, emoji_name, emoji_code, reaction_type);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("args").args;
         assert.equal(args.url, "/json/messages/1001/reactions");
@@ -362,10 +364,12 @@ test("sending", ({override, override_rewire}) => {
         args.error({readyState: 4, responseJSON: {msg: "Some error message"}});
     }
     emoji_name = "alien"; // not set yet
+    emoji_code = "1f47d";
+    reaction_type = "unicode_emoji";
     {
         const stub = make_stub();
         channel.post = stub.f;
-        reactions.toggle_emoji_reaction(message, emoji_name);
+        reactions.toggle_emoji_reaction(message, emoji_name, emoji_code, reaction_type);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("args").args;
         assert.equal(args.url, "/json/messages/1001/reactions");
@@ -399,7 +403,13 @@ test("sending", ({override, override_rewire}) => {
     {
         const stub = make_stub();
         channel.post = stub.f;
-        reactions.toggle_emoji_reaction(message, emoji_name);
+        const emoji_details = emoji.get_emoji_details_by_name(emoji_name);
+        reactions.toggle_emoji_reaction(
+            message,
+            emoji_name,
+            emoji_details.emoji_code,
+            emoji_details.reaction_type,
+        );
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("args").args;
         assert.equal(args.url, "/json/messages/1001/reactions");
@@ -413,10 +423,15 @@ test("sending", ({override, override_rewire}) => {
     }
 
     emoji_name = "unknown-emoji"; // Test sending an emoji unknown to frontend.
-    assert.throws(() => reactions.toggle_emoji_reaction(message, emoji_name), {
-        name: "Error",
-        message: "Bad emoji name: unknown-emoji",
-    });
+    assert.throws(
+        () => {
+            emoji.get_emoji_details_by_name(emoji_name);
+        },
+        {
+            name: "Error",
+            message: "Bad emoji name: unknown-emoji",
+        },
+    );
 });
 
 test("prevent_simultaneous_requests_updating_reaction", ({override_rewire}) => {
@@ -427,8 +442,8 @@ test("prevent_simultaneous_requests_updating_reaction", ({override_rewire}) => {
 
     // Verify that two requests to add the same reaction in a row only
     // result in a single request to the server.
-    reactions.toggle_emoji_reaction(message, "cow");
-    reactions.toggle_emoji_reaction(message, "cow");
+    reactions.toggle_emoji_reaction(message, "cow", "1f404", "unicode_emoji");
+    reactions.toggle_emoji_reaction(message, "cow", "1f404", "unicode_emoji");
 
     assert.equal(stub.num_calls, 1);
 });

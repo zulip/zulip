@@ -133,14 +133,23 @@ function update_ui_and_send_reaction_ajax(
     }
 }
 
-export function toggle_emoji_reaction(message: Message, emoji_name: string): void {
+export function toggle_emoji_reaction(
+    message: Message,
+    emoji_name: string,
+    emoji_code: string,
+    reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji",
+): void {
     // This codepath doesn't support toggling a deactivated realm emoji.
     // Since a user can interact with a deactivated realm emoji only by
     // clicking on a reaction and that is handled by `process_reaction_click()`
     // method. This codepath is to be used only where there is no chance of an
     // user interacting with a deactivated realm emoji like emoji picker.
 
-    const rendering_details = emoji.get_emoji_details_by_name(emoji_name);
+    const rendering_details = emoji.get_emoji_details_for_rendering({
+        emoji_name,
+        emoji_code,
+        reaction_type,
+    });
     update_ui_and_send_reaction_ajax(message, rendering_details);
 }
 
