@@ -374,6 +374,8 @@ class BaseAction(ZulipTestCase):
         with self.captureOnCommitCallbacks(execute=True):
             yield events
 
+        self.user_profile.refresh_from_db()
+
         # Append to an empty list so the result is accessible through the
         # reference we just yielded.
         events += client.event_queue.contents()
@@ -531,7 +533,7 @@ class NormalActionsTest(BaseAction):
                 )
 
     def test_automatically_follow_topic_where_mentioned(self) -> None:
-        user = self.example_user("hamlet")
+        user = self.user_profile
 
         do_change_user_setting(
             user_profile=user,
@@ -684,7 +686,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(user_creation_user_ids, {othello.id, desdemona.id})
 
     def test_stream_send_message_events(self) -> None:
-        hamlet = self.example_user("hamlet")
+        hamlet = self.user_profile
         for stream_name in ["Verona", "Denmark", "core team"]:
             stream = get_stream(stream_name, hamlet.realm)
             sub = get_subscription(stream.name, hamlet)
@@ -871,7 +873,7 @@ class NormalActionsTest(BaseAction):
         assert isinstance(events[0]["message"]["avatar_url"], str)
 
         do_change_user_setting(
-            self.example_user("hamlet"),
+            hamlet,
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -3141,6 +3143,7 @@ class NormalActionsTest(BaseAction):
 
         do_reactivate_user(user_profile, acting_user=None)
         self.set_up_db_for_testing_user_access()
+        self.user_profile.refresh_from_db()
 
         # Test that users who can access the deactivated user
         # do not receive the 'user_group/remove_members' event.
