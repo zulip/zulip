@@ -4196,13 +4196,21 @@ class TestGetAPNsPayload(PushNotificationTest):
         self.assertDictEqual(payload, expected)
         mock_push_notifications.assert_called()
 
-    def _test_get_message_payload_apns_stream_message(self, trigger: str) -> None:
+    def _test_get_message_payload_apns_stream_message(
+        self, trigger: str, empty_string_topic: bool = False
+    ) -> None:
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
+        topic_display_name = message.topic_name()
+        if empty_string_topic:
+            message.set_topic_name("")
+            message.save()
+            topic_display_name = Message.EMPTY_TOPIC_FALLBACK_NAME
+
         payload = get_message_payload_apns(self.sender, message, trigger)
         expected = {
             "alert": {
-                "title": "#Verona > Test topic",
+                "title": f"#Verona > {topic_display_name}",
                 "subtitle": "King Hamlet:",
                 "body": message.content,
             },
@@ -4216,7 +4224,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_id": self.sender.id,
                     "stream": stream.name,
                     "stream_id": stream.id,
-                    "topic": message.topic_name(),
+                    "topic": topic_display_name,
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
                     "realm_name": self.sender.realm.name,
@@ -4234,6 +4242,11 @@ class TestGetAPNsPayload(PushNotificationTest):
 
     def test_get_message_payload_apns_followed_topic_message(self) -> None:
         self._test_get_message_payload_apns_stream_message(NotificationTriggers.FOLLOWED_TOPIC_PUSH)
+
+    def test_get_message_payload_apns_empty_string_topic(self) -> None:
+        self._test_get_message_payload_apns_stream_message(
+            NotificationTriggers.STREAM_PUSH, empty_string_topic=True
+        )
 
     def test_get_message_payload_apns_stream_mention(self) -> None:
         user_profile = self.example_user("othello")
@@ -4469,15 +4482,23 @@ class TestGetGCMPayload(PushNotificationTest):
         truncate_content: bool = False,
         mentioned_user_group_id: int | None = None,
         mentioned_user_group_name: str | None = None,
+        empty_string_topic: bool = False,
     ) -> None:
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
+
         content = message.content
         if truncate_content:
             message.content = "a" * 210
             message.rendered_content = "a" * 210
             message.save()
             content = "a" * 200 + "…"
+
+        topic_display_name = message.topic_name()
+        if empty_string_topic:
+            message.set_topic_name("")
+            message.save()
+            topic_display_name = Message.EMPTY_TOPIC_FALLBACK_NAME
 
         hamlet = self.example_user("hamlet")
         payload, gcm_options = get_message_payload_gcm(
@@ -4502,7 +4523,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "recipient_type": "stream",
             "stream": stream.name,
             "stream_id": stream.id,
-            "topic": message.topic_name(),
+            "topic": topic_display_name,
         }
 
         if mentioned_user_group_id is not None:
@@ -4532,6 +4553,9 @@ class TestGetGCMPayload(PushNotificationTest):
             mentioned_user_group_id=3,
             mentioned_user_group_name="mobile_team",
         )
+
+    def test_get_message_payload_gcm_empty_string_topic(self) -> None:
+        self._test_get_message_payload_gcm_stream_message(empty_string_topic=True)
 
     def test_get_message_payload_gcm_direct_message(self) -> None:
         message = self.get_message(
