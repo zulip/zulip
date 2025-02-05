@@ -13,6 +13,66 @@ import * as stream_data from "./stream_data.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as util from "./util.ts";
 
+const all_inline_html_elements = new Set([
+    "a",
+    "abbr",
+    "acronym",
+    "b",
+    "bdi",
+    "bdo",
+    "big",
+    "br",
+    "cite",
+    "code",
+    "data",
+    "del",
+    "dfn",
+    "em",
+    "i",
+    "img",
+    "input",
+    "kbd",
+    "label",
+    "map",
+    "mark",
+    "output",
+    "q",
+    "ruby",
+    "rp",
+    "rt",
+    "s",
+    "samp",
+    "select",
+    "small",
+    "span",
+    "strong",
+    "sub",
+    "sup",
+    "textarea",
+    "time",
+    "tt",
+    "u",
+    "var",
+    "wbr",
+]);
+const markdown_map_for_inline_html_tags = new Map([
+    ["strong", "**"],
+    ["b", "**"],
+    ["em", "*"],
+    ["i", "*"],
+    ["code", "`"],
+    ["s", "~~"],
+    ["del", "~~"],
+    ["br", "\n"],
+    ["sub", "<sub>"],
+    ["sup", "<sup>"],
+    ["u", "<u>"],
+    ["mark", "=="],
+    ["kbd", "`"],
+    ["var", "_"],
+    ["cite", "_"],
+    ["q", "“"],
+]);
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
     interface HTMLElementTagNameMap {
@@ -640,16 +700,21 @@ export function paste_handler_converter(
             return (math_block_markdown += "```");
         },
     });
-    const inlineTags = new Set(["em", "strong"]);
 
     function is_inline_tag(node: HTMLElement): boolean {
-        return node.nodeType === 1 && inlineTags.has(node.tagName.toLowerCase());
+        return node.nodeType === 1 && all_inline_html_elements.has(node.tagName.toLowerCase());
     }
 
     turndownService.addRule("katex-inline-math", {
         filter(node) {
-            // Allow the intermediate text blocks, so that they don't get appended to the end.
-            if (node.classList.contains("zulip-paste-parser-text-node") || is_inline_tag(node)) {
+            // Allow the intermediate text blocks and inline tags with katex siblings, so that they don't get appended to the end.
+            if (
+                node.classList.contains("zulip-paste-parser-text-node") ||
+                (is_inline_tag(node) &&
+                    [...node.parentNode!.children].some(
+                        (sibling) => sibling !== node && sibling.classList.contains("katex"),
+                    ))
+            ) {
                 return true;
             }
             if (node.classList.contains("katex") && !node.classList.contains("katex-display")) {
@@ -672,17 +737,10 @@ export function paste_handler_converter(
                 }
                 processed_inline_math_block_parents.add(parent);
                 for (const child of parent.children) {
-                    let is_strong_ele = false;
-                    let is_emphasized_ele = false;
-                    if (child.nodeName.toLocaleLowerCase() === "strong") {
-                        is_strong_ele = true;
-                        parsed_inline_expression += "**";
-                    }
-                    if (child.nodeName.toLocaleLowerCase() === "em") {
-                        is_emphasized_ele = true;
-                        parsed_inline_expression += "*";
-                    }
-                    if (child.nodeName === "BR") {
+                    const tag = child.nodeName.toLowerCase();
+                    const markdown_tag_wrap = markdown_map_for_inline_html_tags.get(tag) ?? "";
+
+                    if (tag === "br") {
                         parsed_inline_expression += "\n";
                         continue;
                     }
@@ -699,13 +757,8 @@ export function paste_handler_converter(
                         continue;
                     }
                     // It is a text node that is not between two katex spans
-                    parsed_inline_expression += child.textContent;
-                    if (is_strong_ele) {
-                        parsed_inline_expression += "**";
-                    }
-                    if (is_emphasized_ele) {
-                        parsed_inline_expression += "*";
-                    }
+                    parsed_inline_expression +=
+                        markdown_tag_wrap + child.textContent + markdown_tag_wrap;
                     continue;
                 }
             }
