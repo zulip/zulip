@@ -199,7 +199,8 @@ export function update_send_read_receipts_tooltip(): void {
 }
 
 function settings_change_error(message_html: string, xhr?: JQuery.jqXHR): void {
-    ui_report.error(message_html, xhr, $("#account-settings-status").expectOne());
+    ui_report.error(message_html, xhr, $("#dialog_error"));
+    dialog_widget.hide_dialog_spinner();
 }
 
 function update_custom_profile_field(
@@ -463,7 +464,7 @@ export function set_up(): void {
 
             if (old_password === "") {
                 ui_report.error(
-                    $t_html({defaultMessage: "Please enter your password"}),
+                    $t_html({defaultMessage: "Please enter your password."}),
                     undefined,
                     $("#dialog_error"),
                 );
@@ -472,7 +473,7 @@ export function set_up(): void {
 
             if (new_password === "") {
                 ui_report.error(
-                    $t_html({defaultMessage: "Please choose a new password"}),
+                    $t_html({defaultMessage: "Please choose a new password."}),
                     undefined,
                     $("#dialog_error"),
                 );
@@ -483,7 +484,7 @@ export function set_up(): void {
             if (new_password && new_password.toString().length > max_length) {
                 ui_report.error(
                     $t_html(
-                        {defaultMessage: "Maximum password length: {max_length} characters"},
+                        {defaultMessage: "Maximum password length: {max_length} characters."},
                         {max_length},
                     ),
                     undefined,
@@ -549,7 +550,7 @@ export function set_up(): void {
                 );
                 return;
             } else if (!password_quality(new_pw, undefined, $new_pw_field)) {
-                settings_change_error($t_html({defaultMessage: "New password is too weak"}));
+                settings_change_error($t_html({defaultMessage: "New password is too weak!"}));
                 return;
             }
         }

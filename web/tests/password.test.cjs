@@ -59,7 +59,7 @@ run_test("basics w/progress bar", () => {
     assert.equal($bar.w, "39.7%");
     assert.equal($bar.added_class, "bar-danger");
     warning = password_warning(password, password_field(10));
-    assert.equal(warning, "translated: Password should be at least 10 characters long");
+    assert.equal(warning, "translated: Password should be at least 10 characters long.");
 
     password = "foo";
     accepted = password_quality(password, $bar, password_field(2, 200, 10));
@@ -67,7 +67,7 @@ run_test("basics w/progress bar", () => {
     assert.equal($bar.w, "10.390277164940581%");
     assert.equal($bar.added_class, "bar-success");
     warning = password_warning(password, password_field(2));
-    assert.equal(warning, "translated: Password is too weak");
+    assert.equal(warning, "translated: Password is too weak.");
 
     password = "aaaaaaaa";
     accepted = password_quality(password, $bar, password_field(6, 1e100));
