@@ -304,23 +304,23 @@ Code:
 written with Flutter](https://github.com/zulip/zulip-flutter)
 (now in beta)
 
-Experts: Greg Price, Chris Bobbe
+Experts: Greg Price, Chris Bobbe, Zixuan James Li
 
 - Work on the **upcoming Flutter-based Zulip client**.
-  We're in the midst of [rewriting Zulip's mobile app][flutter-why]
-  from scratch using Flutter, to replace the legacy React Native-based
-  app. The Flutter app [reached beta][flutter-beta] in
-  December 2023, we're working now toward a wider beta, and during the
-  GSoC 2024 period we expect to be working toward turning the beta
-  into a version we can roll out for all Zulip's mobile users.
+  Zulip has a freshly-written [new mobile app built on
+  Flutter][flutter-beta-post], which we're nearing the point of
+  rolling out to replace the legacy React Native-based app.
+  We'll be using this foundation to build much-anticipated features
+  that the Zulip mobile apps have never had before, as well as some
+  that the legacy app had but were skipped for the initial rollout.
 
   This project will involve building features for the Flutter app,
   including code for UI, data structures, and interacting with the
   Zulip server and the Android and/or iOS platforms.
   For a sense of the features we're working on, see our
   [project board][flutter-board] for the new app;
-  the ["Launch" milestone][flutter-milestone-launch]
-  corresponds roughly to what we expect to be working on during GSoC.
+  the tasks we'll be working on during GSoC will come mostly from
+  the ["M6: Post-launch" milestone][flutter-milestone-post-launch].
   For some features, we [may find][flutter-upstream-summary]
   ourselves [contributing changes][flutter-upstream-autocomplete]
   upstream to the Flutter project itself. 175 or 350 hours; difficult.
@@ -333,9 +333,8 @@ Experts: Greg Price, Chris Bobbe
   experience with Android or iOS may also be helpful but is not
   necessary.
 
-[flutter-why]: https://chat.zulip.org/#narrow/channel/2-general/topic/Flutter/near/1582367
-[flutter-beta]: https://chat.zulip.org/#narrow/channel/2-general/topic/Flutter/near/1708728
+[flutter-beta-post]: https://blog.zulip.com/2024/12/12/new-flutter-mobile-app-beta/
 [flutter-board]: https://github.com/orgs/zulip/projects/5/views/4
-[flutter-milestone-launch]: https://github.com/zulip/zulip-flutter/milestone/3
+[flutter-milestone-launch]: https://github.com/zulip/zulip-flutter/milestone/4
 [flutter-upstream-summary]: https://chat.zulip.org/#narrow/channel/2-general/topic/Flutter/near/1524757
 [flutter-upstream-autocomplete]: https://github.com/flutter/flutter/pull/129802
