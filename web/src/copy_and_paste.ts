@@ -13,66 +13,6 @@ import * as stream_data from "./stream_data.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as util from "./util.ts";
 
-const all_inline_html_elements = new Set([
-    "a",
-    "abbr",
-    "acronym",
-    "b",
-    "bdi",
-    "bdo",
-    "big",
-    "br",
-    "cite",
-    "code",
-    "data",
-    "del",
-    "dfn",
-    "em",
-    "i",
-    "img",
-    "input",
-    "kbd",
-    "label",
-    "map",
-    "mark",
-    "output",
-    "q",
-    "ruby",
-    "rp",
-    "rt",
-    "s",
-    "samp",
-    "select",
-    "small",
-    "span",
-    "strong",
-    "sub",
-    "sup",
-    "textarea",
-    "time",
-    "tt",
-    "u",
-    "var",
-    "wbr",
-]);
-const markdown_map_for_inline_html_tags = new Map([
-    ["strong", "**"],
-    ["b", "**"],
-    ["em", "*"],
-    ["i", "*"],
-    ["code", "`"],
-    ["s", "~~"],
-    ["del", "~~"],
-    ["br", "\n"],
-    ["sub", "<sub>"],
-    ["sup", "<sup>"],
-    ["u", "<u>"],
-    ["mark", "=="],
-    ["kbd", "`"],
-    ["var", "_"],
-    ["cite", "_"],
-    ["q", "“"],
-]);
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
     interface HTMLElementTagNameMap {
@@ -504,41 +444,6 @@ export function paste_handler_converter(
         .querySelector("body");
     assert(copied_html_fragment !== null);
 
-    const para_elements = copied_html_fragment.querySelectorAll("p");
-
-    for (const element of para_elements) {
-        const children = [...element.childNodes];
-        /*
-            The aim behind doing this is to convert the intermediate text nodes
-            between two katex spans into spans.
-
-            This is done because filter() function only processes HTMLElements
-        */
-        let katex_node_count = 0;
-        for (const child of children) {
-            if (
-                child instanceof HTMLElement &&
-                (child.classList.contains("katex") || child.classList.contains("katex-display"))
-            ) {
-                katex_node_count += 1;
-            }
-        }
-        // We do the text node to span conversions only if
-        // the children are sandwiched between katex nodes.
-        if (katex_node_count < 2) {
-            continue;
-        }
-
-        for (const child of children) {
-            if (child.nodeType === Node.TEXT_NODE) {
-                const span = document.createElement("span");
-                span.classList.add("zulip-paste-parser-text-node");
-                span.textContent = child.textContent;
-                child.replaceWith(span);
-            }
-        }
-    }
-
     const copied_within_single_element = within_single_element(copied_html_fragment);
     const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE"];
     // If the entire selection copied is within a single HTML element (like an
@@ -639,16 +544,13 @@ export function paste_handler_converter(
         We make use of a set to keep track whether the parent p is already processed in both the cases.
 
         In case of inline math expressions, the structure is same as math blocks.
-        Instead of katex-displays being the immediate children of p, we have span.katex or
-        textnodes(which are converted into spans before parsing) as the immediate children.
-        Newlines in markdown are translated into <br> instead of empty katex-displays here.
+        Instead of katex-displays being the immediate children of p, we have span.katex.
 
         For more information:
         https://chat.zulip.org/#narrow/channel/9-issues/topic/Replying.20to.20highlighted.20text.2C.20LaTeX.20is.20not.20preserved.20.2331608/near/1991687
     */
 
     const processed_math_block_parents = new Set();
-    const processed_inline_math_block_parents = new Set();
     turndownService.addRule("katex-math-block", {
         filter(node) {
             if (
@@ -684,7 +586,7 @@ export function paste_handler_converter(
                         child.classList.contains("katex-display") &&
                         child.querySelector("math")?.textContent !== ""
                     ) {
-                        math_block_markdown += content;
+                        math_block_markdown += content + "\n\n";
                         continue;
                     }
                     if (consecutive_empty_display_count === 0) {
@@ -701,68 +603,25 @@ export function paste_handler_converter(
         },
     });
 
-    function is_inline_tag(node: HTMLElement): boolean {
-        return node.nodeType === 1 && all_inline_html_elements.has(node.tagName.toLowerCase());
-    }
-
     turndownService.addRule("katex-inline-math", {
         filter(node) {
-            // Allow the intermediate text blocks and inline tags with katex siblings, so that they don't get appended to the end.
-            if (
-                node.classList.contains("zulip-paste-parser-text-node") ||
-                (is_inline_tag(node) &&
-                    [...node.parentNode!.children].some(
-                        (sibling) => sibling !== node && sibling.classList.contains("katex"),
-                    ))
-            ) {
-                return true;
-            }
-            if (node.classList.contains("katex") && !node.classList.contains("katex-display")) {
-                // Should explicitly be an inline expression
+            if (node.classList.contains("katex")) {
                 const parent = node.parentElement;
                 if (parent?.classList.contains("katex-display")) {
+                    // This is already processed by the math block rule.
                     return false;
                 }
                 return true;
             }
-
             return false;
         },
         replacement(content, node: Node) {
-            let parsed_inline_expression = "";
-            if (node !== null) {
-                const parent = node.parentElement!;
-                if (processed_inline_math_block_parents.has(parent)) {
-                    return "";
-                }
-                processed_inline_math_block_parents.add(parent);
-                for (const child of parent.children) {
-                    const tag = child.nodeName.toLowerCase();
-                    const markdown_tag_wrap = markdown_map_for_inline_html_tags.get(tag) ?? "";
-
-                    if (tag === "br") {
-                        parsed_inline_expression += "\n";
-                        continue;
-                    }
-                    const annotation_element = child.querySelector(
-                        `.katex-mathml annotation[encoding="application/x-tex"]`,
-                    );
-                    if (annotation_element?.textContent) {
-                        const katex_source = annotation_element.textContent;
-                        parsed_inline_expression += `$$${katex_source}$$`;
-                        continue;
-                    }
-                    if (child.classList.contains("katex")) {
-                        parsed_inline_expression += `$$${content}$$`;
-                        continue;
-                    }
-                    // It is a text node that is not between two katex spans
-                    parsed_inline_expression +=
-                        markdown_tag_wrap + child.textContent + markdown_tag_wrap;
-                    continue;
-                }
-            }
-            return parsed_inline_expression;
+            assert(node instanceof HTMLElement);
+            const annotation_element = node.querySelector(
+                `.katex-mathml annotation[encoding="application/x-tex"]`,
+            );
+            const katex_source = annotation_element?.textContent?.trim() ?? content;
+            return `$$${katex_source}$$`;
         },
     });
 
