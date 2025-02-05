@@ -326,6 +326,15 @@ export function quote_message(opts: {
             const data = z.object({raw_content: z.string()}).parse(raw_data);
             replace_content(message, data.raw_content);
         },
+        error() {
+            compose_ui.replace_syntax(
+                quoting_placeholder,
+                $t({defaultMessage: "[Error fetching message content.]"}),
+                $textarea,
+                opts.forward_message,
+            );
+            compose_ui.autosize_textarea($textarea);
+        },
     });
 }
 
