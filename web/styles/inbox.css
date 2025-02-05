@@ -152,6 +152,7 @@
             }
 
             .inbox-header {
+                user-select: none;
                 display: block;
                 height: 30px;
 
@@ -259,6 +260,7 @@
             }
 
             .inbox-row {
+                user-select: none;
                 display: block;
                 background-color: var(--color-background-inbox-row);
 
