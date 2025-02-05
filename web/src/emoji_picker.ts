@@ -303,7 +303,12 @@ function filter_emojis(): void {
     }
 }
 
-function toggle_reaction(emoji_name: string, event: JQuery.ClickEvent | JQuery.KeyDownEvent): void {
+function toggle_reaction(
+    emoji_name: string,
+    emoji_code: string,
+    reaction_type: "unicode_emoji" | "realm_emoji" | "zulip_extra_emoji",
+    event: JQuery.ClickEvent | JQuery.KeyDownEvent,
+): void {
     // The emoji picker for setting user status
     // doesn't have a concept of toggling.
     // TODO: Ideally we never even get here in
@@ -323,7 +328,7 @@ function toggle_reaction(emoji_name: string, event: JQuery.ClickEvent | JQuery.K
         return;
     }
 
-    reactions.toggle_emoji_reaction(message, emoji_name);
+    reactions.toggle_emoji_reaction(message, emoji_name, emoji_code, reaction_type);
 
     if (!event.shiftKey) {
         hide_emoji_popover();
@@ -736,13 +741,15 @@ export function toggle_emoji_popover(
 
 function handle_reaction_emoji_clicked(
     emoji_name: string,
+    emoji_code: string,
+    reaction_type: "unicode_emoji" | "realm_emoji" | "zulip_extra_emoji",
     event: JQuery.ClickEvent | JQuery.KeyDownEvent,
 ): void {
     // When an emoji is clicked in the popover,
     // if the user has reacted to this message with this emoji
     // the reaction is removed
     // otherwise, the reaction is added
-    toggle_reaction(emoji_name, event);
+    toggle_reaction(emoji_name, emoji_code, reaction_type, event);
 }
 
 function handle_status_emoji_clicked(emoji_name: string): void {
@@ -785,6 +792,10 @@ function handle_emoji_clicked(
     if (emoji_name === undefined) {
         return;
     }
+    const emoji_details = emoji.get_emoji_details_by_name(emoji_name);
+    if (emoji_details.emoji_code === undefined || emoji_details.reaction_type === undefined) {
+        return;
+    }
 
     const emoji_destination = $emoji
         .closest(".emoji-picker-popover")
@@ -792,7 +803,12 @@ function handle_emoji_clicked(
 
     switch (emoji_destination) {
         case "reaction": {
-            handle_reaction_emoji_clicked(emoji_name, event);
+            handle_reaction_emoji_clicked(
+                emoji_name,
+                emoji_details.emoji_code,
+                emoji_details.reaction_type,
+                event,
+            );
             break;
         }
         case "status": {

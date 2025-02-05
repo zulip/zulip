@@ -1210,8 +1210,13 @@ export function process_hotkey(e, hotkey) {
             // '+': reacts with thumbs up emoji on selected message
             // Use canonical name.
             const thumbs_up_emoji_code = "1f44d";
-            const canonical_name = emoji.get_emoji_name(thumbs_up_emoji_code);
-            reactions.toggle_emoji_reaction(msg, canonical_name);
+            const thumbs_up_emoji_name = emoji.get_emoji_name(thumbs_up_emoji_code);
+            reactions.toggle_emoji_reaction(
+                msg,
+                thumbs_up_emoji_name,
+                thumbs_up_emoji_code,
+                "unicode_emoji",
+            );
             return true;
         }
         case "upvote_first_emoji": {
@@ -1228,7 +1233,12 @@ export function process_hotkey(e, hotkey) {
                 return true;
             }
 
-            reactions.toggle_emoji_reaction(msg, first_reaction.emoji_name);
+            reactions.toggle_emoji_reaction(
+                msg,
+                first_reaction.emoji_name,
+                first_reaction.emoji_code,
+                first_reaction.reaction_type,
+            );
             return true;
         }
         case "toggle_topic_visibility_policy":
