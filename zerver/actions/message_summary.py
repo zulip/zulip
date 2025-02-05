@@ -17,17 +17,6 @@ from zerver.models import UserProfile
 
 # Maximum number of messages that can be summarized in a single request.
 MAX_MESSAGES_SUMMARIZED = 100
-# Price per token for input and output tokens.
-# These values are based on the pricing of the Bedrock API
-# for Llama 3.3 Instruct (70B).
-# https://aws.amazon.com/bedrock/pricing/
-# Unit: USD per 1 billion tokens.
-#
-# These values likely will want to be declared in configuration,
-# rather than here in the code.
-OUTPUT_COST_PER_GIGATOKEN = 720
-INPUT_COST_PER_GIGATOKEN = 720
-
 
 ai_time_start = 0.0
 ai_total_time = 0.0
@@ -205,8 +194,8 @@ def do_summarize_narrow(
     input_tokens = response["usage"]["prompt_tokens"]
     output_tokens = response["usage"]["completion_tokens"]
 
-    credits_used = (output_tokens * OUTPUT_COST_PER_GIGATOKEN) + (
-        input_tokens * INPUT_COST_PER_GIGATOKEN
+    credits_used = (output_tokens * settings.OUTPUT_COST_PER_GIGATOKEN) + (
+        input_tokens * settings.INPUT_COST_PER_GIGATOKEN
     )
     do_increment_logging_stat(
         user_profile, COUNT_STATS["ai_credit_usage::day"], None, timezone_now(), credits_used
