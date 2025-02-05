@@ -7,7 +7,6 @@ from django.conf import settings
 from typing_extensions import override
 
 from analytics.models import UserCount
-from zerver.actions.message_summary import INPUT_COST_PER_GIGATOKEN, OUTPUT_COST_PER_GIGATOKEN
 from zerver.lib.test_classes import ZulipTestCase
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
@@ -87,8 +86,8 @@ class MessagesSummaryTestCase(ZulipTestCase):
         ):
             input_tokens = fixture_data["response"]["usage"]["prompt_tokens"]
             output_tokens = fixture_data["response"]["usage"]["completion_tokens"]
-            credits_used = (output_tokens * OUTPUT_COST_PER_GIGATOKEN) + (
-                input_tokens * INPUT_COST_PER_GIGATOKEN
+            credits_used = (output_tokens * settings.OUTPUT_COST_PER_GIGATOKEN) + (
+                input_tokens * settings.INPUT_COST_PER_GIGATOKEN
             )
             self.assertFalse(
                 UserCount.objects.filter(
