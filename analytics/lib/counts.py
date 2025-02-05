@@ -2,11 +2,12 @@ import logging
 import time
 from collections import OrderedDict, defaultdict
 from collections.abc import Callable, Sequence
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import TypeAlias, Union
 
 from django.conf import settings
 from django.db import connection, models
+from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Composable, Identifier, Literal
 from typing_extensions import override
 
@@ -37,6 +38,7 @@ logger = logging.getLogger("zulip.analytics")
 
 # You can't subtract timedelta.max from a datetime, so use this instead
 TIMEDELTA_MAX = timedelta(days=365 * 1000)
+
 
 ## Class definitions ##
 
@@ -81,6 +83,27 @@ class CountStat:
         if fillstate.state == FillState.DONE:
             return fillstate.end_time
         return fillstate.end_time - self.time_increment
+
+    def current_month_accumulated_count_for_user(self, user: UserProfile) -> int:
+        now = timezone_now()
+        start_of_month = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+        if now.month == 12:  # nocoverage
+            start_of_next_month = datetime(now.year + 1, 1, 1, tzinfo=timezone.utc)
+        else:  # nocoverage
+            start_of_next_month = datetime(now.year, now.month + 1, 1, tzinfo=timezone.utc)
+
+        # We just want to check we are not using BaseCount, otherwise all
+        # `output_table` have `objects` property.
+        assert self.data_collector.output_table == UserCount
+        result = self.data_collector.output_table.objects.filter(  # type: ignore[attr-defined] # see above
+            user=user,
+            property=self.property,
+            end_time__gte=start_of_month,
+            end_time__lt=start_of_next_month,
+        ).aggregate(models.Sum("value"))
+
+        total_value = result["value__sum"] or 0
+        return total_value
 
 
 class LoggingCountStat(CountStat):
