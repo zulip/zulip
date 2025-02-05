@@ -57,7 +57,7 @@ A few more details:
 
 * [Channel permissions](/help/channel-permissions) are the same for bots
   as for other users. Therefore, for private channels with protected
-  history, a bot can only access messages sent after it subscribed
+  history, a bot can only access messages sent after it was subscribed
   to the channel.
 
 * **Generic**: A generic bot is like a normal Zulip user account that

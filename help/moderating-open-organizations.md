@@ -73,7 +73,7 @@ organization's policy choices.
 * Investigate behavior by [viewing messages sent by a
   user](/help/view-messages-sent-by-a-user).
 * Delete messages, [archive channels](/help/archive-a-channel), and
-  [unsubscribe users from channels](/help/add-or-remove-users-from-a-channel).
+  [unsubscribe users from channels](/help/unsubscribe-users-from-a-channel).
 * [Move topics](/help/rename-a-topic), including between channels, when
   users start conversations in the wrong place.
 * [Change users' names](/help/change-a-users-name) (e.g., to "Name (Spammer)")

@@ -29,4 +29,5 @@ Organization administrators can unsubscribe other users from any channel.
 * [User groups](/help/user-groups)
 * [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)
 * [Restrict who can subscribe other users to channels](/help/configure-who-can-invite-to-channels)
-* [Add or remove users from a channel](/help/add-or-remove-users-from-a-channel)
+* [Unsubscribe users from a channel](/help/unsubscribe-users-from-a-channel)
+* [Subscribe users to a channel](/help/subscribe-users-to-a-channel)

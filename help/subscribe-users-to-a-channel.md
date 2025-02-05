@@ -1,16 +1,15 @@
-# Add or remove users from a channel
+# Subscribe users to a channel
 
 Organization [administrators](/help/user-roles) can
 [configure](/help/configure-who-can-invite-to-channels#configure-who-can-subscribe-other-users-to-any-channel)
 who can subscribe other users to any channel. Channel administrators can
 configure who can
 [subscribe](/help/configure-who-can-invite-to-channels#configure-who-can-subscribe-other-users-to-a-specific-channel)
-and [unsubscribe](/help/configure-who-can-unsubscribe-others) other users for a
-particular channel.
+other users to a particular channel.
 
 You will only see the options below if you have the required permissions.
 
-## Add users to a channel
+## Subscribe users to a channel
 
 {start_tabs}
 
@@ -29,7 +28,7 @@ You will only see the options below if you have the required permissions.
 
 !!! tip ""
 
-      To add users in bulk, you can copy members from an
+      To subscribe users in bulk, you can copy members from an
       existing channel or [user group](/help/user-groups).
 
 {tab|mobile}
@@ -42,9 +41,9 @@ You will only see the options below if you have the required permissions.
 
 1. Tap **Add subscribers**.
 
-1. Start typing the name of the person you want to add, and
+1. Start typing the name of the person you want to subscribe, and
    select their name from the list of suggestions. You can continue
-   adding as many users as you like.
+   selecting as many users as you'd like to subscribe.
 
 1. Approve by tapping the **checkmark**
    (<img src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark" class="help-center-icon"/>)
@@ -54,7 +53,7 @@ You will only see the options below if you have the required permissions.
 
 {!automated-dm-channel-subscription.md!}
 
-## Alternate methods to add users to a channel
+## Alternate methods to subscribe users to a channel
 
 ### Via channel settings
 
@@ -81,9 +80,9 @@ You will only see the options below if you have the required permissions.
 
 1. Tap **Add subscribers**.
 
-1. Start typing the name of the person you want to add, and
+1. Start typing the name of the person you want to subscribe, and
    select their name from the list of suggestions. You can continue
-   adding as many users as you like.
+   selecting as many users as you'd like to subscribe.
 
 1. Approve by tapping the **checkmark**
    (<img src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark" class="help-center-icon"/>)
@@ -99,8 +98,8 @@ When you [mention a user](/help/mention-a-user-or-group) while composing
 a message in the web or desktop app, an alert banner appears above the
 compose box if they are not subscribed to the channel.
 
-Click the **Subscribe them** button on the banner to add the user to the
-channel. You will not see the button if you don't have permission to
+Click the **Subscribe them** button on the banner to subscribe the user to
+the channel. You will not see the button if you don't have permission to
 subscribe the user.
 
 !!! tip ""
@@ -108,50 +107,13 @@ subscribe the user.
       You do not have to send the message you are composing for
       the user to be subscribed this way.
 
-## Remove users from a channel
-
-{start_tabs}
-
-{tab|desktop-web}
-
-{relative|channel|all}
-
-1. Select a channel.
-
-{!select-channel-view-subscribers.md!}
-
-1. Under **Subscribers**, find the user you would like to remove.
-
-1. Click the **Unsubscribe** button in that row.
-
-{!channel-menu-subscribers-tab-tip.md!}
-
-{tab|via-right-sidebar}
-
-{!right-sidebar-view-profile.md!}
-
-1. Select the **Channels** tab.
-
-1. Under **Subscribed channels**, find the channel you would like
-   to remove the user from.
-
-1. Click the **Unsubscribe** button in that row.
-
-!!! tip ""
-
-    This method is useful if you need to remove one user from multiple channels.
-
-{end_tabs}
-
 ## Related articles
 
 * [Introduction to channels](/help/introduction-to-channels)
-* [Unsubscribe from a channel][unsubscribe]
+* [Unsubscribe users from a channel](/help/unsubscribe-users-from-a-channel)
 * [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)
 * [Restrict channel invitations](/help/configure-who-can-invite-to-channels)
 * [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [User roles](/help/user-roles)
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [View channel subscribers](/help/view-channel-subscribers)
-
-[unsubscribe]: /help/unsubscribe-from-a-channel
