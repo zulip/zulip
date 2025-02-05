@@ -187,6 +187,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result["Content-Type"], "application/octet-stream")
+        consume_response(result)
 
         uploaded_file = SimpleUploadedFile("somefile.txt", b"zulip!", content_type="")
         result = self.api_post(
@@ -199,6 +200,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result["Content-Type"], "text/plain")
+        consume_response(result)
 
     def test_preserve_provided_content_type(self) -> None:
         uploaded_file = SimpleUploadedFile("somefile.txt", b"zulip!", content_type="image/png")
@@ -212,6 +214,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result["Content-Type"], "image/png")
+        consume_response(result)
 
     # This test will go through the code path for uploading files onto LOCAL storage
     # when Zulip is in DEVELOPMENT mode.
