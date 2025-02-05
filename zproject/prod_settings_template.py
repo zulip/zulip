@@ -724,17 +724,20 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 
 ################
-## LLM Summarization
+## AI Features
 ##
-## The model name that will used by LiteLLM library to configure
-## parameters to be sent to API.
-## The Llama-3-8B-instruct model is free to use and only requires submitting
-## a small form on the HuggingFace page for the model to gain access.
+## Specify the model and provider to use for topic summarization. The
+## `model` field from https://docs.litellm.ai/docs/providers specifies
+## your preferred provider/model combination.
 # TOPIC_SUMMARIZATION_MODEL = "huggingface/meta-llama/Meta-Llama-3-8B-Instruct"
-
 ## Other configuration parameters, passed through to litellm's `completion` call
 ## See https://docs.litellm.ai/docs/completion/input
 # TOPIC_SUMMARIZATION_PARAMETERS = {}
+
+## Set usage costs based on your model, and a maximum per-user monthly
+## quota. Units are USD or other currency of your choice.
+# OUTPUT_COST_PER_GIGATOKEN = 500
+# INPUT_COST_PER_GIGATOKEN = 400
 
 ################
 ## Miscellaneous settings.
