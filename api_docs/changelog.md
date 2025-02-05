@@ -35,6 +35,11 @@ format used by the Zulip server that they are interacting with.
   only metadata access without having content access to it. They
   cannot add subscribers to the channel or change it's privacy setting
   without having content access to it.
+* [`GET /events`](/api/get-events): All users with metadata access to
+  a channel are now notified when a relevant stream event occurs.
+  Previously, non-admin users who were channel admins or users
+  belonging to `can_add_subscribers_group` were not notified of events
+  for a private channel they were not subscribed to.
 
 **Feature level 348**
 

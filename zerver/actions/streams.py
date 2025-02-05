@@ -43,6 +43,7 @@ from zerver.lib.streams import (
     get_occupied_streams,
     get_stream_permission_policy_name,
     get_stream_post_policy_value_based_on_group_setting,
+    get_user_ids_with_metadata_access_via_permission_groups,
     render_stream_description,
     send_stream_creation_event,
     send_stream_deletion_event,
@@ -269,15 +270,17 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
 
     recent_traffic = get_streams_traffic({stream.id}, realm)
 
-    subscribed_users = {sub.user_profile for sub in stream_subscribers}
-    admin_users_and_bots = set(realm.get_admin_users_and_bots())
+    subscribed_user_ids = {sub.user_profile.id for sub in stream_subscribers}
+    admin_user_and_bot_ids = {user.id for user in realm.get_admin_users_and_bots()}
 
-    notify_users = admin_users_and_bots | subscribed_users
+    notify_user_ids = list(
+        admin_user_and_bot_ids
+        | subscribed_user_ids
+        | get_user_ids_with_metadata_access_via_permission_groups(stream)
+    )
 
     setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
-    send_stream_creation_event(
-        realm, stream, [user.id for user in notify_users], recent_traffic, setting_groups_dict
-    )
+    send_stream_creation_event(realm, stream, notify_user_ids, recent_traffic, setting_groups_dict)
 
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
     with override_language(stream.realm.default_language):

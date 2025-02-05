@@ -1847,11 +1847,23 @@ class StreamAdminTest(ZulipTestCase):
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
+        shiva = self.example_user("shiva")
 
         stream = self.make_stream("new_stream", is_web_public=True)
         was_invite_only = stream.invite_only
         was_web_public = stream.is_web_public
         was_history_public = stream.history_public_to_subscribers
+
+        aaron_group = self.create_or_update_anonymous_group_for_setting([aaron], [])
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", aaron_group, acting_user=aaron
+        )
+
+        shiva_group = self.create_or_update_anonymous_group_for_setting([shiva], [])
+        do_change_stream_group_based_setting(
+            stream, "can_add_subscribers_group", shiva_group, acting_user=shiva
+        )
 
         self.subscribe(hamlet, stream.name)
         self.subscribe(cordelia, stream.name)
@@ -1863,7 +1875,10 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(events[0]["event"]["op"], "create")
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "new_stream")
         self.assertEqual(events[0]["event"]["streams"][0]["stream_id"], stream.id)
-        self.assertEqual(set(events[0]["users"]), {hamlet.id, cordelia.id, iago.id, desdemona.id})
+        self.assertEqual(
+            set(events[0]["users"]),
+            {hamlet.id, cordelia.id, iago.id, desdemona.id, aaron.id, shiva.id},
+        )
 
         stream = Stream.objects.get(id=stream.id)
         self.assertFalse(stream.deactivated)
