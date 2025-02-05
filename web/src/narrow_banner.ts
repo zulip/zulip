@@ -482,12 +482,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 };
             }
             return {
-                title: $t(
-                    {
-                        defaultMessage: "You have no direct messages including {person} yet.",
-                    },
-                    {person: person_in_dms.full_name},
-                ),
+                title: default_banner_for_multiple_filters,
             };
         }
     }

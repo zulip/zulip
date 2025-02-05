@@ -510,10 +510,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html(
-            "translated: Direct messages are disabled in this organization.",
-            'translated HTML: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
-        ),
+        empty_narrow_html("translated: No search results."),
     );
 
     // direct messages with a bot are possible even though
@@ -522,7 +519,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: You have no direct messages including Example Bot yet."),
+        empty_narrow_html("translated: No search results."),
     );
 
     // sending direct messages enabled
@@ -532,7 +529,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: You have no direct messages including Alice Smith yet."),
+        empty_narrow_html("translated: No search results."),
     );
 
     current_filter = set_filter([["dm-including", me.email]]);
