@@ -113,6 +113,7 @@ class ThumbnailRedirectEndpointTest(ZulipTestCase):
             self.logout()
             response = self.client_get("/thumbnail", {"url": url.removeprefix("/"), "size": "full"})
             self.assertEqual(response.status_code, 200)
+            consume_response(response)
 
         # Deny file access since rate limited
         with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
