@@ -358,12 +358,10 @@ def update_realm(
             continue
 
         setting_value = req_group_setting_vars[setting_name]
-        new_setting_value = parse_group_setting_value(setting_value.new, setting_name)
+        new_setting_value = parse_group_setting_value(setting_value.new)
 
         if setting_value.old is not None:
-            expected_current_setting_value = parse_group_setting_value(
-                setting_value.old, setting_name
-            )
+            expected_current_setting_value = parse_group_setting_value(setting_value.old)
 
         current_value = getattr(realm, setting_name)
         current_setting_api_value = get_group_setting_value_for_api(current_value)
