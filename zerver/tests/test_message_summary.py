@@ -77,6 +77,14 @@ class MessagesSummaryTestCase(ZulipTestCase):
         with open(LLM_FIXTURES_FILE, "rb") as f:
             fixture_data = orjson.loads(f.read())
 
+        # Block summary requests if budget set to 0.
+        with self.settings(
+            TOPIC_SUMMARIZATION_MODEL="groq/llama-3.3-70b-versatile",
+            MAX_PER_USER_MONTHLY_AI_COST=0,
+        ):
+            response = self.client_get("/json/messages/summary")
+            self.assert_json_error_contains(response, "Reached monthly limit for AI credits.")
+
         # Fake credentials to ensure we crash if actual network
         # requests occur, which would reflect a problem with how the
         # fixtures were set up.
@@ -103,3 +111,11 @@ class MessagesSummaryTestCase(ZulipTestCase):
                     property="ai_credit_usage::day", value=credits_used, user_id=self.user.id
                 ).exists()
             )
+
+        # If we reached the credit usage limit, block summary requests.
+        with self.settings(
+            TOPIC_SUMMARIZATION_MODEL="groq/llama-3.3-70b-versatile",
+            MAX_PER_USER_MONTHLY_AI_COST=credits_used / 1000000000,
+        ):
+            response = self.client_get("/json/messages/summary")
+            self.assert_json_error_contains(response, "Reached monthly limit for AI credits.")

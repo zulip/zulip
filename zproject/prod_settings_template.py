@@ -738,6 +738,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## quota. Units are USD or other currency of your choice.
 # OUTPUT_COST_PER_GIGATOKEN = 500
 # INPUT_COST_PER_GIGATOKEN = 400
+# MAX_PER_USER_MONTHLY_AI_COST = 0.5
 
 ################
 ## Miscellaneous settings.
