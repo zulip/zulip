@@ -1938,13 +1938,13 @@ class NormalActionsTest(BaseAction):
         backend = NamedUserGroup.objects.get(name="backend")
         with self.verify_action() as events:
             do_update_user_group_name(backend, "backendteam", acting_user=None)
-        check_user_group_update("events[0]", events[0], "name")
+        check_user_group_update("events[0]", events[0], {"name"})
 
         # Test description update
         description = "Backend team to deal with backend code."
         with self.verify_action() as events:
             do_update_user_group_description(backend, description, acting_user=None)
-        check_user_group_update("events[0]", events[0], "description")
+        check_user_group_update("events[0]", events[0], {"description"})
 
         # Test can_mention_group setting update
         with self.verify_action() as events:
@@ -1955,7 +1955,7 @@ class NormalActionsTest(BaseAction):
                 old_setting_api_value=everyone_group.id,
                 acting_user=None,
             )
-        check_user_group_update("events[0]", events[0], "can_mention_group")
+        check_user_group_update("events[0]", events[0], {"can_mention_group"})
         self.assertEqual(events[0]["data"]["can_mention_group"], moderators_group.id)
 
         setting_group = self.create_or_update_anonymous_group_for_setting(
@@ -1969,7 +1969,7 @@ class NormalActionsTest(BaseAction):
                 old_setting_api_value=moderators_group.id,
                 acting_user=None,
             )
-        check_user_group_update("events[0]", events[0], "can_mention_group")
+        check_user_group_update("events[0]", events[0], {"can_mention_group"})
         self.assertEqual(
             events[0]["data"]["can_mention_group"],
             AnonymousSettingGroupDict(
@@ -2011,14 +2011,14 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action(include_deactivated_groups=True) as events:
             do_deactivate_user_group(api_design, acting_user=None)
-        check_user_group_update("events[0]", events[0], "deactivated")
+        check_user_group_update("events[0]", events[0], {"deactivated"})
 
         with self.verify_action(num_events=0, state_change_expected=False):
             do_update_user_group_name(api_design, "api-deisgn-team", acting_user=None)
 
         with self.verify_action(include_deactivated_groups=True) as events:
             do_update_user_group_name(api_design, "api-deisgn", acting_user=None)
-        check_user_group_update("events[0]", events[0], "name")
+        check_user_group_update("events[0]", events[0], {"name"})
 
     def test_default_stream_groups_events(self) -> None:
         streams = [
@@ -3160,10 +3160,10 @@ class NormalActionsTest(BaseAction):
         check_user_group_remove_members("events[0]", events[0])
         check_user_group_remove_members("events[1]", events[1])
         check_user_group_remove_members("events[2]", events[2])
-        check_user_group_update("events[3]", events[3], "can_add_members_group")
-        check_user_group_update("events[4]", events[4], "can_manage_group")
+        check_user_group_update("events[3]", events[3], {"can_add_members_group"})
+        check_user_group_update("events[4]", events[4], {"can_manage_group"})
         check_realm_update_dict("events[5]", events[5])
-        check_user_group_update("events[6]", events[6], "can_mention_group")
+        check_user_group_update("events[6]", events[6], {"can_mention_group"})
         self.assertEqual(
             events[3]["data"]["can_add_members_group"],
             AnonymousSettingGroupDict(direct_members=[], direct_subgroups=[]),
@@ -3190,10 +3190,10 @@ class NormalActionsTest(BaseAction):
         check_user_group_remove_members("events[0]", events[0])
         check_user_group_remove_members("events[1]", events[1])
         check_user_group_remove_members("events[2]", events[2])
-        check_user_group_update("events[3]", events[3], "can_add_members_group")
-        check_user_group_update("events[4]", events[4], "can_manage_group")
+        check_user_group_update("events[3]", events[3], {"can_add_members_group"})
+        check_user_group_update("events[4]", events[4], {"can_manage_group"})
         check_realm_update_dict("events[5]", events[5])
-        check_user_group_update("events[6]", events[6], "can_mention_group")
+        check_user_group_update("events[6]", events[6], {"can_mention_group"})
         self.assertEqual(
             events[3]["data"]["can_add_members_group"],
             AnonymousSettingGroupDict(direct_members=[], direct_subgroups=[]),
@@ -3226,7 +3226,7 @@ class NormalActionsTest(BaseAction):
         check_user_group_remove_members("events[0]", events[0])
         check_user_group_remove_members("events[1]", events[1])
         check_user_group_remove_members("events[2]", events[2])
-        check_user_group_update("events[3]", events[3], "can_mention_group")
+        check_user_group_update("events[3]", events[3], {"can_mention_group"})
         check_realm_user_remove("events[4]]", events[4])
         self.assertEqual(
             events[3]["data"]["can_mention_group"],
@@ -3315,10 +3315,10 @@ class NormalActionsTest(BaseAction):
         check_user_group_add_members("events[0]", events[0])
         check_user_group_add_members("events[1]", events[1])
         check_user_group_add_members("events[2]", events[2])
-        check_user_group_update("events[3]", events[3], "can_add_members_group")
-        check_user_group_update("events[4]", events[4], "can_manage_group")
+        check_user_group_update("events[3]", events[3], {"can_add_members_group"})
+        check_user_group_update("events[4]", events[4], {"can_manage_group"})
         check_realm_update_dict("events[5]", events[5])
-        check_user_group_update("events[6]", events[6], "can_mention_group")
+        check_user_group_update("events[6]", events[6], {"can_mention_group"})
         self.assertEqual(
             events[3]["data"]["can_add_members_group"],
             AnonymousSettingGroupDict(direct_members=[user_profile.id], direct_subgroups=[]),
