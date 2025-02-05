@@ -1022,7 +1022,6 @@ def get_server_supported_permission_settings() -> ServerSupportedPermissionSetti
 
 def parse_group_setting_value(
     setting_value: int | AnonymousSettingGroupDict,
-    setting_name: str,
 ) -> int | AnonymousSettingGroupDict:
     if isinstance(setting_value, int):
         return setting_value
