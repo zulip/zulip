@@ -1,6 +1,6 @@
 import asyncio
 import socket
-from collections.abc import AsyncIterator, Callable, Iterator
+from collections.abc import AsyncIterator, Iterator
 from contextlib import asynccontextmanager, contextmanager
 from typing import Any, TypeVar
 from unittest import mock
@@ -26,10 +26,6 @@ from zerver.tornado.application import create_tornado_application
 from zerver.tornado.event_queue import process_event
 
 T = TypeVar("T")
-
-
-async def in_django_thread(f: Callable[[], T]) -> T:
-    return await asyncio.create_task(sync_to_async(f)())
 
 
 class TornadoWebTestCase(ZulipTestCase):
@@ -96,7 +92,7 @@ class TornadoWebTestCase(ZulipTestCase):
 class EventsTestCase(TornadoWebTestCase):
     async def test_create_queue(self) -> None:
         async with self.with_tornado():
-            await in_django_thread(lambda: self.login_user(self.example_user("hamlet")))
+            await sync_to_async(lambda: self.login_user(self.example_user("hamlet")))()
             queue_id = await self.create_queue()
             self.assertIn(queue_id, event_queue.clients)
 
@@ -116,8 +112,8 @@ class EventsTestCase(TornadoWebTestCase):
 
     async def test_events_async(self) -> None:
         async with self.with_tornado():
-            user_profile = await in_django_thread(lambda: self.example_user("hamlet"))
-            await in_django_thread(lambda: self.login_user(user_profile))
+            user_profile = await sync_to_async(lambda: self.example_user("hamlet"))()
+            await sync_to_async(lambda: self.login_user(user_profile))()
             event_queue_id = await self.create_queue()
             data = {
                 "queue_id": event_queue_id,
@@ -141,8 +137,8 @@ class EventsTestCase(TornadoWebTestCase):
 
     async def test_events_caching(self) -> None:
         async with self.with_tornado():
-            user_profile = await in_django_thread(lambda: self.example_user("hamlet"))
-            await in_django_thread(lambda: self.login_user(user_profile))
+            user_profile = await sync_to_async(lambda: self.example_user("hamlet"))()
+            await sync_to_async(lambda: self.login_user(user_profile))()
             event_queue_id = await self.create_queue()
             data = {
                 "queue_id": event_queue_id,
