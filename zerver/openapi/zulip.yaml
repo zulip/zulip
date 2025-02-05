@@ -6353,6 +6353,16 @@ paths:
                     Clients should use the `max_topic_length` returned by the
                     [`POST /register`](/api/register-queue) endpoint to determine
                     the maximum topic length.
+
+                    Note: When the value of `realm_empty_topic_display_name` found in
+                    the [POST /register](/api/register-queue) response is used for this
+                    parameter, it is interpreted as an empty string.
+
+                    When [topics are required](/help/require-topics), this parameter can't
+                    be `"(no topic)"`, an empty string, or `realm_empty_topic_display_name`.
+
+                    **Changes**: Before Zulip 10.0 (feature level 334), empty string
+                    was not a valid topic name for channel messages.
                   type: string
                   example: Castle
                 scheduled_delivery_timestamp:
@@ -6517,6 +6527,16 @@ paths:
                     Clients should use the `max_topic_length` returned by the
                     [`POST /register`](/api/register-queue) endpoint to determine
                     the maximum topic length.
+
+                    Note: When the value of `realm_empty_topic_display_name` found in
+                    the [POST /register](/api/register-queue) response is used for this
+                    parameter, it is interpreted as an empty string.
+
+                    When [topics are required](/help/require-topics), this parameter can't
+                    be `"(no topic)"`, an empty string, or `realm_empty_topic_display_name`.
+
+                    **Changes**: Before Zulip 10.0 (feature level 334), empty string
+                    was not a valid topic name for channel messages.
                   type: string
                   example: Castle
                 scheduled_delivery_timestamp:
