@@ -62,7 +62,7 @@
         {{#if (or should_display_mark_as_unread should_display_hide_option should_display_collapse should_display_uncollapse)}}
         <li role="separator" class="popover-menu-separator"></li>
         {{/if}}
-        {{#if stream_not_archived}}
+        {{#if is_stream_not_archived}}
         {{#if should_display_mark_as_unread}}
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" data-message-id="{{message_id}}" class="mark_as_unread popover-menu-link" tabindex="0">

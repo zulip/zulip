@@ -160,6 +160,14 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
 
     send_stream_deletion_event(stream.realm, affected_user_ids, [stream])
 
+    for user_id in affected_user_ids:
+        event = {
+            "type": "mark_stream_messages_as_read",
+            "user_profile_id": user_id,
+            "stream_recipient_ids": [stream.recipient_id],
+        }
+        queue_event_on_commit("deferred_work", event)
+
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=stream.realm,
