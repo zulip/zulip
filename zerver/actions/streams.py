@@ -519,7 +519,14 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
             # they can manage the new stream.
             # Realm admins already have all created private streams.
             realm_admin_ids = {user.id for user in realm.get_admin_users_and_bots()}
-            notify_user_ids = list(stream_users_ids - realm_admin_ids)
+            user_ids_with_metadata_access_via_permission_groups = (
+                get_user_ids_with_metadata_access_via_permission_groups(stream)
+            )
+            notify_user_ids = list(
+                stream_users_ids
+                - realm_admin_ids
+                - user_ids_with_metadata_access_via_permission_groups
+            )
         elif not stream.is_web_public:
             # Guese users need a `create` notification for
             # public streams as well because they need the stream
@@ -1278,8 +1285,15 @@ def do_change_stream_permission(
         old_can_access_stream_metadata_user_ids = set(stream_subscriber_user_ids) | {
             user.id for user in stream.realm.get_admin_users_and_bots()
         }
+        user_ids_with_metadata_access_via_permission_groups = (
+            get_user_ids_with_metadata_access_via_permission_groups(stream)
+        )
         non_guest_user_ids = set(active_non_guest_user_ids(stream.realm_id))
-        notify_stream_creation_ids = non_guest_user_ids - old_can_access_stream_metadata_user_ids
+        notify_stream_creation_ids = (
+            non_guest_user_ids
+            - old_can_access_stream_metadata_user_ids
+            - user_ids_with_metadata_access_via_permission_groups
+        )
 
         recent_traffic = get_streams_traffic({stream.id}, realm)
         setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
@@ -1293,7 +1307,11 @@ def do_change_stream_permission(
         old_subscribers_access_user_ids = set(stream_subscriber_user_ids) | {
             user.id for user in stream.realm.get_admin_users_and_bots()
         }
-        peer_notify_user_ids = non_guest_user_ids - old_subscribers_access_user_ids
+        peer_notify_user_ids = (
+            non_guest_user_ids
+            - old_subscribers_access_user_ids
+            - user_ids_with_metadata_access_via_permission_groups
+        )
         peer_add_event = dict(
             type="subscription",
             op="peer_add",

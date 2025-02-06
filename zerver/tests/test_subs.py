@@ -6081,7 +6081,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Verify that peer_event events are never sent in Zephyr
         # realm. This does generate stream creation events from
         # send_stream_creation_events_for_previously_inaccessible_streams.
-        with self.assert_database_query_count(num_streams + 15):
+        with self.assert_database_query_count(num_streams * 2 + 15):
             with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
                 self.subscribe_via_post(
                     mit_user,
@@ -6548,7 +6548,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(48):
+        with self.assert_database_query_count(49):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[1]],
