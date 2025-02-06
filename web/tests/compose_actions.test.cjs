@@ -42,6 +42,7 @@ const compose_fade = mock_esm("../src/compose_fade", {
 });
 const compose_pm_pill = mock_esm("../src/compose_pm_pill", {
     get_user_ids_string: () => "",
+    get_user_ids: () => [],
 });
 const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea: noop,

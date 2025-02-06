@@ -627,6 +627,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # Whether clients should display "(guest)" after names of guest users.
     enable_guest_user_indicator = models.BooleanField(default=True)
 
+    # Whether to notify client when a DM has a guest recipient.
+    enable_guest_user_dm_warning = models.BooleanField(default=True)
+
     # Define the types of the various automatically managed properties
     property_types: dict[str, type | UnionType] = dict(
         allow_edit_history=bool,
@@ -640,6 +643,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         disallow_disposable_email_addresses=bool,
         email_changes_disabled=bool,
         emails_restricted_to_domains=bool,
+        enable_guest_user_dm_warning=bool,
         enable_guest_user_indicator=bool,
         enable_read_receipts=bool,
         enable_spectator_access=bool,

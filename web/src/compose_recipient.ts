@@ -114,6 +114,7 @@ function update_fade(): void {
 export function update_on_recipient_change(): void {
     update_fade();
     update_narrow_to_recipient_visibility();
+    compose_validate.warn_if_guest_in_dm_recipient();
     drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
 }

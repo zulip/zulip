@@ -22,6 +22,11 @@ const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("/compose_recipient");
 const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
+
+mock_esm("../src/ui_util", {
+    place_caret_at_end: noop,
+});
 
 mock_esm("../src/group_permission_settings", {
     get_group_permission_setting_config: () => ({
@@ -33,6 +38,8 @@ const realm = {};
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
+const user_settings = {defualt_language: "en"};
+initialize_user_settings({user_settings});
 
 const me = {
     email: "me@example.com",
@@ -54,6 +61,13 @@ const bob = {
     is_admin: true,
 };
 
+const guest = {
+    email: "guest@example.com",
+    user_id: 33,
+    full_name: "Guest",
+    is_guest: true,
+};
+
 const social_sub = {
     stream_id: 101,
     name: "social",
@@ -66,6 +80,7 @@ people.initialize_current_user(me.user_id);
 
 people.add_active_user(alice);
 people.add_active_user(bob);
+people.add_active_user(guest);
 
 const welcome_bot = {
     email: "welcome-bot@example.com",
@@ -116,6 +131,30 @@ function stub_message_row($textarea) {
     };
 }
 
+function initialize_pm_pill(mock_template) {
+    $.clear_all_elements();
+
+    $("#compose-send-button").prop("disabled", false);
+    $("#compose-send-button").trigger("focus");
+    $("#compose-send-button .loader").hide();
+
+    const $pm_pill_container = $.create("fake-pm-pill-container");
+    $("#private_message_recipient")[0] = {};
+    $("#private_message_recipient").set_parent($pm_pill_container);
+    $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
+    $("#private_message_recipient").before = noop;
+
+    compose_pm_pill.initialize({
+        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+    });
+
+    $("#zephyr-mirror-error").is = noop;
+
+    mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
+
+    mock_banners();
+}
+
 test_ui("validate_stream_message_address_info", ({mock_template}) => {
     // For this test we basically only use FakeComposeBox
     // to set up the DOM environment. We don't assert about
@@ -153,30 +192,6 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
 });
 
 test_ui("validate", ({mock_template, override}) => {
-    function initialize_pm_pill() {
-        $.clear_all_elements();
-
-        $("#compose-send-button").prop("disabled", false);
-        $("#compose-send-button").trigger("focus");
-        $("#compose-send-button .loader").hide();
-
-        const $pm_pill_container = $.create("fake-pm-pill-container");
-        $("#private_message_recipient")[0] = {};
-        $("#private_message_recipient").set_parent($pm_pill_container);
-        $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
-        $("#private_message_recipient").before = noop;
-
-        compose_pm_pill.initialize({
-            on_pill_create_or_remove: compose_recipient.update_placeholder_text,
-        });
-
-        $("#zephyr-mirror-error").is = noop;
-
-        mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
-
-        mock_banners();
-    }
-
     function add_content_to_compose_box() {
         $("textarea#compose-textarea").val("foobarfoobar");
     }
@@ -184,7 +199,7 @@ test_ui("validate", ({mock_template, override}) => {
     // test validating direct messages
     compose_state.set_message_type("private");
 
-    initialize_pm_pill();
+    initialize_pm_pill(mock_template);
     add_content_to_compose_box();
     compose_state.private_message_recipient("");
     let pm_recipient_error_rendered = false;
@@ -238,7 +253,7 @@ test_ui("validate", ({mock_template, override}) => {
     assert.ok(compose_validate.validate());
     override(realm, "realm_is_zephyr_mirror_realm", false);
 
-    initialize_pm_pill();
+    initialize_pm_pill(mock_template);
     add_content_to_compose_box();
     compose_state.private_message_recipient("welcome-bot@example.com");
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
@@ -258,7 +273,7 @@ test_ui("validate", ({mock_template, override}) => {
         }
         return "<banner-stub>";
     });
-    initialize_pm_pill();
+    initialize_pm_pill(mock_template);
     compose_state.private_message_recipient("welcome-bot@example.com");
     $("textarea#compose-textarea").toggleClass = (classname, value) => {
         assert.equal(classname, "invalid");
@@ -281,7 +296,7 @@ test_ui("validate", ({mock_template, override}) => {
     assert.ok(zephyr_checked);
     assert.ok(zephyr_error_rendered);
 
-    initialize_pm_pill();
+    initialize_pm_pill(mock_template);
     add_content_to_compose_box();
 
     // test validating stream messages
@@ -841,4 +856,69 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     error_shown = false;
     compose_validate.warn_if_topic_resolved(false);
     assert.ok(!error_shown);
+});
+
+test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template}) => {
+    let is_active = false;
+
+    mock_template("compose_banner/guest_in_dm_recipient_warning.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.guest_in_dm_recipient_warning);
+        assert.equal(
+            data.banner_text,
+            $t({defaultMessage: "Guest is a guest in this organization."}),
+        );
+        is_active = true;
+        return "<banner-stub>";
+    });
+
+    compose_state.set_message_type("private");
+    initialize_pm_pill(mock_template);
+    compose_state.private_message_recipient("guest@example.com");
+    const classname = compose_banner.CLASSNAMES.guest_in_dm_recipient_warning;
+    let $banner = $(`#compose_banners .${CSS.escape(classname)}`);
+
+    // if setting is disabled, remove warning if exists
+    realm.realm_enable_guest_user_dm_warning = false;
+    compose_validate.warn_if_guest_in_dm_recipient();
+    assert.ok(!is_active);
+
+    // to show warning for guest emails, banner should be created
+    realm.realm_enable_guest_user_dm_warning = true;
+    $banner.length = 0;
+    compose_validate.warn_if_guest_in_dm_recipient();
+    assert.ok(is_active);
+    assert.deepEqual(compose_state.get_recipient_guest_ids_for_dm_warning(), [33]);
+
+    // don't show warning for same guests if user closed the banner.
+    is_active = false;
+    compose_validate.warn_if_guest_in_dm_recipient();
+    assert.ok(!is_active);
+
+    // on modifying the guest recipient, update banner if already shown.
+    is_active = true;
+    const new_guest = {
+        email: "new_guest@example.com",
+        user_id: 34,
+        full_name: "New Guest",
+        is_guest: true,
+    };
+    people.add_active_user(new_guest);
+
+    initialize_pm_pill(mock_template);
+    compose_state.private_message_recipient("guest@example.com, new_guest@example.com");
+    $banner = $(`#compose_banners .${CSS.escape(classname)}`);
+    $banner.length = 1;
+    let is_updated = false;
+    $banner.set_find_results(".banner_content", {
+        text(content) {
+            assert.equal(
+                content,
+                $t({defaultMessage: "Guest and New Guest are guests in this organization."}),
+            );
+            is_updated = true;
+        },
+    });
+    compose_validate.warn_if_guest_in_dm_recipient();
+    assert.ok(is_updated);
+    assert.deepEqual(compose_state.get_recipient_guest_ids_for_dm_warning(), [33, 34]);
 });

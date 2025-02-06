@@ -630,6 +630,7 @@ test_ui("update_fade", ({override, override_rewire}) => {
         update_narrow_to_recipient_visibility_called = true;
     });
     override_rewire(drafts, "update_compose_draft_count", noop);
+    override(compose_pm_pill, "get_user_ids", () => []);
 
     compose_state.set_message_type(undefined);
     compose_recipient.update_on_recipient_change();

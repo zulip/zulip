@@ -687,6 +687,17 @@ export function pm_with_operand_ids(operand: string): number[] | undefined {
     return user_ids;
 }
 
+export function filter_other_guest_ids(user_ids: number[]): number[] {
+    return sort_numerically(
+        user_ids.filter((id) => id !== current_user.user_id && get_by_user_id(id)?.is_guest),
+    );
+}
+
+export function user_ids_to_full_names_array(user_ids: number[]): string[] {
+    const names = user_ids.map((user_id) => get_by_user_id(user_id).full_name).sort(util.strcmp);
+    return names;
+}
+
 export function emails_to_slug(emails_string: string): string | undefined {
     let slug = reply_to_to_user_ids_string(emails_string);
 
