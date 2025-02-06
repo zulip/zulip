@@ -348,6 +348,33 @@ export function initialize(): void {
     $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
 }
 
+export function update_topic_displayed_text(topic_name: string | undefined): void {
+    if (topic_name === undefined) {
+        topic_name = "";
+    }
+    // When topics are mandatory, we just call topic() as usual.
+    if (realm.realm_mandatory_topics) {
+        compose_state.topic(topic_name);
+        return;
+    }
+    // Otherwise, we have some adjustments to make to display the
+    // general topic as a stylized placeholder
+    const $input = $("input#stream_message_recipient_topic");
+    const is_empty_stream_topic = topic_name === "";
+    let topic_placeholder_text = $t({defaultMessage: "Topic"});
+
+    // Remove any stale references to the empty topic display
+    $input.removeClass("empty-topic-display");
+
+    if (is_empty_stream_topic) {
+        topic_placeholder_text = util.get_final_topic_display_name("");
+        $input.addClass("empty-topic-display");
+    }
+
+    $input.attr("placeholder", topic_placeholder_text);
+    compose_state.topic(topic_name);
+}
+
 export let update_compose_area_placeholder_text = (empty_topic_display = true): void => {
     const $textarea: JQuery<HTMLTextAreaElement> = $("textarea#compose-textarea");
     // Change compose placeholder text only if compose box is open.
