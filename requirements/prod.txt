@@ -94,7 +94,9 @@ aiohttp==3.11.11 \
     --hash=sha256:ed9ee95614a71e87f1a70bc81603f6c6760128b140bc4030abe6abaa988f1c3d \
     --hash=sha256:f047569d655f81cb70ea5be942ee5d4421b6219c3f05d131f64088c73bb0917f \
     --hash=sha256:ffa336210cf9cd8ed117011085817d00abe4c08f99968deef0013ea283547204 \
-    --hash=sha256:ffb3dc385f6bb1568aa974fe65da84723210e5d9707e360e9ecb51f59406cd2e
+    --hash=sha256:ffb3dc385f6bb1568aa974fe65da84723210e5d9707e360e9ecb51f59406cd2e \
+    --hash=sha256:ffb3dc385f6bb1568aa974fe65da84723210e5d9707e360e9ecb51sdhjwuywew
+
     # via
     #   aiohttp-retry
     #   litellm
