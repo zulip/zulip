@@ -187,21 +187,12 @@ p.n-margin {
     box-shadow: 0 0 2px hsl(16deg 60% 45%);
 }
 
-.all-messages-search-caution {
-    border: 1px solid hsl(192deg 19% 75% / 20%);
-    box-shadow: 0 0 2px hsl(192deg 19% 75% / 20%);
-}
-
 .history-limited-box,
-.all-messages-search-caution {
-    border-radius: 4px;
+.all-messages-search-caution,
+.end-of-combined-feed {
     display: none;
     margin: 0 auto 12px;
     padding: 5px;
-    /* Difference should be 16px to accommodate the icon. */
-    /* This emulates hanging indent. */
-    padding-left: 26px;
-    text-indent: -10px;
 
     .all-messages-search-caution-icon {
         margin: 0 3px 0 1px;
