@@ -321,6 +321,12 @@
                   is_checked=realm_enable_guest_user_indicator
                   label=admin_settings_label.realm_enable_guest_user_indicator}}
 
+                {{> settings_checkbox
+                  setting_name="realm_enable_guest_user_dm_warning"
+                  prefix="id_"
+                  is_checked=realm_enable_guest_user_dm_warning
+                  label=admin_settings_label.realm_enable_guest_user_dm_warning}}
+
                 {{> ../dropdown_widget_with_label
                   widget_name="realm_can_access_all_users_group"
                   label=group_setting_labels.can_access_all_users_group

@@ -127,6 +127,7 @@ function clear_box(): void {
     // TODO: Better encapsulate at-mention warnings.
     compose_validate.clear_topic_resolved_warning();
     compose_validate.clear_stream_wildcard_warnings($("#compose_banners"));
+    compose_validate.clear_guest_in_dm_recipient_warning();
     compose_validate.set_user_acknowledged_stream_wildcard_flag(false);
 
     compose_state.set_recipient_edited_manually(false);
@@ -408,6 +409,8 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
 
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);
+    // Show a warning if dm recipient contains guest
+    compose_validate.warn_if_guest_in_dm_recipient();
     // Show a warning if the user is in a search narrow when replying to a message
     if (opts.is_reply) {
         compose_validate.warn_if_in_search_view();

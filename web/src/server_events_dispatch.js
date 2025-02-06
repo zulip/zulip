@@ -16,6 +16,7 @@ import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
+import * as compose_validate from "./compose_validate.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
@@ -262,6 +263,7 @@ export function dispatch_normal_event(event) {
                 want_advertise_in_communities_directory: noop,
                 wildcard_mention_policy: noop,
                 enable_read_receipts: settings_account.update_send_read_receipts_tooltip,
+                enable_guest_user_dm_warning: compose_validate.warn_if_guest_in_dm_recipient,
                 enable_guest_user_indicator: noop,
             };
             switch (event.op) {

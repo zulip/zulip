@@ -4748,6 +4748,13 @@ paths:
                                         Whether [new users joining](/help/restrict-account-creation#configuring-email-domain-restrictions)
                                         this organization are required to have an email
                                         address in one of the `realm_domains` configured for the organization.
+                                    enable_guest_user_dm_warning:
+                                      type: boolean
+                                      description: |
+                                        Whether clients should show a warning when a user is composing
+                                        a DM to a guest user in this organization.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 348).
                                     enable_guest_user_indicator:
                                       type: boolean
                                       description: |
@@ -17609,6 +17616,15 @@ paths:
                           - 2 = Zulip Cloud free plan (LIMITED)
                           - 3 = Zulip Cloud Standard plan (STANDARD)
                           - 4 = Zulip Cloud Standard plan, sponsored for free (STANDARD_FREE)
+                      realm_enable_guest_user_dm_warning:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether clients should show a warning when a user is composing
+                          a DM to a guest user in this organization.
+
+                          **Changes**: New in Zulip 10.0 (feature level 348).
                       realm_enable_guest_user_indicator:
                         type: boolean
                         description: |
