@@ -482,7 +482,8 @@ input[type="checkbox"] {
     }
 }
 
-#stream-specific-notify-table .unmute_stream {
+#stream-specific-notify-table .unmute_stream,
+.reset_stream_notifications {
     position: relative;
     left: 3px;
     top: 2px;
@@ -490,6 +491,15 @@ input[type="checkbox"] {
     &:hover {
         color: var(--color-unmute-stream-hover);
         cursor: pointer;
+    }
+}
+
+#stream-specific-notify-table .reset_stream_notifications {
+    opacity: 0.7;
+
+    &:hover {
+        opacity: 1;
+        color: inherit;
     }
 }
 
