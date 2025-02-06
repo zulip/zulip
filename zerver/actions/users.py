@@ -484,15 +484,12 @@ def do_deactivate_user(
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
 
-    if _cascade:
-        # We need to deactivate bots before the target user, to ensure
-        # that a failure partway through this function cannot result
-        # in only the user being deactivated.
-        bot_profiles = get_active_bots_owned_by_user(user_profile)
-        for profile in bot_profiles:
-            do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
-
     with transaction.atomic(savepoint=False):
+        if _cascade:
+            bot_profiles = get_active_bots_owned_by_user(user_profile)
+            for profile in bot_profiles:
+                do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
+
         if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
             # For zephyr mirror users, we need to make them a mirror dummy
             # again; otherwise, other users won't get the correct behavior
