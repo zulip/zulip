@@ -512,11 +512,12 @@ export function initialize(): void {
         "click",
         ".accept-update-time-zone",
         function (this: HTMLElement) {
+            const $banner = $(this).closest(".banner");
             void channel.patch({
                 url: "/json/settings",
                 data: {timezone: browser_time_zone},
-                success: () => {
-                    banners.close($(this));
+                success() {
+                    banners.close($banner);
                     feedback_widget.show({
                         title_text: $t({defaultMessage: "Time zone updated"}),
                         populate($container) {
@@ -550,11 +551,12 @@ export function initialize(): void {
         "click",
         ".decline-time-zone-update",
         function (this: HTMLElement) {
+            const $banner = $(this).closest(".banner");
             void channel.patch({
                 url: "/json/settings",
                 data: {web_suggest_update_timezone: false},
-                success: () => {
-                    banners.close($(this));
+                success() {
+                    banners.close($banner);
                     feedback_widget.show({
                         title_text: $t({defaultMessage: "Setting updated"}),
                         populate($container) {
