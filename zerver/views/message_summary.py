@@ -39,6 +39,6 @@ def get_messages_summary(
 
     summary = do_summarize_narrow(user_profile, narrow)
     if summary is None:  # nocoverage
-        return json_success(request, {"summary": "No messages in conversation to summarize"})
+        raise JsonableError(_("No messages in conversation to summarize"))
 
     return json_success(request, {"summary": summary})
