@@ -1114,7 +1114,11 @@ div.settings-radio-input-parent {
         float: left;
         width: auto;
         cursor: pointer;
-        margin: 3.5px 0 1px;
+        /* Scale the height with font-size, 14px at 1em */
+        height: 1em;
+        /* This value came from fiddling to find what looked
+           vertically centered at 12px-20px font sizes. */
+        margin-top: 0.15em;
 
         &:focus {
             outline: 1px dotted hsl(0deg 0% 20%);
