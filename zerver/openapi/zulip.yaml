@@ -15284,6 +15284,8 @@ paths:
                                 **Changes**: New in Zulip 8.0 (feature level 207).
                             config_options:
                               $ref: "#/components/schemas/WebhookConfigOption"
+                            interfaced_settings:
+                              $ref: "#/components/schemas/WebhookInterfacedSetting"
                       recent_private_conversations:
                         description: |
                           Present if `recent_private_conversations` is present in `fetch_event_types`.
@@ -23067,6 +23069,63 @@ components:
               The name of the validator function for the configuration
               option. Currently generated values are `check_bool` and
               `check_string`.
+    WebhookInterfacedSetting:
+      type: object
+      additionalProperties: false
+      description: |
+        Dictionary containing the integration's interfaced settings metadata.
+
+        **Interfaced settings** are pre-built API endpoint parameter types that
+        comes with a UI or custom behavior in the frontend.
+
+        Clients are responsible for implementing the custom behavior that each
+        setting promises.
+
+        By default, all interfaced settings are included as keys. Clients can
+        check if a setting is used by examining its value. The value will be
+        `null` if the setting is not used. Otherwise, it will be a dictionary
+        containing context such as the parameter name declared in the endpoint
+        and the setting's unique query variable.
+
+        This is an unstable API expected to be used only by the Zulip web
+        apps. Please discuss in chat.zulip.org before using it.
+
+        **Changes**: New in Zulip 10.0 (feature level ZF-325305).
+      properties:
+        MapToChannelsT:
+          type: object
+          nullable: true
+          additionalProperties: false
+          description: |
+            The `MapToChannelsT` setting is a boolean parameter designed for
+            third-party chat app integrations. It provides a UI for the option
+            to send messages to Zulip channels with the same name as the
+            incoming message's original channel.
+
+            If the option is selected, a `{unique_query}=true` query will be
+            added to the integrations URL. Where the value of `unique_query` is,
+            as the name suggests, the unique query of each interfaced setting.
+
+            In the Zulip web app, this options is added in the "Where to send
+            notifications" dropdown field in the **Generate integration URL
+            modal** as "Map to Zulip channels". If selected, the "Send all
+            notifications to a single topic" checkbox will also be disabled.
+          properties:
+            parameter_name:
+              type: string
+              description: |
+                The parameter name declared in the integrations endpoint using
+                this interfaced setting as its type.
+
+                Clients can use this as additional context to enforce the custom
+                behaviour each setting promises.
+            unique_query:
+              type: string
+              description: |
+                The unique query variable of each interfaced setting. It is used
+                as the query name when encoding the users input for a specific
+                interfaced setting in the integration URL.
+
     CustomProfileField:
       type: object
       additionalProperties: false
