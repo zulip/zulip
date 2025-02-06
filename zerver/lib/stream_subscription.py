@@ -1,6 +1,5 @@
 import itertools
 from collections import defaultdict
-from collections.abc import Collection
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from operator import itemgetter
@@ -8,8 +7,7 @@ from typing import Any
 
 from django.db.models import Q, QuerySet
 
-from zerver.lib.user_groups import get_user_group_member_ids
-from zerver.models import AlertWord, Realm, Recipient, Stream, Subscription, UserProfile, UserTopic
+from zerver.models import AlertWord, Recipient, Stream, Subscription, UserProfile, UserTopic
 
 
 @dataclass
@@ -178,67 +176,6 @@ def get_users_for_streams(stream_ids: set[int]) -> dict[int, set[UserProfile]]:
         result[stream_id] = users
 
     return result
-
-
-def bulk_get_subscriber_peer_info(
-    realm: Realm,
-    streams: Collection[Stream] | QuerySet[Stream],
-) -> SubscriberPeerInfo:
-    """
-    Glossary:
-
-        subscribed_ids:
-            This shows the users who are actually subscribed to the
-            stream, which we generally send to the person subscribing
-            to the stream.
-
-        private_peer_dict:
-            These are the folks that need to know about a new subscriber.
-            It's usually a superset of the subscribers.
-
-            Note that we only compute this for PRIVATE streams.  We
-            let other code handle peers for public streams, since the
-            peers for all public streams are actually the same group
-            of users, and downstream code can use that property of
-            public streams to avoid extra work.
-    """
-
-    subscribed_ids = {}
-    private_peer_dict = {}
-
-    private_streams = {stream for stream in streams if stream.invite_only}
-    private_stream_ids = {stream.id for stream in private_streams}
-    public_stream_ids = {stream.id for stream in streams if not stream.invite_only}
-
-    stream_user_ids = get_user_ids_for_streams(private_stream_ids | public_stream_ids)
-
-    if private_streams:
-        realm_admin_ids = {user.id for user in realm.get_admin_users_and_bots()}
-
-        for stream in private_streams:
-            # Realm admins can see all private stream
-            # subscribers.
-            subscribed_user_ids = stream_user_ids.get(stream.id, set())
-            subscribed_ids[stream.id] = subscribed_user_ids
-            channel_admin_ids = set(get_user_group_member_ids(stream.can_administer_channel_group))
-            can_add_subscribers_group_user_ids = set(
-                get_user_group_member_ids(stream.can_add_subscribers_group)
-            )
-            private_peer_dict[stream.id] = (
-                subscribed_user_ids
-                | realm_admin_ids
-                | channel_admin_ids
-                | can_add_subscribers_group_user_ids
-            )
-
-    for stream_id in public_stream_ids:
-        subscribed_user_ids = stream_user_ids.get(stream_id, set())
-        subscribed_ids[stream_id] = subscribed_user_ids
-
-    return SubscriberPeerInfo(
-        subscribed_ids=subscribed_ids,
-        private_peer_dict=private_peer_dict,
-    )
 
 
 def handle_stream_notifications_compatibility(

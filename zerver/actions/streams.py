@@ -28,7 +28,6 @@ from zerver.lib.stream_color import pick_colors
 from zerver.lib.stream_subscription import (
     SubInfo,
     SubscriberPeerInfo,
-    bulk_get_subscriber_peer_info,
     get_active_subscriptions_for_stream_id,
     get_bulk_stream_subscriber_info,
     get_used_colors_for_user_ids,
@@ -49,7 +48,7 @@ from zerver.lib.streams import (
     send_stream_deletion_event,
     stream_to_dict,
 )
-from zerver.lib.subscription_info import get_subscribers_query
+from zerver.lib.subscription_info import bulk_get_subscriber_peer_info, get_subscribers_query
 from zerver.lib.types import AnonymousSettingGroupDict, APISubscriptionDict
 from zerver.lib.user_groups import (
     get_group_setting_value_for_api,

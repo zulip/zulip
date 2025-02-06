@@ -35,8 +35,8 @@ from zerver.lib.invites import notify_invites_changed
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import clear_scheduled_invitation_emails
-from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.streams import can_access_stream_history
+from zerver.lib.subscription_info import bulk_get_subscriber_peer_info
 from zerver.lib.user_counts import realm_user_count, realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (

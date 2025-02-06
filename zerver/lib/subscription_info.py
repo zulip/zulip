@@ -12,14 +12,17 @@ from psycopg2.sql import SQL
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.stream_subscription import (
+    SubscriberPeerInfo,
     get_active_subscriptions_for_stream_id,
     get_stream_subscriptions_for_user,
+    get_user_ids_for_streams,
 )
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.streams import (
     get_group_setting_value_dict_for_streams,
     get_setting_values_for_group_settings,
     get_stream_post_policy_value_based_on_group_setting,
+    get_user_ids_with_metadata_access_via_permission_groups,
     get_web_public_streams_queryset,
     has_metadata_access_to_channel_via_groups,
     subscribed_to_stream,
@@ -527,6 +530,65 @@ def get_subscribers_query(
     validate_user_access_to_subscribers(requesting_user, stream)
 
     return get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=False)
+
+
+def bulk_get_subscriber_peer_info(
+    realm: Realm,
+    streams: Collection[Stream] | QuerySet[Stream],
+) -> SubscriberPeerInfo:
+    """
+    Glossary:
+
+        subscribed_ids:
+            This shows the users who are actually subscribed to the
+            stream, which we generally send to the person subscribing
+            to the stream.
+
+        private_peer_dict:
+            These are the folks that need to know about a new subscriber.
+            It's usually a superset of the subscribers.
+
+            Note that we only compute this for PRIVATE streams.  We
+            let other code handle peers for public streams, since the
+            peers for all public streams are actually the same group
+            of users, and downstream code can use that property of
+            public streams to avoid extra work.
+    """
+
+    subscribed_ids = {}
+    private_peer_dict = {}
+
+    private_streams = {stream for stream in streams if stream.invite_only}
+    private_stream_ids = {stream.id for stream in private_streams}
+    public_stream_ids = {stream.id for stream in streams if not stream.invite_only}
+
+    stream_user_ids = get_user_ids_for_streams(private_stream_ids | public_stream_ids)
+
+    if private_streams:
+        realm_admin_ids = {user.id for user in realm.get_admin_users_and_bots()}
+
+        for stream in private_streams:
+            # Realm admins can see all private stream
+            # subscribers.
+            subscribed_user_ids = stream_user_ids.get(stream.id, set())
+            subscribed_ids[stream.id] = subscribed_user_ids
+            user_ids_with_metadata_access_via_permission_groups = (
+                get_user_ids_with_metadata_access_via_permission_groups(stream)
+            )
+            private_peer_dict[stream.id] = (
+                subscribed_user_ids
+                | realm_admin_ids
+                | user_ids_with_metadata_access_via_permission_groups
+            )
+
+    for stream_id in public_stream_ids:
+        subscribed_user_ids = stream_user_ids.get(stream_id, set())
+        subscribed_ids[stream_id] = subscribed_user_ids
+
+    return SubscriberPeerInfo(
+        subscribed_ids=subscribed_ids,
+        private_peer_dict=private_peer_dict,
+    )
 
 
 def has_metadata_access_to_previously_subscribed_stream(
