@@ -74,8 +74,7 @@ const admin_settings_label = {
         defaultMessage: "Display “(guest)” after names of guest users",
     }),
     realm_enable_guest_user_dm_warning: $t({
-        defaultMessage:
-            "Display a warning when composing a direct message with guest user recipients",
+        defaultMessage: "Warn when composing a DM to a guest",
     }),
 };
 
