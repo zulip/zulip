@@ -81,7 +81,6 @@ def do_send_stream_typing_notification(
         topic=topic_name,
     )
 
-    # We don't notify long_term_idle subscribers.
     subscriptions_query = get_active_subscriptions_for_stream_id(
         stream.id, include_deactivated_users=False
     )
