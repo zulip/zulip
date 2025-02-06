@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 # this list without any modification.
 IGNORED_PHRASES = [
     # Proper nouns and acronyms
+    r"OAuth",
     r"API",
     r"APNS",
     r"Botserver",

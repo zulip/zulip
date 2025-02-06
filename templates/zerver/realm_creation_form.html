@@ -85,4 +85,26 @@
             {% endif %}
         </div>
     </div>
+
+    {% if not user_registration_form %}
+    <div class="input-box">
+        <div class="inline-block" id="realm-creation-import-from-wrapper">
+            <select id="import_from" name="import_from">
+                {% for key, choice in import_from_choices %}
+                    <option value="{{ key }}" {% if key == "none" %}selected{% endif %}>{{ _(choice) }}</option>
+                {% endfor %}
+            </select>
+            <div class="not-editable-realm-field extra-info-realm-creation-import-from">
+                {% trans %}
+                You can also import from
+                <a href="/help/import-from-mattermost">Mattermost</a> or
+                <a href="/help/import-from-rocketchat">Rocket.Chat</a>.
+                {% endtrans %}
+            </div>
+        </div>
+        <label for="import_from" class="inline-block">
+            {{ _('Import chat history?') }}
+        </label>
+    </div>
+    {% endif %}
 </div>

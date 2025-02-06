@@ -1,5 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
+import shutil
 import tempfile
 import time
 from typing import Any
@@ -12,11 +13,14 @@ from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from typing_extensions import override
 
+from confirmation import settings as confirmation_settings
 from zerver.actions.message_flags import do_mark_stream_messages_as_read
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_export import notify_realm_export
-from zerver.actions.realm_settings import scrub_deactivated_realm
+from zerver.actions.realm_settings import do_delete_all_realm_attachments, scrub_deactivated_realm
+from zerver.data_import.slack import do_convert_zipfile
 from zerver.lib.export import export_realm_wrapper
+from zerver.lib.import_realm import do_import_realm
 from zerver.lib.push_notifications import clear_push_device_tokens
 from zerver.lib.queue import queue_json_publish_rollback_unsafe, retry_event
 from zerver.lib.remote_server import (
@@ -24,8 +28,17 @@ from zerver.lib.remote_server import (
     send_server_data_to_push_bouncer,
 )
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
-from zerver.lib.upload import handle_reupload_emojis_event
-from zerver.models import Message, Realm, RealmAuditLog, RealmExport, Stream, UserMessage
+from zerver.lib.upload import handle_reupload_emojis_event, save_attachment_contents
+from zerver.models import (
+    Message,
+    PreregistrationRealm,
+    Realm,
+    RealmAuditLog,
+    RealmExport,
+    Stream,
+    UserMessage,
+    UserProfile,
+)
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
@@ -236,6 +249,66 @@ class DeferredWorker(QueueProcessingWorker):
             )
             for realm in realms_to_scrub:
                 scrub_deactivated_realm(realm)
+        elif event["type"] == "import_slack_data":
+            preregistration_realm = PreregistrationRealm.objects.get(
+                id=event["preregistration_realm_id"]
+            )
+            string_id = preregistration_realm.string_id
+            output_dir = tempfile.mkdtemp(
+                prefix=f"import-{preregistration_realm.id}-converted-",
+                dir=settings.IMPORT_TMPFILE_DIRECTORY,
+            )
+            try:
+                with tempfile.NamedTemporaryFile(
+                    prefix=f"import-{preregistration_realm.id}-slack-",
+                    suffix=".zip",
+                    dir=settings.IMPORT_TMPFILE_DIRECTORY,
+                ) as fh:
+                    save_attachment_contents(event["filename"], fh)
+                    fh.flush()
+                    do_convert_zipfile(
+                        fh.name,
+                        output_dir,
+                        event["slack_access_token"],
+                    )
+
+                    realm = do_import_realm(output_dir, string_id)
+                    realm.org_type = preregistration_realm.org_type
+                    realm.default_language = preregistration_realm.default_language
+                    realm.save()
+
+                    # Try finding the user who imported this realm and make them owner.
+                    try:
+                        prereg_user = UserProfile.objects.get(
+                            delivery_email__iexact=preregistration_realm.email, realm=realm
+                        )
+                        if prereg_user.role != UserProfile.ROLE_REALM_OWNER:
+                            prereg_user.role = UserProfile.ROLE_REALM_OWNER
+                            prereg_user.save(update_fields=["role"])
+                        preregistration_realm.status = confirmation_settings.STATUS_USED
+                        preregistration_realm.created_realm = realm
+                    except UserProfile.DoesNotExist:
+                        # The email address in the import may not match the email
+                        # address they provided. Ask user which user they want to become.
+                        preregistration_realm.data_import_metadata["no_user_matching_email"] = True
+
+                    preregistration_realm.data_import_metadata["is_import_work_queued"] = False
+                    preregistration_realm.save()
+            except Exception:
+                try:
+                    # Clean up the realm if the import failed
+                    preregistration_realm.created_realm = None
+                    preregistration_realm.data_import_metadata["is_import_work_queued"] = False
+                    preregistration_realm.save()
+
+                    realm = Realm.objects.get(string_id=string_id)
+                    do_delete_all_realm_attachments(realm)
+                    realm.delete()
+                except Realm.DoesNotExist:
+                    pass
+                raise
+            finally:
+                shutil.rmtree(output_dir)
 
         end = time.time()
         logger.info(
