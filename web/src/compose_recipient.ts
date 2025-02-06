@@ -175,7 +175,7 @@ function switch_message_type(message_type: MessageType): void {
         private_message_recipient: compose_state.private_message_recipient(),
     };
     update_compose_for_message_type(opts);
-    update_placeholder_text();
+    update_compose_area_placeholder_text();
     compose_ui.set_focus(opts);
 }
 
@@ -348,7 +348,7 @@ export function initialize(): void {
     $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
 }
 
-export let update_placeholder_text = (): void => {
+export let update_compose_area_placeholder_text = (): void => {
     const $textarea: JQuery<HTMLTextAreaElement> = $("textarea#compose-textarea");
     // Change compose placeholder text only if compose box is open.
     if (!$textarea.is(":visible")) {
@@ -375,8 +375,10 @@ export let update_placeholder_text = (): void => {
     compose_ui.autosize_textarea($textarea);
 };
 
-export function rewire_update_placeholder_text(value: typeof update_placeholder_text): void {
-    update_placeholder_text = value;
+export function rewire_update_compose_area_placeholder_text(
+    value: typeof update_compose_area_placeholder_text,
+): void {
+    update_compose_area_placeholder_text = value;
 }
 
 // This function addresses the issue of the placeholder not reappearing in Firefox

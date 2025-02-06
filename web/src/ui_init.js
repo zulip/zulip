@@ -576,7 +576,7 @@ export function initialize_everything(state_data) {
     compose_recipient.initialize();
     compose_pm_pill.initialize({
         on_pill_create_or_remove() {
-            compose_recipient.update_placeholder_text();
+            compose_recipient.update_compose_area_placeholder_text();
             compose_recipient.check_posting_policy_for_compose_box();
         },
     });

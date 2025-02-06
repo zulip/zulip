@@ -190,7 +190,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     maybe_scroll_up_selected_message(opts);
     compose_fade.start_compose(opts.message_type);
     $(document).trigger(new $.Event("compose_started.zulip", opts));
-    compose_recipient.update_placeholder_text();
+    compose_recipient.update_compose_area_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
     // We explicitly call this function here apart from compose_setup.js
     // as this helps to show banner when responding in an interleaved view.
