@@ -75,13 +75,23 @@ information you need in the moment.
 
 {end_tabs}
 
-### Hide or show the left sidebar
+### Show the left sidebar
 
 {start_tabs}
 
 {tab|desktop-web}
 
-1. Above the left sidebar, click the <i class="fa fa-reorder"></i> icon.
+1. At the top left corner, click the <i class="zulip-icon zulip-icon-panel-left"></i> icon.
+
+{end_tabs}
+
+### Hide the left sidebar
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. At the top left corner, click the <i class="zulip-icon zulip-icon-panel-left-dashed"></i> icon.
 
 {end_tabs}
 
