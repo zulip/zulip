@@ -1259,7 +1259,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 .empty-feed-notice-title {
     font-size: 1.5em;
     font-weight: 400;
-    line-height: 1;
+    line-height: inherit;
     word-wrap: break-word;
 }
 
