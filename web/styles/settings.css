@@ -1286,7 +1286,10 @@ label.preferences-radio-choice-label {
 }
 
 .manage-bot-button,
-.deactivate-bot-button {
+.deactivate-bot-button,
+.download_bot_zuliprc,
+.copy_zuliprc,
+.open_bots_subscribed_streams {
     display: inline-flex;
     align-items: center;
 }
