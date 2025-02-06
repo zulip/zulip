@@ -1,11 +1,92 @@
 /* override table width restrictions */
-.wy-table-responsive table td,
-.wy-table-responsive table th {
-    /* !important prevents the common CSS stylesheets from
-       overriding this as on RTD they are loaded after this stylesheet */
-    white-space: normal !important;
+/* Base styles reset for consistency */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.wy-table-responsive {
-    overflow: visible !important;
+:root {
+    /* Color scheme */
+    --warning-bg: #fff3cd;
+    --warning-border: #ffeeba;
+    --warning-text: #856404;
+    --link-color: #004085;
+    --link-hover: #002752;
+    
+    /* Spacing */
+    --spacing-unit: 1rem;
+    --border-radius: 4px;
+}
+
+/* Admonition base styles */
+.admonition {
+    margin: calc(var(--spacing-unit) * 1.5) 0;
+    padding: var(--spacing-unit);
+    border-radius: var(--border-radius);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Warning specific styles */
+.admonition.warning {
+    background: var(--warning-bg);
+    border-left: 4px solid var(--warning-text);
+    color: var(--warning-text);
+}
+
+/* Title styling */
+.admonition-title {
+    font-weight: 600;
+    margin-bottom: calc(var(--spacing-unit) / 2);
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-size: 1.1em;
+}
+
+.admonition-title::before {
+    content: "⚠️";
+    font-size: 1.2em;
+}
+
+/* Content styling */
+.admonition p {
+    line-height: 1.6;
+    margin: 0.8em 0;
+}
+
+.admonition p:last-child {
+    margin-bottom: 0;
+}
+
+/* Link styling */
+.admonition a {
+    color: var(--link-color);
+    text-decoration: underline;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.admonition a:hover {
+    color: var(--link-hover);
+    text-decoration: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .admonition {
+        margin: var(--spacing-unit) 0;
+        padding: calc(var(--spacing-unit) * 0.75);
+    }
+    
+    .admonition-title {
+        font-size: 1em;
+    }
+}
+
+/* Focus states for accessibility */
+.admonition a:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: 2px;
 }

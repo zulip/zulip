@@ -12,15 +12,23 @@
     # This temporary workaround prevents test failures and should be removed after the next release.
     #}
     <div class="admonition warning">
-        <p class="first admonition-title">Warning</p>
-        <p class="last">You are reading a <strong>development version</strong> of the Zulip documentation. These instructions may contain changes that are not yet present in a supported Zulip Server release.
-        See <a class="reference external" href="https://zulip.readthedocs.io/en/stable/production/">documentation for the latest stable release</a>.</p>
+        <p class="admonition-title">Warning</p>
+        <p>
+            You are reading a <strong>development version</strong> of the Zulip documentation. 
+            These instructions may contain changes that are not yet present in a supported Zulip Server release.
+            <br>
+            See <a class="reference external" href="https://zulip.readthedocs.io/en/stable/{{ pagename }}.html">documentation for the latest stable release</a>.
+        </p>
     </div>
-    {% elif pagename.split("/")[0] == "production" and release.endswith('+git') %}
+{% elif pagename.split("/")[0] == "production" %}
     <div class="admonition warning">
-        <p class="first admonition-title">Warning</p>
-        <p class="last">You are reading a <strong>development version</strong> of the Zulip documentation. These instructions may contain changes that are not yet present in a supported Zulip Server release.
-        See <a class="reference external" href="https://zulip.readthedocs.io/en/stable/{{ pagename }}.html">documentation for the latest stable release</a>.</p>
+        <p class="admonition-title">Warning</p>
+        <p>
+            You are reading a <strong>development version</strong> of the Zulip documentation. 
+            These instructions may contain changes that are not yet present in a supported Zulip Server release.
+            <br>
+            See <a class="reference external" href="https://zulip.readthedocs.io/en/stable/production/">documentation for the latest stable release</a>.
+        </p>
     </div>
     {% endif %}
     {{ super() }}
