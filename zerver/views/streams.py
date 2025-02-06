@@ -62,6 +62,7 @@ from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     StreamDict,
+    UserGroupMembershipDetails,
     access_default_stream_group_by_id,
     access_stream_by_id,
     access_stream_by_name,
@@ -244,7 +245,7 @@ def remove_default_stream(
     (stream, sub) = access_stream_by_id(
         user_profile,
         stream_id,
-        allow_realm_admin=True,
+        require_content_access=False,
     )
     do_remove_default_stream(stream)
     return json_success(request)
@@ -411,9 +412,17 @@ def update_stream_backend(
         if validate_group_setting_value_change(
             current_setting_api_value, new_setting_value, expected_current_setting_value
         ):
+            user_group_membership_details = UserGroupMembershipDetails(
+                user_recursive_group_ids=None
+            )
             if (
                 setting_name in Stream.stream_permission_group_settings_requiring_content_access
-                and not user_has_content_access(user_profile, stream, is_subscribed=sub is not None)
+                and not user_has_content_access(
+                    user_profile,
+                    stream,
+                    user_group_membership_details,
+                    is_subscribed=sub is not None,
+                )
             ):
                 raise JsonableError(_("Invalid channel ID"))
             with transaction.atomic(durable=True):
@@ -889,7 +898,7 @@ def get_subscribers_backend(
     (stream, sub) = access_stream_by_id(
         user_profile,
         stream_id,
-        allow_realm_admin=True,
+        require_content_access=False,
     )
     subscribers = get_subscriber_ids(stream, user_profile)
 
@@ -931,7 +940,7 @@ def get_stream_backend(
     *,
     stream_id: PathOnly[int],
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
+    (stream, sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
 
     recent_traffic = get_streams_traffic({stream.id}, user_profile.realm)
     setting_groups_dict = get_group_setting_value_dict_for_streams([stream])

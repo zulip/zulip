@@ -466,9 +466,15 @@ def check_for_exactly_one_stream_arg(stream_id: int | None, stream: str | None) 
         raise IncompatibleParametersError(["stream_id", "stream"])
 
 
+@dataclass
+class UserGroupMembershipDetails:
+    user_recursive_group_ids: set[int] | None
+
+
 def user_has_content_access(
     user_profile: UserProfile,
     stream: Stream,
+    user_group_membership_details: UserGroupMembershipDetails,
     *,
     is_subscribed: bool,
 ) -> bool:
@@ -478,14 +484,17 @@ def user_has_content_access(
     if is_subscribed:
         return True
 
-    if not stream.invite_only and not user_profile.is_guest:
+    if stream.is_public() and not user_profile.is_guest:
         return True
 
-    user_recursive_group_ids = set(
-        get_recursive_membership_groups(user_profile).values_list("id", flat=True)
-    )
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
 
-    if is_user_in_can_add_subscribers_group(stream, user_recursive_group_ids):
+    if is_user_in_can_add_subscribers_group(
+        stream, user_group_membership_details.user_recursive_group_ids
+    ):
         return True
 
     return False
@@ -514,7 +523,10 @@ def check_stream_access_for_delete_or_update_requiring_metadata_access(
     # to the channel for this block, but since we have ruled out
     # the possibility that the user is a channel admin, checking
     # for content access will save us valuable DB queries.
-    if user_has_content_access(user_profile, stream, is_subscribed=sub is not None):
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    if user_has_content_access(
+        user_profile, stream, user_group_membership_details, is_subscribed=sub is not None
+    ):
         raise CannotAdministerChannelError
 
     raise JsonableError(error)
@@ -555,38 +567,49 @@ def check_basic_stream_access(
     stream: Stream,
     *,
     is_subscribed: bool,
-    allow_realm_admin: bool = False,
+    require_content_access: bool = True,
 ) -> bool:
-    # Any realm user, even guests, can access web_public streams.
-    if stream.is_web_public:
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    if user_has_content_access(
+        user_profile, stream, user_group_membership_details, is_subscribed=is_subscribed
+    ):
         return True
 
-    # If the stream is in your realm and public, you can access it.
-    if stream.is_public() and not user_profile.is_guest:
-        return True
+    if not require_content_access:
+        if user_profile.is_realm_admin:
+            return True
 
-    # Or if you are subscribed to the stream, you can access it.
-    if is_subscribed:
-        return True
-
-    # For some specific callers (e.g. getting list of subscribers,
-    # removing other users from a stream, and updating stream name and
-    # description), we allow realm admins to access stream even if
-    # they are not subscribed to a private stream.
-    if user_profile.is_realm_admin and allow_realm_admin:
-        return True
+        # This will not get fired in practice since we will only arrive
+        # at this if block if `user_has_content_access` returns False.
+        # In every case that `user_has_content_access` returns False,
+        # we already would have calculated `user_recursive_group_ids`.
+        # It is still good to keep this around in case there are
+        # changes in that function.
+        if user_group_membership_details.user_recursive_group_ids is None:  # nocoverage
+            user_group_membership_details.user_recursive_group_ids = set(  # nocoverage
+                get_recursive_membership_groups(user_profile).values_list(
+                    "id", flat=True
+                )  # nocoverage
+            )  # nocoverage
+        if has_metadata_access_to_channel_via_groups(
+            user_group_membership_details.user_recursive_group_ids,
+            stream.can_administer_channel_group_id,
+            stream.can_add_subscribers_group_id,
+        ):
+            return True
 
     return False
 
 
-# Only set allow_realm_admin flag to True when you want to allow realm admin to
-# access unsubscribed private stream content.
+# Only set require_content_access flag to False when you want
+# to allow users with metadata access to access unsubscribed private
+# stream content.
 def access_stream_common(
     user_profile: UserProfile,
     stream: Stream,
     error: str,
     require_active: bool = True,
-    allow_realm_admin: bool = False,
+    require_content_access: bool = True,
 ) -> Subscription | None:
     """Common function for backend code where the target use attempts to
     access the target stream, returning all the data fetched along the
@@ -608,7 +631,10 @@ def access_stream_common(
         sub = None
 
     if not stream.deactivated and check_basic_stream_access(
-        user_profile, stream, is_subscribed=sub is not None, allow_realm_admin=allow_realm_admin
+        user_profile,
+        stream,
+        is_subscribed=sub is not None,
+        require_content_access=require_content_access,
     ):
         return sub
 
@@ -621,7 +647,7 @@ def access_stream_by_id(
     user_profile: UserProfile,
     stream_id: int,
     require_active: bool = True,
-    allow_realm_admin: bool = False,
+    require_content_access: bool = True,
 ) -> tuple[Stream, Subscription | None]:
     error = _("Invalid channel ID")
     try:
@@ -634,7 +660,7 @@ def access_stream_by_id(
         stream,
         error,
         require_active=require_active,
-        allow_realm_admin=allow_realm_admin,
+        require_content_access=require_content_access,
     )
     return (stream, sub)
 
@@ -643,7 +669,7 @@ def access_stream_by_id_for_message(
     user_profile: UserProfile,
     stream_id: int,
     require_active: bool = True,
-    allow_realm_admin: bool = False,
+    require_content_access: bool = True,
 ) -> tuple[Stream, Subscription | None]:
     """
     Variant of access_stream_by_id that uses get_stream_by_id_for_sending_message
@@ -660,7 +686,7 @@ def access_stream_by_id_for_message(
         stream,
         error,
         require_active=require_active,
-        allow_realm_admin=allow_realm_admin,
+        require_content_access=require_content_access,
     )
     return (stream, sub)
 
@@ -697,7 +723,7 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
 
 
 def access_stream_by_name(
-    user_profile: UserProfile, stream_name: str, allow_realm_admin: bool = False
+    user_profile: UserProfile, stream_name: str, require_content_access: bool = True
 ) -> tuple[Stream, Subscription | None]:
     error = _("Invalid channel name '{channel_name}'").format(channel_name=stream_name)
     try:
@@ -709,7 +735,7 @@ def access_stream_by_name(
         user_profile,
         stream,
         error,
-        allow_realm_admin=allow_realm_admin,
+        require_content_access=require_content_access,
     )
     return (stream, sub)
 
@@ -883,7 +909,7 @@ def bulk_can_remove_subscribers_from_streams(
         assert stream.recipient_id is not None
         is_subscribed = stream.recipient_id in sub_recipient_ids
         if not check_basic_stream_access(
-            user_profile, stream, is_subscribed=is_subscribed, allow_realm_admin=True
+            user_profile, stream, is_subscribed=is_subscribed, require_content_access=False
         ):
             return False
 

@@ -404,7 +404,7 @@ def update_realm(
         new_moderation_request_channel_id = None
         if moderation_request_channel_id >= 0:
             (new_moderation_request_channel_id, sub) = access_stream_by_id(
-                user_profile, moderation_request_channel_id, allow_realm_admin=True
+                user_profile, moderation_request_channel_id, require_content_access=False
             )
         do_set_realm_moderation_request_channel(
             realm,
@@ -421,7 +421,9 @@ def update_realm(
         new_stream_announcements_stream_new = None
         if new_stream_announcements_stream_id >= 0:
             (new_stream_announcements_stream_new, sub) = access_stream_by_id(
-                user_profile, new_stream_announcements_stream_id, allow_realm_admin=True
+                user_profile,
+                new_stream_announcements_stream_id,
+                require_content_access=False,
             )
         do_set_realm_new_stream_announcements_stream(
             realm,
@@ -438,7 +440,7 @@ def update_realm(
         new_signup_announcements_stream = None
         if signup_announcements_stream_id >= 0:
             (new_signup_announcements_stream, sub) = access_stream_by_id(
-                user_profile, signup_announcements_stream_id, allow_realm_admin=True
+                user_profile, signup_announcements_stream_id, require_content_access=False
             )
         do_set_realm_signup_announcements_stream(
             realm,
@@ -455,7 +457,9 @@ def update_realm(
         new_zulip_update_announcements_stream = None
         if zulip_update_announcements_stream_id >= 0:
             (new_zulip_update_announcements_stream, sub) = access_stream_by_id(
-                user_profile, zulip_update_announcements_stream_id, allow_realm_admin=True
+                user_profile,
+                zulip_update_announcements_stream_id,
+                require_content_access=False,
             )
         do_set_realm_zulip_update_announcements_stream(
             realm,

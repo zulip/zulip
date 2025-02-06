@@ -186,7 +186,7 @@ def get_chart_data_for_stream(
         user_profile,
         stream_id,
         require_active=True,
-        allow_realm_admin=True,
+        require_content_access=False,
     )
 
     return do_get_chart_data(
