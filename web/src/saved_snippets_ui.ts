@@ -119,12 +119,10 @@ function item_click_callback(
     }
 }
 
-export const initialize = (params: StateData["saved_snippets"]): void => {
-    saved_snippets.initialize(params);
-
+export function setup_saved_snippets_dropdown_widget(widget_selector: string): void {
     saved_snippet_dropdown_widget = new dropdown_widget.DropdownWidget({
         widget_name: "saved_snippets",
-        widget_selector: ".saved_snippets_widget",
+        widget_selector,
         get_options: saved_snippets.get_options_for_dropdown_widget,
         item_click_callback,
         $events_container: $("body"),
@@ -142,4 +140,9 @@ export const initialize = (params: StateData["saved_snippets"]): void => {
         },
     });
     saved_snippet_dropdown_widget.setup();
+}
+
+export const initialize = (params: StateData["saved_snippets"]): void => {
+    saved_snippets.initialize(params);
+    setup_saved_snippets_dropdown_widget(".saved-snippets-composebox-widget");
 };
