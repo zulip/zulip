@@ -73,6 +73,10 @@ const admin_settings_label = {
     realm_enable_guest_user_indicator: $t({
         defaultMessage: "Display “(guest)” after names of guest users",
     }),
+    realm_enable_guest_user_dm_warning: $t({
+        defaultMessage:
+            "Display a warning when composing a direct message with guest user recipients",
+    }),
 };
 
 function insert_tip_box(): void {
@@ -246,6 +250,7 @@ export function build_page(): void {
         automatically_unmute_topics_in_muted_streams_policy_values:
             settings_config.automatically_follow_or_unmute_topics_policy_values,
         realm_enable_guest_user_indicator: realm.realm_enable_guest_user_indicator,
+        realm_enable_guest_user_dm_warning: realm.realm_enable_guest_user_dm_warning,
         active_user_list_dropdown_widget_name: settings_users.active_user_list_dropdown_widget_name,
         deactivated_user_list_dropdown_widget_name:
             settings_users.deactivated_user_list_dropdown_widget_name,
