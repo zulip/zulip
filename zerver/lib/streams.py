@@ -24,7 +24,7 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import AnonymousSettingGroupDict, APIStreamDict
 from zerver.lib.user_groups import (
-    get_recursive_group_members,
+    get_recursive_group_members_union_for_groups,
     get_recursive_membership_groups,
     get_role_based_system_groups_dict,
     user_has_permission_for_group_setting,
@@ -181,17 +181,11 @@ def get_default_values_for_stream_permission_group_settings(
 
 
 def get_user_ids_with_metadata_access_via_permission_groups(stream: Stream) -> set[int]:
-    stream_admin_user_ids = set(
-        get_recursive_group_members(stream.can_administer_channel_group_id).values_list(
-            "id", flat=True
-        )
+    return set(
+        get_recursive_group_members_union_for_groups(
+            [stream.can_add_subscribers_group_id, stream.can_administer_channel_group_id]
+        ).values_list("id", flat=True)
     )
-    stream_add_subscribers_group_user_ids = set(
-        get_recursive_group_members(stream.can_add_subscribers_group_id).values_list(
-            "id", flat=True
-        )
-    )
-    return stream_admin_user_ids | stream_add_subscribers_group_user_ids
 
 
 @transaction.atomic(savepoint=False)

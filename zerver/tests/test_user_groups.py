@@ -40,9 +40,11 @@ from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.user_groups import (
     get_direct_user_groups,
     get_recursive_group_members,
+    get_recursive_group_members_union_for_groups,
     get_recursive_membership_groups,
     get_recursive_strict_subgroups,
     get_recursive_subgroups,
+    get_recursive_subgroups_union_for_groups,
     get_role_based_system_groups_dict,
     get_subgroup_ids,
     get_user_group_member_ids,
@@ -249,6 +251,8 @@ class UserGroupTestCase(ZulipTestCase):
         iago = self.example_user("iago")
         desdemona = self.example_user("desdemona")
         shiva = self.example_user("shiva")
+        aaron = self.example_user("aaron")
+        prospero = self.example_user("prospero")
 
         leadership_group = check_add_user_group(
             realm, "Leadership", [desdemona], acting_user=desdemona
@@ -257,8 +261,14 @@ class UserGroupTestCase(ZulipTestCase):
         staff_group = check_add_user_group(realm, "Staff", [iago], acting_user=iago)
         GroupGroupMembership.objects.create(supergroup=staff_group, subgroup=leadership_group)
 
+        manager_group = check_add_user_group(
+            realm, "Managers", [aaron, prospero], acting_user=aaron
+        )
+        GroupGroupMembership.objects.create(supergroup=manager_group, subgroup=leadership_group)
+
         everyone_group = check_add_user_group(realm, "Everyone", [shiva], acting_user=shiva)
         GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=staff_group)
+        GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=manager_group)
 
         self.assertCountEqual(
             list(get_recursive_subgroups(leadership_group.id)), [leadership_group.usergroup_ptr]
@@ -273,6 +283,16 @@ class UserGroupTestCase(ZulipTestCase):
                 leadership_group.usergroup_ptr,
                 staff_group.usergroup_ptr,
                 everyone_group.usergroup_ptr,
+                manager_group.usergroup_ptr,
+            ],
+        )
+
+        self.assertCountEqual(
+            list(get_recursive_subgroups_union_for_groups([staff_group.id, manager_group.id])),
+            [
+                leadership_group.usergroup_ptr,
+                staff_group.usergroup_ptr,
+                manager_group.usergroup_ptr,
             ],
         )
 
@@ -280,28 +300,43 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertCountEqual(list(get_recursive_strict_subgroups(staff_group)), [leadership_group])
         self.assertCountEqual(
             list(get_recursive_strict_subgroups(everyone_group)),
-            [leadership_group, staff_group],
+            [leadership_group, staff_group, manager_group],
         )
 
         self.assertCountEqual(list(get_recursive_group_members(leadership_group.id)), [desdemona])
         self.assertCountEqual(list(get_recursive_group_members(staff_group.id)), [desdemona, iago])
         self.assertCountEqual(
-            list(get_recursive_group_members(everyone_group.id)), [desdemona, iago, shiva]
+            list(get_recursive_group_members(everyone_group.id)),
+            [desdemona, iago, shiva, aaron, prospero],
+        )
+
+        self.assertCountEqual(
+            list(get_recursive_group_members_union_for_groups([staff_group.id, manager_group.id])),
+            [iago, desdemona, aaron, prospero],
+        )
+        self.assertCountEqual(
+            list(
+                get_recursive_group_members_union_for_groups([leadership_group.id, staff_group.id])
+            ),
+            [desdemona, iago],
         )
 
         self.assertIn(leadership_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
         self.assertIn(staff_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
         self.assertIn(everyone_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
+        self.assertIn(manager_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
 
         self.assertIn(staff_group.usergroup_ptr, get_recursive_membership_groups(iago))
         self.assertIn(everyone_group.usergroup_ptr, get_recursive_membership_groups(iago))
+        self.assertNotIn(manager_group.usergroup_ptr, get_recursive_membership_groups(iago))
 
         self.assertIn(everyone_group.usergroup_ptr, get_recursive_membership_groups(shiva))
 
         do_deactivate_user(iago, acting_user=None)
         self.assertCountEqual(list(get_recursive_group_members(staff_group.id)), [desdemona])
         self.assertCountEqual(
-            list(get_recursive_group_members(everyone_group.id)), [desdemona, shiva]
+            list(get_recursive_group_members(everyone_group.id)),
+            [desdemona, shiva, aaron, prospero],
         )
 
     def test_subgroups_of_role_based_system_groups(self) -> None:
