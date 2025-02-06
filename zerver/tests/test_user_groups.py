@@ -261,14 +261,14 @@ class UserGroupTestCase(ZulipTestCase):
         GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=staff_group)
 
         self.assertCountEqual(
-            list(get_recursive_subgroups(leadership_group)), [leadership_group.usergroup_ptr]
+            list(get_recursive_subgroups(leadership_group.id)), [leadership_group.usergroup_ptr]
         )
         self.assertCountEqual(
-            list(get_recursive_subgroups(staff_group)),
+            list(get_recursive_subgroups(staff_group.id)),
             [leadership_group.usergroup_ptr, staff_group.usergroup_ptr],
         )
         self.assertCountEqual(
-            list(get_recursive_subgroups(everyone_group)),
+            list(get_recursive_subgroups(everyone_group.id)),
             [
                 leadership_group.usergroup_ptr,
                 staff_group.usergroup_ptr,
@@ -283,10 +283,10 @@ class UserGroupTestCase(ZulipTestCase):
             [leadership_group, staff_group],
         )
 
-        self.assertCountEqual(list(get_recursive_group_members(leadership_group)), [desdemona])
-        self.assertCountEqual(list(get_recursive_group_members(staff_group)), [desdemona, iago])
+        self.assertCountEqual(list(get_recursive_group_members(leadership_group.id)), [desdemona])
+        self.assertCountEqual(list(get_recursive_group_members(staff_group.id)), [desdemona, iago])
         self.assertCountEqual(
-            list(get_recursive_group_members(everyone_group)), [desdemona, iago, shiva]
+            list(get_recursive_group_members(everyone_group.id)), [desdemona, iago, shiva]
         )
 
         self.assertIn(leadership_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
@@ -299,8 +299,10 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertIn(everyone_group.usergroup_ptr, get_recursive_membership_groups(shiva))
 
         do_deactivate_user(iago, acting_user=None)
-        self.assertCountEqual(list(get_recursive_group_members(staff_group)), [desdemona])
-        self.assertCountEqual(list(get_recursive_group_members(everyone_group)), [desdemona, shiva])
+        self.assertCountEqual(list(get_recursive_group_members(staff_group.id)), [desdemona])
+        self.assertCountEqual(
+            list(get_recursive_group_members(everyone_group.id)), [desdemona, shiva]
+        )
 
     def test_subgroups_of_role_based_system_groups(self) -> None:
         realm = get_realm("zulip")
