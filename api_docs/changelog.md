@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 352**
+
+* [`POST /register`](/api/register-queue): Updated
+  `realm_incoming_webhook_bots` with a new `interfaced_settings` key,
+  it defines what interfaced settings each integration uses.
+
 **Feature level 351**
 
 * [`POST /message_edit_typing`](/api/set-typing-status-for-message-edit):
