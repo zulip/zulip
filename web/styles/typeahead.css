@@ -141,7 +141,7 @@
         /* Approximate space as preserved in
            typeahead lines, e.g., between the channel
            name and its description. */
-        gap: 0.25ch;
+        gap: 1ch;
         font-weight: 500;
     }
 }
