@@ -223,6 +223,9 @@
         min-width: unset;
         width: 1.1428em; /* 16px at 14px em */
         height: 1.1428em; /* 16px at 14px em */
+        display: flex;
+        justify-content: center;
+        align-items: center;
 
         .hashtag {
             padding-right: 0;
