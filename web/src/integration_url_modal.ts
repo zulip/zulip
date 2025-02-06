@@ -62,6 +62,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
         unique_id: -1,
         is_direct_message: true,
     };
+    const map_to_channels_option = {
+        name: $t_html({defaultMessage: "Map to Zulip channels"}),
+        unique_id: -2,
+    };
     const html_body = render_generate_integration_url_modal({
         default_url_message,
         max_topic_length: realm.max_topic_length,
@@ -217,7 +221,12 @@ export function show_generate_integration_url_modal(api_key: string): void {
             }
 
             const params = new URLSearchParams({api_key});
-            if (stream_id !== -1) {
+            const interfaced_settings = selected_integration_data?.interfaced_settings;
+            const map_to_channel_setting = interfaced_settings?.MapToChannelsT;
+
+            if (map_to_channel_setting && stream_id === map_to_channel_setting.unique_query) {
+                params.set(map_to_channel_setting.unique_query, "true");
+            } else if (stream_id !== -1) {
                 params.set("stream", stream_id!.toString());
                 if ($override_topic.prop("checked") && topic_name !== "") {
                     params.set("topic", topic_name);
@@ -313,9 +322,21 @@ export function show_generate_integration_url_modal(api_key: string): void {
         });
         stream_input_dropdown_widget.setup();
 
+        function get_additional_stream_dropdown_options(): Option[] {
+            const map_to_channel_setting =
+                selected_integration_data?.interfaced_settings?.MapToChannelsT;
+            const additional_options: Option[] = [];
+            if (map_to_channel_setting) {
+                additional_options.push(map_to_channels_option);
+            }
+            return additional_options;
+        }
+
         function get_options_for_stream_dropdown_widget(): Option[] {
+            const additional_settings = get_additional_stream_dropdown_options();
             const options = [
                 direct_messages_option,
+                ...additional_settings,
                 ...streams
                     .filter((stream) => stream_data.can_post_messages_in_stream(stream))
                     .map((stream) => ({
@@ -334,7 +355,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
             stream_input_dropdown_widget.render();
             $(".integration-url-stream-wrapper").trigger("input");
             const user_selected_option = stream_input_dropdown_widget.value();
-            if (user_selected_option === direct_messages_option.unique_id) {
+            if (
+                user_selected_option === direct_messages_option.unique_id ||
+                user_selected_option === map_to_channels_option.unique_id
+            ) {
                 $override_topic.prop("checked", false).prop("disabled", true);
                 $override_topic.closest(".input-group").addClass("control-label-disabled");
                 $topic_input.val("");
