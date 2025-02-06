@@ -42,7 +42,11 @@ pricing](/help/zulip-cloud-billing#temporary-users-and-guests) for guest users.
 
 {end_tabs}
 
-## Configure warning for direct messages to guest users
+## Configure warning when composing a DM to a guest
+
+Zulip can display a warning to let users know when recipients for a direct
+message they are composing are guests in your organization. The warning will be
+shown as a banner in the compose box on the web and desktop apps.
 
 {start_tabs}
 
@@ -50,7 +54,7 @@ pricing](/help/zulip-cloud-billing#temporary-users-and-guests) for guest users.
 
 {settings_tab|organization-permissions}
 
-1. Under **Guests**, toggle **Display a warning when composing a direct message with guest user recipients**.
+1. Under **Guests**, toggle **Warn when composing a DM to a guest**.
 
 {!save-changes.md!}
 
