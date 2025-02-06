@@ -1,4 +1,8 @@
 import os
+from typing import Annotated, TypeAlias
+from unittest.mock import MagicMock, patch
+
+from django.http import HttpRequest
 
 from zerver.lib.integrations import (
     DOC_SCREENSHOT_CONFIG,
@@ -13,6 +17,13 @@ from zerver.lib.integrations import (
     split_fixture_path,
 )
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.typed_endpoint import ApiParamConfig
+from zerver.lib.webhooks.interfaced_settings import (
+    SUPPORTED_INTERFACED_SETTINGS,
+    MapToChannelsT,
+    get_interfaced_settings_for,
+)
+from zerver.models import UserProfile
 
 
 class IntegrationsTestCase(ZulipTestCase):
@@ -83,3 +94,87 @@ class IntegrationsTestCase(ZulipTestCase):
                     os.path.isfile(image_path),
                     message.format(path=image_path, webhook_name=integration_name),
                 )
+
+
+SomeNewSettingT: TypeAlias = Annotated[bool, ApiParamConfig("abcabc")]
+
+SUPPORTED_INTERFACED_SETTINGS_MOCK = {
+    **SUPPORTED_INTERFACED_SETTINGS,
+    "SomeNewSettingT": SomeNewSettingT,
+}
+
+
+class InterfacedSettingTestCase(ZulipTestCase):
+    mocked_integration = WebhookIntegration("helloworld", ["monitoring"])
+
+    def test_no_interfaced_settings(self) -> None:
+        interfaced_settings = get_interfaced_settings_for(
+            InterfacedSettingTestCase.mocked_integration
+        )
+        for value in interfaced_settings.values():
+            self.assertIsNone(value)
+
+    @patch.object(mocked_integration, "get_function")
+    def test_map_to_channel_setting(self, mock_endpoint: MagicMock) -> None:
+        def mock_api_hellosign_webhook(
+            request: HttpRequest,
+            user_profile: UserProfile,
+            *,
+            map_to_channel: MapToChannelsT,
+        ) -> None:
+            assert isinstance(map_to_channel, bool)  # nocoverage
+
+        mock_endpoint.return_value = mock_api_hellosign_webhook
+
+        interfaced_settings = get_interfaced_settings_for(self.mocked_integration)
+        self.assertDictEqual(
+            interfaced_settings,
+            {
+                "MapToChannelsT": {
+                    "parameter_name": "map_to_channel",
+                    "unique_query": "Z_map_to_channels",
+                }
+            },
+        )
+
+    @patch(
+        "zerver.lib.webhooks.interfaced_settings.SUPPORTED_INTERFACED_SETTINGS",
+        new=SUPPORTED_INTERFACED_SETTINGS_MOCK,
+    )
+    @patch.object(mocked_integration, "get_function")
+    def test_unknown_setting(self, mock_endpoint: MagicMock) -> None:
+        def mock_api_unknown_setting_webhook(
+            request: HttpRequest,
+            user_profile: UserProfile,
+            *,
+            some_new_setting: SomeNewSettingT,
+        ) -> None:
+            return  # nocoverage
+
+        mock_endpoint.return_value = mock_api_unknown_setting_webhook
+        with self.assertRaises(AssertionError) as e:
+            get_interfaced_settings_for(self.mocked_integration)
+        self.assertEqual(
+            str(e.exception),
+            "Please define a SettingContext for this setting: some_new_setting",
+        )
+
+    @patch.object(mocked_integration, "get_function")
+    def test_using_multiple_identical_setting(self, mock_endpoint: MagicMock) -> None:
+        def mock_api_hellosign_webhook(
+            request: HttpRequest,
+            user_profile: UserProfile,
+            *,
+            map_to_channel: MapToChannelsT,
+            same_as_above: MapToChannelsT,
+        ) -> None:
+            assert isinstance(map_to_channel, bool)  # nocoverage
+
+        mock_endpoint.return_value = mock_api_hellosign_webhook
+
+        with self.assertRaises(AssertionError) as e:
+            get_interfaced_settings_for(self.mocked_integration)
+        self.assertEqual(
+            str(e.exception),
+            "Using multiple interfaced setting of the same kind is not supported. integration: helloworld, setting: MapToChannelsT",
+        )
