@@ -182,12 +182,14 @@ def get_default_values_for_stream_permission_group_settings(
 
 def get_user_ids_with_metadata_access_via_permission_groups(stream: Stream) -> set[int]:
     stream_admin_user_ids = set(
-        get_recursive_group_members(stream.can_administer_channel_group).values_list(
+        get_recursive_group_members(stream.can_administer_channel_group_id).values_list(
             "id", flat=True
         )
     )
     stream_add_subscribers_group_user_ids = set(
-        get_recursive_group_members(stream.can_add_subscribers_group).values_list("id", flat=True)
+        get_recursive_group_members(stream.can_add_subscribers_group_id).values_list(
+            "id", flat=True
+        )
     )
     return stream_admin_user_ids | stream_add_subscribers_group_user_ids
 

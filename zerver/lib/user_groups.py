@@ -669,9 +669,9 @@ def get_direct_memberships_of_users(user_group: UserGroup, members: list[UserPro
 # https://code.djangoproject.com/ticket/28919
 
 
-def get_recursive_subgroups(user_group: UserGroup) -> QuerySet[UserGroup]:
+def get_recursive_subgroups(user_group_id: int) -> QuerySet[UserGroup]:
     cte = With.recursive(
-        lambda cte: UserGroup.objects.filter(id=user_group.id)
+        lambda cte: UserGroup.objects.filter(id=user_group_id)
         .values(group_id=F("id"))
         .union(
             cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
@@ -694,9 +694,9 @@ def get_recursive_strict_subgroups(user_group: UserGroup) -> QuerySet[NamedUserG
     return cte.join(NamedUserGroup, id=cte.col.group_id).with_cte(cte)
 
 
-def get_recursive_group_members(user_group: UserGroup) -> QuerySet[UserProfile]:
+def get_recursive_group_members(user_group_id: int) -> QuerySet[UserProfile]:
     return UserProfile.objects.filter(
-        is_active=True, direct_groups__in=get_recursive_subgroups(user_group)
+        is_active=True, direct_groups__in=get_recursive_subgroups(user_group_id)
     )
 
 
@@ -728,7 +728,7 @@ def is_user_in_group(
     if direct_member_only:
         return get_user_group_direct_members(user_group=user_group).filter(id=user.id).exists()
 
-    return get_recursive_group_members(user_group=user_group).filter(id=user.id).exists()
+    return get_recursive_group_members(user_group_id=user_group.id).filter(id=user.id).exists()
 
 
 def is_any_user_in_group(
@@ -737,7 +737,7 @@ def is_any_user_in_group(
     if direct_member_only:
         return get_user_group_direct_members(user_group=user_group).filter(id__in=user_ids).exists()
 
-    return get_recursive_group_members(user_group=user_group).filter(id__in=user_ids).exists()
+    return get_recursive_group_members(user_group_id=user_group.id).filter(id__in=user_ids).exists()
 
 
 def get_user_group_member_ids(
@@ -746,7 +746,7 @@ def get_user_group_member_ids(
     if direct_member_only:
         member_ids: Iterable[int] = get_user_group_direct_member_ids(user_group)
     else:
-        member_ids = get_recursive_group_members(user_group).values_list("id", flat=True)
+        member_ids = get_recursive_group_members(user_group.id).values_list("id", flat=True)
 
     return list(member_ids)
 
