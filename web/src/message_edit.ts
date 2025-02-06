@@ -48,6 +48,7 @@ import * as onboarding_steps from "./onboarding_steps.ts";
 import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as rows from "./rows.ts";
+import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -656,6 +657,11 @@ function start_edit_with_content(
     }
     const row_id = rows.id($row);
     upload.setup_upload(upload.edit_config(row_id));
+    // Setup dropdown for saved snippets button in the current
+    // message edit control buttons tray.
+    saved_snippets_ui.setup_saved_snippets_dropdown_widget(
+        `.saved-snippets-message-edit-widget[data-message-id="${CSS.escape(row_id.toString())}"]`,
+    );
 }
 
 export function start($row: JQuery, edit_box_open_callback?: () => void): void {
