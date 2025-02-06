@@ -1557,7 +1557,29 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     visibility: hidden;
 }
 
+.left-sidebar-toggle-button .zulip-icon-panel-left {
+    display: none;
+}
+
+.column-middle.expanded {
+    .left-sidebar-toggle-button .zulip-icon-panel-left {
+        display: none;
+    }
+
+    .left-sidebar-toggle-button .zulip-icon-panel-left-dashed {
+        display: block;
+    }
+}
+
 %hide-left-sidebar {
+    .left-sidebar-toggle-button .zulip-icon-panel-left {
+        display: block;
+    }
+
+    .left-sidebar-toggle-button .zulip-icon-panel-left-dashed {
+        display: none;
+    }
+
     .app-main .column-left {
         display: none;
 
@@ -2030,6 +2052,13 @@ body:not(.hide-left-sidebar) {
         position: relative;
         top: 0.5px;
         right: -0.5px;
+    }
+}
+
+.left-sidebar-toggle-button {
+    .zulip-icon-panel-left,
+    .zulip-icon-panel-left-dashed {
+        font-size: 1.25em; /* 20px at 16px em */
     }
 }
 

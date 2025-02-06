@@ -69,7 +69,8 @@ export function show_userlist_sidebar(): void {
 }
 
 export function show_streamlist_sidebar(): void {
-    $(".app-main .column-left").addClass("expanded");
+    // Left sidebar toggle icon is attached to middle column.
+    $(".app-main .column-left, #navbar-middle").addClass("expanded");
     resize.resize_stream_filters_container();
     left_sidebar_expanded_as_overlay = true;
 }
@@ -90,7 +91,7 @@ export function show_left_sidebar(): void {
 }
 
 export function hide_streamlist_sidebar(): void {
-    $(".app-main .column-left").removeClass("expanded");
+    $(".app-main .column-left, #navbar-middle").removeClass("expanded");
     left_sidebar_expanded_as_overlay = false;
 }
 
