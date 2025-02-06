@@ -484,7 +484,8 @@ def access_stream_for_delete_or_update(
 def check_basic_stream_access(
     user_profile: UserProfile,
     stream: Stream,
-    sub: Subscription | None,
+    *,
+    is_subscribed: bool,
     allow_realm_admin: bool = False,
 ) -> bool:
     # Any realm user, even guests, can access web_public streams.
@@ -496,7 +497,7 @@ def check_basic_stream_access(
         return True
 
     # Or if you are subscribed to the stream, you can access it.
-    if sub is not None:
+    if is_subscribed:
         return True
 
     # For some specific callers (e.g. getting list of subscribers,
@@ -538,7 +539,7 @@ def access_stream_common(
         sub = None
 
     if not stream.deactivated and check_basic_stream_access(
-        user_profile, stream, sub, allow_realm_admin=allow_realm_admin
+        user_profile, stream, is_subscribed=sub is not None, allow_realm_admin=allow_realm_admin
     ):
         return sub
 
@@ -777,7 +778,9 @@ def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -
 def can_remove_subscribers_from_stream(
     stream: Stream, user_profile: UserProfile, sub: Subscription | None
 ) -> bool:
-    if not check_basic_stream_access(user_profile, stream, sub, allow_realm_admin=True):
+    if not check_basic_stream_access(
+        user_profile, stream, is_subscribed=sub is not None, allow_realm_admin=True
+    ):
         return False
 
     # Optimization for the organization administrator code path. We
