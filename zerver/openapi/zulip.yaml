@@ -2945,6 +2945,163 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent when a user starts editing a message.
+                                Event sent when a user starts typing in a textarea to edit the
+                                content of a message. See the [edit message typing notifications
+                                endpoint](/api/set-typing-status-for-message-edit).
+
+                                Clients requesting `typing_edit_message` event type that have
+                                `receives_typing_notifications` enabled will receive this event if
+                                they would have been notified if the message's content edit were to
+                                be saved (E.g., because they were a direct message recipient or
+                                are a subscribe to the channel).
+
+                                **Changes**: New in Zulip 10.0 (feature level 351). Previously,
+                                typing notifications were not available when editing messages.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - typing_edit_message
+                                op:
+                                  type: string
+                                  enum:
+                                    - start
+                                sender_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the user who sent the message.
+                                message_id:
+                                  type: integer
+                                  description: |
+                                    Indicates the message id of the message that is being edited.
+                                recipient:
+                                  type: object
+                                  description: |
+                                    Object containing details about recipients of message edit typing notification.
+                                  additionalProperties: false
+                                  properties:
+                                    type:
+                                      type: string
+                                      description: |
+                                        Type of message being composed. Must be `"channel"` or `"direct"`.
+                                      enum:
+                                        - direct
+                                        - channel
+                                    channel_id:
+                                      type: integer
+                                      description: |
+                                        Only present if `type` is `"channel"`.
+
+                                        The unique ID of the channel to which message is being edited.
+                                    topic:
+                                      type: string
+                                      description: |
+                                        Only present if `type` is `"channel"`.
+
+                                        Topic within the channel where the message is being edited.
+                                    user_ids:
+                                      type: array
+                                      items:
+                                        type: integer
+                                      description: |
+                                        Present only if `type` is `direct`.
+
+                                        The user IDs of every recipient of this direct message.
+                              example:
+                                {
+                                  "type": "typing_edit_message",
+                                  "op": "start",
+                                  "sender_id": 10,
+                                  "recipient":
+                                    {"type": "direct", "user_ids": [8, 10]},
+                                  "message_id": 7,
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent when a user stops typing in a textarea to edit the
+                                content of a message. See the [edit message typing notifications
+                                endpoint](/api/set-typing-status-for-message-edit).
+
+                                Clients requesting `typing_edit_message` event type that have
+                                `receives_typing_notifications` enabled will receive this event if
+                                they would have been notified if the message's content edit were to
+                                be saved (E.g., because they were a direct message recipient or
+                                are a subscribe to the channel).
+
+                                **Changes**: New in Zulip 10.0 (feature level 351). Previously,
+                                typing notifications were not available when editing messages.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - typing_edit_message
+                                op:
+                                  type: string
+                                  enum:
+                                    - stop
+                                sender_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the user who sent the message.
+                                message_id:
+                                  type: integer
+                                  description: |
+                                    Indicates the message id of the message that is being edited.
+                                recipient:
+                                  type: object
+                                  description: |
+                                    Object containing details about recipients of message edit typing notification.
+                                  additionalProperties: false
+                                  properties:
+                                    type:
+                                      type: string
+                                      description: |
+                                        Type of message being composed. Must be `"channel"` or `"direct"`.
+                                      enum:
+                                        - direct
+                                        - channel
+                                    channel_id:
+                                      type: integer
+                                      description: |
+                                        Only present if `type` is `"channel"`.
+
+                                        The unique ID of the channel to which message is being edited.
+                                    topic:
+                                      type: string
+                                      description: |
+                                        Only present if `type` is `"channel"`.
+
+                                        Topic within the channel where the message is being edited.
+                                    user_ids:
+                                      type: array
+                                      items:
+                                        type: integer
+                                      description: |
+                                        Present only if `type` is `direct`.
+
+                                        The user IDs of every recipient of this direct message.
+                              example:
+                                {
+                                  "type": "typing_edit_message",
+                                  "op": "stop",
+                                  "sender_id": 10,
+                                  "message_id": 31,
+                                  "recipient":
+                                    {"type": "direct", "user_ids": [8, 10]},
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to a user when [message flags][message-flags] are added
                                 to messages.
 
@@ -21002,6 +21159,45 @@ paths:
                     description: |
                       An example JSON error response when the user composes a channel message
                       and `stream_id` is not specified:
+  /message_edit_typing:
+    post:
+      operationId: set-typing-status-for-message-edit
+      summary: Set "typing" status for message editing
+      tags: ["users"]
+      description: |
+        Notify other users whether the current user is editing a message.
+
+        Typing notifications for editing messages follow the same protocol as
+        [set-typing-status](/api/set-typing-status), see that endpoint for details.
+
+        **Changes**: New in Zulip 10.0 (feature level 351). Previously,
+        typing notifications were not available when editing messages.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                op:
+                  description: |
+                    Whether the user has started (`"start"`) or stopped (`"stop"`) editing.
+                  type: string
+                  enum:
+                    - start
+                    - stop
+                  example: start
+                message_id:
+                  description: |
+                    Describes the message id of the message being edited.
+                  type: integer
+                  example: 47
+              required:
+                - op
+                - message_id
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /user_groups/create:
     post:
       operationId: create-user-group

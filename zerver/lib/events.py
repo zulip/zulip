@@ -1535,6 +1535,9 @@ def apply_event(
     elif event["type"] == "typing":
         # Typing notification events are transient and thus ignored
         pass
+    elif event["type"] == "typing_edit_message":
+        # Typing message edit notification events are transient and thus ignored
+        pass
     elif event["type"] == "attachment":
         # Attachment events are just for updating the "uploads" UI;
         # they are not sent directly.

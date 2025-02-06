@@ -137,6 +137,30 @@ exports.fixtures = {
         upload_space_used: 90000,
     },
 
+    channel_typing_edit_message__start: {
+        type: "typing_edit_message",
+        op: "start",
+        sender_id: typing_person1.user_id,
+        message_id: 128,
+        recipient: {
+            type: "channel",
+            channel_id: this.stream_typing_in_id,
+            topic: this.topic_typing_in,
+        },
+    },
+
+    channel_typing_edit_message__stop: {
+        type: "typing_edit_message",
+        op: "stop",
+        sender_id: typing_person1.user_id,
+        message_id: 128,
+        recipient: {
+            type: "channel",
+            channel_id: this.stream_typing_in_id,
+            topic: this.topic_typing_in,
+        },
+    },
+
     custom_profile_fields: {
         type: "custom_profile_fields",
         fields: [
@@ -185,6 +209,28 @@ exports.fixtures = {
 
     invites_changed: {
         type: "invites_changed",
+    },
+
+    message_edit_typing__start: {
+        type: "typing_edit_message",
+        op: "start",
+        sender_id: typing_person1.user_id,
+        message_id: 128,
+        recipient: {
+            type: "direct",
+            user_ids: [typing_person2.user_id],
+        },
+    },
+
+    message_edit_typing__stop: {
+        type: "typing_edit_message",
+        op: "stop",
+        sender_id: typing_person1.user_id,
+        message_id: 128,
+        recipient: {
+            type: "direct",
+            user_ids: [typing_person2.user_id],
+        },
     },
 
     muted_users: {

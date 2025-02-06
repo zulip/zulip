@@ -189,7 +189,7 @@ from zerver.views.streams import (
 from zerver.views.submessage import process_submessage
 from zerver.views.thumbnail import backend_serve_thumbnail
 from zerver.views.tusd import handle_tusd_hook
-from zerver.views.typing import send_notification_backend
+from zerver.views.typing import send_message_edit_notification_backend, send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
 from zerver.views.upload import (
     serve_file_backend,
@@ -398,6 +398,8 @@ v1_api_and_json_patterns = [
     # typing -> zerver.views.typing
     # POST sends a typing notification event to recipients
     rest_path("typing", POST=send_notification_backend),
+    # POST sends a message edit typing notification
+    rest_path("message_edit_typing", POST=send_message_edit_notification_backend),
     # user_uploads -> zerver.views.upload
     rest_path("user_uploads", POST=upload_file_backend),
     rest_path(

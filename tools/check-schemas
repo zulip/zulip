@@ -61,6 +61,13 @@ def get_event_checker(event: dict[str, Any]) -> Callable[[str, dict[str, Any]], 
     # Start by grabbing the event type.
     name = event["type"]
 
+    # This is a temporary workaround until a proper fix is implemented.
+    if name == "typing_edit_message":
+        if event["recipient"]["type"] == "channel":
+            name = "typing_edit_channel_message"
+        else:
+            name = "typing_edit_direct_message"
+
     # Handle things like AttachmentRemoveEvent
     if "op" in event:
         name += "_" + event["op"].title()

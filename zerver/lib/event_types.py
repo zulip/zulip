@@ -908,6 +908,47 @@ class EventTypingStop(EventTypingStopCore):
     topic: str | None = None
 
 
+class RecipientFieldForTypingEditChannelMessage(BaseModel):
+    type: Literal["channel"]
+    channel_id: int | None = None
+    topic: str | None = None
+
+
+class RecipientFieldForTypingEditDirectMessage(BaseModel):
+    type: Literal["direct"]
+    user_ids: list[int] | None = None
+
+
+class EventTypingEditMessageStartCore(BaseEvent):
+    type: Literal["typing_edit_message"]
+    op: Literal["start"]
+    sender_id: int
+    message_id: int
+
+
+class EventTypingEditChannelMessageStart(EventTypingEditMessageStartCore):
+    recipient: RecipientFieldForTypingEditChannelMessage
+
+
+class EventTypingEditDirectMessageStart(EventTypingEditMessageStartCore):
+    recipient: RecipientFieldForTypingEditDirectMessage
+
+
+class EventTypingEditMessageStopCore(BaseEvent):
+    type: Literal["typing_edit_message"]
+    op: Literal["stop"]
+    sender_id: int
+    message_id: int
+
+
+class EventTypingEditChannelMessageStop(EventTypingEditMessageStopCore):
+    recipient: RecipientFieldForTypingEditChannelMessage
+
+
+class EventTypingEditDirectMessageStop(EventTypingEditMessageStopCore):
+    recipient: RecipientFieldForTypingEditDirectMessage
+
+
 class EventUpdateDisplaySettingsCore(BaseEvent):
     type: Literal["update_display_settings"]
     setting_name: str

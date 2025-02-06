@@ -911,6 +911,66 @@ run_test("stream_typing", ({override}) => {
     }
 });
 
+run_test("message_edit_typing", ({override}) => {
+    override(current_user, "user_id", typing_person1.user_id + 1);
+
+    let event = event_fixtures.message_edit_typing__start;
+    {
+        const stub = make_stub();
+        override(typing_events, "display_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender_id, typing_person1.user_id);
+        assert_same(args.event.message_id, event.message_id);
+    }
+
+    event = event_fixtures.message_edit_typing__stop;
+    {
+        const stub = make_stub();
+        override(typing_events, "hide_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender_id, typing_person1.user_id);
+        assert_same(args.event.message_id, event.message_id);
+    }
+
+    // Get line coverage--we ignore our own typing events.
+    override(current_user, "user_id", typing_person1.user_id);
+    event = event_fixtures.message_edit_typing__start;
+    dispatch(event);
+    override(current_user, "user_id", undefined);
+});
+
+run_test("stream_typing_message_edit", ({override}) => {
+    const stream_typing_in_id = events.stream_typing_in_id;
+
+    let event = event_fixtures.channel_typing_edit_message__start;
+    {
+        const stub = make_stub();
+        override(typing_events, "display_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender_id, typing_person1.user_id);
+        assert_same(args.event.recipient.type, "channel");
+        assert_same(args.event.recipient.channel_id, stream_typing_in_id);
+    }
+
+    event = event_fixtures.channel_typing_edit_message__stop;
+    {
+        const stub = make_stub();
+        override(typing_events, "hide_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender_id, typing_person1.user_id);
+        assert_same(args.event.recipient.type, "channel");
+        assert_same(args.event.recipient.channel_id, stream_typing_in_id);
+    }
+});
+
 run_test("user_settings", ({override}) => {
     settings_preferences.set_default_language_name = () => {};
     let event = event_fixtures.user_settings__default_language;
@@ -1360,6 +1420,12 @@ run_test("server_event_dispatch_op_errors", () => {
     server_events_dispatch.dispatch_normal_event({
         type: "typing",
         sender: {user_id: 5},
+        op: "other",
+    });
+    blueslip.expect("error", "Unexpected event type typing_edit_message/other");
+    server_events_dispatch.dispatch_normal_event({
+        type: "typing_edit_message",
+        sender_id: 5,
         op: "other",
     });
     blueslip.expect("error", "Unexpected event type user_group/other");

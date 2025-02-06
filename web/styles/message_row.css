@@ -130,6 +130,10 @@
         grid-area: edited;
     }
 
+    .edit-notifications {
+        grid-area: edited;
+    }
+
     .slow-send-spinner {
         display: none;
         justify-self: end;
@@ -370,6 +374,10 @@
             margin-left: 4px;
             /* Unset the padding used on edited notices under the avatar. */
             padding-right: 0;
+
+            &.hide {
+                display: none;
+            }
         }
 
         .message_sender {
@@ -756,6 +764,52 @@
 of the base style defined for a read-only textarea in dark mode. */
 .message_edit_form .edit-controls textarea.message_edit_content:read-only {
     opacity: 1;
+}
+
+.message-editing-animation {
+    display: inline-flex;
+    align-items: baseline;
+    margin-left: 3px;
+    width: 40px;
+    height: 5px;
+
+    .y-animated-dot {
+        width: 4px;
+        height: 4px;
+        background-color: hsl(0deg 0% 53%);
+        border-radius: 50%;
+        margin-left: 3px;
+        opacity: 0;
+
+        &:nth-child(1) {
+            animation: typing 1s infinite 0.2s;
+        }
+
+        &:nth-child(2) {
+            animation: typing 1s infinite 0.4s;
+        }
+
+        &:nth-child(3) {
+            animation: typing 1s infinite 0.6s;
+        }
+    }
+}
+
+@keyframes typing {
+    0% {
+        opacity: 0;
+        transform: translateY(0);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translateY(-3px);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(0);
+    }
 }
 
 .message_edit_countdown_timer {

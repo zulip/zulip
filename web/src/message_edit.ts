@@ -55,6 +55,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import * as typing from "./typing.ts";
 import * as ui_report from "./ui_report.ts";
 import * as upload from "./upload.ts";
 import {the} from "./util.ts";
@@ -942,6 +943,7 @@ export function end_message_row_edit($row: JQuery): void {
 
     const message = message_lists.current.get(row_id);
     if (message !== undefined && currently_editing_messages.has(message.id)) {
+        typing.stop_message_edit_notifications(message.id);
         currently_editing_messages.delete(message.id);
         message_lists.current.hide_edit_message($row);
         compose_call.abort_video_callbacks(message.id.toString());
