@@ -1058,6 +1058,10 @@ textarea.new_message_textarea {
         padding: 4px 6px;
         /* Reset height to let `align-items: stretch` on the grid parent handle this. */
         height: auto;
+
+        &.empty-topic-display::placeholder {
+            color: var(--color-compose-recipient-box-text-color);
+        }
     }
 
     /* Styles for new conversation button in the recipient_box */

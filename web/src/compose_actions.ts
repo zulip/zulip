@@ -349,7 +349,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         compose_state.set_stream_id("");
         compose_recipient.toggle_compose_recipient_dropdown();
     }
-    compose_state.topic(opts.topic);
+    compose_recipient.update_topic_displayed_text(opts.topic);
 
     // Set the recipients with a space after each comma, so it looks nice.
     compose_state.private_message_recipient(
@@ -528,7 +528,7 @@ export let on_topic_narrow = (): void => {
     // we should update the compose topic to match the new narrow.
     // See #3300 for context--a couple users specifically asked for
     // this convenience.
-    compose_state.topic(narrow_state.topic());
+    compose_recipient.update_topic_displayed_text(narrow_state.topic());
     compose_validate.warn_if_topic_resolved(true);
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
