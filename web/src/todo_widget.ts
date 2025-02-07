@@ -441,15 +441,17 @@ export function activate({
         $elem.find("button.add-task").on("click", (e) => {
             e.stopPropagation();
             $elem.find(".widget-error").text("");
-            const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
-            const desc = $elem.find<HTMLInputElement>("input.add-desc").val()?.trim() ?? "";
+            const task =
+                $elem.find<HTMLInputElement>(".add-task-bar input.add-task").val()?.trim() ?? "";
+            const desc =
+                $elem.find<HTMLInputElement>(".add-task-bar input.add-desc").val()?.trim() ?? "";
 
             if (task === "") {
                 return;
             }
 
-            $elem.find("input.add-task").val("").trigger("focus");
-            $elem.find("input.add-desc").val("");
+            $elem.find(".add-task-bar input.add-task").val("").trigger("focus");
+            $elem.find(".add-task-bar input.add-desc").val("");
 
             const task_exists = task_data.name_in_use(task);
             if (task_exists) {
