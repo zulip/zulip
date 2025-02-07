@@ -20436,12 +20436,16 @@ paths:
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
 
-                        Users who can administer the channel or have the similar
-                        realm-level permission can add subscribers regardless of the value
-                        of this setting.
+                        Users who can administer the channel or have similar realm-level
+                        permissions can add subscribers to a public channel regardless
+                        of the value of this setting.
 
-                        Note that a user must also [have access](/help/channel-permissions) to a
-                        channel in order to modify it.
+                        Users in this group need not be subscribed to a private channel to
+                        add subscribers to it.
+
+                        Note that a user must [have content access](/help/channel-permissions)
+                        to a channel and permission to administer the channel in order to
+                        modify this setting.
 
                         **Changes**: New in Zulip 10.0 (feature level 342). Previously, there was no
                         channel-level setting for this permission.
@@ -20460,11 +20464,11 @@ paths:
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
 
-                        Administrators can always unsubscribe others from a channel.
+                        Organization administrators can unsubscribe others from a channel as though
+                        they were in this group without being explicitly listed here.
 
-                        Note that a user must also [have access](/help/channel-permissions) to a
-                        channel in order to modify it. Organization administrators and channel
-                        administrators are an exception to this.
+                        Note that a user must have metadata access to a channel and permission
+                        to administer the channel in order to modify this setting.
 
                         **Changes**: Prior to Zulip 10.0 (feature level 349), channel administrators
                         could not unsubscribe other users if they were not an orgnization
@@ -20494,9 +20498,10 @@ paths:
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
 
-                        Administrators can always administer a channel.
+                        Organization administrators can administer every channel as though they were
+                        in this group without being explicitly listed here.
 
-                        Note that a user must [have access](/help/channel-permissions) to a
+                        Note that a user must [have content access](/help/channel-permissions) to a
                         channel in order to add other subscribers to the channel.
 
                         **Changes**: Prior to Zulip 10.0 (feature level 349) a user needed to
@@ -20523,8 +20528,8 @@ paths:
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
 
-                        Note that a user must also [have access](/help/channel-permissions) to a
-                        channel in order to post in the channel.
+                        Note that a user must have metadata access to a channel and permission
+                        to administer the channel in order to modify this setting.
 
                         **Changes**: New in Zulip 10.0 (feature level 333). Previously
                         `stream_post_policy` field used to control the permission to
@@ -25162,11 +25167,16 @@ components:
             A [group-setting value][setting-values] defining the set of users
             who have permission to add subscribers to this channel.
 
-            Users who can administer the channel or have the similar realm-level
-            permission can add subscribers regardless of the value of this setting.
+            Users who can administer the channel or have similar realm-level
+            permissions can add subscribers to a public channel regardless
+            of the value of this setting.
 
-            Note that a user must also [have access](/help/channel-permissions) to a
-            channel in order to modify it.
+            Users in this group need not be subscribed to a private channel to
+            add subscribers to it.
+
+            Note that a user must [have content access](/help/channel-permissions)
+            to a channel and permission to administer the channel in order to
+            modify this setting.
 
             **Changes**: New in Zulip 10.0 (feature level 342). Previously, there was no
             channel-level setting for this permission.
@@ -25179,11 +25189,11 @@ components:
             A [group-setting value][setting-values] defining the set of users
             who have permission to remove subscribers from this channel.
 
-            Administrators can always unsubscribe others from a channel.
+            Organization administrators can unsubscribe others from a channel as though
+            they were in this group without being explicitly listed here.
 
-            Note that a user must also [have access](/help/channel-permissions) to a
-            channel in order to modify it. Organization administrators and channel
-            administrators are an exception to this.
+            Note that a user must have metadata access to a channel and permission
+            to administer the channel in order to modify this setting.
 
             **Changes**: Prior to Zulip 10.0 (feature level 349), channel administrators
             could not unsubscribe other users if they were not an organization
@@ -25207,10 +25217,11 @@ components:
             A [group-setting value][setting-values] defining the set of users
             who have permission to administer this channel.
 
-            Administrators can always administer a channel.
+            Organization administrators can administer every channel as though they were
+            in this group without being explicitly listed here.
 
-            Note that a user must [have access](/help/channel-permissions) to a
-            channel in order to add other subscribers to the channel.
+            Note that a user must have metadata access to a channel and permission
+            to administer the channel in order to modify this setting.
 
             **Changes**: Prior to Zulip 10.0 (feature level 349) a user needed to
             [have content access](/help/channel-permissions) to a channel in
@@ -25230,8 +25241,8 @@ components:
             A [group-setting value][setting-values] defining the set of users
             who have permission to post in this channel.
 
-            Note that a user must also [have access](/help/channel-permissions) to a
-            channel in order to post in the channel.
+            Note that a user must have metadata access to a channel and permission
+            to administer the channel in order to modify this setting.
 
             **Changes**: New in Zulip 10.0 (feature level 333). Previously
             `stream_post_policy` field used to control the permission to
