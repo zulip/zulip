@@ -51,6 +51,7 @@ let my_user_id: number;
 
 export let INACCESSIBLE_USER_NAME: string;
 export let WELCOME_BOT: User;
+export let EMAIL_GATEWAY_BOT: User;
 
 // We have an init() function so that our automated tests
 // can easily clear data.
@@ -1451,6 +1452,8 @@ export function add_cross_realm_user(person: User): void {
     cross_realm_dict.set(person.user_id, person);
     if (person.full_name === "Welcome Bot") {
         WELCOME_BOT = person;
+    } else if (person.full_name === "Email Gateway") {
+        EMAIL_GATEWAY_BOT = person;
     }
 }
 

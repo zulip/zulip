@@ -38,6 +38,14 @@ const welcome_bot = {
     // cross realm bots have no owner
 };
 
+const email_gateway_bot = {
+    email: "emailgateway@example.com",
+    user_id: 5,
+    full_name: "Email Gateway",
+    is_bot: true,
+    // cross realm bots have no owner
+};
+
 const me = {
     email: "me@example.com",
     user_id: 30,
@@ -378,9 +386,12 @@ test_people("basics", ({override}) => {
     // Add our cross-realm bot.  It won't add to our human
     // count, and it has no owner.
     people.add_cross_realm_user(welcome_bot);
+    people.add_cross_realm_user(email_gateway_bot);
     assert.equal(people.get_bot_owner_user(welcome_bot), undefined);
+    assert.equal(people.get_bot_owner_user(email_gateway_bot), undefined);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.get_by_email(welcome_bot.email).full_name, "Welcome Bot");
+    assert.equal(people.get_by_email(email_gateway_bot.email).full_name, "Email Gateway");
 
     override(settings_data, "user_can_access_all_other_users", () => false);
     assert.equal(
@@ -400,7 +411,11 @@ test_people("basics", ({override}) => {
 
     // get_bot_ids() includes all bot users.
     bot_user_ids = people.get_bot_ids();
-    assert.deepEqual(bot_user_ids, [bot_botson.user_id, welcome_bot.user_id]);
+    assert.deepEqual(bot_user_ids, [
+        bot_botson.user_id,
+        welcome_bot.user_id,
+        email_gateway_bot.user_id,
+    ]);
 
     // The bot doesn't add to our human count.
     assert.equal(people.get_active_human_count(), 1);

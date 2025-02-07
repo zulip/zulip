@@ -1,6 +1,9 @@
 <div class="copy-email-modal">
+    {{> ../dropdown_widget_with_label
+      widget_name="sender_channel_email_address"
+      label=(t 'Who should be the sender of the Zulip messages for this email address?')}}
     <p class="question-which-parts">
-        {{t "Which parts of the email should be included in the Zulip message sent to this channel?"}}
+        {{t "Which parts of the emails should be included in the Zulip messages?"}}
     </p>
     {{#each tags}}
         {{#if (eq this.name "prefer-html") }}
@@ -20,5 +23,8 @@
     </p>
     <div class="stream-email">
         <div class="email-address">{{email_address}}</div>
+        <span class="copy-button tippy-zulip-tooltip copy-email-address" data-tippy-content="{{t 'Copy email address' }}" data-clipboard-text="{{email_address}}">
+            <i class="zulip-icon zulip-icon-copy"></i>
+        </span>
     </div>
 </div>

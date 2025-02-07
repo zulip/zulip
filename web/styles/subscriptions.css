@@ -21,6 +21,9 @@
 }
 
 .stream-email {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-family: "Source Code Pro", monospace;
     padding: 10px;
     font-size: 0.85rem;
@@ -31,10 +34,14 @@
 
 .stream-email .email-address {
     display: block;
-    margin: auto;
+    flex: 0 0 90%;
     word-wrap: break-word;
     word-break: break-all;
     white-space: normal;
+}
+
+.copy-email-address {
+    font-size: 16px;
 }
 
 .sub_setting_checkbox {

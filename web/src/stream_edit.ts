@@ -1,6 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
@@ -12,20 +13,25 @@ import render_stream_description from "../templates/stream_settings/stream_descr
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import type {Bot} from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as narrow_state from "./narrow_state.ts";
+import type {User} from "./people.ts";
+import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_org from "./settings_org.ts";
+import type {CurrentUser} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_edit_subscribers from "./stream_edit_subscribers.ts";
@@ -370,7 +376,7 @@ export function get_stream_email_address(flags: string[], address: string): stri
     return clean_address.replace("@", flag_string + "@");
 }
 
-function show_stream_email_address_modal(address: string): void {
+function show_stream_email_address_modal(address: string, sub: StreamSubscription): void {
     const copy_email_address_modal_html = render_copy_email_address_modal({
         email_address: address,
         tags: [
@@ -397,45 +403,122 @@ function show_stream_email_address_modal(address: string): void {
         ],
     });
 
+    function get_checked_tags(): string[] {
+        const flags: string[] = [];
+        const $checked_checkboxes = $(".copy-email-modal").find("input:checked");
+        $($checked_checkboxes).each(function () {
+            flags.push($(this).attr("id")!);
+        });
+        return flags;
+    }
+
+    function enable_tag_checkbox_change_handler(): void {
+        // Since channel email addresses encode a sender, we can only
+        // continuously update the email address when we have a current
+        // sender.
+        $("#copy_email_address_modal .tag-checkbox").on("change", () => {
+            const flags = get_checked_tags();
+            address = get_stream_email_address(flags, address);
+            $(".email-address").text(address);
+        });
+    }
+
+    function generate_email_modal_post_render(): void {
+        function update_option_label(sender: User | CurrentUser | Bot): string {
+            if (sender.user_id === people.EMAIL_GATEWAY_BOT.user_id) {
+                return "Email Gateway bot";
+            } else if (sender.user_id === current_user.user_id) {
+                return $t({defaultMessage: "You"});
+            }
+            return sender.full_name;
+        }
+
+        function get_options(): {
+            name: string;
+            unique_id: number;
+        }[] {
+            const senders: (User | CurrentUser | Bot)[] = [people.EMAIL_GATEWAY_BOT];
+            senders.push(
+                ...stream_data.get_current_user_and_their_bots_with_post_messages_permission(sub),
+            );
+            return senders.map((sender) => ({
+                name: update_option_label(sender),
+                unique_id: sender.user_id,
+            }));
+        }
+
+        function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance): void {
+            sender_dropdown_widget.render();
+            $(sender_dropdown_widget.widget_selector).trigger("input");
+            dropdown.hide();
+
+            // Since channel email addresses encode a sender, we can
+            // only continuously update the email address when we have
+            // a current sender.
+            $("#copy_email_address_modal .tag-checkbox").off("change");
+            $(".stream-email").children().css("visibility", "hidden");
+            $("#copy_email_address_modal .dialog_submit_button").trigger("focus");
+
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        const sender_dropdown_widget = new dropdown_widget.DropdownWidget({
+            widget_name: "sender_channel_email_address",
+            get_options,
+            item_click_callback,
+            $events_container: $("#copy_email_address_modal"),
+            default_id: people.EMAIL_GATEWAY_BOT.user_id,
+            unique_id_type: dropdown_widget.DataTypes.NUMBER,
+            hide_search_box: true,
+        });
+        sender_dropdown_widget.setup();
+    }
+
+    function generate_email_address(): void {
+        const close_on_success = false;
+        dialog_widget.submit_api_request(
+            channel.get,
+            "/json/streams/" + sub.stream_id + "/email_address",
+            {},
+            {
+                success_continuation(response_data) {
+                    const email = z.object({email: z.string()}).parse(response_data).email;
+                    const flags = get_checked_tags();
+                    address = get_stream_email_address(flags, email);
+                    $(".email-address").text(address);
+                    $(".stream-email").children().css("visibility", "visible");
+                    enable_tag_checkbox_change_handler();
+                },
+            },
+            close_on_success,
+        );
+    }
+
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Generate channel email address"}),
         html_body: copy_email_address_modal_html,
         id: "copy_email_address_modal",
-        html_submit_button: $t_html({defaultMessage: "Copy address"}),
+        html_submit_button: $t_html({defaultMessage: "Generate email address"}),
         html_exit_button: $t_html({defaultMessage: "Close"}),
         help_link: "/help/message-a-channel-by-email#configuration-options",
-        on_click() {
-            // This is handled by the ClipboardJS object below.
-        },
+        post_render: generate_email_modal_post_render,
+        on_click: generate_email_address,
         close_on_submit: false,
     });
     $("#show-sender").prop("checked", true);
 
-    const submit_button = util.the($("#copy_email_address_modal .dialog_submit_button"));
-    const clipboard = new ClipboardJS(submit_button, {
-        text() {
-            return address;
-        },
-    });
-
-    // Show a tippy tooltip when the stream email address copied
-    clipboard.on("success", () => {
-        show_copied_confirmation(submit_button);
-    });
-
-    $("#copy_email_address_modal .tag-checkbox").on("change", () => {
-        const $checked_checkboxes = $(".copy-email-modal").find("input:checked");
-
-        const flags: string[] = [];
-
-        $($checked_checkboxes).each(function () {
-            flags.push($(this).attr("id")!);
+    const email_address_clipboard = new ClipboardJS(
+        "#copy_email_address_modal .copy-email-address",
+    );
+    email_address_clipboard.on("success", (e) => {
+        assert(e.trigger instanceof HTMLElement);
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
         });
-
-        address = get_stream_email_address(flags, address);
-
-        $(".email-address").text(address);
     });
+
+    enable_tag_checkbox_change_handler();
 }
 
 export function initialize(): void {
@@ -560,7 +643,9 @@ export function initialize(): void {
                 url: "/json/streams/" + stream_id + "/email_address",
                 success(data) {
                     const address = z.object({email: z.string()}).parse(data).email;
-                    show_stream_email_address_modal(address);
+                    const sub = sub_store.get(stream_id);
+                    assert(sub !== undefined);
+                    show_stream_email_address_modal(address, sub);
                 },
                 error(xhr) {
                     ui_report.error(
