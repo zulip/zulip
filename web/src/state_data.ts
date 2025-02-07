@@ -266,6 +266,16 @@ export const integrations_interfaced_settings_schema = z.object({
     MapToChannelsT: z.nullable(interfaced_settings_context_schema),
 });
 
+export const integration_config_options_schema = z
+    .array(
+        z.object({
+            key: z.string(),
+            label: z.string(),
+            validator: z.string(),
+        }),
+    )
+    .optional();
+
 // Sync this with zerver.lib.events.do_events_register.
 export const realm_schema = z.object({
     custom_profile_fields: z.array(custom_profile_field_schema),
@@ -361,15 +371,7 @@ export const realm_schema = z.object({
             display_name: z.string(),
             name: z.string(),
             all_event_types: z.nullable(z.array(z.string())),
-            config_options: z
-                .array(
-                    z.object({
-                        key: z.string(),
-                        label: z.string(),
-                        validator: z.string(),
-                    }),
-                )
-                .optional(),
+            config_options: integration_config_options_schema,
             interfaced_settings: integrations_interfaced_settings_schema,
         }),
     ),
