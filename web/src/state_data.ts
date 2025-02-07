@@ -398,6 +398,7 @@ export const realm_schema = z.object({
     realm_wildcard_mention_policy: z.number(),
     realm_zulip_update_announcements_stream_id: z.number(),
     server_avatar_changes_disabled: z.boolean(),
+    server_can_summarize_topics: z.boolean(),
     server_emoji_data_url: z.string(),
     server_inline_image_preview: z.boolean(),
     server_inline_url_embed_preview: z.boolean(),

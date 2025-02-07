@@ -422,6 +422,8 @@ def fetch_initial_state_data(
             else server_default_jitsi_server_url
         )
 
+        state["server_can_summarize_topics"] = settings.TOPIC_SUMMARIZATION_MODEL is not None
+
         moderation_request_channel = realm.moderation_request_channel
         if moderation_request_channel:
             state["realm_moderation_request_channel_id"] = moderation_request_channel.id
