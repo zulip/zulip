@@ -664,4 +664,13 @@ export function initialize(): void {
             instance.destroy();
         },
     });
+
+    tippy.delegate("body", {
+        target: ".generate-channel-email-button-container.disabled_setting_tooltip",
+        content: $t({defaultMessage: "You do not have permission to post in this channel."}),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }

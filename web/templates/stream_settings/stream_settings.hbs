@@ -86,18 +86,18 @@
                     {{stream_id}}
                 </div>
                 {{/with}}
-                {{#if can_access_stream_email}}
                 <div class="input-group stream-email-box">
                     <label for="copy_stream_email_button" class="title inline-block">Email address</label>
                     <p class="field-hint">
                         {{t "You can use email to send messages to Zulip channels."}}
                         {{> ../help_link_widget link="/help/message-a-channel-by-email" }}
                     </p>
-                    <button class="button small rounded copy_email_button" id="copy_stream_email_button" type="button">
-                        <span class="copy_button">{{t "Generate email address" }}</span>
-                    </button>
+                    <span class="generate-channel-email-button-container {{#unless can_access_stream_email}}disabled_setting_tooltip{{/unless}}">
+                        <button class="button small rounded copy_email_button" {{#unless can_access_stream_email}}disabled="disabled"{{/unless}} id="copy_stream_email_button" type="button">
+                            <span class="copy_button">{{t "Generate email address" }}</span>
+                        </button>
+                    </span>
                 </div>
-                {{/if}}
             </div>
         </div>
 
