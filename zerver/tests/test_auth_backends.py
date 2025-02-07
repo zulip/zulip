@@ -418,6 +418,11 @@ class AuthBackendTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "http://zulip.testserver/")
 
+    def test_invalid_login_on_self_hosting_management_subdomain(self) -> None:
+        result = self.client_get("/login/", subdomain="selfhosting")
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("No organization found", result)
+
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipDummyBackend",))
     def test_no_backend_enabled(self) -> None:
         result = self.client_get("/login/")
