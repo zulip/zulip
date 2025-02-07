@@ -206,7 +206,6 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: [
-            "#recent_view .recipient_bar_icon",
             "#inbox-view .recipient_bar_icon",
             "#left-sidebar-container .visibility-policy-icon",
         ].join(","),
