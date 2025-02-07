@@ -4,8 +4,8 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import render_banner from "../templates/components/banner.hbs";
 import * as activity_ui from "./activity_ui.ts";
+import * as alert_popup from "./alert_popup.ts";
 import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
@@ -61,7 +61,6 @@ import * as stream_list from "./stream_list.ts";
 import * as submessage from "./submessage.ts";
 import * as topic_generator from "./topic_generator.ts";
 import * as typing_events from "./typing_events.ts";
-import * as ui_report from "./ui_report.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
@@ -77,7 +76,7 @@ const fetch_message_response_schema = z.object({
 export function reset_ui_state(opts: {trigger?: string}): void {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
-    ui_report.hide_error($("#found-missing-unreads"), true);
+    alert_popup.close_found_missing_unreads_banner();
     narrow_banner.hide_empty_narrow_message();
     message_feed_top_notices.hide_top_of_narrow_notices();
     message_feed_loading.hide_indicators();
@@ -819,40 +818,22 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                         };
                         show(terms, opts);
 
+                        const on_jump_to_first_unread = (): void => {
+                            // This is a no-op if the user has already switched narrow.
+                            if (msg_list.id !== message_lists.current?.id) {
+                                return;
+                            }
+
+                            show(
+                                message_lists.current.data.filter
+                                    .terms()
+                                    .filter((term) => term.operator !== "near"),
+                                {then_select_id: first_unread_message_id},
+                            );
+                        };
                         // Show user a banner with a button to allow user to navigate
                         // to the first unread if required.
-                        const FOUND_MISSING_UNREADS_IN_CURRENT_NARROW = {
-                            intent: "warning",
-                            label: $t({
-                                defaultMessage:
-                                    "This conversation also has older unread messages.",
-                            }),
-                            buttons: [
-                                {
-                                    type: "quiet",
-                                    label: $t({defaultMessage: "Jump to first unread"}),
-                                    custom_classes: "found-missing-unreads-jump-to-first-unread",
-                                },
-                            ],
-                            close_button: true,
-                            custom_classes: "found-missing-unreads",
-                        };
-                        $("#found-missing-unreads").on("click", ".found-missing-unreads-jump-to-first-unread", (e) => {
-                            banners.close($(this));
-                            if (msg_list.id === message_lists.current?.id) {
-                                show(
-                                    message_lists.current.data.filter
-                                        .terms()
-                                        .filter((term) => term.operator !== "near"),
-                                    {then_select_id: first_unread_message_id},
-                                );
-                            }
-                            e.preventDefault();
-                            e.stopPropagation();
-                        });
-                        const $banner_html = render_banner(FOUND_MISSING_UNREADS_IN_CURRENT_NARROW);
-                        $("#found-missing-unreads").append($banner_html);
-                        ui_report.show_error($("#found-missing-unreads"));
+                        alert_popup.open_found_missing_unreads_banner(on_jump_to_first_unread);
                     }
                 },
             });
