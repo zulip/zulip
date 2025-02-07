@@ -14,13 +14,41 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import {$t_html} from "./i18n.ts";
-import type {integration_config_option_schema} from "./state_data.ts";
+import type {
+    integration_config_option_schema,
+    integrations_interfaced_settings_schema,
+} from "./state_data.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import {place_caret_at_end} from "./ui_util.ts";
 import * as util from "./util.ts";
 
 type ConfigOption = z.infer<typeof integration_config_option_schema>;
+
+type EventType = string;
+
+type InterfacedSetting = z.infer<typeof integrations_interfaced_settings_schema>;
+
+class IntegrationData {
+    selected_integration: string;
+    config_options: ConfigOption[] | undefined = undefined;
+    all_event_types: EventType[] | null = null;
+    interfaced_settings: InterfacedSetting | undefined = undefined;
+
+    constructor(selected_integration: string) {
+        const selected_integration_data = realm.realm_incoming_webhook_bots.find(
+            (bot) => bot.name === selected_integration,
+        );
+        this.selected_integration = selected_integration;
+        this.config_options = selected_integration_data?.config_options;
+        if (selected_integration_data?.all_event_types) {
+            this.all_event_types = selected_integration_data.all_event_types;
+        }
+        if (selected_integration_data?.interfaced_settings) {
+            this.interfaced_settings = selected_integration_data.interfaced_settings;
+        }
+    }
+}
 
 export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
@@ -38,6 +66,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         default_url_message,
         max_topic_length: realm.max_topic_length,
     });
+    let selected_integration_data: IntegrationData;
 
     function generate_integration_url_post_render(): void {
         let selected_integration = "";
@@ -163,9 +192,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
             const stream_id = stream_input_dropdown_widget.value();
             const topic_name = $topic_input.val()!;
 
-            const selected_integration_data = realm.realm_incoming_webhook_bots.find(
-                (bot) => bot.name === selected_integration,
-            );
+            selected_integration_data = new IntegrationData(selected_integration);
+
             const all_event_types = selected_integration_data?.all_event_types;
             const config = selected_integration_data?.config_options;
 
@@ -265,11 +293,6 @@ export function show_generate_integration_url_modal(api_key: string): void {
         ): void {
             integration_input_dropdown_widget.render();
             $(".integration-url-name-wrapper").trigger("input");
-
-            const selected_integration = integration_input_dropdown_widget.value();
-            const selected_integration_data = realm.realm_incoming_webhook_bots.find(
-                (bot) => bot.name === selected_integration,
-            );
 
             if (selected_integration_data?.config_options) {
                 render_config(selected_integration_data.config_options);
