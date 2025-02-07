@@ -35,7 +35,10 @@
                 {% include 'zerver/portico-header-dropdown.html' %}
             {% else %}
                 {% if not only_sso %}
+                {% if is_self_hosting_management_page %}
+                {% else %}
                 <a href="{{login_url}}">{{ _('Log in') }}</a>
+                {% endif %}
                 {% endif %}
             {% endif %}
 
