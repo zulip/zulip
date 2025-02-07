@@ -19,6 +19,7 @@ from zerver.lib.stream_subscription import (
 )
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.streams import (
+    UserGroupMembershipDetails,
     get_group_setting_value_dict_for_streams,
     get_setting_values_for_group_settings,
     get_stream_post_policy_value_based_on_group_setting,
@@ -341,18 +342,7 @@ def validate_user_access_to_subscribers(user_profile: UserProfile | None, stream
     * The stream is invite only, requesting_user is passed, and that user
       does not subscribe to the stream.
     """
-    user_recursive_group_ids: set[int] = set()
-    # Optimization for the organization administrator code path. We
-    # don't explicitly grant realm admins this permission, but admins
-    # implicitly have the can_administer_channel_group permission for
-    # all channels. user_recursive_group_ids is used to check the
-    # membership of the current user in can_administer_channel_group
-    # which we don't need to calculate in case of a realm admin.
-    if user_profile and not user_profile.is_realm_admin:
-        user_recursive_group_ids = set(
-            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
-        )
-
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
     validate_user_access_to_subscribers_helper(
         user_profile,
         {
@@ -365,7 +355,7 @@ def validate_user_access_to_subscribers(user_profile: UserProfile | None, stream
         # We use a lambda here so that we only compute whether the
         # user is subscribed if we have to
         lambda user_profile: subscribed_to_stream(user_profile, stream.id),
-        user_recursive_group_ids,
+        user_group_membership_details=user_group_membership_details,
     )
 
 
@@ -373,7 +363,7 @@ def validate_user_access_to_subscribers_helper(
     user_profile: UserProfile | None,
     stream_dict: Mapping[str, Any],
     check_user_subscribed: Callable[[UserProfile], bool],
-    user_recursive_group_ids: set[int],
+    user_group_membership_details: UserGroupMembershipDetails,
 ) -> None:
     """Helper for validate_user_access_to_subscribers that doesn't require
     a full stream object.  This function is a bit hard to read,
@@ -422,8 +412,13 @@ def validate_user_access_to_subscribers_helper(
     if user_profile.is_realm_admin:
         return
 
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
+
     if has_metadata_access_to_channel_via_groups(
-        user_recursive_group_ids,
+        user_group_membership_details.user_recursive_group_ids,
         stream_dict["can_administer_channel_group_id"],
         stream_dict["can_add_subscribers_group_id"],
     ):
@@ -443,17 +438,7 @@ def bulk_get_subscriber_user_ids(
     is_subscribed: bool
     check_user_subscribed = lambda user_profile: is_subscribed
 
-    user_recursive_group_ids = set()
-    # Optimization for the organization administrator code path. We
-    # don't explicitly grant realm admins this permission, but admins
-    # implicitly have the can_administer_channel_group permission for
-    # all channels. user_recursive_group_ids is used to check the
-    # membership of the current user in can_administer_channel_group
-    # which we don't need to calculate in case of a realm admin.
-    if not user_profile.is_realm_admin:
-        user_recursive_group_ids = set(
-            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
-        )
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
     for stream_dict in stream_dicts:
         stream_id = stream_dict["id"]
         is_subscribed = stream_id in subscribed_stream_ids
@@ -463,7 +448,7 @@ def bulk_get_subscriber_user_ids(
                 user_profile,
                 stream_dict,
                 check_user_subscribed,
-                user_recursive_group_ids,
+                user_group_membership_details,
             )
         except JsonableError:
             continue
