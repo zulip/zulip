@@ -122,6 +122,12 @@
             cursor: text;
         }
 
+        #searchbox-input-container.pill-container {
+            /* Pill container should display the same background
+               color as the search typeahead. */
+            background-color: var(--color-background-search);
+        }
+
         @media (width < $md_min) {
             /* 3px chosen so that the cursor clicks the search button
                and close button from the same position. */
@@ -213,9 +219,7 @@
 
         /* Override styles for .pill-container that aren't relevant for search. */
         &.pill-container {
-            /* Pill container should display the same background
-               color as the search typeahead. */
-            background-color: var(--color-background-search);
+            background: inherit;
             /* Maintain only a column gap. */
             gap: 0 0.3125em; /* 5px at 16px em */
             /* Override padding. */
