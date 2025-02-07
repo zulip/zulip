@@ -1,6 +1,8 @@
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
+import type {Bot} from "./bot_data.ts";
+import * as bot_data from "./bot_data.ts";
 import * as color_data from "./color_data.ts";
 import {FoldDict} from "./fold_dict.ts";
 import {page_params} from "./page_params.ts";
@@ -9,7 +11,7 @@ import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import type {GroupSettingValue, StateData} from "./state_data.ts";
+import type {CurrentUser, GroupSettingValue, StateData} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import type {StreamPermissionGroupSetting} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
@@ -593,11 +595,25 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
     );
 }
 
+export function get_current_user_and_their_bots_with_post_messages_permission(
+    sub: StreamSubscription,
+): (CurrentUser | Bot)[] {
+    const current_user_and_their_bots: (CurrentUser | Bot)[] = [
+        current_user,
+        ...bot_data.get_all_bots_for_current_user(),
+    ];
+    const senders_with_post_messages_permission: (CurrentUser | Bot)[] = [];
+
+    for (const sender of current_user_and_their_bots) {
+        if (can_post_messages_in_stream(sub, sender.user_id)) {
+            senders_with_post_messages_permission.push(sender);
+        }
+    }
+    return senders_with_post_messages_permission;
+}
+
 export function can_access_stream_email(sub: StreamSubscription): boolean {
-    return (
-        (sub.subscribed || sub.is_web_public || (!current_user.is_guest && !sub.invite_only)) &&
-        !page_params.is_spectator
-    );
+    return get_current_user_and_their_bots_with_post_messages_permission(sub).length > 0;
 }
 
 export function can_access_topic_history(sub: StreamSubscription): boolean {
@@ -688,7 +704,10 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
     );
 }
 
-export let can_post_messages_in_stream = function (stream: StreamSubscription): boolean {
+export let can_post_messages_in_stream = function (
+    stream: StreamSubscription,
+    sender_id: number = current_user.user_id,
+): boolean {
     if (stream.is_archived) {
         return false;
     }
@@ -697,11 +716,18 @@ export let can_post_messages_in_stream = function (stream: StreamSubscription): 
         return false;
     }
 
+    let sender: CurrentUser | User;
+    if (sender_id === current_user.user_id) {
+        sender = current_user;
+    } else {
+        sender = people.get_by_user_id(sender_id);
+    }
     const can_send_message_group = stream.can_send_message_group;
     return settings_data.user_has_permission_for_group_setting(
         can_send_message_group,
         "can_send_message_group",
         "stream",
+        sender,
     );
 };
 
