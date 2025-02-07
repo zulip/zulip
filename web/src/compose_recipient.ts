@@ -365,11 +365,13 @@ export function update_topic_displayed_text(
     const $input = $("input#stream_message_recipient_topic");
     const is_empty_stream_topic = topic_name === "";
     let topic_placeholder_text = $t({defaultMessage: "Topic"});
+    const recipient_widget_hidden =
+        $(".compose_select_recipient-dropdown-list-container").length === 0;
 
     // Remove any stale references to the empty topic display
     $input.removeClass("empty-topic-display");
 
-    if (is_empty_stream_topic && !has_topic_focus) {
+    if (is_empty_stream_topic && !has_topic_focus && recipient_widget_hidden) {
         topic_placeholder_text = util.get_final_topic_display_name("");
         $input.addClass("empty-topic-display");
     }
