@@ -107,7 +107,7 @@ from zerver.lib.types import (
     NeverSubscribedStreamDict,
     SubscriptionInfo,
 )
-from zerver.lib.user_groups import get_recursive_membership_groups, is_user_in_group
+from zerver.lib.user_groups import is_user_in_group
 from zerver.models import (
     Attachment,
     DefaultStream,
@@ -6503,9 +6503,6 @@ class SubscriptionAPITest(ZulipTestCase):
             "realm_id": realm.id,
             "can_administer_channel_group_id": nobody_group.id,
         }
-        user_recursive_group_ids = set(
-            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
-        )
 
         # For this test to work, othello can't be in the no_othello_here realm
         self.assertNotEqual(
@@ -6515,7 +6512,10 @@ class SubscriptionAPITest(ZulipTestCase):
         # This should result in missing user
         with self.assertRaises(ValidationError):
             validate_user_access_to_subscribers_helper(
-                None, stream_dict, lambda user_profile: True, user_recursive_group_ids
+                None,
+                stream_dict,
+                lambda user_profile: True,
+                UserGroupMembershipDetails(user_recursive_group_ids=None),
             )
 
         # This should result in user not in realm
@@ -6524,7 +6524,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 user_profile,
                 stream_dict,
                 lambda user_profile: True,
-                user_recursive_group_ids,
+                UserGroupMembershipDetails(user_recursive_group_ids=None),
             )
 
     def test_subscriptions_query_count(self) -> None:
