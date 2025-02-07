@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 350**
+
+* [`POST /register`](/api/register-queue): Added
+  `server_can_summarize_topics` to the response.
+
 **Feature level 349**
 
 * [`POST /users/me/subscriptions`](/api/subscribe): Users belonging to

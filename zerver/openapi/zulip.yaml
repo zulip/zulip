@@ -17941,6 +17941,16 @@ paths:
 
                           **Changes**: New in Zulip 8.0 (feature level 212). Previously, this value
                           was available as the now-deprecated `jitsi_server_url`.
+                      server_can_summarize_topics:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`
+
+                          Whether topic summarization is enabled in the server or
+                          not depending upon whether `TOPIC_SUMMARIZATION_MODEL`
+                          is set or not.
+
+                          **Changes**: New in Zulip 10.0 (feature level 350).
                       event_queue_longpoll_timeout_seconds:
                         type: integer
                         description: |

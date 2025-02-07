@@ -221,6 +221,7 @@ class HomeTest(ZulipTestCase):
         "saved_snippets",
         "scheduled_messages",
         "server_avatar_changes_disabled",
+        "server_can_summarize_topics",
         "server_emoji_data_url",
         "server_generation",
         "server_inline_image_preview",
