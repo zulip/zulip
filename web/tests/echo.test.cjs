@@ -8,7 +8,9 @@ const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
+const browser_history = mock_esm("../src/browser_history");
 const compose_notifications = mock_esm("../src/compose_notifications");
+const hash_util = mock_esm("../src/hash_util");
 const markdown = mock_esm("../src/markdown");
 const message_lists = mock_esm("../src/message_lists");
 const message_events_util = mock_esm("../src/message_events_util");
@@ -44,6 +46,11 @@ message_lists.current = {
             can_apply_locally() {
                 return true;
             },
+            has_exactly_channel_topic_operators() {
+                return true;
+            },
+            adjust_with_operand_to_message: noop,
+            terms: noop,
         },
     },
     change_message_id: noop,
@@ -370,6 +377,8 @@ run_test("test reify_message_id", ({override}) => {
 
     override(markdown, "render", noop);
     override(markdown, "get_topic_links", noop);
+    override(hash_util, "search_terms_to_hash", noop);
+    override(browser_history, "update_current_history_state_data", noop);
 
     const message_request = {
         type: "stream",

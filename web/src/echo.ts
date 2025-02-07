@@ -7,9 +7,11 @@ import render_message_controls_failed_msg from "../templates/message_controls_fa
 
 import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
+import * as browser_history from "./browser_history.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as echo_state from "./echo_state.ts";
+import * as hash_util from "./hash_util.ts";
 import * as local_message from "./local_message.ts";
 import * as markdown from "./markdown.ts";
 import * as message_events_util from "./message_events_util.ts";
@@ -436,6 +438,32 @@ export function edit_locally(message: Message, request: LocalEditRequest): Messa
     return message;
 }
 
+export function update_topic_hash_to_contain_with_term(message: Message): void {
+    // If the current filter consists only of channel and topic terms
+    // and the incoming message belongs to same narrow, we try to
+    // add the `with` term to the narrow, and update the hash, to
+    // convert to permalink.
+    if (message.type !== "stream") {
+        return;
+    }
+    const filter = message_lists.current?.data.filter;
+
+    if (!filter?.has_exactly_channel_topic_operators()) {
+        return;
+    }
+
+    filter.adjust_with_operand_to_message(message.id);
+
+    // Adjust the URL to include the /with/ operator. We update the
+    // existing history entry, so that you don't have to hit Back
+    // twice to get to where you were before visiting the new topic.
+    //
+    // Since we're not changing the view, we want to preserve whatever
+    // scroll position StateData was already present.
+    const new_hash = hash_util.search_terms_to_hash(filter.terms());
+    browser_history.update_current_history_state_data({}, new_hash);
+}
+
 export let reify_message_id = (local_id: string, server_id: number): void => {
     const message = echo_state.get_message_waiting_for_id(local_id);
     echo_state.remove_message_from_waiting_for_id(local_id);
@@ -467,6 +495,7 @@ export let reify_message_id = (local_id: string, server_id: number): void => {
             message_id: message.id,
         });
     }
+    update_topic_hash_to_contain_with_term(message);
 };
 
 export function rewire_reify_message_id(value: typeof reify_message_id): void {
