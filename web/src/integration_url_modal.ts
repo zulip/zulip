@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import type {z} from "zod";
 
 import render_generate_integration_url_config_checkbox_modal from "../templates/settings/generate_integration_url_config_checkbox_modal.hbs";
 import render_generate_integration_url_config_text_modal from "../templates/settings/generate_integration_url_config_text_modal.hbs";
@@ -13,23 +13,12 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import {$t_html} from "./i18n.ts";
+import type {integration_config_options_schema} from "./state_data.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as util from "./util.ts";
 
-type ConfigOption = {
-    key: string;
-    label: string;
-    validator: string;
-};
-
-const config_option_schema = z.object({
-    key: z.string(),
-    label: z.string(),
-    validator: z.string(),
-});
-
-const config_options_schema = z.array(config_option_schema);
+type ConfigOption = z.infer<typeof integration_config_options_schema>;
 
 export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
@@ -75,8 +64,11 @@ export function show_generate_integration_url_modal(api_key: string): void {
             );
         });
 
-        function render_config(config: ConfigOption[]): void {
-            const validated_config = config_options_schema.parse(config);
+        function render_config(config: ConfigOption): void {
+            const validated_config = config;
+            if (!validated_config) {
+                return;
+            }
             $config_container.empty();
 
             for (const option of validated_config) {
