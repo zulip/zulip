@@ -92,8 +92,8 @@ from zerver.views.presence import (
     get_status_backend,
     get_statuses_for_realm,
     update_active_status_backend,
+    update_user_status_admin,
     update_user_status_backend,
-    update_user_status_admin
 )
 from zerver.views.push_notifications import (
     add_android_reg_id,

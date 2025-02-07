@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from pydantic import Json, StringConstraints
-from zerver.lib.typed_endpoint import PathOnly
+
 from zerver.actions.presence import update_user_presence
 from zerver.actions.user_status import do_update_user_status
 from zerver.decorator import human_users_only
@@ -16,14 +16,11 @@ from zerver.lib.presence import get_presence_for_user, get_presence_response
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
+from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.user_status import get_user_status
 from zerver.lib.users import access_user_by_id, check_can_access_user
 from zerver.models import UserActivity, UserPresence, UserProfile, UserStatus
-from zerver.models.users import (
-    get_active_user,
-    get_active_user_profile_by_id_in_realm,
-)
+from zerver.models.users import get_active_user, get_active_user_profile_by_id_in_realm
 
 
 def get_presence_backend(
@@ -165,7 +162,6 @@ def update_user_status_admin(
     emoji_code: str | None = None,
     emoji_type: Annotated[str | None, ApiParamConfig("reaction_type")] = None,
 ) -> HttpResponse:
-
     target_user = access_user_by_id(user_profile, target_user_id, for_admin=True)
     if not user_profile.can_admin_user(target_user):
         raise JsonableError(_("Insufficient permission"))
