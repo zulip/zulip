@@ -889,8 +889,16 @@ def login_page(
     next: str = "/",
     **kwargs: Any,
 ) -> HttpResponse:
-    if get_subdomain(request) == settings.SOCIAL_AUTH_SUBDOMAIN:
+    subdomain = get_subdomain(request)
+    if subdomain == settings.SOCIAL_AUTH_SUBDOMAIN:
         return social_auth_subdomain_login_page(request)
+
+    if subdomain == settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN:
+        context = {
+            "current_url": request.get_host(),
+            "is_selfhosting_management_error_page": True,
+        }
+        return render(request, "zerver/invalid_realm.html", status=404, context=context)
 
     # To support previewing the Zulip login pages, we have a special option
     # that disables the default behavior of redirecting logged-in users to the
