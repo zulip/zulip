@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 
 import render_navbar_banners_testing_popover from "../templates/popovers/navbar_banners_testing_popover.hbs";
 
+import * as alert_popup from "./alert_popup.ts";
 import * as banners from "./banners.ts";
 import type {AlertBanner} from "./banners.ts";
 import * as channel from "./channel.ts";
@@ -642,6 +643,13 @@ export function initialize(): void {
                 });
                 $popper.on("click", ".time_zone_update_offer", () => {
                     banners.open(time_zone_update_offer_banner(), $("#navbar_alerts_wrapper"));
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+                $popper.on("click", ".found_missing_unreads_banner", () => {
+                    const on_jump_to_first_unread = (): void => {
+                        console.log("testing: jump to first unread called");
+                    };
+                    alert_popup.open_found_missing_unreads_banner(on_jump_to_first_unread);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
             },
