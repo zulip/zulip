@@ -816,7 +816,6 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
     const owner_id = bot_user.owner_id;
     assert(owner_id !== null);
-    const owner_full_name = people.get_full_name(owner_id);
     const is_active = people.is_person_active(user_id);
 
     assert(bot.is_bot);
@@ -828,8 +827,6 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
-        owner_full_name,
-        current_bot_owner: bot.bot_owner_id,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
     });
     $container.append($(html_body));
