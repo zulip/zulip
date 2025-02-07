@@ -11,6 +11,7 @@ import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
+import * as linkifiers from "./linkifiers.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_ui from "./settings_ui.ts";
@@ -254,6 +255,21 @@ export function build_page(): void {
             $linkifier_status.hide();
             $pattern_status.hide();
             $template_status.hide();
+
+            const pattern = String($("#linkifier_pattern").val()).trim();
+            const url_template = String($("#linkifier_template").val()).trim();
+
+            try {
+                linkifiers.python_to_js_linkifier(pattern, url_template);
+            } catch {
+                $add_linkifier_button.prop("disabled", false);
+                ui_report.error(
+                    $t_html({defaultMessage: "Failed: Invalid Pattern"}),
+                    undefined,
+                    $pattern_status,
+                );
+                return;
+            }
 
             void channel.post({
                 url: "/json/realm/filters",

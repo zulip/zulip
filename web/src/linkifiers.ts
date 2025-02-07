@@ -16,7 +16,7 @@ export function get_linkifier_map(): LinkifierMap {
     return linkifier_map;
 }
 
-function python_to_js_linkifier(
+export function python_to_js_linkifier(
     pattern: string,
     url: string,
 ): [RegExp | null, url_template_lib.Template, Record<number, string>] {
