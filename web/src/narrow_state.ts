@@ -18,11 +18,15 @@ export function filter(): Filter | undefined {
 export function search_terms(current_filter: Filter | undefined = filter()): NarrowTerm[] {
     if (current_filter === undefined) {
         if (page_params.narrow !== undefined) {
-            return new Filter(page_params.narrow).terms();
+            current_filter = new Filter(page_params.narrow);
+        } else {
+            current_filter = new Filter([]);
         }
-        return new Filter([]).terms();
     }
-    return current_filter.terms();
+
+    const non_search_operators = new Set(["with"]);
+
+    return current_filter.terms().filter((term) => !non_search_operators.has(term.operator));
 }
 
 export function is_search_view(current_filter: Filter | undefined = filter()): boolean {
