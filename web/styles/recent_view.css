@@ -54,14 +54,24 @@
             box-shadow: 0 3px 0 var(--color-outline-focus);
         }
 
-        &.change_visibility_policy.visibility-policy-popover-visible {
-            .zulip-icon-inherit {
+        &.change_visibility_policy.topic-popover-visible {
+            .visibility-status-icon {
                 opacity: 0.4;
             }
         }
 
-        &.change_visibility_policy .zulip-icon-inherit {
+        &.change_visibility_policy .visibility-status-icon:hover::before {
+            /* Show vertical ellipsis when user hovers over visibility indicator icon. */
+            content: "\f155";
+        }
+
+        &.change_visibility_policy .recent-view-row-topic-menu {
             opacity: 0;
+            cursor: pointer;
+
+            &:not(.visibility-status-icon) {
+                display: none;
+            }
 
             &:focus {
                 opacity: 0.2;
@@ -348,7 +358,7 @@
         &:hover {
             background-color: var(--color-background-recent-view-row-hover);
 
-            .change_visibility_policy .zulip-icon-inherit {
+            .change_visibility_policy .recent-view-row-topic-menu {
                 opacity: 0.4;
             }
         }
