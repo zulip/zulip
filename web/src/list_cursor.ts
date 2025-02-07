@@ -68,6 +68,24 @@ export class ListCursor<Key> {
         };
     }
 
+    toggle_highlight(key: Key): void {
+        const $li = this.list.find_li({
+            key,
+            force_render: false,
+        });
+
+        if (!$li || $li.length === 0) {
+            return;
+        }
+
+        if ($li.hasClass(this.highlight_class)) {
+            $li.removeClass(this.highlight_class);
+        } else {
+            $li.addClass(this.highlight_class);
+            this.adjust_scroll($li);
+        }
+    }
+
     adjust_scroll($li: JQuery): void {
         const $scroll_container = $(this.list.scroll_container_selector);
         scroll_util.scroll_element_into_container($li, $scroll_container);

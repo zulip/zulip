@@ -145,6 +145,8 @@ export let build_user_sidebar = (): number[] | undefined => {
     render_empty_user_list_message_if_needed(buddy_list.$users_matching_view_list);
     render_empty_user_list_message_if_needed(buddy_list.$other_users_list);
 
+    set_event_handlers();
+
     return all_user_ids; // for testing
 };
 
@@ -244,6 +246,21 @@ function keydown_enter_key(): void {
     narrow_for_user_id({user_id});
     sidebar_ui.hide_all();
     popovers.hide_all();
+}
+
+function user_id_for_elt($elt: JQuery): number {
+    const user_id_string = $elt.attr("data-user-id");
+    assert(user_id_string !== undefined);
+    return Number.parseInt(user_id_string, 10);
+}
+
+function set_event_handlers(): void {
+    // Event handler for handling tab navigation.
+    $(".buddy-list-section a.user-presence-link").off("focus blur");
+    $(".buddy-list-section a.user-presence-link").on("focus blur", (e) => {
+        const user_id = user_id_for_elt($(e.target).parents("li.narrow-filter"));
+        user_cursor?.toggle_highlight(user_id);
+    });
 }
 
 export function set_cursor_and_filter(): void {

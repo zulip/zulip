@@ -133,4 +133,14 @@ run_test("multiple item list", ({override}) => {
     assert.equal(cursor.get_key(), undefined);
     cursor.redraw();
     assert.ok(!list_items[1].hasClass("highlight"));
+
+    // Test toggle highlight
+    cursor.toggle_highlight(2);
+    assert.ok(list_items[2].hasClass("highlight"));
+
+    cursor.toggle_highlight(2);
+    assert.ok(!list_items[2].hasClass("highlight"));
+
+    // Just a noop for test coverage.
+    cursor.toggle_highlight(4);
 });

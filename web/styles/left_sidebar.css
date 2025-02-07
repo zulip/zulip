@@ -387,12 +387,25 @@
         background-color: var(--color-background-hover-narrow-filter);
     }
 
+    & > .bottom_left_row {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
+
     &.active-filter .topic-list .bottom_left_row {
         background-color: var(--color-background-active-narrow-filter);
     }
 
     .bottom_left_row:not(.active-sub-filter) {
         background-color: var(--color-background-hover-narrow-filter);
+    }
+}
+
+/* Do not show focus on anchor element when navigating by tab to keep it consistent with keyboard navigation. */
+#stream_filters .narrow-filter {
+    a.stream-name:focus {
+        outline: none;
+        text-decoration: none;
     }
 }
 
