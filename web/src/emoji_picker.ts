@@ -182,7 +182,7 @@ export function rebuild_catalog(): void {
 
     const categories = EMOJI_CATEGORIES.filter((category) => catalog.has(category.name));
     complete_emoji_catalog = categories.map((category) => ({
-        name: category.translated,
+        name: category.name,
         icon: category.icon,
         // The ! type assertion is correct because of the filter above.
         emojis: catalog.get(category.name)!,
