@@ -1,0 +1,11 @@
+<div class="todo-checkbox">
+    <input type="checkbox" class="task" data-key="{{ key }}" {{#if completed}}checked{{/if}}/>
+    <span class="custom-checkbox"></span>
+</div>
+<div class="todo-task">
+    {{#if completed}}
+    <strike><strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}</strike>
+    {{else}}
+    <strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}
+    {{/if}}
+</div>

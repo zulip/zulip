@@ -1,17 +1,14 @@
 {{#each all_tasks}}
     <li>
         <label class="checkbox">
-            <div class="todo-checkbox">
-                <input type="checkbox" class="task" data-key="{{ key }}" {{#if completed}}checked{{/if}}/>
-                <span class="custom-checkbox"></span>
-            </div>
-            <div class="todo-task">
-                {{#if completed}}
-                <strike><strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}</strike>
-                {{else}}
-                <strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}
-                {{/if}}
-            </div>
+            {{> todo_widget_task_item .}}
         </label>
+        <i class="fa fa-pencil small todo-edit-task-list-item"></i>
+        <div class="todo-task-list-item-bar">
+            <input type="text" class="add-task" placeholder="{{t 'New task'}}" />
+            <input type="text" class="add-desc" placeholder="{{t 'Description'}}" />
+            <button class="todo-task-list-item-remove"><i class="fa fa-remove"></i></button>
+            <button class="todo-task-list-item-check"><i class="fa fa-check"></i></button>
+        </div>
     </li>
 {{/each}}

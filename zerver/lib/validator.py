@@ -547,6 +547,21 @@ def validate_todo_data(todo_data: object, is_widget_author: bool) -> None:
         checker("todo data", todo_data)
         return
 
+    if todo_data["type"] == "edit_task":
+        if not is_widget_author:
+            raise ValidationError("You can't edit the task list unless you are the author.")
+
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("task", check_string),
+                ("desc", check_string),
+                ("key", check_string),
+            ]
+        )
+        checker("todo_data", todo_data)
+        return
+
     raise ValidationError(f"Unknown type for todo data: {todo_data['type']}")
 
 

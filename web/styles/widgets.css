@@ -23,12 +23,17 @@
 }
 
 .todo-widget {
-    .todo-task-list-title-bar {
+    .todo-task-list-title-bar,
+    .todo-task-list-item-bar {
         flex: 1 1 auto;
         display: flex;
         /* Ensure controls remain visible on narrower screens. */
         flex-flow: row wrap;
         gap: 5px;
+        margin-right: 2px;
+    }
+
+    .todo-task-list-title-bar {
         margin-bottom: var(--markdown-interelement-space-px);
     }
 
@@ -254,6 +259,8 @@ input {
 
 .poll-question-check,
 .poll-question-remove,
+.todo-task-list-item-check,
+.todo-task-list-item-remove,
 .todo-task-list-title-check,
 .todo-task-list-title-remove {
     align-self: stretch;
@@ -278,6 +285,25 @@ input {
     &:hover,
     &:focus-visible {
         color: var(--color-message-action-interactive);
+    }
+}
+
+.todo-edit-task-list-item {
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+    color: var(--color-message-action-visible);
+}
+
+.todo-widget li:hover .todo-edit-task-list-item {
+    opacity: 1;
+    transition: opacity 0.1s ease-in;
+    color: var(--color-message-action-visible);
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color-message-action-interactive) !important;
+        opacity: 1;
+        transition: opacity 0.1s ease-in;
     }
 }
 
