@@ -1,8 +1,10 @@
 # Developing on a remote machine
 
-The Zulip developer environment works well on remote virtual machines. This can
+The Zulip developer environment works well on remote virtual machines and in local containers. This can
 be a good alternative for those with poor network connectivity or who have
 limited storage/memory on their local machines.
+
+Throughout this document, the phrase _virtual machine_ or _remote machine_ also refers to a local container, such as a Linux Container.
 
 We recommend giving the Zulip development environment its own virtual
 machine with at least 2GB of memory. If the Zulip development
@@ -49,7 +51,7 @@ following commands as root:
 
 ## Setting up the development environment
 
-After you have connected to your remote server, you need to install the
+After you have connected to your remote machine, you need to install the
 development environment.
 
 If the Zulip development environment will be the only thing running on
@@ -59,7 +61,7 @@ the remote virtual machine, we recommend installing
 need to.
 
 The main difference from the standard instructions is that for a
-remote development environment, and you're not using our Digital Ocean
+remote development environment, you're not using our Digital Ocean
 Droplet infrastructure (which handles `EXTERNAL_HOST` for you), you'll
 need to run `export EXTERNAL_HOST=<REMOTE_IP>:9991` in a shell before
 running `run-dev` (and see also the `--interface=''` option
