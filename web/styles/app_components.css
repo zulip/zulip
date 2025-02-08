@@ -32,8 +32,9 @@ kbd {
     background-color: var(--color-kbd-background);
     color: var(--color-kbd-text);
     margin: 0.25em 0.1em;
-    padding: 0.2em 0.4em;
+    padding: 0.2em 0.4em 0;
     text-shadow: 0 1px 0 hsl(0deg 0% 100%);
+    text-align: center;
     /* Prevent selection */
     user-select: none;
     position: relative;

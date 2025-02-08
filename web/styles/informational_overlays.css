@@ -73,8 +73,8 @@
 
     .arrow-key {
         font-size: 1.36em;
-        line-height: 1;
-        padding: 0 0.2em 0.2em;
+        line-height: normal;
+        padding: 0 0.2em;
     }
 
     & th {
