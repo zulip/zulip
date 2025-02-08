@@ -1965,6 +1965,12 @@ body:not(.hide-left-sidebar) {
         padding-right: 2px;
     }
 
+    .decorated-stream-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .zulip-icon {
         margin-top: 2px;
     }
