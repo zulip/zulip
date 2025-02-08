@@ -1406,6 +1406,9 @@
     --color-kbd-text: light-dark(hsl(0deg 0% 20%), hsl(236deg 33% 90%));
     --color-kbd-enter-sends: light-dark(hsl(0deg 0% 40%), hsl(236deg 33% 90%));
 
+    /* Hotkey opacity */
+    --opacity-hotkey-hint: 1;
+
     /* Settings */
     --color-realm-enable-spectator-access-link: light-dark(
         hsl(0deg 0% 20%),

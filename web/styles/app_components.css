@@ -39,6 +39,7 @@ kbd {
     position: relative;
     min-height: 1em;
     min-width: 1em;
+    opacity: var(--opacity-hotkey-hint);
 
     .zulip-icon::before {
         position: absolute;
