@@ -1295,7 +1295,9 @@ label.preferences-radio-choice-label {
 }
 
 .invite-user-link {
-    display: inline-flex;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    width: fit-content;
     align-items: center;
     text-decoration: none;
 
@@ -1304,16 +1306,11 @@ label.preferences-radio-choice-label {
     }
 
     .zulip-icon-user-plus {
-        text-decoration: none;
         margin-right: 5px;
     }
 
-    .invite-label {
-        line-height: 1;
-
-        &:hover {
-            text-decoration: underline;
-        }
+    &:hover .invite-label {
+        text-decoration: underline;
     }
 }
 
