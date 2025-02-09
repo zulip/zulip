@@ -245,7 +245,10 @@ function message_matches_search_term(message: Message, operator: string, operand
             if (!user_ids) {
                 return false;
             }
-            return user_ids.includes(operand_user.user_id);
+            const operand_users = operand
+                .split(",")
+                .map((email) => people.get_by_email(email.trim()));
+            return operand_users.every((user) => user && user_ids.includes(user.user_id)); 
         }
     }
 

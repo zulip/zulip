@@ -6,7 +6,7 @@ import render_user_pill from "../templates/user_pill.hbs";
 import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
 import * as common from "./common.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
-import {Filter, create_user_pill_context} from "./filter.ts";
+import {Filter} from "./filter.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -196,11 +196,18 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         !check_validity(
             last_complete_term,
             terms.slice(-1),
-            ["dm", "pm-with"],
+            ["dm", "dm-including", "pm-with"],
             [{operator: "channel"}],
         )
     ) {
         return [];
+    }
+
+    const excluded_emails = new Set<string>();
+    for (const term of terms) {
+        if (term.operator === "dm-including") {
+            for (const email of term.operand.split(",")) {excluded_emails.add(email);}
+        }
     }
 
     // If they started typing since a user pill, we'll parse that as "search"
@@ -231,21 +238,30 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
     // We only generate group suggestions when there's more than one part, and
     // we only use the last part to generate suggestions.
 
-    const last_comma_index = operand.lastIndexOf(",");
     let all_but_last_part;
     let last_part;
+    const last_comma_index = operand.lastIndexOf(",");
     if (last_comma_index === -1) {
         all_but_last_part = operand;
         last_part = "";
     } else {
-        // Neither all_but_last_part nor last_part include the final comma.
         all_but_last_part = operand.slice(0, last_comma_index);
         last_part = operand.slice(last_comma_index + 1);
     }
 
+    // Deduplicate the already entered emails.
+    const dedupedEmails = [...new Set(all_but_last_part.split(","))].join(",");
+
     // We don't suggest a person if their email is already present in the
     // operand (not including the last part).
-    const parts = [...all_but_last_part.split(","), people.my_current_email()];
+
+    const current_parts = all_but_last_part.split(",");
+    for (const part of current_parts) {
+        excluded_emails.add(part);
+    }
+
+    const parts = operand.split(",").slice(0, -1);
+    for (const email of parts) {excluded_emails.add(email);}
 
     const all_users_but_last_part = [];
     for (const email of all_but_last_part.split(",")) {
@@ -259,49 +275,42 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         }
         all_users_but_last_part.push(user);
     }
-    const user_pill_contexts = all_users_but_last_part.map((person) =>
-        create_user_pill_context(person),
-    );
 
     const person_matcher = people.build_person_matcher(last_part);
-    let persons = people.filter_all_persons((person) => {
-        if (parts.includes(person.email)) {
-            return false;
-        }
-        return last_part === "" || person_matcher(person);
-    });
+    let persons = people.filter_all_persons((person) => !excluded_emails.has(person.email) && (last_part === "" || person_matcher(person)));
 
     persons.sort(compare_by_direct_message_group(parts));
 
     // Take top 15 persons, since they're ordered by pm_recipient_count.
     persons = persons.slice(0, 15);
 
-    const prefix = Filter.operator_to_prefix("dm", negated);
+    const prefix = Filter.operator_to_prefix(last_complete_term.operator, negated);
 
     const person_highlighter = make_person_highlighter(last_part);
 
     return persons.map((person) => {
+        const operator = last_complete_term.operator;
         const term = {
-            operator: "dm",
-            operand: all_but_last_part + "," + person.email,
+            operator,
+            operand: dedupedEmails + "," + person.email,
             negated,
         };
 
-        let terms: NarrowTerm[] = [term];
+        let terms = [term];
         if (negated) {
-            terms = [{operator: "is", operand: "dm"}, term];
+            terms = [{
+                operator: "is", operand: "dm",
+                negated: undefined
+            }, term];
         }
 
-        const all_user_pill_contexts = [
-            ...user_pill_contexts,
-            highlight_person(person, person_highlighter),
-        ];
+        const new_user_pill = highlight_person(person, person_highlighter);
 
         return {
             description_html: prefix,
             search_string: Filter.unparse(terms),
             is_people: true,
-            users: all_user_pill_contexts.map((user_pill_context) => ({user_pill_context})),
+            users: [{user_pill_context: new_user_pill}],
         };
     });
 }
@@ -1074,6 +1083,7 @@ export function get_search_result(
         get_operator_suggestions,
         get_has_filter_suggestions,
     ];
+
 
     if (page_params.is_spectator) {
         filterers = [

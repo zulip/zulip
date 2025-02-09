@@ -147,6 +147,19 @@ function append_user_pill(
     operator: string,
     negated: boolean,
 ): void {
+    const valid_users = users.filter((user) => people.get_by_email(user.email));
+    if (operator === "dm-including") {
+        // Assume pill_widget.items() returns existing pills.
+        const existing_emails = new Set(
+            pill_widget
+                .items()
+                .filter((item) => item.type === "search_user")
+                .flatMap((item: SearchUserPill) => item.users.map((user) => user.email)),
+        );
+        users = valid_users.filter((user) => !existing_emails.has(user.email));
+    } else {
+        users = valid_users;
+    }
     const pill_data: SearchUserPill = {
         type: "search_user",
         operator,
@@ -209,13 +222,21 @@ export function set_search_bar_contents(
         }
 
         if (user_pill_operators.has(term.operator) && term.operand !== "") {
-            const users = term.operand.split(",").map((email) => {
-                // This is definitely not undefined, because we just validated it
-                // with `Filter.is_valid_search_term`.
-                const user = people.get_by_email(email)!;
-                return user;
-            });
-            append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
+            if (term.operator === "dm-including") {
+                // Split operand by commas and append a pill for each email.
+                const users = term.operand.split(",").map((email) => {
+                    const user = people.get_by_email(email.trim())!;
+                    return user;
+                });
+                append_user_pill(users, pill_widget, "dm-including", term.negated ?? false);
+            } else {
+                const users = term.operand.split(",").map((email) => {
+                    // This is definitely not undefined, because we just validated it.
+                    const user = people.get_by_email(email.trim())!;
+                    return user;
+                });
+                append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
+            }
         } else if (term.operator === "search") {
             search_operator_strings.push(input);
         } else {

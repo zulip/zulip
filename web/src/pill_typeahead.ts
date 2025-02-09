@@ -16,6 +16,11 @@ import * as user_pill from "./user_pill.ts";
 import type {UserPillData, UserPillWidget} from "./user_pill.ts";
 
 function person_matcher(query: string, item: UserPillData): boolean {
+    // If the query contains commas, consider only the part after the last comma.
+    if (query.includes(",")) {
+        query = query.split(",").pop()?.trim() ?? "";
+    }
+    query = query.toLowerCase().replaceAll("\u00A0", " ");
     return (
         people.is_known_user_id(item.user.user_id) &&
         typeahead_helper.query_matches_person(query, item)
