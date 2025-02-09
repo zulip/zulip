@@ -1241,8 +1241,9 @@ div.settings-radio-input-parent {
 }
 
 .stream-settings-color-preview {
-    width: 33px;
-    height: 33px;
+    /* 33px at 12.8 font size (from .button.small) at 14px em */
+    width: 2.5781em;
+    height: 2.5781em;
     margin: -6px 0 -6px -10px;
 }
 
