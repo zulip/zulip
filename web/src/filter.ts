@@ -1412,6 +1412,12 @@ export class Filter {
             (term_types.length === 1 && _.isEqual(term_types, ["dm"]))
         ) {
             const emails = this.operands("dm")[0]!.split(",");
+            if (emails.length === 1) {
+                const user = people.get_by_email(emails[0]!);
+                if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
+                    return $t({defaultMessage: "Messages with yourself"});
+                }
+            }
             const names = emails.map((email) => {
                 const person = people.get_by_email(email);
                 if (!person) {
