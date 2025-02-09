@@ -88,17 +88,21 @@
     <div class="message-header-contents">
         <a class="message_label_clickable narrows_by_recipient stream_label tippy-narrow-tooltip"
           href="{{pm_with_url}}"
-          data-tippy-content="{{t 'Go to direct messages with {display_reply_to_for_tooltip}' }}">
+          data-tippy-content="{{#if is_dm_with_self}}{{t 'Go to direct messages with yourself' }}{{else}}{{t 'Go to direct messages with {display_reply_to_for_tooltip}' }}{{/if}}">
         <span class="private_message_header_icon"><i class="zulip-icon zulip-icon-user"></i></span>
         <span class="private_message_header_name">
-            {{~#tr}}You and <z-user-names></z-user-names>
-            {{#*inline "z-user-names"}}
-                {{#each recipient_users}}
-                    {{~full_name}}{{#if is_bot}}<i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>{{/if}}
-                    {{~#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{/if}}{{#unless @last}}, {{/unless~}}
-                {{/each}}
-            {{/inline}}
-            {{/tr~}}
+            {{#if is_dm_with_self}}
+                {{t 'Messages with yourself' }}
+            {{else}}
+                {{~#tr}}You and <z-user-names></z-user-names>
+                {{#*inline "z-user-names"}}
+                    {{#each recipient_users}}
+                        {{~full_name}}{{#if is_bot}}<i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>{{/if~}}
+                        {{#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{/if}}{{#unless @last}}, {{/unless}}
+                    {{/each}}
+                {{/inline}}
+                {{/tr~}}
+            {{/if}}
         </span>
         </a>
         <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
