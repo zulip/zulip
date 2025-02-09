@@ -119,6 +119,7 @@ test("get_conversations", ({override}) => {
     const expected_data = [
         {
             is_bot: false,
+            is_current_user: true,
             is_active: false,
             is_deactivated: false,
             is_group: false,
@@ -135,6 +136,7 @@ test("get_conversations", ({override}) => {
         },
         {
             recipients: "Alice, Bob",
+            is_current_user: false,
             user_ids_string: "101,102",
             unread: 1,
             is_zero: false,
@@ -171,6 +173,7 @@ test("get_conversations", ({override}) => {
         is_zero: true,
         is_active: true,
         is_deactivated: false,
+        is_current_user: false,
         url: "#narrow/dm/106-Iago",
         status_emoji_info: {emoji_code: "20"},
         user_circle_class: "user-circle-offline",
@@ -208,6 +211,7 @@ test("get_conversations bot", ({override}) => {
         {
             recipients: "Outgoing webhook",
             user_ids_string: "314",
+            is_current_user: false,
             unread: 1,
             is_zero: false,
             is_active: false,
@@ -222,6 +226,7 @@ test("get_conversations bot", ({override}) => {
         {
             recipients: "Alice, Bob",
             user_ids_string: "101,102",
+            is_current_user: false,
             unread: 1,
             is_zero: false,
             is_active: false,
