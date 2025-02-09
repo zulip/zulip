@@ -38,6 +38,7 @@ export function get_active_user_ids_string(): string | undefined {
 type DisplayObject = {
     recipients: string;
     user_ids_string: string;
+    is_current_user: boolean;
     unread: number;
     is_zero: boolean;
     is_active: boolean;
@@ -90,6 +91,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
         let user_circle_class;
         let status_emoji_info;
         let is_bot = false;
+        let is_current_user = false;
 
         if (!is_group) {
             const user_id = Number.parseInt(user_ids_string, 10);
@@ -100,6 +102,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
                 // We display the bot icon rather than a user circle for bots.
                 is_bot = true;
             } else {
+                is_current_user = people.is_my_user_id(user_id);
                 status_emoji_info = user_status.get_status_emoji(user_id);
             }
         }
@@ -116,6 +119,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             is_group,
             is_bot,
             has_unread_mention,
+            is_current_user,
         };
         display_objects.push(display_object);
     }
