@@ -59,7 +59,7 @@
                 <div class="toggle_resolve_topic_spinner" style="display: none"></div>
             {{/if}}
 
-            {{#if is_subscribed}}
+            {{#if (and is_subscribed (not is_archived))}}
                 <span class="change_visibility_policy recipient-bar-control hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}">
                     {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
                         <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic.'}}"

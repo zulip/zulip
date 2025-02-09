@@ -49,7 +49,7 @@
             {{#unless is_direct}}
             <div class="inbox-right-part-wrapper">
                 <div class="inbox-right-part">
-                    {{#if is_topic}}
+                    {{#if (and is_topic (not stream_archived))}}
                         <span class="visibility-policy-indicator change_visibility_policy hidden-for-spectators{{#if (eq visibility_policy all_visibility_policies.INHERIT)}} inbox-row-visibility-policy-inherit{{/if}}"
                           data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}" tabindex="0" data-col-index="{{ column_indexes.TOPIC_VISIBILITY }}">
                             {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
