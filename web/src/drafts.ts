@@ -574,6 +574,7 @@ export type FormattedDraft =
       }
     | {
           is_stream: false;
+          is_current_user: boolean;
           draft_id: string;
           recipients: string;
           raw_content: string;
@@ -643,11 +644,16 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
         };
     }
 
+    let is_current_user = false;
     const emails = util.extract_pm_recipients(draft.private_message_recipient);
+    if (emails.length === 1 && people.is_current_user(emails[0])) {
+        is_current_user = true;
+    }
     const recipients = people.emails_to_full_names_string(emails);
     return {
         draft_id: draft.id,
         is_stream: false,
+        is_current_user,
         recipients,
         raw_content: draft.content,
         time_stamp,
