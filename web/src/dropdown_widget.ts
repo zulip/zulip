@@ -391,7 +391,12 @@ export class DropdownWidget {
 
                     switch (e.key) {
                         case "Enter":
-                            if (e.target === $search_input.get(0)) {
+                            if (
+                                list_items.length === 0 ||
+                                e.target === $sticky_bottom_option.get(0)
+                            ) {
+                                $sticky_bottom_option.trigger("click");
+                            } else if (e.target === $search_input.get(0)) {
                                 // Select first item if in search input.
                                 first_item().trigger("click");
                             } else if (list_items.length > 0) {
