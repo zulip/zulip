@@ -2,12 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as audible_notifications from "./audible_notifications.ts";
-import {
-    NON_COMPACT_MODE_FONT_SIZE_PX,
-    NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
-} from "./information_density.ts";
 import * as overlays from "./overlays.ts";
-import {page_params} from "./page_params.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_org from "./settings_org.ts";
@@ -75,25 +70,6 @@ export function set_up(): void {
             notification_sound: sound,
         });
     });
-
-    if (!page_params.development_environment) {
-        $<HTMLInputElement>("#realm_dense_mode").on("change", function (this: HTMLInputElement) {
-            const val = this.checked;
-            if (val) {
-                $container.find(".information-density-settings").hide();
-                return;
-            }
-
-            if (
-                !realm_user_settings_defaults.dense_mode &&
-                (realm_user_settings_defaults.web_font_size_px !== NON_COMPACT_MODE_FONT_SIZE_PX ||
-                    realm_user_settings_defaults.web_line_height_percent !==
-                        NON_COMPACT_MODE_LINE_HEIGHT_PERCENT)
-            ) {
-                $container.find(".information-density-settings").show();
-            }
-        });
-    }
 
     settings_notifications.set_up(realm_default_settings_panel);
 
