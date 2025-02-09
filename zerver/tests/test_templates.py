@@ -26,11 +26,6 @@ class TemplateTestCase(ZulipTestCase):
         content = template.render(context)
         content_sans_whitespace = content.replace(" ", "").replace("\n", "")
 
-        # Note that the expected HTML has a lot of stray <p> tags. This is a
-        # consequence of how the Markdown renderer converts newlines to HTML
-        # and how elements are delimited by newlines and so forth. However,
-        # stray <p> tags are usually matched with closing tags by HTML renderers
-        # so this doesn't affect the final rendered UI in any visible way.
         expected_html = """
 header
 
@@ -86,7 +81,6 @@ header
 
 footer
 """
-
         expected_html_sans_whitespace = expected_html.replace(" ", "").replace("\n", "")
         self.assertEqual(content_sans_whitespace, expected_html_sans_whitespace)
 
@@ -135,4 +129,17 @@ footer
         content = template.render(context)
         content_sans_whitespace = content.replace(" ", "").replace("\n", "")
         expected = "headerfooter"
+        self.assertEqual(content_sans_whitespace, expected)
+
+    def test_markdown_with_jinja2(self) -> None:
+        template = get_template("tests/test_markdown.html")
+        context = {
+            "markdown_test_file": "zerver/tests/markdown/test_jinja.md",
+            "realm_name": "Zulip",
+            "realm_uri": "https://zulip.com",
+        }
+        content = template.render(context)
+
+        content_sans_whitespace = content.replace(" ", "").replace("\n", "")
+        expected = '<p><a href="https://zulip.com">Zulip</a></p>'
         self.assertEqual(content_sans_whitespace, expected)

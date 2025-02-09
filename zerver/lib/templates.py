@@ -175,7 +175,7 @@ def render_markdown_path(
     if context is None:
         return mark_safe(html)  # noqa: S308
 
-    return mark_safe(jinja.from_string(html).render(context))  # noqa: S308
+    return mark_safe(html)  # noqa: S308
 
 
 def webpack_entry(entrypoint: str) -> list[str]:
