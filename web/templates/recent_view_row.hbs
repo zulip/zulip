@@ -60,6 +60,7 @@
                 </div>
                 <div class="recent_topic_actions">
                     <div class="hidden-for-spectators">
+                        {{#unless is_archived}}
                         <span class="recent_view_focusable change_visibility_policy hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-col-index="{{ column_indexes.mute }}">
                             {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
                                 <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic.'}}"
@@ -75,6 +76,7 @@
                                   role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'Notifications are based on your configuration for this channel.' }}"></i>
                             {{/if}}
                         </span>
+                        {{/unless}}
                     </div>
                 </div>
                 {{/if}}
