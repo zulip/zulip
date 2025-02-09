@@ -110,6 +110,7 @@ const stream_context_properties: (keyof StreamContext)[] = [
 type TopicContext = {
     is_topic: boolean;
     stream_id: number;
+    stream_archived: boolean;
     topic_name: string;
     topic_display_name: string;
     is_empty_string_topic: boolean;
@@ -128,6 +129,7 @@ type TopicContext = {
 const topic_context_properties: (keyof TopicContext)[] = [
     "is_topic",
     "stream_id",
+    "stream_archived",
     "topic_name",
     "topic_display_name",
     "is_empty_string_topic",
@@ -409,11 +411,18 @@ function update_stream_data(
 ): void {
     const stream_topics_data = new Map<string, TopicContext>();
     const stream_data = format_stream(stream_id);
+    const stream_archived = stream_data.is_archived;
     let stream_post_filter_unread_count = 0;
     for (const [topic, {topic_count, latest_msg_id}] of topic_dict) {
         const topic_key = get_topic_key(stream_id, topic);
         if (topic_count) {
-            const topic_data = format_topic(stream_id, topic, topic_count, latest_msg_id);
+            const topic_data = format_topic(
+                stream_id,
+                stream_archived,
+                topic,
+                topic_count,
+                latest_msg_id,
+            );
             stream_topics_data.set(topic_key, topic_data);
             if (!topic_data.is_hidden) {
                 stream_post_filter_unread_count += topic_data.unread_count;
@@ -441,6 +450,7 @@ function rerender_stream_inbox_header_if_needed(
 
 function format_topic(
     stream_id: number,
+    stream_archived: boolean,
     topic: string,
     topic_unread_count: number,
     latest_msg_id: number,
@@ -448,6 +458,7 @@ function format_topic(
     const context = {
         is_topic: true,
         stream_id,
+        stream_archived,
         topic_name: topic,
         topic_display_name: util.get_final_topic_display_name(topic),
         is_empty_string_topic: topic === "",
@@ -1307,12 +1318,14 @@ export function update(): void {
 
             const topic_keys_to_insert: string[] = [];
             const new_stream_data = format_stream(stream_id);
+            const stream_archived = new_stream_data.is_archived;
             for (const [topic, {topic_count, latest_msg_id}] of topic_dict) {
                 const topic_key = get_topic_key(stream_id, topic);
                 if (topic_count) {
                     const old_topic_data = stream_topics_data.get(topic_key);
                     const new_topic_data = format_topic(
                         stream_id,
+                        stream_archived,
                         topic,
                         topic_count,
                         latest_msg_id,
