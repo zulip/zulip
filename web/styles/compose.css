@@ -642,12 +642,15 @@
     right: 0;
     color: var(--color-compose-send-control-button);
     background: transparent;
-    font-size: 12.5px;
+    /* 12.5px at 14px em */
+    font-size: 0.8928em;
     font-weight: normal;
-    line-height: 20px;
+    /* 3px 7px at 12.5px font size at 14px em */
+    line-height: 1.6em;
     opacity: 0.7;
     border: 0;
-    padding: 3px 7px;
+    /* 3px 7px at 12.5px font size at 14px em */
+    padding: 0.24em 0.56em;
     border-radius: 8px;
     vertical-align: unset;
     text-shadow: none;
