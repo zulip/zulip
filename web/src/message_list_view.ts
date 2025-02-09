@@ -123,6 +123,7 @@ export type MessageGroup = {
           pm_with_url: string;
           recipient_users: RecipientRowUser[];
           always_display_date: boolean;
+          is_dm_with_self: boolean;
       }
 );
 
@@ -458,6 +459,7 @@ function populate_group_from_message(
         display_recipient,
         pm_with_url: message.pm_with_url,
         recipient_users: get_users_for_recipient_row(message),
+        is_dm_with_self: people.is_direct_message_conversation_with_self(user_ids),
         display_reply_to_for_tooltip: message_store.get_pm_full_names(user_ids),
         always_display_date,
     };
