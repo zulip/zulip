@@ -54,7 +54,7 @@
             }
 
             #inbox-clear-search {
-                border: 1px solid transparent;
+                border: none;
                 background: transparent;
                 display: flex;
                 justify-content: center;
@@ -66,13 +66,12 @@
                 opacity: 0.4;
                 transition: none 140ms;
                 transition-property: background-color, opacity, transform;
-                padding: 5px;
+                /* 5px at 16px font-size at 14px em */
+                padding: 0.3125em;
                 margin: 0;
-                /* = -Width of the button, 28px at 14px em */
-                margin-right: -2em;
                 position: relative;
-                top: 0;
-                right: 30px;
+                /* Width of the button, 27px at 16px font-size at 14px em */
+                right: 1.6875em;
 
                 &:focus {
                     outline: none;
