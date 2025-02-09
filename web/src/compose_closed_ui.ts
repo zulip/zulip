@@ -5,7 +5,7 @@ import render_reply_recipient_label from "../templates/reply_recipient_label.hbs
 import * as compose_actions from "./compose_actions.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
-import * as message_store from "./message_store.ts";
+import type * as message_store from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
@@ -37,6 +37,8 @@ type ComposeClosedMessage = {
     stream_id?: number | undefined;
     topic?: string;
     display_reply_to?: string | undefined;
+    reply_to?: string | undefined;
+    display_recipient?: message_store.DisplayRecipient | undefined;
 };
 
 export function get_recipient_label(message?: ComposeClosedMessage): RecipientLabel | undefined {
@@ -59,7 +61,10 @@ export function get_recipient_label(message?: ComposeClosedMessage): RecipientLa
                 return get_stream_recipient_label(stream_id, topic);
             } else if (narrow_state.pm_ids_string()) {
                 const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_ids_string()!);
-                return {label_text: message_store.get_pm_full_names(user_ids)};
+                if (user_ids[0] && people.is_my_user_id(user_ids[0])) {
+                    return {label_text: $t({defaultMessage: "yourself"})};
+                }
+                return {label_text: JSON.stringify(user_ids)};
             }
         } else {
             message = message_lists.current.selected_message();
@@ -70,6 +75,12 @@ export function get_recipient_label(message?: ComposeClosedMessage): RecipientLa
         if (message.stream_id !== undefined && message.topic !== undefined) {
             return get_stream_recipient_label(message.stream_id, message.topic);
         } else if (message.display_reply_to) {
+            if (message.display_recipient?.length === 1 && message.reply_to) {
+                const user_id = people.get_by_email(message.reply_to)?.user_id;
+                if (user_id && people.is_my_user_id(user_id)) {
+                    return {label_text: $t({defaultMessage: "yourself"})};
+                }
+            }
             return {label_text: message.display_reply_to};
         }
     }
