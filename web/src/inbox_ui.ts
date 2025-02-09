@@ -883,8 +883,16 @@ function update_closed_compose_text($row: JQuery, is_header_row: boolean): void 
     let reply_recipient_information: compose_closed_ui.ReplyRecipientInformation;
     const is_dm = $row.parent("#inbox-direct-messages-container").length > 0;
     if (is_dm) {
+        const $recipients_info = $row.find(".recipients_info");
+        const href = $recipients_info.attr("href");
+        const match = href?.match(/\/dm\/(\d+)-/);
+        const user_id = match?.[1] ? Number.parseInt(match[1], 10) : null;
+
         reply_recipient_information = {
-            display_reply_to: $row.find(".recipients_name").text(),
+            display_reply_to:
+                match && user_id && people.is_my_user_id(user_id)
+                    ? "yourself"
+                    : $recipients_info.text(),
         };
     } else {
         const $stream = $row.parent(".inbox-topic-container").prev(".inbox-header");

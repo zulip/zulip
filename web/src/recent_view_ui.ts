@@ -342,8 +342,16 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
 
     let reply_recipient_information: compose_closed_ui.ReplyRecipientInformation;
     if (type === "private") {
+        const $recipients_info = $topic_row.find(".recent-view-table-link");
+        const href = $recipients_info.attr("href");
+        const match = href?.match(/\/dm\/(\d+)-/);
+        const user_id = match?.[1] ? Number.parseInt(match[1], 10) : null;
+
         reply_recipient_information = {
-            display_reply_to: $topic_row.find(".recent_topic_name a").text(),
+            display_reply_to:
+                match && user_id && people.is_my_user_id(user_id)
+                    ? "yourself"
+                    : $recipients_info.text(),
         };
     } else {
         const stream_name = $topic_row.find(".recent_topic_stream a").text();
