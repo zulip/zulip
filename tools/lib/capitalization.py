@@ -80,6 +80,7 @@ IGNORED_PHRASES = [
     r"enabled",
     r"signups",
     # Placeholders
+    r"yourself",
     r"keyword",
     r"streamname",
     r"user@example\.com",

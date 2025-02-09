@@ -452,6 +452,9 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
     } else if (opts.direct_message_user_ids.length > 0) {
         const users = people.get_users_from_ids(opts.direct_message_user_ids);
         const recipient_parts = users.map((user) => {
+            if (people.is_my_user_id(user.user_id)) {
+                return $t({defaultMessage: "yourself"});
+            }
             if (people.should_add_guest_user_indicator(user.user_id)) {
                 return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});
             }
