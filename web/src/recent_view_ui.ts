@@ -347,9 +347,19 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
 
     let reply_recipient_information: compose_closed_ui.ReplyRecipientInformation;
     if (type === "private") {
-        reply_recipient_information = {
-            display_reply_to: $topic_row.find(".recent_topic_name a").text(),
-        };
+        const $recipients_info = $topic_row.find(".recent-view-table-link");
+        const narrow_url = $recipients_info.attr("href");
+        assert(narrow_url !== undefined);
+        const recipient_ids = hash_util.decode_dm_recipient_user_ids_from_narrow_url(narrow_url);
+        if (recipient_ids) {
+            reply_recipient_information = {
+                user_ids: recipient_ids,
+            };
+        } else {
+            reply_recipient_information = {
+                display_reply_to: $recipients_info.text(),
+            };
+        }
     } else {
         const stream_name = $topic_row.find(".recent_topic_stream a").text();
         const stream = stream_data.get_sub_by_name(stream_name);

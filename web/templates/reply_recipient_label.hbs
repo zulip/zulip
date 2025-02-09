@@ -1,3 +1,8 @@
+{{#if is_dm_with_self}}
+{{#tr}}
+    Message yourself
+{{/tr}}
+{{else}}
 {{#tr}}
     Message <z-recipient-label></z-recipient-label>
     {{#*inline "z-recipient-label"}}
@@ -8,3 +13,4 @@
         {{~/if}}
     {{~/inline}}
 {{/tr}}
+{{/if}}
