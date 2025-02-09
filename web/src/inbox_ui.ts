@@ -890,9 +890,19 @@ function update_closed_compose_text($row: JQuery, is_header_row: boolean): void 
     let reply_recipient_information: compose_closed_ui.ReplyRecipientInformation;
     const is_dm = $row.parent("#inbox-direct-messages-container").length > 0;
     if (is_dm) {
-        reply_recipient_information = {
-            display_reply_to: $row.find(".recipients_name").text(),
-        };
+        const $recipients_info = $row.find(".recipients_info");
+        const narrow_url = $recipients_info.attr("href");
+        assert(narrow_url !== undefined);
+        const recipient_ids = hash_util.decode_dm_recipient_user_ids_from_narrow_url(narrow_url);
+        if (recipient_ids) {
+            reply_recipient_information = {
+                user_ids: recipient_ids,
+            };
+        } else {
+            reply_recipient_information = {
+                display_reply_to: $recipients_info.text(),
+            };
+        }
     } else {
         const $stream = $row.parent(".inbox-topic-container").prev(".inbox-header");
         reply_recipient_information = {

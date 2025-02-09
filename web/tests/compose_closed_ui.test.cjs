@@ -22,23 +22,38 @@ function MessageListView() {
 mock_esm("../src/message_list_view", {
     MessageListView,
 });
-mock_esm("../src/people.ts", {
-    maybe_get_user_by_id: noop,
-});
 mock_esm("../src/settings_data", {
     user_has_permission_for_group_setting: () => true,
+    user_can_access_all_other_users: () => true,
 });
 
 const stream_data = zrequire("stream_data");
 // Code we're actually using/testing
 const compose_closed_ui = zrequire("compose_closed_ui");
+const people = zrequire("people");
 const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
 const {MessageListData} = zrequire("message_list_data");
 const {set_current_user, set_realm} = zrequire("state_data");
 
-const current_user = {};
+const current_user = {
+    email: "alice@zulip.com",
+    user_id: 1,
+    full_name: "Alice",
+};
 set_current_user(current_user);
+people.add_active_user(current_user);
+people.add_active_user({
+    email: "bob@zulip.com",
+    user_id: 2,
+    full_name: "Bob",
+});
+people.add_active_user({
+    email: "zoe@zulip.com",
+    user_id: 3,
+    full_name: "Zoe",
+});
+people.initialize_current_user(1);
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
 set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
@@ -85,6 +100,8 @@ run_test("reply_label", () => {
                 is_private: false,
                 stream_id: stream_one.stream_id,
                 topic: "first_topic",
+                sent_by_me: false,
+                sender_id: 2,
             },
             {
                 id: 1,
@@ -92,6 +109,8 @@ run_test("reply_label", () => {
                 is_private: false,
                 stream_id: stream_one.stream_id,
                 topic: "second_topic",
+                sent_by_me: false,
+                sender_id: 2,
             },
             {
                 id: 2,
@@ -99,6 +118,8 @@ run_test("reply_label", () => {
                 is_private: false,
                 stream_id: stream_two.stream_id,
                 topic: "third_topic",
+                sent_by_me: false,
+                sender_id: 2,
             },
             {
                 id: 3,
@@ -106,18 +127,24 @@ run_test("reply_label", () => {
                 is_private: false,
                 stream_id: stream_two.stream_id,
                 topic: "second_topic",
+                sent_by_me: false,
+                sender_id: 2,
             },
             {
                 id: 4,
                 is_stream: false,
                 is_private: true,
-                display_reply_to: "some user",
+                to_user_ids: "2",
+                sent_by_me: false,
+                sender_id: 2,
             },
             {
                 id: 5,
                 is_stream: false,
                 is_private: true,
-                display_reply_to: "some user, other user",
+                to_user_ids: "2,3",
+                sent_by_me: false,
+                sender_id: 2,
             },
             {
                 id: 6,
@@ -125,6 +152,8 @@ run_test("reply_label", () => {
                 is_private: false,
                 stream_id: stream_two.stream_id,
                 topic: "",
+                sent_by_me: false,
+                sender_id: 2,
             },
         ],
         {},
@@ -136,8 +165,8 @@ run_test("reply_label", () => {
         "#first_stream &gt; second_topic",
         "#second_stream &gt; third_topic",
         "#second_stream &gt; second_topic",
-        "some user",
-        "some user, other user",
+        "Bob",
+        "Bob, Zoe",
     ];
 
     // Initialize the code we're testing.
@@ -188,16 +217,17 @@ run_test("test_non_message_list_input", () => {
     });
     test_reply_label("#stream test &gt; topic test");
 
-    // Direct message row.
+    // Direct message conversation with current user row.
     compose_closed_ui.update_recipient_text_for_reply_button({
-        display_reply_to: "some user",
+        user_ids: [current_user.user_id],
     });
-    test_reply_label("some user");
+    let label = $("#left_bar_compose_reply_button_big").html();
+    assert.equal(label, "Message yourself");
 
     // Invalid data for a the reply button text.
     compose_closed_ui.update_recipient_text_for_reply_button({
         invalid_field: "something unexpected",
     });
-    const label = $("#left_bar_compose_reply_button_big").text();
+    label = $("#left_bar_compose_reply_button_big").text();
     assert.equal(label, "translated: Compose message");
 });

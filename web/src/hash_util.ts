@@ -319,6 +319,39 @@ export function validate_group_settings_hash(hash: string): string {
     return hash;
 }
 
+export function decode_dm_recipient_user_ids_from_narrow_url(narrow_url: string): number[] | null {
+    try {
+        const url = new URL(narrow_url, window.location.origin);
+        if (url.origin !== window.location.origin || !url.hash.startsWith("#narrow")) {
+            return null;
+        }
+        const terms = parse_narrow(url.hash.split(/\//));
+        if (!terms?.[0]) {
+            return null;
+        }
+        if (terms.length > 2) {
+            return null;
+        }
+        if (
+            terms[0].operator !== "dm" &&
+            terms[1]?.operator !== "with" &&
+            terms[1]?.operator !== "near"
+        ) {
+            return null;
+        }
+        if (people.is_valid_bulk_emails_for_compose(terms[0].operand.split(","))) {
+            const user_ids = people.emails_strings_to_user_ids_array(terms[0].operand);
+            if (!user_ids) {
+                return null;
+            }
+            return user_ids;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
+
 export function decode_stream_topic_from_url(
     url_str: string,
 ): {stream_id: number; topic_name?: string; message_id?: string} | null {

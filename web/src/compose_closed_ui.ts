@@ -20,6 +20,7 @@ type RecipientLabel = {
     label_text: string;
     has_empty_string_topic?: boolean;
     stream_name?: string;
+    is_dm_with_self?: boolean;
 };
 
 function get_stream_recipient_label(stream_id: number, topic: string): RecipientLabel | undefined {
@@ -36,9 +37,25 @@ function get_stream_recipient_label(stream_id: number, topic: string): Recipient
     return undefined;
 }
 
+function get_direct_message_recipient_label(user_ids: number[]): RecipientLabel {
+    let label_text = "";
+    let is_dm_with_self = false;
+    if (people.is_direct_message_conversation_with_self(user_ids)) {
+        is_dm_with_self = true;
+    } else {
+        label_text = message_store.get_pm_full_names(user_ids);
+    }
+    const recipient_label: RecipientLabel = {
+        label_text,
+        is_dm_with_self,
+    };
+    return recipient_label;
+}
+
 export type ReplyRecipientInformation = {
     stream_id?: number | undefined;
     topic?: string | undefined;
+    user_ids?: number[] | undefined;
     display_reply_to?: string | undefined;
 };
 
@@ -59,6 +76,9 @@ export function get_recipient_label(
                 recipient_information.stream_id,
                 recipient_information.topic,
             );
+        }
+        if (recipient_information.user_ids !== undefined) {
+            return get_direct_message_recipient_label(recipient_information.user_ids);
         }
         if (recipient_information.display_reply_to !== undefined) {
             return {label_text: recipient_information.display_reply_to};
@@ -83,7 +103,7 @@ export function get_recipient_label(
         }
         if (user_ids_string !== undefined) {
             const user_ids = people.user_ids_string_to_ids_array(user_ids_string);
-            return {label_text: message_store.get_pm_full_names(user_ids)};
+            return get_direct_message_recipient_label(user_ids);
         }
         // Show the standard button text for empty narrows without
         // a clear reply target, e.g., an empty search view.
@@ -95,7 +115,8 @@ export function get_recipient_label(
         if (selected_message?.is_stream) {
             return get_stream_recipient_label(selected_message.stream_id, selected_message.topic);
         }
-        return {label_text: selected_message.display_reply_to};
+        const user_ids = people.user_ids_string_to_ids_array(selected_message.to_user_ids);
+        return get_direct_message_recipient_label(user_ids);
     }
     // Fall through to show the standard button text.
     return undefined;
@@ -205,6 +226,7 @@ export function update_recipient_text_for_reply_button(
         const rendered_recipient_label = render_reply_recipient_label({
             has_empty_string_topic: recipient_label.has_empty_string_topic,
             channel_name: recipient_label.stream_name,
+            is_dm_with_self: recipient_label.is_dm_with_self,
             empty_string_topic_display_name,
             label_text: recipient_label.label_text,
         });
