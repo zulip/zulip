@@ -1,0 +1,7 @@
+* [`DELETE /users/{user_id}`](/api/deactivate-user): Added new
+  parameter `is_spammer` for marking as spam while deactivating a user.
+* [`DELETE /users/{user_id}`](/api/deactivate-user): Added new
+  parameter `actions` for performing actions related to deactivating
+  users. Currently, this parameter only performs the action of
+  deleting the messages of the user being deactivated and the bots
+  owned by them.
