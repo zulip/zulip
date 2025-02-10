@@ -1,11 +1,15 @@
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import TypedDict
+
+from django.db.models import Q
+from typing_extensions import TypedDict
 
 from zerver.lib import retention
 from zerver.lib.message import event_recipient_ids_for_action_on_messages
 from zerver.lib.retention import move_messages_to_archive
+from zerver.lib.streams import get_public_streams_queryset
 from zerver.models import Message, Realm, Stream, UserProfile
+from zerver.models.recipients import Recipient
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -15,6 +19,12 @@ class DeleteMessagesEvent(TypedDict, total=False):
     message_type: str
     topic: str
     stream_id: int
+
+
+class MessageDeleteAction(TypedDict, total=False):
+    delete_public_stream_messages: bool
+    delete_private_stream_messages: bool
+    delete_direct_messages: bool
 
 
 def check_update_first_message_id(
@@ -153,3 +163,70 @@ def do_delete_messages_by_sender(user: UserProfile) -> None:
     )
     if message_ids:
         move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)
+
+
+def delete_deactivated_user_messages(
+    realm: Realm,
+    user_profile: UserProfile,
+    message_delete_action: MessageDeleteAction,
+    acting_user: UserProfile | None,
+) -> None:
+    delete_public_stream_messages = message_delete_action.get(
+        "delete_public_stream_messages", False
+    )
+    delete_private_stream_messages = message_delete_action.get(
+        "delete_private_stream_messages", False
+    )
+    delete_direct_messages = message_delete_action.get("delete_direct_messages", False)
+
+    if not (
+        delete_public_stream_messages or delete_private_stream_messages or delete_direct_messages
+    ):
+        return
+
+    message_filter_query = Q()
+    message_exclude_query = Q()
+
+    if delete_direct_messages:
+        # Group DMs will be handled with the main query
+        message_filter_query |= Q(recipient__type=Recipient.DIRECT_MESSAGE_GROUP)
+
+    if delete_public_stream_messages and delete_private_stream_messages:
+        message_filter_query |= Q(recipient__type=Recipient.STREAM)
+    elif delete_public_stream_messages or delete_private_stream_messages:
+        public_stream_ids = list(get_public_streams_queryset(realm).values_list("id", flat=True))
+        if delete_public_stream_messages:
+            message_filter_query |= Q(
+                recipient__type=Recipient.STREAM, recipient__type_id__in=public_stream_ids
+            )
+        else:
+            message_filter_query |= Q(recipient__type=Recipient.STREAM)
+            message_exclude_query |= Q(
+                recipient__type=Recipient.STREAM, recipient__type_id__in=public_stream_ids
+            )
+
+    messages = list(
+        Message.objects.filter(sender=user_profile, realm_id=user_profile.realm_id)
+        .filter(message_filter_query)
+        .exclude(message_exclude_query)
+        .select_related("recipient")
+    )
+    do_delete_messages(user_profile.realm, messages, acting_user=acting_user)
+
+    # 1:1 DMs need to be handled separately as we need to group them by conversation
+    if delete_direct_messages:
+        direct_messages = list(
+            Message.objects.filter(
+                sender=user_profile,
+                realm_id=user_profile.realm_id,
+                recipient__type=Recipient.PERSONAL,
+            ).select_related("recipient")
+        )
+
+        personal_messages_by_recipient_dict: defaultdict[int, list[Message]] = defaultdict(list)
+        for message in direct_messages:
+            recipient_user_id = message.recipient.type_id
+            personal_messages_by_recipient_dict[recipient_user_id].append(message)
+
+        for conversation_messages in personal_messages_by_recipient_dict.values():
+            do_delete_messages(user_profile.realm, conversation_messages, acting_user=acting_user)
