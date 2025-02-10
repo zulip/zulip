@@ -506,6 +506,10 @@ input[type="checkbox"] {
     padding-top: 10px;
 }
 
+#org-other-permissions .tip {
+    margin-top: 0;
+}
+
 .language_selection_widget .language_selection_button {
     text-decoration: none;
     min-width: 0;

@@ -341,6 +341,15 @@
                 {{> settings_save_discard_widget section_name="other-permissions" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
+                {{#unless server_can_summarize_topics}}
+                    <div class="tip">
+                        {{t "AI summaries are not enabled on this server."}}
+                    </div>
+                {{/unless}}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_summarize_topics_group"
+                  label=group_setting_labels.can_summarize_topics_group}}
+
                 {{> group_setting_value_pill_input
                   setting_name="realm_can_create_write_only_bots_group"
                   label=group_setting_labels.can_create_write_only_bots_group}}

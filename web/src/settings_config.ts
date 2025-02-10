@@ -687,6 +687,7 @@ export const all_group_setting_labels = {
         can_access_all_users_group: $t({
             defaultMessage: "Who can view all other users in the organization",
         }),
+        can_summarize_topics_group: $t({defaultMessage: "Who can use AI summaries"}),
         can_create_write_only_bots_group: $t({
             defaultMessage: "Who can create bots that send messages into Zulip",
         }),
@@ -766,6 +767,7 @@ export const realm_group_permission_settings: {
         subsection_heading: $t({defaultMessage: "Other permissions"}),
         subsection_key: "org-other-permissions",
         settings: [
+            "can_summarize_topics_group",
             "can_create_write_only_bots_group",
             "can_create_bots_group",
             "can_add_custom_emoji_group",

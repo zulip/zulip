@@ -533,6 +533,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_can_manage_all_groups":
         case "realm_can_move_messages_between_channels_group":
         case "realm_can_move_messages_between_topics_group":
+        case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
         case "realm_direct_message_permission_group": {

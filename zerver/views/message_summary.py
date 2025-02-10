@@ -27,8 +27,8 @@ def get_messages_summary(
     if settings.TOPIC_SUMMARIZATION_MODEL is None:  # nocoverage
         raise JsonableError(_("AI features are not enabled on this server."))
 
-    if not (user_profile.is_moderator or user_profile.is_realm_admin):  # nocoverage
-        return json_success(request, {"summary": "Feature limited to moderators for now."})
+    if not user_profile.can_summarize_topics():
+        raise JsonableError(_("Insufficient permission"))
 
     if settings.MAX_PER_USER_MONTHLY_AI_COST is not None:
         used_credits = COUNT_STATS["ai_credit_usage::day"].current_month_accumulated_count_for_user(

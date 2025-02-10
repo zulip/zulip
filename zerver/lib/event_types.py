@@ -524,6 +524,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_manage_all_groups: int | AnonymousSettingGroupDict | None = None
     can_move_messages_between_channels_group: int | AnonymousSettingGroupDict | None = None
     can_move_messages_between_topics_group: int | AnonymousSettingGroupDict | None = None
+    can_summarize_topics_group: int | AnonymousSettingGroupDict | None = None
     direct_message_initiator_group: int | AnonymousSettingGroupDict | None = None
     direct_message_permission_group: int | AnonymousSettingGroupDict | None = None
 

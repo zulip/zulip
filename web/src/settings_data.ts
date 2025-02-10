@@ -90,6 +90,14 @@ export function user_can_create_multiuse_invite(): boolean {
     );
 }
 
+export function user_can_summarize_topics(): boolean {
+    return user_has_permission_for_group_setting(
+        realm.realm_can_summarize_topics_group,
+        "can_summarize_topics_group",
+        "realm",
+    );
+}
+
 export function can_subscribe_others_to_all_accessible_streams(): boolean {
     return user_has_permission_for_group_setting(
         realm.realm_can_add_subscribers_group,

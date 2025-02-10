@@ -7,7 +7,11 @@ from django.conf import settings
 from typing_extensions import override
 
 from analytics.models import UserCount
+from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.models import NamedUserGroup
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="pydantic")
@@ -119,3 +123,82 @@ class MessagesSummaryTestCase(ZulipTestCase):
         ):
             response = self.client_get("/json/messages/summary")
             self.assert_json_error_contains(response, "Reached monthly limit for AI credits.")
+
+    def test_permission_to_summarize_message_in_topics(self) -> None:
+        narrow = orjson.dumps([["channel", self.channel_name], ["topic", self.topic_name]]).decode()
+
+        realm = get_realm("zulip")
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_summarize_topics_group",
+            moderators_group,
+            acting_user=None,
+        )
+
+        # In this code path, we test using the fixtures.
+        with open(LLM_FIXTURES_FILE, "rb") as f:
+            fixture_data = orjson.loads(f.read())
+
+        def check_message_summary_permission(user: str, expect_fail: bool = False) -> None:
+            self.login(user)
+            with (
+                self.settings(
+                    TOPIC_SUMMARIZATION_MODEL="groq/llama-3.3-70b-versatile",
+                    TOPIC_SUMMARIZATION_API_KEY="test",
+                ),
+                mock.patch("litellm.completion", return_value=fixture_data["response"]),
+            ):
+                result = self.client_get("/json/messages/summary", dict(narrow=narrow))
+
+            if expect_fail:
+                self.assert_json_error(result, "Insufficient permission")
+            else:
+                self.assert_json_success(result)
+
+        check_message_summary_permission("hamlet", expect_fail=True)
+        check_message_summary_permission("shiva")
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_summarize_topics_group",
+            nobody_group,
+            acting_user=None,
+        )
+
+        check_message_summary_permission("desdemona", expect_fail=True)
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_summarize_topics_group",
+            hamletcharacters_group,
+            acting_user=None,
+        )
+
+        check_message_summary_permission("desdemona", expect_fail=True)
+        check_message_summary_permission("othello", expect_fail=True)
+        check_message_summary_permission("hamlet")
+        check_message_summary_permission("cordelia")
+
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [self.example_user("othello")], [moderators_group]
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_summarize_topics_group",
+            setting_group,
+            acting_user=None,
+        )
+
+        check_message_summary_permission("cordelia", expect_fail=True)
+        check_message_summary_permission("hamlet", expect_fail=True)
+        check_message_summary_permission("othello")
+        check_message_summary_permission("shiva")
+        check_message_summary_permission("desdemona")

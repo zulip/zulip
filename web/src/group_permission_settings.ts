@@ -56,6 +56,7 @@ export const realm_group_setting_name_schema = z.enum([
     "can_manage_all_groups",
     "can_move_messages_between_channels_group",
     "can_move_messages_between_topics_group",
+    "can_summarize_topics_group",
     "create_multiuse_invite_group",
     "direct_message_initiator_group",
     "direct_message_permission_group",
