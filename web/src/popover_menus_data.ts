@@ -56,7 +56,6 @@ type TopicPopoverContext = {
     topic_unmuted: boolean;
     is_spectator: boolean;
     is_moderator: boolean;
-    is_development_environment: boolean;
     is_topic_empty: boolean;
     can_move_topic: boolean;
     can_rename_topic: boolean;
@@ -67,6 +66,7 @@ type TopicPopoverContext = {
     url: string;
     visibility_policy: number | false;
     all_visibility_policies: AllVisibilityPolicies;
+    can_summarize_topics: boolean;
 };
 
 type VisibilityChangePopoverContext = {
@@ -267,8 +267,6 @@ export function get_topic_popover_content_context({
         can_move_topic,
         can_rename_topic,
         is_moderator: current_user.is_moderator,
-        // Temporary, as we're using this to control whether we show the summarize popover.
-        is_development_environment: page_params.development_environment,
         is_realm_admin: current_user.is_admin,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
         has_starred_messages,
@@ -276,6 +274,8 @@ export function get_topic_popover_content_context({
         url,
         visibility_policy,
         all_visibility_policies,
+        can_summarize_topics:
+            realm.server_can_summarize_topics && settings_data.user_can_summarize_topics(),
     };
 }
 

@@ -38,7 +38,7 @@
         {{else}}
             {{!-- Group 2 --}}
             <li role="separator" class="popover-menu-separator"></li>
-            {{#if (and is_development_environment (or is_moderator is_realm_admin))}}
+            {{#if can_summarize_topics}}
             <li role="none" class="link-item popover-menu-list-item">
                 <a role="menuitem" class="sidebar-popover-summarize-topic popover-menu-link" tabindex="0">
                     <i class="popover-menu-icon fa fa-magic" aria-hidden="true"></i>
