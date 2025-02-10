@@ -15160,6 +15160,49 @@ paths:
         given their user ID.
       parameters:
         - $ref: "#/components/parameters/UserId"
+        - name: actions
+          in: query
+          description: |
+            The policy for performing various actions related to the user profile and
+            their messages after deactivation.
+
+            An object with boolean values for each message type:
+
+            - `delete_profile`: Delete user profile
+            - `delete_public_channel_messages`: Delete messages in public channels
+            - `delete_private_channel_messages`: Delete messages in private channels
+            - `delete_direct_messages`: Delete direct messages
+
+            If all values are false or the object is empty, profile will not be deleted
+            and no messages will be deleted.
+            This is first applied to any bots created by the user and then to the user.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-01a225).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  delete_profile:
+                    type: boolean
+                    description: |
+                      Whether to delete the user profile by updating their name
+                      to "Deleted user" and removing their profile picture.
+                  delete_public_channel_messages:
+                    type: boolean
+                    description: Whether to delete messages in public channels.
+                  delete_private_channel_messages:
+                    type: boolean
+                    description: Whether to delete messages in private channels.
+                  delete_direct_messages:
+                    type: boolean
+                    description: Whether to delete direct messages.
+              example:
+                delete_profile: false
+                delete_public_channel_messages: false
+                delete_private_channel_messages: false
+                delete_direct_messages: false
+          required: false
       requestBody:
         required: false
         content:

@@ -13,13 +13,18 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import get_language
 
-from zerver.actions.message_delete import do_delete_messages_by_sender
+from zerver.actions.message_delete import (
+    DeactivateUserActions,
+    delete_deactivated_user_messages,
+    do_delete_messages_by_sender,
+)
 from zerver.actions.message_send import send_user_profile_update_notification
 from zerver.actions.streams import bulk_remove_subscriptions, send_peer_remove_events
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
 )
+from zerver.actions.user_settings import do_change_avatar_fields, do_change_full_name
 from zerver.lib.avatar import get_avatar_field
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields, flush_user_profile
@@ -468,7 +473,11 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
 
 
 def do_deactivate_user(
-    user_profile: UserProfile, _cascade: bool = True, *, acting_user: UserProfile | None
+    user_profile: UserProfile,
+    _cascade: bool = True,
+    *,
+    acting_user: UserProfile | None,
+    deactivate_user_actions: DeactivateUserActions | None = None,
 ) -> None:
     if not user_profile.is_active:
         return
@@ -481,13 +490,42 @@ def do_deactivate_user(
         # that a failure partway through this function cannot result
         # in only the user being deactivated.
         bot_profiles = get_active_bots_owned_by_user(user_profile)
+        # Same policies should be applied to the bots as to the user who created
+        # them. If the user is marked as spammer or their content is being
+        # deleted, the same should happen with the bots created by that user.
         for profile in bot_profiles:
-            do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
-
+            do_deactivate_user(
+                profile,
+                _cascade=False,
+                acting_user=acting_user,
+                deactivate_user_actions=deactivate_user_actions,
+            )
     with transaction.atomic(savepoint=False):
         change_user_is_active(user_profile, False)
 
         clear_scheduled_emails([user_profile.id])
+        if deactivate_user_actions is not None:
+            if deactivate_user_actions.delete_profile:
+                # The full name of spam user is changed to Deleted user.
+                if user_profile.full_name != "Deleted user" and not user_profile.is_bot:
+                    do_change_full_name(
+                        user_profile, "Deleted user", acting_user=acting_user, notify=False
+                    )
+                elif user_profile.full_name != "Deactivated bot" and user_profile.is_bot:
+                    do_change_full_name(
+                        user_profile, "Deactivated bot", acting_user=acting_user, notify=False
+                    )
+
+                # TODO: Change avatar image to that of an inaccessible user.
+                if user_profile.avatar_source != UserProfile.AVATAR_FROM_GRAVATAR:
+                    do_change_avatar_fields(
+                        user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user
+                    )
+
+            delete_deactivated_user_messages(
+                user_profile.realm, user_profile, deactivate_user_actions, acting_user
+            )
+
         revoke_invites_generated_by_user(user_profile)
 
         event_time = timezone_now()
