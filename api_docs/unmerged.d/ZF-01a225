@@ -1,0 +1,4 @@
+* [`DELETE /users/{user_id}`](/api/deactivate-user): Added
+  new parameter `actions` for performing actions related to
+  deactivating users like deleting their profile and deleting
+  the messages sent sent by them.
