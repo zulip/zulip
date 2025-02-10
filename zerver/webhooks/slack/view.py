@@ -182,6 +182,7 @@ Feel free to reach out to the [Zulip development community]
 (https://chat.zulip.org/#narrow/channel/127-integrations) if you need
 further help!
 """
+from zerver.lib.webhooks.interfaced_settings import MapToChannelsT
 
 
 @webhook_view("Slack", notify_bot_owner_on_invalid_json=False)
@@ -192,6 +193,7 @@ def api_slack_webhook(
     *,
     slack_app_token: str = "",
     channels_map_to_topics: str | None = None,
+    map_to_channel: MapToChannelsT = False,
 ) -> HttpResponse:
     if request.content_type != "application/json":
         # Handle Slack's legacy Outgoing Webhook Service payload.
