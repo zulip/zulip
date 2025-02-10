@@ -1,6 +1,7 @@
 import asyncio
 import socket
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Iterator
+from contextlib import contextmanager
 from functools import wraps
 from typing import Any, TypeVar
 from unittest import TestResult, mock
@@ -17,7 +18,10 @@ from tornado.httpclient import AsyncHTTPClient, HTTPResponse
 from tornado.httpserver import HTTPServer
 from typing_extensions import ParamSpec, override
 
+from zerver.lib.cache import user_profile_narrow_by_id_cache_key
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import cache_tries_captured, queries_captured
+from zerver.models import UserProfile
 from zerver.tornado import event_queue
 from zerver.tornado.application import create_tornado_application
 from zerver.tornado.event_queue import process_event
@@ -111,6 +115,20 @@ class EventsTestCase(TornadoWebTestCase):
         queue_id = await self.create_queue()
         self.assertIn(queue_id, event_queue.clients)
 
+    @contextmanager
+    def mocked_events(self, user_profile: UserProfile, event: dict[str, object]) -> Iterator[None]:
+        def process_events() -> None:
+            users = [user_profile.id]
+            process_event(event, users)
+
+        def wrapped_fetch_events(**query: Any) -> dict[str, Any]:
+            ret = event_queue.fetch_events(**query)
+            asyncio.get_running_loop().call_soon(process_events)
+            return ret
+
+        with mock.patch("zerver.tornado.views.fetch_events", side_effect=wrapped_fetch_events):
+            yield
+
     @async_to_sync_decorator
     async def test_events_async(self) -> None:
         user_profile = await in_django_thread(lambda: self.example_user("hamlet"))
@@ -123,20 +141,7 @@ class EventsTestCase(TornadoWebTestCase):
 
         path = f"/json/events?{urlencode(data)}"
 
-        def process_events() -> None:
-            users = [user_profile.id]
-            event = dict(
-                type="test",
-                data="test data",
-            )
-            process_event(event, users)
-
-        def wrapped_fetch_events(**query: Any) -> dict[str, Any]:
-            ret = event_queue.fetch_events(**query)
-            asyncio.get_running_loop().call_soon(process_events)
-            return ret
-
-        with mock.patch("zerver.tornado.views.fetch_events", side_effect=wrapped_fetch_events):
+        with self.mocked_events(user_profile, {"type": "test", "data": "test data"}):
             response = await self.fetch_async("GET", path)
 
         self.assertEqual(response.headers["Vary"], "Accept-Language, Cookie")
@@ -148,3 +153,61 @@ class EventsTestCase(TornadoWebTestCase):
             ],
         )
         self.assertEqual(data["result"], "success")
+
+    @async_to_sync_decorator
+    async def test_events_caching(self) -> None:
+        user_profile = await in_django_thread(lambda: self.example_user("hamlet"))
+        await in_django_thread(lambda: self.login_user(user_profile))
+        event_queue_id = await self.create_queue()
+        data = {
+            "queue_id": event_queue_id,
+            "last_event_id": -1,
+        }
+
+        path = f"/json/events?{urlencode(data)}"
+
+        with (
+            self.mocked_events(user_profile, {"type": "test", "data": "test data"}),
+            cache_tries_captured() as cache_gets,
+            queries_captured() as queries,
+        ):
+            await self.fetch_async("GET", path)
+
+            # Two cache fetches -- for the user and the client.  In
+            # production, the session would also be a cache access,
+            # but tests don't use cached sessions.
+            self.assert_length(cache_gets, 2)
+            self.assertEqual(
+                cache_gets[0], ("get", user_profile_narrow_by_id_cache_key(user_profile.id), None)
+            )
+            self.assertEqual(cache_gets[1][0], "get")
+            assert isinstance(cache_gets[1][1], str)
+            self.assertTrue(cache_gets[1][1].startswith("get_client:"))
+
+            # Three database queries -- session, user, and client.
+            # The user query should remain small; it is currently 470
+            # bytes, but anything under 1k should be Fine.
+            self.assert_length(queries, 3)
+            self.assertIn("django_session", queries[0].sql)
+            self.assertIn("zerver_userprofile", queries[1].sql)
+            self.assertLessEqual(len(queries[1].sql), 1024)
+            self.assertIn("zerver_client", queries[2].sql)
+
+        # Perform the same request again, preserving the caches.  We
+        # should only see one database query -- the session.  As noted
+        # above, in production even that would be cached.
+        with (
+            self.mocked_events(user_profile, {"type": "test", "data": "test data"}),
+            cache_tries_captured() as cache_gets,
+            queries_captured(keep_cache_warm=True) as queries,
+        ):
+            await self.fetch_async("GET", path)
+            self.assert_length(cache_gets, 1)
+            self.assertEqual(
+                cache_gets[0], ("get", user_profile_narrow_by_id_cache_key(user_profile.id), None)
+            )
+            # Client is cached in-process-memory, so doesn't even see
+            # a memcached hit
+
+            self.assert_length(queries, 1)
+            self.assertIn("django_session", queries[0].sql)

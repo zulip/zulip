@@ -523,7 +523,11 @@ v1_api_and_json_patterns = [
     # used to register for an event queue in tornado
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
     # events -> zerver.tornado.views
-    rest_path("events", GET=get_events, DELETE=cleanup_event_queue),
+    rest_path(
+        "events",
+        GET=(get_events, {"narrow_user_session_cache"}),
+        DELETE=(cleanup_event_queue, {"narrow_user_session_cache"}),
+    ),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
     # Used to generate a BigBlueButton video call URL

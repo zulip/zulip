@@ -16,6 +16,7 @@ from urllib3.util import Retry
 from zerver.lib.partial import partial
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.models import Client, Realm, UserProfile
+from zerver.models.users import get_user_profile_narrow_by_id
 from zerver.tornado.sharding import (
     get_realm_tornado_ports,
     get_tornado_url,
@@ -97,6 +98,11 @@ def request_event_queue(
     if not settings.USING_TORNADO:
         return None
 
+    # We make sure to pre-fill the narrow user cache, to save
+    # session-based Tornado (/json/events) from having to go to the
+    # database.
+    get_user_profile_narrow_by_id(user_profile.id)
+
     tornado_url = get_tornado_url(get_user_tornado_port(user_profile))
     req = {
         "dont_block": "true",
@@ -133,6 +139,12 @@ def get_user_events(
 ) -> list[dict[str, Any]]:
     if not settings.USING_TORNADO:
         return []
+
+    # Pre-fill the narrow user cache, to save session-based Tornado
+    # (/json/events) from having to go to the database.  This is
+    # almost certainly filled already, from above, but there is little
+    # harm in forcing it.
+    get_user_profile_narrow_by_id(user_profile.id)
 
     tornado_url = get_tornado_url(get_user_tornado_port(user_profile))
     post_data: dict[str, Any] = {
