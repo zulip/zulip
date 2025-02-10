@@ -6,6 +6,8 @@ from zerver.lib import retention
 from zerver.lib.message import event_recipient_ids_for_action_on_messages
 from zerver.lib.retention import move_messages_to_archive
 from zerver.models import Message, Realm, Stream, UserProfile
+from zerver.models.recipients import Recipient
+from zerver.models.streams import get_all_streams
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -146,3 +148,42 @@ def do_delete_messages_by_sender(user: UserProfile) -> None:
     )
     if message_ids:
         move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)
+
+
+def classify_messages(
+    realm: Realm, messages: Iterable[Message]
+) -> tuple[list[Message], list[Message]]:
+    private_stream_messages = []
+    public_stream_messages = []
+
+    streams = get_all_streams(realm=realm, include_archived_channels=True)
+    public_streams = [stream for stream in streams if stream.is_public()]
+
+    for message in messages:
+        if message.recipient.type == Recipient.STREAM:
+            stream = Stream.objects.get(id=message.recipient.type_id)
+            if stream in public_streams:
+                public_stream_messages.append(message)
+            else:
+                private_stream_messages.append(message)
+
+    return private_stream_messages, public_stream_messages
+
+
+def delete_deactivated_user_messages(
+    realm: Realm, user_profile: UserProfile, message_delete_action: int
+) -> None:
+    if message_delete_action == Message.NO_DELETE_ACTION:
+        return
+    user_messages = list(
+        Message.objects.filter(realm_id=user_profile.realm_id, sender=user_profile).only(
+            "id", "recipient__type", "recipient__type_id"
+        )
+    )
+
+    private_stream_messages, public_stream_messages = classify_messages(realm, user_messages)
+    if message_delete_action == Message.DELETE_PUBLIC_STREAM_MESSAGES:
+        do_delete_messages(user_profile.realm, public_stream_messages, acting_user=user_profile)
+    elif message_delete_action == Message.DELETE_ALL_MESSAGES:
+        do_delete_messages(user_profile.realm, private_stream_messages, acting_user=user_profile)
+        do_delete_messages(user_profile.realm, public_stream_messages, acting_user=user_profile)
