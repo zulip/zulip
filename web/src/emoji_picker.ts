@@ -186,6 +186,7 @@ export function rebuild_catalog(): void {
         icon: category.icon,
         // The ! type assertion is correct because of the filter above.
         emojis: catalog.get(category.name)!,
+        translated: category.translated,
     }));
     const emojis_by_category = complete_emoji_catalog.flatMap((category) => {
         if (category.name === "Popular") {
