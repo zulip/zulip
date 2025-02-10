@@ -429,6 +429,10 @@ def user_profile_by_id_cache_key(user_profile_id: int) -> str:
     return f"user_profile_by_id:{user_profile_id}"
 
 
+def user_profile_narrow_by_id_cache_key(user_profile_id: int) -> str:
+    return f"user_profile_narrow_by_id:{user_profile_id}"
+
+
 def user_profile_by_api_key_cache_key(api_key: str) -> str:
     return f"user_profile_by_api_key:{api_key}"
 
@@ -513,6 +517,7 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm_id:
     keys = []
     for user_profile in user_profiles:
         keys.append(user_profile_by_id_cache_key(user_profile.id))
+        keys.append(user_profile_narrow_by_id_cache_key(user_profile.id))
         keys += map(user_profile_by_api_key_cache_key, get_all_api_keys(user_profile))
         keys.append(user_profile_cache_key_id(user_profile.email, realm_id))
         keys.append(user_profile_delivery_email_cache_key(user_profile.delivery_email, realm_id))

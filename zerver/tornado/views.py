@@ -14,10 +14,10 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.queue import get_queue_client
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import AsynchronousResponse, json_success
+from zerver.lib.sessions import narrow_request_user
 from zerver.lib.typed_endpoint import ApiParamConfig, DocumentationStatus, typed_endpoint
 from zerver.models import UserProfile
 from zerver.models.clients import get_client
-from zerver.models.users import get_user_profile_by_id
 from zerver.tornado.descriptors import is_current_port
 from zerver.tornado.event_queue import (
     access_client_descriptor,
@@ -100,8 +100,8 @@ def cleanup_event_queue(
 @internal_api_view(True)
 @typed_endpoint
 def get_events_internal(request: HttpRequest, *, user_profile_id: Json[int]) -> HttpResponse:
-    user_profile = get_user_profile_by_id(user_profile_id)
-    RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
+    user_profile = narrow_request_user(request, user_id=user_profile_id)
+    assert isinstance(user_profile, UserProfile)
     assert is_current_port(get_user_tornado_port(user_profile))
 
     process_client(request, user_profile, client_name="internal")
