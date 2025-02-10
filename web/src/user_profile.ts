@@ -1304,6 +1304,15 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                 };
             }
 
+            const user_deactivation_actions: Record<string, boolean> = {};
+            for (const elem of $(".deactivate-actions input[type='checkbox']:checked")) {
+                user_deactivation_actions[$(elem).attr("data-key")!] = true;
+            }
+
+            data = {
+                ...data,
+                actions: JSON.stringify(user_deactivation_actions),
+            };
             dialog_widget.submit_api_request(channel.del, url, data);
         }
         user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);
