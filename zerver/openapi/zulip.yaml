@@ -15090,6 +15090,59 @@ paths:
         given their user ID.
       parameters:
         - $ref: "#/components/parameters/UserId"
+        - name: is_spammer
+          in: query
+          description: |
+            Whether or not the user should be marked as a spammer.
+            If this parameter is true, the user is deactivated,
+            their name is updated to "Deleted user", and their profile
+            is removed if present. Any bots created by the user will
+            also be treated as spammers, and the same policies will be
+            applied to them as to the user who created them.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-01a225).
+          content:
+            application/json:
+              schema:
+                type: boolean
+              example: true
+          required: false
+        - name: actions
+          in: query
+          description: |
+            The policy for performing various actions related to the user messages
+            after deactivation. Currently, this is only used for deleting the messages
+            sent by the deactivated user.
+
+            An object with boolean values for each message type:
+
+            - `delete_public_stream_messages`: Delete messages in public streams
+            - `delete_private_stream_messages`: Delete messages in private streams
+            - `delete_direct_messages`: Delete direct messages
+
+            If all values are false or the object is empty, no messages will be deleted.
+            This is first applied to any bots created by the user and then to the user.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-01a225).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  delete_public_stream_messages:
+                    type: boolean
+                    description: Whether to delete messages in public streams
+                  delete_private_stream_messages:
+                    type: boolean
+                    description: Whether to delete messages in private streams
+                  delete_direct_messages:
+                    type: boolean
+                    description: Whether to delete direct messages
+              example:
+                delete_public_stream_messages: false
+                delete_private_stream_messages: false
+                delete_direct_messages: false
+          required: false
       requestBody:
         required: false
         content:
