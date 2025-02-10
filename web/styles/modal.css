@@ -425,6 +425,10 @@
     }
 }
 
+.deactivate-actions {
+    margin-top: 0.625em;
+}
+
 .email_field {
     margin-top: 10px;
 

@@ -532,11 +532,17 @@ function handle_deactivation($tbody: JQuery): void {
         }
 
         function handle_confirm(): void {
-            let data = {};
+            const data: Record<string, unknown> = {};
+
+            const deactivation_actions: Record<string, boolean> = {};
+            for (const elem of $(".deactivate-actions input[type='checkbox']:checked")) {
+                deactivation_actions[$(elem).attr("data-key")!] = true;
+            }
+            data["actions"] = JSON.stringify(deactivation_actions);
+
+            // Handle deactivation notification
             if ($(".send_email").is(":checked")) {
-                data = {
-                    deactivation_notification_comment: $(".email_field_textarea").val(),
-                };
+                data["deactivation_notification_comment"] = $(".email_field_textarea").val();
             }
 
             if (user_id === current_user.user_id) {
