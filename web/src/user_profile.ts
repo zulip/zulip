@@ -1175,6 +1175,18 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                 };
             }
 
+            const is_spammer = $("#is-user-spammer").is(":checked");
+            const message_delete_action: Record<string, boolean> = {};
+            for (const action of settings_config.message_delete_action_values) {
+                message_delete_action[action.key] = $(
+                    `#message-delete-action[value='${action.code}']`,
+                ).is(":checked");
+            }
+            data = {
+                ...data,
+                is_spammer,
+                message_delete_action: JSON.stringify(message_delete_action),
+            };
             dialog_widget.submit_api_request(channel.del, url, data);
         }
         user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);
