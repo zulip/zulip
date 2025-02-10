@@ -15163,8 +15163,48 @@ paths:
         [Deactivates a
         user](https://zulip.com/help/deactivate-or-reactivate-a-user)
         given their user ID.
+
+        Note that any bots controlled by the user will be deactivated
+        before the user; clients that don't want this behavior are
+        expected to prompt the user to adjust the bot's owners before
+        making this API request.
       parameters:
         - $ref: "#/components/parameters/UserId"
+        - name: actions
+          in: query
+          description: |
+            Additional actions for the server to perform while deactivating the user.
+
+            As with the actual deactivation, actions are first applied
+            to any bots controlled by the target user, and then to the
+            target user.
+
+            **Changes**: New in Zulip 12.0 (feature level 459).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  delete_profile:
+                    type: boolean
+                    description: |
+                      Whether to delete the user's profile by updating their name
+                      to "Deleted user" and removing their profile picture.
+                  delete_public_channel_messages:
+                    type: boolean
+                    description: Whether to delete messages in public channels.
+                  delete_private_channel_messages:
+                    type: boolean
+                    description: Whether to delete messages in private channels.
+                  delete_direct_messages:
+                    type: boolean
+                    description: Whether to delete direct messages.
+              example:
+                delete_profile: false
+                delete_public_channel_messages: false
+                delete_private_channel_messages: false
+                delete_direct_messages: false
+          required: false
       requestBody:
         required: false
         content:
