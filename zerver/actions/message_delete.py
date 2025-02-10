@@ -65,9 +65,12 @@ def do_delete_messages(
     message_type = "stream"
     users_to_notify = set()
     if not sample_message.is_stream_message():
-        assert len(messages) == 1
         message_type = "private"
-        archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
+    archiving_chunk_size = (
+        retention.STREAM_MESSAGE_BATCH_SIZE
+        if message_type == "stream"
+        else retention.MESSAGE_BATCH_SIZE
+    )
 
     if message_type == "stream":
         stream_id = sample_message.recipient.type_id
@@ -103,3 +106,41 @@ def do_delete_messages_by_sender(user: UserProfile) -> None:
     )
     if message_ids:
         move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)
+
+
+def classify_messages(
+    user_profile: UserProfile, messages: Iterable[Message]
+) -> tuple[list[Message], list[Message]]:
+    message_ids = [message.id for message in messages]
+
+    message_stream_flags = {
+        message.id: (message.is_public_stream_message(), message.is_private_stream_message())
+        for message in Message.objects.filter(id__in=message_ids).only(
+            "id", "recipient__type", "recipient__type_id"
+        )
+    }
+
+    private_stream_messages = []
+    public_stream_messages = []
+
+    for message in messages:
+        is_public, is_private = message_stream_flags.get(message.id, (False, False))
+        if is_public:
+            public_stream_messages.append(message)
+        elif is_private:
+            private_stream_messages.append(message)
+    return private_stream_messages, public_stream_messages
+
+
+def delete_deactivated_user_messages(user_profile: UserProfile, message_delete_action: int) -> None:
+    if message_delete_action == Message.NO_DELETE_ACTION:
+        return
+    user_messages = list(
+        Message.objects.filter(realm_id=user_profile.realm_id, sender=user_profile)
+    )
+    private_stream_messages, public_stream_messages = classify_messages(user_profile, user_messages)
+    if message_delete_action == Message.DELETE_PUBLIC_STREAM_MESSAGES:
+        do_delete_messages(user_profile.realm, public_stream_messages, acting_user=user_profile)
+    elif message_delete_action == Message.DELETE_ALL_MESSAGES:
+        do_delete_messages(user_profile.realm, private_stream_messages, acting_user=user_profile)
+        do_delete_messages(user_profile.realm, public_stream_messages, acting_user=user_profile)
