@@ -532,11 +532,24 @@ function handle_deactivation($tbody: JQuery): void {
         }
 
         function handle_confirm(): void {
-            let data = {};
+            const data: Record<string, unknown> = {};
+
+            // Handle spammer status
+            const is_spammer = $("#is-user-spammer").is(":checked");
+            if (is_spammer) {
+                data["is_spammer"] = true;
+            }
+
+            // Handle message deletion actions
+            const message_delete_action: Record<string, boolean> = {};
+            for (const action of settings_config.message_delete_action_values) {
+                message_delete_action[action.key] = $(`.${action.key}`).is(":checked");
+            }
+            data["actions"] = JSON.stringify(message_delete_action);
+
+            // Handle deactivation notification
             if ($(".send_email").is(":checked")) {
-                data = {
-                    deactivation_notification_comment: $(".email_field_textarea").val(),
-                };
+                data["deactivation_notification_comment"] = $(".email_field_textarea").val();
             }
 
             if (user_id === current_user.user_id) {

@@ -89,6 +89,7 @@ IGNORED_PHRASES = [
     r"is …",
     r"your subscriptions on your Channels page",
     r"Add global time<br />Everyone sees global times in their own time zone\.",
+    r"They will be renamed to Deleted user.",
     r"user",
     r"an unknown operating system",
     r"Go to Settings",

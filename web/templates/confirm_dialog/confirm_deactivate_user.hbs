@@ -44,3 +44,41 @@
         <textarea class="email_field_textarea modal-textarea" rows="8" maxlength="2000"></textarea>
     </div>
 </div>
+<br/>
+<label class="checkbox">
+    <input id="is-user-spammer" type="checkbox" class="spammer" />
+    <span class="rendered-checkbox"></span>
+    {{t "Is this user a spammer?" }}
+</label>
+<div class="spammer-actions">
+    <p class="border-top">{{t 'Upon deactivation:'}}</p>
+    <ul class="spammer-actions-body">
+        <li>
+            {{#tr}}
+            They will be renamed to <strong>Deleted user</strong>.
+            {{/tr}}
+        </li>
+        <li>{{t "Their profile picture will be removed."}}</li>
+    </ul>
+    {{#if user_can_delete_any_message}}
+    <div class="delete-message-handling">
+        <label class="delete-spammer-messages-label">
+            {{#if bots_owned_by_user}}
+                {{t "Should messages sent by this user and the bots they administer be deleted?" }}
+            {{else}}
+                {{t "Should messages sent by this user be deleted?" }}
+            {{/if}}
+        </label>
+        <div class="input-group">
+            {{#each message_delete_actions}}
+                <label class="checkbox">
+                    <input class="{{this.key}}" type="checkbox"/>
+                    <span class="rendered-checkbox"></span>
+                    {{this.value}}
+                </label>
+                <br/>
+            {{/each}}
+        </div>
+    </div>
+    {{/if}}
+</div>
