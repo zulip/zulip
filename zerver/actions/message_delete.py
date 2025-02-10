@@ -3,9 +3,10 @@ from collections.abc import Iterable
 from typing import TypedDict
 
 from zerver.lib import retention
-from zerver.lib.message import event_recipient_ids_for_action_on_messages
+from zerver.lib.message import classify_stream_messages, event_recipient_ids_for_action_on_messages
 from zerver.lib.retention import move_messages_to_archive
 from zerver.models import Message, Realm, Stream, UserProfile
+from zerver.models.recipients import Recipient
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -15,6 +16,12 @@ class DeleteMessagesEvent(TypedDict, total=False):
     message_type: str
     topic: str
     stream_id: int
+
+
+class MessageDeleteAction(TypedDict, total=False):
+    delete_public_stream_messages: bool
+    delete_private_stream_messages: bool
+    delete_direct_messages: bool
 
 
 def check_update_first_message_id(
@@ -153,3 +160,97 @@ def do_delete_messages_by_sender(user: UserProfile) -> None:
     )
     if message_ids:
         move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)
+
+
+def _group_personal_messages_by_conversation(
+    user_direct_messages: list[Message], sender_id: int
+) -> tuple[dict[int, list[Message]], list[Message]]:
+    """
+    Group 1:1 DMs by the other participant to ensure proper event handling.
+    This prevents issues where events are sent to wrong users when processing
+    messages from different directions of the same conversation separately.
+
+    Returns:
+        - Dictionary mapping other participant ID to their 1:1 messages with sender
+        - List of group DM messages (which can be processed normally)
+    """
+    personal_messages_by_other_user: dict[int, list[Message]] = {}
+    direct_message_group_messages: list[Message] = []
+
+    for message in user_direct_messages:
+        if message.recipient.type == Recipient.PERSONAL:
+            # For 1:1 DMs, group by the other participant
+            # message.recipient.type_id is the recipient user ID
+            other_user_id = message.recipient.type_id
+            if other_user_id not in personal_messages_by_other_user:
+                personal_messages_by_other_user[other_user_id] = []
+            personal_messages_by_other_user[other_user_id].append(message)
+        else:
+            # For group DMs, we can process them normally since they share the same recipient
+            direct_message_group_messages.append(message)
+
+    return personal_messages_by_other_user, direct_message_group_messages
+
+
+def delete_deactivated_user_messages(
+    realm: Realm, user_profile: UserProfile, message_delete_action: MessageDeleteAction
+) -> None:
+    if not (
+        message_delete_action.get("delete_public_stream_messages", False)
+        or message_delete_action.get("delete_private_stream_messages", False)
+        or message_delete_action.get("delete_direct_messages", False)
+    ):
+        return
+
+    if message_delete_action.get(
+        "delete_public_stream_messages", False
+    ) or message_delete_action.get("delete_private_stream_messages", False):
+        user_stream_messages = list(
+            Message.objects.filter(
+                realm_id=user_profile.realm_id,
+                sender=user_profile,
+                recipient__type=Recipient.STREAM,
+            ).select_related("recipient")
+        )
+
+        messages_to_delete = []
+        if message_delete_action.get(
+            "delete_public_stream_messages", False
+        ) and message_delete_action.get("delete_private_stream_messages", False):
+            # Delete all stream messages
+            messages_to_delete = user_stream_messages
+        else:
+            # Only delete specific types
+            private_stream_messages, public_stream_messages = classify_stream_messages(
+                realm, user_stream_messages
+            )
+            if message_delete_action.get("delete_public_stream_messages", False):
+                messages_to_delete.extend(public_stream_messages)
+            if message_delete_action.get("delete_private_stream_messages", False):
+                messages_to_delete.extend(private_stream_messages)
+
+        if messages_to_delete:
+            do_delete_messages(user_profile.realm, messages_to_delete, acting_user=user_profile)
+
+    if message_delete_action.get("delete_direct_messages", False):
+        user_direct_messages = list(
+            Message.objects.filter(
+                realm_id=user_profile.realm_id,
+                sender=user_profile,
+                recipient__type__in=[Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP],
+            ).select_related("recipient")
+        )
+
+        personal_messages_by_other_user, direct_message_group_messages = (
+            _group_personal_messages_by_conversation(user_direct_messages, user_profile.id)
+        )
+
+        # Delete 1:1 messages for each conversation separately
+        for conversation_messages in personal_messages_by_other_user.values():
+            do_delete_messages(user_profile.realm, conversation_messages, acting_user=user_profile)
+
+        # Delete group DM messages together
+        if direct_message_group_messages:
+            do_delete_messages(
+                user_profile.realm, direct_message_group_messages, acting_user=user_profile
+            )

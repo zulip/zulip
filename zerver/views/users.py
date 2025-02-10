@@ -24,6 +24,7 @@ from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
     do_update_user_custom_profile_data_if_changed,
 )
+from zerver.actions.message_delete import MessageDeleteAction as MessageDeleteActionDict
 from zerver.actions.user_settings import (
     check_change_bot_full_name,
     check_change_full_name,
@@ -109,6 +110,12 @@ RoleParamType: TypeAlias = Annotated[
 ]
 
 
+class MessageDeleteAction(BaseModel):
+    delete_public_stream_messages: bool = False
+    delete_private_stream_messages: bool = False
+    delete_direct_messages: bool = False
+
+
 def check_last_owner(user_profile: UserProfile) -> bool:
     owners = set(user_profile.realm.get_human_owner_users())
     return user_profile.is_realm_owner and not user_profile.is_bot and len(owners) == 1
@@ -119,6 +126,8 @@ def deactivate_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    is_spammer: Json[bool] = False,
+    message_delete_action: Json[MessageDeleteAction] | None = None,
     deactivation_notification_comment: Annotated[str, StringConstraints(max_length=2000)]
     | None = None,
     user_id: PathOnly[int],
@@ -134,6 +143,8 @@ def deactivate_user_backend(
         request,
         user_profile,
         target,
+        is_spammer=is_spammer,
+        message_delete_action=message_delete_action,
         deactivation_notification_comment=deactivation_notification_comment,
     )
 
@@ -162,9 +173,24 @@ def _deactivate_user_profile_backend(
     user_profile: UserProfile,
     target: UserProfile,
     *,
+    is_spammer: Json[bool] = False,
+    message_delete_action: Json[MessageDeleteAction] | None = None,
     deactivation_notification_comment: str | None,
 ) -> HttpResponse:
-    do_deactivate_user(target, acting_user=user_profile)
+    message_delete_action_dict: MessageDeleteActionDict | None = None
+    if message_delete_action is not None:
+        message_delete_action_dict = {
+            "delete_public_stream_messages": message_delete_action.delete_public_stream_messages,
+            "delete_private_stream_messages": message_delete_action.delete_private_stream_messages,
+            "delete_direct_messages": message_delete_action.delete_direct_messages,
+        }
+
+    do_deactivate_user(
+        target,
+        acting_user=user_profile,
+        is_spammer=is_spammer,
+        message_delete_action=message_delete_action_dict,
+    )
 
     # It's important that we check for None explicitly here, since ""
     # encodes sending an email without a custom administrator comment.

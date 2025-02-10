@@ -1,0 +1,3 @@
+* [`DELETE /users/{user_id}`](/api/deactivate-user): Added new
+  parameters `is_spammer` and `message_delete_action` for marking 
+  as spam while deactivating a user.
