@@ -302,6 +302,14 @@
     }
 }
 
+.spammer-actions {
+    margin-top: 10px;
+
+    .delete-spammer-messages-label {
+        margin-bottom: 10px;
+    }
+}
+
 .email_field {
     margin-top: 10px;
 
