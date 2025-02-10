@@ -83,6 +83,7 @@ from zerver.lib.streams import (
     ensure_stream,
     filter_stream_authorization,
     list_to_streams,
+    public_stream_user_ids,
     user_has_content_access,
 )
 from zerver.lib.subscription_info import (
@@ -2003,39 +2004,81 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "sTREAm_name1"})
         self.assert_json_success(result)
 
-        # Two events should be sent: stream_name update and notification message.
-        with self.capture_send_event_calls(expected_num_events=2) as events:
-            stream_id = get_stream("stream_name1", user_profile.realm).id
-            result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "stream_name2"})
-        self.assert_json_success(result)
-        event = events[0]["event"]
-        self.assertEqual(
-            event,
-            dict(
-                op="update",
-                type="stream",
-                property="name",
-                value="stream_name2",
-                stream_id=stream_id,
-                name="sTREAm_name1",
-            ),
-        )
-        notified_user_ids = set(events[0]["users"])
+        def get_notified_user_ids() -> set[int]:
+            # Two events should be sent: stream_name update and notification message.
+            with self.capture_send_event_calls(expected_num_events=2) as events:
+                stream_id = get_stream("stream_name1", user_profile.realm).id
+                result = self.client_patch(
+                    f"/json/streams/{stream_id}", {"new_name": "stream_name2"}
+                )
+            self.assert_json_success(result)
+            event = events[0]["event"]
+            self.assertEqual(
+                event,
+                dict(
+                    op="update",
+                    type="stream",
+                    property="name",
+                    value="stream_name2",
+                    stream_id=stream_id,
+                    name="sTREAm_name1",
+                ),
+            )
+            self.assertRaises(Stream.DoesNotExist, get_stream, "stream_name1", realm)
 
-        self.assertRaises(Stream.DoesNotExist, get_stream, "stream_name1", realm)
+            stream_name2_exists = get_stream("stream_name2", realm)
+            self.assertTrue(stream_name2_exists)
 
-        stream_name2_exists = get_stream("stream_name2", realm)
-        self.assertTrue(stream_name2_exists)
+            self.client_patch(f"/json/streams/{stream_id}", {"new_name": "stream_name1"})
+            return set(events[0]["users"])
 
-        self.assertEqual(notified_user_ids, set(active_non_guest_user_ids(realm.id)))
+        stream_name_1 = get_stream("stream_name1", user_profile.realm)
+        notified_user_ids = get_notified_user_ids()
+        self.assertEqual(notified_user_ids, set(public_stream_user_ids(stream_name_1)))
         self.assertIn(user_profile.id, notified_user_ids)
         self.assertIn(self.example_user("prospero").id, notified_user_ids)
         self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
 
+        # Guest with metadata access should be notified, but the
+        # can_add_subscribers_group setting has
+        # allow_everyone_group=False, so should not grant guests
+        # metadata access.
+        guest_group = check_add_user_group(
+            realm, "guest_group", [self.example_user("polonius")], acting_user=user_profile
+        )
+        do_change_stream_group_based_setting(
+            stream_name_1,
+            "can_add_subscribers_group",
+            guest_group,
+            acting_user=None,
+        )
+        notified_user_ids = get_notified_user_ids()
+        self.assertEqual(notified_user_ids, set(public_stream_user_ids(stream_name_1)))
+        self.assertIn(user_profile.id, notified_user_ids)
+        self.assertIn(self.example_user("prospero").id, notified_user_ids)
+        self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
+        do_change_stream_group_based_setting(
+            stream_name_1,
+            "can_add_subscribers_group",
+            nobody_group,
+            acting_user=None,
+        )
+
+        # Subscribed guest user should be notified.
+        self.subscribe(self.example_user("polonius"), stream_name_1.name)
+        notified_user_ids = get_notified_user_ids()
+        self.assertEqual(notified_user_ids, set(public_stream_user_ids(stream_name_1)))
+        self.assertIn(user_profile.id, notified_user_ids)
+        self.assertIn(self.example_user("prospero").id, notified_user_ids)
+        self.assertIn(self.example_user("polonius").id, notified_user_ids)
+
         # Test case to handle Unicode stream name change
         # *NOTE: Here encoding is needed when Unicode string is passed as an argument*
         with self.capture_send_event_calls(expected_num_events=2) as events:
-            stream_id = stream_name2_exists.id
+            stream_id = stream_name_1.id
             result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "नया नाम"})
         self.assert_json_success(result)
         # While querying, system can handle Unicode strings.
