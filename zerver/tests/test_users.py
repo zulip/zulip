@@ -1918,7 +1918,7 @@ class ActivateTest(ZulipTestCase):
         self.assert_json_success(result)
 
         user_messages = list(get_user_sent_messages(user))
-        self.assert_length(user_messages, 2) # We do not delete DMs in any case.
+        self.assert_length(user_messages, 2)  # We do not delete DMs in any case.
 
     def test_name_change_on_deactiation(self) -> None:
         admin = self.example_user("othello")
