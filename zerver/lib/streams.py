@@ -24,6 +24,7 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import AnonymousSettingGroupDict, APIStreamDict
 from zerver.lib.user_groups import (
+    get_recursive_group_members,
     get_recursive_group_members_union_for_groups,
     get_recursive_membership_groups,
     get_role_based_system_groups_dict,
@@ -795,7 +796,20 @@ def public_stream_user_ids(stream: Stream) -> set[int]:
     guest_subscriptions_ids = {
         sub["user_profile_id"] for sub in guest_subscriptions.values("user_profile_id")
     }
-    return set(active_non_guest_user_ids(stream.realm_id)) | guest_subscriptions_ids
+    can_add_subscribers_group_user_ids = set(
+        get_recursive_group_members(stream.can_add_subscribers_group_id)
+        .exclude(
+            # allow_everyone_group=False is false for can_add_subscribers_group,
+            # so guest users cannot exercise this permission.
+            role=UserProfile.ROLE_GUEST
+        )
+        .values_list("id", flat=True)
+    )
+    return (
+        set(active_non_guest_user_ids(stream.realm_id))
+        | guest_subscriptions_ids
+        | can_add_subscribers_group_user_ids
+    )
 
 
 def can_access_stream_metadata_user_ids(stream: Stream) -> set[int]:
