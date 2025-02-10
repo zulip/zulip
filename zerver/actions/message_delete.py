@@ -3,9 +3,10 @@ from collections.abc import Iterable
 from typing import TypedDict
 
 from zerver.lib import retention
-from zerver.lib.message import event_recipient_ids_for_action_on_messages
+from zerver.lib.message import classify_stream_messages, event_recipient_ids_for_action_on_messages
 from zerver.lib.retention import move_messages_to_archive
 from zerver.models import Message, Realm, Stream, UserProfile
+from zerver.models.recipients import Recipient
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -146,3 +147,32 @@ def do_delete_messages_by_sender(user: UserProfile) -> None:
     )
     if message_ids:
         move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)
+
+
+def delete_deactivated_user_messages(
+    realm: Realm, user_profile: UserProfile, message_delete_action: list[int]
+) -> None:
+    if Message.NO_DELETE_ACTION in message_delete_action:
+        return
+    user_stream_messages = list(
+        Message.objects.filter(
+            realm_id=user_profile.realm_id,
+            sender=user_profile,
+            recipient__type=Recipient.STREAM,
+        ).only("id", "recipient__type", "recipient__type_id")
+    )
+    private_stream_messages, public_stream_messages = classify_stream_messages(
+        realm, user_stream_messages
+    )
+    if Message.DELETE_PUBLIC_STREAM_MESSAGES in message_delete_action:
+        do_delete_messages(user_profile.realm, public_stream_messages, acting_user=user_profile)
+    if Message.DELETE_PRIVATE_STREAM_MESSAGES in message_delete_action:
+        do_delete_messages(user_profile.realm, private_stream_messages, acting_user=user_profile)
+    if Message.DELETE_ALL_MESSAGES in message_delete_action:
+        user_messages = list(
+            Message.objects.filter(
+                realm_id=user_profile.realm_id,
+                sender=user_profile,
+            ).only("id", "recipient__type", "recipient__type_id")
+        )
+        do_delete_messages(user_profile.realm, user_messages, acting_user=user_profile)

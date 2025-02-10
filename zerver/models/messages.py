@@ -181,6 +181,18 @@ class Message(AbstractMessage):
 
     DEFAULT_SELECT_RELATED = ["sender", "realm", "recipient", "sending_client"]
 
+    NO_DELETE_ACTION = 0
+    DELETE_PUBLIC_STREAM_MESSAGES = 1
+    DELETE_PRIVATE_STREAM_MESSAGES = 2
+    DELETE_ALL_MESSAGES = 3
+
+    DEACTIVATED_USER_MESSAGE_DELETE_ACTION = [
+        NO_DELETE_ACTION,
+        DELETE_PUBLIC_STREAM_MESSAGES,
+        DELETE_PRIVATE_STREAM_MESSAGES,
+        DELETE_ALL_MESSAGES,
+    ]
+
     # Name to be used for the empty topic with clients that have not
     # yet migrated to have the `empty_topic_name` client capability.
     EMPTY_TOPIC_FALLBACK_NAME = "general chat"
