@@ -24,6 +24,10 @@ format used by the Zulip server that they are interacting with.
 
 * [`POST /register`](/api/register-queue): Added
   `server_can_summarize_topics` to the response.
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Added `can_summarize_topics_group` realm setting which is
+  a [group-setting value](/api/group-setting-values) describing the set of
+  users with permission to use AI summarization.
 
 **Feature level 349**
 

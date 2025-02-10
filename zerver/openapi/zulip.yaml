@@ -4647,6 +4647,14 @@ paths:
                                               create and edit user groups.
 
                                             [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                                    can_summarize_topics_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the
+                                            set of users who are allowed to use AI summarization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 350).
                                     create_multiuse_invite_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -17662,6 +17670,14 @@ paths:
                               to be of type integer and did not accept anonymous user groups.
 
                               New in Zulip 8.0 (feature level 225).
+                      realm_can_summarize_topics_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the
+                              set of users who are allowed to use AI summarization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 350).
                       zulip_plan_is_not_limited:
                         type: boolean
                         description: |

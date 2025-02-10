@@ -873,6 +873,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_delete_own_message(self) -> bool:
         return self.has_permission("can_delete_own_message_group")
 
+    def can_summarize_topics(self) -> bool:
+        return self.has_permission("can_summarize_topics_group")
+
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
 

@@ -632,3 +632,10 @@ run_test("guests_can_access_all_other_users", () => {
     realm.realm_can_access_all_users_group = everyone.id;
     assert.ok(settings_data.guests_can_access_all_other_users());
 });
+
+run_test("user_can_summarize_topics", () => {
+    test_realm_group_settings(
+        "realm_can_summarize_topics_group",
+        settings_data.user_can_summarize_topics,
+    );
+});

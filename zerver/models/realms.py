@@ -293,6 +293,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # UserGroup whose members are allowed to summarize topics.
+    can_summarize_topics_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # UserGroup whose members are allowed to create invite link.
     create_multiuse_invite_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
@@ -790,6 +795,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
         ),
+        can_summarize_topics_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+        ),
         direct_message_initiator_group=GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
@@ -1203,6 +1215,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_move_messages_between_channels_group__named_user_group",
         "can_move_messages_between_topics_group",
         "can_move_messages_between_topics_group__named_user_group",
+        "can_summarize_topics_group",
+        "can_summarize_topics_group__named_user_group",
         "direct_message_initiator_group",
         "direct_message_initiator_group__named_user_group",
         "direct_message_permission_group",
