@@ -259,8 +259,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         # Add to this new HttpRequest logging data from the processing of
         # the original request; we will need these for logging.
         request_notes.log_data = old_request_notes.log_data
-        if request_notes.rate_limit is not None:
-            request_notes.rate_limit = old_request_notes.rate_limit
+        request_notes.ratelimits_applied += old_request_notes.ratelimits_applied
         if request_notes.requester_for_logs is not None:
             request_notes.requester_for_logs = old_request_notes.requester_for_logs
         request.user = old_request.user
