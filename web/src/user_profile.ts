@@ -1171,7 +1171,24 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         const user_id = Number($("#edit-user-form").attr("data-user-id"));
         function handle_confirm(): void {
             const url = "/json/users/" + encodeURIComponent(user_id);
-            dialog_widget.submit_api_request(channel.del, url, {});
+            const is_spammer = $("#is-user-spammer").is(":checked");
+            const message_delete_actions = settings_config.message_delete_action_values;
+
+            let message_delete_action;
+            if (
+                $("#message-delete-action").val() ===
+                message_delete_actions.delete_public_stream_messages.value
+            ) {
+                message_delete_action = message_delete_actions.delete_public_stream_messages.code;
+            } else if (
+                $("#message-delete-action").val() ===
+                message_delete_actions.delete_all_messages.value
+            ) {
+                message_delete_action = message_delete_actions.delete_all_messages.code;
+            } else {
+                message_delete_action = message_delete_actions.no_delete_action.code;
+            }
+            dialog_widget.submit_api_request(channel.del, url, {is_spammer, message_delete_action});
         }
         user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);
     });
