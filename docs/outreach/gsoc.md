@@ -118,6 +118,21 @@ Django, TypeScript/JavaScript, and CSS.
 
   Experts: Tim Abbott, Mateusz Mandera, Prakhar Pratyush
 
+- **Implement [channel
+  groups](https://github.com/zulip/zulip/issues/31972)** that simplify
+  administration of collections of related channels in
+  Zulip. Contributors interested in working on this should start with
+  studying Zulip's existing channel and group-based permissions
+  system, both UX and implementation, and doing some starter issues in
+  the settings area. **Skills required**: Ability to read and
+  understand a lot of code, as well web frontend work in
+  TypeScript/HTML/CSS, with a bit of Python server programming. We'll
+  be particularly interested in the ability to explain and reason
+  about complex logic and follow the existing UI patterns for group
+  settings and channel settings.
+
+  Experts: Sahil Batra, Shubham Padia
+
 - Add the core infrastructure for **topic-based permissions and settings**
   like [pinned topics](https://github.com/zulip/zulip/issues/19483)
   and [read-only topics](https://github.com/zulip/zulip/issues/26944),
@@ -174,11 +189,48 @@ Django, TypeScript/JavaScript, and CSS.
 
 [redesign-label]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3Aredesign
 
-- **Optimize performance and scalability**, either for the web frontend or
-  the server. Zulip is already one of the faster web apps out there,
-  but we have a number of ideas for how to make it substantially
-  faster yet. This is likely a particularly challenging project to do
-  well, since there are a lot of subtle interactions to
+- **Improve type safety of node tests**. Rework Zulip's [automated
+  node tests](../testing/testing-with-node.md) to use objects that
+  consistently have the correct type. Currently, many tests use fake
+  message, user, or channel objects with only a handful of fields
+  relevant to the test. We've been working towards
+  `web/tests/lib/example_*`. A good starter project would be to try to
+  convert a small test module that currently does not use the
+  `make_user` type functions to do so. The [main TypeScript migration
+  thread](https://chat.zulip.org/#narrow/channel/6-frontend/topic/typescript.20migration/with/2085240)
+  is useful background reading, and
+  [#frontend](https://chat.zulip.org/#narrow/channel/6-frontend)
+  channel is a good place to start new topics while working on this
+  project. **Skills required**: TypeScript fluency, and the discipline
+  to write easily reviewed pull requests that often will include a
+  series of changes to clean up an individual test while you're
+  working on it.
+
+  Experts: Afeefuddin, Lalit
+
+- **Replace hundreds of `dict[str, Any]` types with modern
+  dataclasses**. While functionally efficient, `dataclasses` are more
+  readable, safe against typos, and have nice support for optimizing
+  them further using `__slots__`. A lot of Zulip server code was
+  written before dataclasses existed, and while a lot has been
+  converted naturally as part of other projects, we'd like to a
+  focused push to replace the remaining ones. This project will
+  involve making dozens of small commits and PRs, each a clean
+  refactor converting a single type. Use [this
+  conversation](https://chat.zulip.org/#narrow/channel/3-backend/topic/migrating.20to.20dataclasses/near/2085283)
+  for discussion and coordination. **Skills required**. Solid
+  understanding of statically typed Python, and the discipline to
+  learn to write refactoring commits that are easy to integrate,
+  following our standard guidelines, because they convincingly don't
+  change any product behavior while improving type-safety.
+
+  Experts: Tim Abbott, Anders Kaseorg
+
+- **Optimize performance and scalability**, either for the web
+  frontend or the server. Zulip is already one of the faster web apps
+  out there, but we have a number of ideas for how to make it
+  substantially faster yet. This is likely a particularly challenging
+  project to do well, since there are a lot of subtle interactions to
   understand. 175 or 350 hours; difficult. **Skill recommended**:
   Strong debugging, communication, and code reading skills are most
   important here. JavaScript experience; some Python/Django
