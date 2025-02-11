@@ -133,9 +133,9 @@ def fill_remote_cache(cache: str) -> None:
             items_filler(items_for_remote_cache, obj)
             count += 1
             if count % batch_size == 0:
-                cache_set_many(items_for_remote_cache, timeout=3600 * 24)
+                cache_set_many(items_for_remote_cache, timeout=timeout)
                 items_for_remote_cache = {}
-        cache_set_many(items_for_remote_cache, timeout=3600 * 24 * 7)
+        cache_set_many(items_for_remote_cache, timeout=timeout)
     logging.info(
         "Successfully populated %s cache: %d items, %d DB queries, %d memcached sets, %.2f seconds",
         cache,
