@@ -181,7 +181,7 @@ export function get_list_info(
 
     if (
         stream_id === narrow_state.stream_id() &&
-        narrowed_topic &&
+        narrowed_topic !== undefined &&
         !contains_topic(topic_names, narrowed_topic)
     ) {
         topic_names.unshift(narrowed_topic);
