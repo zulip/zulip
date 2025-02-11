@@ -373,8 +373,6 @@ class StreamMessageEditRequest:
     is_topic_edited: bool
     is_stream_edited: bool
     is_message_moved: bool
-    topic_resolved: bool
-    topic_unresolved: bool
     content: str
     target_topic_name: str
     target_stream: "Stream"
@@ -389,3 +387,9 @@ class DirectMessageEditRequest:
     content: str
     orig_content: str
     is_content_edited: bool
+
+
+@dataclass
+class ResolveTopicRequest(StreamMessageEditRequest):
+    topic_resolved: bool
+    topic_unresolved: bool

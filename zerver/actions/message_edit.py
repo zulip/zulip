@@ -68,7 +68,12 @@ from zerver.lib.topic import (
     update_edit_history,
     update_messages_for_topic_edit,
 )
-from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
+from zerver.lib.types import (
+    DirectMessageEditRequest,
+    EditHistoryEvent,
+    ResolveTopicRequest,
+    StreamMessageEditRequest,
+)
 from zerver.lib.url_encoding import near_stream_message_url
 from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
@@ -164,28 +169,13 @@ def validate_user_can_edit_message(
 def maybe_send_resolve_topic_notifications(
     *,
     user_profile: UserProfile,
-    message_edit_request: StreamMessageEditRequest,
+    message_edit_request: ResolveTopicRequest,
     changed_messages: QuerySet[Message],
 ) -> tuple[int | None, bool]:
     """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
     # Note that topics will have already been stripped in check_update_message.
     topic_resolved = message_edit_request.topic_resolved
     topic_unresolved = message_edit_request.topic_unresolved
-    if not topic_resolved and not topic_unresolved:
-        # If there's some other weird topic that does not toggle the
-        # state of "topic starts with RESOLVED_TOPIC_PREFIX", we do
-        # nothing. Any other logic could result in cases where we send
-        # these notifications in a non-alternating fashion.
-        #
-        # Note that it is still possible for an individual topic to
-        # have multiple "This topic was marked as resolved"
-        # notifications in a row: one can send new messages to the
-        # pre-resolve topic and then resolve the topic created that
-        # way to get multiple in the resolved topic. And then an
-        # administrator can delete the messages in between. We consider this
-        # to be a fundamental risk of irresponsible message deletion,
-        # not a bug with the "resolve topics" feature.
-        return None, False
 
     stream = message_edit_request.orig_stream
     # Sometimes a user might accidentally resolve a topic, and then
@@ -532,7 +522,7 @@ def update_message_content(
 def do_update_message(
     user_profile: UserProfile,
     target_message: Message,
-    message_edit_request: StreamMessageEditRequest | DirectMessageEditRequest,
+    message_edit_request: StreamMessageEditRequest | DirectMessageEditRequest | ResolveTopicRequest,
     send_notification_to_old_thread: bool,
     send_notification_to_new_thread: bool,
     rendering_result: MessageRenderingResult | None,
@@ -586,6 +576,9 @@ def do_update_message(
 
         # mention_data is required if there's a content edit.
         assert mention_data is not None
+
+        # ResolveTopicRequest has no content edited.
+        assert not isinstance(message_edit_request, ResolveTopicRequest)
 
         if isinstance(message_edit_request, StreamMessageEditRequest):
             # We do not allow changing content and stream together,
@@ -645,6 +638,8 @@ def do_update_message(
     users_losing_access = UserProfile.objects.none()
     user_ids_gaining_usermessages: list[int] = []
     if message_edit_request.is_stream_edited:
+        assert isinstance(message_edit_request, StreamMessageEditRequest)
+
         new_stream = message_edit_request.target_stream
 
         edit_history_event["prev_stream"] = stream_being_edited.id
@@ -1069,11 +1064,8 @@ def do_update_message(
 
     resolved_topic_message_id = None
     resolved_topic_message_deleted = False
-    if (
-        message_edit_request.is_topic_edited
-        and not message_edit_request.is_content_edited
-        and not message_edit_request.is_stream_edited
-    ):
+
+    if isinstance(message_edit_request, ResolveTopicRequest):
         resolved_topic_message_id, resolved_topic_message_deleted = (
             maybe_send_resolve_topic_notifications(
                 user_profile=user_profile,
@@ -1082,7 +1074,7 @@ def do_update_message(
             )
         )
 
-    if message_edit_request.is_message_moved:
+    elif message_edit_request.is_message_moved:
         # Notify users that the topic was moved.
         old_thread_notification_string = None
         if send_notification_to_old_thread:
@@ -1107,11 +1099,7 @@ def do_update_message(
             # The stream changed -> eligible to notify.
             message_edit_request.is_stream_edited
             # The topic changed -> eligible to notify.
-            or (
-                message_edit_request.is_topic_edited
-                and not message_edit_request.topic_resolved
-                and not message_edit_request.topic_unresolved
-            )
+            or message_edit_request.is_topic_edited
         ):
             stream_for_new_topic = message_edit_request.target_stream
             assert stream_for_new_topic.recipient_id is not None
@@ -1261,7 +1249,7 @@ def build_message_edit_request(
     stream_id: int | None = None,
     topic_name: str | None = None,
     content: str | None = None,
-) -> StreamMessageEditRequest | DirectMessageEditRequest:
+) -> StreamMessageEditRequest | DirectMessageEditRequest | ResolveTopicRequest:
     is_content_edited = False
     new_content = message.content
     if content is not None:
@@ -1313,14 +1301,47 @@ def build_message_edit_request(
         )[0]
         is_stream_edited = True
 
+    # If there's some other weird topic that does not toggle the
+    # state of "topic starts with RESOLVED_TOPIC_PREFIX", we do
+    # nothing. Any other logic could result in cases where we send
+    # these notifications in a non-alternating fashion.
+    #
+    # Note that it is still possible for an individual topic to
+    # have multiple "This topic was marked as resolved"
+    # notifications in a row: one can send new messages to the
+    # pre-resolve topic and then resolve the topic created that
+    # way to get multiple in the resolved topic. And then an
+    # administrator can delete the messages in between. We consider this
+    # to be a fundamental risk of irresponsible message deletion,
+    # not a bug with the "resolve topics" feature.
+    if (
+        (topic_resolved or topic_unresolved)
+        and not is_content_edited
+        and not is_stream_edited
+        and propagate_mode == "change_all"
+    ):
+        return ResolveTopicRequest(
+            topic_resolved=topic_resolved,
+            topic_unresolved=topic_unresolved,
+            is_content_edited=is_content_edited,
+            content=new_content,
+            is_topic_edited=is_topic_edited,
+            target_topic_name=target_topic_name,
+            is_stream_edited=is_stream_edited,
+            orig_content=message.content,
+            orig_topic_name=old_topic_name,
+            orig_stream=orig_stream,
+            propagate_mode=propagate_mode,
+            target_stream=target_stream,
+            is_message_moved=True,
+        )
+
     return StreamMessageEditRequest(
         is_content_edited=is_content_edited,
         content=new_content,
         is_topic_edited=is_topic_edited,
         target_topic_name=target_topic_name,
         is_stream_edited=is_stream_edited,
-        topic_resolved=topic_resolved,
-        topic_unresolved=topic_unresolved,
         orig_content=message.content,
         orig_topic_name=old_topic_name,
         orig_stream=orig_stream,
@@ -1401,11 +1422,19 @@ def check_update_message(
                     _("The time limit for editing this message's topic has passed.")
                 )
 
+    if (
+        isinstance(message_edit_request, ResolveTopicRequest)
+        and not user_profile.can_resolve_topic()
+    ):
+        raise JsonableError(_("You don't have permission to resolve topics."))
+
     rendering_result = None
     links_for_embed: set[str] = set()
     prior_mention_user_ids: set[int] = set()
     mention_data: MentionData | None = None
     if message_edit_request.is_content_edited:
+        assert not isinstance(message_edit_request, ResolveTopicRequest)
+
         mention_backend = MentionBackend(user_profile.realm_id)
         mention_data = MentionData(
             mention_backend=mention_backend,

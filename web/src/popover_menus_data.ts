@@ -60,6 +60,7 @@ type TopicPopoverContext = {
     is_topic_empty: boolean;
     can_move_topic: boolean;
     can_rename_topic: boolean;
+    can_resolve_topic: boolean;
     is_realm_admin: boolean;
     topic_is_resolved: boolean;
     has_starred_messages: boolean;
@@ -251,6 +252,7 @@ export function get_topic_popover_content_context({
     const has_unread_messages = num_unread_for_topic(sub.stream_id, topic_name) > 0;
     const can_move_topic = settings_data.user_can_move_messages_between_streams();
     const can_rename_topic = settings_data.user_can_move_messages_to_another_topic();
+    const can_resolve_topic = settings_data.user_can_resolve_topic();
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
     const is_spectator = page_params.is_spectator;
@@ -266,6 +268,7 @@ export function get_topic_popover_content_context({
         is_topic_empty,
         can_move_topic,
         can_rename_topic,
+        can_resolve_topic,
         is_moderator: current_user.is_moderator,
         // Temporary, as we're using this to control whether we show the summarize popover.
         is_development_environment: page_params.development_environment,
