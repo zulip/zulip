@@ -60,30 +60,30 @@ framework; as you can see, it's very little code on top of our
 `cache_with_key` decorator:
 
 ```python
-def user_profile_cache_key_id(email: str, realm_id: int) -> str:
+def user_profile_by_email_realm_id_cache_key(email: str, realm_id: int) -> str:
     return f"user_profile:{hashlib.sha1(email.strip().encode()).hexdigest()}:{realm_id}"
 
-def user_profile_cache_key(email: str, realm: "Realm") -> str:
-    return user_profile_cache_key_id(email, realm.id)
+def user_profile_by_email_realm_cache_key(email: str, realm: "Realm") -> str:
+    return user_profile_by_email_realm_id_cache_key(email, realm.id)
 
-@cache_with_key(user_profile_cache_key, timeout=3600 * 24 * 7)
+@cache_with_key(user_profile_by_email_realm_cache_key, timeout=3600 * 24 * 7)
 def get_user(email: str, realm: Realm) -> UserProfile:
-    return UserProfile.objects.select_related("realm", "bot_owner").get(
-        email__iexact=email.strip(), realm=realm
-    )
+    # A small amount of complexity, of prefetching additional relationd objects,
+    # has been trimmed here
+    return UserProfile.objects.get(email__iexact=email.strip(), realm=realm)
 ```
 
 This decorator implements a pretty classic caching paradigm:
 
-- The `user_profile_cache_key` function defines a unique map from a
-  canonical form of its arguments to a string. These strings are
-  namespaced (the `user_profile:` part) so that they won't overlap
-  with other caches, and encode the arguments so that two uses of this
-  cache won't overlap. In this case, a hash of the email address and
-  realm ID are those canonicalized arguments. (The `make_safe_digest`
-  is important to ensure we don't send special characters to
-  memcached). And we have two versions, depending whether the caller
-  has access to a `Realm` or just a `realm_id`.
+- The `user_profile_by_email_realm_id_cache_key` function defines a
+  unique map from a canonical form of its arguments to a string. These
+  strings are namespaced (the `user_profile:` part) so that they won't
+  overlap with other caches, and encode the arguments so that two uses
+  of this cache won't overlap. In this case, a hash of the email
+  address and realm ID are those canonicalized arguments. (The
+  `make_safe_digest` is important to ensure we don't send special
+  characters to memcached). And we have two versions, depending
+  whether the caller has access to a `Realm` or just a `realm_id`.
 - When `get_user` is called, `cache_with_key` will compute the key,
   and do a Django `cache_get` query for the key (which goes to
   memcached). If the key is in the cache, it just returns the value.
