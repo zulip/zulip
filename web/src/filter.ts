@@ -21,12 +21,16 @@ import * as stream_data from "./stream_data.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
-type HandlebarsRuntime = {
-    SafeString: new (str: string) => {string: string};
+declare module "handlebars/runtime" {
+    export class SafeString {
+        constructor(str: string);
+        toString(): string;
+        string: string;
+    }
 }
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-const SafeString = (Handlebars as unknown as HandlebarsRuntime).SafeString;
+// Now we can use SafeString directly from Handlebars
+const {SafeString} = Handlebars;
 
 type IconData = {
     title: string;
