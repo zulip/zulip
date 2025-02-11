@@ -92,6 +92,7 @@ Django, TypeScript/JavaScript, and CSS.
   you feel you have the skills required to complete. Read the code and
   the feedback, and then create your own PR for the issue. See the [guide on
   continuing unfinished work][continuing-work] for details.
+  175 or 350 hours; difficulty will vary.
   **Skills required**: Varies with project; a common skill will be
   good reading comprehension and organization/communication skills, to
   walk maintainers through how you resolved problems, addressed any
@@ -109,7 +110,8 @@ Django, TypeScript/JavaScript, and CSS.
   structures](https://github.com/zulip/zulip/issues/25713)** to a new
   model that enables personal settings associated with a direct
   message conversation, and add several settings (see the linked
-  issues) enabled by that infrastructure work. **Skills required**:
+  issues) enabled by that infrastructure work. 175 or 350
+  hours; fairly difficult. **Skills required**:
   This project will be deep Python 3/PostgreSQL work. Concretely,
   challenging parts of this project include thinking about races and
   database transactions, writing database migrations intended to be
@@ -124,7 +126,8 @@ Django, TypeScript/JavaScript, and CSS.
   Zulip. Contributors interested in working on this should start with
   studying Zulip's existing channel and group-based permissions
   system, both UX and implementation, and doing some starter issues in
-  the settings area. **Skills required**: Ability to read and
+  the settings area. 175 or 350 hours; medium difficulty.
+  **Skills required**: Ability to read and
   understand a lot of code, as well web frontend work in
   TypeScript/HTML/CSS, with a bit of Python server programming. We'll
   be particularly interested in the ability to explain and reason
@@ -142,7 +145,7 @@ Django, TypeScript/JavaScript, and CSS.
   intended to be run live at scale, and complex logic to handle moving
   messages correctly in the context of these settings, including
   significant changes to the Zulip API and API documentation.
-
+  175 or 350 hours; fairly difficult.
   **Skills required**: A high level of fluency with writing readable
   Python 3 and thinking about corner cases.
 
@@ -201,7 +204,8 @@ Django, TypeScript/JavaScript, and CSS.
   is useful background reading, and
   [#frontend](https://chat.zulip.org/#narrow/channel/6-frontend)
   channel is a good place to start new topics while working on this
-  project. **Skills required**: TypeScript fluency, and the discipline
+  project. 175 or 350 hours; medium difficulty. **Skills required**:
+  TypeScript fluency, and the discipline
   to write easily reviewed pull requests that often will include a
   series of changes to clean up an individual test while you're
   working on it.
@@ -213,7 +217,7 @@ Django, TypeScript/JavaScript, and CSS.
   readable, safe against typos, and have nice support for optimizing
   them further using `__slots__`. A lot of Zulip server code was
   written before dataclasses existed, and while a lot has been
-  converted naturally as part of other projects, we'd like to a
+  converted naturally as part of other projects, we'd like to make a
   focused push to replace the remaining ones. This project will
   involve making dozens of small commits and PRs, each a clean
   refactor converting a single type. Use [this
