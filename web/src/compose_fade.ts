@@ -105,7 +105,7 @@ function fade_messages(): void {
     );
 }
 
-function do_update_all(): void {
+export function do_update_all(): void {
     if (compose_fade_helper.want_normal_display()) {
         if (!normal_display) {
             display_messages_normally();

@@ -1378,7 +1378,7 @@ export function to_compose_target(): void {
         // grey-out the message view instead of narrowing to an empty view.
         const terms = [{operator: "channel", operand: stream_id.toString()}];
         const topic = compose_state.topic();
-        if (topic !== "") {
+        if (topic !== "" || !realm.realm_mandatory_topics) {
             terms.push({operator: "topic", operand: topic});
         }
         show(terms, opts);

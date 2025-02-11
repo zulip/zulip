@@ -769,7 +769,7 @@ run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
     message_view.to_compose_target();
 });
 
-run_test("narrow_to_compose_target streams", ({override_rewire}) => {
+run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
     const args = {called: false};
     override_rewire(message_view, "show", (terms, opts) => {
         args.terms = terms;
@@ -803,19 +803,43 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
         {operator: "topic", operand: "four"},
     ]);
 
-    // Test with blank topic
+    // Test with blank topic, with realm_mandatory_topics
+    override(realm, "realm_mandatory_topics", true);
     compose_state.topic("");
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "channel", operand: rome_id.toString()}]);
 
-    // Test with no topic
+    // Test with blank topic, without realm_mandatory_topics
+    override(realm, "realm_mandatory_topics", false);
+    compose_state.topic("");
+    args.called = false;
+    message_view.to_compose_target();
+    assert.equal(args.called, true);
+    assert.deepEqual(args.terms, [
+        {operator: "channel", operand: rome_id.toString()},
+        {operator: "topic", operand: ""},
+    ]);
+
+    // Test with no topic, with realm mandatory topics
+    override(realm, "realm_mandatory_topics", true);
     compose_state.topic(undefined);
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "channel", operand: rome_id.toString()}]);
+
+    // Test with no topic, without realm mandatory topics
+    override(realm, "realm_mandatory_topics", false);
+    compose_state.topic(undefined);
+    args.called = false;
+    message_view.to_compose_target();
+    assert.equal(args.called, true);
+    assert.deepEqual(args.terms, [
+        {operator: "channel", operand: rome_id.toString()},
+        {operator: "topic", operand: ""},
+    ]);
 });
 
 run_test("narrow_to_compose_target direct messages", ({override, override_rewire}) => {

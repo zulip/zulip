@@ -823,6 +823,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         fake_compose_box.show_message_preview();
 
         override_rewire(compose_recipient, "update_compose_area_placeholder_text", noop);
+        override(compose_fade, "do_update_all", noop);
         override(narrow_state, "narrowed_by_reply", () => true);
         override(
             compose_notifications,
