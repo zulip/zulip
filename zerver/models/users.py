@@ -956,23 +956,23 @@ def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
     return base_get_user_queryset().get(id=user_profile_id)
 
 
+def base_get_user_narrow_queryset() -> QuerySet[UserProfile]:
+    return UserProfile.objects.select_related("realm").only(
+        "id",
+        "bot_type",
+        "is_active",
+        "presence_enabled",
+        "rate_limits",
+        "role",
+        "recipient_id",
+        "realm__string_id",
+        "realm__deactivated",
+    )
+
+
 @cache_with_key(user_profile_narrow_by_id_cache_key, timeout=3600 * 24 * 7)
 def get_user_profile_narrow_by_id(user_profile_id: int) -> UserProfile:
-    return (
-        UserProfile.objects.select_related("realm")
-        .only(
-            "id",
-            "bot_type",
-            "is_active",
-            "presence_enabled",
-            "rate_limits",
-            "role",
-            "recipient_id",
-            "realm__string_id",
-            "realm__deactivated",
-        )
-        .get(id=user_profile_id)
-    )
+    return base_get_user_narrow_queryset().get(id=user_profile_id)
 
 
 def get_user_profile_by_email(email: str) -> UserProfile:
