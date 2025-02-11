@@ -36,6 +36,7 @@ set_global("page_params", {});
 
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+const stream_settings_data = zrequire("stream_settings_data");
 const stream_settings_ui = zrequire("stream_settings_ui");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
@@ -188,8 +189,34 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         date_created: 1691057093,
         creator_id: null,
     };
+    const archived_channel = {
+        elem: "archived_channel",
+        subscribed: true,
+        name: "Archived channel",
+        stream_id: 109,
+        description: "testing",
+        subscribers: [1, 2],
+        stream_weekly_traffic: 6,
+        color: "red",
+        can_administer_channel_group: nobody_group.id,
+        can_remove_subscribers_group: admins_group.id,
+        can_add_subscribers_group: admins_group.id,
+        date_created: 1691057093,
+        creator_id: null,
+        is_archived: true,
+    };
 
-    const sub_row_data = [denmark, poland, pomona, cpp, zzyzx, abcd, utopia, jerry];
+    const sub_row_data = [
+        denmark,
+        poland,
+        pomona,
+        cpp,
+        zzyzx,
+        abcd,
+        utopia,
+        jerry,
+        archived_channel,
+    ];
 
     for (const sub of sub_row_data) {
         stream_data.create_sub_from_server_data(sub);
@@ -201,6 +228,13 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         populated_subs = data.subscriptions;
     });
 
+    // Store a random string to ensure the filter defaults to FILTERS.NON_ARCHIVED_CHANNELS.
+    // This also helps achieve code coverage for `stream_settings_data.ts`.
+    stream_settings_data.save_data_to_ls("RandomString");
+    assert.equal(
+        stream_settings_data.get_current_channel_visibility_filter(),
+        stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
+    );
     stream_settings_ui.render_left_panel_superset();
 
     const sub_stubs = [];
@@ -214,6 +248,11 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
     }
 
     $.create("#channels_overlay_container .stream-row", {children: sub_stubs});
+
+    const $no_streams_message = $(".no-streams-to-show");
+    const $child_element = $(".subscribed_streams_tab_empty_text");
+    $no_streams_message.children = () => $child_element;
+    $child_element.hide = () => [];
 
     let ui_called = false;
     scroll_util.reset_scrollbar = ($elem) => {
@@ -352,8 +391,21 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
     test_filter({input: "d", show_subscribed: true}, [poland]);
     assert.ok($(".stream-row-denmark").hasClass("active"));
 
+    $(".stream-row.active").attr("data-stream-id", 101);
     stream_settings_ui.switch_stream_tab("subscribed");
     assert.ok(!$(".stream-row-denmark").hasClass("active"));
     assert.ok(!$(".right .settings").visible());
     assert.ok($(".nothing-selected").visible());
+
+    stream_settings_data.save_data_to_ls(stream_settings_data.FILTERS.ALL_CHANNELS);
+
+    test_filter(
+        {
+            input: "",
+            show_subscribed: true,
+            show_not_subscribed: false,
+            sort_order: "by-stream-name",
+        },
+        [archived_channel, cpp, poland, pomona, zzyzx],
+    );
 });

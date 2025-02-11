@@ -616,6 +616,7 @@ type ConversationContext = {
           stream_url: string;
           invite_only: boolean;
           is_web_public: boolean;
+          is_archived: boolean;
           topic: string;
           topic_display_name: string;
           is_empty_string_topic: boolean;
@@ -655,6 +656,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const stream_url = hash_util.by_stream_url(stream_id);
         const invite_only = stream_info.invite_only;
         const is_web_public = stream_info.is_web_public;
+        const is_archived = stream_info.is_archived;
         // Topic info
         const topic = last_msg.topic;
         const topic_display_name = util.get_final_topic_display_name(topic);
@@ -684,6 +686,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
             stream_url,
             invite_only,
             is_web_public,
+            is_archived,
             topic,
             topic_display_name,
             is_empty_string_topic,

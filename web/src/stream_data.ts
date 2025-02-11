@@ -312,12 +312,13 @@ export function delete_sub(stream_id: number): void {
         return;
     }
     sub.is_archived = true;
-    stream_info.set_false(stream_id, sub);
 }
 
 export function get_non_default_stream_names(): {name: string; unique_id: number}[] {
     let subs = [...stream_info.values()];
-    subs = subs.filter((sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only);
+    subs = subs.filter(
+        (sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only && !sub.is_archived,
+    );
     const names = subs.map((sub) => ({
         name: sub.name,
         unique_id: sub.stream_id,
@@ -347,6 +348,10 @@ export function subscribed_streams(): string[] {
 
 export function subscribed_stream_ids(): number[] {
     return subscribed_subs().map((sub) => sub.stream_id);
+}
+
+export function get_archived_subs(): StreamSubscription[] {
+    return [...stream_info.values()].filter((sub) => sub.is_archived);
 }
 
 export function muted_stream_ids(): number[] {
@@ -478,7 +483,8 @@ export function is_new_stream_announcements_stream_muted(): boolean {
 }
 
 export function can_toggle_subscription(sub: StreamSubscription): boolean {
-    // You can always remove your subscription if you're subscribed.
+    // You can always remove your subscription if you're subscribed
+    // unless it is an archived channel.
     //
     // One can only join a stream if it is public (!invite_only) and
     // your role is Member or above (!is_guest).
@@ -487,15 +493,17 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
     // Note that the correctness of this logic relies on the fact that
     // one cannot be subscribed to a deactivated stream.
     return (
-        (sub.subscribed || (!current_user.is_guest && !(sub.invite_only || sub.is_archived))) &&
-        !page_params.is_spectator
+        (sub.subscribed || (!current_user.is_guest && !sub.invite_only)) &&
+        !page_params.is_spectator &&
+        !sub.is_archived
     );
 }
 
 export function can_access_stream_email(sub: StreamSubscription): boolean {
     return (
         (sub.subscribed || sub.is_web_public || (!current_user.is_guest && !sub.invite_only)) &&
-        !page_params.is_spectator
+        !page_params.is_spectator &&
+        !sub.is_archived
     );
 }
 
@@ -516,6 +524,10 @@ export function can_change_permissions(sub: StreamSubscription): boolean {
     // they are part of can_administer_channel_group. Non-subscribers with
     // these permission can edit name and description of a private channel
     // without being subscribed to it.
+
+    if (sub.is_archived) {
+        return false;
+    }
 
     if (sub.invite_only && !sub.subscribed) {
         return false;
@@ -548,7 +560,7 @@ export function can_view_subscribers(sub: StreamSubscription): boolean {
 }
 
 export function can_subscribe_others(sub: StreamSubscription): boolean {
-    if (sub.invite_only && !sub.subscribed) {
+    if (sub.is_archived || (sub.invite_only && !sub.subscribed)) {
         return false;
     }
 
@@ -591,6 +603,10 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
     // UI for removing subscribers generally is a list of the stream's
     // subscribers.
     if (!can_view_subscribers(sub)) {
+        return false;
+    }
+
+    if (sub.is_archived) {
         return false;
     }
 
