@@ -21,6 +21,13 @@ import * as stream_data from "./stream_data.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
+type HandlebarsRuntime = {
+    SafeString: new (str: string) => {string: string};
+}
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+const SafeString = (Handlebars as unknown as HandlebarsRuntime).SafeString;
+
 type IconData = {
     title: string;
     is_spectator: boolean;
@@ -237,15 +244,22 @@ function message_matches_search_term(message: Message, operator: string, operand
         }
 
         case "dm-including": {
-            const operand_user = people.get_by_email(operand);
-            if (operand_user === undefined) {
+            // Support multiple users in operand like dm operator
+            const operand_emails = Array.isArray(operand) 
+                ? operand 
+                : [operand];
+            
+            const operand_users = operand_emails.map((email: string) => people.get_by_email(email.toLowerCase()));
+            if (!operand_users.every((user) => user !== undefined)) {
                 return false;
             }
+            
             const user_ids = people.all_user_ids_in_pm(message);
             if (!user_ids) {
                 return false;
             }
-            return user_ids.includes(operand_user.user_id);
+            
+            return operand_users.every((user) => user_ids.includes(user.user_id));
         }
     }
 
@@ -258,7 +272,7 @@ export function create_user_pill_context(user: User): UserPillItem {
 
     return {
         id: user.user_id,
-        display_value: new Handlebars.SafeString(user.full_name),
+        display_value: new SafeString(user.full_name),
         has_image: true,
         img_src: avatar_url,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
@@ -472,7 +486,7 @@ export class Filter {
         // Match all operands that either have no spaces, or are surrounded by
         // quotes, preceded by an optional operator.
         // TODO: rewrite this using `str.matchAll` to get out the match objects
-        // with individual capture groups, so we don’t need to write a separate
+        // with individual capture groups, so we don't need to write a separate
         // parser with `.split`.
         const matches = str.match(/([^\s:]+:)?("[^"]+"?|\S+)/g);
         if (matches === null) {
