@@ -141,31 +141,6 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
     return pills;
 }
 
-function append_user_pill(
-    users: User[],
-    pill_widget: SearchPillWidget,
-    operator: string,
-    negated: boolean,
-): void {
-    const pill_data: SearchUserPill = {
-        type: "search_user",
-        operator,
-        negated,
-        users: users.map((user) => ({
-            full_name: user.full_name,
-            user_id: user.user_id,
-            email: user.email,
-            img_src: people.small_avatar_url_for_person(user),
-            status_emoji_info: user_status.get_status_emoji(user.user_id),
-            should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
-            deactivated: !people.is_person_active(user.user_id) && !user.is_inaccessible_user,
-        })),
-    };
-
-    pill_widget.appendValidatedData(pill_data);
-    pill_widget.clear_text();
-}
-
 const user_pill_operators = new Set(["dm", "dm-including", "sender"]);
 
 export function set_search_bar_contents(
@@ -252,4 +227,57 @@ export function get_current_search_pill_terms(pill_widget: SearchPillWidget): Na
         ...item,
         operand: get_search_operand(item, false),
     }));
+}
+
+function append_user_pill(
+    users: User[],
+    pill_widget: SearchPillWidget,
+    operator: string,
+    negated: boolean,
+): void {
+    // For dm-including operator, we want to allow multiple users like dm operator
+    if (operator === "dm-including" && pill_widget.items().some((item) => item.operator === "dm-including")) {
+        // If there's an existing dm-including pill, add the users to it
+        const existing_pill = pill_widget.items().find((item) => item.operator === "dm-including");
+        if (existing_pill && existing_pill.type === "search_user") {
+            // Add new users to the existing pill
+            const new_users = users.filter(
+                (user) => !existing_pill.users.some((u) => u.user_id === user.user_id),
+            );
+            if (new_users.length > 0) {
+                existing_pill.users.push(
+                    ...new_users.map((user) => ({
+                        full_name: user.full_name,
+                        user_id: user.user_id,
+                        email: user.email,
+                        img_src: people.small_avatar_url_for_person(user),
+                        status_emoji_info: user_status.get_status_emoji(user.user_id),
+                        should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
+                        deactivated: !people.is_person_active(user.user_id) && !user.is_inaccessible_user,
+                    })),
+                );
+                pill_widget.render();
+            }
+            pill_widget.clear_text();
+            return;
+        }
+    }
+
+    const pill_data: SearchUserPill = {
+        type: "search_user",
+        operator,
+        negated,
+        users: users.map((user) => ({
+            full_name: user.full_name,
+            user_id: user.user_id,
+            email: user.email,
+            img_src: people.small_avatar_url_for_person(user),
+            status_emoji_info: user_status.get_status_emoji(user.user_id),
+            should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
+            deactivated: !people.is_person_active(user.user_id) && !user.is_inaccessible_user,
+        })),
+    };
+
+    pill_widget.appendValidatedData(pill_data);
+    pill_widget.clear_text();
 }
