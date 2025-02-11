@@ -409,12 +409,12 @@ def single_user_display_recipient_cache_key(user_id: int) -> str:
     return f"single_user_display_recipient:{user_id}"
 
 
-def user_profile_cache_key_id(email: str, realm_id: int) -> str:
+def user_profile_by_email_realm_id_cache_key(email: str, realm_id: int) -> str:
     return f"user_profile:{hashlib.sha1(email.strip().encode()).hexdigest()}:{realm_id}"
 
 
-def user_profile_cache_key(email: str, realm: "Realm") -> str:
-    return user_profile_cache_key_id(email, realm.id)
+def user_profile_by_email_realm_cache_key(email: str, realm: "Realm") -> str:
+    return user_profile_by_email_realm_id_cache_key(email, realm.id)
 
 
 def user_profile_delivery_email_cache_key(delivery_email: str, realm_id: int) -> str:
@@ -518,7 +518,7 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm_id:
         keys.append(user_profile_by_id_cache_key(user_profile.id))
         keys.append(user_profile_narrow_by_id_cache_key(user_profile.id))
         keys.append(user_profile_by_api_key_cache_key(user_profile.api_key))
-        keys.append(user_profile_cache_key_id(user_profile.email, realm_id))
+        keys.append(user_profile_by_email_realm_id_cache_key(user_profile.email, realm_id))
         keys.append(user_profile_delivery_email_cache_key(user_profile.delivery_email, realm_id))
         if user_profile.is_bot and is_cross_realm_bot_email(user_profile.email):
             # Handle clearing system bots from their special cache.

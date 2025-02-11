@@ -23,8 +23,8 @@ from zerver.lib.cache import (
     realm_user_dict_fields,
     realm_user_dicts_cache_key,
     user_profile_by_api_key_cache_key,
+    user_profile_by_email_realm_cache_key,
     user_profile_by_id_cache_key,
-    user_profile_cache_key,
     user_profile_narrow_by_id_cache_key,
 )
 from zerver.lib.types import ProfileData, RawUserDict
@@ -1038,7 +1038,7 @@ def get_users_by_delivery_email(emails: set[str], realm: "Realm") -> QuerySet[Us
     return UserProfile.objects.filter(realm=realm).filter(email_filter)
 
 
-@cache_with_key(user_profile_cache_key, timeout=3600 * 24 * 7)
+@cache_with_key(user_profile_by_email_realm_cache_key, timeout=3600 * 24 * 7)
 def get_user(email: str, realm: "Realm") -> UserProfile:
     """Fetches the user by its visible-to-other users username (in the
     `email` field).  For use in API contexts; do not use in
