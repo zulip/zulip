@@ -501,11 +501,6 @@ def get_api_key(user_profile: UserProfile) -> str:
     return user_profile.api_key
 
 
-def get_all_api_keys(user_profile: UserProfile) -> list[str]:
-    # Users can only have one API key for now
-    return [user_profile.api_key]
-
-
 def validate_user_custom_profile_field(
     realm_id: int, field: CustomProfileField, value: ProfileDataElementValue
 ) -> ProfileDataElementValue:
