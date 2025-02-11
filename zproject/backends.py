@@ -1556,7 +1556,7 @@ def sync_user_profile_custom_fields(
                 "value": value,
             }
         )
-    do_update_user_custom_profile_data_if_changed(user_profile, profile_data)
+    do_update_user_custom_profile_data_if_changed(user_profile, profile_data, acting_user=user_profile)
 
 
 @external_auth_method

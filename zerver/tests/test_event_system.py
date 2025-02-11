@@ -1246,7 +1246,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_user=4,
             realm_user_groups=3,
             realm_user_settings_defaults=1,
-            recent_private_conversations=1,
+            recent_private_conversations=2,
             saved_snippets=1,
             scheduled_messages=1,
             starred_messages=1,

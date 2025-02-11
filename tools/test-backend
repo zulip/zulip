@@ -62,7 +62,7 @@ not_yet_fully_covered = [
     "corporate/lib/activity.py",
     "corporate/lib/remote_billing_util.py",
     # Major lib files should have 100% coverage
-    "zerver/lib/addressee.py",
+    "zerver/actions/addressee.py",
     "zerver/lib/markdown/__init__.py",
     "zerver/lib/cache.py",
     "zerver/lib/cache_helpers.py",
@@ -101,6 +101,7 @@ not_yet_fully_covered = [
     "zerver/lib/templates.py",
     # Low priority for coverage
     "zerver/lib/ccache.py",
+    "zerver/lib/emoji.py",
     "zerver/lib/generate_test_data.py",
     "zerver/lib/server_initialization.py",
     "zerver/lib/test_fixtures.py",
