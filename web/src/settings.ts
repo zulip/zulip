@@ -121,7 +121,6 @@ export function build_page(): void {
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         disabled_notification_settings:
             settings_config.all_notifications(user_settings).disabled_notification_settings,
-        information_section_checkbox_group: settings_config.information_section_checkbox_group,
         information_density_settings: settings_config.get_information_density_preferences(),
         settings_render_only: settings_config.get_settings_render_only(),
         user_can_change_name: settings_data.user_can_change_name(),

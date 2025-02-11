@@ -63,14 +63,33 @@
         </select>
     </div>
 
-    {{#each information_section_checkbox_group.settings.user_preferences}}
-        {{> settings_checkbox
-          setting_name=this
-          is_checked=(lookup ../settings_object this)
-          label=(lookup ../settings_label this)
-          render_only=(lookup ../settings_render_only.render_only this)
-          prefix=../prefix}}
-    {{/each}}
+    {{> settings_checkbox
+      setting_name="starred_message_counts"
+      is_checked=settings_object.starred_message_counts
+      label=settings_label.starred_message_counts
+      render_only=settings_render_only.starred_message_counts
+      prefix=prefix}}
+
+    {{> settings_checkbox
+      setting_name="receives_typing_notifications"
+      is_checked=settings_object.receives_typing_notifications
+      label=settings_label.receives_typing_notifications
+      render_only=settings_render_only.receives_typing_notifications
+      prefix=prefix}}
+
+    {{> settings_checkbox
+      setting_name="hide_ai_features"
+      is_checked=settings_object.hide_ai_features
+      label=settings_label.hide_ai_features
+      render_only=settings_render_only.hide_ai_features
+      prefix=prefix}}
+
+    {{> settings_checkbox
+      setting_name="fluid_layout_width"
+      is_checked=settings_object.fluid_layout_width
+      label=settings_label.fluid_layout_width
+      render_only=settings_render_only.fluid_layout_width
+      prefix=prefix}}
 
     <div class="input-group">
         <label for="{{prefix}}demote_inactive_streams" class="settings-field-label">{{t "Demote inactive channels" }}
