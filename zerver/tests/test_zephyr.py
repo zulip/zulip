@@ -5,7 +5,6 @@ from unittest.mock import patch
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.users import get_api_key
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 
@@ -33,7 +32,7 @@ class ZephyrTest(ZulipTestCase):
         email = str(self.mit_email("starnine"))
         realm = get_realm("zephyr")
         user = get_user(email, realm)
-        api_key = get_api_key(user)
+        api_key = user.api_key
         self.login_user(user)
 
         def ccache_mock(**kwargs: Any) -> Any:

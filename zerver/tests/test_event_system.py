@@ -27,7 +27,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     stub_event_queue_user_events,
 )
-from zerver.lib.users import get_api_key, get_users_for_api
+from zerver.lib.users import get_users_for_api
 from zerver.models import CustomProfileField, UserMessage, UserPresence, UserProfile
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm, get_realm_with_settings
@@ -627,7 +627,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assert_length(result["realm_bots"], 0)
 
         # additionally the API key for a random bot is not present in the data
-        api_key = get_api_key(self.notification_bot(user_profile.realm))
+        api_key = self.notification_bot(user_profile.realm).api_key
         self.assertNotIn(api_key, str(result))
 
     # Admin users have access to all bots in the realm_bots field

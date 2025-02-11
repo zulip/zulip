@@ -50,7 +50,6 @@ from zerver.lib.response import json_response, json_success
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, dummy_handler, queries_captured
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.users import get_api_key
 from zerver.lib.utils import generate_api_key, has_api_key_format
 from zerver.middleware import LogRequests, parse_client
 from zerver.models import Client, Realm, UserProfile
@@ -154,7 +153,7 @@ class DecoratorTestCase(ZulipTestCase):
         webhook_bot_email = "webhook-bot@zulip.com"
         webhook_bot_realm = get_realm("zulip")
         webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
-        webhook_bot_api_key = get_api_key(webhook_bot)
+        webhook_bot_api_key = webhook_bot.api_key
 
         request = HostRequestMock()
         request.POST["api_key"] = "X" * 32
@@ -339,7 +338,7 @@ class SkipRateLimitingTest(ZulipTestCase):
 
         request = HostRequestMock(host="zulip.testserver")
         request.method = "POST"
-        request.POST["api_key"] = get_api_key(self.example_user("hamlet"))
+        request.POST["api_key"] = self.example_user("hamlet").api_key
         with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
             result = my_unlimited_view(request)
 
@@ -348,7 +347,7 @@ class SkipRateLimitingTest(ZulipTestCase):
 
         request = HostRequestMock(host="zulip.testserver")
         request.method = "POST"
-        request.POST["api_key"] = get_api_key(self.example_user("hamlet"))
+        request.POST["api_key"] = self.example_user("hamlet").api_key
         with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
             result = my_rate_limited_view(request)
 
@@ -462,7 +461,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
 
     def test_authenticated_rest_api_view_errors(self) -> None:
         user_profile = self.example_user("hamlet")
-        api_key = get_api_key(user_profile)
+        api_key = user_profile.api_key
         credentials = f"{user_profile.email}:{api_key}"
         api_auth = "Digest " + base64.b64encode(credentials.encode()).decode()
         result = self.client_post("/api/v1/external/zendesk", {}, HTTP_AUTHORIZATION=api_auth)
@@ -676,7 +675,7 @@ class DeactivatedRealmTest(ZulipTestCase):
             email_owners=False,
         )
         user_profile = self.example_user("hamlet")
-        api_key = get_api_key(user_profile)
+        api_key = user_profile.api_key
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
         data = self.webhook_fixture_data("jira", "created_v2")
         result = self.client_post(url, data, content_type="application/json")
@@ -878,7 +877,7 @@ class InactiveUserTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         do_deactivate_user(user_profile, acting_user=None)
 
-        api_key = get_api_key(user_profile)
+        api_key = user_profile.api_key
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
         data = self.webhook_fixture_data("jira", "created_v2")
         result = self.client_post(url, data, content_type="application/json")
@@ -937,19 +936,19 @@ class TestValidateApiKey(ZulipTestCase):
             # We use default_bot's key but webhook_bot's email address to test
             # the logic when an API key is passed and it doesn't belong to the
             # user whose email address has been provided.
-            api_key = get_api_key(self.default_bot)
+            api_key = self.default_bot.api_key
             validate_api_key(HostRequestMock(), self.webhook_bot.email, api_key)
 
     def test_validate_api_key_if_profile_is_not_active(self) -> None:
         change_user_is_active(self.default_bot, False)
         with self.assertRaises(JsonableError):
-            api_key = get_api_key(self.default_bot)
+            api_key = self.default_bot.api_key
             validate_api_key(HostRequestMock(), self.default_bot.email, api_key)
         change_user_is_active(self.default_bot, True)
 
     def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_unset(self) -> None:
         with self.assertRaises(JsonableError), self.assertLogs(level="WARNING") as root_warn_log:
-            api_key = get_api_key(self.webhook_bot)
+            api_key = self.webhook_bot.api_key
             validate_api_key(HostRequestMock(), self.webhook_bot.email, api_key)
         self.assertEqual(
             root_warn_log.output,
@@ -959,7 +958,7 @@ class TestValidateApiKey(ZulipTestCase):
         )
 
     def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_set(self) -> None:
-        api_key = get_api_key(self.webhook_bot)
+        api_key = self.webhook_bot.api_key
         profile = validate_api_key(
             HostRequestMock(host="zulip.testserver"),
             self.webhook_bot.email,
@@ -969,7 +968,7 @@ class TestValidateApiKey(ZulipTestCase):
         self.assertEqual(profile.id, self.webhook_bot.id)
 
     def test_validate_api_key_if_email_is_case_insensitive(self) -> None:
-        api_key = get_api_key(self.default_bot)
+        api_key = self.default_bot.api_key
         profile = validate_api_key(
             HostRequestMock(host="zulip.testserver"), self.default_bot.email.upper(), api_key
         )
@@ -977,7 +976,7 @@ class TestValidateApiKey(ZulipTestCase):
 
     def test_valid_api_key_if_user_is_on_wrong_subdomain(self) -> None:
         with self.settings(RUNNING_INSIDE_TORNADO=False):
-            api_key = get_api_key(self.default_bot)
+            api_key = self.default_bot.api_key
             with (
                 self.assertLogs(level="WARNING") as m,
                 self.assertRaisesRegex(

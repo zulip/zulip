@@ -79,7 +79,6 @@ from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
 from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.lib.user_groups import get_system_user_group_for_user
-from zerver.lib.users import get_api_key
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_fixture_http_headers,
@@ -956,7 +955,7 @@ Output:
         # TODO: use encode_user where possible
         assert "@" in email
         user = get_user_by_delivery_email(email, get_realm(realm))
-        api_key = get_api_key(user)
+        api_key = user.api_key
 
         return self.encode_credentials(email, api_key)
 
@@ -2437,7 +2436,7 @@ one or more new messages.
     def build_webhook_url(self, *args: str, **kwargs: str) -> str:
         url = self.URL_TEMPLATE
         if url.find("api_key") >= 0:
-            api_key = get_api_key(self.test_user)
+            api_key = self.test_user.api_key
             url = self.URL_TEMPLATE.format(api_key=api_key, stream=self.CHANNEL_NAME)
         else:
             url = self.URL_TEMPLATE.format(stream=self.CHANNEL_NAME)
