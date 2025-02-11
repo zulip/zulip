@@ -83,7 +83,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.types import Validator
 from zerver.lib.user_groups import is_user_in_group
-from zerver.lib.users import get_api_key, get_users_for_api
+from zerver.lib.users import get_users_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
@@ -7656,7 +7656,7 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
         self.email = self.example_email("hamlet")
         self.realm = get_realm("zulip")
         self.user_profile = get_user_by_delivery_email(self.email, self.realm)
-        self.api_key = get_api_key(self.user_profile)
+        self.api_key = self.user_profile.api_key
         self.raw_user_data = get_users_for_api(
             self.user_profile.realm,
             self.user_profile,

@@ -20,7 +20,6 @@ from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import upload_message_attachment
-from zerver.lib.users import get_api_key
 from zerver.models import Client, Message, NamedUserGroup, UserPresence
 from zerver.models.realms import get_realm
 from zerver.models.users import UserProfile, get_user
@@ -377,7 +376,7 @@ def deactivate_own_user() -> dict[str, object]:
     )
     realm = get_realm("zulip")
     test_user = get_user(test_user_email, realm)
-    test_user_api_key = get_api_key(test_user)
+    test_user_api_key = test_user.api_key
     # change authentication line to allow test_client to delete itself.
     AUTHENTICATION_LINE[0] = f"{deactivate_test_user.email}:{test_user_api_key}"
     return {}

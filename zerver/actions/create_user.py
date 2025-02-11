@@ -42,7 +42,6 @@ from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
     can_access_delivery_email,
     format_user_row,
-    get_api_key,
     get_data_for_inaccessible_user,
     get_user_ids_who_can_access_user,
     user_access_restricted_in_realm,
@@ -478,7 +477,7 @@ def created_bot_event(user_profile: UserProfile) -> dict[str, Any]:
         full_name=user_profile.full_name,
         bot_type=user_profile.bot_type,
         is_active=user_profile.is_active,
-        api_key=get_api_key(user_profile),
+        api_key=user_profile.api_key,
         default_sending_stream=default_sending_stream_name,
         default_events_register_stream=default_events_register_stream_name,
         default_all_public_streams=user_profile.default_all_public_streams,

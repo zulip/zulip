@@ -48,7 +48,6 @@ from zerver.lib.upload import sanitize_name, upload_message_attachment
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
-from zerver.lib.users import get_api_key
 from zerver.models import Attachment, Message, Realm, RealmDomain, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_by_delivery_email
@@ -110,7 +109,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get(url, {"api_key": "invalid"})
         self.assertEqual(response.status_code, 401)
 
-        response = self.client_get(url, {"api_key": get_api_key(user_profile)})
+        response = self.client_get(url, {"api_key": user_profile.api_key})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.getvalue(), b"zulip!")
 

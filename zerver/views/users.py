@@ -79,7 +79,6 @@ from zerver.lib.users import (
     check_valid_bot_config,
     check_valid_bot_type,
     check_valid_interface_type,
-    get_api_key,
     get_users_for_api,
     max_message_id_for_user,
     validate_user_custom_profile_data,
@@ -678,7 +677,7 @@ def add_bot_backend(
 
     notify_created_bot(bot_profile)
 
-    api_key = get_api_key(bot_profile)
+    api_key = bot_profile.api_key
 
     json_result = dict(
         user_id=bot_profile.id,
@@ -706,7 +705,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
         # Bots are supposed to have only one API key, at least for now.
         # Therefore we can safely assume that one and only valid API key will be
         # the first one.
-        api_key = get_api_key(bot_profile)
+        api_key = bot_profile.api_key
 
         return dict(
             username=bot_profile.email,

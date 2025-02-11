@@ -67,7 +67,7 @@ from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.users import get_api_key, get_users_for_api, is_2fa_verified
+from zerver.lib.users import get_users_for_api, is_2fa_verified
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.validator import validate_login_email
 from zerver.models import (
@@ -463,7 +463,7 @@ def finish_desktop_flow(
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
     # For the mobile OAuth flow, we send the API key and other
     # necessary details in a redirect to a zulip:// URL scheme.
-    api_key = get_api_key(user_profile)
+    api_key = user_profile.api_key
     response = create_response_for_otp_flow(
         api_key, otp, user_profile, encrypted_key_field_name="otp_encrypted_api_key"
     )
@@ -1028,7 +1028,7 @@ def process_api_key_fetch_authenticate_result(
     process_client(request, user_profile)
     RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
 
-    api_key = get_api_key(user_profile)
+    api_key = user_profile.api_key
     return api_key
 
 
@@ -1204,7 +1204,7 @@ def json_fetch_api_key(
     ):
         raise JsonableError(_("Password is incorrect."))
 
-    api_key = get_api_key(user_profile)
+    api_key = user_profile.api_key
     return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 

@@ -497,10 +497,6 @@ def get_accounts_for_email(email: str) -> list[Account]:
     ]
 
 
-def get_api_key(user_profile: UserProfile) -> str:
-    return user_profile.api_key
-
-
 def validate_user_custom_profile_field(
     realm_id: int, field: CustomProfileField, value: ProfileDataElementValue
 ) -> ProfileDataElementValue:
