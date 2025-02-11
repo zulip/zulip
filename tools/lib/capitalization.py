@@ -16,6 +16,7 @@ IGNORED_PHRASES = [
     r"APNS",
     r"Botserver",
     r"Cookie Bot",
+    r"Deleted user",
     r"DevAuthBackend",
     r"DSN",
     r"Esc",

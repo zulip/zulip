@@ -296,6 +296,21 @@
     }
 }
 
+.spammer-field {
+    margin-top: 10px;
+
+    .delete-message-handling {
+        .mssage-delete-action {
+            margin-left: 5px;
+        }
+    }
+
+    .spammer-message-action-dropdown {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
 .email_field {
     margin-top: 10px;
 

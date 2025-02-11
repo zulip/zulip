@@ -13076,6 +13076,30 @@ paths:
         given their user ID.
       parameters:
         - $ref: "#/components/parameters/UserId"
+        - name: is_spammer
+          in: query
+          description: |
+            Whether or not the user should be marked as a spammer.
+            **Changes**: New in Zulip 10.0 (feature level 333).
+          content:
+            application/json:
+              schema:
+                type: boolean
+              example: true
+          required: false
+        - name: message_delete_action
+          in: query
+          description: |
+            The policy for deleting the user messages after deactivation:
+
+            - No delete action: 0
+            - Delete messages in public stream: 1
+            - Delete all messages: 2
+              **Changes**: New in Zulip 10.0 (feature level 333).
+          schema:
+            type: integer
+          example: 0
+          required: false
       requestBody:
         required: false
         content:
