@@ -23,7 +23,6 @@ from zerver.lib.cache import (
 )
 from zerver.lib.safe_session_cached_db import SessionStore
 from zerver.lib.sessions import session_engine
-from zerver.lib.users import get_all_api_keys
 from zerver.models import Client, UserProfile
 from zerver.models.clients import get_client_cache_key
 from zerver.models.users import base_get_user_queryset
@@ -36,8 +35,9 @@ def get_users() -> QuerySet[UserProfile]:
 def user_cache_items(
     items_for_remote_cache: dict[str, tuple[UserProfile]], user_profile: UserProfile
 ) -> None:
-    for api_key in get_all_api_keys(user_profile):
-        items_for_remote_cache[user_profile_by_api_key_cache_key(api_key)] = (user_profile,)
+    items_for_remote_cache[user_profile_by_api_key_cache_key(user_profile.api_key)] = (
+        user_profile,
+    )
     items_for_remote_cache[user_profile_cache_key_id(user_profile.email, user_profile.realm_id)] = (
         user_profile,
     )
