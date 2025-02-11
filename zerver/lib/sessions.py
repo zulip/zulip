@@ -16,7 +16,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.request import RequestNotes
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.models import Realm, UserProfile
-from zerver.models.users import get_user_profile_by_id, get_user_profile_narrow_by_id
+from zerver.models.users import get_user_profile_narrow_by_id
 
 
 class SessionEngine(Protocol):
@@ -71,7 +71,7 @@ def delete_all_deactivated_user_sessions() -> None:
         user_profile_id = get_session_user_id(session)
         if user_profile_id is None:  # nocoverage  # TODO: Investigate why we lost coverage on this
             continue
-        user_profile = get_user_profile_by_id(user_profile_id)
+        user_profile = get_user_profile_narrow_by_id(user_profile_id)
         if not user_profile.is_active or user_profile.realm.deactivated:
             logging.info("Deactivating session for deactivated user %s", user_profile.id)
             delete_session(session)
