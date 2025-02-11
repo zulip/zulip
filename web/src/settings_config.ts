@@ -188,17 +188,6 @@ export type DisplaySettings = {
 };
 
 /* istanbul ignore next */
-export const information_section_checkbox_group: DisplaySettings = {
-    settings: {
-        user_preferences: [
-            "starred_message_counts",
-            "receives_typing_notifications",
-            "fluid_layout_width",
-        ],
-    },
-};
-
-/* istanbul ignore next */
 export const get_information_density_preferences = (): DisplaySettings => ({
     render_group: page_params.development_environment,
     settings: {
@@ -208,6 +197,7 @@ export const get_information_density_preferences = (): DisplaySettings => ({
 
 type SettingsRenderOnly = {
     dense_mode: boolean;
+    hide_ai_features: boolean;
     high_contrast_mode: boolean;
     web_font_size_px: boolean;
     web_line_height_percent: boolean;
@@ -216,6 +206,9 @@ type SettingsRenderOnly = {
 /* istanbul ignore next */
 export const get_settings_render_only = (): SettingsRenderOnly => ({
     dense_mode: page_params.development_environment,
+    // Offer the UI for hiding AI features exactly when the server
+    // supports doing so.
+    hide_ai_features: realm.server_can_summarize_topics,
     high_contrast_mode: page_params.development_environment,
     web_font_size_px: page_params.development_environment,
     web_line_height_percent: page_params.development_environment,
@@ -576,6 +569,7 @@ export const preferences_settings_labels = {
         }),
     ),
     fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
+    hide_ai_features: $t({defaultMessage: "Hide AI features"}),
     high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
     enter_sends: new Handlebars.SafeString(
         $t_html({defaultMessage: "<kbd>Enter</kbd> sends when composing a message"}),

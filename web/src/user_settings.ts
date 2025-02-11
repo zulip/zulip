@@ -56,6 +56,7 @@ export const user_settings_schema = stream_notification_settings_schema
         enable_online_push_notifications: z.boolean(),
         enter_sends: z.boolean(),
         fluid_layout_width: z.boolean(),
+        hide_ai_features: z.boolean(),
         high_contrast_mode: z.boolean(),
         left_side_userlist: z.boolean(),
         message_content_in_email_notifications: z.boolean(),

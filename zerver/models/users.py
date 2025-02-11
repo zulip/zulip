@@ -296,6 +296,9 @@ class UserBaseSettings(models.Model):
 
     EMAIL_ADDRESS_VISIBILITY_TYPES = list(EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.keys())
 
+    # Whether user wants to see AI features in the UI.
+    hide_ai_features = models.BooleanField(default=False)
+
     display_settings_legacy = dict(
         # Don't add anything new to this legacy dict.
         # Instead, see `modern_settings` below.
@@ -359,6 +362,7 @@ class UserBaseSettings(models.Model):
         web_line_height_percent=int,
         web_navigate_to_sent_message=bool,
         web_suggest_update_timezone=bool,
+        hide_ai_features=bool,
     )
 
     modern_notification_settings = dict(
