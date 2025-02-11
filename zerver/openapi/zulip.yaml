@@ -455,7 +455,7 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When a user changes their time zone setting.
+                                        When a user changes their [profile time zone](/help/change-your-timezone).
                                       properties:
                                         user_id:
                                           type: integer
@@ -472,7 +472,7 @@ paths:
                                         timezone:
                                           type: string
                                           description: |
-                                            The new time zone of the user.
+                                            The IANA identifier of the new profile time zone for the user.
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -9657,7 +9657,8 @@ paths:
                       timezone:
                         type: string
                         description: |
-                          The time zone of the requesting user.
+                          The IANA identifier of the requesting user's [profile time zone](/help/change-your-timezone),
+                          which is used primarily to display the user's local time to other users.
 
                           **Changes**: New in Zulip 3.0 (feature level 10).
                         example: ""
@@ -15809,7 +15810,8 @@ paths:
                           timezone:
                             type: string
                             description: |
-                              The IANA identifier of the user's [configured time zone](/help/change-your-timezone).
+                              The IANA identifier of the user's [profile time zone](/help/change-your-timezone),
+                              which is used primarily to display the user's local time to other users.
                           enter_sends:
                             type: boolean
                             description: |
@@ -16721,8 +16723,8 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
-                          The time zone configured for the user. This is used primarily to display
-                          the user's time zone to other users.
+                          The user's [profile time zone](/help/change-your-timezone), which is
+                          used primarily to display the user's local time to other users.
 
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
@@ -19721,7 +19723,8 @@ paths:
                     **Changes**: New in Zulip 10.0 (feature level 350).
                 timezone:
                   description: |
-                    The IANA identifier of the user's [configured time zone](/help/change-your-timezone).
+                    The IANA identifier of the user's [profile time zone](/help/change-your-timezone),
+                    which is used primarily to display the user's local time to other users.
 
                     **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
                     the `PATCH /settings/display` endpoint.
@@ -24760,7 +24763,8 @@ components:
         timezone:
           type: string
           description: |
-            The time zone of the user.
+            The IANA identifier of the user's [profile time zone](/help/change-your-timezone),
+            which is used primarily to display the user's local time to other users.
         avatar_url:
           type: string
           nullable: true
