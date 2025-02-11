@@ -550,7 +550,9 @@ def human_users_only(
         request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
     ) -> HttpResponse:
         assert request.user.is_authenticated
-        if request.user.is_bot:
+        # Check bot_type here, rather than is_bot, because  the
+        # narrow user cache only has that (nullable) type
+        if request.user.bot_type is not None:
             raise JsonableError(_("This endpoint does not accept bot requests."))
         return view_func(request, *args, **kwargs)
 
@@ -681,7 +683,9 @@ def require_member_or_admin(
     ) -> HttpResponse:
         if user_profile.is_guest:
             raise JsonableError(_("Not allowed for guest users"))
-        if user_profile.is_bot:
+        # Check bot_type here, rather than is_bot, because  the
+        # narrow user cache only has that (nullable) type
+        if user_profile.bot_type is not None:
             raise JsonableError(_("This endpoint does not accept bot requests."))
         return view_func(request, user_profile, *args, **kwargs)
 

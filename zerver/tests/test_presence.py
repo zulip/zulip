@@ -679,6 +679,31 @@ class UserPresenceTests(ZulipTestCase):
         result_dict = self.assert_json_success(result)
         self.assertEqual(set(result_dict["presences"].keys()), {othello.email})
 
+    def test_query_counts(self) -> None:
+        self.login("hamlet")
+        with self.assert_database_query_count(6):
+            # 1. session
+            # 2. narrow user cache
+            # 3. client
+            # 4. lock the userpresence row
+            # 5. update the userpresence row
+            # 6. select other userpresence data
+            self.assert_json_success(
+                self.client_post("/json/users/me/presence", {"status": "active"})
+            )
+
+        with self.assert_database_query_count(3, keep_cache_warm=True):
+            # With a warm cache, we skip the first three queries
+            self.assert_json_success(
+                self.client_post("/json/users/me/presence", {"status": "active"})
+            )
+
+        with self.assert_database_query_count(3, keep_cache_warm=True):
+            # It's the same story if we're becoming idle, as well
+            self.assert_json_success(
+                self.client_post("/json/users/me/presence", {"status": "idle"})
+            )
+
 
 class SingleUserPresenceTests(ZulipTestCase):
     def test_email_access(self) -> None:

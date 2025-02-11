@@ -964,6 +964,7 @@ def get_user_profile_narrow_by_id(user_profile_id: int) -> UserProfile:
             "id",
             "bot_type",
             "is_active",
+            "presence_enabled",
             "rate_limits",
             "role",
             "recipient_id",
