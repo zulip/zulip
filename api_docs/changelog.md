@@ -301,9 +301,11 @@ deactivated groups.
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
   [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
-  Added new `web_suggest_update_timezone` option to decide whether the user should be
-  shown an alert offering to update their profile time zone to the time zone of the
-  browser in case they differ.
+  Added new `web_suggest_update_timezone` user setting to indicate whether
+  the user should be shown an alert, offering to update their [profile
+  time zone](/help/change-your-timezone), when the time displayed for the
+  profile time zone differs from the current time displayed by the time
+  zone configured on their device.
 
 **Feature level 328**
 

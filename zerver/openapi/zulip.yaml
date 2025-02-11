@@ -12223,8 +12223,10 @@ paths:
                   example: true
                 web_suggest_update_timezone:
                   description: |
-                    Whether the user should be shown an alert offering to update their profile time zone
-                    to the time zone of the browser in case they differ.
+                    Whether the user should be shown an alert, offering to update their
+                    [profile time zone](/help/change-your-timezone), when the time displayed
+                    for the profile time zone differs from the current time displayed by the
+                    time zone configured on their device.
 
                     **Changes**: New in Zulip 10.0 (feature level 329).
                   type: boolean
@@ -15652,8 +15654,10 @@ paths:
                           web_suggest_update_timezone:
                             type: boolean
                             description: |
-                              Whether the user should be shown an alert offering to update their profile time zone
-                              to the time zone of the browser in case they differ.
+                              Whether the user should be shown an alert, offering to update their
+                              [profile time zone](/help/change-your-timezone), when the time displayed
+                              for the profile time zone differs from the current time displayed by the
+                              time zone configured on their device.
 
                               **Changes**: New in Zulip 10.0 (feature level 329).
                           fluid_layout_width:
@@ -16781,13 +16785,6 @@ paths:
 
                           **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
                           only options to disable sending typing notifications.
-                      web_suggest_update_timezone:
-                        type: boolean
-                        description: |
-                          Whether the user should be shown an alert offering to update their profile time zone
-                          to the time zone of the browser in case they differ.
-
-                          **Changes**: New in Zulip 10.0 (feature level 329).
                       enter_sends:
                         deprecated: true
                         type: boolean
@@ -18318,8 +18315,10 @@ paths:
                           web_suggest_update_timezone:
                             type: boolean
                             description: |
-                              Whether the user should be shown an alert offering to update their profile time zone
-                              to the time zone of the browser in case they differ.
+                              Whether the user should be shown an alert, offering to update their
+                              [profile time zone](/help/change-your-timezone), when the time displayed
+                              for the profile time zone differs from the current time displayed by the
+                              time zone configured on their device.
 
                               **Changes**: New in Zulip 10.0 (feature level 329).
                           fluid_layout_width:
@@ -19487,8 +19486,10 @@ paths:
                 web_suggest_update_timezone:
                   type: boolean
                   description: |
-                    Whether the user should be shown an alert offering to update their profile time zone
-                    to the time zone of the browser in case they differ.
+                    Whether the user should be shown an alert, offering to update their
+                    [profile time zone](/help/change-your-timezone), when the time displayed
+                    for the profile time zone differs from the current time displayed by the
+                    time zone configured on their device.
 
                     **Changes**: New in Zulip 10.0 (feature level 329).
                   example: true
