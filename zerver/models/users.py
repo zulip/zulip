@@ -988,12 +988,7 @@ def get_user_profile_by_email(email: str) -> UserProfile:
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600 * 24 * 7)
 def maybe_get_user_profile_by_api_key(api_key: str) -> UserProfile | None:
     try:
-        return UserProfile.objects.select_related(
-            "realm",
-            "realm__can_access_all_users_group",
-            "realm__can_access_all_users_group__named_user_group",
-            "bot_owner",
-        ).get(api_key=api_key)
+        return base_get_user_queryset().get(api_key=api_key)
     except UserProfile.DoesNotExist:
         # We will cache failed lookups with None.  The
         # use case here is that broken API clients may
