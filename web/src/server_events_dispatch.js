@@ -817,6 +817,7 @@ export function dispatch_normal_event(event) {
                 "web_navigate_to_sent_message",
                 "enter_sends",
                 "web_suggest_update_timezone",
+                "hide_ai_features",
             ];
 
             const original_home_view = user_settings.web_home_view;

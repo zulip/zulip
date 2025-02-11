@@ -12288,6 +12288,13 @@ paths:
                     - 2
                     - 3
                   example: 2
+                hide_ai_features:
+                  type: boolean
+                  description: |
+                    Controls whether user wants AI features like topic summarization to
+                    be hidden in all Zulip clients.
+
+                    **Changes**: New in Zulip 10.0 (feature level 350).
                 enable_stream_desktop_notifications:
                   description: |
                     Enable visual desktop notifications for channel messages.
@@ -12598,6 +12605,8 @@ paths:
               user_list_style:
                 contentType: application/json
               web_stream_unreads_count_display_policy:
+                contentType: application/json
+              hide_ai_features:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json
@@ -15639,6 +15648,13 @@ paths:
                               - 3 - No channels
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
+                          hide_ai_features:
+                            type: boolean
+                            description: |
+                              Controls whether user wants AI features like topic summarization to
+                              be hidden in all Zulip clients.
+
+                              **Changes**: New in Zulip 10.0 (feature level 350).
                           timezone:
                             type: string
                             description: |
@@ -18272,6 +18288,13 @@ paths:
                               - 3 - No channels
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
+                          hide_ai_features:
+                            type: boolean
+                            description: |
+                              Controls whether user wants AI features like topic summarization to
+                              be hidden in all Zulip clients.
+
+                              **Changes**: New in Zulip 10.0 (feature level 350).
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
@@ -19513,6 +19536,13 @@ paths:
                     - 2
                     - 3
                   example: 2
+                hide_ai_features:
+                  type: boolean
+                  description: |
+                    Controls whether user wants AI features like topic summarization to
+                    be hidden in all Zulip clients.
+
+                    **Changes**: New in Zulip 10.0 (feature level 350).
                 timezone:
                   description: |
                     The IANA identifier of the user's [configured time zone](/help/change-your-timezone).
@@ -19909,6 +19939,8 @@ paths:
               user_list_style:
                 contentType: application/json
               web_stream_unreads_count_display_policy:
+                contentType: application/json
+              hide_ai_features:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json

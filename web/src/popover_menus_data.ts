@@ -67,6 +67,7 @@ type TopicPopoverContext = {
     visibility_policy: number | false;
     all_visibility_policies: AllVisibilityPolicies;
     can_summarize_topics: boolean;
+    show_ai_features: boolean;
 };
 
 type VisibilityChangePopoverContext = {
@@ -276,6 +277,7 @@ export function get_topic_popover_content_context({
         all_visibility_policies,
         can_summarize_topics:
             realm.server_can_summarize_topics && settings_data.user_can_summarize_topics(),
+        show_ai_features: !user_settings.hide_ai_features,
     };
 }
 

@@ -28,6 +28,9 @@ format used by the Zulip server that they are interacting with.
   `PATCH /realm`: Added `can_summarize_topics_group` realm setting which is
   a [group-setting value](/api/group-setting-values) describing the set of
   users with permission to use AI summarization.
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added new `hide_ai_features` option for hiding all AI features in the UI.
 
 **Feature level 349**
 
