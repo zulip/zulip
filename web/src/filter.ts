@@ -1,4 +1,4 @@
-import Handlebars from "handlebars/runtime.js";
+// import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -21,16 +21,21 @@ import * as stream_data from "./stream_data.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
-declare module "handlebars/runtime" {
-    export class SafeString {
-        constructor(str: string);
-        toString(): string;
-        string: string;
-    }
-}
+// Declare minimal type for what we need
+type SafeString = {
+    toString: () => string;
+    string: string;
+};
 
-// Now we can use SafeString directly from Handlebars
-const {SafeString} = Handlebars;
+function createSafeString(str: string): SafeString {
+    const safeStr = {
+        string: str,
+        toString() {
+            return this.string;
+        },
+    };
+    return safeStr;
+}
 
 type IconData = {
     title: string;
@@ -276,7 +281,7 @@ export function create_user_pill_context(user: User): UserPillItem {
 
     return {
         id: user.user_id,
-        display_value: new SafeString(user.full_name),
+        display_value: createSafeString(user.full_name),
         has_image: true,
         img_src: avatar_url,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
