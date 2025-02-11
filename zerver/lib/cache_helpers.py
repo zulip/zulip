@@ -26,6 +26,11 @@ from zerver.lib.sessions import session_engine
 from zerver.lib.users import get_all_api_keys
 from zerver.models import Client, UserProfile
 from zerver.models.clients import get_client_cache_key
+from zerver.models.users import base_get_user_queryset
+
+
+def get_users() -> QuerySet[UserProfile]:
+    return base_get_user_queryset().filter(long_term_idle=False, realm__in=get_active_realm_ids())
 
 
 def user_cache_items(
@@ -76,12 +81,6 @@ def get_active_realm_ids() -> QuerySet[RealmCount, int]:
         )
         .distinct("realm_id")
         .values_list("realm_id", flat=True)
-    )
-
-
-def get_users() -> QuerySet[UserProfile]:
-    return UserProfile.objects.select_related("realm", "bot_owner").filter(
-        long_term_idle=False, realm__in=get_active_realm_ids()
     )
 
 
