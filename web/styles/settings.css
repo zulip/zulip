@@ -2046,8 +2046,9 @@ label.preferences-radio-choice-label {
         gap: 6px;
 
         & .dropdown-widget-button {
-            height: 30px;
+            height: 1.4em;
             max-width: 160px;
+            box-sizing: content-box;
         }
 
         & input.search {
@@ -2114,7 +2115,7 @@ label.preferences-radio-choice-label {
         .dropdown-widget-button, we need to explicitly set the height here.
         We could set the height inside .user_filters but that would make
         the height a tiny bit inconsistent on pages without .user_filters. */
-        height: 20px;
+        height: 1.4em;
         float: right;
         font-size: 1em;
         max-width: 160px;
