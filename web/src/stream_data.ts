@@ -500,7 +500,7 @@ export function has_metadata_access(sub: StreamSubscription): boolean {
         return true;
     }
 
-    if (can_administer_accessible_channel(sub)) {
+    if (can_administer_channel(sub)) {
         return true;
     }
 
@@ -563,7 +563,11 @@ export function has_content_access(sub: StreamSubscription): boolean {
     return true;
 }
 
-function can_administer_accessible_channel(sub: StreamSubscription): boolean {
+function can_administer_channel(sub: StreamSubscription): boolean {
+    // Note that most callers should use wrappers like
+    // can_change_permissions_requiring_content_access, since actions
+    // that can grant access to message content require content access
+    // in addition to being a channel administrator.
     if (current_user.is_admin) {
         return true;
     }
@@ -612,7 +616,7 @@ export function can_change_permissions_requiring_content_access(sub: StreamSubsc
         return false;
     }
 
-    return can_administer_accessible_channel(sub);
+    return can_administer_channel(sub);
 }
 
 export function can_change_permissions_requiring_metadata_access(sub: StreamSubscription): boolean {
@@ -620,7 +624,7 @@ export function can_change_permissions_requiring_metadata_access(sub: StreamSubs
         return false;
     }
 
-    return can_administer_accessible_channel(sub);
+    return can_administer_channel(sub);
 }
 
 export function can_view_subscribers(sub: StreamSubscription): boolean {
@@ -636,7 +640,7 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
         return true;
     }
 
-    if (can_administer_accessible_channel(sub)) {
+    if (can_administer_channel(sub)) {
         return true;
     }
 
@@ -674,7 +678,7 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
         return false;
     }
 
-    if (can_administer_accessible_channel(sub)) {
+    if (can_administer_channel(sub)) {
         return true;
     }
 
