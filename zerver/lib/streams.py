@@ -185,7 +185,15 @@ def get_user_ids_with_metadata_access_via_permission_groups(stream: Stream) -> s
     return set(
         get_recursive_group_members_union_for_groups(
             [stream.can_add_subscribers_group_id, stream.can_administer_channel_group_id]
-        ).values_list("id", flat=True)
+        )
+        .exclude(
+            # allow_everyone_group=False is false for both
+            # can_add_subscribers_group and
+            # can_administer_channel_group, so guest users cannot
+            # exercise these permission to get metadata access.
+            role=UserProfile.ROLE_GUEST
+        )
+        .values_list("id", flat=True)
     )
 
 
@@ -269,6 +277,9 @@ def create_stream_if_needed(
             if stream.is_web_public:
                 notify_user_ids = active_user_ids(stream.realm_id)
             else:
+                # TODO: This should include guests with metadata
+                # access to the channel, once that is possible via
+                # can_join_group.
                 notify_user_ids = active_non_guest_user_ids(stream.realm_id)
             send_stream_creation_event(
                 realm, stream, notify_user_ids, setting_groups_dict=setting_groups_dict
@@ -336,6 +347,9 @@ def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
 def is_user_in_can_administer_channel_group(
     stream: Stream, user_recursive_group_ids: set[int]
 ) -> bool:
+    # Important: The caller must have verified the acting user is not
+    # a guest, to enforce that can_administer_channel_group has
+    # allow_everyone_group=False.
     group_allowed_to_administer_channel_id = stream.can_administer_channel_group_id
     assert group_allowed_to_administer_channel_id is not None
     return group_allowed_to_administer_channel_id in user_recursive_group_ids
@@ -344,6 +358,9 @@ def is_user_in_can_administer_channel_group(
 def is_user_in_can_add_subscribers_group(
     stream: Stream, user_recursive_group_ids: set[int]
 ) -> bool:
+    # Important: The caller must have verified the acting user is not
+    # a guest, to enforce that can_add_subscribers_group has
+    # allow_everyone_group=False.
     group_allowed_to_add_subscribers_id = stream.can_add_subscribers_group_id
     assert group_allowed_to_add_subscribers_id is not None
     return group_allowed_to_add_subscribers_id in user_recursive_group_ids
@@ -352,6 +369,9 @@ def is_user_in_can_add_subscribers_group(
 def is_user_in_can_remove_subscribers_group(
     stream: Stream, user_recursive_group_ids: set[int]
 ) -> bool:
+    # Important: The caller must have verified the acting user is not
+    # a guest, to enforce that can_remove_subscribers_group has
+    # allow_everyone_group=False.
     group_allowed_to_remove_subscribers_id = stream.can_remove_subscribers_group_id
     assert group_allowed_to_remove_subscribers_id is not None
     return group_allowed_to_remove_subscribers_id in user_recursive_group_ids
@@ -481,7 +501,10 @@ def user_has_content_access(
     if is_subscribed:
         return True
 
-    if stream.is_public() and not user_profile.is_guest:
+    if user_profile.is_guest:
+        return False
+
+    if stream.is_public():
         return True
 
     if user_group_membership_details.user_recursive_group_ids is None:
@@ -489,6 +512,8 @@ def user_has_content_access(
             get_recursive_membership_groups(user_profile).values_list("id", flat=True)
         )
 
+    # This check must be after the user_profile.is_guest check, since
+    # allow_everyone_group=False for can_add_subscribers_group.
     if is_user_in_can_add_subscribers_group(
         stream, user_group_membership_details.user_recursive_group_ids
     ):
@@ -895,6 +920,10 @@ def bulk_can_remove_subscribers_from_streams(
     if user_profile.is_realm_admin:
         return True
 
+    if user_profile.is_guest:
+        # All the permissions in this function have allow_everyone_group=False
+        return False  # nocoverage
+
     user_recursive_group_ids = set(
         get_recursive_membership_groups(user_profile).values_list("id", flat=True)
     )
@@ -958,6 +987,11 @@ def get_streams_to_which_user_cannot_add_subscribers(
         default_stream_ids = get_default_stream_ids_for_realm(user_profile.realm_id)
 
     for stream in streams:
+        # All the permissions in this function have allow_everyone_group=False
+        if user_profile.is_guest:  # nocoverage
+            result.append(stream)
+            continue
+
         # We only allow this exception for the invite code path and not
         # for other code paths, since a user should be able to add the
         # invited users to default channels regardless of their permission
@@ -1031,14 +1065,19 @@ def filter_stream_authorization(
         if stream.is_web_public:
             continue
 
+        if user_profile.is_guest:
+            unauthorized_streams.append(stream)
+            continue
+
         # Members and administrators are authorized for public streams
-        if not stream.invite_only and not user_profile.is_guest:
+        if not stream.invite_only:
             continue
 
         if stream.invite_only:
             user_recursive_group_ids = set(
                 get_recursive_membership_groups(user_profile).values_list("id", flat=True)
             )
+            # The above has checked that the user is not a guest for the below settings.
             if is_user_in_can_add_subscribers_group(stream, user_recursive_group_ids):
                 continue
 
