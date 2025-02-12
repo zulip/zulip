@@ -198,9 +198,10 @@ def do_summarize_narrow(
     credits_used = (output_tokens * settings.OUTPUT_COST_PER_GIGATOKEN) + (
         input_tokens * settings.INPUT_COST_PER_GIGATOKEN
     )
+    ai_stats_finish()
+
     do_increment_logging_stat(
         user_profile, COUNT_STATS["ai_credit_usage::day"], None, timezone_now(), credits_used
     )
 
-    ai_stats_finish()
     return response["choices"][0]["message"]["content"]
