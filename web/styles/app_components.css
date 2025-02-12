@@ -962,6 +962,7 @@ input.settings_text_input {
     width: 12px;
 
     &.zulip-icon-globe,
+    &.zulip-icon-archive,
     &.zulip-icon-hashtag {
         font-size: 0.75em;
     }
