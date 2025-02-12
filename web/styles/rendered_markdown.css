@@ -11,24 +11,13 @@
     }
 
     & ul {
-        margin: 0 0 var(--markdown-interelement-space-px) 20px;
-    }
-
-    /* Swap the left and right margins of bullets for Right-To-Left languages */
-    &.rtl ul {
-        margin-right: 20px;
-        margin-left: 0;
+        margin: 0 0 var(--markdown-interelement-space-px) 0;
+        margin-inline-start: 3ch;
     }
 
     & ol {
-        /* 20px at 14px em */
-        margin: 0 0 var(--markdown-interelement-space-px) 1.4285em;
-    }
-
-    /* Swap the left and right margins of ordered list for Right-To-Left languages */
-    &.rtl ol {
-        margin-right: 8px;
-        margin-left: 0;
+        margin: 0 0 var(--markdown-interelement-space-px) 0;
+        margin-inline-start: 3ch;
     }
 
     & hr {
