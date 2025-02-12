@@ -1495,7 +1495,9 @@ def do_change_stream_description(
 ) -> None:
     old_description = stream.description
     stream.description = new_description
-    stream.rendered_description = render_stream_description(new_description, stream.realm)
+    stream.rendered_description = render_stream_description(
+        new_description, stream.realm, acting_user=acting_user
+    )
     stream.save(update_fields=["description", "rendered_description"])
     RealmAuditLog.objects.create(
         realm=stream.realm,
