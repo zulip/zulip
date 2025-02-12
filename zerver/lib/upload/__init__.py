@@ -15,6 +15,7 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids, user_avatar_path
+from zerver.lib.event_types import AttachmentAddEvent
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_type
 from zerver.lib.outgoing_http import OutgoingSession
@@ -30,6 +31,7 @@ from zerver.lib.thumbnail import (
 from zerver.lib.upload.base import StreamingSourceWithSize, ZulipUploadBackend
 from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
 from zerver.models.users import is_cross_realm_bot_email
+from zerver.tornado.django_api import send_event_on_commit
 
 
 class RealmUploadQuotaError(JsonableError):
@@ -71,9 +73,12 @@ def create_attachment(
         content_type=content_type,
     )
     maybe_thumbnail(file_real_data, content_type, path_id, realm.id)
-    from zerver.actions.uploads import notify_attachment_update
 
-    notify_attachment_update(user_profile, "add", attachment.to_dict())
+    event = AttachmentAddEvent(
+        attachment=attachment.to_pydantic(),
+        upload_space_used=user_profile.realm.currently_used_upload_space_bytes(),
+    )
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
 def get_file_info(user_file: UploadedFile) -> tuple[str, str]:

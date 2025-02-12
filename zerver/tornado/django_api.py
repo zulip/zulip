@@ -13,6 +13,7 @@ from requests.models import PreparedRequest, Response
 from typing_extensions import override
 from urllib3.util import Retry
 
+from zerver.lib.event_types import BaseEvent
 from zerver.lib.partial import partial
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.models import Client, Realm, UserProfile
@@ -211,6 +212,13 @@ def send_event_rollback_unsafe(
 
 
 def send_event_on_commit(
-    realm: Realm, event: Mapping[str, Any], users: Iterable[int] | Iterable[Mapping[str, Any]]
+    realm: Realm,
+    event: Mapping[str, Any] | BaseEvent,
+    users: Iterable[int] | Iterable[Mapping[str, Any]],
 ) -> None:
+    # Until we fully transition to pydantic types, we need
+    # the isinstance check (as well as the union type).
+    if isinstance(event, BaseEvent):
+        event = event.model_dump()
+
     transaction.on_commit(lambda: send_event_rollback_unsafe(realm, event, users))

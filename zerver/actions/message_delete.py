@@ -1,19 +1,11 @@
 from collections.abc import Iterable
-from typing import TypedDict
 
 from zerver.lib import retention
+from zerver.lib.event_types import DeletePrivateMessagesEvent, DeleteStreamMessagesEvent
 from zerver.lib.message import event_recipient_ids_for_action_on_messages
 from zerver.lib.retention import move_messages_to_archive
 from zerver.models import Message, Realm, Stream, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
-
-
-class DeleteMessagesEvent(TypedDict, total=False):
-    type: str
-    message_ids: list[int]
-    message_type: str
-    topic: str
-    stream_id: int
 
 
 def check_update_first_message_id(
@@ -56,25 +48,16 @@ def do_delete_messages(
     if not message_ids:
         return
 
-    event: DeleteMessagesEvent = {
-        "type": "delete_message",
-        "message_ids": message_ids,
-    }
-
     sample_message = messages[0]
-    message_type = "stream"
-    users_to_notify = set()
-    if not sample_message.is_stream_message():
+    if sample_message.is_stream_message():
+        message_type = "stream"
+        stream_id = sample_message.recipient.type_id
+        stream = Stream.objects.get(id=stream_id)
+        archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
+    else:
         assert len(messages) == 1
         message_type = "private"
         archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
-
-    if message_type == "stream":
-        stream_id = sample_message.recipient.type_id
-        event["stream_id"] = stream_id
-        event["topic"] = sample_message.topic_name()
-        stream = Stream.objects.get(id=stream_id)
-        archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
 
     # We exclude long-term idle users, since they by definition have no active clients.
     users_to_notify = event_recipient_ids_for_action_on_messages(
@@ -90,8 +73,16 @@ def do_delete_messages(
     if message_type == "stream":
         check_update_first_message_id(realm, stream, message_ids, users_to_notify)
 
-    event["message_type"] = message_type
-    send_event_on_commit(realm, event, users_to_notify)
+    if message_type == "private":
+        delete_private_messages_event = DeletePrivateMessagesEvent(
+            message_ids=message_ids,
+        )
+        send_event_on_commit(realm, delete_private_messages_event, users_to_notify)
+    else:
+        delete_stream_messages_event = DeleteStreamMessagesEvent(
+            message_ids=message_ids, stream_id=stream_id, topic=sample_message.topic_name()
+        )
+        send_event_on_commit(realm, delete_stream_messages_event, users_to_notify)
 
 
 def do_delete_messages_by_sender(user: UserProfile) -> None:

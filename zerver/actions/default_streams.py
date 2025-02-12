@@ -5,6 +5,7 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
+from zerver.lib.event_types import DefaultStreamGroupsEvent, DefaultStreamsEvent
 from zerver.lib.exceptions import JsonableError
 from zerver.models import DefaultStream, DefaultStreamGroup, Realm, Stream
 from zerver.models.streams import get_default_stream_groups
@@ -50,19 +51,17 @@ def lookup_default_stream_groups(
 
 
 def notify_default_streams(realm: Realm) -> None:
-    event = dict(
-        type="default_streams",
+    event = DefaultStreamsEvent(
         default_streams=list(get_default_stream_ids_for_realm(realm.id)),
     )
     send_event_on_commit(realm, event, active_non_guest_user_ids(realm.id))
 
 
 def notify_default_stream_groups(realm: Realm) -> None:
-    event = dict(
-        type="default_stream_groups",
-        default_stream_groups=default_stream_groups_to_dicts_sorted(
-            get_default_stream_groups(realm)
-        ),
+    default_stream_groups = [group.to_pydantic() for group in get_default_stream_groups(realm)]
+    sorted_default_stream_groups = sorted(default_stream_groups, key=lambda group: group.name)
+    event = DefaultStreamGroupsEvent(
+        default_stream_groups=sorted_default_stream_groups,
     )
     send_event_on_commit(realm, event, active_non_guest_user_ids(realm.id))
 
