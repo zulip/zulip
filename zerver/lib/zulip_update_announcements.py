@@ -425,10 +425,15 @@ def send_zulip_update_announcements_to_realm(
     # ourself.
     realm.refresh_from_db()
     realm_zulip_update_announcements_level = realm.zulip_update_announcements_level
-    assert (
-        realm_zulip_update_announcements_level is None
-        or realm_zulip_update_announcements_level < latest_zulip_update_announcements_level
-    )
+    if (
+        realm_zulip_update_announcements_level is not None
+        and realm_zulip_update_announcements_level == latest_zulip_update_announcements_level
+    ):
+        # This is possible due to a race of some form.
+        logging.warning(  # nocoverage
+            "Skipping realm {realm}: already at level {latest_zulip_update_announcements_level}."
+        )
+        return  # nocoverage
 
     sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
 
