@@ -2094,6 +2094,15 @@ function make_web_public_sub(name, stream_id) {
     stream_data.add_sub(sub);
 }
 
+function make_archived_sub(name, stream_id) {
+    const sub = {
+        name,
+        stream_id,
+        is_archived: true,
+    };
+    stream_data.add_sub(sub);
+}
+
 test("navbar_helpers", ({override}) => {
     stream_data.add_sub(foo_sub);
 
@@ -2185,6 +2194,9 @@ test("navbar_helpers", ({override}) => {
     const web_public_sub_id = new_stream_id();
     make_web_public_sub("webPublicSub", web_public_sub_id); // capitalized just to try be tricky and robust.
     const web_public_channel = [{operator: "channel", operand: web_public_sub_id.toString()}];
+    const archived_sub_id = new_stream_id();
+    make_archived_sub("archivedSub", archived_sub_id);
+    const archived_channel_term = [{operator: "channel", operand: archived_sub_id.toString()}];
     const dm = [{operator: "dm", operand: "joe@example.com"}];
     const dm_with = [
         {operator: "dm", operand: "joe@example.com"},
@@ -2342,6 +2354,13 @@ test("navbar_helpers", ({override}) => {
             zulip_icon: "globe",
             title: "webPublicSub",
             redirect_url_with_search: `/#narrow/channel/${web_public_sub_id}-webPublicSub`,
+        },
+        {
+            terms: archived_channel_term,
+            is_common_narrow: true,
+            zulip_icon: "archive",
+            title: "archivedSub",
+            redirect_url_with_search: `/#narrow/channel/${archived_sub_id}-archivedSub`,
         },
         {
             terms: dm,
