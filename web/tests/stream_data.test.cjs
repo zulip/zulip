@@ -561,6 +561,10 @@ test("admin_options", ({override}) => {
     assert.ok(!is_realm_admin(sub));
     assert.ok(can_change_stream_permissions_requiring_metadata_access(sub));
     assert.ok(can_change_stream_permissions_requiring_content_access(sub));
+
+    // Permissions for archived channels can't be changed
+    sub.is_archived = true;
+    assert.ok(!can_change_stream_permissions_requiring_content_access(sub));
 });
 
 test("stream_settings", ({override}) => {
@@ -1325,6 +1329,13 @@ test("can_unsubscribe_others", ({override}) => {
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     override(current_user, "is_admin", false);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
+
+    sub.subscribed = true;
+    sub.is_archived = true;
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.can_unsubscribe_others(sub), false);
+    sub.is_archived = false;
+    assert.equal(stream_data.can_unsubscribe_others(sub), true);
 });
 
 test("can_subscribe_others", ({override}) => {

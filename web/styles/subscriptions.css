@@ -1361,6 +1361,10 @@ div.settings-radio-input-parent {
     height: inherit;
 }
 
+.stream-permissions .tip {
+    margin: 0 0 10px;
+}
+
 .group-setting-label {
     /* Avoid having the clickable area extend to the full width of the containing element */
     width: fit-content;
