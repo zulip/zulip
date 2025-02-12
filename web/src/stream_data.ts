@@ -619,7 +619,11 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
         return false;
     }
 
-    // Currently, you can always remove your subscription if you're subscribed.
+    // Currently, you can always remove your subscription if you're subscribed unless it's an archive channel.
+    if (sub.is_archived) {
+        return false;
+    }
+
     if (sub.subscribed) {
         return true;
     }
@@ -667,6 +671,10 @@ export function can_preview(sub: StreamSubscription): boolean {
 }
 
 export function can_change_permissions_requiring_content_access(sub: StreamSubscription): boolean {
+    if (sub.is_archived) {
+        return false;
+    }
+
     if (!has_content_access(sub)) {
         return false;
     }
@@ -687,6 +695,10 @@ export function can_view_subscribers(sub: StreamSubscription): boolean {
 }
 
 export function can_subscribe_others(sub: StreamSubscription): boolean {
+    if (sub.is_archived) {
+        return false;
+    }
+
     if (!has_content_access(sub)) {
         return false;
     }
@@ -730,6 +742,10 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
     // remove them. This check may never fire in practice, since the
     // UI for removing subscribers generally is a list of the stream's
     // subscribers.
+    if (sub.is_archived) {
+        return false;
+    }
+
     if (!can_view_subscribers(sub)) {
         return false;
     }
