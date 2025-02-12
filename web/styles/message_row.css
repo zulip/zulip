@@ -104,9 +104,7 @@
         in the column. */
     grid-template:
         var(--message-box-sender-line-height) repeat(3, auto) /
-        var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
-            3 * var(--message-box-icon-width)
-        )
+        var(--message-box-avatar-column-width) minmax(0, 1fr) max-content
         8px minmax(var(--message-box-timestamp-column-width), max-content);
     /* Named grid areas provide flexibility for positioning grid items
        reliably, even if the row or column definitions of the grid change. */
@@ -126,14 +124,6 @@
                 var(--message-box-timestamp-column-width),
                 max-content
             );
-    }
-
-    @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
-        grid-template-columns:
-            var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
-                2 * var(--message-box-icon-width)
-            )
-            8px minmax(var(--message-box-timestamp-column-width), max-content);
     }
 
     .message_edit_notice {
@@ -542,10 +532,10 @@
 
     .edit_content {
         /* Icons for editing content are determined on message hover;
-           we set an empty `.edit_content` to have 0 height in order to
-           preserve the layout of the other icons prior to any hovering. */
+           we set an empty `.edit_content` to take the eventual width
+           of whatever icon is displayed, so as to avoid a grid shift. */
         &:empty {
-            height: 0;
+            width: var(--message-box-icon-width);
         }
 
         &:hover {
