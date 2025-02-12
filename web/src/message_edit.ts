@@ -1011,7 +1011,6 @@ export function try_save_inline_topic_edit($row: JQuery): void {
 }
 
 export function do_save_inline_topic_edit($row: JQuery, message: Message, new_topic: string): void {
-    const msg_list = message_lists.current;
     show_topic_edit_spinner($row);
 
     if (message.locally_echoed) {
@@ -1074,13 +1073,6 @@ export function do_save_inline_topic_edit($row: JQuery, message: Message, new_to
                 return;
             }
             loading.destroy_indicator($spinner);
-            if (msg_list === message_lists.current) {
-                const message = channel.xhr_error_message(
-                    $t({defaultMessage: "Error saving edit"}),
-                    xhr,
-                );
-                $row.find(".edit_error").text(message).css("display", "inline-block");
-            }
         },
     });
 }
