@@ -1,6 +1,6 @@
 {{! Client-side Handlebars template for rendering the topic edit form. }}
 
-<form id="topic_edit_form">
+<form class="topic_edit_form">
     <input type="text" value="" autocomplete="off" maxlength="{{ max_topic_length }}"
       class="inline_topic_edit header-v {{#unless realm_mandatory_topics}}empty-topic-placeholder-display{{/unless}}"
       {{#unless realm_mandatory_topics}}placeholder="{{empty_string_topic_display_name}}"{{/unless}} />

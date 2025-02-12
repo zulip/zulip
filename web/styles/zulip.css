@@ -917,7 +917,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
     }
 }
 
-#topic_edit_form {
+.topic_edit_form {
     display: flex;
     align-items: center;
     gap: 3px;
