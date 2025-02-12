@@ -20,6 +20,31 @@
         margin-inline-start: 3ch;
     }
 
+    /* We set margin according to the length of the longest list counter. */
+    .counter-length-1 {
+        margin-inline-start: 2ch;
+    }
+
+    .counter-length-2 {
+        margin-inline-start: 3ch;
+    }
+
+    .counter-length-3 {
+        margin-inline-start: 4ch;
+    }
+
+    .counter-length-4 {
+        margin-inline-start: 5ch;
+    }
+
+    .counter-length-5 {
+        margin-inline-start: 6ch;
+    }
+
+    .counter-length-6 {
+        margin-inline-start: 7ch;
+    }
+
     & hr {
         border-bottom: 1px solid hsl(0deg 0% 87%);
         border-top: 1px solid hsl(0deg 0% 87%);
