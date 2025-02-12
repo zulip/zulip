@@ -101,7 +101,7 @@ that registration and saving the updated secret in
             f"* This server's configured hostname: {request['hostname']}\n"
             f"* This server's configured contact email address: {request['contact_email']}\n"
             "* Metadata about each organization hosted by the server; see:\n\n"
-            "    <https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-basic-metadata>\n\n"
+            "    <https://zulip.com/doc-permalinks/basic-metadata>\n\n"
             "Use of this service is governed by the Zulip Terms of Service:\n\n"
             "    <https://zulip.com/policies/terms>\n"
         )

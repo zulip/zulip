@@ -277,14 +277,14 @@ if [ -n "$PUSH_NOTIFICATIONS" ]; then
     echo "* The server's configured hostname: $EXTERNAL_HOST"
     echo "* The server's configured contact email address: $ZULIP_ADMINISTRATOR"
     echo "* Basic metadata about each organization hosted by the server; see:"
-    echo "    <https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-basic-metadata>"
+    echo "    <https://zulip.com/doc-permalinks/basic-metadata>"
     if [ -z "$NO_SUBMIT_USAGE_STATISTICS" ]; then
         echo "* The server's usage statistics; see:"
-        echo "    <https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-usage-statistics>"
+        echo "    <https://zulip.com/doc-permalinks/usage-statistics>"
     fi
     echo
     echo "For details on why a centralized push notification service is necessary, see:"
-    echo "    <https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#why-a-push-notification-service-is-necessary>"
+    echo "    <https://zulip.com/doc-permalinks/why-service>"
     echo
     echo "Use of this service is governed by the Zulip Terms of Service:"
     echo "    <https://zulip.com/policies/terms>"
