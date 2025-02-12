@@ -60,7 +60,7 @@ from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_d
 from zerver.views.email_mirror import email_mirror_message
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
-from zerver.views.home import accounts_accept_terms, desktop_home, home
+from zerver.views.home import accounts_accept_terms, desktop_home, doc_permalinks_view, home
 from zerver.views.invite import (
     generate_multiuse_invite_backend,
     get_user_invites,
@@ -851,6 +851,7 @@ urls += [
     path("api/<slug:article>", api_documentation_view),
     path("policies/", policy_documentation_view),
     path("policies/<slug:article>", policy_documentation_view),
+    path("doc-permalinks/<str:doc_id>", doc_permalinks_view),
 ]
 
 urls += [

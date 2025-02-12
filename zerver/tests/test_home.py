@@ -1487,3 +1487,30 @@ class HomeTest(ZulipTestCase):
             page_params["state_data"]["realm_push_notifications_enabled_end_timestamp"],
             datetime_to_timestamp(end_timestamp),
         )
+
+
+class TestDocRedirectView(ZulipTestCase):
+    def test_doc_permalink_view(self) -> None:
+        result = self.client_get("/doc-permalinks/usage-statistics")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(
+            result["Location"],
+            "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-usage-statistics",
+        )
+
+        result = self.client_get("/doc-permalinks/basic-metadata")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(
+            result["Location"],
+            "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-basic-metadata",
+        )
+
+        result = self.client_get("/doc-permalinks/why-service")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(
+            result["Location"],
+            "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#why-a-push-notification-service-is-necessary",
+        )
+
+        result = self.client_get("/doc-permalinks/invalid-doc-id")
+        self.assertEqual(result.status_code, 404)
