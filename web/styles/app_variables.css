@@ -1110,7 +1110,6 @@
     --color-background-button-inbox-selected: hsl(0deg 0% 0% / 5%);
     --color-background-button-inbox-focus: hsl(0deg 0% 80%);
     --color-icons-inbox: hsl(0deg 0% 0%);
-    --color-background-icon-close-hover: hsl(0deg 0% 0% / 5%);
 
     /* Navbar dropdown menu constants - Values from Figma design */
     --box-shadow-popover-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
@@ -2119,7 +2118,6 @@
     --color-background-button-inbox-selected: hsl(0deg 0% 100% / 5%);
     --color-background-button-inbox-focus: hsl(0deg 0% 20%);
     --color-icons-inbox: hsl(0deg 0% 100%);
-    --color-background-icon-close-hover: hsl(0deg 0% 100% / 5%);
 
     /* Navbar dropdown menu constants - Values from Figma design */
     --box-shadow-popover-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
