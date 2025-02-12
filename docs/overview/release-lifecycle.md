@@ -193,8 +193,8 @@ love to hear from you, either in
 GitHub issue. Please an include an explanation of your use case: such details
 can be extremely helpful in designing appropriately general solutions, and also
 helps us identify cases where an existing solution can solve your problem. See
-our guides for [reporting bugs](../contributing/reporting-bugs.md) and [giving
-feedback](../contributing/contributing.md#user-feedback) for more details.
+our guide on [suggesting features and
+improvements](../contributing/suggesting-features.md) for more details.
 
 ## Client apps
 
