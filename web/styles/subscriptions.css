@@ -448,7 +448,7 @@ h4.user_group_setting_subsection_title {
 
     .exit-sign {
         font-size: 1.5em;
-        margin-right: 10px;
+        margin-right: 0.7142em; /* 10px at 14px em */
         font-weight: 600;
         cursor: pointer;
     }
