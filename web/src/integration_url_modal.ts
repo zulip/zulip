@@ -34,6 +34,7 @@ class IntegrationData {
     config_options: ConfigOption[] | undefined = undefined;
     all_event_types: EventType[] | null = null;
     interfaced_settings: InterfacedSetting | undefined = undefined;
+    integration_logo_url = "";
 
     constructor(selected_integration: string) {
         const selected_integration_data = realm.realm_incoming_webhook_bots.find(
@@ -46,6 +47,9 @@ class IntegrationData {
         }
         if (selected_integration_data?.interfaced_settings) {
             this.interfaced_settings = selected_integration_data.interfaced_settings;
+        }
+        if (selected_integration_data) {
+            this.integration_logo_url = `/static/images/integrations/logos/${selected_integration}.svg`;
         }
     }
 }
@@ -65,6 +69,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
     const map_to_channels_option = {
         name: $t_html({defaultMessage: "Map to Zulip channels"}),
         unique_id: -2,
+        integration_logo_url: "",
+        is_interfaced_setting: true,
     };
     const html_body = render_generate_integration_url_modal({
         default_url_message,
@@ -327,6 +333,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 selected_integration_data?.interfaced_settings?.MapToChannelsT;
             const additional_options: Option[] = [];
             if (map_to_channel_setting) {
+                map_to_channels_option.integration_logo_url =
+                    selected_integration_data.integration_logo_url;
                 additional_options.push(map_to_channels_option);
             }
             return additional_options;
