@@ -50,7 +50,7 @@ from zerver.lib.exceptions import (
     OrganizationAdministratorRequiredError,
     OrganizationOwnerRequiredError,
 )
-from zerver.lib.integrations import EMBEDDED_BOTS
+from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
 from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
@@ -558,6 +558,7 @@ def add_bot_backend(
     bot_type: Json[int] = UserProfile.DEFAULT_BOT,
     payload_url: Json[Annotated[str, AfterValidator(check_url)]] = "",
     service_name: str | None = None,
+    integration_name: str | None = None,
     config_data: Json[Mapping[str, str]] | None = None,
     interface_type: Json[int] = Service.GENERIC,
     default_sending_stream_name: Annotated[
@@ -595,6 +596,10 @@ def add_bot_backend(
             raise JsonableError(_("Embedded bots are not enabled."))
         if service_name not in [bot.name for bot in EMBEDDED_BOTS]:
             raise JsonableError(_("Invalid embedded bot name."))
+    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and integration_name not in [
+        bot.name for bot in WEBHOOK_INTEGRATIONS
+    ]:
+        raise JsonableError(_("Invalid integration name."))
 
     if not form.is_valid():  # nocoverage
         # coverage note: The similar block above covers the most
@@ -670,6 +675,9 @@ def add_bot_backend(
 
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
         set_bot_config(bot_profile, "integration_id", service_name)
+
+    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and integration_name:
+        set_bot_config(bot_profile, "integration_name", integration_name)
 
     if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
         for key, value in config_data.items():
