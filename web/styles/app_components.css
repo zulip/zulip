@@ -532,7 +532,8 @@ input.settings_text_input {
     border: 1px solid var(--color-border-tip);
     border-radius: 4px;
     padding: 10px;
-    font-size: 1rem;
+    /* previously 1rem = 16px at 14px em = 1.1428em */
+    font-size: 1.1428em;
     line-height: 1.5;
     color: hsl(0deg 0% 40%);
 
