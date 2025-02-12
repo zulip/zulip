@@ -156,6 +156,7 @@ def render_incoming_message(
     mention_data: MentionData | None = None,
     url_embed_data: dict[str, UrlEmbedData | None] | None = None,
     email_gateway: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> MessageRenderingResult:
     realm_alert_words_automaton = get_alert_word_automaton(realm)
     try:
@@ -167,6 +168,7 @@ def render_incoming_message(
             mention_data=mention_data,
             url_embed_data=url_embed_data,
             email_gateway=email_gateway,
+            acting_user=acting_user,
         )
     except MarkdownRenderingError:
         raise JsonableError(_("Unable to render message"))
@@ -576,6 +578,7 @@ def build_message_send_dict(
     limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None,
+    acting_user: UserProfile | None = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -620,6 +623,7 @@ def build_message_send_dict(
         realm,
         mention_data=mention_data,
         email_gateway=email_gateway,
+        acting_user=acting_user,
     )
     message.rendered_content = rendering_result.rendered_content
     message.rendered_content_version = markdown_version
@@ -1707,6 +1711,7 @@ def check_message(
     limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
     archived_channel_notice: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1850,6 +1855,7 @@ def check_message(
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
+        acting_user=acting_user,
     )
 
     if (
@@ -1888,6 +1894,7 @@ def _internal_prep_message(
     forged: bool = False,
     forged_timestamp: float | None = None,
     archived_channel_notice: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> SendMessageRequest | None:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -1920,6 +1927,7 @@ def _internal_prep_message(
             forged=forged,
             forged_timestamp=forged_timestamp,
             archived_channel_notice=archived_channel_notice,
+            acting_user=acting_user,
         )
     except JsonableError as e:
         logging.exception(
@@ -1944,6 +1952,7 @@ def internal_prep_stream_message(
     forged: bool = False,
     forged_timestamp: float | None = None,
     archived_channel_notice: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> SendMessageRequest | None:
     """
     See _internal_prep_message for details of how this works.
@@ -1962,6 +1971,7 @@ def internal_prep_stream_message(
         forged=forged,
         forged_timestamp=forged_timestamp,
         archived_channel_notice=archived_channel_notice,
+        acting_user=acting_user,
     )
 
 
@@ -2041,6 +2051,7 @@ def internal_send_stream_message(
     message_type: int = Message.MessageType.NORMAL,
     limit_unread_user_ids: set[int] | None = None,
     archived_channel_notice: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> int | None:
     message = internal_prep_stream_message(
         sender,
@@ -2051,6 +2062,7 @@ def internal_send_stream_message(
         message_type=message_type,
         limit_unread_user_ids=limit_unread_user_ids,
         archived_channel_notice=archived_channel_notice,
+        acting_user=acting_user,
     )
 
     if message is None:

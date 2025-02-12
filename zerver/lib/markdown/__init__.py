@@ -67,7 +67,7 @@ from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
-from zerver.models import Message, Realm
+from zerver.models import Message, Realm, UserProfile
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import EmojiInfo, get_name_keyed_dict_for_active_realm_emoji
 
@@ -2697,6 +2697,7 @@ def do_convert(
     mention_data: MentionData | None = None,
     email_gateway: bool = False,
     no_previews: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> MessageRenderingResult:
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
@@ -2772,13 +2773,16 @@ def do_convert(
             mention_backend = MentionBackend(message_realm.id)
             mention_data = MentionData(mention_backend, content, message_sender)
 
+        if acting_user is None:
+            acting_user = message_sender
+
         stream_names = possible_linked_stream_names(content)
-        stream_name_info = mention_data.get_stream_name_map(
-            stream_names, acting_user=message_sender
-        )
+        stream_name_info = mention_data.get_stream_name_map(stream_names, acting_user=acting_user)
 
         linked_stream_topic_data = possible_linked_topics(content)
-        topic_info = mention_data.get_topic_info_map(linked_stream_topic_data)
+        topic_info = mention_data.get_topic_info_map(
+            linked_stream_topic_data, acting_user=acting_user
+        )
 
         if content_has_emoji_syntax(content):
             active_realm_emoji = get_name_keyed_dict_for_active_realm_emoji(message_realm.id)
@@ -2877,6 +2881,7 @@ def markdown_convert(
     mention_data: MentionData | None = None,
     email_gateway: bool = False,
     no_previews: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> MessageRenderingResult:
     markdown_stats_start()
     ret = do_convert(
@@ -2890,6 +2895,7 @@ def markdown_convert(
         mention_data,
         email_gateway,
         no_previews=no_previews,
+        acting_user=acting_user,
     )
     markdown_stats_finish()
     return ret
@@ -2903,6 +2909,7 @@ def render_message_markdown(
     url_embed_data: dict[str, UrlEmbedData | None] | None = None,
     mention_data: MentionData | None = None,
     email_gateway: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> MessageRenderingResult:
     """
     This is basically just a wrapper for do_render_markdown.
@@ -2925,6 +2932,7 @@ def render_message_markdown(
         url_embed_data=url_embed_data,
         mention_data=mention_data,
         email_gateway=email_gateway,
+        acting_user=acting_user,
     )
 
     return rendering_result
