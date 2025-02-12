@@ -226,6 +226,7 @@ def maybe_send_resolve_topic_notifications(
             ),
             message_type=Message.MessageType.RESOLVE_TOPIC_NOTIFICATION,
             limit_unread_user_ids=affected_participant_ids,
+            acting_user=user_profile,
         )
 
     return resolved_topic_message_id, False
@@ -293,6 +294,7 @@ def send_message_moved_breadcrumbs(
                     user=user_mention,
                     changed_messages_count=changed_messages_count,
                 ),
+                acting_user=user_profile,
             )
 
     if old_thread_notification_string is not None:
@@ -307,6 +309,7 @@ def send_message_moved_breadcrumbs(
                     new_location=new_topic_link,
                     changed_messages_count=changed_messages_count,
                 ),
+                acting_user=user_profile,
             )
 
 

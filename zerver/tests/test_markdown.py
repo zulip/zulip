@@ -72,6 +72,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
+from zerver.models.users import get_system_bot
 
 
 class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
@@ -3236,6 +3237,21 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
             f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/channel/{core_stream.id}-core/topic/testing/with/{msg_id}">#{core_stream.name} &gt; testing</a></p>',
         )
 
+        # Test permalinks generated when a user with no access to the channel
+        # sends a topic link on behalf of a user who has access to the channel.
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, iago.realm_id)
+
+        msg = Message(
+            sender=notification_bot,
+            sending_client=get_client("test"),
+            realm=realm,
+        )
+        content = "#**core>testing**"
+        self.assertEqual(
+            render_message_markdown(msg, content, acting_user=iago).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/channel/{core_stream.id}-core/topic/testing/with/{msg_id}">#{core_stream.name} &gt; testing</a></p>',
+        )
+
         # Test newly subscribed user to a channel with protected history
         # won't have accessed to this message, and hence, the topic
         # link would not be a permalink.
@@ -3250,6 +3266,22 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
             f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/channel/{core_stream.id}-core/topic/testing">#{core_stream.name} &gt; testing</a></p>',
+        )
+
+        # Test permalinks would not be generated when a user with no access to the
+        # channel sends a topic link on behalf of another user who has no access to
+        # the channel.
+        cordelia = self.example_user("cordelia")
+
+        msg = Message(
+            sender=notification_bot,
+            sending_client=get_client("test"),
+            realm=realm,
+        )
+        content = "#**core>testing**"
+        self.assertEqual(
+            render_message_markdown(msg, content, acting_user=cordelia).rendered_content,
+            "<p>#<strong>core&gt;testing</strong></p>",
         )
 
         # Test when trying to render a topic link of a channel with protected

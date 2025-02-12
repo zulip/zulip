@@ -423,16 +423,12 @@ class MentionData:
     def get_stream_name_map(
         self, stream_names: set[str], acting_user: UserProfile | None
     ) -> dict[str, int]:
-        return self.mention_backend.get_stream_name_map(
-            stream_names, acting_user=self.message_sender
-        )
+        return self.mention_backend.get_stream_name_map(stream_names, acting_user=acting_user)
 
     def get_topic_info_map(
-        self, channel_topics: set[ChannelTopicInfo]
+        self, channel_topics: set[ChannelTopicInfo], acting_user: UserProfile | None
     ) -> dict[ChannelTopicInfo, int | None]:
-        return self.mention_backend.get_topic_info_map(
-            channel_topics, acting_user=self.message_sender
-        )
+        return self.mention_backend.get_topic_info_map(channel_topics, acting_user=acting_user)
 
 
 def silent_mention_syntax_for_user(user_profile: UserProfile) -> str:
