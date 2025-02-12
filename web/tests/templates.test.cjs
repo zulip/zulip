@@ -47,6 +47,25 @@ run_test("numberFormat", () => {
     assert.equal(html, "1,000,000\n");
 });
 
+run_test("ternary", () => {
+    const args = {
+        test: true,
+        yes: "test is true",
+        no: "test is false",
+    };
+    const html = require("./templates/ternary.hbs")(args);
+    const expected_html = "<div>test is true</div>\n";
+    assert.equal(html, expected_html);
+    const args2 = {
+        test: false,
+        yes: "test is true",
+        no: "test is false",
+    };
+    const html2 = require("./templates/ternary.hbs")(args2);
+    const expected_html2 = "<div>test is false</div>\n";
+    assert.equal(html2, expected_html2);
+});
+
 run_test("tooltip_hotkey_hints", () => {
     const args = {
         hotkey_one: "Ctrl",

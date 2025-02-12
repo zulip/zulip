@@ -138,6 +138,10 @@ Handlebars.registerHelper(
 
 Handlebars.registerHelper("numberFormat", (number: number) => number.toLocaleString());
 
+Handlebars.registerHelper("ternary", (test: boolean, yes: string, no: string) =>
+    test ? new Handlebars.SafeString(yes) : new Handlebars.SafeString(no),
+);
+
 Handlebars.registerHelper("tooltip_hotkey_hints", (...args) => {
     args.pop(); // Handlebars options
     const hotkeys: string[] = args;
