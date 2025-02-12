@@ -461,6 +461,10 @@ input[type="checkbox"] {
     }
 }
 
+.privacy_settings {
+    margin-top: 20px;
+}
+
 .preferences-settings-form {
     .tab-picker {
         width: 325px;
