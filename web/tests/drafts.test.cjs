@@ -22,7 +22,8 @@ const {set_realm} = zrequire("state_data");
 initialize_user_settings({user_settings: {}});
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "test general chat";
-set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
+const realm = {realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME};
+set_realm(realm);
 
 const aaron = {
     email: "aaron@zulip.com",
@@ -575,6 +576,11 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         id6: draft_6,
     };
     ls.set("drafts", data);
+    assert.deepEqual(draft_model.get(), data);
+
+    override(realm, "realm_mandatory_topics", true);
+    expected[5].topic_display_name = "";
+    expected[5].is_empty_string_topic = false;
     assert.deepEqual(draft_model.get(), data);
 
     const stub_render_now = timerender.render_now;
