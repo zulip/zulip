@@ -16,7 +16,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import do_change_stream_permission
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.users import do_change_can_create_users, do_change_user_role, do_deactivate_user
-from zerver.lib.bot_config import ConfigError, get_bot_config
+from zerver.lib.bot_config import get_bot_config
 from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
 from zerver.lib.request import RequestNotes
@@ -796,7 +796,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.login("hamlet")
         self.assert_num_bots_equal(0)
-        self.create_bot(bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+        self.create_bot(bot_type=UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld")
         self.assert_num_bots_equal(1)
 
         profile = get_user(bot_email, bot_realm)
@@ -816,13 +816,20 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_error(result, "Invalid bot type")
 
     def check_user_can_create_bot(
-        self, user: str, bot_name: str, bot_type: int, error_msg: Optional["str"] = None
+        self,
+        user: str,
+        bot_name: str,
+        bot_type: int,
+        error_msg: Optional["str"] = None,
+        service_name: Optional["str"] = None,
     ) -> None:
         bot_info = {
             "full_name": bot_name,
             "short_name": bot_name,
             "bot_type": bot_type,
         }
+        if bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+            bot_info["service_name"] = service_name
         bot_email = f"{bot_name}-bot@zulip.testserver"
         bot_realm = get_realm("zulip")
         self.login(user)
@@ -834,6 +841,23 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             profile = get_user(bot_email, bot_realm)
             self.assertEqual(profile.bot_type, bot_type)
             self.assertEqual(profile.bot_owner, self.example_user(user))
+
+    def test_create_incoming_webhook_bot_with_invalid_integration_name(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "Invalid Integration Bot",
+            "short_name": "invalid-integration-bot",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "service_name": "nonexistent_integration",
+        }
+        response = self.client_post("/json/bots", bot_metadata)
+        self.assertEqual(response.status_code, 400)
+        expected_error_message = "Invalid integration 'nonexistent_integration'."
+        self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
+
+        # Ensure bot is not created
+        with self.assertRaises(UserProfile.DoesNotExist):
+            UserProfile.objects.get(full_name="Invalid Integration Bot")
 
     def test_can_create_write_only_bots_group(self) -> None:
         """
@@ -867,9 +891,15 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             acting_user=None,
         )
 
-        self.check_user_can_create_bot("hamlet", "testbot-1", UserProfile.INCOMING_WEBHOOK_BOT)
         self.check_user_can_create_bot(
-            "polonius", "testbot-2", UserProfile.INCOMING_WEBHOOK_BOT, "Not allowed for guest users"
+            "hamlet", "testbot-1", UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld"
+        )
+        self.check_user_can_create_bot(
+            "polonius",
+            "testbot-2",
+            UserProfile.INCOMING_WEBHOOK_BOT,
+            "Not allowed for guest users",
+            "helloworld",
         )
 
         do_change_realm_permission_group_setting(
@@ -878,10 +908,18 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             moderators_system_group,
             acting_user=None,
         )
-        self.check_user_can_create_bot("shiva", "testbot-3", UserProfile.INCOMING_WEBHOOK_BOT)
-        self.check_user_can_create_bot("iago", "testbot-4", UserProfile.INCOMING_WEBHOOK_BOT)
         self.check_user_can_create_bot(
-            "hamlet", "testbot-5", UserProfile.INCOMING_WEBHOOK_BOT, "Insufficient permission"
+            "shiva", "testbot-3", UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld"
+        )
+        self.check_user_can_create_bot(
+            "iago", "testbot-4", UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld"
+        )
+        self.check_user_can_create_bot(
+            "hamlet",
+            "testbot-5",
+            UserProfile.INCOMING_WEBHOOK_BOT,
+            "Insufficient permission",
+            "helloworld",
         )
 
         do_change_realm_permission_group_setting(
@@ -890,9 +928,15 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             administrators_system_group,
             acting_user=None,
         )
-        self.check_user_can_create_bot("iago", "testbot-5", UserProfile.INCOMING_WEBHOOK_BOT)
         self.check_user_can_create_bot(
-            "shiva", "testbot-6", UserProfile.INCOMING_WEBHOOK_BOT, "Insufficient permission"
+            "iago", "testbot-5", UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld"
+        )
+        self.check_user_can_create_bot(
+            "shiva",
+            "testbot-6",
+            UserProfile.INCOMING_WEBHOOK_BOT,
+            "Insufficient permission",
+            "helloworld",
         )
 
         # Test for checking setting for non-system user group.
@@ -904,16 +948,26 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         )
 
         # Hamlet and Cordelia are in the allowed user group, so can create bots.
-        self.check_user_can_create_bot("hamlet", "testbot-6", UserProfile.INCOMING_WEBHOOK_BOT)
-        self.check_user_can_create_bot("cordelia", "testbot-7", UserProfile.INCOMING_WEBHOOK_BOT)
+        self.check_user_can_create_bot(
+            "hamlet", "testbot-6", UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld"
+        )
+        self.check_user_can_create_bot(
+            "cordelia", "testbot-7", UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld"
+        )
 
         # Shiva is not in the allowed user group, so cannot create bots.
         self.check_user_can_create_bot(
-            "shiva", "testbot-8", UserProfile.INCOMING_WEBHOOK_BOT, "Insufficient permission"
+            "shiva",
+            "testbot-8",
+            UserProfile.INCOMING_WEBHOOK_BOT,
+            "Insufficient permission",
+            "helloworld",
         )
         # Iago is not in `can_create_write_only_bots_group` but is in `can_create_bots_group`,
         # so can create any bot.
-        self.check_user_can_create_bot("iago", "testbot-8", UserProfile.INCOMING_WEBHOOK_BOT)
+        self.check_user_can_create_bot(
+            "iago", "testbot-8", UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld"
+        )
 
         # Test for checking the setting for anonymous user group.
         anonymous_user_group = self.create_or_update_anonymous_group_for_setting(
@@ -928,12 +982,20 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         )
 
         # Hamlet is the direct member of the anonymous user group, so can create bots.
-        self.check_user_can_create_bot("hamlet", "testbot-9", UserProfile.INCOMING_WEBHOOK_BOT)
+        self.check_user_can_create_bot(
+            "hamlet", "testbot-9", UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld"
+        )
         # Iago is in the `administrators_system_group` subgroup, so can create bots.
-        self.check_user_can_create_bot("iago", "testbot-10", UserProfile.INCOMING_WEBHOOK_BOT)
+        self.check_user_can_create_bot(
+            "iago", "testbot-10", UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld"
+        )
         # Shiva is not in the anonymous user group, so cannot create bots.
         self.check_user_can_create_bot(
-            "shiva", "testbot-11", UserProfile.INCOMING_WEBHOOK_BOT, "Insufficient permission"
+            "shiva",
+            "testbot-11",
+            UserProfile.INCOMING_WEBHOOK_BOT,
+            "Insufficient permission",
+            "helloworld",
         )
 
         do_change_realm_permission_group_setting(
@@ -945,19 +1007,27 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # Iago is in `can_create_bots_group`, so can create any bot.
         self.check_user_can_create_bot("iago", "testbot-11", UserProfile.DEFAULT_BOT)
-        self.check_user_can_create_bot("iago", "testbot-12", UserProfile.INCOMING_WEBHOOK_BOT)
+        self.check_user_can_create_bot(
+            "iago", "testbot-12", UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld"
+        )
         # Shiva is only in `can_create_write_only_bots_group`, so can only create
         # "INCOMING_WEBHOOK_BOT".
         self.check_user_can_create_bot(
             "shiva", "testbot-13", UserProfile.DEFAULT_BOT, "Insufficient permission"
         )
-        self.check_user_can_create_bot("shiva", "testbot-13", UserProfile.INCOMING_WEBHOOK_BOT)
+        self.check_user_can_create_bot(
+            "shiva", "testbot-13", UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld"
+        )
         # Hamlet is in neither of the group, so cannot create any bot.
         self.check_user_can_create_bot(
             "hamlet", "testbot-14", UserProfile.DEFAULT_BOT, "Insufficient permission"
         )
         self.check_user_can_create_bot(
-            "hamlet", "testbot-14", UserProfile.INCOMING_WEBHOOK_BOT, "Insufficient permission"
+            "hamlet",
+            "testbot-14",
+            UserProfile.INCOMING_WEBHOOK_BOT,
+            "Insufficient permission",
+            "helloworld",
         )
 
     def test_can_create_bots_group(self) -> None:
@@ -2116,10 +2186,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
         }
-        self.create_bot(**bot_metadata)
-        new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
-        with self.assertRaises(ConfigError):
-            get_bot_config(new_bot)
+        response = self.client_post("/json/bots", bot_metadata)
+        self.assertEqual(response.status_code, 400)
 
     @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_with_incorrect_service_name(self) -> None:
