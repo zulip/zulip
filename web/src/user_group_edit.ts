@@ -141,9 +141,12 @@ function update_add_members_elements(group: UserGroup): void {
         $button_element.prop("disabled", true);
         $add_members_container.addClass("add_members_disabled");
 
+        const disable_hint = group.deactivated
+            ? $t({defaultMessage: "Can't add members to a deactivated group"})
+            : $t({defaultMessage: "You are not allowed to add members to this group"});
         settings_components.initialize_disable_button_hint_popover(
             $add_members_container,
-            $t({defaultMessage: "You are not allowed to add members to this group."}),
+            disable_hint,
         );
     }
 }
@@ -260,8 +263,13 @@ function initialize_tooltip_for_membership_button(group_id: number): void {
         ".join_leave_button_wrapper",
     );
     const is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
+    const is_deactivated = user_groups.get_user_group_from_id(group_id).deactivated;
     let tooltip_message;
-    if (is_member) {
+    if (is_deactivated && is_member) {
+        tooltip_message = $t({defaultMessage: "You cannot leave a deactivated user group."});
+    } else if (is_deactivated) {
+        tooltip_message = $t({defaultMessage: "You cannot join a deactivated user group."});
+    } else if (is_member) {
         tooltip_message = $t({defaultMessage: "You do not have permission to leave this group."});
     } else {
         tooltip_message = $t({defaultMessage: "You do not have permission to join this group."});
