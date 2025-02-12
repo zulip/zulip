@@ -21,7 +21,8 @@
     }
 
     & ol {
-        margin: 0 0 var(--markdown-interelement-space-px) 20px;
+        /* 20px at 14px em */
+        margin: 0 0 var(--markdown-interelement-space-px) 1.4285em;
     }
 
     /* Swap the left and right margins of ordered list for Right-To-Left languages */
