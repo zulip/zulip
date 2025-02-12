@@ -80,7 +80,6 @@
                 &:hover,
                 &:focus-visible {
                     opacity: 1;
-                    background-color: var(--color-background-icon-close-hover);
                 }
 
                 &:active {
