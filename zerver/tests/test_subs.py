@@ -1828,6 +1828,9 @@ class StreamAdminTest(ZulipTestCase):
     def test_unarchive_stream_private_and_web_public(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
+        prospero = self.example_user("prospero")
+        realm = hamlet.realm
 
         stream = self.make_stream("private", invite_only=True)
         self.subscribe(hamlet, stream.name)
@@ -1838,34 +1841,59 @@ class StreamAdminTest(ZulipTestCase):
         # This led to archived channels potentially being in an invalid state.
         stream.is_web_public = True
         stream.save(update_fields=["is_web_public"])
-        with self.capture_send_event_calls(expected_num_events=2):
+
+        aaron_group = check_add_user_group(realm, "aaron_group", [aaron], acting_user=aaron)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            aaron_group,
+            acting_user=None,
+        )
+        prospero_group = check_add_user_group(
+            realm, "prospero_group", [prospero], acting_user=prospero
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_add_subscribers_group",
+            prospero_group,
+            acting_user=None,
+        )
+        self.subscribe(self.example_user("cordelia"), "stream_private_name1")
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             do_unarchive_stream(stream, new_name="private", acting_user=None)
 
         stream = Stream.objects.get(id=stream.id)
         self.assertFalse(stream.is_web_public)
 
+        # Tell all users with metadata access that the stream exists.
+        self.assertEqual(events[0]["event"]["op"], "create")
+        self.assertEqual(events[0]["event"]["streams"][0]["name"], "private")
+        self.assertEqual(events[0]["event"]["streams"][0]["stream_id"], stream.id)
+        notified_user_ids = set(events[0]["users"])
+        self.assertEqual(
+            notified_user_ids,
+            can_access_stream_metadata_user_ids(stream),
+        )
+        self.assertIn(self.example_user("cordelia").id, notified_user_ids)
+        # An important corner case is that all organization admins are notified.
+        self.assertIn(self.example_user("iago").id, notified_user_ids)
+        # The current user, Hamlet was made an admin and thus should be notified too.
+        self.assertIn(aaron.id, notified_user_ids)
+        # Channel admin should be notified.
+        self.assertIn(self.example_user("aaron").id, notified_user_ids)
+        # User belonging to `can_add_subscribers_group` should be notified.
+        self.assertIn(prospero.id, notified_user_ids)
+        # Guest user should not be notified.
+        self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
+
     def test_unarchive_stream(self) -> None:
-        desdemona = self.example_user("desdemona")
-        iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
-        aaron = self.example_user("aaron")
-        shiva = self.example_user("shiva")
 
         stream = self.make_stream("new_stream", is_web_public=True)
         was_invite_only = stream.invite_only
         was_web_public = stream.is_web_public
         was_history_public = stream.history_public_to_subscribers
-
-        aaron_group = self.create_or_update_anonymous_group_for_setting([aaron], [])
-        do_change_stream_group_based_setting(
-            stream, "can_administer_channel_group", aaron_group, acting_user=aaron
-        )
-
-        shiva_group = self.create_or_update_anonymous_group_for_setting([shiva], [])
-        do_change_stream_group_based_setting(
-            stream, "can_add_subscribers_group", shiva_group, acting_user=shiva
-        )
 
         self.subscribe(hamlet, stream.name)
         self.subscribe(cordelia, stream.name)
@@ -1873,14 +1901,17 @@ class StreamAdminTest(ZulipTestCase):
         with self.capture_send_event_calls(expected_num_events=2) as events:
             do_unarchive_stream(stream, new_name="new_stream", acting_user=None)
 
-        # Tell all subscribers and admins and owners that the stream exists
+        # Tell all users with metadata access that the stream exists.
         self.assertEqual(events[0]["event"]["op"], "create")
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "new_stream")
         self.assertEqual(events[0]["event"]["streams"][0]["stream_id"], stream.id)
+        notified_user_ids = set(events[0]["users"])
         self.assertEqual(
-            set(events[0]["users"]),
-            {hamlet.id, cordelia.id, iago.id, desdemona.id, aaron.id, shiva.id},
+            notified_user_ids,
+            public_stream_user_ids(stream),
         )
+        # Guest user should not be notified.
+        self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
 
         stream = Stream.objects.get(id=stream.id)
         self.assertFalse(stream.deactivated)
