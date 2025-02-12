@@ -269,15 +269,7 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
 
     recent_traffic = get_streams_traffic({stream.id}, realm)
 
-    subscribed_user_ids = {sub.user_profile.id for sub in stream_subscribers}
-    admin_user_and_bot_ids = {user.id for user in realm.get_admin_users_and_bots()}
-
-    notify_user_ids = list(
-        admin_user_and_bot_ids
-        | subscribed_user_ids
-        | get_user_ids_with_metadata_access_via_permission_groups(stream)
-    )
-
+    notify_user_ids = list(can_access_stream_metadata_user_ids(stream))
     setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
     send_stream_creation_event(realm, stream, notify_user_ids, recent_traffic, setting_groups_dict)
 
