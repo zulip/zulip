@@ -80,7 +80,8 @@
         border-radius: 3px;
 
         & i {
-            font-size: 17px;
+            /* 17px at 16px em */
+            font-size: 1.0625em;
             /* Ensure the icon takes the same baseline
                as the rest of the row, for perfect
                vertical alignment with the username and
