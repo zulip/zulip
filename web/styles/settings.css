@@ -1365,8 +1365,9 @@ label.preferences-radio-choice-label {
         .sidebar-item {
             display: grid;
             /* 3.5714em is 50px at 14px/1em -- the legacy height of these rows. */
+            /* 2.8571em is 40px at 14px/1em */
             grid-template:
-                "starting-anchor-element row-content ending-anchor-element" 3.5714em / 40px minmax(
+                "starting-anchor-element row-content ending-anchor-element" 3.5714em / 2.8571em minmax(
                     0,
                     1fr
                 )
