@@ -616,15 +616,15 @@ export const realm_user_settings_defaults_labels = {
     }),
     enable_digest_emails: $t({defaultMessage: "Send digest emails when user is away"}),
 
-    realm_presence_enabled: $t({
+    presence_enabled: $t({
         defaultMessage: "Display availability to other users",
     }),
-    realm_presence_enabled_parens_text: $t({defaultMessage: "invisible mode off"}),
-    realm_send_read_receipts: $t({defaultMessage: "Allow other users to view read receipts"}),
-    realm_send_private_typing_notifications: $t({
+    presence_enabled_parens_text: $t({defaultMessage: "invisible mode off"}),
+    send_read_receipts: $t({defaultMessage: "Allow other users to view read receipts"}),
+    send_private_typing_notifications: $t({
         defaultMessage: "Let recipients see when a user is typing direct messages",
     }),
-    realm_send_stream_typing_notifications: $t({
+    send_stream_typing_notifications: $t({
         defaultMessage: "Let recipients see when a user is typing channel messages",
     }),
 };
