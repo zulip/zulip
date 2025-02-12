@@ -395,6 +395,39 @@ class TestCreateStreams(ZulipTestCase):
         stream = get_stream("new_stream", realm)
         self.assertEqual(stream.description, "multi line description")
 
+    def test_create_api_topic_permalink_description(self) -> None:
+        user = self.example_user("iago")
+        realm = user.realm
+        self.login_user(user)
+
+        hamlet = self.example_user("hamlet")
+        core_stream = self.make_stream("core", realm, True, history_public_to_subscribers=True)
+        self.subscribe(hamlet, "core")
+        msg_id = self.send_stream_message(hamlet, "core", topic_name="testing")
+
+        # Test permalink not generated for description since user has no access to
+        # the channel.
+        subscriptions = [{"name": "stream1", "description": "#**core>testing**"}]
+        result = self.subscribe_via_post(user, subscriptions, subdomain="zulip")
+        self.assert_json_success(result)
+        stream = get_stream("stream1", realm)
+
+        self.assertEqual(stream.rendered_description, "<p>#<strong>core&gt;testing</strong></p>")
+
+        self.subscribe(user, "core")
+
+        # Test permalink generated for the description since user now has access
+        # to the channel.
+        subscriptions = [{"name": "stream2", "description": "#**core>testing**"}]
+        result = self.subscribe_via_post(user, subscriptions, subdomain="zulip")
+        self.assert_json_success(result)
+        stream = get_stream("stream2", realm)
+
+        self.assertEqual(
+            stream.rendered_description,
+            f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/channel/{core_stream.id}-core/topic/testing/with/{msg_id}">#{core_stream.name} &gt; testing</a></p>',
+        )
+
     def test_history_public_to_subscribers_on_stream_creation(self) -> None:
         realm = get_realm("zulip")
         stream_dicts: list[StreamDict] = [
@@ -2433,6 +2466,42 @@ class StreamAdminTest(ZulipTestCase):
             f"/json/streams/{stream_id}", {"description": "Test description"}
         )
         self.assert_json_success(result)
+
+        # Verify that we render topic permalinks in the description depending
+        # on whether the acting_user has access to that channel.
+        hamlet = self.example_user("hamlet")
+        core_stream = self.make_stream("core", realm, True, history_public_to_subscribers=True)
+
+        self.subscribe(hamlet, "core")
+        msg_id = self.send_stream_message(hamlet, "core", topic_name="testing")
+
+        result = self.client_patch(
+            f"/json/streams/{stream_id}",
+            {"description": "#**core>testing**"},
+        )
+
+        stream = get_stream("stream_name1", realm)
+
+        # permalink is not rendered since acting_user has no access to channel.
+        self.assertEqual(
+            stream.rendered_description,
+            "<p>#<strong>core&gt;testing</strong></p>",
+        )
+
+        self.subscribe(user_profile, "core")
+
+        result = self.client_patch(
+            f"/json/streams/{stream_id}",
+            {"description": "#**core>testing**"},
+        )
+
+        stream = get_stream("stream_name1", realm)
+
+        # permalink is rendered since acting_user now has access to channel.
+        self.assertEqual(
+            stream.rendered_description,
+            f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/channel/{core_stream.id}-core/topic/testing/with/{msg_id}">#{core_stream.name} &gt; testing</a></p>',
+        )
 
     def test_change_stream_description_requires_administer_channel_permissions(self) -> None:
         user_profile = self.example_user("hamlet")

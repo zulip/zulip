@@ -128,10 +128,14 @@ def get_default_value_for_history_public_to_subscribers(
     return history_public_to_subscribers
 
 
-def render_stream_description(text: str, realm: Realm) -> str:
+def render_stream_description(
+    text: str, realm: Realm, *, acting_user: UserProfile | None = None
+) -> str:
     from zerver.lib.markdown import markdown_convert
 
-    return markdown_convert(text, message_realm=realm, no_previews=True).rendered_content
+    return markdown_convert(
+        text, message_realm=realm, no_previews=True, acting_user=acting_user
+    ).rendered_content
 
 
 def send_stream_creation_event(
@@ -258,7 +262,9 @@ def create_stream_if_needed(
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
 
         stream.recipient = recipient
-        stream.rendered_description = render_stream_description(stream_description, realm)
+        stream.rendered_description = render_stream_description(
+            stream_description, realm, acting_user=acting_user
+        )
         stream.save(update_fields=["recipient", "rendered_description"])
 
         event_time = timezone_now()
