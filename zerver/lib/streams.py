@@ -574,10 +574,19 @@ def access_stream_for_delete_or_update_requiring_metadata_access(
 
 
 def has_metadata_access_to_channel_via_groups(
+    user_profile: UserProfile,
     user_recursive_group_ids: set[int],
     can_administer_channel_group_id: int,
     can_add_subscribers_group_id: int,
 ) -> bool:
+    for setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
+        permission_configuration = Stream.stream_permission_group_settings[setting_name]
+        if not permission_configuration.allow_everyone_group and user_profile.is_guest:
+            return False
+
+    # It's best to just check the variables directly here since it
+    # becomes complicated to create an automated loop for both settings
+    # and values because of https://github.com/python/mypy/issues/5382.
     return (
         can_administer_channel_group_id in user_recursive_group_ids
         or can_add_subscribers_group_id in user_recursive_group_ids
@@ -614,6 +623,7 @@ def check_basic_stream_access(
                 )  # nocoverage
             )  # nocoverage
         if has_metadata_access_to_channel_via_groups(
+            user_profile,
             user_group_membership_details.user_recursive_group_ids,
             stream.can_administer_channel_group_id,
             stream.can_add_subscribers_group_id,

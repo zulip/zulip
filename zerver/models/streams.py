@@ -184,6 +184,14 @@ class Stream(models.Model):
         stream_permission_group_settings.keys()
     )
 
+    stream_permission_group_settings_granting_metadata_access = [
+        "can_add_subscribers_group",
+        "can_administer_channel_group",
+    ]
+    assert set(stream_permission_group_settings_granting_metadata_access).issubset(
+        stream_permission_group_settings.keys()
+    )
+
     class Meta:
         indexes = [
             models.Index(Upper("name"), name="upper_stream_name_idx"),

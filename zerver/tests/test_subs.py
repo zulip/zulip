@@ -7840,6 +7840,7 @@ class AccessStreamTest(ZulipTestCase):
 
         othello = self.example_user("othello")
         iago = self.example_user("iago")
+        polonius = self.example_user("polonius")
 
         # Realm admin cannot access the private stream
         with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
@@ -7865,8 +7866,8 @@ class AccessStreamTest(ZulipTestCase):
         with self.assertRaisesRegex(JsonableError, "Invalid channel name 'new_private_stream'"):
             access_stream_by_name(othello, stream.name, require_content_access=False)
 
-        othello_group = check_add_user_group(
-            othello.realm, "user_profile_group", [othello], acting_user=othello
+        polonius_and_othello_group = check_add_user_group(
+            othello.realm, "user_profile_group", [othello, polonius], acting_user=othello
         )
         nobody_group = NamedUserGroup.objects.get(
             name="role:nobody", is_system_group=True, realm=othello.realm
@@ -7875,13 +7876,19 @@ class AccessStreamTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             stream,
             "can_administer_channel_group",
-            othello_group,
+            polonius_and_othello_group,
             acting_user=None,
         )
         # Channel admins can access private stream if
         # require_content_access is set to False
         access_stream_by_id(othello, stream.id, require_content_access=False)
         access_stream_by_name(othello, stream.name, require_content_access=False)
+        # Guest user who is a channel admin cannot access a stream via
+        # groups if they are not subscribed to it.
+        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
+            access_stream_by_id(polonius, stream.id, require_content_access=False)
+        with self.assertRaisesRegex(JsonableError, "Invalid channel name 'new_private_stream'"):
+            access_stream_by_name(polonius, stream.name, require_content_access=False)
         do_change_stream_group_based_setting(
             stream,
             "can_administer_channel_group",
@@ -7892,13 +7899,25 @@ class AccessStreamTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             stream,
             "can_add_subscribers_group",
-            othello_group,
+            polonius_and_othello_group,
             acting_user=None,
         )
-        # Users in `can_add_subscribers_group` can access private
-        # stream if require_content_access is set to True
         access_stream_by_id(othello, stream.id, require_content_access=False)
         access_stream_by_name(othello, stream.name, require_content_access=False)
+        # Users in `can_add_subscribers_group` can access private
+        # stream if require_content_access is set to True
+        access_stream_by_id(othello, stream.id, require_content_access=True)
+        access_stream_by_name(othello, stream.name, require_content_access=True)
+        # Guest user who cannot access a stream via groups if they are
+        # part of `can_add_subscribers_group` but not subscribed to it.
+        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
+            access_stream_by_id(polonius, stream.id, require_content_access=False)
+        with self.assertRaisesRegex(JsonableError, "Invalid channel name 'new_private_stream'"):
+            access_stream_by_name(polonius, stream.name, require_content_access=False)
+        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
+            access_stream_by_id(polonius, stream.id, require_content_access=True)
+        with self.assertRaisesRegex(JsonableError, "Invalid channel name 'new_private_stream'"):
+            access_stream_by_name(polonius, stream.name, require_content_access=True)
 
     def test_stream_access_by_guest(self) -> None:
         guest_user_profile = self.example_user("polonius")
