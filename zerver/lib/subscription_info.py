@@ -418,6 +418,7 @@ def validate_user_access_to_subscribers_helper(
         )
 
     if has_metadata_access_to_channel_via_groups(
+        user_profile,
         user_group_membership_details.user_recursive_group_ids,
         stream_dict["can_administer_channel_group_id"],
         stream_dict["can_add_subscribers_group_id"],
@@ -591,7 +592,10 @@ def has_metadata_access_to_previously_subscribed_stream(
 
     if stream_dict["invite_only"]:
         return user_profile.is_realm_admin or has_metadata_access_to_channel_via_groups(
-            user_recursive_group_ids, can_administer_channel_group_id, can_add_subscribers_group_id
+            user_profile,
+            user_recursive_group_ids,
+            can_administer_channel_group_id,
+            can_add_subscribers_group_id,
         )
 
     return True
@@ -733,7 +737,10 @@ def gather_subscriptions_helper(
         can_administer_channel_group_id = raw_stream_dict["can_administer_channel_group_id"]
         can_add_subscribers_group_id = raw_stream_dict["can_add_subscribers_group_id"]
         has_metadata_access = has_metadata_access_to_channel_via_groups(
-            user_recursive_group_ids, can_administer_channel_group_id, can_add_subscribers_group_id
+            user_profile,
+            user_recursive_group_ids,
+            can_administer_channel_group_id,
+            can_add_subscribers_group_id,
         )
         if is_public or user_profile.is_realm_admin or has_metadata_access:
             slim_stream_dict = build_stream_dict_for_never_sub(
