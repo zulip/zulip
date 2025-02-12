@@ -471,6 +471,52 @@ class TestCreateStreams(ZulipTestCase):
             if stream.name == "publictrywithouthistory":
                 self.assertTrue(stream.history_public_to_subscribers)
 
+    def test_create_stream_using_add_channel(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+
+        params = {
+            "channel": orjson.dumps(
+                {"name": "basketball", "description": "Channel for chatting about basketball."}
+            ).decode(),
+            "subscribers": orjson.dumps([11]).decode(),
+            "announce": orjson.dumps(False).decode(),
+            "is_default_stream": orjson.dumps(True).decode(),
+            "invite_only": orjson.dumps(False).decode(),
+            "is_web_public": orjson.dumps(False).decode(),
+        }
+
+        result = self.api_post(user_profile, "/api/v1/channels/create", params)
+        self.assert_json_success(result)
+        cordelia = self.example_user("cordelia")
+        realm = user_profile.realm
+        group = check_add_user_group(realm, "AdminsGroup", [user_profile], acting_user=user_profile)
+        params = {
+            "channel": orjson.dumps(
+                {"name": "testchannel", "description": "Testing can_* fields", "color": "#11f1f1"}
+            ).decode(),
+            "subscribers": orjson.dumps([11, cordelia.id]).decode(),
+            "announce": orjson.dumps(False).decode(),
+            "invite_only": orjson.dumps(False).decode(),
+            "is_web_public": orjson.dumps(False).decode(),
+            "is_default_stream": orjson.dumps(False).decode(),
+            "can_add_subscribers_group": orjson.dumps(group.id).decode(),
+        }
+
+        result = self.api_post(user_profile, "/api/v1/channels/create", params)
+        self.assert_json_success(result)
+
+        # Creating an existing channel should return an error.
+        params = {
+            "channel": orjson.dumps(
+                {"name": "basketball", "description": "Channel for chatting about basketball."}
+            ).decode(),
+            "subscribers": orjson.dumps([11]).decode(),
+        }
+        result = self.api_post(user_profile, "/api/v1/channels/create", params)
+        self.assert_json_error(result, "Channel 'basketball' already exists")
+        self.assert_json_error_contains(result, "Channel 'basketball' already exists")
+
     def test_add_stream_as_default_on_stream_creation(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
