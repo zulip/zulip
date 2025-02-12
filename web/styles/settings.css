@@ -1455,7 +1455,7 @@ label.preferences-radio-choice-label {
         .exit {
             font-weight: 600;
             position: absolute;
-            right: 10px;
+            right: 0.7142em; /* 10px at 14px em */
             color: hsl(0deg 0% 67%);
             cursor: pointer;
         }
