@@ -24132,6 +24132,10 @@ components:
             sender's email address, which corresponds in this case to their
             real email address.
 
+            The avatar size will be `100x100` px (default) and a larger avatar
+            size is available. See the [**Get a user's avatar**](/api/get-user-avatar)
+            page on how to get larger avatar size and other details.
+
             **Changes**: Before Zulip 7.0 (feature level 163), access to a
             user's real email address was a realm-level setting. As of this
             feature level, `email_address_visibility` is a user setting.
@@ -24914,6 +24918,10 @@ components:
             query parameter was set to `true`, the current user has access to
             this user's real email address, and this user's avatar is hosted by
             the Gravatar provider (i.e. this user has never uploaded an avatar).
+
+            The avatar size will be `100x100` px (default) and a larger avatar
+            size is available. See the [**Get a user's avatar**](/api/get-user-avatar)
+            page on how to get larger avatar size and other details.
 
             **Changes**: Before Zulip 7.0 (feature level 163), access to a
             user's real email address was a realm-level setting. As of this
