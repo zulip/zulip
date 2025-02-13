@@ -1217,6 +1217,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     vertical-align: bottom;
 }
 
+.add-user-group-container,
 .add_streams_container {
     display: inline-flex;
     align-items: center;
