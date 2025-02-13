@@ -1,11 +1,11 @@
 # Subscribe users to a channel
 
 Organization [administrators](/help/user-roles) can
-[configure](/help/configure-who-can-invite-to-channels#configure-who-can-subscribe-other-users-to-any-channel)
-who can subscribe other users to any channel. Channel administrators can
+[configure](/help/configure-who-can-invite-to-channels#configure-who-can-subscribe-others-to-channels-in-general)
+who can subscribe other users to channels. Channel administrators can
 configure who can
-[subscribe](/help/configure-who-can-invite-to-channels#configure-who-can-subscribe-other-users-to-a-specific-channel)
-other users to a particular channel.
+[subscribe](/help/configure-who-can-invite-to-channels#configure-who-can-subscribe-anyone-to-a-specific-channel)
+anyone to a particular channel.
 
 You will only see the options below if you have the required permissions.
 

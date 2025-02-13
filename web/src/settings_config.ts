@@ -661,7 +661,7 @@ export const all_group_setting_labels = {
             defaultMessage: "Who can create web-public channels",
         }),
         can_create_private_channel_group: $t({defaultMessage: "Who can create private channels"}),
-        can_add_subscribers_group: $t({defaultMessage: "Who can subscribe users to any channel"}),
+        can_add_subscribers_group: $t({defaultMessage: "Who can subscribe others to channels"}),
         direct_message_permission_group: $t({
             defaultMessage: "Who can authorize a direct message conversation",
         }),
@@ -689,11 +689,11 @@ export const all_group_setting_labels = {
         can_add_custom_emoji_group: $t({defaultMessage: "Who can add custom emoji"}),
     },
     stream: {
-        can_add_subscribers_group: $t({defaultMessage: "Who can subscribe others to this channel"}),
+        can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
         can_send_message_group: $t({defaultMessage: "Who can post to this channel"}),
         can_administer_channel_group: $t({defaultMessage: "Who can administer this channel"}),
         can_remove_subscribers_group: $t({
-            defaultMessage: "Who can unsubscribe others from this channel",
+            defaultMessage: "Who can unsubscribe anyone from this channel",
         }),
     },
     group: {
@@ -1193,7 +1193,7 @@ export const stream_privacy_policy_values = {
         code: "invite-only-public-history",
         name: $t({defaultMessage: "Private, shared history"}),
         description: $t({
-            defaultMessage: "Joining and viewing messages requires being added by a subscriber",
+            defaultMessage: "Joining and viewing messages requires being invited",
         }),
     },
     private: {
@@ -1201,7 +1201,7 @@ export const stream_privacy_policy_values = {
         name: $t({defaultMessage: "Private, protected history"}),
         description: $t({
             defaultMessage:
-                "Joining and viewing messages requires being added by a subscriber; new subscribers cannot see messages sent before they joined",
+                "Joining and viewing messages requires being invited; users can only view messages sent while they were subscribed",
         }),
     },
 };

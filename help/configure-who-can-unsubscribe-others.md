@@ -1,11 +1,8 @@
-# Configure who can unsubscribe other users from a channel
+# Configure who can unsubscribe anyone from a channel
 
-If you have permission to administer a public channel, you can configure
-who can unsubscribe other users from it. For [private
-channels](/help/channel-permissions#private-channels), you additionally
-need to be a subscriber in order to change this configuration.
-
-Organization administrators can unsubscribe other users from any channel.
+Organization administrators and [channel
+administrators](/help/configure-who-can-administer-a-channel) can automatically
+unsubscribe anyone from a channel.
 
 {start_tabs}
 
@@ -15,7 +12,7 @@ Organization administrators can unsubscribe other users from any channel.
 
 {!select-channel-view-general.md!}
 
-1. Under **Channel permissions**, configure **Who can unsubscribe others from
+1. Under **Channel permissions**, configure **Who can unsubscribe anyone from
    this channel**.
 
 {!save-changes.md!}
