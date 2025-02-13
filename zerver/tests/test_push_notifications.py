@@ -48,7 +48,6 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
     APNsContext,
     DeviceToken,
-    HostnameAlreadyInUseBouncerError,
     InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
     b64_to_hex,
@@ -5386,7 +5385,6 @@ class PushBouncerSignupTest(ZulipTestCase):
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_error(result, "A server with hostname example.com already exists")
         self.assertEqual(result.json()["code"], "HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR")
-        self.assertEqual(result.json()["docs_url"], HostnameAlreadyInUseBouncerError.docs_url)
 
     def test_register_contact_email_validation_rules(self) -> None:
         zulip_org_id = str(uuid.uuid4())

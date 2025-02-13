@@ -1534,9 +1534,8 @@ class PushNotificationsDisallowedByBouncerError(Exception):
 
 class HostnameAlreadyInUseBouncerError(JsonableError):
     code = ErrorCode.HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR
-    docs_url = "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#moving-your-registration-to-a-new-server"
 
-    data_fields = ["hostname", "docs_url"]
+    data_fields = ["hostname"]
 
     def __init__(self, hostname: str) -> None:
         self.hostname: str = hostname
