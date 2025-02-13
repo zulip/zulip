@@ -1,9 +1,9 @@
 # Unsubscribe users from a channel
 
 Organization [administrators](/help/user-roles) can
-unsubscribe other users from any channel. Channel administrators can
+unsubscribe users from any channel. Channel administrators can
 configure who can
-[unsubscribe](/help/configure-who-can-unsubscribe-others) other users
+[unsubscribe](/help/configure-who-can-unsubscribe-others) anyone
 from a particular channel.
 
 You will only see the options below if you have the required permissions.

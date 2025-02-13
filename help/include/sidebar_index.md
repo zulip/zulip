@@ -215,7 +215,7 @@
 * [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)
 * [Restrict channel creation](/help/configure-who-can-create-channels)
 * [Configure who can subscribe others](/help/configure-who-can-invite-to-channels)
-* [Configure who can unsubscribe others](/help/configure-who-can-unsubscribe-others)
+* [Configure who can unsubscribe anyone](/help/configure-who-can-unsubscribe-others)
 * [Subscribe users to a channel](/help/subscribe-users-to-a-channel)
 * [Unsubscribe users from a channel](/help/unsubscribe-users-from-a-channel)
 * [Set default channels for new users](/help/set-default-channels-for-new-users)
