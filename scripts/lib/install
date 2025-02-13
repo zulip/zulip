@@ -758,7 +758,7 @@ else
             # to not allow future bugs to cause ToS acceptance to be skipped.
             SKIP_TOS_AGREEMENT_OPTION=""
         else
-            SKIP_TOS_AGREEMENT_OPTION="--agree_to_terms_of_service"
+            SKIP_TOS_AGREEMENT_OPTION="--agree-to-terms-of-service"
         fi
         set +x
         echo "Services enabled, attempting to register server..."

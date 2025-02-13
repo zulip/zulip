@@ -30,7 +30,7 @@ class Command(ZulipBaseCommand):
     @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
-            "--agree_to_terms_of_service",
+            "--agree-to-terms-of-service",
             action="store_true",
             help="Agree to the Zulipchat Terms of Service: https://zulip.com/policies/terms.",
         )
