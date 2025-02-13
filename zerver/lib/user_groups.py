@@ -792,7 +792,7 @@ def get_root_id_annotated_recursive_subgroups_for_groups(
     # each group root_id and annotates it with that group.
 
     cte = With.recursive(
-        lambda cte: NamedUserGroup.objects.filter(id__in=user_group_ids, realm=realm_id)
+        lambda cte: UserGroup.objects.filter(id__in=user_group_ids, realm=realm_id)
         .values(group_id=F("id"), root_id=F("id"))
         .union(
             cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
@@ -801,9 +801,7 @@ def get_root_id_annotated_recursive_subgroups_for_groups(
         )
     )
     recursive_subgroups = (
-        cte.join(NamedUserGroup, id=cte.col.group_id)
-        .with_cte(cte)
-        .annotate(root_id=cte.col.root_id)
+        cte.join(UserGroup, id=cte.col.group_id).with_cte(cte).annotate(root_id=cte.col.root_id)
     )
 
     return recursive_subgroups

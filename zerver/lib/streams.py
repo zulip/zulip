@@ -1,3 +1,4 @@
+from collections import defaultdict
 from collections.abc import Collection, Iterable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -25,9 +26,9 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import AnonymousSettingGroupDict, APIStreamDict
 from zerver.lib.user_groups import (
     get_recursive_group_members,
-    get_recursive_group_members_union_for_groups,
     get_recursive_membership_groups,
     get_role_based_system_groups_dict,
+    get_root_id_annotated_recursive_subgroups_for_groups,
     user_has_permission_for_group_setting,
 )
 from zerver.models import (
@@ -185,20 +186,59 @@ def get_default_values_for_stream_permission_group_settings(
     return group_setting_values
 
 
-def get_user_ids_with_metadata_access_via_permission_groups(stream: Stream) -> set[int]:
-    return set(
-        get_recursive_group_members_union_for_groups(
-            [stream.can_add_subscribers_group_id, stream.can_administer_channel_group_id]
+def get_users_dict_with_metadata_access_to_streams_via_permission_groups(
+    streams: list[Stream],
+    realm_id: int,
+) -> dict[int, set[int]]:
+    can_administer_group_ids = {stream.can_administer_channel_group_id for stream in streams}
+    can_add_subscriber_group_ids = {stream.can_add_subscribers_group_id for stream in streams}
+
+    all_permission_group_ids = list(can_administer_group_ids | can_add_subscriber_group_ids)
+
+    recursive_subgroups = get_root_id_annotated_recursive_subgroups_for_groups(
+        all_permission_group_ids, realm_id
+    )
+    subgroup_root_id_dict = {}
+    all_subgroup_ids = set()
+    for group in recursive_subgroups:
+        subgroup_root_id_dict[group.id] = group.root_id  # type: ignore[attr-defined]  # root_id is an annotated field.
+        all_subgroup_ids.add(group.id)
+
+    group_members = (
+        UserGroupMembership.objects.filter(
+            user_group_id__in=list(all_subgroup_ids), user_profile__is_active=True
         )
         .exclude(
             # allow_everyone_group=False is false for both
             # can_add_subscribers_group and
             # can_administer_channel_group, so guest users cannot
             # exercise these permission to get metadata access.
-            role=UserProfile.ROLE_GUEST
+            user_profile__role=UserProfile.ROLE_GUEST
         )
-        .values_list("id", flat=True)
+        .values_list("user_group_id", "user_profile_id")
     )
+    group_members_dict = defaultdict(set)
+    for user_group_id, user_profile_id in group_members:
+        root_id = subgroup_root_id_dict[user_group_id]
+        group_members_dict[root_id].add(user_profile_id)
+
+    users_with_metadata_access_dict = defaultdict(set)
+    for stream in streams:
+        users_with_metadata_access_dict[stream.id] = (
+            group_members_dict[stream.can_administer_channel_group_id]
+            | group_members_dict[stream.can_add_subscribers_group_id]
+        )
+
+    return users_with_metadata_access_dict
+
+
+def get_user_ids_with_metadata_access_via_permission_groups(stream: Stream) -> set[int]:
+    users_with_metadata_access_dict = (
+        get_users_dict_with_metadata_access_to_streams_via_permission_groups(
+            [stream], stream.realm_id
+        )
+    )
+    return users_with_metadata_access_dict[stream.id]
 
 
 @transaction.atomic(savepoint=False)

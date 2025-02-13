@@ -23,7 +23,7 @@ from zerver.lib.streams import (
     get_group_setting_value_dict_for_streams,
     get_setting_values_for_group_settings,
     get_stream_post_policy_value_based_on_group_setting,
-    get_user_ids_with_metadata_access_via_permission_groups,
+    get_users_dict_with_metadata_access_to_streams_via_permission_groups,
     get_web_public_streams_queryset,
     has_metadata_access_to_channel_via_groups,
     subscribed_to_stream,
@@ -521,6 +521,7 @@ def get_subscribers_query(
 def bulk_get_subscriber_peer_info(
     realm: Realm,
     streams: Collection[Stream] | QuerySet[Stream],
+    users_with_metadata_access_via_permission_groups: dict[int, set[int]] | None = None,
 ) -> SubscriberPeerInfo:
     """
     Glossary:
@@ -553,18 +554,22 @@ def bulk_get_subscriber_peer_info(
     if private_streams:
         realm_admin_ids = {user.id for user in realm.get_admin_users_and_bots()}
 
+        if users_with_metadata_access_via_permission_groups is None:
+            users_with_metadata_access_via_permission_groups = (
+                get_users_dict_with_metadata_access_to_streams_via_permission_groups(
+                    list(private_streams), realm.id
+                )
+            )
+
         for stream in private_streams:
             # Realm admins can see all private stream
             # subscribers.
             subscribed_user_ids = stream_user_ids.get(stream.id, set())
             subscribed_ids[stream.id] = subscribed_user_ids
-            user_ids_with_metadata_access_via_permission_groups = (
-                get_user_ids_with_metadata_access_via_permission_groups(stream)
-            )
             private_peer_dict[stream.id] = (
                 subscribed_user_ids
                 | realm_admin_ids
-                | user_ids_with_metadata_access_via_permission_groups
+                | users_with_metadata_access_via_permission_groups[stream.id]
             )
 
     for stream_id in public_stream_ids:
