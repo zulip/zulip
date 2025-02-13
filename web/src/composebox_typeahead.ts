@@ -1414,7 +1414,7 @@ export function initialize({
         $element: $("input#stream_message_recipient_topic"),
         type: "input",
     };
-    new Typeahead(stream_message_typeahead_input, {
+    const composebox_topic_typeahead = new Typeahead(stream_message_typeahead_input, {
         source(): string[] {
             return topics_seen_for(compose_state.stream_id());
         },
@@ -1442,6 +1442,11 @@ export function initialize({
             return false;
         },
         header_html: render_topic_typeahead_hint,
+    });
+    $("input#stream_message_recipient_topic").on("focus", () => {
+        if (!realm.realm_mandatory_topics) {
+            composebox_topic_typeahead.lookup(false);
+        }
     });
 
     const private_message_typeahead_input: TypeaheadInputElement = {
