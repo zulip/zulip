@@ -270,9 +270,9 @@ def desktop_home(request: HttpRequest) -> HttpResponse:
 
 def doc_permalinks_view(request: HttpRequest, doc_id: str) -> HttpResponse:
     DOC_PERMALINK_MAP: dict[str, str] = {
-        "usage-statistics": "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-usage-statistics",
-        "basic-metadata": "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#uploading-basic-metadata",
-        "why-service": "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#why-a-push-notification-service-is-necessary",
+        "usage-statistics": "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#uploading-usage-statistics",
+        "basic-metadata": "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#uploading-basic-metadata",
+        "why-service": "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#why-a-push-notification-service-is-necessary",
         "registration-transfer": "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#moving-your-registration-to-a-new-server",
     }
 
