@@ -93,6 +93,10 @@ export function user_can_create_multiuse_invite(): boolean {
 }
 
 export function user_can_summarize_topics(): boolean {
+    if (!realm.server_can_summarize_topics) {
+        return false;
+    }
+
     return user_has_permission_for_group_setting(
         realm.realm_can_summarize_topics_group,
         "can_summarize_topics_group",
