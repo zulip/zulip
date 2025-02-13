@@ -119,6 +119,12 @@ of the failure, you can just rerun the script. For more information, see
   notifications are not enabled, no data will be submitted, so this flag is
   redundant.
 
+- `--agree-to-terms-of-service`: If you're using the `--push-notifications` flag,
+  you can pass this additional flag to indicate that you have read and agree to
+  the [Terms of Service][terms].
+  This skips the Terms of Service prompt, allowing for running the installer
+  with `--push-notifications` in scripts without requiring user input.
+
 - `--self-signed-cert`: With this option, the Zulip installer
   generates a self-signed SSL certificate for the server. This isn't
   suitable for production use, but may be convenient for testing.
