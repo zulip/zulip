@@ -111,6 +111,7 @@ export let render_typeahead_item = (args: {
     emoji_code?: string | undefined;
     topic_object?: TopicSuggestion;
     is_stream_topic?: boolean;
+    is_empty_string_topic?: boolean;
 }): string => {
     const has_image = args.img_src !== undefined;
     const has_status = args.status_emoji_info !== undefined;
