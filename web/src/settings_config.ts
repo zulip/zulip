@@ -260,39 +260,6 @@ export const common_policy_values = {
     },
 };
 
-export const wildcard_mention_policy_values = {
-    by_everyone: {
-        order: 1,
-        code: 1,
-        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
-    },
-    by_members: {
-        order: 2,
-        code: 2,
-        description: $t({defaultMessage: "Admins, moderators and members"}),
-    },
-    by_full_members: {
-        order: 3,
-        code: 3,
-        description: $t({defaultMessage: "Admins, moderators and full members"}),
-    },
-    by_moderators_only: {
-        order: 4,
-        code: 7,
-        description: $t({defaultMessage: "Admins and moderators"}),
-    },
-    by_admins_only: {
-        order: 5,
-        code: 5,
-        description: $t({defaultMessage: "Admins only"}),
-    },
-    nobody: {
-        order: 6,
-        code: 6,
-        description: $t({defaultMessage: "Nobody"}),
-    },
-};
-
 export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),
@@ -687,6 +654,9 @@ export const all_group_setting_labels = {
         }),
         can_create_bots_group: $t({defaultMessage: "Who can create any bot"}),
         can_add_custom_emoji_group: $t({defaultMessage: "Who can add custom emoji"}),
+        can_mention_many_users_group: $t({
+            defaultMessage: "Who can notify a large number of users with a wildcard mention",
+        }),
     },
     stream: {
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
@@ -727,6 +697,7 @@ export const realm_group_permission_settings: {
             "can_create_web_public_channel_group",
             "can_create_private_channel_group",
             "can_add_subscribers_group",
+            "can_mention_many_users_group",
         ],
     },
     {

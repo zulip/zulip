@@ -4751,6 +4751,18 @@ paths:
                                             setting controlled this permission; `true` corresponded to `Admins`, and
                                             `false` to `Members`.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_mention_many_users_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to use wildcard mentions in large channels.
+
+                                            All users will receive a warning/reminder when using mentions in large
+                                            channels, even when permitted to do so.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 352). Previously, this
+                                            permission was controlled by the enum `wildcard_mention_policy`.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_move_messages_between_channels_group:
                                       allOf:
                                         - description: |
@@ -5267,28 +5279,6 @@ paths:
                                         Zulip [communities directory](/help/communities-directory).
 
                                         **Changes**: New in Zulip 6.0 (feature level 129).
-                                    wildcard_mention_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy][permission-level] for who can use wildcard mentions in
-                                        large channels.
-
-                                        - 1 = Any user can use wildcard mentions in large channels.
-                                        - 2 = Only members can use wildcard mentions in large channels.
-                                        - 3 = Only [full members][calc-full-member] can use wildcard mentions in large channels.
-                                        - 5 = Only organization administrators can use wildcard mentions in large channels.
-                                        - 6 = Nobody can use wildcard mentions in large channels.
-                                        - 7 = Only organization administrators and moderators can use wildcard mentions in large channels.
-
-                                        All users will receive a warning/reminder when using
-                                        mentions in large channels, even when permitted to do so.
-
-                                        **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
-                                        Zulip 4.0 (feature level 62). Channel administrators option removed in
-                                        Zulip 6.0 (feature level 133).
-
-                                        [permission-level]: /api/roles-and-permissions#permission-levels
-                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     zulip_update_announcements_stream_id:
                                       type: integer
                                       description: |
@@ -7527,8 +7517,10 @@ paths:
                           }
                         description: |
                           An example JSON error response for when the message was rejected because
-                          of the organization's `wildcard_mention_policy` and large number of
-                          subscribers to the channel.
+                          the message contains a stream wildcard mention, but the user doesn't have
+                          permission to use such a mention in this channel as the user is not present
+                          in `can_mention_many_users_group` and the channel contains a large number
+                          of subscribers.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
                           error returned the `"BAD_REQUEST"` code.
@@ -7543,9 +7535,9 @@ paths:
                         description: |
                           An example JSON error response for when the message was rejected because
                           the message contains a topic wildcard mention, but the user doesn't have
-                          permission to use such a mention in this topic due to the
-                          `wildcard_mention_policy` (and large number of participants in this
-                          specific topic).
+                          permission to use such a mention in this topic as the user is not present
+                          in `can_mention_many_users_group` and the topic contains a large number
+                          of participants.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously,
                           `wildcard_mention_policy` was not enforced for topic mentions.
@@ -8963,8 +8955,10 @@ paths:
                           }
                         description: |
                           An example JSON error response for when the message was rejected because
-                          of the organization's `wildcard_mention_policy` and large number of
-                          subscribers to the channel.
+                          the message contains a stream wildcard mention, but the user doesn't have
+                          permission to use such a mention in this channel as the user is not present
+                          in `can_mention_many_users_group` and the channel contains a large number
+                          of subscribers.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
                           error returned the `"BAD_REQUEST"` code.
@@ -8979,9 +8973,9 @@ paths:
                         description: |
                           An example JSON error response for when the message was rejected because
                           the message contains a topic wildcard mention, but the user doesn't have
-                          permission to use such a mention in this topic due to the
-                          `wildcard_mention_policy` (and large number of participants in this
-                          specific topic).
+                          permission to use such a mention in this topic as the user is not present
+                          in `can_mention_many_users_group` and the topic contains a large number
+                          of participants.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously,
                           `wildcard_mention_policy` was not enforced for topic mentions.
@@ -16928,6 +16922,20 @@ paths:
                               setting controlled this permission; `true` corresponded to `Admins`, and
                               `false` to `Members`.
                           - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_mention_many_users_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to use wildcard mentions in large channels.
+
+                              All users will receive a warning/reminder when using mentions in large
+                              channels, even when permitted to do so.
+
+                              **Changes**: New in Zulip 10.0 (feature level 352). Previously, this
+                              permission was controlled by the enum `wildcard_mention_policy`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_can_move_messages_between_channels_group:
                         allOf:
                           - description: |
@@ -17144,11 +17152,17 @@ paths:
                           [permission-level]: /api/roles-and-permissions#permission-levels
                       realm_wildcard_mention_policy:
                         type: integer
+                        deprecated: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The [policy][permission-level] for who can use wildcard mentions
-                          in large channels.
+                          A deprecated representation of a superset of the users who
+                          have permission to use wildcard mentions in large channels,
+                          available for backwards-compatibility. Clients should use
+                          `can_mention_many_users_group` instead.
+
+                          It is an enum with the following possible values, corresponding
+                          to roles/system groups:
 
                           - 1 = Any user can use wildcard mentions in large channels.
                           - 2 = Only members can use wildcard mentions in large channels.
@@ -17160,9 +17174,14 @@ paths:
                           All users will receive a warning/reminder when using
                           mentions in large channels, even when permitted to do so.
 
-                          **Changes**: In Zulip 6.0 (feature level 133), channel administrators option removed.
+                          **Changes**: Deprecated in Zulip 10.0 (feature level 352) and
+                          replaced by `realm_can_mention_many_users_group`, which
+                          supports finer resolution of configurations, resulting in this
+                          property being inaccurate following that transition.
 
-                          In Zulip 4.0 (feature level 62), moderators option added.
+                          Channel administrators option removed in Zulip 6.0 (feature level 133).
+
+                          Moderators option added in Zulip 4.0 (feature level 62).
 
                           New in Zulip 4.0 (feature level 33).
 

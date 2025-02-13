@@ -93,14 +93,10 @@
                   setting_name="realm_can_add_subscribers_group"
                   label=group_setting_labels.can_add_subscribers_group}}
 
-                <div class="input-group">
-                    <label for="id_realm_wildcard_mention_policy" class="settings-field-label">{{t "Who can notify a large number of users with a wildcard mention" }}
-                        {{> ../help_link_widget link="/help/restrict-wildcard-mentions" }}
-                    </label>
-                    <select name="realm_wildcard_mention_policy" id="id_realm_wildcard_mention_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=wildcard_mention_policy_values}}
-                    </select>
-                </div>
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_mention_many_users_group"
+                  label=group_setting_labels.can_mention_many_users_group
+                  help_link="/help/restrict-wildcard-mentions"}}
             </div>
         </div>
 

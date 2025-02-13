@@ -5450,6 +5450,11 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_realm_permission_group_setting(
             realm, "can_add_subscribers_group", moderators_group, acting_user=None
         )
+
+        # Moderators, Admins and owners are always full members.
+        do_change_user_role(self.test_user, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.assertFalse(self.test_user.is_provisional_member)
+
         do_change_user_role(self.test_user, UserProfile.ROLE_MEMBER, acting_user=None)
         # Make sure that we are checking the permission with a full member,
         # as full member is the user just below moderator in the role hierarchy.
@@ -5503,6 +5508,7 @@ class SubscriptionAPITest(ZulipTestCase):
             realm, "can_add_subscribers_group", full_members_group, acting_user=None
         )
         do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)
+        self.assertTrue(user_profile.is_provisional_member)
         result = self.subscribe_via_post(
             self.test_user,
             ["stream2"],
