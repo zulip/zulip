@@ -90,15 +90,13 @@ function get_render_data(): BuddyListRenderData {
     const other_users_count = people.get_active_human_count() - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
     const get_all_participant_ids = buddy_data.get_conversation_participants_callback();
-
     let unsubscribed_posters_count = 0;
     if (current_sub) {
-        const all_participant_ids = get_all_participant_ids();
-        all_participant_ids.forEach((user_id) => {
+        for (const user_id of get_all_participant_ids()) {
             if (!stream_data.is_user_subscribed(current_sub.stream_id, user_id)) {
-                unsubscribed_posters_count++;
+                unsubscribed_posters_count += 1;
             }
-        });
+        }
     }
 
     return {
@@ -223,11 +221,11 @@ export class BuddyList extends BuddyListConf {
                         const all_participant_ids = buddy_data.get_conversation_participants_callback()();
                         let unsubscribed_posters_count = 0;
                         if (current_sub) {
-                            all_participant_ids.forEach((user_id) => {
+                            for (const user_id of all_participant_ids) {
                                 if (!stream_data.is_user_subscribed(current_sub.stream_id, user_id)) {
-                                    unsubscribed_posters_count++;
+                                    unsubscribed_posters_count += 1;
                                 }
-                            });
+                            }
                         }
                         const elem_id = $elem.attr("id");
                         if (elem_id === "buddy-list-participants-section-heading") {
@@ -417,11 +415,11 @@ export class BuddyList extends BuddyListConf {
         const {total_human_subscribers_count, other_users_count} = this.render_data;
         const all_participant_ids = this.render_data.get_all_participant_ids();
         let unsubscribed_posters_count = 0;
-        all_participant_ids.forEach((user_id) => {
+        for (const user_id of all_participant_ids) {
             if (this.render_data.current_sub && !stream_data.is_user_subscribed(this.render_data.current_sub.stream_id, user_id)) {
-                unsubscribed_posters_count++;
+                unsubscribed_posters_count += 1;
             }
-        });
+        }
         const subscriber_section_user_count =
             total_human_subscribers_count - all_participant_ids.size + unsubscribed_posters_count
 
