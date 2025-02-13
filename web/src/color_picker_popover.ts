@@ -235,4 +235,14 @@ export function initialize(): void {
             toggle_color_picker_popover(target ?? this, stream_id);
         },
     );
+    $("body").on(
+        "click",
+        ".channel-color-label",
+        function (this: HTMLElement, e: JQuery.ClickEvent) {
+            e.stopPropagation();
+            e.preventDefault();
+            const $button = $(this).siblings(".choose_stream_color");
+            $button.trigger("click");
+        },
+    );
 }
