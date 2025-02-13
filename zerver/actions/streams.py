@@ -43,6 +43,7 @@ from zerver.lib.streams import (
     get_stream_permission_policy_name,
     get_stream_post_policy_value_based_on_group_setting,
     get_user_ids_with_metadata_access_via_permission_groups,
+    get_users_dict_with_metadata_access_to_streams_via_permission_groups,
     render_stream_description,
     send_stream_creation_event,
     send_stream_deletion_event,
@@ -492,6 +493,7 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
     stream_dict: dict[int, Stream],
     altered_user_dict: dict[int, set[int]],
     altered_guests: set[int],
+    users_with_metadata_access_via_permission_groups: dict[int, set[int]] | None = None,
 ) -> None:
     stream_ids = set(altered_user_dict.keys())
     recent_traffic = get_streams_traffic(stream_ids, realm)
@@ -504,6 +506,7 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
 
         notify_user_ids = []
         if not stream.is_public():
+            assert users_with_metadata_access_via_permission_groups is not None
             # Users newly added to invite-only streams
             # need a `create` notification.  The former, because
             # they need the stream to exist before
@@ -511,13 +514,10 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
             # they can manage the new stream.
             # Realm admins already have all created private streams.
             realm_admin_ids = {user.id for user in realm.get_admin_users_and_bots()}
-            user_ids_with_metadata_access_via_permission_groups = (
-                get_user_ids_with_metadata_access_via_permission_groups(stream)
-            )
             notify_user_ids = list(
                 stream_users_ids
                 - realm_admin_ids
-                - user_ids_with_metadata_access_via_permission_groups
+                - users_with_metadata_access_via_permission_groups[stream.id]
             )
         elif not stream.is_web_public:
             # Guese users need a `create` notification for
@@ -805,9 +805,19 @@ def bulk_add_subscriptions(
 
     new_streams = [stream_dict[stream_id] for stream_id in altered_user_dict]
 
+    private_streams = [stream for stream in new_streams if not stream.is_public()]
+    users_with_metadata_access_via_permission_groups = None
+    if private_streams:
+        users_with_metadata_access_via_permission_groups = (
+            get_users_dict_with_metadata_access_to_streams_via_permission_groups(
+                private_streams, realm.id
+            )
+        )
+
     subscriber_peer_info = bulk_get_subscriber_peer_info(
         realm=realm,
         streams=new_streams,
+        users_with_metadata_access_via_permission_groups=users_with_metadata_access_via_permission_groups,
     )
 
     # We now send several types of events to notify browsers.  The
@@ -820,6 +830,7 @@ def bulk_add_subscriptions(
             stream_dict=stream_dict,
             altered_user_dict=altered_user_dict,
             altered_guests=altered_guests,
+            users_with_metadata_access_via_permission_groups=users_with_metadata_access_via_permission_groups,
         )
 
         send_subscription_add_events(

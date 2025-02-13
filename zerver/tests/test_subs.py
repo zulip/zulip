@@ -3391,7 +3391,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=16,
+            query_count=17,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3408,7 +3408,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=16,
+            query_count=17,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -6133,15 +6133,17 @@ class SubscriptionAPITest(ZulipTestCase):
             private, "can_administer_channel_group", user6_group, acting_user=user6
         )
 
-        user7_group = self.create_or_update_anonymous_group_for_setting([user7], [])
+        user7_and_guests_group = self.create_or_update_anonymous_group_for_setting(
+            [user7, guest], []
+        )
         do_change_stream_group_based_setting(
-            private, "can_add_subscribers_group", user7_group, acting_user=user7
+            private, "can_add_subscribers_group", user7_and_guests_group, acting_user=user7
         )
 
         # Sends 3 peer-remove events, 2 unsubscribe events
         # and 2 stream delete events for private streams.
         with (
-            self.assert_database_query_count(19),
+            self.assert_database_query_count(20),
             self.assert_memcached_count(3),
             self.capture_send_event_calls(expected_num_events=7) as events,
         ):
@@ -6230,7 +6232,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Verify that peer_event events are never sent in Zephyr
         # realm. This does generate stream creation events from
         # send_stream_creation_events_for_previously_inaccessible_streams.
-        with self.assert_database_query_count(num_streams * 2 + 15):
+        with self.assert_database_query_count(num_streams + 17):
             with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
                 self.subscribe_via_post(
                     mit_user,
@@ -6697,7 +6699,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(49):
+        with self.assert_database_query_count(50):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[1]],
