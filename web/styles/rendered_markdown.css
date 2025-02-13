@@ -12,37 +12,37 @@
 
     & ul {
         margin: 0 0 var(--markdown-interelement-space-px) 0;
-        margin-inline-start: 3ch;
+        margin-inline-start: 3.5ch;
     }
 
     & ol {
         margin: 0 0 var(--markdown-interelement-space-px) 0;
-        margin-inline-start: 3ch;
+        margin-inline-start: 3.5ch;
     }
 
     /* We set margin according to the length of the longest list counter. */
     .counter-length-1 {
-        margin-inline-start: 2ch;
+        margin-inline-start: 2.5ch;
     }
 
     .counter-length-2 {
-        margin-inline-start: 3ch;
+        margin-inline-start: 3.5ch;
     }
 
     .counter-length-3 {
-        margin-inline-start: 4ch;
+        margin-inline-start: 4.5ch;
     }
 
     .counter-length-4 {
-        margin-inline-start: 5ch;
+        margin-inline-start: 5.5ch;
     }
 
     .counter-length-5 {
-        margin-inline-start: 6ch;
+        margin-inline-start: 6.5ch;
     }
 
     .counter-length-6 {
-        margin-inline-start: 7ch;
+        margin-inline-start: 7.5ch;
     }
 
     & hr {
