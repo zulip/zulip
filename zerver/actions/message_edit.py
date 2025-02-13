@@ -1350,6 +1350,14 @@ def check_update_message(
     It returns the number changed.
     """
     message = access_message(user_profile, message_id, lock_message=True)
+    if message.recipient.type == Recipient.STREAM:
+        try:
+            stream = Stream.objects.get(id=message.recipient.type_id)
+        except Stream.DoesNotExist:  # nocoverage
+            raise JsonableError(_("Invalid stream."))  # nocoverage
+
+        if stream.deactivated:
+            raise JsonableError(_("Invalid message(s)"))
 
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds
