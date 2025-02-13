@@ -256,6 +256,7 @@ export function build_page(): void {
         ...get_realm_level_notification_settings(),
         group_setting_labels: settings_config.all_group_setting_labels.realm,
         server_can_summarize_topics: realm.server_can_summarize_topics,
+        is_plan_self_hosted: realm.realm_plan_type === 1,
     };
 
     const rendered_admin_tab = render_admin_tab(options);

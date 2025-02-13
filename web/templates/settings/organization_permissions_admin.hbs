@@ -339,7 +339,11 @@
             <div class="m-10 inline-block organization-permissions-parent">
                 {{#unless server_can_summarize_topics}}
                     <div class="tip">
+                        {{#if is_plan_self_hosted}}
                         {{t "AI summaries are not enabled on this server."}}
+                        {{else}}
+                        {{t "AI summaries are not available on Zulip Cloud yet."}}
+                        {{/if}}
                     </div>
                 {{/unless}}
                 {{> group_setting_value_pill_input
