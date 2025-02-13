@@ -17,7 +17,6 @@ const compose_validate = zrequire("compose_validate");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const resolved_topic = zrequire("../shared/src/resolved_topic");
-const settings_config = zrequire("settings_config");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("/compose_recipient");
@@ -68,6 +67,13 @@ const guest = {
     is_guest: true,
 };
 
+const moderator = {
+    email: "moderator@example.com",
+    user_id: 34,
+    full_name: "Charlie",
+    is_moderator: true,
+};
+
 const social_sub = {
     stream_id: 101,
     name: "social",
@@ -102,9 +108,9 @@ const nobody = {
 const everyone = {
     name: "role:everyone",
     id: 2,
-    members: new Set([30]),
+    members: new Set([30, 33]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([3]),
+    direct_subgroup_ids: new Set([5]),
 };
 const admin = {
     name: "role:administrators",
@@ -113,8 +119,22 @@ const admin = {
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
 };
+const moderators = {
+    name: "role:moderators",
+    id: 4,
+    members: new Set([34]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([3]),
+};
+const members = {
+    name: "role:members",
+    id: 5,
+    members: new Set([31]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([4]),
+};
 
-user_groups.initialize({realm_user_groups: [nobody, everyone, admin]});
+user_groups.initialize({realm_user_groups: [nobody, everyone, admin, moderators, members]});
 function test_ui(label, f) {
     run_test(label, (helpers) => {
         $("textarea#compose-textarea").val("some message");
@@ -362,82 +382,34 @@ test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) =>
     // policy matters.
     override_rewire(peer_data, "get_subscriber_count", () => 16);
 
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.by_everyone.code,
-    );
-    override(current_user, "is_guest", true);
-    override(current_user, "is_admin", false);
+    override(realm, "realm_can_mention_many_users_group", everyone.id);
+    override(current_user, "user_id", guest.user_id);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.nobody.code,
-    );
-    override(current_user, "is_admin", true);
+    override(realm, "realm_can_mention_many_users_group", nobody.id);
+    override(current_user, "user_id", bob.user_id);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.by_members.code,
-    );
-    override(current_user, "is_guest", true);
-    override(current_user, "is_admin", false);
+    override(realm, "realm_can_mention_many_users_group", members.id);
+    override(current_user, "user_id", guest.user_id);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
-    override(current_user, "is_guest", false);
+    override(current_user, "user_id", alice.user_id);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.by_moderators_only.code,
-    );
-    override(current_user, "is_moderator", false);
+    override(realm, "realm_can_mention_many_users_group", moderators.id);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
-    override(current_user, "is_moderator", true);
+    override(current_user, "user_id", moderator.user_id);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.by_admins_only.code,
-    );
-    override(current_user, "is_admin", false);
+    override(realm, "realm_can_mention_many_users_group", admin.id);
+    override(current_user, "user_id", moderator.user_id);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     // TODO: Add a by_admins_only case when we implement stream-level administrators.
 
-    override(current_user, "is_admin", true);
-    assert.ok(compose_validate.stream_wildcard_mention_allowed());
-
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.by_full_members.code,
-    );
-    const person = people.get_by_user_id(current_user.user_id);
-    person.date_joined = new Date(Date.now());
-    override(realm, "realm_waiting_period_threshold", 10);
-
-    assert.ok(compose_validate.stream_wildcard_mention_allowed());
-    override(current_user, "is_admin", false);
-    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
-
-    // Now, check for small streams (<=15 subscribers) where the wildcard mention
-    // policy doesn't matter; everyone is allowed to use wildcard mentions.
-    override_rewire(peer_data, "get_subscriber_count", () => 14);
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.by_admins_only.code,
-    );
-    override(current_user, "is_admin", false);
-    override(current_user, "is_guest", true);
+    override(current_user, "user_id", bob.user_id);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 });
 
@@ -475,7 +447,7 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
         return "<banner-stub>";
     });
 
-    override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => true);
+    override(realm, "realm_can_mention_many_users_group", everyone.id);
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
@@ -488,7 +460,7 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
         wildcards_not_allowed_rendered = true;
         return "<banner-stub>";
     });
-    override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => false);
+    override(realm, "realm_can_mention_many_users_group", admin.id);
     assert.ok(!compose_validate.validate());
     assert.ok(wildcards_not_allowed_rendered);
 });

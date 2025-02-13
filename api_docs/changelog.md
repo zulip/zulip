@@ -20,6 +20,22 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 352**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_mention_many_users_group`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to use wildcard mentions in large
+  channels.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `wildcard_mention_policy` property, as the permission to use wildcard mentions
+  in large channels is now controlled by `can_mention_many_users_group` setting.
+* [`POST /register`](/api/register-queue): `realm_wildcard_mention_policy`
+  field is deprecated, having been replaced by `can_mention_many_users_group`.
+  Notably, this backwards-compatible `realm_wildcard_mention_policy` value
+  now contains the superset of the true value that best approximates the actual
+  permission setting.
+
 **Feature level 351**
 
 * [`POST /message_edit_typing`](/api/set-typing-status-for-message-edit):

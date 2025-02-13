@@ -5,7 +5,7 @@ import orjson
 import time_machine
 from django.utils.timezone import now as timezone_now
 
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.users import do_change_can_create_users, do_change_user_role
 from zerver.lib.exceptions import JsonableError, StreamWildcardMentionNotAllowedError
 from zerver.lib.streams import access_stream_for_send_message
@@ -13,7 +13,8 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.users import is_administrator_role
 from zerver.models import Realm, UserProfile, UserStatus
-from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
+from zerver.models.groups import NamedUserGroup, SystemGroups
+from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 
@@ -441,16 +442,21 @@ class TestMocking(ZulipTestCase):
     # https://zulip.readthedocs.io/en/latest/testing/testing-with-django.html#testing-with-mocks
     def test_wildcard_mentions(self) -> None:
         cordelia = self.example_user("cordelia")
+        realm = cordelia.realm
         self.login_user(cordelia)
         self.subscribe(cordelia, "test_stream")
 
         # Let's explicitly set the policy for sending wildcard
         # mentions to a stream. If a stream has too many
         # subscribers, we won't allow any users to spam the stream.
-        do_set_realm_property(
-            cordelia.realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.NOBODY,
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_mention_many_users_group",
+            nobody_system_group,
             acting_user=None,
         )
 

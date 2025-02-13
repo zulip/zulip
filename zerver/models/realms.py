@@ -241,6 +241,15 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         SystemGroups.NOBODY: POLICY_NOBODY,
     }
 
+    SYSTEM_GROUPS_TO_WILDCARD_MENTION_POLICY_MAP = {
+        SystemGroups.EVERYONE: WildcardMentionPolicyEnum.EVERYONE,
+        SystemGroups.MEMBERS: WildcardMentionPolicyEnum.MEMBERS,
+        SystemGroups.FULL_MEMBERS: WildcardMentionPolicyEnum.FULL_MEMBERS,
+        SystemGroups.MODERATORS: WildcardMentionPolicyEnum.MODERATORS,
+        SystemGroups.ADMINISTRATORS: WildcardMentionPolicyEnum.ADMINS,
+        SystemGroups.NOBODY: WildcardMentionPolicyEnum.NOBODY,
+    }
+
     COMMON_POLICY_TYPES = [field.value for field in CommonPolicyEnum]
 
     CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES = [
@@ -351,12 +360,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
-    # Global policy for who is allowed to use wildcard mentions in
-    # streams with a large number of subscribers.  Anyone can use
-    # wildcard mentions in small streams regardless of this setting.
-    wildcard_mention_policy = models.PositiveSmallIntegerField(
-        default=WildcardMentionPolicyEnum.ADMINS,
+    # UserGroup which is allowed to use wildcard mentions in large channels.
+    can_mention_many_users_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
+
     WILDCARD_MENTION_POLICY_TYPES = [field.value for field in WildcardMentionPolicyEnum]
 
     # Threshold in days for new users to create streams, and potentially take
@@ -672,7 +680,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         video_chat_provider=int,
         waiting_period_threshold=int,
         want_advertise_in_communities_directory=bool,
-        wildcard_mention_policy=int,
     )
 
     REALM_PERMISSION_GROUP_SETTINGS: dict[str, GroupPermissionSetting] = dict(
@@ -780,6 +787,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_nobody_group=False,
             allow_everyone_group=False,
             default_group_name=SystemGroups.OWNERS,
+        ),
+        can_mention_many_users_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.ADMINISTRATORS,
         ),
         can_move_messages_between_channels_group=GroupPermissionSetting(
             require_system_group=False,
@@ -1211,6 +1225,8 @@ def get_realm_with_settings(realm_id: int) -> Realm:
         "can_invite_users_group__named_user_group",
         "can_manage_all_groups",
         "can_manage_all_groups__named_user_group",
+        "can_mention_many_users_group",
+        "can_mention_many_users_group__named_user_group",
         "can_move_messages_between_channels_group",
         "can_move_messages_between_channels_group__named_user_group",
         "can_move_messages_between_topics_group",
@@ -1262,9 +1278,16 @@ def get_corresponding_policy_value_for_group_setting(
         hasattr(setting_group, "named_user_group")
         and setting_group.named_user_group.is_system_group
     ):
-        enum_policy_value = Realm.SYSTEM_GROUPS_ENUM_MAP[setting_group.named_user_group.name]
-        if enum_policy_value in valid_policy_enums:
-            return enum_policy_value
+        system_group_name = setting_group.named_user_group.name
+        if group_setting_name == "can_mention_many_users_group":
+            # Wildcard mention policy uses different set of enums than other policy settings.
+            return Realm.SYSTEM_GROUPS_TO_WILDCARD_MENTION_POLICY_MAP.get(
+                system_group_name, WildcardMentionPolicyEnum.EVERYONE
+            )
+        else:
+            enum_policy_value = Realm.SYSTEM_GROUPS_ENUM_MAP[system_group_name]
+            if enum_policy_value in valid_policy_enums:
+                return enum_policy_value
 
     # If the group setting is not set to one of the role based groups
     # that the previous enum setting allowed, then just return the
@@ -1274,6 +1297,9 @@ def get_corresponding_policy_value_for_group_setting(
         # moderators group.
         assert valid_policy_enums == Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES
         return Realm.POLICY_MODERATORS_ONLY
+
+    if group_setting_name == "can_mention_many_users_group":
+        return WildcardMentionPolicyEnum.EVERYONE
 
     assert valid_policy_enums == Realm.COMMON_POLICY_TYPES
     return Realm.POLICY_MEMBERS_ONLY
