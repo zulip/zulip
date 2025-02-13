@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 import type * as tippy from "tippy.js";
-import {z} from "zod";
+import type {z} from "zod";
 
 import render_generate_integration_url_config_checkbox_modal from "../templates/settings/generate_integration_url_config_checkbox_modal.hbs";
 import render_generate_integration_url_config_text_modal from "../templates/settings/generate_integration_url_config_text_modal.hbs";
@@ -13,23 +13,45 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import {$t_html} from "./i18n.ts";
+import type {
+    integration_all_event_types_shcmea,
+    integration_config_options_schema,
+    integrations_interfaced_settings_schema,
+} from "./state_data.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as util from "./util.ts";
 
-type ConfigOption = {
-    key: string;
-    label: string;
-    validator: string;
-};
+type ConfigOption = z.infer<typeof integration_config_options_schema>;
 
-const config_option_schema = z.object({
-    key: z.string(),
-    label: z.string(),
-    validator: z.string(),
-});
+type AllEventType = z.infer<typeof integration_all_event_types_shcmea>;
 
-const config_options_schema = z.array(config_option_schema);
+type InterfacedSetting = z.infer<typeof integrations_interfaced_settings_schema>;
+
+class IntegrationData {
+    seletec_integration: string;
+    config_options: ConfigOption = undefined;
+    all_event_types: AllEventType = null;
+    interfaced_settings: InterfacedSetting | undefined = undefined;
+    integration_logo_url = "";
+
+    constructor(selected_integration: string) {
+        const selected_integration_data = realm.realm_incoming_webhook_bots.find(
+            (bot) => bot.name === selected_integration,
+        );
+        this.seletec_integration = selected_integration;
+        this.config_options = selected_integration_data?.config_options;
+        if (selected_integration_data?.all_event_types) {
+            this.all_event_types = selected_integration_data.all_event_types;
+        }
+        if (selected_integration_data?.interfaced_settings) {
+            this.interfaced_settings = selected_integration_data.interfaced_settings;
+        }
+        if (selected_integration_data) {
+            this.integration_logo_url = `/static/images/integrations/logos/${selected_integration}.svg`;
+        }
+    }
+}
 
 export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
@@ -43,10 +65,17 @@ export function show_generate_integration_url_modal(api_key: string): void {
         unique_id: -1,
         is_direct_message: true,
     };
+    const map_to_channels_option = {
+        name: $t_html({defaultMessage: "Map to Zulip channels"}),
+        unique_id: -2,
+        integration_logo_url: "",
+        is_interfaced_setting: true,
+    };
     const html_body = render_generate_integration_url_modal({
         default_url_message,
         max_topic_length: realm.max_topic_length,
     });
+    let selected_integration_data: IntegrationData;
 
     function generate_integration_url_post_render(): void {
         let selected_integration = "";
@@ -75,8 +104,11 @@ export function show_generate_integration_url_modal(api_key: string): void {
             );
         });
 
-        function render_config(config: ConfigOption[]): void {
-            const validated_config = config_options_schema.parse(config);
+        function render_config(config: ConfigOption): void {
+            const validated_config = config;
+            if (!validated_config) {
+                return;
+            }
             $config_container.empty();
 
             for (const option of validated_config) {
@@ -157,9 +189,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
             const stream_id = stream_input_dropdown_widget.value();
             const topic_name = $topic_input.val()!;
 
-            const selected_integration_data = realm.realm_incoming_webhook_bots.find(
-                (bot) => bot.name === selected_integration,
-            );
+            selected_integration_data = new IntegrationData(selected_integration);
+
             const all_event_types = selected_integration_data?.all_event_types;
             const config = selected_integration_data?.config_options;
 
@@ -183,7 +214,12 @@ export function show_generate_integration_url_modal(api_key: string): void {
             }
 
             const params = new URLSearchParams({api_key});
-            if (stream_id !== -1) {
+            const interfaced_settings = selected_integration_data?.interfaced_settings;
+            const map_to_channel_setting = interfaced_settings?.MapToChannelsT;
+
+            if (map_to_channel_setting && stream_id === -2) {
+                params.set(map_to_channel_setting.unique_query, "true");
+            } else if (stream_id !== -1) {
                 params.set("stream", stream_id!.toString());
                 if ($override_topic.prop("checked") && topic_name !== "") {
                     params.set("topic", topic_name);
@@ -253,11 +289,6 @@ export function show_generate_integration_url_modal(api_key: string): void {
             integration_input_dropdown_widget.render();
             $(".integration-url-name-wrapper").trigger("input");
 
-            const selected_integration = integration_input_dropdown_widget.value();
-            const selected_integration_data = realm.realm_incoming_webhook_bots.find(
-                (bot) => bot.name === selected_integration,
-            );
-
             if (selected_integration_data?.config_options) {
                 render_config(selected_integration_data.config_options);
             }
@@ -277,9 +308,23 @@ export function show_generate_integration_url_modal(api_key: string): void {
         });
         stream_input_dropdown_widget.setup();
 
+        function get_additional_stream_dropdown_options(): Option[] {
+            const map_to_channel_setting =
+                selected_integration_data?.interfaced_settings?.MapToChannelsT;
+            const additional_options: Option[] = [];
+            if (map_to_channel_setting) {
+                map_to_channels_option.integration_logo_url =
+                    selected_integration_data.integration_logo_url;
+                additional_options.push(map_to_channels_option);
+            }
+            return additional_options;
+        }
+
         function get_options_for_stream_dropdown_widget(): Option[] {
+            const additional_settings = get_additional_stream_dropdown_options();
             const options = [
                 direct_messages_option,
+                ...additional_settings,
                 ...streams
                     .filter((stream) => stream_data.can_post_messages_in_stream(stream))
                     .map((stream) => ({
@@ -298,7 +343,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
             stream_input_dropdown_widget.render();
             $(".integration-url-stream-wrapper").trigger("input");
             const user_selected_option = stream_input_dropdown_widget.value();
-            if (user_selected_option === direct_messages_option.unique_id) {
+            if (
+                user_selected_option === direct_messages_option.unique_id ||
+                user_selected_option === map_to_channels_option.unique_id
+            ) {
                 $override_topic.prop("checked", false).prop("disabled", true);
                 $override_topic.closest(".input-group").addClass("control-label-disabled");
                 $topic_input.val("");

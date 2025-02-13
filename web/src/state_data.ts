@@ -255,6 +255,29 @@ export const realm_linkifier_schema = z.object({
     id: z.number(),
 });
 
+export const integration_all_event_types_shcmea = z.nullable(z.array(z.string()));
+
+// Sync this with zerver.lib.webhooks.interfaced_setting.SettingContext
+export const interfaced_settings_context_schema = z.object({
+    parameter_name: z.string(),
+    unique_query: z.string(),
+});
+
+// Sync this with zerver.lib.webhooks.interfaced_setting.SUPPORTED_INTERFACED_SETTINGS
+export const integrations_interfaced_settings_schema = z.object({
+    MapToChannelsT: z.nullable(interfaced_settings_context_schema),
+});
+
+export const integration_config_options_schema = z
+    .array(
+        z.object({
+            key: z.string(),
+            label: z.string(),
+            validator: z.string(),
+        }),
+    )
+    .optional();
+
 // Sync this with zerver.lib.events.do_events_register.
 export const realm_schema = z.object({
     custom_profile_fields: z.array(custom_profile_field_schema),
@@ -349,16 +372,9 @@ export const realm_schema = z.object({
         z.object({
             display_name: z.string(),
             name: z.string(),
-            all_event_types: z.nullable(z.array(z.string())),
-            config_options: z
-                .array(
-                    z.object({
-                        key: z.string(),
-                        label: z.string(),
-                        validator: z.string(),
-                    }),
-                )
-                .optional(),
+            all_event_types: integration_all_event_types_shcmea,
+            config_options: integration_config_options_schema,
+            interfaced_settings: integrations_interfaced_settings_schema,
         }),
     ),
     realm_inline_image_preview: z.boolean(),
