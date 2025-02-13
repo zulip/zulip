@@ -424,22 +424,24 @@ function handle_message_row_edit_escape(e: JQuery.KeyDownEvent): void {
     e.preventDefault();
 }
 
-function handle_inline_topic_edit_keydown(e: JQuery.KeyDownEvent, $recipient_row: JQuery): void {
-    if (keydown_util.is_enter_event(e)) {
-        // Handle Enter key in the recipient bar/inline topic edit form
+function handle_inline_topic_edit_keydown(this: HTMLElement, e: JQuery.KeyDownEvent): void {
+    e.stopPropagation();
+    const $form = $(this);
+    const $form_inline_input = $form.find<HTMLInputElement>("input.inline_topic_edit");
+
+    if ($form_inline_input.is(":focus") && keydown_util.is_enter_event(e)) {
+        // Handle Enter key event in the inline topic edit UI.
+        e.preventDefault();
         if ($(".typeahead:visible").length > 0) {
-            // Accepting typeahead should not trigger a save.
-            e.preventDefault();
+            // Accepting a suggestion from the typeahead should not trigger a save.
             return;
         }
+        const $recipient_row = $form.closest(".recipient_row");
         try_save_inline_topic_edit($recipient_row);
-        e.stopPropagation();
-        e.preventDefault();
     } else if (e.key === "Escape") {
-        // Handle Esc
-        end_if_focused_on_inline_topic_edit();
-        e.stopPropagation();
+        // Handle Escape key event in the inline topic edit UI.
         e.preventDefault();
+        end_if_focused_on_inline_topic_edit();
     }
 }
 
@@ -904,9 +906,6 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
         }),
     );
     message_lists.current.show_edit_topic_on_recipient_row($recipient_row, $form);
-    $form.on("keydown", (e) => {
-        handle_inline_topic_edit_keydown(e, $recipient_row);
-    });
     $(".topic_edit_spinner").hide();
     const msg_id = rows.id_for_recipient_row($recipient_row);
     const message = message_lists.current.get(msg_id);
@@ -920,6 +919,8 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
         stream_name,
         false,
     );
+
+    $form.on("keydown", handle_inline_topic_edit_keydown);
 }
 
 export function end_inline_topic_edit($row: JQuery): void {
