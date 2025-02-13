@@ -1515,5 +1515,12 @@ class TestDocRedirectView(ZulipTestCase):
             "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#why-a-push-notification-service-is-necessary",
         )
 
+        result = self.client_get("/doc-permalinks/registration-transfer")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(
+            result["Location"],
+            "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#moving-your-registration-to-a-new-server",
+        )
+
         result = self.client_get("/doc-permalinks/invalid-doc-id")
         self.assertEqual(result.status_code, 404)
