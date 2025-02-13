@@ -22,9 +22,8 @@ import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as reactions from "./reactions.ts";
 import * as recent_senders from "./recent_senders.ts";
-import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import {current_user, realm} from "./state_data.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -578,63 +577,20 @@ function is_recipient_large_topic(): boolean {
     return topic_participant_count_more_than_threshold(stream_id, compose_state.topic());
 }
 
-// Exported for tests
-export let wildcard_mention_policy_authorizes_user = (): boolean => {
-    if (
-        realm.realm_wildcard_mention_policy ===
-        settings_config.wildcard_mention_policy_values.by_everyone.code
-    ) {
-        return true;
-    }
-    if (
-        realm.realm_wildcard_mention_policy ===
-        settings_config.wildcard_mention_policy_values.nobody.code
-    ) {
-        return false;
-    }
-    if (
-        realm.realm_wildcard_mention_policy ===
-        settings_config.wildcard_mention_policy_values.by_admins_only.code
-    ) {
-        return current_user.is_admin;
-    }
-
-    if (
-        realm.realm_wildcard_mention_policy ===
-        settings_config.wildcard_mention_policy_values.by_moderators_only.code
-    ) {
-        return current_user.is_admin || current_user.is_moderator;
-    }
-
-    if (
-        realm.realm_wildcard_mention_policy ===
-        settings_config.wildcard_mention_policy_values.by_full_members.code
-    ) {
-        if (current_user.is_admin) {
-            return true;
-        }
-        const person = people.get_by_user_id(current_user.user_id);
-        const current_datetime = new Date(Date.now()).getTime();
-        const person_date_joined = new Date(person.date_joined).getTime();
-        const days = (current_datetime - person_date_joined) / 1000 / 86400;
-
-        return days >= realm.realm_waiting_period_threshold && !current_user.is_guest;
-    }
-    return !current_user.is_guest;
-};
-
-export function rewire_wildcard_mention_policy_authorizes_user(
-    value: typeof wildcard_mention_policy_authorizes_user,
-): void {
-    wildcard_mention_policy_authorizes_user = value;
+function user_can_mention_many_users(): boolean {
+    return settings_data.user_has_permission_for_group_setting(
+        realm.realm_can_mention_many_users_group,
+        "can_mention_many_users_group",
+        "realm",
+    );
 }
 
 export function stream_wildcard_mention_allowed(): boolean {
-    return !is_recipient_large_stream() || wildcard_mention_policy_authorizes_user();
+    return !is_recipient_large_stream() || user_can_mention_many_users();
 }
 
 export function topic_wildcard_mention_allowed(): boolean {
-    return !is_recipient_large_topic() || wildcard_mention_policy_authorizes_user();
+    return !is_recipient_large_topic() || user_can_mention_many_users();
 }
 
 export function set_wildcard_mention_threshold(value: number): void {
@@ -648,7 +604,7 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
     // stream, check if they permission to do so. If yes, warn them
     // if they haven't acknowledged the wildcard warning yet.
     if (opts.stream_wildcard_mention !== null && subscriber_count > wildcard_mention_threshold) {
-        if (!wildcard_mention_policy_authorizes_user()) {
+        if (!user_can_mention_many_users()) {
             const new_row_html = render_wildcard_mention_not_allowed_error({
                 banner_type: compose_banner.ERROR,
                 classname: compose_banner.CLASSNAMES.wildcards_not_allowed,

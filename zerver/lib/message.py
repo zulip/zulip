@@ -52,7 +52,6 @@ from zerver.models import (
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
 from zerver.models.messages import get_usermessage_by_message_id
-from zerver.models.realms import WildcardMentionPolicyEnum
 from zerver.models.users import is_cross_realm_bot_email
 
 
@@ -1272,32 +1271,14 @@ def get_recent_private_conversations(user_profile: UserProfile) -> dict[int, dic
     return recipient_map
 
 
-def wildcard_mention_policy_authorizes_user(sender: UserProfile, realm: Realm) -> bool:
+def can_mention_many_users(sender: UserProfile) -> bool:
     """Helper function for 'topic_wildcard_mention_allowed' and
     'stream_wildcard_mention_allowed' to check if the sender is allowed to use
-    wildcard mentions based on the 'wildcard_mention_policy' setting of that realm.
+    wildcard mentions based on the 'can_mention_many_users_group' setting of that realm.
     This check is used only if the participants count in the topic or the subscribers
     count in the stream is greater than 'Realm.WILDCARD_MENTION_THRESHOLD'.
     """
-    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.NOBODY:
-        return False
-
-    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.EVERYONE:
-        return True
-
-    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.ADMINS:
-        return sender.is_realm_admin
-
-    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.MODERATORS:
-        return sender.is_realm_admin or sender.is_moderator
-
-    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.FULL_MEMBERS:
-        return sender.is_realm_admin or (not sender.is_provisional_member and not sender.is_guest)
-
-    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.MEMBERS:
-        return not sender.is_guest
-
-    raise AssertionError("Invalid wildcard mention policy")
+    return sender.has_permission("can_mention_many_users_group")
 
 
 def topic_wildcard_mention_allowed(
@@ -1305,7 +1286,7 @@ def topic_wildcard_mention_allowed(
 ) -> bool:
     if topic_participant_count <= Realm.WILDCARD_MENTION_THRESHOLD:
         return True
-    return wildcard_mention_policy_authorizes_user(sender, realm)
+    return can_mention_many_users(sender)
 
 
 def stream_wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: Realm) -> bool:
@@ -1315,7 +1296,7 @@ def stream_wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: 
     # applies to a stream as an override.
     if num_subscribers_for_stream_id(stream.id) <= Realm.WILDCARD_MENTION_THRESHOLD:
         return True
-    return wildcard_mention_policy_authorizes_user(sender, realm)
+    return can_mention_many_users(sender)
 
 
 def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: list[int]) -> None:

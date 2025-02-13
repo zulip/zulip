@@ -73,7 +73,7 @@ from zerver.models.clients import get_client
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.onboarding_steps import OnboardingStep
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
+from zerver.models.realms import get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
@@ -384,12 +384,6 @@ class Command(ZulipBaseCommand):
                     plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                     org_type=Realm.ORG_TYPES["business"]["id"],
                 )
-
-                # Default to allowing all members to send mentions in
-                # large streams for the test suite to keep
-                # mention-related tests simple.
-                zulip_realm.wildcard_mention_policy = WildcardMentionPolicyEnum.MEMBERS
-                zulip_realm.save(update_fields=["wildcard_mention_policy"])
 
             # Realms should have matching RemoteRealm entries - simulating having realms registered
             # with the bouncer, which is going to be the primary case for modern servers. Tests

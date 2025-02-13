@@ -522,6 +522,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_delete_own_message_group: int | AnonymousSettingGroupDict | None = None
     can_invite_users_group: int | AnonymousSettingGroupDict | None = None
     can_manage_all_groups: int | AnonymousSettingGroupDict | None = None
+    can_mention_many_users_group: int | AnonymousSettingGroupDict | None = None
     can_move_messages_between_channels_group: int | AnonymousSettingGroupDict | None = None
     can_move_messages_between_topics_group: int | AnonymousSettingGroupDict | None = None
     can_summarize_topics_group: int | AnonymousSettingGroupDict | None = None

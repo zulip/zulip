@@ -67,7 +67,7 @@ from zerver.models import (
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
+from zerver.models.realms import get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
@@ -1804,6 +1804,7 @@ class StreamMessagesTest(ZulipTestCase):
         iago = self.example_user("iago")
         polonius = self.example_user("polonius")
         shiva = self.example_user("shiva")
+        hamlet = self.example_user("hamlet")
         realm = cordelia.realm
 
         stream_name = "test_stream"
@@ -1811,19 +1812,36 @@ class StreamMessagesTest(ZulipTestCase):
         self.subscribe(iago, stream_name)
         self.subscribe(polonius, stream_name)
         self.subscribe(shiva, stream_name)
+        self.subscribe(hamlet, stream_name)
 
-        do_set_realm_property(
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        everyone_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
             realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.EVERYONE,
+            "can_mention_many_users_group",
+            everyone_system_group,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("polonius")
 
-        do_set_realm_property(
+        do_change_realm_permission_group_setting(
             realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.MEMBERS,
+            "can_mention_many_users_group",
+            members_system_group,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("polonius", test_fails=True)
@@ -1831,45 +1849,20 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_topic_wildcard_mention_message("polonius", topic_participant_count=10)
         self.send_and_verify_topic_wildcard_mention_message("cordelia")
 
-        do_set_realm_property(
+        do_change_realm_permission_group_setting(
             realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.FULL_MEMBERS,
-            acting_user=None,
-        )
-        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
-        iago.date_joined = timezone_now()
-        iago.save()
-        shiva.date_joined = timezone_now()
-        shiva.save()
-        cordelia.date_joined = timezone_now()
-        cordelia.save()
-        self.send_and_verify_topic_wildcard_mention_message("cordelia", test_fails=True)
-        self.send_and_verify_topic_wildcard_mention_message("cordelia", topic_participant_count=10)
-        # Administrators and moderators can use wildcard mentions even if they are new.
-        self.send_and_verify_topic_wildcard_mention_message("iago")
-        self.send_and_verify_topic_wildcard_mention_message("shiva")
-
-        cordelia.date_joined = timezone_now() - timedelta(days=11)
-        cordelia.save()
-        self.send_and_verify_topic_wildcard_mention_message("cordelia")
-
-        do_set_realm_property(
-            realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.MODERATORS,
+            "can_mention_many_users_group",
+            moderators_system_group,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("cordelia", test_fails=True)
         self.send_and_verify_topic_wildcard_mention_message("cordelia", topic_participant_count=10)
         self.send_and_verify_topic_wildcard_mention_message("shiva")
 
-        cordelia.date_joined = timezone_now()
-        cordelia.save()
-        do_set_realm_property(
+        do_change_realm_permission_group_setting(
             realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.ADMINS,
+            "can_mention_many_users_group",
+            administrators_system_group,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("shiva", test_fails=True)
@@ -1877,14 +1870,50 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_topic_wildcard_mention_message("shiva", topic_participant_count=10)
         self.send_and_verify_topic_wildcard_mention_message("iago")
 
-        do_set_realm_property(
+        do_change_realm_permission_group_setting(
             realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.NOBODY,
+            "can_mention_many_users_group",
+            nobody_system_group,
             acting_user=None,
         )
         self.send_and_verify_topic_wildcard_mention_message("iago", test_fails=True)
         self.send_and_verify_topic_wildcard_mention_message("iago", topic_participant_count=10)
+
+        # Test for checking setting for non-system user group.
+        user_group = check_add_user_group(
+            realm, "new_group", [hamlet, cordelia], acting_user=hamlet
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_mention_many_users_group", user_group, acting_user=None
+        )
+
+        # Hamlet and Cordelia are in the allowed user group.
+        self.send_and_verify_topic_wildcard_mention_message("hamlet")
+        self.send_and_verify_topic_wildcard_mention_message("cordelia")
+
+        # Iago is not in the allowed user group.
+        self.send_and_verify_topic_wildcard_mention_message("iago", test_fails=True)
+        self.send_and_verify_topic_wildcard_mention_message("iago", topic_participant_count=10)
+
+        # Test for checking the setting for anonymous user group.
+        anonymous_user_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet],
+            [administrators_system_group],
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_mention_many_users_group",
+            anonymous_user_group,
+            acting_user=None,
+        )
+
+        # Hamlet is the direct member of the anonymous user group.
+        self.send_and_verify_topic_wildcard_mention_message("hamlet")
+        # Iago is in the `administrators_system_group` subgroup.
+        self.send_and_verify_topic_wildcard_mention_message("iago")
+        # Shiva is not in the anonymous user group.
+        self.send_and_verify_topic_wildcard_mention_message("shiva", test_fails=True)
+        self.send_and_verify_topic_wildcard_mention_message("shiva", topic_participant_count=10)
 
     def send_and_verify_stream_wildcard_mention_message(
         self, sender_name: str, test_fails: bool = False, sub_count: int = 16
@@ -1909,6 +1938,7 @@ class StreamMessagesTest(ZulipTestCase):
         iago = self.example_user("iago")
         polonius = self.example_user("polonius")
         shiva = self.example_user("shiva")
+        hamlet = self.example_user("hamlet")
         realm = cordelia.realm
 
         stream_name = "test_stream"
@@ -1916,19 +1946,36 @@ class StreamMessagesTest(ZulipTestCase):
         self.subscribe(iago, stream_name)
         self.subscribe(polonius, stream_name)
         self.subscribe(shiva, stream_name)
+        self.subscribe(hamlet, stream_name)
 
-        do_set_realm_property(
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        everyone_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
             realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.EVERYONE,
+            "can_mention_many_users_group",
+            everyone_system_group,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("polonius")
 
-        do_set_realm_property(
+        do_change_realm_permission_group_setting(
             realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.MEMBERS,
+            "can_mention_many_users_group",
+            members_system_group,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("polonius", test_fails=True)
@@ -1936,45 +1983,20 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_stream_wildcard_mention_message("polonius", sub_count=10)
         self.send_and_verify_stream_wildcard_mention_message("cordelia")
 
-        do_set_realm_property(
+        do_change_realm_permission_group_setting(
             realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.FULL_MEMBERS,
-            acting_user=None,
-        )
-        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
-        iago.date_joined = timezone_now()
-        iago.save()
-        shiva.date_joined = timezone_now()
-        shiva.save()
-        cordelia.date_joined = timezone_now()
-        cordelia.save()
-        self.send_and_verify_stream_wildcard_mention_message("cordelia", test_fails=True)
-        self.send_and_verify_stream_wildcard_mention_message("cordelia", sub_count=10)
-        # Administrators and moderators can use wildcard mentions even if they are new.
-        self.send_and_verify_stream_wildcard_mention_message("iago")
-        self.send_and_verify_stream_wildcard_mention_message("shiva")
-
-        cordelia.date_joined = timezone_now() - timedelta(days=11)
-        cordelia.save()
-        self.send_and_verify_stream_wildcard_mention_message("cordelia")
-
-        do_set_realm_property(
-            realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.MODERATORS,
+            "can_mention_many_users_group",
+            moderators_system_group,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("cordelia", test_fails=True)
         self.send_and_verify_stream_wildcard_mention_message("cordelia", sub_count=10)
         self.send_and_verify_stream_wildcard_mention_message("shiva")
 
-        cordelia.date_joined = timezone_now()
-        cordelia.save()
-        do_set_realm_property(
+        do_change_realm_permission_group_setting(
             realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.ADMINS,
+            "can_mention_many_users_group",
+            administrators_system_group,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("shiva", test_fails=True)
@@ -1982,14 +2004,50 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_stream_wildcard_mention_message("shiva", sub_count=10)
         self.send_and_verify_stream_wildcard_mention_message("iago")
 
-        do_set_realm_property(
+        do_change_realm_permission_group_setting(
             realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.NOBODY,
+            "can_mention_many_users_group",
+            nobody_system_group,
             acting_user=None,
         )
         self.send_and_verify_stream_wildcard_mention_message("iago", test_fails=True)
         self.send_and_verify_stream_wildcard_mention_message("iago", sub_count=10)
+
+        # Test for checking setting for non-system user group.
+        user_group = check_add_user_group(
+            realm, "new_group", [hamlet, cordelia], acting_user=hamlet
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_mention_many_users_group", user_group, acting_user=None
+        )
+
+        # Hamlet and Cordelia are in the allowed user group.
+        self.send_and_verify_stream_wildcard_mention_message("hamlet")
+        self.send_and_verify_stream_wildcard_mention_message("cordelia")
+
+        # Iago is not in the allowed user group.
+        self.send_and_verify_stream_wildcard_mention_message("iago", test_fails=True)
+        self.send_and_verify_stream_wildcard_mention_message("iago", sub_count=10)
+
+        # Test for checking the setting for anonymous user group.
+        anonymous_user_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet],
+            [administrators_system_group],
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_mention_many_users_group",
+            anonymous_user_group,
+            acting_user=None,
+        )
+
+        # Hamlet is the direct member of the anonymous user group.
+        self.send_and_verify_stream_wildcard_mention_message("hamlet")
+        # Iago is in the `administrators_system_group` subgroup.
+        self.send_and_verify_stream_wildcard_mention_message("iago")
+        # Shiva is not in the anonymous user group.
+        self.send_and_verify_stream_wildcard_mention_message("shiva", test_fails=True)
+        self.send_and_verify_stream_wildcard_mention_message("shiva", sub_count=10)
 
     def test_topic_wildcard_mentioned_flag(self) -> None:
         # For topic wildcard mentions, the 'topic_wildcard_mentioned' flag should be
@@ -2035,19 +2093,6 @@ class StreamMessagesTest(ZulipTestCase):
                 user_profile=iago, message=message
             ).flags.topic_wildcard_mentioned.is_set
         )
-
-    def test_invalid_wildcard_mention_policy(self) -> None:
-        cordelia = self.example_user("cordelia")
-        self.login_user(cordelia)
-
-        self.subscribe(cordelia, "test_stream")
-        do_set_realm_property(cordelia.realm, "wildcard_mention_policy", 10, acting_user=None)
-        content = "@**all** test wildcard mention"
-        with (
-            mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=16),
-            self.assertRaisesRegex(AssertionError, "Invalid wildcard mention policy"),
-        ):
-            self.send_stream_message(cordelia, "test_stream", content)
 
     def test_user_group_mentions_via_subgroup(self) -> None:
         user_profile = self.example_user("iago")

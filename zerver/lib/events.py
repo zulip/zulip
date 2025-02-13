@@ -314,6 +314,11 @@ def fetch_initial_state_data(
                 Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
             )
         )
+        state["realm_wildcard_mention_policy"] = get_corresponding_policy_value_for_group_setting(
+            realm,
+            "can_mention_many_users_group",
+            Realm.WILDCARD_MENTION_POLICY_TYPES,
+        )
 
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
@@ -1379,6 +1384,15 @@ def apply_event(
                 if key == "can_invite_users_group" and "can_invite_others_to_realm" in state:
                     state["can_invite_others_to_realm"] = user_profile.has_permission(
                         "can_invite_users_group"
+                    )
+
+                if key == "can_mention_many_users_group":
+                    state["realm_wildcard_mention_policy"] = (
+                        get_corresponding_policy_value_for_group_setting(
+                            user_profile.realm,
+                            "can_mention_many_users_group",
+                            Realm.WILDCARD_MENTION_POLICY_TYPES,
+                        )
                     )
 
                 if key == "plan_type":
