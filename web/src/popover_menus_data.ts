@@ -275,8 +275,7 @@ export function get_topic_popover_content_context({
         url,
         visibility_policy,
         all_visibility_policies,
-        can_summarize_topics:
-            realm.server_can_summarize_topics && settings_data.user_can_summarize_topics(),
+        can_summarize_topics: settings_data.user_can_summarize_topics(),
         show_ai_features: !user_settings.hide_ai_features,
     };
 }

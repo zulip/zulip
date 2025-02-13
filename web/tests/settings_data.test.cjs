@@ -633,9 +633,13 @@ run_test("guests_can_access_all_other_users", () => {
     assert.ok(settings_data.guests_can_access_all_other_users());
 });
 
-run_test("user_can_summarize_topics", () => {
+run_test("user_can_summarize_topics", ({override}) => {
+    override(realm, "server_can_summarize_topics", true);
     test_realm_group_settings(
         "realm_can_summarize_topics_group",
         settings_data.user_can_summarize_topics,
     );
+
+    override(realm, "server_can_summarize_topics", false);
+    assert.ok(!settings_data.user_can_summarize_topics());
 });
