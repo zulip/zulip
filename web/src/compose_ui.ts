@@ -213,7 +213,7 @@ function get_focus_area(opts: ComposeTriggeredOptions): string {
         (opts.message_type === "stream" && opts.stream_id !== undefined) ||
         (opts.message_type === "private" && opts.private_message_recipient)
     ) {
-        if (opts.trigger === "clear topic button") {
+        if (opts.trigger === "clear topic button" || opts.trigger === "compose_hotkey") {
             return "input#stream_message_recipient_topic";
         }
         return "textarea#compose-textarea";
@@ -228,14 +228,16 @@ function get_focus_area(opts: ComposeTriggeredOptions): string {
 // Export for testing
 export const _get_focus_area = get_focus_area;
 
-export function set_focus(opts: ComposeTriggeredOptions): void {
+export function set_focus(opts: ComposeTriggeredOptions): string | undefined {
     // Called mainly when opening the compose box or switching the
     // message type to set the focus in the first empty input in the
     // compose box.
     if (window.getSelection()!.toString() === "" || opts.trigger !== "message click") {
         const focus_area = get_focus_area(opts);
         $(focus_area).trigger("focus");
+        return focus_area;
     }
+    return undefined;
 }
 
 export let smart_insert_inline = ($textarea: JQuery<HTMLTextAreaElement>, syntax: string): void => {

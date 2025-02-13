@@ -14,6 +14,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as drafts from "./drafts.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {Option} from "./dropdown_widget.ts";
@@ -176,7 +177,10 @@ function switch_message_type(message_type: MessageType): void {
     };
     update_compose_for_message_type(opts);
     update_compose_area_placeholder_text();
-    compose_ui.set_focus(opts);
+    const focused_area = compose_ui.set_focus(opts);
+    if (focused_area === "input#stream_message_recipient_topic") {
+        composebox_typeahead.maybe_show_topic_box_typeahead();
+    }
 }
 
 function update_recipient_label(stream_id?: number): void {
@@ -266,6 +270,9 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
     dropdown.hide();
     event.preventDefault();
     event.stopPropagation();
+    if (recipient_id !== compose_state.DIRECT_MESSAGE_ID) {
+        composebox_typeahead.maybe_show_topic_box_typeahead();
+    }
 }
 
 function get_options_for_recipient_widget(): Option[] {

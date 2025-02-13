@@ -13,6 +13,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as drafts from "./drafts.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
@@ -112,7 +113,10 @@ function show_compose_box(opts: ComposeActionsOpts): void {
     $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
-    compose_ui.set_focus(opts_by_message_type);
+    const focused_area = compose_ui.set_focus(opts_by_message_type);
+    if (focused_area === "input#stream_message_recipient_topic") {
+        composebox_typeahead.maybe_show_topic_box_typeahead();
+    }
 }
 
 export let clear_textarea = (): void => {

@@ -165,6 +165,7 @@ import getCaretCoordinates from "textarea-caret";
 import * as tippy from "tippy.js";
 
 import * as scroll_util from "./scroll_util.ts";
+import {realm} from "./state_data.ts";
 import {get_string_diff, the} from "./util.ts";
 
 export function defaultSorter(items: string[], query: string): string[] {
@@ -729,6 +730,16 @@ export class Typeahead<ItemType extends string | object> {
                 break;
 
             case "Tab":
+                if (
+                    !this.shown &&
+                    !realm.realm_mandatory_topics &&
+                    this.input_element.$element.val() === "" &&
+                    the(this.input_element.$element).id === "stream_message_recipient_topic"
+                ) {
+                    this.lookup(false);
+                    return;
+                }
+
                 // If the typeahead is not shown or tabIsEnter option is not set, do nothing and return
                 if (!this.tabIsEnter || !this.shown) {
                     return;

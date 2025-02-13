@@ -16,6 +16,7 @@ import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t_html} from "./i18n.ts";
@@ -589,6 +590,7 @@ export function initialize() {
         const $input = $("input#stream_message_recipient_topic");
         $input.val("");
         $input.trigger("focus");
+        composebox_typeahead.maybe_show_topic_box_typeahead();
     });
 
     $("input#stream_message_recipient_topic").on("focus", () => {

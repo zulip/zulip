@@ -1404,6 +1404,14 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
     );
 }
 
+export let composebox_topic_typeahead: Typeahead<string>;
+
+export function maybe_show_topic_box_typeahead(): void {
+    if (!realm.realm_mandatory_topics && $("input#stream_message_recipient_topic").val() === "") {
+        composebox_topic_typeahead.lookup(false);
+    }
+}
+
 export function initialize({
     on_enter_send,
 }: {
@@ -1421,7 +1429,7 @@ export function initialize({
         $element: $("input#stream_message_recipient_topic"),
         type: "input",
     };
-    new Typeahead(stream_message_typeahead_input, {
+    composebox_topic_typeahead = new Typeahead(stream_message_typeahead_input, {
         source(): string[] {
             return topics_seen_for(compose_state.stream_id());
         },
