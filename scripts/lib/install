@@ -70,6 +70,14 @@ Options:
       If push notifications are not enabled, data won't be submitted, so
       this flag is redundant.
 
+  --agree-to-terms-of-service
+      If you enable push notifications, you can pass this flag to indicate
+      that you have read and agree to the Zulip Terms of Service:
+      <https://zulip.com/policies/terms>.
+      This skips the Terms of Service prompt, allowing for running the installer
+      with --push-notifications in scripts without requiring user input.
+
+
 EOF
 }
 
@@ -87,7 +95,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,puppet-classes:,no-overwrite-settings,no-dist-upgrade,push-notifications,no-push-notifications,no-submit-usage-statistics -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,puppet-classes:,no-overwrite-settings,no-dist-upgrade,push-notifications,no-push-notifications,no-submit-usage-statistics,agree-to-terms-of-service -n "$0" -- "$@")"
 
 eval "set -- $args"
 while true; do
@@ -179,6 +187,10 @@ while true; do
             NO_SUBMIT_USAGE_STATISTICS=1
             shift
             ;;
+        --agree-to-terms-of-service)
+            AGREE_TO_TERMS_OF_SERVICE_FLAG=1
+            shift
+            ;;
         --)
             shift
             break
@@ -268,43 +280,52 @@ else
     SERVICE_SUBMIT_USAGE_STATISTICS="False"
 fi
 
-# If user asked for push notifications, prompt for ToS acceptance.
+# ToS acceptance needs to be ensured if --push-notifications is passed.
 if [ -n "$PUSH_NOTIFICATIONS" ]; then
-    echo
-    echo "You chose to register your server for the Mobile Push Notifications Service."
-    echo "Doing so will share basic metadata with the service's maintainers, including:"
-    echo
-    echo "* The server's configured hostname: $EXTERNAL_HOST"
-    echo "* The server's configured contact email address: $ZULIP_ADMINISTRATOR"
-    echo "* Basic metadata about each organization hosted by the server; see:"
-    echo "    <https://zulip.com/doc-permalinks/basic-metadata>"
-    if [ -z "$NO_SUBMIT_USAGE_STATISTICS" ]; then
-        echo "* The server's usage statistics; see:"
-        echo "    <https://zulip.com/doc-permalinks/usage-statistics>"
-    fi
-    echo
-    echo "For details on why a centralized push notification service is necessary, see:"
-    echo "    <https://zulip.com/doc-permalinks/why-service>"
-    echo
-    echo "Use of this service is governed by the Zulip Terms of Service:"
-    echo "    <https://zulip.com/policies/terms>"
-    echo
-    read -r -p "Do you want to agree to the Zulip Terms of Service and proceed? [Y/n] " tos_prompt
-    echo
+    # If the user provided the --agree-to-terms-of-service flag, we can just proceed.
+    if [ -n "$AGREE_TO_TERMS_OF_SERVICE_FLAG" ]; then
+        PUSH_NOTIFICATIONS_SERVICE_TOS_AGREED=1
+        echo "Push notifications will be enabled, as you agreed to the Zulip Terms of Service"
+        echo "by passing the --agree-to-terms-of-service flag."
+        sleep 2
+    else
+        # If user asked for push notifications, prompt for ToS acceptance.
+        echo
+        echo "You chose to register your server for the Mobile Push Notifications Service."
+        echo "Doing so will share basic metadata with the service's maintainers, including:"
+        echo
+        echo "* The server's configured hostname: $EXTERNAL_HOST"
+        echo "* The server's configured contact email address: $ZULIP_ADMINISTRATOR"
+        echo "* Basic metadata about each organization hosted by the server; see:"
+        echo "    <https://zulip.com/doc-permalinks/basic-metadata>"
+        if [ -z "$NO_SUBMIT_USAGE_STATISTICS" ]; then
+            echo "* The server's usage statistics; see:"
+            echo "    <https://zulip.com/doc-permalinks/usage-statistics>"
+        fi
+        echo
+        echo "For details on why a centralized push notification service is necessary, see:"
+        echo "    <https://zulip.com/doc-permalinks/why-service>"
+        echo
+        echo "Use of this service is governed by the Zulip Terms of Service:"
+        echo "    <https://zulip.com/policies/terms>"
+        echo
+        read -r -p "Do you want to agree to the Zulip Terms of Service and proceed? [Y/n] " tos_prompt
+        echo
 
-    # Normalize the user’s response to lowercase.
-    case "${tos_prompt,,}" in
-        "" | y | yes)
-            echo "Great! Push notifications will be enabled; continuing with installation..."
-            PUSH_NOTIFICATIONS_SERVICE_TOS_AGREED=1
-            sleep 2
-            ;;
-        *)
-            echo "In order to enable push notifications, you must agree to the Terms of Service."
-            echo "If you do not want to enable push notifications, run the command without the --push-notifications flag."
-            exit 1
-            ;;
-    esac
+        # Normalize the user’s response to lowercase.
+        case "${tos_prompt,,}" in
+            "" | y | yes)
+                echo "Great! Push notifications will be enabled; continuing with installation..."
+                PUSH_NOTIFICATIONS_SERVICE_TOS_AGREED=1
+                sleep 2
+                ;;
+            *)
+                echo "In order to enable push notifications, you must agree to the Terms of Service."
+                echo "If you do not want to enable push notifications, run the command without the --push-notifications flag."
+                exit 1
+                ;;
+        esac
+    fi
 fi
 
 # Do set -x after option parsing is complete
