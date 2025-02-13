@@ -191,6 +191,7 @@ p.n-margin {
 .all-messages-search-caution,
 .end-of-combined-feed {
     display: none;
+    font-size: var(--base-font-size-px);
     margin: 0 auto 12px;
     padding: 5px;
 
