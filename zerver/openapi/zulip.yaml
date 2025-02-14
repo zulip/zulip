@@ -25954,9 +25954,9 @@ components:
         services:
           type: array
           description: |
-            An array containing extra configuration fields only relevant for
-            outgoing webhook bots and embedded bots. This is always a single-element
-            array.
+            An array containing extra configuration fields for outgoing webhook
+            bots, embedded bots, and incoming webhook bots. This is always a
+            single-element array.
 
             We consider this part of the Zulip API to be unstable; it is used only
             for UI elements for administering bots and is likely to change.
@@ -25997,6 +25997,17 @@ components:
                       The name of the bot.
                   config_data:
                     $ref: "#/components/schemas/BotConfiguration"
+              - type: object
+                additionalProperties: false
+                description: |
+                  When the bot is an incoming webhook bot.
+                properties:
+                  integration_name:
+                    type: string
+                    description: |
+                      The name of the integration the bot is associated with.
+                required:
+                  - integration_name
     Bot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"

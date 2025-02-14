@@ -3449,6 +3449,15 @@ class NormalActionsTest(BaseAction):
             )
         check_realm_bot_add("events[3]", events[3])
 
+        with self.verify_action(num_events=4) as events:
+            self.create_bot(
+                "test_incoming",
+                full_name="Incoming Bot",
+                service_name="helloworld",
+                bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            )
+        check_realm_bot_add("events[3]", events[3])
+
     def test_change_bot_full_name(self) -> None:
         bot = self.create_bot("test")
         with self.verify_action(num_events=2) as events:
