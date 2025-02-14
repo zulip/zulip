@@ -299,11 +299,14 @@ def get_environment() -> str:
     return "dev"
 
 
-def get_recent_deployments(threshold_days: int) -> set[str]:
+def get_recent_deployments(threshold_days: int | None) -> set[str]:
     # Returns a list of deployments not older than threshold days
     # including `/root/zulip` directory if it exists.
     recent = set()
-    threshold_date = datetime.now() - timedelta(days=threshold_days)  # noqa: DTZ005
+    if threshold_days is not None:
+        threshold_date = datetime.now() - timedelta(days=threshold_days)  # noqa: DTZ005
+    else:
+        threshold_date = None
     for dir_name in os.listdir(DEPLOYMENTS_DIR):
         target_dir = os.path.join(DEPLOYMENTS_DIR, dir_name)
         if not os.path.isdir(target_dir):
@@ -314,7 +317,7 @@ def get_recent_deployments(threshold_days: int) -> set[str]:
             continue
         try:
             date = datetime.strptime(dir_name, TIMESTAMP_FORMAT)  # noqa: DTZ007
-            if date >= threshold_date:
+            if threshold_date is None or date >= threshold_date:
                 recent.add(target_dir)
         except ValueError:
             # Always include deployments whose name is not in the format of a timestamp.
