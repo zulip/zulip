@@ -74,7 +74,7 @@ function should_hide_headers(
 
 function get_unsubscribed_posters_count(
     current_sub: StreamSubscription | undefined,
-    get_all_participant_ids: () => Set<number>
+    get_all_participant_ids: () => Set<number>,
 ): number {
     if (!current_sub) {
         return 0;
@@ -108,7 +108,10 @@ function get_render_data(): BuddyListRenderData {
     const other_users_count = people.get_active_human_count() - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
     const get_all_participant_ids = buddy_data.get_conversation_participants_callback();
-    const unsubscribed_posters_count = get_unsubscribed_posters_count(current_sub, get_all_participant_ids);
+    const unsubscribed_posters_count = get_unsubscribed_posters_count(
+        current_sub,
+        get_all_participant_ids,
+    );
 
     return {
         current_sub,
@@ -231,7 +234,7 @@ export class BuddyList extends BuddyListConf {
                         );
                         const unsubscribed_posters_count = get_unsubscribed_posters_count(
                             current_sub,
-                            buddy_data.get_conversation_participants_callback()
+                            buddy_data.get_conversation_participants_callback(),
                         );
                         const elem_id = $elem.attr("id");
                         if (elem_id === "buddy-list-participants-section-heading") {
@@ -249,7 +252,12 @@ export class BuddyList extends BuddyListConf {
                                         defaultMessage:
                                             "{N, plural, one {# other subscriber} other {# other subscribers}}",
                                     },
-                                    {N: total_human_subscribers_count - participant_count + unsubscribed_posters_count},
+                                    {
+                                        N:
+                                            total_human_subscribers_count -
+                                            participant_count +
+                                            unsubscribed_posters_count,
+                                    },
                                 );
                             } else if (current_sub) {
                                 tooltip_text = $t(
@@ -422,7 +430,7 @@ export class BuddyList extends BuddyListConf {
         const all_participant_ids = this.render_data.get_all_participant_ids();
         const unsubscribed_posters_count = get_unsubscribed_posters_count(
             this.render_data.current_sub,
-            this.render_data.get_all_participant_ids
+            this.render_data.get_all_participant_ids,
         );
         const subscriber_section_user_count =
             total_human_subscribers_count - all_participant_ids.size + unsubscribed_posters_count;
@@ -468,7 +476,12 @@ export class BuddyList extends BuddyListConf {
         }
         this.current_filter = narrow_state.filter();
 
-        const {current_sub, total_human_subscribers_count, other_users_count, unsubscribed_posters_count} = this.render_data;
+        const {
+            current_sub,
+            total_human_subscribers_count,
+            other_users_count,
+            unsubscribed_posters_count,
+        } = this.render_data;
         $(".buddy-list-subsection-header").empty();
         $(".buddy-list-subsection-header").toggleClass("no-display", hide_headers);
         if (hide_headers) {
@@ -494,7 +507,9 @@ export class BuddyList extends BuddyListConf {
                         ? $t({defaultMessage: "THIS CHANNEL"})
                         : $t({defaultMessage: "THIS CONVERSATION"}),
                     user_count: get_formatted_sub_count(
-                        total_human_subscribers_count - all_participant_ids.size + unsubscribed_posters_count,
+                        total_human_subscribers_count -
+                            all_participant_ids.size +
+                            unsubscribed_posters_count,
                     ),
                     is_collapsed: this.users_matching_view_is_collapsed,
                 }),
