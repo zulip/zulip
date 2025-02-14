@@ -91,7 +91,7 @@ page can be easily identified in it's respective JavaScript file. -->
                                 <input id="id_username" type="{% if not require_email_format_usernames %}text{% else %}email{% endif %}"
                                   name="username" class="{% if require_email_format_usernames %}email {% endif %}required"
                                   {% if email %} value="{{ email }}" {% else %} value="" autofocus {% endif %}
-                                  maxlength="72" required />
+                                  maxlength="72" required placeholder="Enter your email"/>
                                 <label for="id_username">
                                     {% if not require_email_format_usernames and email_auth_enabled %}
                                     {{ _('Email or username') }}
@@ -106,7 +106,7 @@ page can be easily identified in it's respective JavaScript file. -->
                             <div class="input-box password-div">
                                 <input id="id_password" name="password" class="required" type="password" autocomplete="off"
                                   {% if email %} autofocus {% endif %}
-                                  required />
+                                  required placeholder="Enter your password" />
                                 <label for="id_password">{{ _('Password') }}</label>
                                 <i class="fa fa-eye-slash password_visibility_toggle" role="button" tabindex="0"></i>
                             </div>
