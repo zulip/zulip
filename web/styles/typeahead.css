@@ -22,8 +22,9 @@
 
         & > a {
             display: flex;
-            padding: 3px 10px;
-            gap: 5px;
+            align-items: center;
+            padding: 0.2142em 0.7142em; /* 3px 10px at 14px em */
+            gap: 0.3571em; /* 5px at 14px em */
             font-weight: normal;
             /* We want to keep this `max-width` less than 320px. */
             max-width: 292px;
@@ -174,22 +175,22 @@
     }
 }
 
+/* For FontAwesome icons and zulip icons used in place of images for some users. */
 .typeahead-image {
+    font-size: 1.3571em; /* 19px at 14px em */
     display: inline-block;
-    height: 21px;
-    width: 21px;
+    height: 1.1052em; /* 21px at 19px/1em */
+    width: 1.1052em; /* 21px at 19px/1em */
     border-radius: 4px;
 
-    /* For FontAwesome icons and zulip icons used in place of images for some users. */
-    font-size: 19px;
     text-align: center;
 
     &.zulip-icon-triple-users {
-        font-size: 19px;
+        font-size: 1.3571em; /* 19px at 14px em */
     }
 
     &.no-presence-circle {
-        margin-left: 14px;
+        margin-left: 0.7368em; /* 14px at 19px/1em */
     }
 }
 
