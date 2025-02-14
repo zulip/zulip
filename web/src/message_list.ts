@@ -538,23 +538,18 @@ export class MessageList {
     }
 
     show_edit_topic_on_recipient_row($recipient_row: JQuery, $form: JQuery): void {
-        $recipient_row.find(".topic_edit_form").append($form);
-        $recipient_row.find(".on_hover_topic_edit").hide();
+        $recipient_row.find(".topic_edit").append($form);
         $recipient_row.find(".stream_topic").hide();
         $recipient_row.find(".topic_edit").show();
-        $recipient_row.find(".always_visible_topic_edit").hide();
-        $recipient_row.find(".on_hover_topic_resolve").hide();
-        $recipient_row.find(".on_hover_topic_unresolve").hide();
+        $recipient_row.find(".recipient_bar_control").hide();
     }
 
     hide_edit_topic_on_recipient_row($recipient_row: JQuery): void {
         $recipient_row.find(".stream_topic").show();
         $recipient_row.find(".on_hover_topic_edit").show();
-        $recipient_row.find(".topic_edit_form").empty();
+        $recipient_row.find(".topic_edit").empty();
         $recipient_row.find(".topic_edit").hide();
-        $recipient_row.find(".always_visible_topic_edit").show();
-        $recipient_row.find(".on_hover_topic_resolve").show();
-        $recipient_row.find(".on_hover_topic_unresolve").show();
+        $recipient_row.find(".recipient_bar_control").show();
     }
 
     reselect_selected_id(): void {

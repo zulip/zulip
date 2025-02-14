@@ -5,13 +5,13 @@
     <span class="banner-action-buttons">
         {{#each buttons}}
             {{#if this.intent}}
-                {{> action-button .}}
+                {{> action_button .}}
             {{else}}
-                {{> action-button . intent=../intent}}
+                {{> action_button . intent=../intent}}
             {{/if}}
         {{/each}}
     </span>
     {{#if close_button}}
-        {{> icon-button custom_classes="banner-close-action banner-close-button" icon="close" intent=intent}}
+        {{> icon_button custom_classes="banner-close-action banner-close-button" icon="close" intent=intent}}
     {{/if}}
 </div>

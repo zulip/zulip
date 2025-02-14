@@ -366,7 +366,7 @@ export function show_topic_edit_spinner($row: JQuery): void {
 }
 
 export function end_if_focused_on_inline_topic_edit(): void {
-    const $focused_elem = $(".topic_edit_form").find(":focus");
+    const $focused_elem = $(".topic_edit").find(":focus");
     if ($focused_elem.length === 1) {
         $focused_elem.trigger("blur");
         const $recipient_row = $focused_elem.closest(".recipient_row");
