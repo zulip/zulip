@@ -575,7 +575,9 @@ export function set_up(): void {
         e.preventDefault();
         e.stopPropagation();
         const api_key = $(this).attr("data-api-key")!;
-        integration_url_modal.show_generate_integration_url_modal(api_key);
+        const $bot_info = $(this).closest(".bot-information-box").find(".bot-card-info");
+        const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
+        integration_url_modal.show_generate_integration_url_modal(api_key, bot_id);
     });
 
     const clipboard = new ClipboardJS("#copy_zuliprc", {
