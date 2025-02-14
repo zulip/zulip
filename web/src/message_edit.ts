@@ -899,6 +899,8 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     const $form = $(
         render_topic_edit_form({
             max_topic_length: realm.max_topic_length,
+            realm_mandatory_topics: realm.realm_mandatory_topics,
+            empty_string_topic_display_name: util.get_final_topic_display_name(""),
         }),
     );
     message_lists.current.show_edit_topic_on_recipient_row($recipient_row, $form);
@@ -912,10 +914,6 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     const topic = message.topic;
     const $inline_topic_edit_input = $form.find<HTMLInputElement>("input.inline_topic_edit");
     $inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
-    if (topic === "") {
-        const topic_display_name = util.get_final_topic_display_name(topic);
-        $inline_topic_edit_input.attr("placeholder", topic_display_name);
-    }
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
     composebox_typeahead.initialize_topic_edit_typeahead(
         $inline_topic_edit_input,
