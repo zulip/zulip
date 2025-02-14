@@ -16,8 +16,8 @@ other [video call integration options](https://zulip.com/help/start-a-call) on a
 self-hosted Zulip server.
 
 :::{note}
-It is possible to disable the video and voice call buttons for your
-organization by [setting the call
+You can disable the video and voice call buttons for your organization by
+[setting the call
 provider](https://zulip.com/help/start-a-call#change-your-organizations-call-provider)
 to "None".
 :::
@@ -34,16 +34,15 @@ No server configuration changes are required.
 
 To use a [Zoom](https://zoom.us) integration on a self-hosted
 installation, you'll need to register a custom Zoom application for
-your Zulip server.
+your Zulip server. Zulip supports two types of custom Zoom apps:
 
-Zulip supports two types of custom Zoom apps:
-
-- [Server to Server OAuth app][], which is easiest to setup, but
-  requires users to be part of the Zoom organization that created the
+- [Server to Server OAuth app](#server-to-server-oauth-app): Easiest to set up,
+  but requires users to be part of the Zoom organization that created the
   application in order to create calls.
-- [General OAuth app][], which is used by Zulip Cloud and other
-  settings where the server-to-server integration's limitations are
-  problematic.
+
+- [General OAuth app](#general-oauth-app): Recommended for settings where the
+  limitations of the Server to Server OAuth app are problematic (e.g., this is
+  used by Zulip Cloud).
 
 ### Server to Server OAuth app
 
