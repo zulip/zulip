@@ -467,9 +467,9 @@ distro==1.9.0 \
     # via
     #   openai
     #   zulip
-django[argon2]==5.0.10 \
-    --hash=sha256:0f6cbc56cc298b0451d20a5120c6a8731e9073330fb5d84295c23c151a1eb300 \
-    --hash=sha256:c8fab2c553750933c8e7f5f95e5507e138e6acf6c2b4581cb691e70fe3ed747b
+django[argon2]==5.1.6 \
+    --hash=sha256:1e39eafdd1b185e761d9fab7a9f0b9fa00af1b37b25ad980a8aa0dac13535690 \
+    --hash=sha256:8d203400bc2952fbfb287c2bbda630297d654920c72a73cc82a9ad7926feaad5
     # via
     #   -r requirements/common.in
     #   django-auth-ldap

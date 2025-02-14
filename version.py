@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 353  # Last bumped for Zoom server to server video chat opti
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (312, 0)  # bumped 2024-02-14 to upgrade asgiref
+PROVISION_VERSION = (313, 0)  # bumped 2024-02-14 to upgrade Django
