@@ -198,4 +198,8 @@
     i.zulip-icon-bot {
         align-self: center;
     }
+
+    .status-emoji {
+        margin-left: 0;
+    }
 }
