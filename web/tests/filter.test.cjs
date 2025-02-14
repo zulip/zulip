@@ -2699,6 +2699,26 @@ run_test("is_in_home", () => {
     assert.ok(!filter3.is_in_home());
 });
 
+run_test("excludes_muted_topics", () => {
+    let filter = new Filter([{operator: "is", operand: "starred"}]);
+    assert.ok(!filter.excludes_muted_topics());
+
+    filter = new Filter([{operator: "in", operand: "home", negated: true}]);
+    assert.ok(!filter.excludes_muted_topics());
+
+    filter = new Filter([{operator: "search", operand: "pizza"}]);
+    assert.ok(!filter.excludes_muted_topics());
+
+    filter = new Filter([
+        {operator: "channel", operand: foo_stream_id.toString()},
+        {operator: "topic", operand: "bar"},
+    ]);
+    assert.ok(!filter.excludes_muted_topics());
+
+    filter = new Filter([{operator: "is", operand: "dm"}]);
+    assert.ok(!filter.excludes_muted_topics());
+});
+
 run_test("equals", () => {
     let terms = [{operator: "channel", operand: foo_stream_id.toString()}];
     let filter = new Filter(terms);
