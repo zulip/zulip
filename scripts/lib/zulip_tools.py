@@ -299,29 +299,33 @@ def get_environment() -> str:
     return "dev"
 
 
-def get_recent_deployments(threshold_days: int) -> set[str]:
+def get_recent_deployments(threshold_days: int | None) -> set[str]:
     # Returns a list of deployments not older than threshold days
     # including `/root/zulip` directory if it exists.
     recent = set()
-    threshold_date = datetime.now() - timedelta(days=threshold_days)  # noqa: DTZ005
-    for dir_name in os.listdir(DEPLOYMENTS_DIR):
-        target_dir = os.path.join(DEPLOYMENTS_DIR, dir_name)
-        if not os.path.isdir(target_dir):
-            # Skip things like uwsgi sockets, symlinks, etc.
-            continue
-        if not os.path.exists(os.path.join(target_dir, "zerver")):
-            # Skip things like "lock" that aren't actually a deployment directory
-            continue
-        try:
-            date = datetime.strptime(dir_name, TIMESTAMP_FORMAT)  # noqa: DTZ007
-            if date >= threshold_date:
+    if threshold_days is not None:
+        threshold_date = datetime.now() - timedelta(days=threshold_days)  # noqa: DTZ005
+    else:
+        threshold_date = None
+    if os.path.isdir(DEPLOYMENTS_DIR):
+        for dir_name in os.listdir(DEPLOYMENTS_DIR):
+            target_dir = os.path.join(DEPLOYMENTS_DIR, dir_name)
+            if not os.path.isdir(target_dir):
+                # Skip things like uwsgi sockets, symlinks, etc.
+                continue
+            if not os.path.exists(os.path.join(target_dir, "zerver")):
+                # Skip things like "lock" that aren't actually a deployment directory
+                continue
+            try:
+                date = datetime.strptime(dir_name, TIMESTAMP_FORMAT)  # noqa: DTZ007
+                if threshold_date is None or date >= threshold_date:
+                    recent.add(target_dir)
+            except ValueError:
+                # Always include deployments whose name is not in the format of a timestamp.
                 recent.add(target_dir)
-        except ValueError:
-            # Always include deployments whose name is not in the format of a timestamp.
-            recent.add(target_dir)
-            # If it is a symlink then include the target as well.
-            if os.path.islink(target_dir):
-                recent.add(os.path.realpath(target_dir))
+                # If it is a symlink then include the target as well.
+                if os.path.islink(target_dir):
+                    recent.add(os.path.realpath(target_dir))
     if os.path.exists("/root/zulip"):
         recent.add("/root/zulip")
     return recent
