@@ -511,6 +511,29 @@ body.has-overlay-scrollbar {
     }
 }
 
+/* We test for spec-aligned container query support
+   using these styles. */
+.container-query-test {
+    /* Keep the test div from rendering. */
+    visibility: hidden;
+    /* Establish a container. */
+    container: test-container / inline-size;
+    /* Establish a positioning context that
+       conforming browsers will ignore. */
+    position: relative;
+    top: 100px;
+
+    .container-query-test-child {
+        /* Non-spec aligned browsers will keep
+           this element to the top of the containing
+           <div>; spec-aligned browsers move it to the
+           top of the viewport. We check for this in
+           information_density.ts */
+        position: fixed;
+        top: 0;
+    }
+}
+
 .column-middle,
 #compose-content {
     margin-right: var(--right-column-width);
