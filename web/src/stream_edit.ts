@@ -636,7 +636,8 @@ export function initialize(): void {
         }
 
         const text: string = this.value;
-        const newWidth: string = (text.length || 1) + "ch";
+        // Compute the width in ch, ensuring it doesn't exceed 58.5ch.
+        const newWidth: string = Math.min(text.length || 1, 58.5) + "ch";
         $(this).css("width", newWidth);
     });
 
