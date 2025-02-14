@@ -279,6 +279,7 @@ export function set_up_toggler(): void {
         rendered_markdown.update_elements($(this));
     });
     $(".informational-overlays .overlay-body").append($markdown_help);
+    rendered_markdown.process_message_formatting_layout($("#markdown-instructions"));
 
     const $search_operators = $(
         render_search_operator({

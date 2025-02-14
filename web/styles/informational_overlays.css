@@ -121,3 +121,9 @@
 #search-operators-first-header {
     width: 40%;
 }
+
+#message-formatting {
+    & .preserve-message-formatting-layout {
+        margin-bottom: unset;
+    }
+}
