@@ -15,7 +15,8 @@ import * as rows from "./rows.ts";
 import * as saved_snippets from "./saved_snippets.ts";
 import type {StateData} from "./state_data.ts";
 
-let saved_snippet_dropdown_widget: dropdown_widget.DropdownWidget;
+let saved_snippets_widget: dropdown_widget.DropdownWidget | undefined;
+let saved_snippets_dropdown: tippy.Instance | undefined;
 
 function submit_create_saved_snippet_form(): void {
     const title = $<HTMLInputElement>("#add-new-saved-snippet-modal .saved-snippet-title")
@@ -49,8 +50,11 @@ function saved_snippet_modal_post_render(): void {
 }
 
 export function rerender_dropdown_widget(): void {
-    const options = saved_snippets.get_options_for_dropdown_widget();
-    saved_snippet_dropdown_widget.list_widget?.replace_list_data(options);
+    if (saved_snippets_widget && saved_snippets_dropdown) {
+        const options = saved_snippets.get_options_for_dropdown_widget();
+        saved_snippets_widget.list_widget?.replace_list_data(options);
+        saved_snippets_widget.show_empty_if_no_items($(saved_snippets_dropdown.popper));
+    }
 }
 
 function delete_saved_snippet(saved_snippet_id: string): void {
@@ -120,7 +124,7 @@ function item_click_callback(
 }
 
 export function setup_saved_snippets_dropdown_widget(widget_selector: string): void {
-    saved_snippet_dropdown_widget = new dropdown_widget.DropdownWidget({
+    new dropdown_widget.DropdownWidget({
         widget_name: "saved_snippets",
         widget_selector,
         get_options: saved_snippets.get_options_for_dropdown_widget,
@@ -130,6 +134,10 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
         sticky_bottom_option: $t({
             defaultMessage: "Create a new saved snippet",
         }),
+        on_show_callback(dropdown: tippy.Instance, widget: dropdown_widget.DropdownWidget) {
+            saved_snippets_widget = widget;
+            saved_snippets_dropdown = dropdown;
+        },
         focus_target_on_hidden: false,
         prefer_top_start_placement: true,
         tippy_props: {
@@ -138,8 +146,7 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
             // recipient dropdown widget.
             offset: [-100, 5],
         },
-    });
-    saved_snippet_dropdown_widget.setup();
+    }).setup();
 }
 
 export const initialize = (params: StateData["saved_snippets"]): void => {
