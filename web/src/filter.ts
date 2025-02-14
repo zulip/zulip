@@ -170,6 +170,8 @@ function message_matches_search_term(message: Message, operator: string, operand
                         message.type === "stream" &&
                         user_topics.is_topic_followed(message.stream_id, message.topic)
                     );
+                case "muted":
+                    return !message_in_home(message);
                 default:
                     return false; // is:whatever returns false
             }
@@ -549,6 +551,7 @@ export class Filter {
                     "unread",
                     "resolved",
                     "followed",
+                    "muted",
                 ].includes(term.operand);
             case "in":
                 return ["home", "all"].includes(term.operand);
@@ -645,6 +648,7 @@ export class Filter {
             "is-unread",
             "is-resolved",
             "is-followed",
+            "is-muted",
             "has-link",
             "has-image",
             "has-attachment",
@@ -1042,7 +1046,12 @@ export class Filter {
 
     is_in_home(): boolean {
         // Combined feed view
-        return this._terms.length === 1 && this.has_operand("in", "home");
+        return (
+            // The `-is:muted` term is an alias for `in:home`. The `in:home` term will
+            // be removed in the future.
+            this._terms.length === 1 &&
+            (this.has_operand("in", "home") || this.has_negated_operand("is", "muted"))
+        );
     }
 
     has_exactly_channel_topic_operators(): boolean {
@@ -1088,6 +1097,8 @@ export class Filter {
             "not-is-resolved",
             "is-followed",
             "not-is-followed",
+            "is-muted",
+            "not-is-muted",
             "in-home",
             "in-all",
             "channels-public",
@@ -1159,6 +1170,10 @@ export class Filter {
         }
 
         if (_.isEqual(term_types, ["in-home"])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ["not-is-muted"])) {
             return true;
         }
 
@@ -1732,7 +1747,9 @@ export class Filter {
             // not narrowed to starred messages
             !this.has_operand("is", "starred") &&
             // not narrowed to negated home messages
-            !this.has_negated_operand("in", "home")
+            !this.has_negated_operand("in", "home") &&
+            // not narrowed to muted topics messages
+            !this.has_operand("is", "muted")
         );
     }
 
