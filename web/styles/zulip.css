@@ -534,6 +534,26 @@ body.has-overlay-scrollbar {
     }
 }
 
+.with-container-query-support {
+    /* With spec-aligned container support, we
+       can establish em-aware containers to
+       query as needed.
+       Note that container queries can only
+       act on children of the container, so
+       at least for now, we include separate
+       queries for #header-container in the
+       navbar as well as .app-main in capable
+       browsers.
+    */
+    #header-container {
+        container: header-container / inline-size;
+    }
+
+    .app {
+        container: app / inline-size;
+    }
+}
+
 .column-middle,
 #compose-content {
     margin-right: var(--right-column-width);
