@@ -147,13 +147,13 @@ export function fetch_and_render_message_history(message: Message): void {
                 if (index === 0) {
                     edited_by_notice = $t({defaultMessage: "Posted by {full_name}"}, {full_name});
                     body_to_render = msg.rendered_content;
-                } else if (msg.prev_topic && msg.prev_content) {
+                } else if (msg.prev_topic !== undefined && msg.prev_content) {
                     edited_by_notice = $t({defaultMessage: "Edited by {full_name}"}, {full_name});
                     body_to_render = msg.content_html_diff;
                     topic_edited = true;
                     prev_topic = msg.prev_topic;
                     new_topic = msg.topic;
-                } else if (msg.prev_topic && msg.prev_stream) {
+                } else if (msg.prev_topic !== undefined && msg.prev_stream) {
                     edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
                     topic_edited = true;
                     prev_topic = msg.prev_topic;
@@ -164,7 +164,7 @@ export function fetch_and_render_message_history(message: Message): void {
                     if (prev_stream_item !== null) {
                         prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
                     }
-                } else if (msg.prev_topic) {
+                } else if (msg.prev_topic !== undefined) {
                     edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
                     topic_edited = true;
                     prev_topic = msg.prev_topic;
