@@ -13,10 +13,10 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as rows from "./rows.ts";
 import * as saved_snippets from "./saved_snippets.ts";
-import type {StateData} from "./state_data.ts";
 
 let saved_snippets_widget: dropdown_widget.DropdownWidget | undefined;
 let saved_snippets_dropdown: tippy.Instance | undefined;
+let composebox_saved_snippets_dropdown_widget = false;
 
 function submit_create_saved_snippet_form(): void {
     const title = $<HTMLInputElement>("#add-new-saved-snippet-modal .saved-snippet-title")
@@ -149,7 +149,9 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
     }).setup();
 }
 
-export const initialize = (params: StateData["saved_snippets"]): void => {
-    saved_snippets.initialize(params);
-    setup_saved_snippets_dropdown_widget(".saved-snippets-composebox-widget");
-};
+export function setup_saved_snippets_dropdown_widget_if_needed(): void {
+    if (!composebox_saved_snippets_dropdown_widget) {
+        composebox_saved_snippets_dropdown_widget = true;
+        setup_saved_snippets_dropdown_widget(".saved-snippets-composebox-widget");
+    }
+}

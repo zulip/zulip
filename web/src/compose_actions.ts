@@ -24,6 +24,7 @@ import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as reload_state from "./reload_state.ts";
 import * as resize from "./resize.ts";
+import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as spectators from "./spectators.ts";
 import * as stream_data from "./stream_data.ts";
 
@@ -425,6 +426,8 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     resize.reset_compose_message_max_height();
 
     complete_starting_tasks(opts);
+
+    saved_snippets_ui.setup_saved_snippets_dropdown_widget_if_needed();
 };
 
 export function rewire_start(value: typeof start): void {
