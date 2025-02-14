@@ -637,7 +637,10 @@ run_test("get_display_group_name", () => {
     });
 
     assert.equal(user_groups.get_display_group_name(admins.name), "translated: Administrators");
-    assert.equal(user_groups.get_display_group_name(all.name), "translated: Everyone");
+    assert.equal(
+        user_groups.get_display_group_name(all.name),
+        "translated: Everyone including guests",
+    );
     assert.equal(user_groups.get_display_group_name(students.name), "Students");
 });
 
