@@ -72,6 +72,24 @@ function should_hide_headers(
     return !current_sub && pm_ids_set.size === 0;
 }
 
+function get_unsubscribed_posters_count(
+    current_sub: StreamSubscription | undefined,
+    get_all_participant_ids: () => Set<number>,
+): number {
+    if (!current_sub) {
+        return 0;
+    }
+    // Iterate over all conversation participants.
+    // Increment the count for each user who is not subscribed to the current stream.
+    let count = 0;
+    for (const user_id of get_all_participant_ids()) {
+        if (!stream_data.is_user_subscribed(current_sub.stream_id, user_id)) {
+            count += 1;
+        }
+    }
+    return count;
+}
+
 type BuddyListRenderData = {
     current_sub: StreamSubscription | undefined;
     pm_ids_set: Set<number>;
@@ -79,6 +97,7 @@ type BuddyListRenderData = {
     other_users_count: number;
     hide_headers: boolean;
     get_all_participant_ids: () => Set<number>;
+    unsubscribed_posters_count: number;
 };
 
 function get_render_data(): BuddyListRenderData {
@@ -89,6 +108,10 @@ function get_render_data(): BuddyListRenderData {
     const other_users_count = people.get_active_human_count() - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
     const get_all_participant_ids = buddy_data.get_conversation_participants_callback();
+    const unsubscribed_posters_count = get_unsubscribed_posters_count(
+        current_sub,
+        get_all_participant_ids,
+    );
 
     return {
         current_sub,
@@ -97,6 +120,7 @@ function get_render_data(): BuddyListRenderData {
         other_users_count,
         hide_headers,
         get_all_participant_ids,
+        unsubscribed_posters_count,
     };
 }
 
@@ -208,6 +232,10 @@ export class BuddyList extends BuddyListConf {
                             $("#buddy-list-participants-section-heading").attr("data-user-count")!,
                             10,
                         );
+                        const unsubscribed_posters_count = get_unsubscribed_posters_count(
+                            current_sub,
+                            buddy_data.get_conversation_participants_callback(),
+                        );
                         const elem_id = $elem.attr("id");
                         if (elem_id === "buddy-list-participants-section-heading") {
                             tooltip_text = $t(
@@ -224,7 +252,12 @@ export class BuddyList extends BuddyListConf {
                                         defaultMessage:
                                             "{N, plural, one {# other subscriber} other {# other subscribers}}",
                                     },
-                                    {N: total_human_subscribers_count - participant_count},
+                                    {
+                                        N:
+                                            total_human_subscribers_count -
+                                            participant_count +
+                                            unsubscribed_posters_count,
+                                    },
                                 );
                             } else if (current_sub) {
                                 tooltip_text = $t(
@@ -395,8 +428,12 @@ export class BuddyList extends BuddyListConf {
     update_section_header_counts(): void {
         const {total_human_subscribers_count, other_users_count} = this.render_data;
         const all_participant_ids = this.render_data.get_all_participant_ids();
+        const unsubscribed_posters_count = get_unsubscribed_posters_count(
+            this.render_data.current_sub,
+            this.render_data.get_all_participant_ids,
+        );
         const subscriber_section_user_count =
-            total_human_subscribers_count - all_participant_ids.size;
+            total_human_subscribers_count - all_participant_ids.size + unsubscribed_posters_count;
 
         const formatted_participants_count = get_formatted_sub_count(all_participant_ids.size);
         const formatted_sub_users_count = get_formatted_sub_count(subscriber_section_user_count);
@@ -439,7 +476,12 @@ export class BuddyList extends BuddyListConf {
         }
         this.current_filter = narrow_state.filter();
 
-        const {current_sub, total_human_subscribers_count, other_users_count} = this.render_data;
+        const {
+            current_sub,
+            total_human_subscribers_count,
+            other_users_count,
+            unsubscribed_posters_count,
+        } = this.render_data;
         $(".buddy-list-subsection-header").empty();
         $(".buddy-list-subsection-header").toggleClass("no-display", hide_headers);
         if (hide_headers) {
@@ -465,7 +507,9 @@ export class BuddyList extends BuddyListConf {
                         ? $t({defaultMessage: "THIS CHANNEL"})
                         : $t({defaultMessage: "THIS CONVERSATION"}),
                     user_count: get_formatted_sub_count(
-                        total_human_subscribers_count - all_participant_ids.size,
+                        total_human_subscribers_count -
+                            all_participant_ids.size +
+                            unsubscribed_posters_count,
                     ),
                     is_collapsed: this.users_matching_view_is_collapsed,
                 }),
