@@ -630,6 +630,16 @@ export function initialize(): void {
         dialog_widget.submit_api_request(channel.patch, url, data);
     }
 
+    $(document).on("input", "input#change_stream_name", function () {
+        if (!(this instanceof HTMLInputElement)) {
+            return;
+        }
+
+        const text: string = this.value;
+        const newWidth: string = (text.length || 1) + "ch";
+        $(this).css("width", newWidth);
+    });
+
     $("#channels_overlay_container").on(
         "click",
         ".copy_email_button",
