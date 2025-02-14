@@ -58,20 +58,42 @@ When you paste a topic link into Zulip, it's automatically formatted as
 
 ## Link to Zulip from anywhere
 
-All URLs in Zulip are designed to be shareable.  Copying the URL from
-the browser's address bar will work for all views, including searches.
+All URLs in Zulip are designed to be **shareable**, including:
+
+- Links to messages, topics, and channels.
+- Search URLs, though note that personal
+  [filters](/help/search-for-messages#search-filters) (e.g., `is:followed`) will
+  be applied according to the user who's viewing the URL.
+
+In addition, links to messages, topics, and channels are **permanent**:
+
+- [Message links](#get-a-link-to-a-specific-message) will still work even when
+  the message is [moved to another topic](/help/move-content-to-another-topic)
+  or [channel](/help/move-content-to-another-channel), or if its [topic is
+  resolved](/help/resolve-a-topic). Zulip uses the same permanent link syntax
+  when [quoting a message](/help/quote-or-forward-a-message).
+
+- [Topic links](#get-a-link-to-a-specific-topic) will still work even when the
+  topic is [renamed](/help/rename-a-topic), [moved to another
+  channel](/help/move-content-to-another-channel), or
+  [resolved](/help/resolve-a-topic).
+
+!!! tip ""
+
+    When some messages are [moved out of a
+    topic](/help/move-content-to-another-topic) and others are left in place,
+    links to that topic will follow the location of the message whose ID is
+    encoded in the topic URL (usually the first or last message in the topic).
+
+- [Channel links](#get-a-link-to-a-specific-channel) will still work even when a
+  channel is [renamed](/help/rename-a-channel) or
+  [archived](/help/archive-a-channel).
 
 ### Get a link to a specific message
 
-This copies to your clipboard a permanent link to the message,
-displayed in its thread (i.e. topic view for messages in a channel).
-Viewing a topic via a message link will never mark messages as read.
-
-These links will still work even when the message is [moved to another
-topic](/help/move-content-to-another-topic) or
-[channel](/help/move-content-to-another-channel), or if its [topic is
-resolved](/help/resolve-a-topic). Zulip uses the same permanent link syntax when
-[quoting a message](/help/quote-or-forward-a-message).
+This copies to your clipboard a permanent link to the message, displayed in the
+context of its conversation. To preserve your reading status, messages won't be
+automatically marked as read when you view a conversation via a message link.
 
 When you paste a message link into the compose box, it gets automatically
 formatted to be easy to read:
