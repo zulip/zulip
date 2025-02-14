@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 354**
+
+* [`POST /register`](/api/register-queue), [`GET/events`](/api/get-events),
+  `PATCH /realm`: Change `allow_edit_history` boolean field to
+  `message_edit_history_visibility` integer field to support
+  an intermediate field for `Moved only` history.
+
 **Feature level 353**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

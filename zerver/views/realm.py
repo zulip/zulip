@@ -46,7 +46,7 @@ from zerver.lib.user_groups import (
 )
 from zerver.lib.validator import check_capped_url, check_string
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
-from zerver.models.realms import DigestWeekdayEnum, OrgTypeEnum
+from zerver.models.realms import DigestWeekdayEnum, MessageEditHistoryVisibilityEnum, OrgTypeEnum
 from zerver.views.user_settings import (
     check_information_density_setting_values,
     check_settings_values,
@@ -110,7 +110,7 @@ def update_realm(
     message_content_edit_limit_seconds_raw: Annotated[
         Json[int | str] | None, ApiParamConfig("message_content_edit_limit_seconds")
     ] = None,
-    allow_edit_history: Json[bool] | None = None,
+    message_edit_history_visibility: Json[MessageEditHistoryVisibilityEnum] | None = None,
     default_language: str | None = None,
     waiting_period_threshold: Json[NonNegativeInt] | None = None,
     authentication_methods: Json[dict[str, Any]] | None = None,

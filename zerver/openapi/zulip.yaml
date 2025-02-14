@@ -4576,11 +4576,6 @@ paths:
                                     irrespective of which of these settings were changed. Now, a separate event
                                     is sent for each changed setting.
                                   properties:
-                                    allow_edit_history:
-                                      type: boolean
-                                      description: |
-                                        Whether this organization is configured to allow users to access
-                                        [message edit history](/help/view-a-messages-edit-history).
                                     allow_message_editing:
                                       type: boolean
                                       description: |
@@ -5060,6 +5055,19 @@ paths:
 
                                         **Changes**: Before Zulip 6.0 (feature level 138), no limit was
                                         represented using the special value `0`.
+                                    message_edit_history_visibility:
+                                      type: integer
+                                      description: |
+                                        Which type of history i.e. moved or edited is configured to allow users to access
+                                        [message edit history](/help/view-a-messages-edit-history).
+
+                                        - 1 = All history is visible
+                                        - 2 = Only Moves history is visible
+                                        - 3 = No history is visible
+
+                                        **Changes**: New in Zulip 10.0 (feature level 354), replacing the previous
+                                        `allow_edit_history` boolean setting; `true` corresponds to `All`,
+                                        and `false` to `None`.
                                     moderation_request_channel_id:
                                       type: integer
                                       description: |
@@ -16852,13 +16860,21 @@ paths:
                               type: string
                               description: |
                                 The text describing the emoji set.
-                      realm_allow_edit_history:
-                        type: boolean
+                      realm_message_edit_history_visibility:
+                        type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether this organization is configured to allow users to access
                           [message edit history](/help/view-a-messages-edit-history).
+
+                          - 1 = All history is visible
+                          - 2 = Only Moves history is visible
+                          - 3 = No history is visible
+
+                          **Changes**: New in Zulip 10.0 (feature level 354) replacing the previous
+                          `realm_allow_edit_history` boolean setting; `true` corresponds to `All`,
+                          and `false` to `None`.
                       realm_can_add_custom_emoji_group:
                         allOf:
                           - description: |

@@ -3846,6 +3846,7 @@ class RealmPropertyActionTest(BaseAction):
             default_language=["es", "de", "en"],
             description=["Realm description", "New description"],
             digest_weekday=[0, 1, 2],
+            message_edit_history_visibility=Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_TYPES,
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[1000, 2000],
