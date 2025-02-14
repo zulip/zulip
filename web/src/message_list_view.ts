@@ -192,7 +192,7 @@ function analyze_edit_history(
                 moved = true;
             }
 
-            if (edit_history_event.prev_topic) {
+            if (edit_history_event.prev_topic !== undefined) {
                 // TODO: Possibly this assert could be removed if we tightened the type
                 // on edit history elements such that a `prev_topic` being present means a
                 // `topic` element is.
