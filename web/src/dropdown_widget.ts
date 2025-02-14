@@ -51,7 +51,7 @@ export type DropdownWidgetOptions = {
     // It is important to not pass `$("body")` here for widgets that would be `setup()`
     // multiple times, so that we don't have duplicate event handlers.
     $events_container: JQuery;
-    on_show_callback?: (instance: tippy.Instance) => void;
+    on_show_callback?: (instance: tippy.Instance, widget: DropdownWidget) => void;
     on_mount_callback?: (instance: tippy.Instance) => void;
     on_hidden_callback?: (instance: tippy.Instance) => void;
     on_exit_with_escape_callback?: () => void;
@@ -88,7 +88,7 @@ export class DropdownWidget {
         is_sticky_bottom_option_clicked: boolean,
     ) => void;
     focus_target_on_hidden: boolean;
-    on_show_callback: (instance: tippy.Instance) => void;
+    on_show_callback: (instance: tippy.Instance, widget: DropdownWidget) => void;
     on_mount_callback: (instance: tippy.Instance) => void;
     on_hidden_callback: (instance: tippy.Instance) => void;
     on_exit_with_escape_callback: () => void;
@@ -473,7 +473,7 @@ export class DropdownWidget {
                     }
                 }, 0);
 
-                this.on_show_callback(instance);
+                this.on_show_callback(instance, this);
                 this.adjust_dropdown_position_post_list_render(instance);
             },
             onMount: (instance: tippy.Instance) => {
