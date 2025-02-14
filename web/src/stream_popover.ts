@@ -322,11 +322,12 @@ export async function build_move_topic_to_stream_popover(
     const current_stream_name = sub_store.get(current_stream_id)!.name;
     const stream = sub_store.get(current_stream_id);
     const topic_display_name = util.get_final_topic_display_name(topic_name);
+    const empty_string_topic_display_name = util.get_final_topic_display_name("");
     const is_empty_string_topic = topic_name === "";
     const args: {
         topic_name: string;
-        topic_display_name: string;
-        is_empty_string_topic: boolean;
+        empty_string_topic_display_name: string;
+        realm_mandatory_topics: boolean;
         current_stream_id: number;
         notify_new_thread: boolean;
         notify_old_thread: boolean;
@@ -337,8 +338,8 @@ export async function build_move_topic_to_stream_popover(
         stream: sub_store.StreamSubscription | undefined;
     } = {
         topic_name,
-        topic_display_name,
-        is_empty_string_topic,
+        empty_string_topic_display_name,
+        realm_mandatory_topics: realm.realm_mandatory_topics,
         current_stream_id,
         stream,
         notify_new_thread: message_edit.notify_new_thread_default,
