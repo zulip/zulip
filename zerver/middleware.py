@@ -750,3 +750,31 @@ class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
             return response
 
         return None
+
+
+class BadAPIRequestError(JsonableError):
+    http_status_code: int = 403
+    code: ErrorCode = ErrorCode.BAD_API_REQUEST
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _(
+            "The Zulip API is only accessible over HTTPS, not HTTP. Any credentials sent with this request should be considered compromised."
+        )
+
+
+class BadAPIRequest(MiddlewareMixin):
+    def process_request(self, request: HttpRequest) -> None:
+        # Most HTTP requests are redirected to HTTPS by NGINX, but  should not be, as clients
+        # might follow the redirect and accidentally hide the credentials leak inherent in the
+        # insecure HTTP request. Explicitly reject HTTP requests to the API.
+        if (
+            request.path.startswith("/api/v1/")
+            and not request.is_secure()
+            and request.META["REMOTE_ADDR"] not in ("127.0.0.1", "::1")
+        ):
+            raise BadAPIRequestError

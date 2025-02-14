@@ -4,6 +4,11 @@ server {
     listen 80;
     listen [::]:80;
 
+    location /api/v1 {
+        include /etc/nginx/zulip-include/api_headers;
+        include uwsgi_params;
+    }
+
     location /api/internal/ {
         # If coming from localhost, we do allow access to internal
         # APIs over HTTP, without an HTTPS redirect.  Adding TLS does

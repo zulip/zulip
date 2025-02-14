@@ -8,6 +8,7 @@ from typing_extensions import override
 
 
 class ErrorCode(Enum):
+    # An enumeration whose members are used strictly for their names.
     BAD_REQUEST = auto()  # Generic name, from the name of HTTP 400.
     REQUEST_VARIABLE_MISSING = auto()
     REQUEST_VARIABLE_INVALID = auto()
@@ -31,6 +32,7 @@ class ErrorCode(Enum):
     REQUEST_CONFUSING_VAR = auto()
     INVALID_API_KEY = auto()
     INVALID_ZOOM_TOKEN = auto()
+    BAD_API_REQUEST = auto()
     UNAUTHENTICATED_USER = auto()
     NONEXISTENT_SUBDOMAIN = auto()
     RATE_LIMIT_HIT = auto()
