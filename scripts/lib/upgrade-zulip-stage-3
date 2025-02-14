@@ -96,6 +96,13 @@ if args.skip_restart:
 if not args.skip_puppet and args.less_graceful:
     logging.warning("Ignored --less-graceful; all upgrades without --skip-puppet are ungraceful.")
 
+if args.only_django:
+    logging.error(
+        "Only restarting Django into a new deployment leads to inconsistent caches "
+        "with Tornado; use --skip-client-reloads instead."
+    )
+    sys.exit(1)
+
 deploy_path = args.deploy_path
 os.chdir(deploy_path)
 
