@@ -120,16 +120,15 @@ function zephyr_topic_name_match(message: Message & {type: "stream"}, operand: s
 
 function message_in_home(message: Message): boolean {
     // The home view contains messages not sent to muted channels,
-    // with additional logic for unmuted topics, mentions, and
+    // with additional logic for unmuted topics and
     // single-channel windows.
     if (message.type === "private") {
         return true;
     }
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
     if (
-        message.mentioned ||
-        (page_params.narrow_stream !== undefined &&
-            stream_name.toLowerCase() === page_params.narrow_stream.toLowerCase())
+        page_params.narrow_stream !== undefined &&
+        stream_name.toLowerCase() === page_params.narrow_stream.toLowerCase()
     ) {
         return true;
     }
@@ -1763,7 +1762,9 @@ export class Filter {
             // not narrowed to dms
             !(this.has_operator("dm") || this.has_operand("is", "dm")) &&
             // not narrowed to starred messages
-            !this.has_operand("is", "starred")
+            !this.has_operand("is", "starred") &&
+            // not narrowed to negated home messages
+            !this.has_negated_operand("in", "home")
         );
     }
 
