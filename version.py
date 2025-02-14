@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 352  # Last bumped for can_mention_many_users_group.
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (311, 0)  # bumped 2024-01-29 to upgrade JavaScript dependencies
+PROVISION_VERSION = (312, 0)  # bumped 2024-02-14 to upgrade asgiref

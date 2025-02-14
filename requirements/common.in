@@ -7,7 +7,7 @@
 
 # Django itself
 Django[argon2]==5.0.*
-asgiref<3.8.0  # Breaks with https://github.com/django/asgiref/pull/367
+https://github.com/andersk/asgiref/archive/8a2717c14bce1b8dd37371c675ee3728e66c3fe3.zip#egg=asgiref==3.8.1+git  # https://github.com/django/asgiref/pull/494
 
 # needed for NotRequired, ParamSpec
 typing-extensions
