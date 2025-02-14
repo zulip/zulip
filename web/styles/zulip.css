@@ -534,6 +534,15 @@ body.has-overlay-scrollbar {
     }
 }
 
+.with-container-query-support {
+    /* With spec-aligned container support, we
+       can establish an em-aware container to
+       query as needed. */
+    .app-main {
+        container: app-main / inline-size;
+    }
+}
+
 .column-middle,
 #compose-content {
     margin-right: var(--right-column-width);
