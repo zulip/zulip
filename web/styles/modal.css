@@ -439,7 +439,7 @@
 .modal_password_input,
 .modal_url_input,
 .modal_text_input {
-    padding: 4px 6px;
+    padding: 6px 8px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
@@ -450,6 +450,10 @@
     margin-bottom: 10px;
     /* subtract padding (6px each side) and border (1px each side) */
     min-width: calc(var(--modal-input-width) - 14px);
+    box-sizing: border-box;
+    max-width: 100%;
+    width: auto; /* or width: 100%; your JS will override with an inline style */
+    min-height: 32px; /* keep a reasonable height */
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);

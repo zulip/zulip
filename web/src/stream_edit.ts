@@ -630,15 +630,58 @@ export function initialize(): void {
         dialog_widget.submit_api_request(channel.patch, url, data);
     }
 
-    $(document).on("input", "input#change_stream_name", function () {
-        if (!(this instanceof HTMLInputElement)) {
-            return;
+    $(() => {
+        // Try to find the mirror element.
+        const mirrorCandidate = document.querySelector("#input-mirror");
+        let mirror: HTMLElement;
+        if (mirrorCandidate !== null && mirrorCandidate instanceof HTMLElement) {
+            mirror = mirrorCandidate;
+        } else {
+            mirror = document.createElement("span");
+            mirror.id = "input-mirror";
+            Object.assign(mirror.style, {
+                position: "absolute",
+                top: "-9999px",
+                left: "-9999px",
+                visibility: "hidden",
+                whiteSpace: "pre",
+            });
+            document.body.append(mirror);
         }
 
-        const text: string = this.value;
-        // Compute the width in ch, ensuring it doesn't exceed 58.5ch.
-        const newWidth: string = Math.min(text.length || 1, 58.5) + "ch";
-        $(this).css("width", newWidth);
+        const $mirror = $(mirror);
+
+        $(document).on("input", "input#change_stream_name", function () {
+            if (!(this instanceof HTMLInputElement)) {
+                return;
+            }
+
+            const $input = $(this);
+            // Use nullish coalescing to get the text.
+            const text = this.value ?? $input.attr("placeholder") ?? "";
+            $mirror.text(text);
+
+            const properties = [
+                "font-size",
+                "font-family",
+                "font-weight",
+                "font-style",
+                "letter-spacing",
+                "text-transform",
+                "padding",
+            ];
+            for (const prop of properties) {
+                $mirror.css(prop, $input.css(prop));
+            }
+
+            const mirrorWidth = $mirror.width() ?? 0;
+            const computedWidth = mirrorWidth + 10;
+            const containerWidth = 600; // Use the appropriate container width here.
+            const maxUsableWidth = containerWidth - 20;
+            const newWidth = Math.min(computedWidth, maxUsableWidth);
+
+            $input.css("width", `${newWidth}px`);
+        });
     });
 
     $("#channels_overlay_container").on(
