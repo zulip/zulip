@@ -6,7 +6,7 @@ import postcssPrefixWrap from "postcss-prefixwrap";
 import postcssPresetEnv from "postcss-preset-env";
 import postcssSimpleVars from "postcss-simple-vars";
 
-import {media_breakpoints} from "./src/css_variables.ts";
+import {container_breakpoints, media_breakpoints} from "./src/css_variables.ts";
 
 const config = ({file}) => ({
     plugins: [
@@ -18,7 +18,7 @@ const config = ({file}) => ({
                 plugins: [postcssPrefixWrap("%dark-theme")],
             }),
         postcssExtendRule,
-        postcssSimpleVars({variables: media_breakpoints}),
+        postcssSimpleVars({variables: {...container_breakpoints, ...media_breakpoints}}),
         postcssPresetEnv({
             features: {
                 "nesting-rules": true,

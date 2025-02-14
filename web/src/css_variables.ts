@@ -13,6 +13,9 @@ const ms = 320; // Mobile small
 // Breakpoints for middle column
 const mc = 849; // Middle column as wide as it appears after the `sm` breakpoint
 
+// Base em unit for container_breakpoints conversion
+const base_em_px = 16;
+
 export const media_breakpoints = {
     xs_min: xs + "px",
     sm_min: sm + "px",
@@ -29,6 +32,12 @@ export const media_breakpoints = {
     // screen. 800px is the breakpoint at the 14px legacy font size, scaled with
     // em to user-chosen font-size.
     settings_overlay_sidebar_collapse_breakpoint: 800 / 14 + "em",
+};
+
+export const container_breakpoints = {
+    cq_xl_min: xl / base_em_px + "em",
+    cq_md_min: md / base_em_px + "em",
+    cq_mm_min: mm / base_em_px + "em",
 };
 
 export const media_breakpoints_num = {
