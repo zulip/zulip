@@ -370,7 +370,7 @@ export function add_a_new_bot(): void {
                         get_options: get_options_for_integration_input_dropdown,
                         $events_container: $("#create_bot_form"),
                         default_id: default_integration_option.unique_id,
-                        unique_id_type: dropdown_widget.DataTypes.STRING,
+                        unique_id_type: "string",
                         item_click_callback(
                             event: JQuery.ClickEvent,
                             dropdown: tippy.Instance,
@@ -577,7 +577,9 @@ export function set_up(): void {
         e.preventDefault();
         e.stopPropagation();
         const api_key = $(this).attr("data-api-key")!;
-        integration_url_modal.show_generate_integration_url_modal(api_key);
+        const $bot_info = $(this).closest(".bot-information-box").find(".bot-card-info");
+        const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
+        integration_url_modal.show_generate_integration_url_modal(api_key, bot_id);
     });
 
     const clipboard = new ClipboardJS("#copy_zuliprc", {
