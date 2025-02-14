@@ -10,7 +10,7 @@ GENERIC_INTERFACE = "GenericService"
 SLACK_INTERFACE = "SlackOutgoingWebhookService"
 
 
-# A Service corresponds to either an outgoing webhook bot or an embedded bot.
+# A Service corresponds to an outgoing webhook bot, embedded bot, or incoming webhook bot.
 # The type of Service is determined by the bot_type field of the referenced
 # UserProfile.
 #
@@ -23,6 +23,10 @@ SLACK_INTERFACE = "SlackOutgoingWebhookService"
 # - name is the canonical name for the type of bot (e.g. 'xkcd' for an instance
 #   of the xkcd bot); multiple embedded bots can have the same name, but all
 #   embedded bots with the same name will run the same code
+# - base_url and token are currently unused
+#
+# If the Service is an incoming webhook bot:
+# - name is the integration name for the bot
 # - base_url and token are currently unused
 class Service(models.Model):
     name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH)
