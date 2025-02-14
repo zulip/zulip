@@ -1,17 +1,17 @@
 # Typing notifications
 
 The Zulip web app displays typing notifications in [conversation
-views](/help/reading-conversations) and [**All direct
-messages**](/help/direct-messages#access-all-dms). Typing
-notifications are not shown in channels with more than 100
-subscribers. The mobile app displays typing notifications in direct
-message conversations.
+views](/help/reading-conversations) and the [direct message
+feed](/help/direct-messages#access-all-dms). Typing notifications are not
+shown in channels with more than 100 subscribers. The mobile app displays typing
+notifications in direct message conversations.
 
-Typing notifications are only sent while one is actively editing text in
-the compose box. They disappear if typing is paused for several seconds,
-if all the content of the message is erased, or if the message is
-[saved as a draft](/help/view-and-edit-your-message-drafts#save-a-draft).
-Just having the compose box open will not send a typing notification.
+Typing notifications are only sent while one is actively editing text in the
+compose box or the [message editing](/help/edit-a-message) box. They disappear
+if typing is paused for several seconds, if all the content of the message is
+erased, or if the message is [saved as a
+draft](/help/view-and-edit-your-message-drafts#save-a-draft). Just having the
+compose box or message editing box open will not send a typing notification.
 
 ## Disable sending typing notifications
 
