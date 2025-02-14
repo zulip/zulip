@@ -90,6 +90,7 @@ TAB_SECTION_LABELS = {
     "via-channel-settings": "Via channel settings",
     "via-group-settings": "Via group settings",
     "via-compose-box": "Via compose box",
+    "via-search-box": "Via search box",
     "default-subdomain": "Default subdomain",
     "custom-subdomain": "Custom subdomain",
     "zulip-cloud-standard": "Zulip Cloud Standard",
