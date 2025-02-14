@@ -79,6 +79,9 @@ mock_esm("../src/resize", {
 mock_esm("../src/popovers", {
     hide_all: noop,
 });
+mock_esm("../src/saved_snippets_ui", {
+    setup_saved_snippets_dropdown_widget_if_needed: noop,
+});
 
 const people = zrequire("people");
 

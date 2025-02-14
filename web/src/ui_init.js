@@ -98,7 +98,7 @@ import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload_setup from "./reload_setup.js";
 import * as resize_handler from "./resize_handler.ts";
-import * as saved_snippets_ui from "./saved_snippets_ui.ts";
+import * as saved_snippets from "./saved_snippets.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as scheduled_messages_ui from "./scheduled_messages_ui.ts";
@@ -515,7 +515,7 @@ export function initialize_everything(state_data) {
     });
     inbox_ui.initialize();
     alert_words.initialize(state_data.alert_words);
-    saved_snippets_ui.initialize(state_data.saved_snippets);
+    saved_snippets.initialize(state_data.saved_snippets);
     emojisets.initialize();
     scroll_bar.initialize();
     message_viewport.initialize();
