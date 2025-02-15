@@ -576,23 +576,26 @@ def do_change_user_setting(
             status = UserPresence.LEGACY_STATUS_ACTIVE_INT
             presence_time = timezone_now()
         else:
-            # HACK: Remove existing presence data for the current user
-            # when disabling presence. This hack will go away when we
-            # replace our presence data structure with a simpler model
-            # that doesn't separate individual clients.
-            UserPresence.objects.filter(user_profile_id=user_profile.id).delete()
-
-            # We create a single presence entry for the user, old
-            # enough to be guaranteed to be treated as offline by
-            # correct clients, such that the user will, for as long as
-            # presence remains disabled, appear to have been last
-            # online a few minutes before they disabled presence.
-            #
-            # We add a small additional offset as a fudge factor in
-            # case of clock skew.
             status = UserPresence.LEGACY_STATUS_IDLE_INT
+
+            # We create backend the user's existing presence data so
+            # they will be treated as offline by correct clients, such
+            # that the user will, for as long as presence remains
+            # disabled, appear to have been last online a few minutes
+            # before they disabled presence.
             presence_time = timezone_now() - timedelta(
+                # We add a small additional offset as a fudge factor in
+                # case of clock skew.
                 seconds=settings.OFFLINE_THRESHOLD_SECS + 120
+            )
+
+            # TODO: This doesn't seem quite right. I'm not sure
+            # whether we need these lines at all; will the
+            # `do_update_user_presence` below backdate with
+            # force_send_update?
+            UserPresence.objects.filter(user_profile_id=user_profile.id).update(
+                last_connected_time=presence_time,
+                last_active_time=presence_time,
             )
 
         # do_update_user_presence doesn't allow being run inside another
