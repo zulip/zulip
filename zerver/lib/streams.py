@@ -15,6 +15,7 @@ from zerver.lib.exceptions import (
     IncompatibleParametersError,
     JsonableError,
     OrganizationOwnerRequiredError,
+    StreamExistsError,
 )
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
@@ -152,6 +153,14 @@ def send_stream_creation_event(
         streams=[stream_to_dict(stream, recent_traffic, setting_groups_dict)],
     )
     send_event_on_commit(realm, event, user_ids)
+
+
+def ensure_stream_does_not_exist_already(stream_name: str, realm: Realm) -> None:
+    try:
+        get_realm_stream(stream_name, realm.id)
+        raise StreamExistsError(stream_name)
+    except Stream.DoesNotExist:
+        return
 
 
 def get_stream_permission_default_group(
