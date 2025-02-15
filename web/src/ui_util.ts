@@ -22,14 +22,39 @@ export function place_caret_at_end(el: HTMLElement): void {
     }
 }
 
-export function replace_emoji_with_text($element: JQuery): void {
+export function replace_emoji_name_with_unicode_emoji_code($element: JQuery): void {
     $element
         .find(".emoji")
         .text(function () {
+            // We don't have corresponding unicode for a custom emoji.
             if ($(this).is("img")) {
                 return $(this).attr("alt") ?? "";
             }
-            return $(this).text();
+
+            // Emojis have a class with the emoji code next to them e.g. ".emoji-1f419".
+            // The code "1f419" represents an octopus.
+            const emoji_class_with_code: string | undefined = $(this).attr("class");
+            if (emoji_class_with_code === undefined) {
+                return $(this).text();
+            }
+
+            const regex = /emoji-(\w+)/;
+            const match = regex.exec(emoji_class_with_code);
+            const emoji_code = match?.[1] ?? "";
+
+            const hex_emoji_code = Number.parseInt(emoji_code, 16);
+            // Validate the parameter passed to String.fromCodePoint() (here, hex_emoji_code).
+            // "An integer between 0 and 0x10FFFF (inclusive) representing a Unicode code point."
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/fromCodePoint
+            // for details.
+            if (
+                Number.isNaN(hex_emoji_code) ||
+                !(hex_emoji_code >= 0 && hex_emoji_code <= 0x10ffff)
+            ) {
+                return $(this).text();
+            }
+            const unicode_emoji_code = String.fromCodePoint(hex_emoji_code);
+            return unicode_emoji_code;
         })
         .contents()
         .unwrap();
