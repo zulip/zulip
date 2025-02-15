@@ -369,6 +369,9 @@ def bulk_get_digest_context(
             hot_topic.teaser_data(user, stream_id_map) for hot_topic in hot_topics
         ]
 
+        context["total_hot_topic_conversations"] = sum(
+            hot_topic.teaser_data(user, stream_id_map)["count"] for hot_topic in hot_topics
+        )
         # Gather new streams.
         new_streams_count, new_streams = gather_new_streams(
             realm=realm,
@@ -377,6 +380,9 @@ def bulk_get_digest_context(
         )
         context["new_channels"] = new_streams
         context["new_streams_count"] = new_streams_count
+        context[
+            "message_content_disabled_by_realm"
+        ] = not realm.message_content_allowed_in_email_notifications
 
         yield user, context
 
