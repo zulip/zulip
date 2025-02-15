@@ -49,7 +49,7 @@ class TornadoWebTestCase(ZulipTestCase):
             self.http_server.stop()
             await self.http_server.close_all_connections()
             tasks = set(asyncio.all_tasks()) - {asyncio.current_task()}
-            if tasks:
+            if tasks:  # nocoverage
                 await asyncio.wait(tasks)
 
     async def fetch_async(self, method: str, path: str, **kwargs: Any) -> HTTPResponse:
