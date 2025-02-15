@@ -6,7 +6,7 @@
 -r pip.in
 
 # Django itself
-Django[argon2]==5.0.*
+Django[argon2]==5.1.*
 https://github.com/andersk/asgiref/archive/8a2717c14bce1b8dd37371c675ee3728e66c3fe3.zip#egg=asgiref==3.8.1+git  # https://github.com/django/asgiref/pull/494
 
 # needed for NotRequired, ParamSpec

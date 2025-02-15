@@ -53,7 +53,7 @@ class Customer(models.Model):
         # Enforce that at least one of these is set.
         constraints = [
             models.CheckConstraint(
-                check=Q(realm__isnull=False)
+                condition=Q(realm__isnull=False)
                 | Q(remote_server__isnull=False)
                 | Q(remote_realm__isnull=False),
                 name="has_associated_model_object",
