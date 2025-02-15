@@ -248,6 +248,18 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         ),
     );
 
+    // for empty combined feed
+    const current_filter = new Filter([{operator: "in", operand: "home"}]);
+    message_lists.set_current({data: {filter: current_filter}});
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: There are no messages in your combined feed.",
+            'translated HTML: Would you like to <a href="#narrow/channels/public">view messages in all public channels</a>?',
+        ),
+    );
+
     // for non-existent or private stream
     set_filter([["stream", "999"]]);
     narrow_banner.show_empty_narrow_message();
