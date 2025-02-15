@@ -147,7 +147,7 @@
     }
 
     a strong.typeahead-strong-section {
-        white-space: pre;
+        white-space: normal;
         /* Present as flexbox to better control
            icon alignment and spacing, when icons
            are shown. */
