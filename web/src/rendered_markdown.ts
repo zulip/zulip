@@ -384,3 +384,9 @@ export const update_elements = ($content: JQuery): void => {
             .unwrap();
     }
 };
+
+export function process_message_formatting_layout($rendered_html: JQuery): void {
+    $rendered_html
+        .find("p, ul, ol, pre, blockquote, hr")
+        .addClass("preserve-message-formatting-layout");
+}
