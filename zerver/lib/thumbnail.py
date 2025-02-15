@@ -411,7 +411,7 @@ class MarkdownImageMetadata:
     transcoded_image: StoredThumbnailFormat | None = None
 
 
-def get_user_upload_previews(
+def generate_user_upload_previews(
     realm_id: int,
     content: str,
     lock: bool = False,
