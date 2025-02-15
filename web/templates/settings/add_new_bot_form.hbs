@@ -19,6 +19,15 @@
                 {{/each}}
             </select>
         </div>
+        <div class="input-group" id="integration_name_list">
+            <label for="select_integration_name" class="modal-field-label">{{t "Integration"}}</label>
+            <select name="integration_name" id="select_integration_name" class="modal_select bootstrap-focus-style">
+                <option value="" disabled selected>{{t "Select an integration"}}</option>
+                {{#each realm_incoming_webhook_bots}}
+                    <option value="{{this.name}}">{{this.display_name}}</option>
+                {{/each}}
+            </select>
+        </div>
         <div class="input-group">
             <label for="create_bot_name" class="modal-field-label">{{t "Name" }}</label>
             <input type="text" name="bot_name" id="create_bot_name" class="required modal_text_input"
