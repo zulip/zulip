@@ -1252,8 +1252,6 @@ export function register_save_discard_widget_handlers(
                     success_continuation = () => {
                         settings_preferences.update_information_density_settings_visibility(
                             $("#realm-user-default-settings"),
-                            realm_user_settings_defaults,
-                            data,
                         );
                     };
                 }
