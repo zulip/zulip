@@ -2,11 +2,14 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
-from zerver.lib.attachments import get_old_unclaimed_attachments, validate_attachment_request
+from django.db.models import Q, QuerySet
+
+from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.thumbnail import StoredThumbnailFormat, get_image_thumbnail_path
 from zerver.lib.upload import claim_attachment, delete_message_attachments
 from zerver.models import (
+    ArchivedAttachment,
     Attachment,
     ImageAttachment,
     Message,
@@ -80,45 +83,60 @@ def do_claim_attachments(
 DELETE_BATCH_SIZE = 1000
 
 
-def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
-    old_unclaimed_attachments, old_unclaimed_archived_attachments = get_old_unclaimed_attachments(
-        weeks_ago
-    )
+def do_delete_old_unclaimed_attachments(
+    old_unclaimed_attachments: QuerySet[Attachment],
+    old_unclaimed_archived_attachments: QuerySet[ArchivedAttachment],
+) -> None:
+    attachments_path_ids = [attachment.path_id for attachment in old_unclaimed_attachments]
+
+    archived_attachments_path_ids = [
+        archived_attachment.path_id for archived_attachment in old_unclaimed_archived_attachments
+    ]
+
+    old_unclaimed_attachments.update(deleted=True)
+    old_unclaimed_archived_attachments.update(deleted=True)
+
+    ImageAttachment.objects.filter(
+        Q(path_id__in=attachments_path_ids) | Q(path_id__in=archived_attachments_path_ids)
+    ).update(deleted=True)
 
     # An attachment may be removed from Attachments and
     # ArchiveAttachments in the same run; prevent warnings from the
     # backing store by only removing it from there once.
     already_removed = set()
     storage_paths = []
-    for attachment in old_unclaimed_attachments:
-        storage_paths.append(attachment.path_id)
-        image_row = ImageAttachment.objects.filter(path_id=attachment.path_id).first()
+    for attachment_path_id in attachments_path_ids:
+        storage_paths.append(attachment_path_id)
+        image_row = ImageAttachment.objects.filter(path_id=attachment_path_id).first()
         if image_row:
             for existing_thumbnail in image_row.thumbnail_metadata:
                 thumb = StoredThumbnailFormat(**existing_thumbnail)
                 storage_paths.append(get_image_thumbnail_path(image_row, thumb))
-            image_row.delete()
-        already_removed.add(attachment.path_id)
-        attachment.delete()
-        if len(storage_paths) >= DELETE_BATCH_SIZE:
-            delete_message_attachments(storage_paths[:DELETE_BATCH_SIZE])
-            storage_paths = storage_paths[DELETE_BATCH_SIZE:]
-    for archived_attachment in old_unclaimed_archived_attachments:
-        if archived_attachment.path_id not in already_removed:
-            storage_paths.append(archived_attachment.path_id)
-            image_row = ImageAttachment.objects.filter(path_id=archived_attachment.path_id).first()
+        already_removed.add(attachment_path_id)
+
+    for archived_attachment_path_id in archived_attachments_path_ids:
+        if archived_attachment_path_id not in already_removed:
+            storage_paths.append(archived_attachment_path_id)
+            image_row = ImageAttachment.objects.filter(path_id=archived_attachment_path_id).first()
             if image_row:  # nocoverage
                 for existing_thumbnail in image_row.thumbnail_metadata:
                     thumb = StoredThumbnailFormat(**existing_thumbnail)
                     storage_paths.append(get_image_thumbnail_path(image_row, thumb))
-                image_row.delete()
-        archived_attachment.delete()
-        if len(storage_paths) >= DELETE_BATCH_SIZE:
-            delete_message_attachments(storage_paths[:DELETE_BATCH_SIZE])
-            storage_paths = storage_paths[DELETE_BATCH_SIZE:]
 
-    if storage_paths:
-        delete_message_attachments(storage_paths)
+    # delete files from storage, deleting one DELETE_BATCH_SIZE at a time.
+    for batch_start_index in range(0, len(storage_paths), DELETE_BATCH_SIZE):
+        delete_message_attachments(
+            storage_paths[batch_start_index : batch_start_index + DELETE_BATCH_SIZE]
+        )
+
+    clear_old_unclaimed_attachments()
+
+
+def clear_old_unclaimed_attachments() -> None:
+    """delete old unclaimed attachments from database."""
+    Attachment.objects.filter(deleted=True).delete()
+    ArchivedAttachment.objects.filter(deleted=True).delete()
+    ImageAttachment.objects.filter(deleted=True).delete()
 
 
 def check_attachment_reference_change(
