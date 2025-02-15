@@ -492,18 +492,18 @@ test("sort_recipients", () => {
         "b_user_3@zulip.net",
         "b_bot@example.com",
         "a_bot@zulip.com",
-        "a_user@zulip.org",
         "zman@test.net",
+        "a_user@zulip.org",
     ]);
 
     // Typeahead for direct message [query, "", ""]
     assert.deepEqual(get_typeahead_result("a", "", ""), [
         "a_user@zulip.org",
         "a_bot@zulip.com",
+        "zman@test.net",
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
         "b_user_3@zulip.net",
-        "zman@test.net",
         "b_bot@example.com",
     ]);
 
@@ -570,9 +570,9 @@ test("sort_recipients", () => {
         "b_user_3@zulip.net",
         "a_user@zulip.org",
         "b_bot@example.com",
+        "a_bot@zulip.com",
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
-        "a_bot@zulip.com",
     ]);
 });
 
@@ -596,13 +596,13 @@ test("sort_recipients all mention", () => {
 
     assertSameEmails(results, [
         broadcast_item(all_obj),
-        a_user_item,
         a_bot_item,
+        a_user_item,
         b_user_1_item,
         b_user_2_item,
         b_user_3_item,
-        zman_item,
         b_bot_item,
+        zman_item,
     ]);
 });
 
@@ -630,26 +630,21 @@ test("sort_recipients pm counts", () => {
 
     assert.deepEqual(get_typeahead_result("b", linux_sub.stream_id, "Linux topic"), [
         "b_user_3@zulip.net",
-        "b_user_2@zulip.net",
         "b_user_1@zulip.net",
+        "b_user_2@zulip.net",
         "b_bot@example.com",
         "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
     ]);
 
-    /* istanbul ignore next */
-    function compare() {
-        throw new Error("We do not expect to need a tiebreaker here.");
-    }
-
     // get some line coverage
     assert.equal(
-        th.compare_people_for_relevance(b_user_1_item, b_user_3_item, compare, linux_sub.stream_id),
+        th.compare_people_for_streams(b_user_1_item, b_user_3_item, linux_sub.stream_id, ""),
         1,
     );
     assert.equal(
-        th.compare_people_for_relevance(b_user_3_item, b_user_1_item, compare, linux_sub.stream_id),
+        th.compare_people_for_streams(b_user_3_item, b_user_1_item, linux_sub.stream_id, ""),
         -1,
     );
 });
@@ -671,8 +666,8 @@ test("sort_recipients dup bots", () => {
         "b_bot@example.com",
         "a_bot@zulip.com",
         "a_bot@zulip.com",
-        "a_user@zulip.org",
         "zman@test.net",
+        "a_user@zulip.org",
     ];
     assert.deepEqual(recipients_email, expected);
 });
@@ -774,7 +769,7 @@ test("sort broadcast mentions for stream message type", () => {
     compose_state.set_message_type("stream");
     const mentions = ct.broadcast_mentions().reverse();
     const broadcast_items = mentions.map((broadcast) => broadcast_item(broadcast));
-    const results = th.sort_people_for_relevance(broadcast_items, "", "");
+    const results = th.sort_people_for_relevance(broadcast_items, linux_sub.stream_id, "");
 
     assert.deepEqual(
         results.map((r) => r.user.email),
@@ -792,11 +787,11 @@ test("sort broadcast mentions for stream message type", () => {
             .reverse(),
         a_user_item,
     ];
-    const results2 = th.sort_people_for_relevance(user_or_mention_items, "", "");
+    const results2 = th.sort_people_for_relevance(user_or_mention_items, linux_sub.stream_id, "");
 
     assert.deepEqual(
         results2.map((r) => r.user.email),
-        ["all", "everyone", "stream", "channel", "topic", a_user.email, zman.email],
+        ["all", "everyone", "stream", "channel", "topic", zman.email, a_user.email],
     );
 });
 
@@ -823,7 +818,7 @@ test("sort broadcast mentions for direct message type", () => {
 
     assert.deepEqual(
         results2.map((r) => r.user.email),
-        [a_user.email, zman.email, "all", "everyone"],
+        [zman.email, a_user.email, "all", "everyone"],
     );
 });
 
@@ -835,9 +830,9 @@ test("test compare directly for stream message type", () => {
     const all_obj = ct.broadcast_mentions()[0];
     const all_obj_item = broadcast_item(all_obj);
 
-    assert.equal(th.compare_people_for_relevance(all_obj_item, all_obj_item), 0);
-    assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), -1);
-    assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), 1);
+    assert.equal(th.compare_people_for_streams(all_obj_item, all_obj_item, 1, ""), 0);
+    assert.equal(th.compare_people_for_streams(all_obj_item, zman_item, 1, ""), -1);
+    assert.equal(th.compare_people_for_streams(zman_item, all_obj_item, 1, ""), 1);
 });
 
 test("test compare directly for direct message", () => {
@@ -845,9 +840,168 @@ test("test compare directly for direct message", () => {
     const all_obj = ct.broadcast_mentions()[0];
     const all_obj_item = broadcast_item(all_obj);
 
-    assert.equal(th.compare_people_for_relevance(all_obj_item, all_obj_item), 0);
-    assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), 1);
-    assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), -1);
+    assert.equal(th.compare_people_for_pms(all_obj_item, all_obj_item), 0);
+    assert.equal(th.compare_people_for_pms(all_obj_item, zman_item), 1);
+    assert.equal(th.compare_people_for_pms(zman_item, all_obj_item), -1);
+});
+
+test("sort_people_for_relevance", () => {
+    // For Test coverage
+    peer_data.add_subscriber(dev_sub.stream_id, b_user_1.user_id);
+
+    assert.deepEqual(
+        th.sort_people_for_relevance([b_user_2_item, b_user_1_item], dev_sub.stream_id, ""),
+        [b_user_1_item, b_user_2_item],
+    );
+
+    pm_conversations.set_partner(b_user_1.user_id);
+    assert.deepEqual(th.sort_people_for_relevance([b_user_2_item, b_user_1_item]), [
+        b_user_1_item,
+        b_user_2_item,
+    ]);
+    assert.deepEqual(th.sort_people_for_relevance([b_user_2_item, b_user_1_item], "", ""), [
+        b_user_1_item,
+        b_user_2_item,
+    ]);
+});
+
+test("compare_people_for_streams", () => {
+    // For Test coverage
+    peer_data.add_subscriber(dev_sub.stream_id, a_user.user_id);
+
+    // Two users
+    assert.equal(
+        th.compare_people_for_streams(b_user_1_item, a_user_item, dev_sub.stream_id, ""),
+        1,
+    );
+
+    compose_state.set_message_type("stream");
+    const mentions = ct.broadcast_mentions();
+    const all_item = broadcast_item(mentions[0]);
+    const everyone_item = broadcast_item(mentions[1]);
+
+    // a: user, b: wildcard
+    assert.equal(th.compare_people_for_streams(a_user_item, all_item, dev_sub.stream_id, ""), -1);
+
+    // b: user, a: wildcard
+    assert.equal(th.compare_people_for_streams(b_user_1_item, all_item, dev_sub.stream_id, ""), 1);
+
+    // both wildcards
+    assert.equal(
+        th.compare_people_for_streams(all_item, everyone_item, dev_sub.stream_id, ""),
+        all_item.user.idx - everyone_item.user.idx,
+    );
+});
+
+test("compare_people_for_pms", () => {
+    // For Test coverage
+    pm_conversations.set_partner(a_user.user_id);
+
+    // Two users
+    assert.equal(
+        th.compare_people_for_streams(b_user_1_item, a_user_item, dev_sub.stream_id, ""),
+        1,
+    );
+
+    compose_state.set_message_type("stream");
+    const mentions = ct.broadcast_mentions();
+    const all_item = broadcast_item(mentions[0]);
+    const everyone_item = broadcast_item(mentions[1]);
+
+    // a: user, b: wildcard
+    assert.equal(th.compare_people_for_streams(a_user_item, all_item, dev_sub.stream_id, ""), -1);
+
+    // b: user, a: wildcard
+    assert.equal(th.compare_people_for_streams(b_user_1_item, all_item, dev_sub.stream_id, ""), 1);
+
+    // both wildcards
+    assert.equal(
+        th.compare_people_for_streams(all_item, everyone_item, dev_sub.stream_id, ""),
+        all_item.user.idx - everyone_item.user.idx,
+    );
+});
+
+test("compare_users_for_streams", () => {
+    peer_data.add_subscriber(dev_sub.stream_id, a_user.user_id);
+    recent_senders.process_stream_message({
+        sender_id: a_bot.user_id,
+        stream_id: dev_sub.stream_id,
+        topic: "Dev topic 1",
+        id: (next_id += 1),
+    });
+    recent_senders.process_stream_message({
+        sender_id: b_user_1.user_id,
+        stream_id: dev_sub.stream_id,
+        topic: "Dev topic 2",
+        id: (next_id += 1),
+    });
+    pm_conversations.set_partner(b_user_2.user_id);
+
+    // 1. Subscribers over non-subscribers.
+    assert.equal(th.compare_users_for_streams(a_user, b_user_3, dev_sub.stream_id, ""), -1);
+    assert.equal(th.compare_users_for_streams(b_user_3, a_user, dev_sub.stream_id, ""), 1);
+
+    // 2. Users who have sent messages to the current topic over those who haven't sent to the current topic.
+    assert.equal(
+        th.compare_users_for_streams(a_bot, b_user_3, dev_sub.stream_id, "Dev topic 1"),
+        -1,
+    );
+    assert.equal(
+        th.compare_users_for_streams(b_user_3, a_bot, dev_sub.stream_id, "Dev topic 1"),
+        1,
+    );
+
+    // 3. Users who have sent messages to the stream over those who haven't sent to the stream.
+    assert.equal(
+        th.compare_users_for_streams(b_user_1, b_user_3, dev_sub.stream_id, "Dev topic 2"),
+        -1,
+    );
+    assert.equal(
+        th.compare_users_for_streams(b_user_3, b_user_1, dev_sub.stream_id, "Dev topic 2"),
+        1,
+    );
+
+    // 4. Users have PMed with over users haven't PMed with.
+    assert.equal(th.compare_users_for_streams(b_user_2, b_user_3, dev_sub.stream_id, ""), -1);
+    assert.equal(th.compare_users_for_streams(b_user_3, b_user_2, dev_sub.stream_id, ""), 1);
+
+    // 5. No matches:
+    assert.equal(th.compare_users_for_streams(b_user_3, b_bot, dev_sub.stream_id, ""), 0);
+});
+
+test("compare_users_for_pms", () => {
+    pm_conversations.set_partner(a_user.user_id);
+    people.set_recipient_count_for_testing(b_user_1.user_id, 50);
+
+    // 1. Users who have PMed with over users haven't PMed with.
+    assert.equal(th.compare_users_for_pms(a_user, b_user_2), -1);
+    assert.equal(th.compare_users_for_pms(b_user_2, a_user), 1);
+
+    // 2. Recipients with higher counts.
+    assert.equal(th.compare_users_for_pms(b_user_1, b_user_2), -1);
+    assert.equal(th.compare_users_for_pms(b_user_2, b_user_1), 1);
+
+    // 3. Normal users over bots.
+    assert.equal(th.compare_users_for_pms(b_user_2, a_bot), -1);
+    assert.equal(th.compare_users_for_pms(a_bot, b_user_2), 1);
+
+    // 4. Users with shorter names over those with longer names (alpha sort)
+    assert.equal(th.compare_users_for_pms(zman, b_user_2), -1);
+    assert.equal(th.compare_users_for_pms(b_user_2, zman), 1);
+
+    // 5. No matches:
+    assert.equal(th.compare_users_for_pms(b_user_2, b_user_2), 0);
+});
+
+test("compare_user_wildcard", () => {
+    compose_state.set_message_type("private");
+    assert.equal(th.compare_user_wildcard([], ""), -1);
+
+    compose_state.set_message_type("stream");
+    assert.equal(th.compare_user_wildcard([], false), -1);
+
+    assert.equal(th.compare_user_wildcard([true, false, false, false], true), -1);
+    assert.equal(th.compare_user_wildcard([false, false, false, false], true), 1);
 });
 
 test("highlight_with_escaping", () => {
@@ -1085,8 +1239,8 @@ test("compare_language", () => {
 
 // TODO: This is incomplete for testing this function, and
 // should be filled out more. This case was added for codecov.
-test("compare_by_pms", () => {
-    assert.equal(th.compare_by_pms(a_user, a_user), 0);
+test("compare_users_for_pms", () => {
+    assert.equal(th.compare_users_for_pms(a_user, a_user), 0);
 });
 
 test("sort_group_setting_options", ({override_rewire}) => {
