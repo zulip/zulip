@@ -299,8 +299,11 @@ export function is_setting_group_empty(setting_group: GroupSettingValue): boolea
     return true;
 }
 
-export function get_user_groups_of_user(user_id: number): UserGroup[] {
-    const user_groups_realm = get_realm_user_groups();
+export function get_user_groups_of_user(
+    user_id: number,
+    include_deactivated_groups = false,
+): UserGroup[] {
+    const user_groups_realm = get_realm_user_groups(include_deactivated_groups);
     const groups_of_user = user_groups_realm.filter((group) => is_user_in_group(group.id, user_id));
     return groups_of_user;
 }

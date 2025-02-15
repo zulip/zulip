@@ -24,6 +24,7 @@ import type {Toggle} from "./components.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import type {
     GroupGroupSettingName,
@@ -34,6 +35,7 @@ import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
+import {localstorage} from "./localstorage.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -57,6 +59,7 @@ import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_profile from "./user_profile.ts";
 import * as util from "./util.ts";
+import * as views_util from "./views_util.ts";
 
 type ActiveData = {
     $row: JQuery | undefined;
@@ -64,6 +67,17 @@ type ActiveData = {
     $tabs: JQuery;
 };
 
+let filters_dropdown_widget;
+export const FILTERS = {
+    ACTIVE_AND_DEACTIVATED_GROUPS: $t({defaultMessage: "Active and deactivated"}),
+    ACTIVE_GROUPS: $t({defaultMessage: "Active groups"}),
+    DEACTIVATED_GROUPS: $t({defaultMessage: "Deactivated groups"}),
+};
+const ls = localstorage();
+export const user_group_visibility_key = "visible_user_groups";
+const initial_visible_groups =
+    z.string().optional().parse(ls.get(user_group_visibility_key)) ??
+    FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS;
 export let toggler: Toggle;
 export let select_tab = "general";
 
@@ -132,9 +146,12 @@ function update_add_members_elements(group: UserGroup): void {
         $button_element.prop("disabled", true);
         $add_members_container.addClass("add_members_disabled");
 
+        const disable_hint = group.deactivated
+            ? $t({defaultMessage: "Can't add members to a deactivated group"})
+            : $t({defaultMessage: "You are not allowed to add members to this group"});
         settings_components.initialize_disable_button_hint_popover(
             $add_members_container,
-            $t({defaultMessage: "You are not allowed to add members to this group."}),
+            disable_hint,
         );
     }
 }
@@ -251,8 +268,13 @@ function initialize_tooltip_for_membership_button(group_id: number): void {
         ".join_leave_button_wrapper",
     );
     const is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
+    const is_deactivated = user_groups.get_user_group_from_id(group_id).deactivated;
     let tooltip_message;
-    if (is_member) {
+    if (is_deactivated && is_member) {
+        tooltip_message = $t({defaultMessage: "You cannot leave a deactivated user group."});
+    } else if (is_deactivated) {
+        tooltip_message = $t({defaultMessage: "You cannot join a deactivated user group."});
+    } else if (is_member) {
         tooltip_message = $t({defaultMessage: "You do not have permission to leave this group."});
     } else {
         tooltip_message = $t({defaultMessage: "You do not have permission to join this group."});
@@ -1425,9 +1447,9 @@ function compare_by_name(a: UserGroup, b: UserGroup): number {
 function redraw_left_panel(tab_name: string): void {
     let groups_list_data;
     if (tab_name === "all-groups") {
-        groups_list_data = user_groups.get_realm_user_groups();
+        groups_list_data = user_groups.get_realm_user_groups(true);
     } else if (tab_name === "your-groups") {
-        groups_list_data = user_groups.get_user_groups_of_user(people.my_current_user_id());
+        groups_list_data = user_groups.get_user_groups_of_user(people.my_current_user_id(), true);
     }
     if (groups_list_data === undefined) {
         return;
@@ -1517,7 +1539,7 @@ export function update_empty_left_panel_message(): void {
     const is_your_groups_tab_active =
         get_active_data().$tabs.first().attr("data-tab-key") === "your-groups";
     if (is_your_groups_tab_active) {
-        has_groups = user_groups.get_user_groups_of_user(people.my_current_user_id()).length;
+        has_groups = user_groups.get_user_groups_of_user(people.my_current_user_id(), true).length;
     } else {
         has_groups = user_groups.get_realm_user_groups().length;
     }
@@ -1550,6 +1572,71 @@ export function remove_deactivated_user_from_all_groups(user_id: number): void {
     }
 }
 
+export function update_displayed_groups(filter_id: string): void {
+    if (filter_id === FILTERS.ACTIVE_GROUPS) {
+        $(".user-groups-list").addClass("hide-deactived-user-groups");
+        $(".user-groups-list").removeClass("hide-active-user-groups");
+        ls.set(user_group_visibility_key, FILTERS.ACTIVE_GROUPS);
+    } else if (filter_id === FILTERS.DEACTIVATED_GROUPS) {
+        $(".user-groups-list").removeClass("hide-deactived-user-groups");
+        $(".user-groups-list").addClass("hide-active-user-groups");
+        ls.set(user_group_visibility_key, FILTERS.DEACTIVATED_GROUPS);
+    } else {
+        $(".user-groups-list").removeClass("hide-deactived-user-groups");
+        $(".user-groups-list").removeClass("hide-active-user-groups");
+        ls.set(user_group_visibility_key, FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS);
+    }
+}
+
+export function filter_click_handler(
+    event: JQuery.TriggeredEvent,
+    dropdown: tippy.Instance,
+    widget: dropdown_widget.DropdownWidget,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const filter_id = z.string().parse(widget.value());
+    update_displayed_groups(filter_id);
+    dropdown.hide();
+    widget.render();
+}
+
+function filters_dropdown_options(current_value: string | number | undefined): {
+    unique_id: string;
+    name: string;
+    bold_current_selection: boolean;
+}[] {
+    return [
+        {
+            unique_id: FILTERS.ACTIVE_GROUPS,
+            name: FILTERS.ACTIVE_GROUPS,
+            bold_current_selection: current_value === FILTERS.ACTIVE_GROUPS,
+        },
+        {
+            unique_id: FILTERS.DEACTIVATED_GROUPS,
+            name: FILTERS.DEACTIVATED_GROUPS,
+            bold_current_selection: current_value === FILTERS.DEACTIVATED_GROUPS,
+        },
+        {
+            unique_id: FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS,
+            name: FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS,
+            bold_current_selection: current_value === FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS,
+        },
+    ];
+}
+
+function setup_dropdown_filters_widget(): void {
+    filters_dropdown_widget = new dropdown_widget.DropdownWidget({
+        ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
+        get_options: filters_dropdown_options,
+        widget_name: "user_group_visibility_settings",
+        item_click_callback: filter_click_handler,
+        $events_container: $("#more_options_user_group"),
+        default_id: initial_visible_groups,
+    });
+    filters_dropdown_widget.setup();
+}
+
 export function setup_page(callback: () => void): void {
     function initialize_components(): void {
         group_list_toggler = components.toggle({
@@ -1564,6 +1651,7 @@ export function setup_page(callback: () => void): void {
         });
 
         group_list_toggler.get().prependTo("#groups_overlay_container .list-toggler-container");
+        setup_dropdown_filters_widget();
     }
 
     function populate_and_fill(): void {
@@ -1584,6 +1672,7 @@ export function setup_page(callback: () => void): void {
         );
         $groups_overlay_container.html(groups_overlay_html);
 
+        update_displayed_groups(initial_visible_groups);
         const context = {
             banner_type: compose_banner.INFO,
             classname: "group_info",
