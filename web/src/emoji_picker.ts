@@ -15,6 +15,7 @@ import * as compose_ui from "./compose_ui.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as emoji from "./emoji.ts";
 import type {EmojiDict} from "./emoji.ts";
+import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as message_store from "./message_store.ts";
 import {page_params} from "./page_params.ts";
@@ -57,17 +58,29 @@ let edit_message_id: number | null = null;
 let current_message_id: number | null = null;
 
 const EMOJI_CATEGORIES = [
-    {name: "Popular", icon: "fa-star-o"},
-    {name: "Smileys & Emotion", icon: "fa-smile-o"},
-    {name: "People & Body", icon: "fa-thumbs-o-up"},
-    {name: "Animals & Nature", icon: "fa-leaf"},
-    {name: "Food & Drink", icon: "fa-cutlery"},
-    {name: "Activities", icon: "fa-soccer-ball-o"},
-    {name: "Travel & Places", icon: "fa-car"},
-    {name: "Objects", icon: "fa-lightbulb-o"},
-    {name: "Symbols", icon: "fa-hashtag"},
-    {name: "Flags", icon: "fa-flag"},
-    {name: "Custom", icon: "fa-cog"},
+    {name: "Popular", icon: "fa-star-o", translated: $t({defaultMessage: "Popular"})},
+    {
+        name: "Smileys & Emotion",
+        icon: "fa-smile-o",
+        translated: $t({defaultMessage: "Smileys & Emotion"}),
+    },
+    {
+        name: "People & Body",
+        icon: "fa-thumbs-o-up",
+        translated: $t({defaultMessage: "People & Body"}),
+    },
+    {
+        name: "Animals & Nature",
+        icon: "fa-leaf",
+        translated: $t({defaultMessage: "Animals & Nature"}),
+    },
+    {name: "Food & Drink", icon: "fa-cutlery", translated: $t({defaultMessage: "Food & Drink"})},
+    {name: "Activities", icon: "fa-soccer-ball-o", translated: $t({defaultMessage: "Activities"})},
+    {name: "Travel & Places", icon: "fa-car", translated: $t({defaultMessage: "Travel & Places"})},
+    {name: "Objects", icon: "fa-lightbulb-o", translated: $t({defaultMessage: "Objects"})},
+    {name: "Symbols", icon: "fa-hashtag", translated: $t({defaultMessage: "Symbols"})},
+    {name: "Flags", icon: "fa-flag", translated: $t({defaultMessage: "Flags"})},
+    {name: "Custom", icon: "fa-cog", translated: $t({defaultMessage: "Custom"})},
 ];
 
 function get_total_sections(): number {
@@ -173,6 +186,7 @@ export function rebuild_catalog(): void {
         icon: category.icon,
         // The ! type assertion is correct because of the filter above.
         emojis: catalog.get(category.name)!,
+        translated: category.translated,
     }));
     const emojis_by_category = complete_emoji_catalog.flatMap((category) => {
         if (category.name === "Popular") {
