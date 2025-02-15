@@ -1,11 +1,11 @@
 # Direct messages
 
 **Direct messages (DMs)** are conversations with other users that happen outside
-of a [channel](/help/introduction-to-channels). DMs work well for one-off messages,
-usually with just one or two others.
+of a [channel](/help/introduction-to-channels). They are convenient for 1:1 and
+small group conversations.
 
 If you find yourself frequently conversing with the same person or group, it
-often works better to [create a private channel](/help/create-a-channel) for your
+often works best to [create a private channel](/help/create-a-channel) for your
 conversations. This lets you organize your discussion into topics, and subscribe
 or unsubscribe people as needed.
 
@@ -13,20 +13,37 @@ or unsubscribe people as needed.
 
 {!send-dm.md!}
 
-## Access a DM
+## View your DMs
 
-If using Zulip in a browser or desktop, there are several ways to access an existing DM conversation.
+There are a few different ways to view your DM conversations in the web and
+desktop apps.
 
-* Click on **Direct messages** near the top of the left sidebar to access
-  recent DM conversations.
+{start_tabs}
+
+{tab|via-left-sidebar}
+
+1. If the **direct messages** section in the left sidebar is collapsed, click on
+   the **direct messages** heading to expand it.
+
+1. Choose a recent DM conversation, or click **more conversations**. If you
+   don't see this link, you are already viewing all of your direct message
+   conversations.
+
+{tab|via-user-list}
 
 * Click on any user in the right sidebar.
+
+{tab|via-search}
 
 * Start typing a user's name in the [search](/help/search-for-messages) bar.
   You'll be able to select DMs with that user.
 
+{tab|via-compose-box}
+
 * Open the compose box, and enter a list of users on the **To:**
   line. Type <kbd>Ctrl</kbd> + <kbd>.</kbd> to open that conversation.
+
+{end_tabs}
 
 ## Find a direct message conversation
 
@@ -34,8 +51,8 @@ If using Zulip in a browser or desktop, there are several ways to access an exis
 
 {tab|desktop-web}
 
-1. If the **DIRECT MESSAGES** section in the left sidebar is collapsed, click on
-   the **DIRECT MESSAGES** heading to expand it.
+1. If the **direct messages** section in the left sidebar is collapsed, click on
+   the **direct messages** heading to expand it.
 1. At the bottom of the list of your recent direct messages, click **more
    conversations**. If you don't see this link, you are already viewing all of
    your direct message conversations.
@@ -43,7 +60,7 @@ If using Zulip in a browser or desktop, there are several ways to access an exis
 
 {end_tabs}
 
-## Access all DMs
+## View direct message feed
 
 {start_tabs}
 
@@ -51,7 +68,7 @@ If using Zulip in a browser or desktop, there are several ways to access an exis
 
 1. In the left sidebar, click the **Direct message feed**
    (<i class="zulip-icon zulip-icon-all-messages"></i>) icon to the right of the
-   **Direct messages** label, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
+   **direct messages** heading, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
    keyboard shortcut.
 
 {tab|mobile}
