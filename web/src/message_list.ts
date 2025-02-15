@@ -591,6 +591,8 @@ export class MessageList {
                 // that the view doesn't have messages that we're
                 // waiting for the server to send us.
                 narrow_banner.show_empty_narrow_message();
+                this.last_message_historical = true; // as there are no messages in the narrow
+                this.update_trailing_bookend();
             } else {
                 narrow_banner.hide_empty_narrow_message();
             }
