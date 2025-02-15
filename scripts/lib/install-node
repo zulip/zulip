@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-version=22.12.0
+version=22.14.0
 arch="$(uname -m)"
 
 case $arch in
