@@ -591,6 +591,8 @@ h4.user_group_setting_subsection_title {
                 line-height: 1;
                 font-weight: 600;
                 word-break: break-all;
+                padding: 0 24px;
+                box-sizing: border-box;
 
                 .large-icon {
                     display: inline-block;
