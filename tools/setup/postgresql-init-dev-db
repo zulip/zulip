@@ -106,6 +106,10 @@ psql -v ON_ERROR_STOP=1 -e -h localhost "$DBNAME_BASE" "$USERNAME" <<EOF
 CREATE SCHEMA zulip;
 EOF
 
+PGVERSION=$(psql --version | awk '{split($3, a, "."); print a[1]}')
+echo "shared_preload_libraries = 'pg_search'" | sudo tee "/etc/postgresql/$PGVERSION/main/conf.d/zulip-dev.conf"
+sudo systemctl restart "postgresql@${PGVERSION}-main"
+
 "${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DBNAME_BASE" <<EOF
 CREATE EXTENSION pgroonga;
 
@@ -116,6 +120,8 @@ SELECT unnest(
         ARRAY['ALTER SYSTEM SET pgroonga.enable_wal = ''on''', 'SELECT pg_reload_conf()']
     END
 ) \gexec
+
+CREATE EXTENSION pg_search;
 EOF
 
 psql -v ON_ERROR_STOP=1 -e -h localhost postgres "$USERNAME" <<EOF

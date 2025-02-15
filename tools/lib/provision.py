@@ -230,6 +230,7 @@ def install_system_deps() -> None:
         run_as_root(["./scripts/lib/build-groonga"])
     if BUILD_PGROONGA_FROM_SOURCE:
         run_as_root(["./scripts/lib/build-pgroonga"])
+    run_as_root(["./scripts/lib/build-paradedb"])
 
 
 def install_apt_deps(deps_to_install: list[str]) -> None:
