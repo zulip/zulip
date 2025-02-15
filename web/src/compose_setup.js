@@ -570,7 +570,7 @@ export function initialize() {
     });
 
     $("textarea#compose-textarea").on("focus", () => {
-        compose_recipient.update_placeholder_text();
+        compose_recipient.update_compose_area_placeholder_text();
         if (narrow_state.narrowed_by_reply()) {
             compose_notifications.maybe_show_one_time_non_interleaved_view_messages_fading_banner();
         } else {
@@ -592,11 +592,18 @@ export function initialize() {
     });
 
     $("input#stream_message_recipient_topic").on("focus", () => {
-        compose_recipient.update_placeholder_text();
+        const $input = $("input#stream_message_recipient_topic");
+        compose_recipient.update_topic_displayed_text($input.val(), true);
+        compose_recipient.update_compose_area_placeholder_text(false);
+
+        $("input#stream_message_recipient_topic").one("blur", () => {
+            compose_recipient.update_topic_displayed_text($input.val());
+            compose_recipient.update_compose_area_placeholder_text();
+        });
     });
 
     $("input#stream_message_recipient_topic").on("input", () => {
-        compose_recipient.update_placeholder_text();
+        compose_recipient.update_compose_area_placeholder_text(false);
     });
 
     $("body").on("click", ".formatting_button", function (e) {

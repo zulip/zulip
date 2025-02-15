@@ -25,6 +25,10 @@ const people = zrequire("people");
 const compose_fade = zrequire("compose_fade");
 const compose_fade_helper = zrequire("compose_fade_helper");
 const compose_state = zrequire("compose_state");
+const {set_realm} = zrequire("state_data");
+
+const realm = {};
+set_realm(realm);
 
 const me = {
     email: "me@example.com",
@@ -77,7 +81,7 @@ run_test("set_focused_recipient", () => {
     assert.ok(compose_fade_helper.should_fade_message(bad_msg));
 });
 
-run_test("want_normal_display", () => {
+run_test("want_normal_display", ({override}) => {
     const stream_id = 110;
     const sub = {
         stream_id,
@@ -100,8 +104,16 @@ run_test("want_normal_display", () => {
     assert.ok(compose_fade_helper.want_normal_display());
 
     // Focused recipient is a valid stream with no topic set
+    // when topics are mandatory
+    override(realm, "realm_mandatory_topics", true);
     stream_data.add_sub(sub);
     assert.ok(compose_fade_helper.want_normal_display());
+
+    // However, focused recipient is a valid stream with a
+    // topic set when topics are not mandatory
+    override(realm, "realm_mandatory_topics", false);
+    stream_data.add_sub(sub);
+    assert.ok(!compose_fade_helper.want_normal_display());
 
     // If we're focused to a topic, then we do want to fade.
     compose_fade_helper.set_focused_recipient({

@@ -1414,13 +1414,19 @@ export function initialize({
         $element: $("input#stream_message_recipient_topic"),
         type: "input",
     };
-    new Typeahead(stream_message_typeahead_input, {
+    const composebox_topic_typeahead = new Typeahead(stream_message_typeahead_input, {
         source(): string[] {
             return topics_seen_for(compose_state.stream_id());
         },
+        helpOnEmptyStrings: $("#compose-recipient").hasClass("permit-empty-topic"),
         items: max_num_items,
         highlighter_html(item: string): string {
-            return typeahead_helper.render_typeahead_item({primary: item});
+            const is_empty_string_topic = item === "";
+            const topic_display_name = util.get_final_topic_display_name(item);
+            return typeahead_helper.render_typeahead_item({
+                primary: topic_display_name,
+                is_empty_string_topic,
+            });
         },
         sorter(items: string[], query: string): string[] {
             const sorted = typeahead_helper.sorter(query, items, (x) => x);
@@ -1430,12 +1436,17 @@ export function initialize({
             return sorted;
         },
         option_label(matching_items: string[], item: string): string | false {
-            if (!matching_items.includes(item)) {
+            if (item !== "" && !matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
             }
             return false;
         },
         header_html: render_topic_typeahead_hint,
+    });
+    $("input#stream_message_recipient_topic").on("focus", () => {
+        if (!realm.realm_mandatory_topics) {
+            composebox_topic_typeahead.lookup(false);
+        }
     });
 
     const private_message_typeahead_input: TypeaheadInputElement = {

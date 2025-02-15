@@ -175,7 +175,7 @@ function switch_message_type(message_type: MessageType): void {
         private_message_recipient: compose_state.private_message_recipient(),
     };
     update_compose_for_message_type(opts);
-    update_placeholder_text();
+    update_compose_area_placeholder_text();
     compose_ui.set_focus(opts);
 }
 
@@ -348,7 +348,39 @@ export function initialize(): void {
     $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
 }
 
-export let update_placeholder_text = (): void => {
+export function update_topic_displayed_text(
+    topic_name: string | undefined,
+    has_topic_focus = false,
+): void {
+    if (topic_name === undefined) {
+        topic_name = "";
+    }
+    // When topics are mandatory, we just call topic() as usual.
+    if (realm.realm_mandatory_topics) {
+        compose_state.topic(topic_name);
+        return;
+    }
+    // Otherwise, we have some adjustments to make to display the
+    // general topic as a stylized placeholder
+    const $input = $("input#stream_message_recipient_topic");
+    const is_empty_string_topic = topic_name === "";
+    let topic_placeholder_text = $t({defaultMessage: "Topic"});
+    const recipient_widget_hidden =
+        $(".compose_select_recipient-dropdown-list-container").length === 0;
+
+    // Remove any stale references to the empty topic display
+    $input.removeClass("empty-topic-display");
+
+    if (is_empty_string_topic && !has_topic_focus && recipient_widget_hidden) {
+        topic_placeholder_text = util.get_final_topic_display_name("");
+        $input.addClass("empty-topic-display");
+    }
+
+    $input.attr("placeholder", topic_placeholder_text);
+    compose_state.topic(topic_name);
+}
+
+export let update_compose_area_placeholder_text = (empty_topic_display = true): void => {
     const $textarea: JQuery<HTMLTextAreaElement> = $("textarea#compose-textarea");
     // Change compose placeholder text only if compose box is open.
     if (!$textarea.is(":visible")) {
@@ -359,10 +391,14 @@ export let update_placeholder_text = (): void => {
     let placeholder = compose_ui.DEFAULT_COMPOSE_PLACEHOLDER;
     if (message_type === "stream") {
         const stream_id = compose_state.stream_id();
+        let topic = compose_state.topic();
+        if (empty_topic_display && !realm.realm_mandatory_topics) {
+            topic = util.get_final_topic_display_name(topic);
+        }
         placeholder = compose_ui.compute_placeholder_text({
             message_type,
             stream_id,
-            topic: compose_state.topic(),
+            topic,
         });
     } else if (message_type === "private") {
         placeholder = compose_ui.compute_placeholder_text({
@@ -375,8 +411,10 @@ export let update_placeholder_text = (): void => {
     compose_ui.autosize_textarea($textarea);
 };
 
-export function rewire_update_placeholder_text(value: typeof update_placeholder_text): void {
-    update_placeholder_text = value;
+export function rewire_update_compose_area_placeholder_text(
+    value: typeof update_compose_area_placeholder_text,
+): void {
+    update_compose_area_placeholder_text = value;
 }
 
 // This function addresses the issue of the placeholder not reappearing in Firefox
