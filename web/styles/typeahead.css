@@ -159,6 +159,10 @@
         gap: 0.25ch;
         font-weight: 500;
     }
+
+    a strong.typeahead-strong-section .stream-name {
+        max-width: 200px;
+    }
 }
 
 .typeahead-option-label-container {
