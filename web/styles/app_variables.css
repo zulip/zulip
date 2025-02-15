@@ -653,6 +653,7 @@
         --color-background-navigation-item-hover
     );
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
+    --color-background-hover-todo-item: hsl(0deg 0% 97%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 80%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
@@ -1674,6 +1675,7 @@
     --color-background-sidebar-action-heading-hover: var(
         --color-background-navigation-item-hover
     );
+    --color-background-hover-todo-item: hsl(0deg 0% 21%);
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: hsl(0deg 0% 30%);
