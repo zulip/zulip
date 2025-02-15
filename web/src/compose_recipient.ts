@@ -3,7 +3,7 @@
 import $ from "jquery";
 import _, {isNumber} from "lodash";
 import assert from "minimalistic-assert";
-import type * as tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 
@@ -19,12 +19,15 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import type {Option} from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
+import {parse_html} from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
+import {the} from "./util.ts";
 
 type MessageType = "stream" | "private";
 type DirectMessagesOption = {
@@ -73,6 +76,7 @@ export let update_narrow_to_recipient_visibility = (): void => {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            maybe_show_go_to_conversation_button_intro_tooltip();
             return;
         }
     } else if (message_type === "private") {
@@ -83,10 +87,16 @@ export let update_narrow_to_recipient_visibility = (): void => {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            maybe_show_go_to_conversation_button_intro_tooltip();
             return;
         }
     }
     $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", false);
+    if (
+        onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_go_to_conversation_button_tooltip")
+    ) {
+        check_hide_go_to_conversation_button_intro_tooltip();
+    }
 };
 
 export function rewire_update_narrow_to_recipient_visibility(
@@ -148,6 +158,11 @@ export let check_posting_policy_for_compose_box = (): void => {
 
     let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
     compose_validate.set_recipient_disallowed(true);
+    if (
+        onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_go_to_conversation_button_tooltip")
+    ) {
+        check_hide_go_to_conversation_button_intro_tooltip();
+    }
     if (compose_state.selected_recipient_id === "direct") {
         banner_classname = compose_banner.CLASSNAMES.cannot_send_direct_message;
         compose_banner.cannot_send_direct_message_error(banner_text);
@@ -314,6 +329,50 @@ export function handle_middle_pane_transition(): void {
     if (compose_state.composing()) {
         update_narrow_to_recipient_visibility();
     }
+}
+
+function maybe_show_go_to_conversation_button_intro_tooltip(): void {
+    // The tooltip is shown only if:
+    // The tooltip hasn't been shown before.
+    // The user has confirmed a recipient change to a topic/DM that
+    // is not in the current view and the "Go to conversation" button
+    // is active - checked while updating narrow to recipient visibility.
+    // There are no compose banners currently visible.
+
+    if (
+        !onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has(
+            "intro_go_to_conversation_button_tooltip",
+        ) ||
+        compose_banner.is_any_banner_visible()
+    ) {
+        return;
+    }
+
+    const $go_to_conversation_button = $(".conversation-arrow");
+    const element: tippy.ReferenceElement = the($go_to_conversation_button);
+
+    const tippy_instance =
+        element._tippy ??
+        tippy.default(element, {
+            hideOnClick: false,
+            trigger: "manual",
+            appendTo: document.body,
+        });
+    tippy_instance.setContent(
+        parse_html($("#compose_go_to_conversation_button_tootltip_template").html()),
+    );
+
+    tippy_instance.show();
+}
+
+export function check_hide_go_to_conversation_button_intro_tooltip(): boolean {
+    const element: tippy.ReferenceElement = the($(".conversation-arrow"));
+    const instance = element._tippy;
+    if (instance?.state.isVisible) {
+        instance.destroy();
+        return true;
+    }
+    return false;
 }
 
 export function initialize(): void {
