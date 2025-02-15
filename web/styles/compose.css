@@ -1050,6 +1050,7 @@ textarea.new_message_textarea {
 
     /* Styles for input in the recipient_box */
     #stream_message_recipient_topic {
+        color: var(--color-compose-recipient-box-text-color);
         /* Override grid's effective `max-content` min-width */
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1060,6 +1061,10 @@ textarea.new_message_textarea {
         padding: 4px 6px;
         /* Reset height to let `align-items: stretch` on the grid parent handle this. */
         height: auto;
+
+        &.empty-topic-display::placeholder {
+            color: var(--color-compose-recipient-box-text-color);
+        }
     }
 
     /* Styles for new conversation button in the recipient_box */
@@ -1086,7 +1091,7 @@ textarea.new_message_textarea {
         }
     }
 
-    #stream_message_recipient_topic:placeholder-shown
+    #stream_message_recipient_topic:not(.empty-topic-display):placeholder-shown
         + #recipient_box_clear_topic_button {
         visibility: hidden;
     }

@@ -165,7 +165,7 @@ function initialize_pm_pill(mock_template) {
     $("#private_message_recipient").before = noop;
 
     compose_pm_pill.initialize({
-        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+        on_pill_create_or_remove: compose_recipient.update_compose_area_placeholder_text,
     });
 
     $("#zephyr-mirror-error").is = noop;
