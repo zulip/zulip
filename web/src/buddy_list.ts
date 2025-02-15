@@ -224,7 +224,12 @@ export class BuddyList extends BuddyListConf {
                                         defaultMessage:
                                             "{N, plural, one {# other subscriber} other {# other subscribers}}",
                                     },
-                                    {N: total_human_subscribers_count - participant_count},
+                                    {
+                                        N: Math.max(
+                                            0,
+                                            total_human_subscribers_count - participant_count,
+                                        ),
+                                    },
                                 );
                             } else if (current_sub) {
                                 tooltip_text = $t(
@@ -395,8 +400,10 @@ export class BuddyList extends BuddyListConf {
     update_section_header_counts(): void {
         const {total_human_subscribers_count, other_users_count} = this.render_data;
         const all_participant_ids = this.render_data.get_all_participant_ids();
-        const subscriber_section_user_count =
-            total_human_subscribers_count - all_participant_ids.size;
+        const subscriber_section_user_count = Math.max(
+            0,
+            total_human_subscribers_count - all_participant_ids.size,
+        );
 
         const formatted_participants_count = get_formatted_sub_count(all_participant_ids.size);
         const formatted_sub_users_count = get_formatted_sub_count(subscriber_section_user_count);
@@ -465,7 +472,7 @@ export class BuddyList extends BuddyListConf {
                         ? $t({defaultMessage: "THIS CHANNEL"})
                         : $t({defaultMessage: "THIS CONVERSATION"}),
                     user_count: get_formatted_sub_count(
-                        total_human_subscribers_count - all_participant_ids.size,
+                        Math.max(0, total_human_subscribers_count - all_participant_ids.size),
                     ),
                     is_collapsed: this.users_matching_view_is_collapsed,
                 }),
