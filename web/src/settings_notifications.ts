@@ -1,5 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.hbs";
@@ -8,9 +9,11 @@ import render_stream_specific_notification_row from "../templates/settings/strea
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as message_notifications from "./message_notifications.ts";
 import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import type {SettingsPanel} from "./settings_preferences.ts";
@@ -32,6 +35,8 @@ import {
 import * as util from "./util.ts";
 
 export let user_settings_panel: SettingsPanel | undefined;
+let customize_stream_notifications_widget: dropdown_widget.DropdownWidget;
+const stream_ids_with_custom_notifications = new Set<number>();
 
 function rerender_ui(): void {
     const $unmatched_streams_table = $("#stream-specific-notify-table");
@@ -46,6 +51,7 @@ function rerender_ui(): void {
     $unmatched_streams_table.find(".stream-notifications-row").remove();
 
     const muted_stream_ids = stream_data.muted_stream_ids();
+    stream_ids_with_custom_notifications.clear();
 
     for (const stream of unmatched_streams) {
         $unmatched_streams_table.append(
@@ -61,12 +67,19 @@ function rerender_ui(): void {
                 }),
             ),
         );
+        stream_ids_with_custom_notifications.add(stream.stream_id);
     }
 
     if (unmatched_streams.length === 0) {
         $unmatched_streams_table.css("display", "none");
+        $("#customize_stream_notifications_widget .dropdown_widget_value").text(
+            $t({defaultMessage: "Customize a channel"}),
+        );
     } else {
         $unmatched_streams_table.css("display", "table-row-group");
+        $("#customize_stream_notifications_widget .dropdown_widget_value").text(
+            $t({defaultMessage: "Customize another channel"}),
+        );
     }
 }
 
@@ -144,9 +157,7 @@ export function set_enable_marketing_emails_visibility(): void {
     }
 }
 
-function stream_notification_setting_changed(target: HTMLInputElement): void {
-    const $row = $(target).closest(".stream-notifications-row");
-    const stream_id = Number.parseInt($row.attr("data-stream-id")!, 10);
+function stream_notification_setting_changed(target: HTMLInputElement, stream_id: number): void {
     if (!stream_id) {
         blueslip.error("Cannot find stream id for target");
         return;
@@ -169,6 +180,66 @@ function stream_notification_setting_changed(target: HTMLInputElement): void {
         {property: setting, value: target.checked},
         $status_element,
     );
+}
+
+function change_state_of_customize_stream_notifications_widget(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+): void {
+    dropdown.hide();
+    event.preventDefault();
+    event.stopPropagation();
+    assert(customize_stream_notifications_widget !== undefined);
+    customize_stream_notifications_widget.render();
+    const stream_id = customize_stream_notifications_widget.value();
+    assert(typeof stream_id === "number");
+
+    $("#customizable_stream_notifications_table")
+        .find("input[type='checkbox']")
+        .prop("disabled", false);
+
+    for (const notification_setting of settings_config.stream_specific_notification_settings) {
+        const checked_state = stream_data.receives_notifications(stream_id, notification_setting);
+        $("#customizable_stream_notifications_table")
+            .find(`.${CSS.escape(notification_setting)}`)
+            .prop("checked", checked_state);
+    }
+}
+
+function get_streams_to_customize_notifications(): dropdown_widget.Option[] {
+    const user_id = people.my_current_user_id();
+
+    return stream_data
+        .get_streams_for_user(user_id)
+        .subscribed.map((stream) => {
+            const sub = sub_store.get(stream.stream_id);
+            assert(sub !== undefined);
+            return {
+                name: sub.name,
+                unique_id: stream.stream_id,
+                stream: sub,
+            };
+        })
+        .filter((stream) => !stream_ids_with_custom_notifications.has(stream.unique_id))
+        .sort((a, b) => util.strcmp(a.name, b.name));
+}
+
+function render_customize_stream_notifications_widget(): void {
+    customize_stream_notifications_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "customize_stream_notifications",
+        get_options: get_streams_to_customize_notifications,
+        item_click_callback: change_state_of_customize_stream_notifications_widget,
+        $events_container: $("#user-notification-settings .notification-settings-form"),
+        unique_id_type: dropdown_widget.DataTypes.NUMBER,
+    });
+    customize_stream_notifications_widget.setup();
+}
+
+function customize_stream_notifications(target: HTMLInputElement): void {
+    assert(customize_stream_notifications_widget !== undefined);
+    const stream_id = customize_stream_notifications_widget.value();
+    assert(typeof stream_id === "number");
+    stream_notification_setting_changed(target, stream_id);
 }
 
 export function set_up(settings_panel: SettingsPanel): void {
@@ -246,8 +317,15 @@ export function set_up(settings_panel: SettingsPanel): void {
         e.stopPropagation();
         const $input_elem = $(e.currentTarget);
         if ($input_elem.parents("#stream-specific-notify-table").length > 0) {
+            const $row = $input_elem.closest(".stream-notifications-row");
+            const stream_id = Number.parseInt($row.attr("data-stream-id")!, 10);
             assert(e.currentTarget instanceof HTMLInputElement);
-            stream_notification_setting_changed(e.currentTarget);
+            stream_notification_setting_changed(e.currentTarget, stream_id);
+            return;
+        }
+        if ($input_elem.parents("#customizable_stream_notifications_table").length > 0) {
+            assert(e.currentTarget instanceof HTMLInputElement);
+            customize_stream_notifications(e.currentTarget);
             return;
         }
 
@@ -340,6 +418,7 @@ export function set_up(settings_panel: SettingsPanel): void {
     });
 
     set_enable_marketing_emails_visibility();
+    render_customize_stream_notifications_widget();
     rerender_ui();
 }
 
@@ -385,6 +464,12 @@ export function update_page(settings_panel: SettingsPanel): void {
             }
         }
     }
+    $container
+        .find("#customizable_stream_notifications_table input[type='checkbox']")
+        .each(function () {
+            $(this).prop("disabled", true).prop("checked", false);
+        });
+
     rerender_ui();
 }
 
