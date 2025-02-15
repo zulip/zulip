@@ -13,8 +13,8 @@
                         <td class="operator"><span class="operator_value">keyword</span></td>
                         <td class="definition">
                             {{#tr}}
-                                Search for <z-value></z-value> in the topic or message content.
-                                {{#*inline "z-value"}}<span class="operator_value">keyword</span>{{/inline}}
+                            Search for <z-value></z-value> in the topic or message content.
+                            {{#*inline "z-value"}}<span class="operator_value">keyword</span>{{/inline}}
                             {{/tr}}
                         </td>
                     </tr>
@@ -22,8 +22,8 @@
                         <td class="operator">channel:<span class="operator_value">channel</span></td>
                         <td class="definition">
                             {{#tr}}
-                                Narrow to messages on channel <z-value></z-value>.
-                                {{#*inline "z-value"}}<span class="operator_value">channel</span>{{/inline}}
+                            Narrow to messages on channel <z-value></z-value>.
+                            {{#*inline "z-value"}}<span class="operator_value">channel</span>{{/inline}}
                             {{/tr}}
                         </td>
                     </tr>
@@ -31,8 +31,8 @@
                         <td class="operator">topic:<span class="operator_value">topic</span></td>
                         <td class="definition">
                             {{#tr}}
-                                Narrow to messages with topic <z-value></z-value>.
-                                {{#*inline "z-value"}}<span class="operator_value">topic</span>{{/inline}}
+                            Narrow to messages with topic <z-value></z-value>.
+                            {{#*inline "z-value"}}<span class="operator_value">topic</span>{{/inline}}
                             {{/tr}}
                         </td>
                     </tr>
@@ -46,8 +46,8 @@
                         <td class="operator">dm:<span class="operator_value">user</span></td>
                         <td class="definition">
                             {{#tr}}
-                                Narrow to direct messages with <z-value></z-value>.
-                                {{#*inline "z-value"}}<span class="operator_value">user</span>{{/inline}}
+                            Narrow to direct messages with <z-value></z-value>.
+                            {{#*inline "z-value"}}<span class="operator_value">user</span>{{/inline}}
                             {{/tr}}
                         </td>
                     </tr>
@@ -55,8 +55,8 @@
                         <td class="operator">dm-including:<span class="operator_value">user</span></td>
                         <td class="definition">
                             {{#tr}}
-                                Narrow to direct messages that include <z-value></z-value>.
-                                {{#*inline "z-value"}}<span class="operator_value">user</span>{{/inline}}
+                            Narrow to direct messages that include <z-value></z-value>.
+                            {{#*inline "z-value"}}<span class="operator_value">user</span>{{/inline}}
                             {{/tr}}
                         </td>
                     </tr>
@@ -71,11 +71,21 @@
                         </td>
                     </tr>
                     <tr>
+                        <td class="operator">channels:archived</td>
+                        <td class="definition">
+                            {{#if can_access_all_public_channels }}
+                            {{t 'Search all archived channels.'}}
+                            {{else}}
+                            {{t 'Search all archived channels that you can view.'}}
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="operator">sender:<span class="operator_value">user</span></td>
                         <td class="definition">
                             {{#tr}}
-                                Narrow to messages sent by <z-value></z-value>.
-                                {{#*inline "z-value"}}<span class="operator_value">user</span>{{/inline}}
+                            Narrow to messages sent by <z-value></z-value>.
+                            {{#*inline "z-value"}}<span class="operator_value">user</span>{{/inline}}
                             {{/tr}}
                         </td>
                     </tr>
@@ -149,8 +159,8 @@
                         <td class="operator">near:<span class="operator_value">id</span></td>
                         <td class="definition">
                             {{#tr}}
-                                Center the view around message ID <z-value></z-value>.
-                                {{#*inline "z-value"}}<span class="operator_value">id</span>{{/inline}}
+                            Center the view around message ID <z-value></z-value>.
+                            {{#*inline "z-value"}}<span class="operator_value">id</span>{{/inline}}
                             {{/tr}}
                         </td>
                     </tr>
@@ -158,8 +168,8 @@
                         <td class="operator">id:<span class="operator_value">id</span></td>
                         <td class="definition">
                             {{#tr}}
-                                Narrow to just message ID <z-value></z-value>.
-                                {{#*inline "z-value"}}<span class="operator_value">id</span>{{/inline}}
+                            Narrow to just message ID <z-value></z-value>.
+                            {{#*inline "z-value"}}<span class="operator_value">id</span>{{/inline}}
                             {{/tr}}
                         </td>
                     </tr>
@@ -167,8 +177,8 @@
                         <td class="operator">-topic:<span class="operator_value">topic</span></td>
                         <td class="definition">
                             {{#tr}}
-                                Exclude messages with topic <z-value></z-value>.
-                                {{#*inline "z-value"}}<span class="operator_value">topic</span>{{/inline}}
+                            Exclude messages with topic <z-value></z-value>.
+                            {{#*inline "z-value"}}<span class="operator_value">topic</span>{{/inline}}
                             {{/tr}}
                         </td>
                     </tr>
@@ -176,7 +186,8 @@
             </table>
             <p>{{t "You can combine search filters as needed." }}</p>
             <hr />
-            <a href="help/search-for-messages#search-filters" target="_blank" rel="noopener noreferrer">{{t "Detailed search filters documentation" }}</a>
+            <a href="help/search-for-messages#search-filters" target="_blank" rel="noopener noreferrer">{{t "Detailed
+                search filters documentation" }}</a>
         </div>
     </div>
 </div>

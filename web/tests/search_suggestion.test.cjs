@@ -370,6 +370,7 @@ test("empty_query_suggestions", () => {
 
     const expected = [
         "channels:public",
+        "channels:archived",
         "is:dm",
         "is:starred",
         "is:mentioned",
@@ -999,7 +1000,7 @@ test("operator_suggestions", ({override, mock_template}) => {
 
     query = "ch";
     suggestions = get_suggestions(query);
-    expected = ["ch", "channels:public", "channel:"];
+    expected = ["ch", "channels:public", "channels:archived", "channel:"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-s";
