@@ -442,6 +442,8 @@
     padding: 4px 6px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;
+    box-sizing: border-box;
+    height: 31px !important;
     border: 1px solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
@@ -449,7 +451,7 @@
         box-shadow linear 0.2s;
     margin-bottom: 10px;
     /* subtract padding (6px each side) and border (1px each side) */
-    width: calc(var(--modal-input-width) - 14px);
+    min-width: calc(var(--modal-input-width) - 14px);
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
