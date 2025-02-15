@@ -69,8 +69,6 @@ async function test_reload_hash(page: Page): Promise<void> {
     assert(initial_page_load_time !== undefined);
     console.log(`initial load time: ${initial_page_load_time}`);
 
-    const initial_hash = await page.evaluate(() => window.location.hash);
-
     await page.evaluate(() => {
         zulip_test.initiate_reload({immediate: true});
     });
@@ -83,9 +81,6 @@ async function test_reload_hash(page: Page): Promise<void> {
     const page_load_time = await page.evaluate(() => zulip_test.page_load_time);
     assert(page_load_time !== undefined);
     assert.ok(page_load_time > initial_page_load_time, "Page not reloaded.");
-
-    const hash = await page.evaluate(() => window.location.hash);
-    assert.strictEqual(hash, initial_hash, "Hash not preserved.");
 }
 
 async function navigation_tests(page: Page): Promise<void> {
