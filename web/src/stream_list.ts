@@ -859,14 +859,27 @@ export function initialize_tippy_tooltips(): void {
         target: "#stream_filters li .subscription_block .stream-name",
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
+            // check for "Go to channel feed" tooltip conditions first.
             const stream_id = stream_id_for_elt($(instance.reference).parents("li.narrow-filter"));
             const current_narrow_stream_id = narrow_state.stream_id();
             const current_topic = narrow_state.topic();
-            if (!(current_narrow_stream_id === stream_id && current_topic)) {
-                return false;
+
+            if (current_narrow_stream_id === stream_id && current_topic) {
+                instance.setContent(ui_util.parse_html(render_go_to_channel_feed_tooltip()));
+                return undefined;
             }
-            instance.setContent(ui_util.parse_html(render_go_to_channel_feed_tooltip()));
-            return undefined;
+
+            // Then check for truncation
+            const stream_name = instance.reference;
+            assert(stream_name instanceof HTMLElement);
+
+            if (stream_name.offsetWidth < stream_name.scrollWidth) {
+                const truncated_stream_name = stream_name.textContent ?? "";
+                instance.setContent(truncated_stream_name);
+                return undefined;
+            }
+
+            return false;
         },
         appendTo: () => document.body,
     });
