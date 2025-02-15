@@ -211,9 +211,43 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
     assert.ok(user_not_subscribed_rendered);
 });
 
-test_ui("validate", ({mock_template, override}) => {
+test_ui("validate", ({mock_template, override, override_rewire}) => {
+    function initialize_pm_pill() {
+        $.clear_all_elements();
+
+        $("#compose-send-button").prop("disabled", false);
+        $("#compose-send-button").trigger("focus");
+        $("#compose-send-button .loader").hide();
+
+        const $pm_pill_container = $.create("fake-pm-pill-container");
+        $("#private_message_recipient")[0] = {};
+        $("#private_message_recipient").set_parent($pm_pill_container);
+        $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
+        $("#private_message_recipient").before = noop;
+
+        compose_pm_pill.initialize({
+            on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+        });
+
+        $("#zephyr-mirror-error").is = noop;
+
+        mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
+
+        mock_banners();
+    }
+
     function add_content_to_compose_box() {
         $("textarea#compose-textarea").val("foobarfoobar");
+    }
+
+    function add_content_that_exceeds_message_length() {
+        const $textarea = $("textarea#compose-textarea");
+        for (let i = 0; i < 10000; i = i + 1) {
+            $textarea.val($textarea.val() + "hello ");
+        }
+    }
+    function set_compose_box_as_empty() {
+        $("textarea#compose-textarea").val("");
     }
 
     // test validating direct messages
@@ -227,10 +261,7 @@ test_ui("validate", ({mock_template, override}) => {
     override(realm, "realm_direct_message_initiator_group", everyone.id);
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_private_message_recipient);
-        assert.equal(
-            data.banner_text,
-            $t({defaultMessage: "Please specify at least one valid recipient."}),
-        );
+        assert.equal(data.banner_text, compose_validate.NO_PRIVATE_RECIPIENT_ERROR_MESSAGE);
         pm_recipient_error_rendered = true;
         return "<banner-stub>";
     });
@@ -318,6 +349,47 @@ test_ui("validate", ({mock_template, override}) => {
 
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
+    // test no message content
+    const india = {
+        stream_id: 100,
+        name: "India",
+        subscribed: true,
+        can_send_message_group: everyone.id,
+    };
+    override_rewire(stream_data, "can_post_messages_in_stream", () => true);
+    stream_data.add_sub(india);
+    compose_state.set_stream_id(india.stream_id);
+    compose_state.set_message_type("stream");
+    compose_state.topic("Random topic for india");
+
+    set_compose_box_as_empty();
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+
+    let render_no_message_content = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.no_message_content);
+        assert.equal(data.banner_text, compose_validate.NO_MESSAGE_CONTENT_ERROR_MESSAGE);
+        render_no_message_content = true;
+        return "<banner-stub>";
+    });
+    assert.ok(!compose_validate.validate());
+    assert.ok(render_no_message_content);
+
+    // test exceeded message length limit
+    add_content_that_exceeds_message_length();
+    override(realm, "max_message_length", 10000);
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+
+    let render_exceeded_message_length_limit_error = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.exceeded_message_length_limit);
+        assert.equal(data.banner_text, compose_validate.get_message_too_long_for_compose_error());
+        render_exceeded_message_length_limit_error = true;
+        return "<banner-stub>";
+    });
+    assert.ok(!compose_validate.validate());
+    assert.ok(render_exceeded_message_length_limit_error);
+    $("textarea#compose-textarea").val("hello world");
 
     // test validating stream messages
     compose_state.set_message_type("stream");
@@ -325,7 +397,7 @@ test_ui("validate", ({mock_template, override}) => {
     let empty_stream_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_stream);
-        assert.equal(data.banner_text, $t({defaultMessage: "Please specify a channel."}));
+        assert.equal(data.banner_text, compose_validate.NO_CHANNEL_SELECTED_ERROR_MESSAGE);
         empty_stream_error_rendered = true;
         return "<banner-stub>";
     });
@@ -344,10 +416,7 @@ test_ui("validate", ({mock_template, override}) => {
     let missing_topic_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.topic_missing);
-        assert.equal(
-            data.banner_text,
-            $t({defaultMessage: "Topics are required in this organization."}),
-        );
+        assert.equal(data.banner_text, compose_validate.TOPICS_REQUIRED_ERROR_MESSAGE);
         missing_topic_error_rendered = true;
         return "<banner-stub>";
     });

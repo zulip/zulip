@@ -455,7 +455,7 @@ test("copy_paste", ({override, override_rewire}) => {
     assert.equal(upload_files_called, false);
 });
 
-test("uppy_events", ({override_rewire, mock_template}) => {
+test("uppy_events", ({override, override_rewire, mock_template}) => {
     $("#compose_banners .upload_banner .moving_bar").css = noop;
     $("#compose_banners .upload_banner").length = 0;
     override_rewire(compose_ui, "smart_insert_inline", noop);
@@ -517,6 +517,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     override_rewire(compose_ui, "autosize_textarea", () => {
         compose_ui_autosize_textarea_called = true;
     });
+    override(compose_state, "get_message_type", () => "stream");
     on_upload_success_callback(file, response);
 
     assert.ok(compose_ui_replace_syntax_called);
