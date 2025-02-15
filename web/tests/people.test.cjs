@@ -522,11 +522,11 @@ test_people("pm_lookup_key", () => {
 test_people("get_recipients", () => {
     people.add_active_user(isaac);
     people.add_active_user(linus);
-    assert.equal(people.get_recipients("30"), "Me Myself");
-    assert.equal(people.get_recipients("30,32"), "Isaac Newton");
+    assert.deepEqual(people.get_recipients("30"), ["Me Myself"]);
+    assert.deepEqual(people.get_recipients("30,32"), ["Isaac Newton"]);
 
     muted_users.add_muted_user(304);
-    assert.equal(people.get_recipients("304,32"), "Isaac Newton, translated: Muted user");
+    assert.deepEqual(people.get_recipients("304,32"), ["Isaac Newton", "translated: Muted user"]);
 });
 
 test_people("get_full_name", () => {
