@@ -183,6 +183,16 @@ export function user_last_seen_time_status(user_id: number): string {
     return timerender.last_seen_status_from_date(last_active_date);
 }
 
+export function get_user_last_seen_status(user_id: number): string | undefined {
+    const last_seen_date = presence.last_active_date(user_id);
+
+    if (last_seen_date) {
+        return user_last_seen_time_status(user_id);
+    }
+    presence.fetch_presence_for_user(user_id);
+    return undefined;
+}
+
 export type BuddyUserInfo = {
     href: string;
     name: string;

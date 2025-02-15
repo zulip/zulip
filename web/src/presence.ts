@@ -1,8 +1,12 @@
+import $ from "jquery";
 import {z} from "zod";
 
+import * as channel from "./channel.ts";
+import {$t} from "./i18n.ts";
 import * as people from "./people.ts";
 import type {StateData, presence_schema} from "./state_data.ts";
 import {realm} from "./state_data.ts";
+import * as timerender from "./timerender.ts";
 import {user_settings} from "./user_settings.ts";
 
 export type RawPresence = z.infer<typeof presence_schema> & {
@@ -23,6 +27,23 @@ export const presence_info_from_event_schema = z.object({
     }),
 });
 export type PresenceInfoFromEvent = z.output<typeof presence_info_from_event_schema>;
+
+const user_last_seen_response_schema = z.object({
+    result: z.string(),
+    msg: z.string().optional(),
+    presence: z
+        .object({
+            aggregated: z.object({
+                status: z.enum(["active", "idle", "offline"]),
+                timestamp: z.number(),
+            }),
+            website: z.object({
+                status: z.enum(["active", "idle", "offline"]),
+                timestamp: z.number(),
+            }),
+        })
+        .optional(),
+});
 
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
@@ -303,6 +324,48 @@ export function last_active_date(user_id: number): Date | undefined {
     }
 
     return new Date(info.last_active * 1000);
+}
+
+export let fetch_presence_for_user = (user_id: number): void => {
+    const url = `json/users/${user_id}/presence`;
+
+    channel.get({
+        url,
+        success(data: unknown) {
+            const parsed_data = user_last_seen_response_schema.safeParse(data);
+
+            if (parsed_data.success) {
+                const response = parsed_data.data;
+
+                if (response.result === "success" && response.presence) {
+                    const {aggregated} = response.presence;
+                    presence_info.set(user_id, {
+                        status: aggregated.status,
+                        last_active: aggregated.timestamp,
+                    });
+
+                    // Update the user's last seen time in the user card
+                    // popover once we have their presence information.
+                    $(".user-last-seen-time").text(
+                        timerender.last_seen_status_from_date(
+                            new Date(aggregated.timestamp * 1000),
+                        ),
+                    );
+                }
+            }
+        },
+        error(xhr: {responseJSON?: {msg?: string}}) {
+            // Fallback logic for users who haven't generated any presence data
+
+            const default_msg = $t({defaultMessage: "Failed to fetch presence data"});
+            const error_msg = xhr.responseJSON?.msg ?? default_msg;
+            $(".user-last-seen-time").text(error_msg);
+        },
+    });
+};
+
+export function rewire_fetch_presence_for_user(value: (user_id: number) => string): void {
+    fetch_presence_for_user = value;
 }
 
 export function initialize(params: StateData["presence"]): void {
