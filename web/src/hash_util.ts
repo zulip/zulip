@@ -182,6 +182,9 @@ export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
 }
 
 export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
+    // There's a Python copy of this function in `zerver/lib/url_decoding.py`
+    // called `parse_narrow_url`, the two should be kept roughly in sync.
+
     // This will throw an exception when passed an invalid hash
     // at the decodeHashComponent call, handle appropriately.
     let i;
