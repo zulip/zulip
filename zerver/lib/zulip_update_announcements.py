@@ -274,6 +274,28 @@ DIRECT MESSAGES to [start a DM]({starting_a_new_direct_message_help_url}).
             quote_or_forward_help_url="/help/quote-or-forward-a-message",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=12,
+        message="""
+- When you [link to a topic]({link_from_anywhere_help_url}) in Zulip, that link
+  will now continue to work even when the topic is
+  [renamed]({rename_a_topic_help_url}), [moved to another
+  channel]({move_content_to_another_channel_help_url}), or
+  [resolved]({resolve_a_topic_help_url}).
+
+**Web and desktop updates**
+- You can now [save snippets]({saved_snippets_help_url}) of message content, and
+quickly insert them into the message you're composing.
+- [Drafts]({drafts_help_url}) are no longer removed after 30 days.
+""".format(
+            link_from_anywhere_help_url="/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere",
+            rename_a_topic_help_url="/help/rename-a-topic",
+            move_content_to_another_channel_help_url="/help/move-content-to-another-channel",
+            resolve_a_topic_help_url="/help/resolve-a-topic",
+            saved_snippets_help_url="/help/saved-snippets",
+            drafts_help_url="/help/view-and-edit-your-message-drafts",
+        ),
+    ),
 ]
 
 
