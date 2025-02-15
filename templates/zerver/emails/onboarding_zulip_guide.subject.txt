@@ -12,4 +12,14 @@
 {{ _("Zulip guide for non-profits") }}
 {% elif organization_type == "community" %}
 {{ _("Zulip guide for communities") }}
+{% elif organization_type == "unspecified" %}
+{{ _("Zulip guide") }}
+{% elif organization_type == "government" %}
+{{ _("Zulip guide") }}
+{% elif organization_type == "political_group" %}
+{{ _("Zulip guide") }}
+{% elif organization_type == "personal" %}
+{{ _("Zulip guide") }}
+{% elif organization_type == "other" %}
+{{ _("Zulip guide") }}
 {% endif %}
