@@ -35,6 +35,8 @@ export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list
 let should_redraw_active_users_list = false;
 let should_redraw_deactivated_users_list = false;
 let presence_data_fetched = false;
+let active_users_role_dropdown: dropdown_widget.DropdownWidget;
+let deactivated_users_role_dropdown: dropdown_widget.DropdownWidget;
 
 type UserSettingsSection = {
     dropdown_widget_name: string;
@@ -129,6 +131,9 @@ export function update_view_on_deactivate(user_id: number): void {
 
     should_redraw_active_users_list = true;
     should_redraw_deactivated_users_list = true;
+
+    active_users_role_dropdown.render();
+    deactivated_users_role_dropdown.render();
 }
 
 export function update_view_on_reactivate(user_id: number): void {
@@ -147,6 +152,9 @@ export function update_view_on_reactivate(user_id: number): void {
 
     should_redraw_active_users_list = true;
     should_redraw_deactivated_users_list = true;
+
+    active_users_role_dropdown.render();
+    deactivated_users_role_dropdown.render();
 }
 
 function add_value_to_filters(
@@ -222,22 +230,32 @@ function get_roles_with_counts(user_ids: number[]): {unique_id: number; name: st
     ];
 }
 
+function get_roles_count_for_active_users(): {unique_id: number; name: string}[] {
+    const active_user_ids = people.get_realm_active_human_user_ids();
+    return get_roles_with_counts(active_user_ids);
+}
+
+function get_roles_count_for_deactivated_users(): {unique_id: number; name: string}[] {
+    const deactivated_user_ids = people.get_non_active_human_ids();
+    return get_roles_with_counts(deactivated_user_ids);
+}
+
 function create_role_filter_dropdown(
     $events_container: JQuery,
     section: UserSettingsSection,
-    user_ids: number[],
-): void {
-    new dropdown_widget.DropdownWidget({
+    get_role_options: () => {unique_id: number; name: string}[],
+): dropdown_widget.DropdownWidget {
+    return new dropdown_widget.DropdownWidget({
         widget_name: section.dropdown_widget_name,
         unique_id_type: dropdown_widget.DataTypes.NUMBER,
-        get_options: () => get_roles_with_counts(user_ids),
+        get_options: get_role_options,
         $events_container,
         item_click_callback: role_selected_handler,
         default_id: section.filters.role_code,
         tippy_props: {
             offset: [0, 0],
         },
-    }).setup();
+    });
 }
 
 function populate_users(): void {
@@ -252,24 +270,36 @@ function populate_users(): void {
                 presence_data_fetched = true;
                 active_section.create_table(active_user_ids);
                 deactivated_section.create_table(deactivated_user_ids);
-                create_role_filter_dropdown($("#admin-user-list"), active_section, active_user_ids);
-                create_role_filter_dropdown(
+                active_users_role_dropdown = create_role_filter_dropdown(
+                    $("#admin-user-list"),
+                    active_section,
+                    get_roles_count_for_active_users,
+                );
+                deactivated_users_role_dropdown = create_role_filter_dropdown(
                     $("#admin-deactivated-users-list"),
                     deactivated_section,
-                    deactivated_user_ids,
+                    get_roles_count_for_deactivated_users,
                 );
+                active_users_role_dropdown.setup();
+                deactivated_users_role_dropdown.setup();
             },
         });
     }
     active_section.create_table(active_user_ids);
-    create_role_filter_dropdown($("#admin-user-list"), active_section, active_user_ids);
+    active_users_role_dropdown = create_role_filter_dropdown(
+        $("#admin-user-list"),
+        active_section,
+        get_roles_count_for_active_users,
+    );
 
     deactivated_section.create_table(deactivated_user_ids);
-    create_role_filter_dropdown(
+    deactivated_users_role_dropdown = create_role_filter_dropdown(
         $("#admin-deactivated-users-list"),
         deactivated_section,
-        deactivated_user_ids,
+        get_roles_count_for_deactivated_users,
     );
+    active_users_role_dropdown.setup();
+    deactivated_users_role_dropdown.setup();
 }
 
 function reset_scrollbar($sel: JQuery): () => void {
