@@ -22,11 +22,12 @@ from zerver.lib.message import (
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
+from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import maybe_rename_empty_topic_to_general_chat
 from zerver.lib.typed_endpoint import OptionalTopic, PathOnly, typed_endpoint
 from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent
-from zerver.models import Message, UserProfile
+from zerver.models import Message, Recipient, UserProfile
 
 
 def fill_edit_history_entries(
@@ -112,6 +113,9 @@ def get_message_edit_history(
     if not user_profile.realm.allow_edit_history:
         raise JsonableError(_("Message edit history is disabled in this organization"))
     message = access_message(user_profile, message_id)
+    if message.recipient.type == Recipient.STREAM:
+        stream_id = message.recipient.type_id
+        access_stream_by_id(user_profile, stream_id)
 
     # Extract the message edit history from the message
     if message.edit_history is not None:

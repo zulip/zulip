@@ -7,8 +7,9 @@ from zerver.lib.emoji import get_emoji_data
 from zerver.lib.exceptions import JsonableError, ReactionDoesNotExistError
 from zerver.lib.message import access_message
 from zerver.lib.response import json_success
+from zerver.lib.streams import access_stream_by_id
 from zerver.lib.typed_endpoint import typed_endpoint
-from zerver.models import Reaction, UserProfile
+from zerver.models import Reaction, Recipient, UserProfile
 
 
 # transaction.atomic is required since we use FOR UPDATE queries in access_message
@@ -41,6 +42,9 @@ def remove_reaction(
     reaction_type: str = "unicode_emoji",
 ) -> HttpResponse:
     message = access_message(user_profile, message_id, lock_message=True)
+    if message.recipient.type == Recipient.STREAM:
+        stream_id = message.recipient.type_id
+        access_stream_by_id(user_profile, stream_id)
 
     if emoji_code is None:
         if emoji_name is None:
