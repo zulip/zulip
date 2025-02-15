@@ -445,6 +445,16 @@ function handle_inline_topic_edit_keydown(this: HTMLElement, e: JQuery.KeyDownEv
     }
 }
 
+function handle_inline_topic_edit_change(this: HTMLInputElement): void {
+    const $inline_topic_edit_input = $(this);
+    if ($inline_topic_edit_input.hasClass("invalid-input")) {
+        // If invalid-input class is present on the inline topic edit
+        // input field, remove it as soon as the user starts typing
+        // as that probably means the user is trying to fix the error.
+        $inline_topic_edit_input.removeClass("invalid-input");
+    }
+}
+
 function timer_text(seconds_left: number): string {
     const minutes = Math.floor(seconds_left / 60);
     const seconds = seconds_left % 60;
@@ -921,6 +931,8 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     );
 
     $form.on("keydown", handle_inline_topic_edit_keydown);
+
+    $inline_topic_edit_input.on("input", handle_inline_topic_edit_change);
 }
 
 export function end_inline_topic_edit($row: JQuery): void {
@@ -980,7 +992,8 @@ export function try_save_inline_topic_edit($row: JQuery): void {
     const message = message_lists.current.get(message_id);
     assert(message?.type === "stream");
     const old_topic = message.topic;
-    const new_topic = $row.find<HTMLInputElement>("input.inline_topic_edit").val()?.trim();
+    const $inline_topic_edit_input = $row.find<HTMLInputElement>("input.inline_topic_edit");
+    const new_topic = $inline_topic_edit_input.val()?.trim();
     assert(new_topic !== undefined);
     const topic_changed = new_topic !== old_topic;
 
@@ -988,6 +1001,15 @@ export function try_save_inline_topic_edit($row: JQuery): void {
         // this means the inline_topic_edit was opened and submitted without
         // changing anything, therefore, we should just close the inline topic edit.
         end_inline_topic_edit($row);
+        return;
+    }
+
+    if (realm.realm_mandatory_topics && util.is_topic_name_considered_empty(new_topic)) {
+        // When the topic is mandatory in a realm and the new topic is considered
+        // empty, we don't allow the user to save the topic. Instead, we show the
+        // error visually via the invalid-input class and focus on the input field.
+        $inline_topic_edit_input.addClass("invalid-input");
+        $inline_topic_edit_input.trigger("focus");
         return;
     }
 
