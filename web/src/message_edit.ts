@@ -57,6 +57,7 @@ import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as typing from "./typing.ts";
 import * as ui_report from "./ui_report.ts";
+import * as ui_util from "./ui_util.ts";
 import * as upload from "./upload.ts";
 import {the} from "./util.ts";
 import * as util from "./util.ts";
@@ -452,6 +453,25 @@ function handle_inline_topic_edit_change(this: HTMLInputElement): void {
         // input field, remove it as soon as the user starts typing
         // as that probably means the user is trying to fix the error.
         $inline_topic_edit_input.removeClass("invalid-input");
+    }
+
+    const $topic_edit_save_button = $inline_topic_edit_input
+        .closest(".topic_edit_form")
+        .find(".topic_edit_save");
+    if (realm.realm_mandatory_topics && util.is_topic_name_considered_empty(this.value)) {
+        // When the topic is mandatory in a realm and the new topic is considered empty,
+        // we disable the save button and show a tooltip with an error message.
+        ui_util.disable_element_and_add_tooltip(
+            $topic_edit_save_button,
+            $t({defaultMessage: "Topics are required in this organization."}),
+        );
+        return;
+    }
+    if ($topic_edit_save_button.parent().hasClass("disabled-tooltip")) {
+        // If we reach here, it means the save button was disabled previously
+        // and the user has started typing in the input field, probably to fix
+        // the error. So, we re-enable the save button and remove the tooltip.
+        ui_util.enable_element_and_remove_tooltip($topic_edit_save_button);
     }
 }
 

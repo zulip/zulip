@@ -46,6 +46,12 @@
         outline-offset: 2px;
         clip-path: inset(-3px);
     }
+
+    &:disabled {
+        cursor: default;
+        pointer-events: none;
+        opacity: 0.5;
+    }
 }
 
 .action-button-label {
@@ -408,6 +414,12 @@
         outline: 1px solid var(--color-outline-focus) !important;
         outline-offset: 2px;
         clip-path: inset(-3px);
+    }
+
+    &:disabled {
+        cursor: default;
+        pointer-events: none;
+        opacity: 0.5;
     }
 }
 

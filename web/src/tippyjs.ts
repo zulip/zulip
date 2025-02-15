@@ -696,4 +696,13 @@ export function initialize(): void {
             instance.destroy();
         },
     });
+
+    tippy.delegate("body", {
+        target: ".disabled-tooltip",
+        trigger: "focus mouseenter",
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }
