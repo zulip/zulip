@@ -80,8 +80,9 @@ export type LanguageSuggestion = {
 };
 
 export type TopicSuggestion = {
-    topic: string;
+    topic_display_name: string;
     type: "topic_list";
+    is_empty_string_topic: boolean;
     // is_channel_link will be used when we want to only render the stream as an
     // option in the topic typeahead while having #**stream_name> as the token.
     is_channel_link: boolean;
@@ -954,9 +955,17 @@ export function get_candidates(
                     topic_list.push(token);
                 }
                 const matcher = get_topic_matcher(token);
+                // We want the empty topic's display name to match the query
+                // while searching for topics in the typeahead.
+                const empty_string_topic_display_name = util.get_final_topic_display_name("");
+                const empty_string_topic_idx = topic_list.indexOf("");
+                if (empty_string_topic_idx !== -1) {
+                    topic_list[empty_string_topic_idx] = empty_string_topic_display_name;
+                }
                 const matches = topic_list.filter((item) => matcher(item));
                 const matches_list: TopicSuggestion[] = matches.map((topic) => ({
-                    topic,
+                    topic_display_name: topic,
+                    is_empty_string_topic: topic === empty_string_topic_display_name,
                     type: "topic_list",
                     is_channel_link: false,
                     stream_data: {
@@ -970,13 +979,14 @@ export function get_candidates(
                 const topic_suggestion_candidates = typeahead_helper.sorter(
                     token,
                     matches_list,
-                    (x) => x.topic,
+                    (x) => x.topic_display_name,
                 );
 
                 // Add link to channel if and only if nothing is typed after '>'
                 if (token.length === 0) {
                     topic_suggestion_candidates.unshift({
-                        topic: stream_name,
+                        topic_display_name: stream_name,
+                        is_empty_string_topic: false,
                         type: "topic_list",
                         is_channel_link: true,
                         stream_data: {
@@ -1231,10 +1241,14 @@ export function content_typeahead_selected(
                 beginning = beginning.slice(0, syntax_start_index) + "#**" + stream_name + "** ";
                 break;
             }
-            beginning =
-                beginning.slice(0, syntax_start_index) +
-                topic_link_util.get_stream_topic_link_syntax(stream_name, item.topic) +
-                " ";
+            const stream_topic_link_syntax =
+                item.topic_display_name === util.get_final_topic_display_name("")
+                    ? topic_link_util.get_stream_topic_link_syntax(stream_name, "")
+                    : topic_link_util.get_stream_topic_link_syntax(
+                          stream_name,
+                          item.topic_display_name,
+                      );
+            beginning = beginning.slice(0, syntax_start_index) + stream_topic_link_syntax + " ";
             break;
         }
         case "time_jump": {
