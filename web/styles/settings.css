@@ -119,6 +119,11 @@ h3,
     min-width: 0;
 }
 
+.change-email {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .admin-realm-description {
     height: 16em;
     width: 100%;
