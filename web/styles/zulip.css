@@ -930,7 +930,6 @@ div.focused-message-list.is-conversation-view .recipient_row {
        this preserves the dimensions and rounded corners
        on the image itself. */
     line-height: 1;
-    margin-right: 11px;
     vertical-align: top;
     border-radius: 4px;
     overflow: hidden;
@@ -949,6 +948,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
 .user_sidebar_entry.with_avatar .user-profile-picture {
     width: var(--right-sidebar-avatar-width);
     height: var(--right-sidebar-avatar-height);
+    margin-right: var(--right-sidebar-avatar-right-margin);
 }
 
 .home-error-bar {

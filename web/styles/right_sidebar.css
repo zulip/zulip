@@ -189,10 +189,6 @@
         font-size: 0.875em;
         /* Override .empty-list-message !important styling */
         padding: 0 !important;
-        margin-left: calc(
-            var(--right-sidebar-toggle-width-offset) +
-                var(--right-sidebar-left-spacing)
-        );
         text-align: left;
 
         &:hover {
@@ -294,7 +290,10 @@
         "starting-anchor-element row-content markers-and-controls" var(
             --line-height-sidebar-row
         )
-        ".                       row-content ." auto / 20px minmax(0, 1fr)
+        ".                       row-content ." auto / var(
+            --right-sidebar-presence-circle-width
+        )
+        minmax(0, 1fr)
         minmax(0, auto);
     align-items: baseline;
 }
@@ -306,6 +305,7 @@
 
     .selectable_sidebar_block {
         margin: 4px;
+        margin-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
     }
 
     .avatar-preload-background {
@@ -397,13 +397,15 @@
         "row-content ." auto / minmax(0, 1fr) 26px;
     align-content: baseline;
     margin-right: var(--width-simplebar-scroll-hover);
-    margin-left: var(--right-sidebar-toggle-width-offset);
     /* When both the left circle and three dot menu are present, we want
        the space to the left of the circle to be more similar to the space
        to the right of the three dot menu. */
     &:not(.with_avatar) {
-        padding-left: 2px;
-        margin-left: calc(var(--right-sidebar-toggle-width-offset) - 2px);
+        padding-left: calc(var(--right-sidebar-toggle-width-offset) - 2px);
+    }
+
+    &:hover {
+        cursor: pointer;
     }
 
     .user-name-and-status-emoji {
@@ -513,7 +515,6 @@
 .buddy-list-user-link,
 .invite-user-shortcut {
     margin-right: var(--width-simplebar-scroll-hover);
-    padding-left: var(--right-sidebar-left-spacing);
     border-radius: 4px;
 
     &:hover {
@@ -546,8 +547,23 @@
     }
 }
 
-.buddy-list-user-link {
-    margin-left: var(--right-sidebar-toggle-width-offset);
+#user-list.with_avatars
+    .buddy-list-user-link
+    .right-sidebar-wrappable-text-container,
+#user-list.with_avatars .buddy-list-section .empty-list-message {
+    margin-left: calc(
+        var(--right-sidebar-header-icon-toggle-width) / 2 +
+            var(--right-sidebar-avatar-width) +
+            var(--right-sidebar-avatar-right-margin)
+    );
+}
+
+.buddy-list-user-link .right-sidebar-wrappable-text-container,
+.buddy-list-section .empty-list-message {
+    margin-left: calc(
+        var(--right-sidebar-toggle-width-offset) - 2px +
+            var(--right-sidebar-presence-circle-width)
+    );
 }
 
 .invite-user-shortcut {
@@ -557,7 +573,6 @@
        from the legacy value. */
     margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
     margin-bottom: var(--sidebar-bottom-spacing);
-    padding-left: 0;
 
     .invite-user-link {
         grid-template-columns:
