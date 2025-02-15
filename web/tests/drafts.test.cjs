@@ -3,7 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
-const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -18,6 +18,11 @@ const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
 const {initialize_user_settings} = zrequire("user_settings");
 const {set_realm} = zrequire("state_data");
+class Clipboard {
+    on() {}
+}
+
+mock_cjs("clipboard", Clipboard);
 
 initialize_user_settings({user_settings: {}});
 
