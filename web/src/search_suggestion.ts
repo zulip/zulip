@@ -703,6 +703,15 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
             incompatible_patterns: [{operator: "is", operand: "unread"}],
         },
         {
+            search_string: "is:muted",
+            description_html: "muted messages",
+            is_people: false,
+            incompatible_patterns: [
+                {operator: "is", operand: "muted"},
+                {operator: "in", operand: "home"},
+            ],
+        },
+        {
             search_string: "is:resolved",
             description_html: "topics marked as resolved",
             is_people: false,
