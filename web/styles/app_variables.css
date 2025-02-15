@@ -937,7 +937,6 @@
 
     /* Settings */
     --color-realm-enable-spectator-access-link: hsl(0deg 0% 20%);
-    --color-unmute-stream-hover: hsl(0deg 0% 20%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 93%);
@@ -1943,7 +1942,6 @@
 
     /* Settings */
     --color-realm-enable-spectator-access-link: hsl(236deg 33% 90%);
-    --color-unmute-stream-hover: hsl(0deg 0% 100%);
 
     /* Markdown colors */
     --color-background-rendered-markdown-thead: hsl(0deg 0% 0% / 50%);
