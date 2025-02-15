@@ -60,7 +60,7 @@ run_test("get_emoji_details_by_name", () => {
     let result = emoji.get_emoji_details_by_name(emoji_name);
     assert.deepEqual(result, {
         emoji_name: "smile",
-        emoji_code: "1f642",
+        emoji_code: "1f604",
         reaction_type: "unicode_emoji",
     });
 
@@ -71,7 +71,7 @@ run_test("get_emoji_details_by_name", () => {
     assert.deepEqual(result, {
         emoji_name: "smile",
         reaction_type: "unicode_emoji",
-        emoji_code: "1f642",
+        emoji_code: "1f604",
     });
 
     // Test adding zulip emoji.
