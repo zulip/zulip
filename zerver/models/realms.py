@@ -148,6 +148,12 @@ class DigestWeekdayEnum(IntEnum):
     SUNDAY = 6
 
 
+class MessageEditHistoryVisibilityEnum(IntEnum):
+    MESSAGE_EDIT_HISTORY_VISIBILITY_ALL = 1
+    MESSAGE_EDIT_HISTORY_VISIBILITY_MOVES_ONLY = 2
+    MESSAGE_EDIT_HISTORY_VISIBILITY_NONE = 3
+
+
 class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
@@ -390,7 +396,12 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     # Whether users have access to message edit history
-    allow_edit_history = models.BooleanField(default=True)
+    message_edit_history_visibility = models.PositiveSmallIntegerField(
+        default=MessageEditHistoryVisibilityEnum.MESSAGE_EDIT_HISTORY_VISIBILITY_ALL,
+    )
+    MESSAGE_EDIT_HISTORY_VISIBILITY_TYPES = [
+        field.value for field in MessageEditHistoryVisibilityEnum
+    ]
 
     # Defaults for new users
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
@@ -651,7 +662,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # Define the types of the various automatically managed properties
     property_types: dict[str, type | UnionType] = dict(
-        allow_edit_history=bool,
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
         default_code_block_language=str,
@@ -675,6 +685,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         message_content_allowed_in_email_notifications=bool,
         message_content_edit_limit_seconds=int | None,
         message_content_delete_limit_seconds=int | None,
+        message_edit_history_visibility=int,
         move_messages_between_streams_limit_seconds=int | None,
         move_messages_within_stream_limit_seconds=int | None,
         message_retention_days=int,

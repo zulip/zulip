@@ -161,12 +161,16 @@ export function enable_or_disable_group_permission_settings(): void {
 
 type OrganizationSettingsOptions = {
     common_policy_values: SettingOptionValueWithKey[];
+    message_edit_history_visibility_values: SettingOptionValueWithKey[];
 };
 
 export function get_organization_settings_options(): OrganizationSettingsOptions {
     return {
         common_policy_values: settings_components.get_sorted_options_list(
             settings_config.common_policy_values,
+        ),
+        message_edit_history_visibility_values: settings_components.get_sorted_options_list(
+            settings_config.message_edit_history_visibility_values,
         ),
     };
 }
