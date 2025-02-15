@@ -23,6 +23,7 @@ const settings_account = zrequire("settings_account");
 const settings_components = zrequire("settings_components");
 const settings_org = zrequire("settings_org");
 const {set_current_user, set_realm} = zrequire("state_data");
+const pygments_data = zrequire("pygments_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const current_user = {};
@@ -686,6 +687,36 @@ test("test get_sorted_options_list", () => {
         settings_components.get_sorted_options_list(option_values_2),
         expected_option_values,
     );
+});
+
+test("test combined_code_language_options", ({override}) => {
+    const default_options = Object.keys(pygments_data.langs).map((x) => ({
+        name: x,
+        unique_id: x,
+    }));
+
+    const expected_options_without_realm_playgrounds = [
+        {is_setting_disabled: true, unique_id: "", name: $t({defaultMessage: "No language set"})},
+        ...default_options,
+    ];
+
+    const options_without_realm_playgrounds = settings_org.combined_code_language_options();
+    assert.deepEqual(options_without_realm_playgrounds, expected_options_without_realm_playgrounds);
+
+    override(realm, "realm_playgrounds", [
+        {pygments_language: "custom_lang_1"},
+        {pygments_language: "custom_lang_2"},
+    ]);
+
+    const expected_options_with_realm_playgrounds = [
+        {is_setting_disabled: true, unique_id: "", name: $t({defaultMessage: "No language set"})},
+        {unique_id: "custom_lang_1", name: "custom_lang_1"},
+        {unique_id: "custom_lang_2", name: "custom_lang_2"},
+        ...default_options,
+    ];
+
+    const options_with_realm_playgrounds = settings_org.combined_code_language_options();
+    assert.deepEqual(options_with_realm_playgrounds, expected_options_with_realm_playgrounds);
 });
 
 test("misc", ({override}) => {

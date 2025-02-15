@@ -1,4 +1,5 @@
 from zerver.actions.realm_playgrounds import check_add_realm_playground
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmPlayground
 from zerver.models.realms import get_realm
@@ -131,3 +132,25 @@ class RealmPlaygroundTests(ZulipTestCase):
         result = self.api_delete(iago, f"/api/v1/realm/playgrounds/{playground_id}")
         self.assert_json_success(result)
         self.assertFalse(RealmPlayground.objects.filter(name="Python").exists())
+
+    def test_delete_default_code_block_language_playground(self) -> None:
+        iago = self.example_user("iago")
+        realm = get_realm("zulip")
+
+        playground_id = check_add_realm_playground(
+            realm,
+            acting_user=iago,
+            name="Python playground",
+            pygments_language="Python",
+            url_template="https://python.example.com{code}",
+        )
+        self.assertTrue(RealmPlayground.objects.filter(name="Python playground").exists())
+
+        # Set the default code block language to the playground's language
+        do_set_realm_property(realm, "default_code_block_language", "Python", acting_user=iago)
+        self.assertEqual(realm.default_code_block_language, "Python")
+        result = self.api_delete(iago, f"/api/v1/realm/playgrounds/{playground_id}")
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertFalse(RealmPlayground.objects.filter(name="Python").exists())
+        self.assertEqual(realm.default_code_block_language, "")
