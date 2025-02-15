@@ -23,6 +23,7 @@ mock_esm("../src/timerender", {
 mock_esm("../src/people", {
     sender_is_bot: () => false,
     sender_is_guest: () => false,
+    sender_is_deactivated: () => false,
     should_add_guest_user_indicator: () => false,
     small_avatar_url: () => "fake/small/avatar/url",
     maybe_get_user_by_id: noop,
@@ -374,6 +375,7 @@ test("muted_message_vars", () => {
 
         // sanity check on mocked values
         assert.equal(result[1].sender_is_bot, false);
+        assert.equal(result[1].sender_is_deactivated, false);
         assert.equal(result[1].sender_is_guest, false);
         assert.equal(result[1].small_avatar_url, "fake/small/avatar/url");
 

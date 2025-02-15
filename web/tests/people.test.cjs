@@ -1108,6 +1108,18 @@ test_people("message_methods", () => {
 
     message = {sender_id: undefined};
     assert.equal(people.sender_is_guest(message), false);
+
+    // Test sender_is_deactivated
+    people.deactivate(maria);
+
+    message = {sender_id: maria.user_id};
+    assert.equal(people.sender_is_deactivated(message), true);
+
+    message = {sender_id: charles.user_id};
+    assert.equal(people.sender_is_deactivated(message), false);
+
+    message = {sender_id: undefined};
+    assert.equal(people.sender_is_deactivated(message), false);
 });
 
 test_people("extract_people_from_message", () => {
