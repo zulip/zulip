@@ -882,7 +882,7 @@ li.top_left_scheduled_messages {
     /* Provide a two-column grid, sized to accommodate
        the content of the conversation list and status
        emoji, if any. */
-    grid-template-columns: repeat(2, minmax(0, max-content));
+    grid-template-columns: repeat(3, minmax(0, max-content));
     align-items: center;
 }
 

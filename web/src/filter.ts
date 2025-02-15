@@ -1375,7 +1375,9 @@ export class Filter {
                 if (!person) {
                     return email;
                 }
-
+                if (people.is_my_user_id(person.user_id)) {
+                    return $t({defaultMessage: "Message with yourself"});
+                }
                 if (people.should_add_guest_user_indicator(person.user_id)) {
                     return $t({defaultMessage: "{name} (guest)"}, {name: person.full_name});
                 }

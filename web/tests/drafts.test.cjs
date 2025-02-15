@@ -514,6 +514,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         },
         {
             draft_id: "id2",
+            is_current_user: true,
             is_stream: false,
             recipients: "Aaron",
             raw_content: "Test direct message",
@@ -521,6 +522,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         },
         {
             draft_id: "id5",
+            is_current_user: true,
             is_stream: false,
             recipients: "Aaron",
             raw_content: "Test direct message 3",
@@ -528,6 +530,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         },
         {
             draft_id: "id4",
+            is_current_user: true,
             is_stream: false,
             recipients: "Aaron",
             raw_content: "Test direct message 2",
@@ -612,6 +615,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
+    override_rewire(people, "get_by_user_id", () => aaron);
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
     drafts_overlay_ui.launch();
@@ -695,6 +699,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     const expected_pm_drafts = [
         {
             draft_id: "id2",
+            is_current_user: true,
             is_stream: false,
             recipients: "Aaron",
             raw_content: "Test direct message",
@@ -702,6 +707,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         },
         {
             draft_id: "id5",
+            is_current_user: true,
             is_stream: false,
             recipients: "Aaron",
             raw_content: "Test direct message 3",
@@ -709,6 +715,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         },
         {
             draft_id: "id4",
+            is_current_user: true,
             is_stream: false,
             recipients: "Aaron",
             raw_content: "Test direct message 2",
@@ -791,6 +798,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     compose_state.set_message_type("private");
     compose_state.private_message_recipient(aaron.email);
 
+    override_rewire(people, "get_by_user_id", () => aaron);
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
     drafts_overlay_ui.launch();
