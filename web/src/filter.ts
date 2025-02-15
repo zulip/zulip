@@ -750,11 +750,16 @@ export class Filter {
             const operand = term.operand;
             const canonicalized_operator = Filter.canonicalize_operator(term.operator);
             if (canonicalized_operator === "is") {
-                const verb = term.negated ? "exclude " : "";
+                // Some operands have their own negative words. Except for them,
+                // we use the verb "exclude" to describe negated operands.
+                // e.g. "resolved" -> "unresolved"
+                const negated_operand_vocab: Record<string, string> = {resolved: "unresolved"};
+                const has_negated_vocab = negated_operand_vocab[operand];
+                const verb = !has_negated_vocab && term.negated ? "exclude " : "";
                 return {
                     type: "is_operator",
                     verb,
-                    operand,
+                    operand: has_negated_vocab && term.negated ? has_negated_vocab : operand,
                 };
             }
             if (canonicalized_operator === "has") {
@@ -1422,7 +1427,7 @@ export class Filter {
                 case "is-dm":
                     return $t({defaultMessage: "Direct message feed"});
                 case "is-resolved":
-                    return $t({defaultMessage: "Topics marked as resolved"});
+                    return $t({defaultMessage: "Resolved topics"});
                 case "is-followed":
                     return $t({defaultMessage: "Followed topics"});
                 // These cases return false for is_common_narrow, and therefore are not
