@@ -57,6 +57,7 @@ import type {NarrowTerm} from "./state_data.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
+import {get_latest_known_message_id_in_topic} from "./stream_topic_history.ts";
 import * as submessage from "./submessage.ts";
 import * as topic_generator from "./topic_generator.ts";
 import * as typing_events from "./typing_events.ts";
@@ -400,6 +401,23 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         raw_terms = [{operator: "in", operand: "home"}];
     }
     const filter = new Filter(raw_terms);
+
+    // If the filter is in channel topic narrow, but we don't have any of
+    // the messages of it locally, then we set `narrow_requires_hash_change`
+    // true.
+    // This would make sure that when messages are fetched from server, if
+    // the narrow has any message we update the hash to a topic permalink
+    // by attaching `with` operator to the last message.
+    if (filter.has_exactly_channel_topic_operators()) {
+        const channel_id = stream_data.get_stream_id(filter.operands("channel")[0]!)!;
+        const topic = filter.operands("topic")[0]!;
+        const last_msg_id = get_latest_known_message_id_in_topic(channel_id, topic);
+
+        if (last_msg_id === undefined) {
+            filter.narrow_requires_hash_change = true;
+        }
+    }
+
     filter.try_adjusting_for_moved_with_target();
 
     if (!show_opts.force_rerender && try_rendering_locally_for_same_narrow(filter, show_opts)) {
