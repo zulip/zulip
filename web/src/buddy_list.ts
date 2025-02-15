@@ -62,6 +62,17 @@ function get_total_human_subscriber_count(
     return 0;
 }
 
+function get_non_participant_subscribers_count(
+    current_sub: StreamSubscription | undefined,
+): number {
+    if (!current_sub) {
+        return 0;
+    }
+    const total_human_subscribers_count = get_total_human_subscriber_count(current_sub, new Set());
+    const subscribed_participant_ids = buddy_list.subscribed_participant_ids();
+    return total_human_subscribers_count - subscribed_participant_ids.length;
+}
+
 function should_hide_headers(
     current_sub: StreamSubscription | undefined,
     pm_ids_set: Set<number>,
@@ -79,6 +90,7 @@ type BuddyListRenderData = {
     other_users_count: number;
     hide_headers: boolean;
     get_all_participant_ids: () => Set<number>;
+    non_participant_subscribers_count: number;
 };
 
 function get_render_data(): BuddyListRenderData {
@@ -89,6 +101,7 @@ function get_render_data(): BuddyListRenderData {
     const other_users_count = people.get_active_human_count() - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
     const get_all_participant_ids = buddy_data.get_conversation_participants_callback();
+    const non_participant_subscribers_count = get_non_participant_subscribers_count(current_sub);
 
     return {
         current_sub,
@@ -97,6 +110,7 @@ function get_render_data(): BuddyListRenderData {
         other_users_count,
         hide_headers,
         get_all_participant_ids,
+        non_participant_subscribers_count,
     };
 }
 
@@ -204,6 +218,8 @@ export class BuddyList extends BuddyListConf {
                             current_sub,
                             pm_ids_set,
                         );
+                        const non_participant_subscribers_count =
+                            get_non_participant_subscribers_count(current_sub);
                         const participant_count = Number.parseInt(
                             $("#buddy-list-participants-section-heading").attr("data-user-count")!,
                             10,
@@ -218,31 +234,13 @@ export class BuddyList extends BuddyListConf {
                                 {N: participant_count},
                             );
                         } else if (elem_id === "buddy-list-users-matching-view-section-heading") {
-                            if (participant_count) {
-                                tooltip_text = $t(
-                                    {
-                                        defaultMessage:
-                                            "{N, plural, one {# other subscriber} other {# other subscribers}}",
-                                    },
-                                    {N: total_human_subscribers_count - participant_count},
-                                );
-                            } else if (current_sub) {
-                                tooltip_text = $t(
-                                    {
-                                        defaultMessage:
-                                            "{N, plural, one {# subscriber} other {# subscribers}}",
-                                    },
-                                    {N: total_human_subscribers_count},
-                                );
-                            } else {
-                                tooltip_text = $t(
-                                    {
-                                        defaultMessage:
-                                            "{N, plural, one {# participant} other {# participants}}",
-                                    },
-                                    {N: total_human_subscribers_count},
-                                );
-                            }
+                            tooltip_text = $t(
+                                {
+                                    defaultMessage:
+                                        "{N, plural, one {# other subscriber} other {# other subscribers}}",
+                                },
+                                {N: non_participant_subscribers_count},
+                            );
                         } else {
                             const other_users_count =
                                 people.get_active_human_count() - total_human_subscribers_count;
@@ -263,6 +261,17 @@ export class BuddyList extends BuddyListConf {
                 });
             },
         );
+    }
+
+    subscribed_participant_ids(): number[] {
+        const {current_sub, pm_ids_set, get_all_participant_ids} = this.render_data;
+        const participant_ids_list = [...get_all_participant_ids()];
+        return participant_ids_list.filter((user_id) => {
+            if (current_sub) {
+                return peer_data.is_user_subscribed(current_sub.stream_id, user_id);
+            }
+            return pm_ids_set.has(user_id);
+        });
     }
 
     populate(opts: {all_user_ids: number[]}): void {
@@ -393,13 +402,13 @@ export class BuddyList extends BuddyListConf {
     }
 
     update_section_header_counts(): void {
-        const {total_human_subscribers_count, other_users_count} = this.render_data;
+        const {other_users_count, non_participant_subscribers_count} = this.render_data;
         const all_participant_ids = this.render_data.get_all_participant_ids();
-        const subscriber_section_user_count =
-            total_human_subscribers_count - all_participant_ids.size;
 
         const formatted_participants_count = get_formatted_sub_count(all_participant_ids.size);
-        const formatted_sub_users_count = get_formatted_sub_count(subscriber_section_user_count);
+        const formatted_sub_users_count = get_formatted_sub_count(
+            non_participant_subscribers_count,
+        );
         const formatted_other_users_count = get_formatted_sub_count(other_users_count);
 
         $("#buddy-list-participants-container .buddy-list-heading-user-count").text(
@@ -418,7 +427,7 @@ export class BuddyList extends BuddyListConf {
         );
         $("#buddy-list-users-matching-view-section-heading").attr(
             "data-user-count",
-            subscriber_section_user_count,
+            non_participant_subscribers_count,
         );
         $("#buddy-list-users-other-users-section-heading").attr(
             "data-user-count",
@@ -439,7 +448,8 @@ export class BuddyList extends BuddyListConf {
         }
         this.current_filter = narrow_state.filter();
 
-        const {current_sub, total_human_subscribers_count, other_users_count} = this.render_data;
+        const {current_sub, other_users_count, non_participant_subscribers_count} =
+            this.render_data;
         $(".buddy-list-subsection-header").empty();
         $(".buddy-list-subsection-header").toggleClass("no-display", hide_headers);
         if (hide_headers) {
@@ -464,9 +474,7 @@ export class BuddyList extends BuddyListConf {
                     header_text: current_sub
                         ? $t({defaultMessage: "THIS CHANNEL"})
                         : $t({defaultMessage: "THIS CONVERSATION"}),
-                    user_count: get_formatted_sub_count(
-                        total_human_subscribers_count - all_participant_ids.size,
-                    ),
+                    user_count: get_formatted_sub_count(non_participant_subscribers_count),
                     is_collapsed: this.users_matching_view_is_collapsed,
                 }),
             ),
