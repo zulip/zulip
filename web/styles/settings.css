@@ -1779,6 +1779,14 @@ label.preferences-radio-choice-label {
         display: none;
     }
 
+    .empty-email-col-for-user-group {
+        display: none;
+    }
+
+    .hidden-subscriber-email {
+        display: none;
+    }
+
     .upload-size {
         display: none;
     }
