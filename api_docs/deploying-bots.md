@@ -72,7 +72,7 @@ Install the `zulip_botserver` package:
 pip3 install zulip_botserver
 ```
 
-### Running a bot using the Zulip Botserver
+### Create a bot in your Zulip organization
 
 {start_tabs}
 
@@ -82,20 +82,34 @@ pip3 install zulip_botserver
     http://<hostname>:<port>
     ```
 
-    where the `hostname` is the hostname you'll be running the bot
-    server on, and `port` is the port for it (the recommended default
-    is `5002`).
+    The `hostname` is the hostname you'll be running the Botserver on,
+    and `port` is the port for it. The recommended default port is
+    `5002`.
 
-1. Register new bot users on the Zulip server's web interface.
+1. Log in to your Zulip organization.
 
-    * Log in to the Zulip server.
-    * Navigate to *Personal settings (<i class="zulip-icon zulip-icon-gear"></i>)* -> *Bots* -> *Add a new bot*.
-      Select *Outgoing webhook* for bot type, fill out the form (using
-      the URL from above) and click on *Create bot*.
-    * A new bot user should appear in the *Active bots* panel.
+1. Via the gear menu, navigate to **Personal settings
+   (<i class="zulip-icon zulip-icon-gear"></i>)** -> **Bots**, and click
+   **Add a new bot**.
 
-1. Download the `zuliprc` file for your bot from the *Active Bots*
-   panel, using the download button.
+1. Select **Outgoing webhook** for bot type, and fill out the form using
+   the URL constructed above.
+
+1. Click **Create bot**. You should see the new bot user in the **Active
+   bots** panel.
+
+{end_tabs}
+
+### Running a bot using the Zulip Botserver
+
+{start_tabs}
+
+1. [Create your bot](#create-a-bot-in-your-zulip-organization)
+   in your Zulip organizaiton.
+
+1. Download the `zuliprc` file for the bot created above from the
+   **Active Bots** panel in the **Bots** tab of your **Personal Settings**,
+   using the download button.
 
 1. Run the Botserver, where `helloworld` is the name of the bot you
    want to run:
@@ -105,36 +119,27 @@ pip3 install zulip_botserver
     You can specify the port number and various other options; run
     `zulip-botserver --help` to see how to do this.
 
-1.  Congrats, everything is set up! Test your Botserver like you would
-    test a normal bot.
-
 {end_tabs}
+
+Congrats, everything is set up! Test your Botserver like you would
+test a normal bot.
 
 ### Running multiple bots using the Zulip Botserver
 
 The Zulip Botserver also supports running multiple bots from a single
-Botserver process.  You can do this with the following procedure.
+Botserver process.
 
 {start_tabs}
 
-1. Download the `botserverrc` from the `your-bots` settings page, using
-   the "Download config of all active outgoing webhook bots in Zulip
-   Botserver format." option at the top.
+1. [Create your bots](#create-a-bot-in-your-zulip-organization)
+   in your Zulip organization.
 
-1. Open the `botserverrc`. It should contain one or more sections that look like this:
+1. Download the `botserverrc` file from the **Bots** tab of your **Personal
+   Settings**, using the **Download config of all active outgoing webhook
+   bots in Zulip Botserver format** option.
 
-    ```
-    []
-    email=foo-bot@hostname
-    key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
-    site=http://hostname
-    token=aQVQmSd6j6IHphJ9m1jhgHdbnhl5ZcsY
-    ```
-
-    Each section contains the configuration for an outgoing webhook bot. For each
-    bot, enter the name of the bot you want to run in the square brackets `[]`.
-    For example, if we want `foo-bot@hostname` to run the `helloworld` bot, our
-    new section would look like this:
+1. Open the `botserverrc`. It should contain one or more sections that look
+   like this:
 
     ```
     [helloworld]
@@ -142,24 +147,23 @@ Botserver process.  You can do this with the following procedure.
     key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
     site=http://hostname
     token=aQVQmSd6j6IHphJ9m1jhgHdbnhl5ZcsY
+    bot-config-file=~/path/to/helloworld.conf
     ```
 
-    To run an external bot, enter the path to the bot's python file in the square
-    brackets `[]`. For example, if we want to run `~/Documents/my_new_bot.py`, our
-    new section could look like this:
+    Each section contains the configuration for an outgoing webhook bot.
 
-    ```
-    [~/Documents/my_new_bot.py]
-    email=foo-bot@hostname
-    key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
-    site=http://hostname
-    ```
+1. For each bot, enter the name of the bot you want to run in the square
+   brackets `[]`, e.g., the above example applies to the `helloworld` bot.
+   To run an external bot, enter the path to the bot's python file instead,
+   e.g., `[~/Documents/my_new_bot.py]`.
 
-1.  Run the Zulip Botserver by passing the `botserverrc` to it. The
-    command format is:
+    Note that the `bot-config-file` is needed only for bots that use a config
+    file.
+
+1.  Run the Zulip Botserver by passing the `botserverrc` to it.
 
      ```
-     zulip-botserver  --config-file <path_to_botserverrc>
+     zulip-botserver --config-file <path to botserverrc> --hostname <address> --port <port>
      ```
 
      If omitted, `hostname` defaults to `127.0.0.1` and `port` to `5002`.
