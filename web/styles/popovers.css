@@ -544,7 +544,8 @@ ul.popover-group-menu-member-list {
         }
 
         .stream-privacy {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
         }
 
         .filter-icon i {
@@ -626,6 +627,8 @@ ul.popover-group-menu-member-list {
                 /* Ensure equal height for rows with a remove-subscription-button and
                    those without one. */
                 height: 34px;
+                display: flex;
+                justify-content: space-between;
 
                 &:last-of-type {
                     border-bottom: none;
@@ -640,6 +643,11 @@ ul.popover-group-menu-member-list {
 
                     &:last-of-type {
                         padding-right: 10px;
+                    }
+
+                    &.subscription_list_stream {
+                        display: flex;
+                        align-items: center;
                     }
 
                     &.remove_subscription,
