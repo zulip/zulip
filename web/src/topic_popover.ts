@@ -1,4 +1,3 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
@@ -6,6 +5,8 @@ import type * as tippy from "tippy.js";
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
 
+import * as blueslip from "./blueslip.ts";
+import * as clipboard_handler from "./clipboard_handler.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
@@ -198,12 +199,19 @@ export function initialize(): void {
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
 
-                new ClipboardJS(util.the($popper.find(".sidebar-popover-copy-link-to-topic"))).on(
-                    "success",
-                    () => {
-                        popover_menus.hide_current_popover_if_visible(instance);
-                    },
-                );
+                $popper.on("click", ".sidebar-popover-copy-link-to-topic", () => {
+                    const clipboard_text = String(
+                        $(".sidebar-popover-copy-link-to-topic").data("clipboard-text"),
+                    );
+                    clipboard_handler
+                        .copy_to_clipboard(clipboard_text)
+                        .then(() => {
+                            popover_menus.hide_current_popover_if_visible(instance);
+                        })
+                        .catch((error: unknown) => {
+                            blueslip.error("Failed to copy to clipboard: ", {error: String(error)});
+                        });
+                });
             },
             onHidden(instance) {
                 const $elt = $(instance.reference).closest(".recent_view_focusable");

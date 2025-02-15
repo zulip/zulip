@@ -1,9 +1,10 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_message_actions_popover from "../templates/popovers/message_actions_popover.hbs";
 
+import * as blueslip from "./blueslip.ts";
+import * as clipboard_handler from "./clipboard_handler.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as condense from "./condense.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
@@ -26,6 +27,21 @@ let message_actions_popover_keyboard_toggle = false;
 
 function get_action_menu_menu_items(): JQuery {
     return $("[data-tippy-root] #message-actions-menu-dropdown li:not(.divider):visible a");
+}
+function handleCopyToClipboard(
+    instance: typeof popover_menus.popover_instances.message_actions,
+    clipboard_text: string,
+    success_callback: () => void,
+): void {
+    void clipboard_handler
+        .copy_to_clipboard(clipboard_text)
+        .then(() => {
+            popover_menus.hide_current_popover_if_visible(instance);
+            success_callback();
+        })
+        .catch((error: unknown) => {
+            blueslip.error("Failed to copy to clipboard: ", {error: String(error)});
+        });
 }
 
 function focus_first_action_popover_item(): void {
@@ -228,14 +244,13 @@ export function initialize(): void {
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
-            new ClipboardJS(the($popper.find(".copy_link"))).on("success", () => {
-                show_copied_confirmation(the($(instance.reference).closest(".message_controls")));
-                setTimeout(() => {
-                    // The Clipboard library works by focusing to a hidden textarea.
-                    // We unfocus this so keyboard shortcuts, etc., will work again.
-                    $(":focus").trigger("blur");
-                }, 0);
-                popover_menus.hide_current_popover_if_visible(instance);
+            $popper.on("click", ".copy_link", () => {
+                const clipboard_text = String($(".copy_link").data("clipboard-text"));
+                handleCopyToClipboard(instance, clipboard_text, () => {
+                    show_copied_confirmation(
+                        the($(instance.reference).closest(".message_controls")),
+                    );
+                });
             });
         },
         onHidden(instance) {
