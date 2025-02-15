@@ -26,13 +26,13 @@ run_test("postprocess_content", () => {
                 '<a role="button">button</a> ' +
                 "</div>",
         ),
-        '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
-            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer" title="translated: Download file.png">upload</a> ' +
+        '<a href="http://example.com" target="_blank" rel="noopener noreferrer" class="inline_url">good</a> ' +
+            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer" class="internal_named_link">upload</a> ' +
             "<a>invalid</a> " +
             "<a>unsafe</a> " +
-            '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>' +
+            '<a href="/#fragment" class="internal_named_link">fragment</a>' +
             '<div class="message_inline_image">' +
-            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" target="_blank" rel="noopener noreferrer" aria-label="inline image">upload</a> ' +
+            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" target="_blank" rel="noopener noreferrer" aria-label="inline image" class="internal_named_link">upload</a> ' +
             '<a role="button">button</a> ' +
             "</div>",
     );
@@ -96,7 +96,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</div>",
         ),
         '<div class="message_inline_image">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png" class="internal_named_link">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" loading="lazy">' +
             "</a>" +
             "</div>",
@@ -113,7 +113,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</div>",
         ),
         '<div class="message_inline_image">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png" class="internal_named_link">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" loading="lazy">' +
             "</a>" +
             "</div>",
@@ -130,7 +130,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</div>",
         ),
         '<div class="message_inline_image message_inline_animated_image_still">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png" class="internal_named_link">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy">' +
             "</a>" +
             "</div>",
@@ -146,7 +146,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
                 "</div>",
         ),
         '<div class="message_inline_image message_inline_animated_image_still">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" aria-label="image.png" class="internal_named_link">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy">' +
             "</a>" +
             "</div>",
