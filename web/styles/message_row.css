@@ -394,9 +394,15 @@
                message-box grid's baseline group, too. */
             align-items: baseline;
 
-            .zulip-icon.zulip-icon-bot {
-                align-self: center;
-                margin-left: 5px;
+            .sender_info {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+            .bot-icon {
+                display: flex;
+                margin-top: -2px;
             }
 
             .sender_name {
