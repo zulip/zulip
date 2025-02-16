@@ -248,83 +248,80 @@ export function initialize(): void {
         starred_messages_ui.toggle_starred_and_update_server(message);
     });
 
-    function resetButtonState(button: JQuery): void {
-        // Ensure button contains an icon before modifying it
-        const icon = button.find("i");
-        if (icon.length > 0) {
-            icon.removeClass("zulip-icon-pause").addClass("zulip-icon-unmute");
+    function resetButtonState($button: JQuery): void {
+        const $icon = $button.find("i");
+        if ($icon.length > 0) {
+            $icon.removeClass("zulip-icon-pause").addClass("zulip-icon-unmute");
         }
 
-        // Reset tooltip safely
         if (document.querySelector("#tts-tooltip-template")) {
-            button.attr("data-tooltip-template-id", "tts-tooltip-template");
+            $button.attr("data-tooltip-template-id", "tts-tooltip-template");
         }
     }
 
-    let currentUtterance: SpeechSynthesisUtterance | null = null; // Store the currently speaking utterance
-    let currentButton: JQuery | null = null; // Store the button associated with the current speech
+    let currentUtterance: SpeechSynthesisUtterance | null = null;
+    let currentButton: JQuery | undefined;
 
-    $("#main_div").on("click", ".tts_button", function (e: JQuery.ClickEvent): void {
-        e.stopPropagation();
+    $("#main_div").on(
+        "click",
+        ".tts_button",
+        function (this: HTMLElement, e: JQuery.ClickEvent): void {
+            e.stopPropagation();
 
-        const button: JQuery = $(this);
-        const messageBox: JQuery = button.closest(".messagebox");
+            const $button = $(this);
+            const message_id = rows.get_message_id(this); // Safer than manually fetching ID
 
-        if (messageBox.length === 0) {
-            return; // Avoid unnecessary errors
-        }
-
-        const messageElement: JQuery = messageBox.find(".message_content.rendered_markdown");
-
-        if (messageElement.length === 0) {
-            return;
-        }
-
-        const text: string = messageElement.text().trim();
-        if (text.length === 0) {
-            return;
-        }
-
-        // If the same button is clicked again, toggle pause/resume
-        if (button.is(currentButton) && window.speechSynthesis.speaking) {
-            window.speechSynthesis.cancel();
-            resetButtonState(button);
-            return;
-        }
-
-        // Stop any currently speaking utterance (if different message)
-        if (currentUtterance) {
-            window.speechSynthesis.cancel();
-            if (currentButton) {
-                resetButtonState(currentButton);
+            if (!message_id) {
+                return;
             }
-        }
 
-        // Create a new utterance for the new message
-        const utterance: SpeechSynthesisUtterance = new SpeechSynthesisUtterance(text);
-        currentUtterance = utterance;
-        currentButton = button; // Store this button as the currently active one
+            const $messageBox = $button.closest(".messagebox");
+            const $messageElement = $messageBox.find(".message_content.rendered_markdown");
 
-        // Ensure button contains an icon before modifying it
-        const icon = button.find("i");
-        if (icon.length > 0) {
-            icon.removeClass("zulip-icon-unmute").addClass("zulip-icon-pause");
-        }
+            if ($messageElement.length === 0) {
+                return;
+            }
 
-        // Update tooltip safely
-        if (document.querySelector("#tts-pause-tooltip-template")) {
-            button.attr("data-tooltip-template-id", "tts-pause-tooltip-template");
-        }
+            const text: string = $messageElement.text().trim();
+            if (text.length === 0) {
+                return;
+            }
 
-        window.speechSynthesis.speak(utterance);
+            if ($button.is(currentButton) && window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                resetButtonState($button);
+                return;
+            }
 
-        // When speech ends, reset the button
-        utterance.onend = (): void => {
-            resetButtonState(button);
-            currentUtterance = null;
-            currentButton = null;
-        };
-    });
+            if (currentUtterance) {
+                window.speechSynthesis.cancel();
+                if (currentButton !== undefined) {
+                    resetButtonState(currentButton);
+                }
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            currentUtterance = utterance;
+            currentButton = $button;
+
+            const $icon = $button.find("i");
+            if ($icon.length > 0) {
+                $icon.removeClass("zulip-icon-unmute").addClass("zulip-icon-pause");
+            }
+
+            if (document.querySelector("#tts-pause-tooltip-template")) {
+                $button.attr("data-tooltip-template-id", "tts-pause-tooltip-template");
+            }
+
+            window.speechSynthesis.speak(utterance);
+
+            utterance.onend = (): void => {
+                resetButtonState($button);
+                currentUtterance = null;
+                currentButton = undefined;
+            };
+        },
+    );
 
     $("#main_div").on("click", ".message_reaction", function (this: HTMLElement, e) {
         e.stopPropagation();
