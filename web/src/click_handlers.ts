@@ -260,68 +260,64 @@ export function initialize(): void {
     }
 
     let currentUtterance: SpeechSynthesisUtterance | null = null;
-    let currentButton: JQuery | undefined;
+    let $currentButton: JQuery | null = null;
 
-    $("#main_div").on(
-        "click",
-        ".tts_button",
-        function (this: HTMLElement, e: JQuery.ClickEvent): void {
-            e.stopPropagation();
+    $("#main_div").on("click", ".tts_button", function (this: HTMLElement, e) {
+        e.stopPropagation();
 
-            const $button = $(this);
-            const message_id = rows.get_message_id(this); // Safer than manually fetching ID
+        const $button = $(this);
+        const message_id = rows.get_message_id(this);
+        if (!message_id) {
+            return;
+        }
 
-            if (!message_id) {
-                return;
+        const $messageBox = $button.closest(".messagebox");
+        const $messageElement = $messageBox.find(".message_content.rendered_markdown");
+        if ($messageElement.length === 0) {
+            return;
+        }
+
+        const text = $messageElement.text().trim();
+        if (text.length === 0) {
+            return;
+        }
+
+        if ($currentButton?.is($button) && window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+            resetButtonState($button);
+            return;
+        }
+
+        if (currentUtterance) {
+            window.speechSynthesis.cancel();
+            if ($currentButton) {
+                resetButtonState($currentButton);
             }
+        }
 
-            const $messageBox = $button.closest(".messagebox");
-            const $messageElement = $messageBox.find(".message_content.rendered_markdown");
+        const utterance = new SpeechSynthesisUtterance(text);
+        currentUtterance = utterance;
+        $currentButton = $button;
 
-            if ($messageElement.length === 0) {
-                return;
+        const $icon = $button.find("i");
+        if ($icon.length > 0) {
+            $icon.removeClass("zulip-icon-unmute").addClass("zulip-icon-pause");
+        }
+
+        if (document.querySelector("#tts-pause-tooltip-template")) {
+            $button.attr("data-tooltip-template-id", "tts-pause-tooltip-template");
+        }
+
+        window.speechSynthesis.speak(utterance);
+
+        utterance.onend = () => {
+            if ($currentButton) {
+                resetButtonState($currentButton);
             }
-
-            const text: string = $messageElement.text().trim();
-            if (text.length === 0) {
-                return;
-            }
-
-            if ($button.is(currentButton) && window.speechSynthesis.speaking) {
-                window.speechSynthesis.cancel();
-                resetButtonState($button);
-                return;
-            }
-
-            if (currentUtterance) {
-                window.speechSynthesis.cancel();
-                if (currentButton !== undefined) {
-                    resetButtonState(currentButton);
-                }
-            }
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            currentUtterance = utterance;
-            currentButton = $button;
-
-            const $icon = $button.find("i");
-            if ($icon.length > 0) {
-                $icon.removeClass("zulip-icon-unmute").addClass("zulip-icon-pause");
-            }
-
-            if (document.querySelector("#tts-pause-tooltip-template")) {
-                $button.attr("data-tooltip-template-id", "tts-pause-tooltip-template");
-            }
-
-            window.speechSynthesis.speak(utterance);
-
-            utterance.onend = (): void => {
-                resetButtonState($button);
-                currentUtterance = null;
-                currentButton = undefined;
-            };
-        },
-    );
+            currentUtterance = null;
+            $currentButton = null;
+        };
+    });
 
     $("#main_div").on("click", ".message_reaction", function (this: HTMLElement, e) {
         e.stopPropagation();
