@@ -282,7 +282,7 @@ export function initialize(): void {
             console.error("Error: Could not find .message_content inside messagebox");
             return;
         }
-    
+        // const text = "This is Akash, creator of skytup.com, testing the Text to Speech feature";
         const text = messageElement.text().trim();
         if (!text) {
             console.error("Error: Message text is empty");
