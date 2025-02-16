@@ -66,7 +66,7 @@ jobs:
 
       - name: Create cache directories
         run: |
-          dirs=(/srv/zulip-{venv,emoji}-cache)
+          dirs=(/srv/zulip-emoji-cache)
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
 
@@ -76,12 +76,12 @@ jobs:
           path: /__w/.pnpm-store
           key: v1-pnpm-store-${{ matrix.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: Restore python cache
+      - name: Restore uv cache
         uses: actions/cache@v4
         with:
-          path: /srv/zulip-venv-cache
-          key: v1-venv-${{ matrix.os }}-${{ hashFiles('requirements/dev.txt') }}
-          restore-keys: v1-venv-${{ matrix.os }}
+          path: ~/.cache/uv
+          key: uv-${{ matrix.os }}-${{ hashFiles('uv.lock') }}
+          restore-keys: uv-${{ matrix.os }}-
 
       - name: Restore emoji cache
         uses: actions/cache@v4
@@ -180,11 +180,8 @@ jobs:
       - name: Run miscellaneous tests
         run: |
           source tools/ci/activate-venv
+          uv lock --check
 
-          # Currently our compiled requirements files will differ for different
-          # Python versions, so we will run test-locked-requirements only on the
-          # platform with the oldest one.
-          # ./tools/test-locked-requirements
           # ./tools/test-run-dev  # https://github.com/zulip/zulip/pull/14233
           #
           # This test has been persistently flaky at like 1% frequency, is slow,
@@ -214,12 +211,6 @@ jobs:
               exit 1
           fi
 
-      - name: Test locked requirements
-        if: ${{ matrix.os == 'jammy' }}
-        run: |
-          source tools/ci/activate-venv
-          ./tools/test-locked-requirements
-
       - name: Upload coverage reports
 
         # Only upload coverage when both frontend and backend
@@ -247,6 +238,9 @@ jobs:
           set -x
           path="$(pnpm store path)"
           [[ "$path" == /__w/.pnpm-store/* ]]
+
+      - name: Minimize uv cache
+        run: uv cache prune --ci
 
       - name: Generate failure report string
         id: failure_report_string

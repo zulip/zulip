@@ -36,7 +36,7 @@ async function realm_creation_tests(page: Page): Promise<void> {
 
     // Open the confirmation URL
     const page_content = await page.evaluate(() => document.querySelector("body")!.textContent);
-    assert(page_content !== null);
+    assert.ok(page_content !== null);
     const {confirmation_key} = z
         .object({confirmation_key: z.string()})
         .parse(JSON.parse(page_content));

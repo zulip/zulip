@@ -603,7 +603,7 @@ def add_bot_backend(
         raise JsonableError(_("Bad name or username"))
     try:
         get_user_by_delivery_email(email, user_profile.realm)
-        raise JsonableError(_("Username already in use"))
+        raise JsonableError(_("Email '{email}' already in use").format(email=email))
     except UserProfile.DoesNotExist:
         pass
 

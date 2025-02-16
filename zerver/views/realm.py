@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from enum import Enum
 from typing import Annotated, Any, Literal
 
 from django.conf import settings
@@ -41,12 +42,18 @@ from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
     access_user_group_for_setting,
     get_group_setting_value_for_api,
+    get_system_user_group_by_name,
     parse_group_setting_value,
     validate_group_setting_value_change,
 )
 from zerver.lib.validator import check_capped_url, check_string
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
-from zerver.models.realms import DigestWeekdayEnum, OrgTypeEnum
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import (
+    DigestWeekdayEnum,
+    MessageEditHistoryVisibilityPolicyEnum,
+    OrgTypeEnum,
+)
 from zerver.views.user_settings import (
     check_information_density_setting_values,
     check_settings_values,
@@ -110,7 +117,11 @@ def update_realm(
     message_content_edit_limit_seconds_raw: Annotated[
         Json[int | str] | None, ApiParamConfig("message_content_edit_limit_seconds")
     ] = None,
-    allow_edit_history: Json[bool] | None = None,
+    message_edit_history_visibility_policy_raw: Annotated[
+        # TODO: Use MessageEditHistoryVisibilityPolicyEnum here with Pydantic
+        Literal["all", "moves", "none"] | None,
+        ApiParamConfig("message_edit_history_visibility_policy"),
+    ] = None,
     default_language: str | None = None,
     waiting_period_threshold: Json[NonNegativeInt] | None = None,
     authentication_methods: Json[dict[str, Any]] | None = None,
@@ -327,6 +338,12 @@ def update_realm(
 
             data["jitsi_server_url"] = jitsi_server_url
 
+    message_edit_history_visibility_policy: Enum | None = None
+    if message_edit_history_visibility_policy_raw is not None:
+        message_edit_history_visibility_policy = MessageEditHistoryVisibilityPolicyEnum[
+            message_edit_history_visibility_policy_raw
+        ]
+
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
     #
@@ -352,6 +369,7 @@ def update_realm(
             else:
                 data[k] = v
 
+    nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
     for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
         expected_current_setting_value = None
         assert setting_name in req_group_setting_vars
@@ -359,10 +377,12 @@ def update_realm(
             continue
 
         setting_value = req_group_setting_vars[setting_name]
-        new_setting_value = parse_group_setting_value(setting_value.new)
+        new_setting_value = parse_group_setting_value(setting_value.new, nobody_group)
 
         if setting_value.old is not None:
-            expected_current_setting_value = parse_group_setting_value(setting_value.old)
+            expected_current_setting_value = parse_group_setting_value(
+                setting_value.old, nobody_group
+            )
 
         current_value = getattr(realm, setting_name)
         current_setting_api_value = get_group_setting_value_for_api(current_value)

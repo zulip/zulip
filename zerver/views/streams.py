@@ -62,7 +62,6 @@ from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     StreamDict,
-    UserGroupMembershipDetails,
     access_default_stream_group_by_id,
     access_stream_by_id,
     access_stream_by_name,
@@ -70,7 +69,7 @@ from zerver.lib.streams import (
     access_web_public_stream,
     check_stream_name_available,
     do_get_streams,
-    filter_stream_authorization,
+    filter_stream_authorization_for_adding_subscribers,
     get_group_setting_value_dict_for_streams,
     get_stream_permission_default_group,
     get_stream_permission_policy_name,
@@ -87,12 +86,14 @@ from zerver.lib.topic import (
 )
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_color
-from zerver.lib.types import AnonymousSettingGroupDict
+from zerver.lib.types import UserGroupMembersDict
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
+    UserGroupMembershipDetails,
     access_user_group_for_setting,
     get_group_setting_value_for_api,
     get_role_based_system_groups_dict,
+    get_system_user_group_by_name,
     parse_group_setting_value,
     validate_group_setting_value_change,
 )
@@ -100,6 +101,7 @@ from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, Stream, UserMessage, UserProfile, UserTopic
+from zerver.models.groups import SystemGroups
 from zerver.models.users import get_system_bot
 
 
@@ -269,6 +271,7 @@ def update_stream_backend(
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
+    can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
     # Most settings updates only require metadata access, not content
     # access. We will check for content access further when and where
@@ -393,6 +396,7 @@ def update_stream_backend(
             check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name, user_profile)
 
+    nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
     request_settings_dict = locals()
     for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
         assert setting_name in request_settings_dict
@@ -400,11 +404,13 @@ def update_stream_backend(
             continue
 
         setting_value = request_settings_dict[setting_name]
-        new_setting_value = parse_group_setting_value(setting_value.new)
+        new_setting_value = parse_group_setting_value(setting_value.new, nobody_group)
 
         expected_current_setting_value = None
         if setting_value.old is not None:
-            expected_current_setting_value = parse_group_setting_value(setting_value.old)
+            expected_current_setting_value = parse_group_setting_value(
+                setting_value.old, nobody_group
+            )
 
         current_value = getattr(stream, setting_name)
         current_setting_api_value = get_group_setting_value_for_api(current_value)
@@ -593,10 +599,11 @@ def add_subscriptions_backend(
     is_default_stream: Json[bool] = False,
     history_public_to_subscribers: Json[bool] | None = None,
     message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
-    can_add_subscribers_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_administer_channel_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_send_message_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_remove_subscribers_group: Json[int | AnonymousSettingGroupDict] | None = None,
+    can_add_subscribers_group: Json[int | UserGroupMembersDict] | None = None,
+    can_administer_channel_group: Json[int | UserGroupMembersDict] | None = None,
+    can_send_message_group: Json[int | UserGroupMembersDict] | None = None,
+    can_remove_subscribers_group: Json[int | UserGroupMembersDict] | None = None,
+    can_subscribe_group: Json[int | UserGroupMembersDict] | None = None,
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
@@ -618,7 +625,11 @@ def add_subscriptions_backend(
         assert setting_name in request_settings_dict
         if request_settings_dict[setting_name] is not None:
             setting_request_value = request_settings_dict[setting_name]
-            setting_value = parse_group_setting_value(setting_request_value)
+            if system_groups_name_dict is None:
+                system_groups_name_dict = get_role_based_system_groups_dict(realm)
+            setting_value = parse_group_setting_value(
+                setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
+            )
             group_settings_map[setting_name] = access_user_group_for_setting(
                 setting_value,
                 user_profile,
@@ -635,8 +646,8 @@ def add_subscriptions_backend(
             if permission_configuration.default_group_name == "stream_creator_or_nobody":
                 # Default for some settings like "can_administer_channel_group"
                 # is anonymous group with stream creator.
-                setting_groups_dict[group_settings_map[setting_name].id] = (
-                    AnonymousSettingGroupDict(direct_subgroups=[], direct_members=[user_profile.id])
+                setting_groups_dict[group_settings_map[setting_name].id] = UserGroupMembersDict(
+                    direct_subgroups=[], direct_members=[user_profile.id]
                 )
             else:
                 setting_groups_dict[group_settings_map[setting_name].id] = group_settings_map[
@@ -672,6 +683,7 @@ def add_subscriptions_backend(
         stream_dict_copy["can_remove_subscribers_group"] = group_settings_map[
             "can_remove_subscribers_group"
         ]
+        stream_dict_copy["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
 
         stream_dicts.append(stream_dict_copy)
 
@@ -690,7 +702,7 @@ def add_subscriptions_backend(
         setting_groups_dict=setting_groups_dict,
     )
 
-    streams_categorized_by_permissions = filter_stream_authorization(
+    streams_categorized_by_permissions = filter_stream_authorization_for_adding_subscribers(
         user_profile, existing_streams, is_subscribing_other_users
     )
     authorized_streams = streams_categorized_by_permissions.authorized_streams
@@ -916,19 +928,24 @@ def get_streams_backend(
     include_web_public: Json[bool] = False,
     include_subscribed: Json[bool] = True,
     exclude_archived: Json[bool] = True,
+    include_all: Json[bool] = False,
     include_all_active: Json[bool] = False,
     include_default: Json[bool] = False,
     include_owner_subscribed: Json[bool] = False,
+    include_can_access_content: Json[bool] = False,
 ) -> HttpResponse:
+    if include_all_active is True:
+        include_all = True
     streams = do_get_streams(
         user_profile,
         include_public=include_public,
         include_web_public=include_web_public,
         include_subscribed=include_subscribed,
         exclude_archived=exclude_archived,
-        include_all_active=include_all_active,
+        include_all=include_all,
         include_default=include_default,
         include_owner_subscribed=include_owner_subscribed,
+        include_can_access_content=include_can_access_content,
     )
     return json_success(request, data={"streams": streams})
 

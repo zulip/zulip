@@ -82,8 +82,9 @@ function retrieve_search_query_data(): SearchData {
             const stream_name = stream_data.get_valid_sub_by_id_string(stream_id).name;
             search_string_result.stream_query = stream_name;
         }
-        if (topic) {
-            search_string_result.topic_query = topic;
+        if (topic !== undefined) {
+            search_string_result.topic_query = util.get_final_topic_display_name(topic);
+            search_string_result.is_empty_string_topic = topic === "";
         }
     }
 
@@ -127,9 +128,27 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
     const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
 
     const current_filter = narrow_state.filter();
-
-    if (current_filter === undefined || current_filter.is_in_home()) {
+    if (current_filter === undefined) {
+        // We're in either the inbox or recent conversations view.
         return default_banner;
+    }
+    if (current_filter.is_in_home()) {
+        // We're in the combined feed view.
+        return {
+            title: $t({defaultMessage: "There are no messages in your combined feed."}),
+            html: page_params.is_spectator
+                ? ""
+                : $t_html(
+                      {
+                          defaultMessage:
+                              "Would you like to <z-link>view messages in all public channels</z-link>?",
+                      },
+                      {
+                          "z-link": (content_html) =>
+                              `<a href="#narrow/channels/public">${content_html.join("")}</a>`,
+                      },
+                  ),
+        };
     }
 
     const first_term = current_filter.terms()[0]!;

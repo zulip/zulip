@@ -458,7 +458,7 @@ def update_message_content(
         members = mention_data.get_group_members(group_id)
         rendering_result.mentions_user_ids.update(members)
 
-    # One could imagine checking realm.allow_edit_history here and
+    # One could imagine checking realm.message_edit_history_visibility_policy here and
     # modifying the events based on that setting, but doing so
     # doesn't really make sense.  We need to send the edit event
     # to clients regardless, and a client already had access to
@@ -1350,7 +1350,7 @@ def check_update_message(
     and raises a JsonableError if otherwise.
     It returns the number changed.
     """
-    message = access_message(user_profile, message_id, lock_message=True)
+    message = access_message(user_profile, message_id, lock_message=True, is_modifying_message=True)
 
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds

@@ -28,6 +28,7 @@ export type SearchUserPill = {
         should_add_guest_user_indicator: boolean;
         deactivated: boolean;
     }[];
+    display_value?: string;
 };
 
 type SearchPill =
@@ -56,6 +57,9 @@ export function create_item_from_search_string(search_string: string): SearchPil
 }
 
 export function get_search_string_from_item(item: SearchPill): string {
+    if (item.type === "search_user" && item.operator === "dm-including" && item.display_value) {
+        return item.display_value;
+    }
     const sign = item.negated ? "-" : "";
     return `${sign}${item.operator}: ${get_search_operand(item, true)}`;
 }
@@ -147,6 +151,60 @@ function append_user_pill(
     operator: string,
     negated: boolean,
 ): void {
+    const valid_users = users.filter((user) => people.get_by_email(user.email));
+
+    if (operator === "dm-including") {
+        const existing_pill = pill_widget
+            .items()
+            .find(
+                (item): item is SearchUserPill =>
+                    item.type === "search_user" && item.operator === "dm-including",
+            );
+
+        if (existing_pill && valid_users.length === 1) {
+            const existing_emails = new Set(existing_pill.users.map((u) => u.email));
+            const new_users = valid_users.filter((u) => !existing_emails.has(u.email));
+            if (new_users.length > 0) {
+                const new_user_objs = new_users.map((u) => ({
+                    full_name: u.full_name,
+                    user_id: u.user_id,
+                    email: u.email,
+                    img_src: people.small_avatar_url_for_person(u),
+                    status_emoji_info: user_status.get_status_emoji(u.user_id),
+                    should_add_guest_user_indicator: people.should_add_guest_user_indicator(
+                        u.user_id,
+                    ),
+                    deactivated: !people.is_person_active(u.user_id) && !u.is_inaccessible_user,
+                }));
+                existing_pill.users.push(...new_user_objs);
+
+                // To remove the old pill from the widget.
+                const items = pill_widget.items();
+                const idx = items.indexOf(existing_pill);
+                if (idx !== -1) {
+                    items.splice(idx, 1);
+                    pill_widget.clear();
+                }
+
+                pill_widget.appendValidatedData(existing_pill);
+            }
+            pill_widget.clear_text();
+            return;
+        }
+    }
+
+    if (operator === "dm-including") {
+        const existing_emails = new Set(
+            pill_widget
+                .items()
+                .filter((item) => item.type === "search_user")
+                .flatMap((item: SearchUserPill) => item.users.map((user) => user.email)),
+        );
+        users = valid_users.filter((u) => !existing_emails.has(u.email));
+    } else {
+        users = valid_users;
+    }
+
     const pill_data: SearchUserPill = {
         type: "search_user",
         operator,
@@ -209,12 +267,9 @@ export function set_search_bar_contents(
         }
 
         if (user_pill_operators.has(term.operator) && term.operand !== "") {
-            const users = term.operand.split(",").map((email) => {
-                // This is definitely not undefined, because we just validated it
-                // with `Filter.is_valid_search_term`.
-                const user = people.get_by_email(email)!;
-                return user;
-            });
+            const users = term.operand
+                .split(",")
+                .map((email) => people.get_by_email(email.trim())!);
             append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
         } else if (term.operator === "search") {
             search_operator_strings.push(input);

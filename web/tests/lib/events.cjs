@@ -144,8 +144,8 @@ exports.fixtures = {
         message_id: 128,
         recipient: {
             type: "channel",
-            channel_id: this.stream_typing_in_id,
-            topic: this.topic_typing_in,
+            channel_id: exports.stream_typing_in_id,
+            topic: exports.topic_typing_in,
         },
     },
 
@@ -156,8 +156,8 @@ exports.fixtures = {
         message_id: 128,
         recipient: {
             type: "channel",
-            channel_id: this.stream_typing_in_id,
-            topic: this.topic_typing_in,
+            channel_id: exports.stream_typing_in_id,
+            topic: exports.topic_typing_in,
         },
     },
 
@@ -344,6 +344,13 @@ exports.fixtures = {
         type: "realm",
         op: "update",
         property: "invite_required",
+        value: false,
+    },
+
+    realm__update__mandatory_topics: {
+        type: "realm",
+        op: "update",
+        property: "mandatory_topics",
         value: false,
     },
 
@@ -739,8 +746,8 @@ exports.fixtures = {
         op: "start",
         message_type: "stream",
         sender: typing_person1,
-        stream_id: this.stream_typing_in_id,
-        topic: this.topic_typing_in,
+        stream_id: exports.stream_typing_in_id,
+        topic: exports.topic_typing_in,
     },
 
     stream_typing__stop: {
@@ -748,8 +755,8 @@ exports.fixtures = {
         op: "stop",
         message_type: "stream",
         sender: typing_person1,
-        stream_id: this.stream_typing_in_id,
-        topic: this.topic_typing_in,
+        stream_id: exports.stream_typing_in_id,
+        topic: exports.topic_typing_in,
     },
 
     submessage: {

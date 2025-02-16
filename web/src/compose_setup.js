@@ -3,12 +3,14 @@ import _ from "lodash";
 
 import {unresolve_name} from "../shared/src/resolved_topic.ts";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
+import render_add_todo_list_modal from "../templates/add_todo_list_modal.hbs";
 
 import * as compose from "./compose.js";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
 import * as compose_call_ui from "./compose_call_ui.ts";
+import * as compose_fade from "./compose_fade.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
@@ -23,7 +25,6 @@ import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import {page_params} from "./page_params.ts";
-import * as poll_modal from "./poll_modal.ts";
 import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
 import * as rows from "./rows.ts";
@@ -36,6 +37,7 @@ import {get_timestamp_for_flatpickr} from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as upload from "./upload.ts";
 import * as user_topics from "./user_topics.ts";
+import * as widget_modal from "./widget_modal.ts";
 
 export function abort_xhr() {
     $("#compose-send-button").prop("disabled", false);
@@ -69,6 +71,14 @@ export function initialize() {
         compose_ui.handle_keyup(event, $("textarea#compose-textarea").expectOne());
     });
 
+    $("#compose-send-button").on("mouseenter", () => {
+        compose_validate.validate(false, false);
+        compose_validate.update_send_button_status();
+    });
+    $("#compose-send-button").on("mouseleave", () => {
+        $(".message-send-controls").removeClass("disabled-message-send-controls");
+    });
+
     $("textarea#compose-textarea").on("input propertychange", () => {
         compose_validate.warn_if_topic_resolved(false);
         const compose_text_length = compose_validate.check_overflow_text($("#send_message_form"));
@@ -88,9 +98,9 @@ export function initialize() {
 
         // The poll widget requires an empty compose box.
         if (compose_text_length > 0) {
-            $(".add-poll").parent().addClass("disabled-on-hover");
+            $(".needs-empty-compose").parent().addClass("disabled-on-hover");
         } else {
-            $(".add-poll").parent().removeClass("disabled-on-hover");
+            $(".needs-empty-compose").parent().removeClass("disabled-on-hover");
         }
 
         if (compose_state.get_is_content_unedited_restored_draft()) {
@@ -107,7 +117,11 @@ export function initialize() {
 
     // Updates compose max-height and scroll to bottom button position when
     // there is a change in compose height like when a compose banner is displayed.
-    const update_compose_max_height = new ResizeObserver(resize.reset_compose_message_max_height);
+    const update_compose_max_height = new ResizeObserver((_entries) => {
+        requestAnimationFrame(() => {
+            resize.reset_compose_message_max_height();
+        });
+    });
     update_compose_max_height.observe(document.querySelector("#compose"));
 
     function get_input_info(event) {
@@ -449,16 +463,84 @@ export function initialize() {
                 // frame a message using data input in modal, then populate the compose textarea with it
                 e.preventDefault();
                 e.stopPropagation();
-                const poll_message_content = poll_modal.frame_poll_message_content();
+                const poll_message_content = widget_modal.frame_poll_message_content();
                 compose_ui.insert_syntax_and_focus(poll_message_content);
+            },
+            on_show() {
+                setTimeout(() => {
+                    $("#poll-question-input").trigger("focus");
+                }, 0);
             },
             validate_input,
             form_id: "add-poll-form",
             id: "add-poll-modal",
-            post_render: poll_modal.poll_options_setup,
+            post_render: widget_modal.poll_options_setup,
             help_link: "https://zulip.com/help/create-a-poll",
         });
     });
+
+    $("body").on("input", "#add-todo-modal .todo-input", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $(".option-row").each(function () {
+            const todo_name = $(this).find(".todo-input").val();
+            const $todo_description = $(this).find(".todo-description-input");
+            $todo_description.prop("disabled", !todo_name);
+        });
+    });
+
+    $("body").on(
+        "click",
+        ".compose_control_button_container:not(.disabled) .add-todo-list",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            function validate_input(e) {
+                let is_valid = true;
+                e.preventDefault();
+                e.stopPropagation();
+                $(".option-row").each(function () {
+                    const todo_name = $(this).find(".todo-input").val();
+                    const todo_description = $(this).find(".todo-description-input").val();
+                    if (!todo_name && todo_description) {
+                        ui_report.error(
+                            $t_html({defaultMessage: "Please enter task title."}),
+                            undefined,
+                            $("#dialog_error"),
+                        );
+                        is_valid = false;
+                    }
+                });
+                return is_valid;
+            }
+
+            dialog_widget.launch({
+                html_heading: $t_html({defaultMessage: "Create a collaborative to-do list"}),
+                html_body: render_add_todo_list_modal(),
+                html_submit_button: $t_html({defaultMessage: "Create to-do list"}),
+                close_on_submit: true,
+                on_click(e) {
+                    // frame a message using data input in modal, then populate the compose textarea with it
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const todo_message_content = widget_modal.frame_todo_message_content();
+                    compose_ui.insert_syntax_and_focus(todo_message_content);
+                },
+                on_show() {
+                    setTimeout(() => {
+                        $("#todo-title-input").trigger("select");
+                    }, 0);
+                },
+                form_id: "add-todo-form",
+                validate_input,
+                id: "add-todo-modal",
+                post_render: widget_modal.todo_list_tasks_setup,
+                help_link: "https://zulip.com/help/collaborative-to-do-lists",
+            });
+        },
+    );
 
     $("#compose").on("click", ".markdown_preview", (e) => {
         e.preventDefault();
@@ -501,7 +583,8 @@ export function initialize() {
     });
 
     $("textarea#compose-textarea").on("focus", () => {
-        compose_recipient.update_placeholder_text();
+        compose_recipient.update_compose_area_placeholder_text();
+        compose_fade.do_update_all();
         if (narrow_state.narrowed_by_reply()) {
             compose_notifications.maybe_show_one_time_non_interleaved_view_messages_fading_banner();
         } else {
@@ -523,11 +606,18 @@ export function initialize() {
     });
 
     $("input#stream_message_recipient_topic").on("focus", () => {
-        compose_recipient.update_placeholder_text();
+        const $input = $("input#stream_message_recipient_topic");
+        compose_recipient.update_topic_displayed_text($input.val(), true);
+        compose_recipient.update_compose_area_placeholder_text();
+
+        $("input#stream_message_recipient_topic").one("blur", () => {
+            compose_recipient.update_topic_displayed_text($input.val());
+            compose_recipient.update_compose_area_placeholder_text();
+        });
     });
 
     $("input#stream_message_recipient_topic").on("input", () => {
-        compose_recipient.update_placeholder_text();
+        compose_recipient.update_compose_area_placeholder_text();
     });
 
     $("body").on("click", ".formatting_button", function (e) {

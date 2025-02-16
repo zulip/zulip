@@ -826,12 +826,6 @@ def get_user_groups(client: Client) -> int:
     return leadership_user_group["id"]
 
 
-def test_user_not_authorized_error(nonadmin_client: Client) -> None:
-    result = nonadmin_client.get_streams(include_all_active=True)
-    assert_error_response(result)
-    validate_against_openapi_schema(result, "/rest-error-handling", "post", "400")
-
-
 @openapi_test_function("/streams/{stream_id}/members:get")
 def get_subscribers(client: Client) -> None:
     user_ids = [11, 25]
@@ -1881,7 +1875,6 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     add_default_stream(client)
     remove_default_stream(client)
 
-    test_user_not_authorized_error(nonadmin_client)
     test_authorization_errors_fatal(client, nonadmin_client)
 
 

@@ -61,8 +61,7 @@ run ./tools/test-migrations
 # run ./tools/test-documentation --skip-external-links
 run ./tools/test-help-documentation --skip-external-links "${forcearg[@]}"
 run ./tools/test-api
-# Not running requirements check locally, because slow and low-churn
-# run ./tools/test-locked-requirements
+run uv lock --check
 # Not running run-dev tests locally; we never have
 # run ./tools/test-run-dev
 # Not running queue worker reload tests since it's low-churn code

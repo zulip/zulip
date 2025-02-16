@@ -8,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
+from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, NamedUserGroup, UserProfile
@@ -533,6 +534,20 @@ class DeleteMessageTest(ZulipTestCase):
         result = self.client_delete(f"/json/messages/{msg_id}")
         self.assert_json_success(result)
         self.assertFalse(Message.objects.filter(id=msg_id).exists())
+
+    def test_delete_message_from_archived_channel(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+
+        stream = self.make_stream("stream1")
+        self.subscribe(hamlet, "stream1")
+        msg_id = self.send_stream_message(
+            hamlet, "stream1", topic_name="editing", content="before edit"
+        )
+        do_deactivate_stream(stream, acting_user=hamlet)
+
+        result = self.client_delete(f"/json/messages/{msg_id}")
+        self.assert_json_error(result, "Invalid message(s)")
 
     def test_update_first_message_id_on_stream_message_deletion(self) -> None:
         realm = get_realm("zulip")

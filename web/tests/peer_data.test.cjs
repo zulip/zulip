@@ -8,6 +8,7 @@
 
 const assert = require("node:assert/strict");
 
+const example_settings = require("./lib/example_settings.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -15,11 +16,13 @@ const {page_params} = require("./lib/zpage_params.cjs");
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-const {set_current_user} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
 
 set_current_user({});
+const realm = {};
+set_realm(realm);
 
 page_params.realm_users = [];
 const me = {
@@ -73,6 +76,11 @@ function test(label, f) {
         user_groups.initialize({
             realm_user_groups: [nobody_group],
         });
+        override(
+            realm,
+            "server_supported_permission_settings",
+            example_settings.server_supported_permission_settings,
+        );
 
         f({override});
     });
@@ -111,6 +119,7 @@ test("subscribers", () => {
         stream_id: 1001,
         can_add_subscribers_group: nobody_group.id,
         can_administer_channel_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
     };
     stream_data.add_sub(sub);
 

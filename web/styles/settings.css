@@ -353,6 +353,17 @@ select.settings_select {
     word-break: normal;
 }
 
+.last_active {
+    .loading_indicator_spinner {
+        width: 1.25em;
+        height: auto;
+        display: flex;
+        align-items: center;
+        margin: 0;
+        margin-left: 0.5em; /* The spinner is left-justified with a slight left margin to look good. */
+    }
+}
+
 .input-group {
     margin: 0 0 20px;
 
@@ -634,7 +645,8 @@ input[type="checkbox"] {
     padding: 4px 14px;
 }
 
-#user-notification-settings {
+#user-notification-settings,
+#realm-user-default-settings {
     .notification-table {
         thead {
             background-color: var(--color-background-notification-table-thead);
@@ -1776,6 +1788,14 @@ label.preferences-radio-choice-label {
 
 @media (width < $lg_min) {
     .settings-email-column {
+        display: none;
+    }
+
+    .empty-email-col-for-user-group {
+        display: none;
+    }
+
+    .hidden-subscriber-email {
         display: none;
     }
 

@@ -7,7 +7,11 @@
             <span>channel: {{search_data.stream_query}}</span>
             {{/if}}
             {{#if search_data.topic_query}}
+            {{#if search_data.is_empty_string_topic}}
+            <span>topic: <span class="empty-topic-display">{{search_data.topic_query}}</span></span>
+            {{else}}
             <span>topic: {{search_data.topic_query}}</span>
+            {{/if}}
             {{/if}}
             {{#each search_data.query_words}}
                 {{#if is_stop_word}}

@@ -10,7 +10,7 @@ with more than 15 subscribers, and `@topic` in topics with more than 15
 participants.
 
 This permission can be granted to any combination of [roles](/help/user-roles),
-[groups](/help/user-groups), and individual [users](/help/manage-a-user).
+[groups](/help/user-groups), and individual [users](/help/introduction-to-users).
 
 {start_tabs}
 

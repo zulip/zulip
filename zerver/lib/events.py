@@ -40,7 +40,7 @@ from zerver.lib.message import (
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.muted_users import get_user_mutes
-from zerver.lib.narrow_helpers import NarrowTerm, read_stop_words
+from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm, read_stop_words
 from zerver.lib.narrow_predicate import check_narrow_for_events
 from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
@@ -61,8 +61,9 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME, maybe_rename_general_chat_to_empty_topic
 from zerver.lib.user_groups import (
-    get_group_setting_value_for_api,
+    get_group_setting_value_for_register_api,
     get_recursive_membership_groups,
+    get_role_based_system_groups_dict,
     get_server_supported_permission_settings,
     user_groups_in_realm_serialized,
 )
@@ -97,9 +98,9 @@ from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
 from zerver.models.realms import (
+    MessageEditHistoryVisibilityPolicyEnum,
     get_corresponding_policy_value_for_group_setting,
     get_realm_domains,
-    get_realm_with_settings,
 )
 from zerver.models.streams import get_default_stream_groups
 from zerver.tornado.django_api import get_user_events, request_event_queue
@@ -268,6 +269,27 @@ def fetch_initial_state_data(
         # Send server_timestamp, to match the format of `GET /presence` requests.
         state["server_timestamp"] = time.time()
 
+    realm_setting_group_ids = {
+        getattr(realm, setting_name + "_id")
+        for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
+    }
+
+    if want("realm_user_groups") or want("realm"):
+        # Optimizing opportunity: This fetches more data than
+        # we strictly need when "realm_user_groups" is not in
+        # fetch_event_types; we need the membership of the
+        # anonymous groups in realm_setting_group_ids and the
+        # IDs of the NamedUserGroup objects used there, but
+        # don't need the other NamedUserGroup fields.
+        realm_groups_data = user_groups_in_realm_serialized(
+            realm,
+            include_deactivated_groups=include_deactivated_groups,
+            realm_setting_group_ids=realm_setting_group_ids,
+        )
+
+    if want("realm_user_groups"):
+        state["realm_user_groups"] = realm_groups_data.api_groups
+
     if want("realm"):
         # The realm bundle includes both realm properties and server
         # properties, since it's rare that one would want one and not
@@ -294,17 +316,25 @@ def fetch_initial_state_data(
             state["realm_" + property_name] = getattr(realm, property_name)
 
         for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
-            setting_value = getattr(realm, setting_name)
-            state["realm_" + setting_name] = get_group_setting_value_for_api(setting_value)
+            setting_group_id = getattr(realm, setting_name + "_id")
+            state["realm_" + setting_name] = get_group_setting_value_for_register_api(
+                setting_group_id, realm_groups_data.realm_setting_anonymous_group_membership
+            )
 
         state["realm_create_public_stream_policy"] = (
             get_corresponding_policy_value_for_group_setting(
-                realm, "can_create_public_channel_group", Realm.COMMON_POLICY_TYPES
+                realm,
+                "can_create_public_channel_group",
+                Realm.COMMON_POLICY_TYPES,
+                realm_groups_data.system_groups_name_dict,
             )
         )
         state["realm_create_private_stream_policy"] = (
             get_corresponding_policy_value_for_group_setting(
-                realm, "can_create_private_channel_group", Realm.COMMON_POLICY_TYPES
+                realm,
+                "can_create_private_channel_group",
+                Realm.COMMON_POLICY_TYPES,
+                realm_groups_data.system_groups_name_dict,
             )
         )
         state["realm_create_web_public_stream_policy"] = (
@@ -312,12 +342,14 @@ def fetch_initial_state_data(
                 realm,
                 "can_create_web_public_channel_group",
                 Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
+                realm_groups_data.system_groups_name_dict,
             )
         )
         state["realm_wildcard_mention_policy"] = get_corresponding_policy_value_for_group_setting(
             realm,
             "can_mention_many_users_group",
             Realm.WILDCARD_MENTION_POLICY_TYPES,
+            realm_groups_data.system_groups_name_dict,
         )
 
         # Most state is handled via the property_types framework;
@@ -429,31 +461,16 @@ def fetch_initial_state_data(
 
         state["server_can_summarize_topics"] = settings.TOPIC_SUMMARIZATION_MODEL is not None
 
-        moderation_request_channel = realm.moderation_request_channel
-        if moderation_request_channel:
-            state["realm_moderation_request_channel_id"] = moderation_request_channel.id
-        else:
-            state["realm_moderation_request_channel_id"] = -1
-
-        new_stream_announcements_stream = realm.new_stream_announcements_stream
-        if new_stream_announcements_stream:
-            state["realm_new_stream_announcements_stream_id"] = new_stream_announcements_stream.id
-        else:
-            state["realm_new_stream_announcements_stream_id"] = -1
-
-        signup_announcements_stream = realm.signup_announcements_stream
-        if signup_announcements_stream:
-            state["realm_signup_announcements_stream_id"] = signup_announcements_stream.id
-        else:
-            state["realm_signup_announcements_stream_id"] = -1
-
-        zulip_update_announcements_stream = realm.zulip_update_announcements_stream
-        if zulip_update_announcements_stream:
-            state["realm_zulip_update_announcements_stream_id"] = (
-                zulip_update_announcements_stream.id
-            )
-        else:
-            state["realm_zulip_update_announcements_stream_id"] = -1
+        for channel_field in [
+            "moderation_request_channel_id",
+            "new_stream_announcements_stream_id",
+            "signup_announcements_stream_id",
+            "zulip_update_announcements_stream_id",
+        ]:
+            if getattr(realm, channel_field) is None:
+                state["realm_" + channel_field] = -1
+            else:
+                state["realm_" + channel_field] = getattr(realm, channel_field)
 
         state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
@@ -489,6 +506,18 @@ def fetch_initial_state_data(
         )
 
         state["realm_empty_topic_display_name"] = Message.EMPTY_TOPIC_FALLBACK_NAME
+
+        state["realm_allow_edit_history"] = (
+            realm.message_edit_history_visibility_policy
+            != MessageEditHistoryVisibilityPolicyEnum.none.value
+        )
+
+        state["realm_message_edit_history_visibility_policy"] = (
+            MessageEditHistoryVisibilityPolicyEnum(
+                realm.message_edit_history_visibility_policy
+            ).name
+        )
+
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         state["realm_user_settings_defaults"] = {}
@@ -528,11 +557,6 @@ def fetch_initial_state_data(
 
     if want("realm_playgrounds"):
         state["realm_playgrounds"] = get_realm_playgrounds(realm)
-
-    if want("realm_user_groups"):
-        state["realm_user_groups"] = user_groups_in_realm_serialized(
-            realm, include_deactivated_groups=include_deactivated_groups
-        )
 
     if user_profile is not None:
         settings_user = user_profile
@@ -721,7 +745,7 @@ def fetch_initial_state_data(
             state["streams"] = do_get_streams(
                 user_profile,
                 include_web_public=True,
-                include_all_active=user_profile.is_realm_admin,
+                include_all=user_profile.is_realm_admin,
             )
         else:
             # TODO: This line isn't used by the web app because it
@@ -1326,7 +1350,13 @@ def apply_event(
                     else state["server_jitsi_server_url"]
                 )
 
+            if field == "realm_message_edit_history_visibility_policy":
+                state["realm_allow_edit_history"] = (
+                    event["value"] != MessageEditHistoryVisibilityPolicyEnum.none.name
+                )
+
         elif event["op"] == "update_dict":
+            system_groups_name_dict: dict[int, str] | None = None
             for key, value in event["data"].items():
                 if key == "max_file_upload_size_mib":
                     state["max_file_upload_size_mib"] = value
@@ -1347,12 +1377,26 @@ def apply_event(
                     "can_create_private_channel_group",
                     "can_create_web_public_channel_group",
                 ]:
+                    if system_groups_name_dict is None:
+                        # Here we do a database query, because
+                        # get_corresponding_policy_value_for_group_setting
+                        # requires the full set of system groups.
+                        # This could be avoided if realm_user_group were in
+                        # fetch_event_types, since the system groups should
+                        # all be there, but the query itself is cheap enough
+                        # that it's likely not worth that complexity.
+                        system_groups = get_role_based_system_groups_dict(user_profile.realm)
+                        system_groups_name_dict = {}
+                        for group in system_groups.values():
+                            system_groups_name_dict[group.id] = group.name
+
                     if key == "can_create_public_channel_group":
                         state["realm_create_public_stream_policy"] = (
                             get_corresponding_policy_value_for_group_setting(
                                 user_profile.realm,
                                 "can_create_public_channel_group",
                                 Realm.COMMON_POLICY_TYPES,
+                                system_groups_name_dict,
                             )
                         )
                         state["can_create_public_streams"] = user_profile.has_permission(key)
@@ -1362,6 +1406,7 @@ def apply_event(
                                 user_profile.realm,
                                 "can_create_private_channel_group",
                                 Realm.COMMON_POLICY_TYPES,
+                                system_groups_name_dict,
                             )
                         )
                         state["can_create_private_streams"] = user_profile.has_permission(key)
@@ -1371,6 +1416,7 @@ def apply_event(
                                 user_profile.realm,
                                 "can_create_web_public_channel_group",
                                 Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
+                                system_groups_name_dict,
                             )
                         )
                         state["can_create_web_public_streams"] = user_profile.has_permission(key)
@@ -1387,11 +1433,25 @@ def apply_event(
                     )
 
                 if key == "can_mention_many_users_group":
+                    if system_groups_name_dict is None:
+                        # Here we do a database query, because
+                        # get_corresponding_policy_value_for_group_setting
+                        # requires the full set of system groups.
+                        # This could be avoided if realm_user_group were in
+                        # fetch_event_types, since the system groups should
+                        # all be there, but the query itself is cheap enough
+                        # that it's likely not worth that complexity.
+                        system_groups = get_role_based_system_groups_dict(user_profile.realm)
+                        system_groups_name_dict = {}
+                        for group in system_groups.values():
+                            system_groups_name_dict[group.id] = group.name
+
                     state["realm_wildcard_mention_policy"] = (
                         get_corresponding_policy_value_for_group_setting(
                             user_profile.realm,
                             "can_mention_many_users_group",
                             Realm.WILDCARD_MENTION_POLICY_TYPES,
+                            system_groups_name_dict,
                         )
                     )
 
@@ -1787,7 +1847,7 @@ def do_events_register(
     include_subscribers: bool = True,
     include_streams: bool = True,
     client_capabilities: ClientCapabilities = DEFAULT_CLIENT_CAPABILITIES,
-    narrow: Collection[NarrowTerm] = [],
+    narrow: Collection[NeverNegatedNarrowTerm] = [],
     fetch_event_types: Collection[str] | None = None,
     spectator_requested_language: str | None = None,
     pronouns_field_type_supported: bool = True,
@@ -1816,14 +1876,6 @@ def do_events_register(
         event_types_set = set(event_types)
     else:
         event_types_set = None
-
-    # Fetch the realm object again to prefetch all the
-    # settings that will be used in 'fetch_initial_state_data'
-    # to avoid unnecessary DB queries.
-    # The settings include:
-    # * group settings which support anonymous groups
-    # * announcements streams
-    realm = get_realm_with_settings(realm_id=realm.id)
 
     if user_profile is None:
         # TODO: Unify the two fetch_initial_state_data code paths.

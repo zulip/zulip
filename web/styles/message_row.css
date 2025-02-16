@@ -226,6 +226,31 @@
         }
     }
 
+    .message_length_toggle {
+        width: 100%;
+        height: 1.714em; /* 24px / 14px em */
+        margin-bottom: var(--message-box-markdown-aligned-vertical-space);
+        color: var(--color-text-show-more-less-button);
+        background-color: var(--color-show-more-less-button-background);
+        border-radius: 4px;
+        border: none;
+        outline: none;
+        font-variant: all-small-caps;
+
+        &:hover {
+            background-color: var(
+                --color-show-more-less-button-background-hover
+            );
+        }
+
+        &:active {
+            background-color: var(
+                --color-show-more-less-button-background-active
+            );
+            scale: 0.98;
+        }
+    }
+
     &.content_edit_mode .message_length_controller {
         /* If entering edit mode on a collapsed message,
            just hide the controller area. This preserves
@@ -912,6 +937,21 @@ of the base style defined for a read-only textarea in dark mode. */
     cursor: default;
 }
 
+/* Placehold the control buttons, unless there's a failure. */
+.locally-echoed {
+    .messagebox:hover
+        .message_controls
+        .message_control_button:not(.failed_message_action) {
+        visibility: hidden;
+    }
+    /* The actual star icon is not added to the DOM when a
+       message is locally echoed, so we set the equivalent
+       width on its container. */
+    .star_container {
+        width: var(--message-box-icon-width);
+    }
+}
+
 .recipient_row {
     /* See https://stackoverflow.com/questions/2717480/css-selector-for-first-element-with-class/8539107#8539107
        for details on how this works */
@@ -947,4 +987,18 @@ of the base style defined for a read-only textarea in dark mode. */
         /* Right padding matches time in message row and date in recipient row. */
         padding: 8px 6px 8px 4px;
     }
+}
+
+.bookend {
+    margin-top: 10px;
+    background-color: transparent;
+}
+
+/* Only show links on the trailing bookend. */
+.bookend-channel-settings-link {
+    display: none;
+}
+
+.trailing_bookend .bookend-channel-settings-link {
+    display: inline;
 }

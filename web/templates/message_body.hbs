@@ -41,6 +41,8 @@
     {{#if msg/locally_echoed}}
         {{#if msg/failed_request}}
             {{> message_controls_failed_msg}}
+            {{ else }}
+            {{> message_controls .}}
         {{/if}}
     {{else}}
         {{> message_controls .}}

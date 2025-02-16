@@ -19,7 +19,6 @@ from zerver.lib.stream_subscription import (
 )
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.streams import (
-    UserGroupMembershipDetails,
     get_group_setting_value_dict_for_streams,
     get_setting_values_for_group_settings,
     get_stream_post_policy_value_based_on_group_setting,
@@ -30,15 +29,15 @@ from zerver.lib.streams import (
 )
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
-    AnonymousSettingGroupDict,
     APIStreamDict,
     NeverSubscribedStreamDict,
     RawStreamDict,
     RawSubscriptionDict,
     SubscriptionInfo,
     SubscriptionStreamDict,
+    UserGroupMembersDict,
 )
-from zerver.lib.user_groups import get_recursive_membership_groups
+from zerver.lib.user_groups import UserGroupMembershipDetails, get_recursive_membership_groups
 from zerver.models import Realm, Stream, Subscription, UserProfile
 from zerver.models.streams import get_all_streams
 
@@ -63,6 +62,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         can_administer_channel_group = setting_groups_dict[stream.can_administer_channel_group_id]
         can_send_message_group = setting_groups_dict[stream.can_send_message_group_id]
         can_remove_subscribers_group = setting_groups_dict[stream.can_remove_subscribers_group_id]
+        can_subscribe_group = setting_groups_dict[stream.can_subscribe_group_id]
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
         description = stream.description
@@ -102,6 +102,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
             can_administer_channel_group=can_administer_channel_group,
             can_send_message_group=can_send_message_group,
             can_remove_subscribers_group=can_remove_subscribers_group,
+            can_subscribe_group=can_subscribe_group,
             color=color,
             creator_id=creator_id,
             date_created=date_created,
@@ -146,7 +147,7 @@ def build_unsubscribed_sub_from_stream_dict(
 def build_stream_api_dict(
     raw_stream_dict: RawStreamDict,
     recent_traffic: dict[int, int] | None,
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict],
+    setting_groups_dict: dict[int, int | UserGroupMembersDict],
 ) -> APIStreamDict:
     # Add a few computed fields not directly from the data models.
     if recent_traffic is not None:
@@ -169,6 +170,7 @@ def build_stream_api_dict(
     can_remove_subscribers_group = setting_groups_dict[
         raw_stream_dict["can_remove_subscribers_group_id"]
     ]
+    can_subscribe_group = setting_groups_dict[raw_stream_dict["can_subscribe_group_id"]]
 
     return APIStreamDict(
         is_archived=raw_stream_dict["deactivated"],
@@ -176,6 +178,7 @@ def build_stream_api_dict(
         can_administer_channel_group=can_administer_channel_group,
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
+        can_subscribe_group=can_subscribe_group,
         creator_id=raw_stream_dict["creator_id"],
         date_created=datetime_to_timestamp(raw_stream_dict["date_created"]),
         description=raw_stream_dict["description"],
@@ -205,6 +208,7 @@ def build_stream_dict_for_sub(
     can_administer_channel_group = stream_dict["can_administer_channel_group"]
     can_send_message_group = stream_dict["can_send_message_group"]
     can_remove_subscribers_group = stream_dict["can_remove_subscribers_group"]
+    can_subscribe_group = stream_dict["can_subscribe_group"]
     creator_id = stream_dict["creator_id"]
     date_created = stream_dict["date_created"]
     description = stream_dict["description"]
@@ -243,6 +247,7 @@ def build_stream_dict_for_sub(
         can_administer_channel_group=can_administer_channel_group,
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
+        can_subscribe_group=can_subscribe_group,
         color=color,
         creator_id=creator_id,
         date_created=date_created,
@@ -272,7 +277,7 @@ def build_stream_dict_for_sub(
 def build_stream_dict_for_never_sub(
     raw_stream_dict: RawStreamDict,
     recent_traffic: dict[int, int] | None,
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict],
+    setting_groups_dict: dict[int, int | UserGroupMembersDict],
 ) -> NeverSubscribedStreamDict:
     is_archived = raw_stream_dict["deactivated"]
     creator_id = raw_stream_dict["creator_id"]
@@ -306,6 +311,7 @@ def build_stream_dict_for_never_sub(
     can_remove_subscribers_group_value = setting_groups_dict[
         raw_stream_dict["can_remove_subscribers_group_id"]
     ]
+    can_subscribe_group_value = setting_groups_dict[raw_stream_dict["can_subscribe_group_id"]]
 
     # Backwards-compatibility addition of removed field.
     is_announcement_only = raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
@@ -317,6 +323,7 @@ def build_stream_dict_for_never_sub(
         can_administer_channel_group=can_administer_channel_group_value,
         can_send_message_group=can_send_message_group_value,
         can_remove_subscribers_group=can_remove_subscribers_group_value,
+        can_subscribe_group=can_subscribe_group_value,
         creator_id=creator_id,
         date_created=date_created,
         description=description,
@@ -351,6 +358,7 @@ def validate_user_access_to_subscribers(user_profile: UserProfile | None, stream
             "invite_only": stream.invite_only,
             "can_administer_channel_group_id": stream.can_administer_channel_group_id,
             "can_add_subscribers_group_id": stream.can_add_subscribers_group_id,
+            "can_subscribe_group_id": stream.can_subscribe_group_id,
         },
         # We use a lambda here so that we only compute whether the
         # user is subscribed if we have to
@@ -422,6 +430,7 @@ def validate_user_access_to_subscribers_helper(
         user_group_membership_details.user_recursive_group_ids,
         stream_dict["can_administer_channel_group_id"],
         stream_dict["can_add_subscribers_group_id"],
+        stream_dict["can_subscribe_group_id"],
     ):
         return
 
@@ -588,6 +597,7 @@ def has_metadata_access_to_previously_subscribed_stream(
     user_recursive_group_ids: set[int],
     can_administer_channel_group_id: int,
     can_add_subscribers_group_id: int,
+    can_subscribe_group_id: int,
 ) -> bool:
     if stream_dict["is_web_public"]:
         return True
@@ -601,6 +611,7 @@ def has_metadata_access_to_previously_subscribed_stream(
             user_recursive_group_ids,
             can_administer_channel_group_id,
             can_add_subscribers_group_id,
+            can_subscribe_group_id,
         )
 
     return True
@@ -707,12 +718,14 @@ def gather_subscriptions_helper(
         else:
             can_administer_channel_group_id = raw_stream_dict["can_administer_channel_group_id"]
             can_add_subscribers_group_id = raw_stream_dict["can_add_subscribers_group_id"]
+            can_subscribe_group_id = raw_stream_dict["can_subscribe_group_id"]
             if has_metadata_access_to_previously_subscribed_stream(
                 user_profile,
                 stream_dict,
                 user_recursive_group_ids,
                 can_administer_channel_group_id,
                 can_add_subscribers_group_id,
+                can_subscribe_group_id,
             ):
                 """
                 User who are no longer subscribed to a stream that they don't have
@@ -741,11 +754,13 @@ def gather_subscriptions_helper(
         is_public = not raw_stream_dict["invite_only"]
         can_administer_channel_group_id = raw_stream_dict["can_administer_channel_group_id"]
         can_add_subscribers_group_id = raw_stream_dict["can_add_subscribers_group_id"]
+        can_subscribe_group_id = raw_stream_dict["can_subscribe_group_id"]
         has_metadata_access = has_metadata_access_to_channel_via_groups(
             user_profile,
             user_recursive_group_ids,
             can_administer_channel_group_id,
             can_add_subscribers_group_id,
+            can_subscribe_group_id,
         )
         if is_public or user_profile.is_realm_admin or has_metadata_access:
             slim_stream_dict = build_stream_dict_for_never_sub(

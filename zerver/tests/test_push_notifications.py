@@ -2126,6 +2126,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         handling for this edge case nonetheless.
         """
 
+        original_server = RemoteZulipServer.objects.get(uuid=self.server.uuid)
         # Start by deleting existing registration, to have a clean slate.
         RemoteRealm.objects.all().delete()
 
@@ -2151,9 +2152,19 @@ class AnalyticsBouncerTest(BouncerTestCase):
             plan_type=RemoteRealm.PLAN_TYPE_SELF_MANAGED,
         )
 
-        with self.assertLogs("zulip.analytics", level="WARNING") as m:
+        with (
+            self.assertLogs("zulip.analytics", level="WARNING") as mock_log_host,
+            self.assertLogs("zilencer.views") as mock_log_bouncer,
+        ):
             send_server_data_to_push_bouncer()
-        self.assertEqual(m.output, ["WARNING:zulip.analytics:Duplicate registration detected."])
+        self.assertEqual(
+            mock_log_host.output, ["WARNING:zulip.analytics:Duplicate registration detected."]
+        )
+        self.assertIn(
+            "INFO:zilencer.views:"
+            f"update_remote_realm_data_for_server:server:{original_server.id}:IntegrityError creating RemoteRealm rows:",
+            mock_log_bouncer.output[0],
+        )
 
     # Servers on Zulip 2.0.6 and earlier only send realm_counts and installation_counts data,
     # and don't send realmauditlog_rows. Make sure that continues to work.

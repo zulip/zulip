@@ -718,6 +718,7 @@ paths:
                                         "stream_weekly_traffic": null,
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
+                                        "can_subscribe_group": 2,
                                         "subscribers": [10],
                                       },
                                     ],
@@ -1355,6 +1356,7 @@ paths:
                                         "is_announcement_only": false,
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
+                                        "can_subscribe_group": 2,
                                         "stream_weekly_traffic": null,
                                       },
                                     ],
@@ -4576,11 +4578,6 @@ paths:
                                     irrespective of which of these settings were changed. Now, a separate event
                                     is sent for each changed setting.
                                   properties:
-                                    allow_edit_history:
-                                      type: boolean
-                                      description: |
-                                        Whether this organization is configured to allow users to access
-                                        [message edit history](/help/view-a-messages-edit-history).
                                     allow_message_editing:
                                       type: boolean
                                       description: |
@@ -5060,6 +5057,19 @@ paths:
 
                                         **Changes**: Before Zulip 6.0 (feature level 138), no limit was
                                         represented using the special value `0`.
+                                    message_edit_history_visibility_policy:
+                                      type: string
+                                      description: |
+                                        Which type of message edit history is configured to allow users to
+                                        access [message edit history](/help/view-a-messages-edit-history).
+
+                                        - "all" = All edit history is visible.
+                                        - "moves" = Only moves are visible.
+                                        - "none" = No edit history is visible.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 358), replacing the previous
+                                        `allow_edit_history` boolean setting; `true` corresponds to `all`,
+                                        and `false` to `none`.
                                     moderation_request_channel_id:
                                       type: integer
                                       description: |
@@ -7893,8 +7903,26 @@ paths:
                           type: integer
                         description: |
                           An array with the IDs of the modified messages.
+                      ignored_because_not_subscribed_channels:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          Only present if the flag is `read` and the operation is `remove`.
+
+                          Zulip has an invariant that all unread messages must be in channels
+                          the user is subscribed to. This field will contain a list of the
+                          channels whose messages were skipped to mark as unread because the
+                          user is not subscribed to them.
+
+                          **Changes**: New in Zulip 10.0 (feature level 355).
                     example:
-                      {"msg": "", "messages": [4, 18, 15], "result": "success"}
+                      {
+                        "msg": "",
+                        "messages": [4, 18, 15],
+                        "ignored_because_not_subscribed_channels": [12, 13, 9],
+                        "result": "success",
+                      }
   /messages/flags/narrow:
     post:
       operationId: update-message-flags-for-narrow
@@ -8089,6 +8117,19 @@ paths:
                           bulk update to decide whether to issue
                           another request anchored at
                           `last_processed_id`).
+                      ignored_because_not_subscribed_channels:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          Only present if the flag is `read` and the operation is `remove`.
+
+                          Zulip has an invariant that all unread messages must be in channels
+                          the user is subscribed to. This field will contain a list of the
+                          channels whose messages were skipped to mark as unread because the
+                          user is not subscribed to them.
+
+                          **Changes**: New in Zulip 10.0 (feature level 355).
                     example:
                       {
                         "result": "success",
@@ -8099,6 +8140,7 @@ paths:
                         "last_processed_id": 55,
                         "found_oldest": false,
                         "found_newest": true,
+                        "ignored_because_not_subscribed_channels": [12, 13, 9],
                       }
   /messages/render:
     post:
@@ -10610,12 +10652,16 @@ paths:
         created. The initial [channel settings](/api/update-stream) will be determined
         by the optional parameters, like `invite_only`, detailed below.
 
-        Note that the ability to subscribe oneself and/or other users to a specified
-        channel depends on the [channel's type: private, public, or
-        web-public](/help/channel-permissions).
+        Note that the ability to subscribe oneself and/or other users
+        to a specified channel depends on the [channel's permissions
+        settings](/help/channel-permissions).
 
-        **Changes**: Before Zulip 10.0 (feature level 349), a user cannot
-        subscribe other users to a private channel without being subscribed
+        **Changes**: Before Zulip 10.0 (feature level 357), the
+        `can_subscribe_group` permission, which allows members of the
+        group to subscribe themselves to the channel, did not exist.
+
+        Before Zulip 10.0 (feature level 349), a user cannot subscribe
+        other users to a private channel without being subscribed
         to that channel themselves. Now, If a user is part of
         `can_add_subscribers_group`, they can subscribe themselves or other
         users to a private channel without being subscribed to that channel.
@@ -10766,6 +10812,8 @@ paths:
                   $ref: "#/components/schemas/CanAdministerChannelGroup"
                 can_send_message_group:
                   $ref: "#/components/schemas/CanSendMessageGroup"
+                can_subscribe_group:
+                  $ref: "#/components/schemas/CanSubscribeGroup"
               required:
                 - subscriptions
             encoding:
@@ -10792,6 +10840,8 @@ paths:
               can_administer_channel_group:
                 contentType: application/json
               can_send_message_group:
+                contentType: application/json
+              can_subscribe_group:
                 contentType: application/json
       responses:
         "200":
@@ -15342,6 +15392,7 @@ paths:
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
                                 can_send_message_group: {}
+                                can_subscribe_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -16852,13 +16903,35 @@ paths:
                               type: string
                               description: |
                                 The text describing the emoji set.
+                      realm_message_edit_history_visibility_policy:
+                        type: string
+                        description: |
+                          What typesof message edit history are accessible to users via
+                          [message edit history](/help/view-a-messages-edit-history).
+
+                          - "all" = All edit history is visible.
+                          - "moves" = Only moves are visible.
+                          - "none" = No edit history is visible.
+
+                          **Changes**: New in Zulip 10.0 (feature level 358), replacing the previous
+                          `allow_edit_history` boolean setting; `true` corresponds to `all`,
+                          and `false` to `none`.
                       realm_allow_edit_history:
+                        deprecated: true
                         type: boolean
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether this organization is configured to allow users to access
                           [message edit history](/help/view-a-messages-edit-history).
+
+                          The value of `realm_allow_edit_history` is set as `false` if the
+                          `realm_message_edit_history_visibility_policy` is configured as "None"
+                          and `true` if it is configured as "Moves only" or "All".
+
+                          **Changes**: Deprecated in Zulip 10.0 (feature level 358) and will be
+                          removed in the future, as it is an inaccurate version
+                          `realm_message_edit_history_visibility_policy`, which replaces this field.
                       realm_can_add_custom_emoji_group:
                         allOf:
                           - description: |
@@ -20308,8 +20381,31 @@ paths:
         - name: include_all_active
           in: query
           description: |
-            Include all active channels. The user must have administrative privileges
-            to use this parameter.
+            Deprecated parameter to include all channels. The user must
+            have administrative privileges to use this parameter.
+
+            **Changes**: Deprecated in Zulip 10.0 (feature level
+            356). Clients interacting with newer servers should use
+            the equivalent `include_all` parameter, which does not
+            incorrectly hint that this parameter, and not
+            `exclude_archived`, controls whether archived channels
+            appear in the response.
+          schema:
+            type: boolean
+            default: false
+          deprecated: true
+          example: true
+        - name: include_all
+          in: query
+          description: |
+            Include all channels that the user has metadata access to.
+
+            For organization administrators, this will be all channels
+            in the organization, since organization administrators
+            implicitly have metadata access to all channels.
+
+            **Changes**: New in Zulip 10.0 (feature level 356). On older
+            versions, use `include_all_active`, which this replaces.
           schema:
             type: boolean
             default: false
@@ -20327,6 +20423,16 @@ paths:
           description: |
             If the user is a bot, include all channels that the bot's owner is
             subscribed to.
+          schema:
+            type: boolean
+            default: false
+          example: true
+        - name: include_can_access_content
+          in: query
+          description: |
+            Include all the channels that the user has content access to.
+
+            **Changes**: New in Zulip 10.0 (feature level 356).
           schema:
             type: boolean
             default: false
@@ -20375,6 +20481,7 @@ paths:
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
                                 can_send_message_group: {}
+                                can_subscribe_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -20416,6 +20523,7 @@ paths:
                                 - first_message_id
                                 - is_announcement_only
                                 - can_remove_subscribers_group
+                                - can_subscribe_group
                                 - stream_weekly_traffic
                                 - is_recently_active
                     example:
@@ -20427,6 +20535,7 @@ paths:
                             {
                               "can_add_subscribers_group": 10,
                               "can_remove_subscribers_group": 10,
+                              "can_subscribe_group": 10,
                               "creator_id": null,
                               "date_created": 1691057093,
                               "description": "A private channel",
@@ -20448,6 +20557,7 @@ paths:
                             {
                               "can_add_subscribers_group": 9,
                               "can_remove_subscribers_group": 9,
+                              "can_subscribe_group": 10,
                               "creator_id": 12,
                               "date_created": 1691057093,
                               "description": "A default public channel",
@@ -20468,23 +20578,6 @@ paths:
                             },
                           ],
                       }
-        "400":
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "User not authorized for this query",
-                        "result": "error",
-                      }
-                    description: |
-                      An example JSON response for when the user is not authorized to use the
-                      `include_all_active` parameter (i.e. because they are not an organization
-                      administrator):
   /streams/{stream_id}:
     get:
       operationId: get-stream-by-id
@@ -20534,6 +20627,7 @@ paths:
                             "stream_post_policy": 1,
                             "can_add_subscribers_group": 2,
                             "can_remove_subscribers_group": 2,
+                            "can_subscribe_group": 2,
                             "stream_weekly_traffic": null,
                           },
                       }
@@ -20725,7 +20819,7 @@ paths:
                         to administer the channel in order to modify this setting.
 
                         **Changes**: Prior to Zulip 10.0 (feature level 349), channel administrators
-                        could not unsubscribe other users if they were not an orgnization
+                        could not unsubscribe other users if they were not an organization
                         administrator or part of `can_remove_subscribers_group`. Realm administrators
                         were not allowed to unsubscribe other users from a private channel if they
                         were not subscribed to that channel.
@@ -20796,6 +20890,32 @@ paths:
                         }
 
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_subscribe_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to subscribe themselves to this channel
+                        expressed as an [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        Everyone, excluding guests, can subscribe to any public channel
+                        irrespective of this setting.
+
+                        Users in this group can subscribe to a private channel as well.
+
+                        Note that a user must [have content access](/help/channel-permissions)
+                        to a channel and permission to administer the channel in order to
+                        modify this setting.
+
+                        **Changes**: New in Zulip 10.0 (feature level 357).
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
+
             encoding:
               is_private:
                 contentType: application/json
@@ -20812,6 +20932,8 @@ paths:
               can_administer_channel_group:
                 contentType: application/json
               can_send_message_group:
+                contentType: application/json
+              can_subscribe_group:
                 contentType: application/json
       responses:
         "200":
@@ -22557,6 +22679,7 @@ components:
             can_remove_subscribers_group: {}
             can_administer_channel_group: {}
             can_send_message_group: {}
+            can_subscribe_group: {}
             stream_weekly_traffic:
               type: integer
               nullable: true
@@ -22590,6 +22713,7 @@ components:
             - is_announcement_only
             - can_remove_subscribers_group
             - stream_weekly_traffic
+            - can_subscribe_group
     BasicChannelBase:
       type: object
       description: |
@@ -22744,6 +22868,8 @@ components:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
         can_send_message_group:
           $ref: "#/components/schemas/CanSendMessageGroup"
+        can_subscribe_group:
+          $ref: "#/components/schemas/CanSubscribeGroup"
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -23808,6 +23934,8 @@ components:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
         can_send_message_group:
           $ref: "#/components/schemas/CanSendMessageGroup"
+        can_subscribe_group:
+          $ref: "#/components/schemas/CanSubscribeGroup"
         is_archived:
           type: boolean
           description: |
@@ -25541,6 +25669,25 @@ components:
             **Changes**: New in Zulip 10.0 (feature level 333). Previously
             `stream_post_policy` field used to control the permission to
             post in the channel.
+
+            [setting-values]: /api/group-setting-values
+    CanSubscribeGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to subscribe themselves to this channel.
+
+            Everyone, excluding guests, can subscribe to any public channel
+            irrespective of this setting.
+
+            Users in this group can subscribe to a private channel as well.
+
+            Note that a user must [have content access](/help/channel-permissions)
+            to a channel and permission to administer the channel in order to
+            modify this setting.
+
+            **Changes**: New in Zulip 10.0 (feature level 357).
 
             [setting-values]: /api/group-setting-values
     LinkifierPattern:

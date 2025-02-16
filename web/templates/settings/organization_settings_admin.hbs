@@ -67,46 +67,10 @@
             </div>
         </div>
 
-        <div id="org-message-retention" class="settings-subsection-parent">
+        <div id="org-compose-settings" class="settings-subsection-parent">
             <div class="subsection-header">
-                <h3>{{t "Message retention" }}
-                    {{> ../help_link_widget link="/help/message-retention-policy" }}
-                </h3>
-                {{> settings_save_discard_widget section_name="message-retention" }}
-            </div>
-
-            {{> upgrade_tip_widget . }}
-
-            <div class="inline-block organization-settings-parent">
-                <div class="input-group time-limit-setting">
-                    <label for="id_realm_message_retention_days" class="settings-field-label">{{t "Message retention period" }}
-                    </label>
-                    <select name="realm_message_retention_days"
-                      id="id_realm_message_retention_days" class="prop-element settings_select bootstrap-focus-style"
-                      data-setting-widget-type="message-retention-setting"
-                      {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}>
-                        <option value="unlimited">{{t 'Retain forever' }}</option>
-                        <option value="custom_period">{{t 'Custom' }}</option>
-                    </select>
-
-                    <div class="dependent-settings-block">
-                        <label for="id_realm_message_retention_custom_input" class="inline-block realm-time-limit-label">
-                            {{t 'Retention period (days)' }}:
-                        </label>
-                        <input type="text" id="id_realm_message_retention_custom_input" autocomplete="off"
-                          name="realm_message_retention_custom_input"
-                          class="admin-realm-message-retention-days message-retention-setting-custom-input time-limit-custom-input"
-                          data-setting-widget-type="number"
-                          {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}/>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="org-other-settings" class="settings-subsection-parent">
-            <div class="subsection-header">
-                <h3>{{t "Other settings" }}</h3>
-                {{> settings_save_discard_widget section_name="other-settings" }}
+                <h3>{{t "Compose settings"}}</h3>
+                {{> settings_save_discard_widget section_name="compose-settings"}}
             </div>
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
@@ -159,17 +123,24 @@
                     </select>
                 </div>
 
-
-                {{> ../dropdown_widget_with_label
-                  widget_name="realm_default_code_block_language"
-                  label=admin_settings_label.realm_default_code_block_language
-                  value_type="string"}}
-
                 {{> settings_checkbox
                   setting_name="realm_mandatory_topics"
                   prefix="id_"
                   is_checked=realm_mandatory_topics
                   label=admin_settings_label.realm_mandatory_topics}}
+            </div>
+        </div>
+
+        <div id="org-msg-feed-settings" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Message feed settings"}}</h3>
+                {{> settings_save_discard_widget section_name="msg-feed-settings"}}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_default_code_block_language"
+                  label=admin_settings_label.realm_default_code_block_language
+                  value_type="string"}}
 
                 {{> settings_checkbox
                   setting_name="realm_enable_read_receipts"
@@ -195,6 +166,42 @@
                   label=admin_settings_label.realm_inline_url_embed_preview
                   help_link="/help/image-video-and-website-previews"}}
                 {{/if}}
+            </div>
+        </div>
+
+        <div id="org-message-retention" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Message retention period" }}
+                    {{> ../help_link_widget link="/help/message-retention-policy" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="message-retention" }}
+            </div>
+
+            {{> upgrade_tip_widget . }}
+
+            <div class="inline-block organization-settings-parent">
+                <div class="input-group time-limit-setting">
+                    <label for="id_realm_message_retention_days" class="settings-field-label">{{t "Message retention period" }}
+                    </label>
+                    <select name="realm_message_retention_days"
+                      id="id_realm_message_retention_days" class="prop-element settings_select bootstrap-focus-style"
+                      data-setting-widget-type="message-retention-setting"
+                      {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}>
+                        <option value="unlimited">{{t 'Retain forever' }}</option>
+                        <option value="custom_period">{{t 'Custom' }}</option>
+                    </select>
+
+                    <div class="dependent-settings-block">
+                        <label for="id_realm_message_retention_custom_input" class="inline-block realm-time-limit-label">
+                            {{t 'Retention period (days)' }}:
+                        </label>
+                        <input type="text" id="id_realm_message_retention_custom_input" autocomplete="off"
+                          name="realm_message_retention_custom_input"
+                          class="admin-realm-message-retention-days message-retention-setting-custom-input time-limit-custom-input"
+                          data-setting-widget-type="number"
+                          {{#unless zulip_plan_is_not_limited}}disabled{{/unless}}/>
+                    </div>
+                </div>
             </div>
         </div>
     </form>

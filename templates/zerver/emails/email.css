@@ -342,7 +342,7 @@ p.digest_paragraph,
 }
 
 /* The 450px cutoff was determined by testing in Gmail as a point
-   where an image looks good in either state. Logically it makes senes
+   where an image looks good in either state. Logically it makes sense
    since then the text still has the majority of the space in the
    side-by-side view. */
 @media only screen and (min-width: 450px) {

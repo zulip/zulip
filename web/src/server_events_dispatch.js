@@ -210,7 +210,6 @@ export function dispatch_normal_event(event) {
 
         case "realm": {
             const realm_settings = {
-                allow_edit_history: noop,
                 allow_message_editing: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 can_add_custom_emoji_group: noop,
@@ -243,6 +242,7 @@ export function dispatch_normal_event(event) {
                 mandatory_topics: noop,
                 message_content_edit_limit_seconds: noop,
                 message_content_delete_limit_seconds: noop,
+                message_edit_history_visibility_policy: noop,
                 move_messages_between_streams_limit_seconds: noop,
                 move_messages_within_stream_limit_seconds: message_edit.update_inline_topic_edit_ui,
                 message_retention_days: noop,
@@ -282,6 +282,10 @@ export function dispatch_normal_event(event) {
                             stream_settings_ui.update_stream_privacy_choices(
                                 "can_create_web_public_channel_group",
                             );
+                        }
+
+                        if (event.property === "mandatory_topics") {
+                            compose_recipient.update_compose_area_placeholder_text();
                         }
                     }
                     break;
@@ -1056,7 +1060,7 @@ export function dispatch_normal_event(event) {
 
                 // Update the status text in compose box placeholder when opened to self.
                 if (compose_pm_pill.get_user_ids().includes(event.user_id)) {
-                    compose_recipient.update_placeholder_text();
+                    compose_recipient.update_compose_area_placeholder_text();
                 }
             }
 

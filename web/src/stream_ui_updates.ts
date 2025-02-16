@@ -3,7 +3,7 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
-import render_stream_can_add_subscribers_group_label from "../templates/stream_settings/stream_can_add_subscribers_group_label.hbs";
+import render_stream_can_subscribe_group_label from "../templates/stream_settings/stream_can_subscribe_group_label.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
@@ -258,15 +258,13 @@ export function update_default_stream_and_stream_privacy_state($container: JQuer
     update_private_stream_privacy_option_state($container, is_default_stream);
 }
 
-export function update_can_add_subscribers_group_label($container: JQuery): void {
+export function update_can_subscribe_group_label($container: JQuery): void {
     const privacy_type = $container.find("input[type=radio][name=privacy]:checked").val();
     const is_invite_only =
         privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
 
-    const $can_add_subscribers_group_label = $("#group_setting_label_can_add_subscribers_group");
-    $can_add_subscribers_group_label.html(
-        render_stream_can_add_subscribers_group_label({is_invite_only}),
-    );
+    const $can_subscribe_group_label = $container.find(".can_subscribe_group_label");
+    $can_subscribe_group_label.html(render_stream_can_subscribe_group_label({is_invite_only}));
 }
 
 export function enable_or_disable_permission_settings_in_edit_panel(

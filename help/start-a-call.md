@@ -102,7 +102,7 @@ supported by Zulip are:
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings**, select the desired provider from the
+1. Under **Compose settings**, select the desired provider from the
    **Call provider** dropdown.
 
 {!save-changes.md!}
@@ -119,7 +119,7 @@ instance of Jitsi Meet.
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings**, select **Custom URL** from the
+1. Under **Compose settings**, select **Custom URL** from the
    **Jitsi server URL** dropdown.
 
 1. Enter the URL of your self-hosted Jitsi Meet server.

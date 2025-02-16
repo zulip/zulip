@@ -466,7 +466,8 @@
     width: 14em;
 }
 
-#add-poll-modal {
+#add-poll-modal,
+#add-todo-modal {
     /* this height allows 3-4 option rows
     to fit in without need for scrolling */
     height: 32.1428em; /* 450px / 14px em */
@@ -481,27 +482,32 @@
         }
     }
 
-    #add-poll-form {
+    #add-poll-form,
+    #add-todo-form {
         display: flex;
         flex-direction: column;
         overflow: hidden;
         height: 100%;
 
-        .poll-label {
+        .poll-label,
+        .todo-label {
             font-weight: bold;
             margin: 5px 0;
         }
 
-        .poll-question-input-container {
+        .poll-question-input-container,
+        .todo-title-input-container {
             display: flex;
             margin-bottom: 10px;
 
-            #poll-question-input {
+            #poll-question-input,
+            #todo-title-input {
                 flex-grow: 1;
             }
         }
 
-        .poll-options-list {
+        .poll-options-list,
+        .todo-options-list {
             margin: 0;
             height: 0;
             overflow: auto;
@@ -525,6 +531,23 @@
                     margin-bottom: 0;
                     flex-grow: 1;
                 }
+
+                .todo-input {
+                    flex: 1 1 auto;
+                    margin-bottom: 0;
+                    max-width: 30%;
+                }
+
+                .todo-description-container {
+                    flex: 1 1 auto;
+                    display: flex;
+                    min-width: 0;
+
+                    .todo-description-input {
+                        flex-grow: 1;
+                        margin-bottom: 0;
+                    }
+                }
             }
 
             .option-row:first-child {
@@ -540,6 +563,22 @@
 
                 .drag-icon {
                     visibility: hidden;
+                }
+            }
+        }
+
+        @media (max-width: $sm_min) {
+            .option-row {
+                .todo-input {
+                    width: 100%;
+                    min-width: 90px;
+                }
+
+                .todo-description-container {
+                    .todo-description-input {
+                        width: 100%;
+                        min-width: 90px;
+                    }
                 }
             }
         }

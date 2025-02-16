@@ -17,6 +17,8 @@ from django.core.cache.backends.base import BaseCache
 from django.db.models import Q, QuerySet
 from typing_extensions import ParamSpec
 
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments
+
 if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
@@ -51,6 +53,22 @@ def remote_cache_stats_finish() -> None:
     global remote_cache_total_time, remote_cache_total_requests
     remote_cache_total_requests += 1
     remote_cache_total_time += time.time() - remote_cache_time_start
+
+
+def update_cached_cache_key_prefixes() -> list[str]:
+    # Clearing cache keys happens for all cache prefixes at once.
+    # Because the list of cache prefixes can only be derived from
+    # reading disk, we cache the list of cache prefixes, itself, in
+    # the cache.
+    found_prefixes: set[str] = set()
+    for deploy_dir in get_recent_deployments(None):
+        filename = os.path.join(deploy_dir, "var", "remote_cache_prefix")
+        if not os.path.exists(filename):
+            continue
+        with open(filename) as f:
+            found_prefixes.add(f.readline().removesuffix("\n"))
+    caches["default"].set("cache_key_prefixes", list(found_prefixes), timeout=60 * 60 * 24)  # 24h
+    return list(found_prefixes)
 
 
 def get_or_create_key_prefix() -> str:
@@ -89,10 +107,25 @@ def get_or_create_key_prefix() -> str:
         print("Could not read remote cache key prefix file")
         sys.exit(1)
 
+    update_cached_cache_key_prefixes()
     return prefix
 
 
 KEY_PREFIX: str = get_or_create_key_prefix()
+
+
+def get_all_cache_key_prefixes() -> list[str]:
+    if not settings.PRODUCTION or not os.path.exists(DEPLOYMENTS_DIR):
+        return [KEY_PREFIX]
+    return get_all_deployment_cache_key_prefixes()
+
+
+def get_all_deployment_cache_key_prefixes() -> list[str]:
+    stored_prefixes = caches["default"].get("cache_key_prefixes")
+    if stored_prefixes:
+        return stored_prefixes
+
+    return update_cached_cache_key_prefixes()
 
 
 def bounce_key_prefix_for_testing(test_name: str) -> None:
@@ -270,16 +303,13 @@ def safe_cache_set_many(
 
 
 def cache_delete(key: str, cache_name: str | None = None) -> None:
-    final_key = KEY_PREFIX + key
-    validate_cache_key(final_key)
-
-    remote_cache_stats_start()
-    get_cache_backend(cache_name).delete(final_key)
-    remote_cache_stats_finish()
+    cache_delete_many([key], cache_name)
 
 
 def cache_delete_many(items: Iterable[str], cache_name: str | None = None) -> None:
-    keys = [KEY_PREFIX + item for item in items]
+    keys = []
+    for key_prefix in get_all_cache_key_prefixes():
+        keys += [key_prefix + item for item in items]
     for key in keys:
         validate_cache_key(key)
     remote_cache_stats_start()

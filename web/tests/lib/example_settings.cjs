@@ -2,6 +2,14 @@
 
 exports.server_supported_permission_settings = {
     stream: {
+        can_add_subscribers_group: {
+            require_system_group: false,
+            allow_internet_group: false,
+            allow_nobody_group: true,
+            allow_everyone_group: false,
+            default_group_name: "role:nobody",
+            allowed_system_groups: [],
+        },
         can_administer_channel_group: {
             require_system_group: true,
             allow_internet_group: false,
@@ -16,6 +24,14 @@ exports.server_supported_permission_settings = {
             allow_nobody_group: false,
             allow_everyone_group: true,
             default_group_name: "role:administrators",
+            allowed_system_groups: [],
+        },
+        can_subscribe_group: {
+            require_system_group: false,
+            allow_internet_group: false,
+            allow_nobody_group: true,
+            allow_everyone_group: false,
+            default_group_name: "role:nobody",
             allowed_system_groups: [],
         },
     },

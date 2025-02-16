@@ -189,10 +189,11 @@ export function get_list_info(
 
     if (zoomed) {
         const word_separator_regex = /[\s/:_-]/; // Use -, _, :, / as word separators in addition to spaces.
+        const empty_string_topic_display_name = util.get_final_topic_display_name("");
         topic_names = util.filter_by_word_prefix_match(
             topic_names,
             search_term,
-            (topic) => topic,
+            (topic) => (topic === "" ? empty_string_topic_display_name : topic),
             word_separator_regex,
         );
     }

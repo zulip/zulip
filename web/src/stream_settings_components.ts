@@ -15,6 +15,7 @@ import * as peer_data from "./peer_data.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as stream_ui_updates from "./stream_ui_updates.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
@@ -255,7 +256,10 @@ export function sub_or_unsub(
 ): void {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
-        if (sub.invite_only || current_user.is_guest) {
+        if (
+            (sub.invite_only && !stream_data.has_content_access_via_group_permissions(sub)) ||
+            current_user.is_guest
+        ) {
             unsubscribe_from_private_stream(sub);
             return;
         }

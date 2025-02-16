@@ -1,11 +1,11 @@
 # Direct messages
 
 **Direct messages (DMs)** are conversations with other users that happen outside
-of a [channel](/help/introduction-to-channels). DMs work well for one-off messages,
-usually with just one or two others.
+of a [channel](/help/introduction-to-channels). They are convenient for 1:1 and
+small group conversations.
 
 If you find yourself frequently conversing with the same person or group, it
-often works better to [create a private channel](/help/create-a-channel) for your
+often works best to [create a private channel](/help/create-a-channel) for your
 conversations. This lets you organize your discussion into topics, and subscribe
 or unsubscribe people as needed.
 
@@ -13,20 +13,61 @@ or unsubscribe people as needed.
 
 {!send-dm.md!}
 
-## Access a DM
+## View your DMs
 
-If using Zulip in a browser or desktop, there are several ways to access an existing DM conversation.
+There are a few different ways to view your DM conversations in the web and
+desktop apps.
 
-* Click on **Direct messages** near the top of the left sidebar to access
-  recent DM conversations.
+{start_tabs}
 
-* Click on any user in the right sidebar.
+{tab|via-left-sidebar}
 
-* Start typing a user's name in the [search](/help/search-for-messages) bar.
-  You'll be able to select DMs with that user.
+{!view-dms-left-sidebar.md!}
 
-* Open the compose box, and enter a list of users on the **To:**
-  line. Type <kbd>Ctrl</kbd> + <kbd>.</kbd> to open that conversation.
+{tab|via-right-sidebar}
+
+1. If the [user list](/help/user-list) in the right sidebar is hidden, click the
+   **user list** (<i class="zulip-icon zulip-icon-triple-users"></i> ) icon in
+   the upper right to show it.
+
+1. Click on any user to view your 1:1 DM conversation.
+
+!!! tip ""
+
+    You can find a user by typing their name in the **Filter users** box at the
+    top of the right sidebar.
+
+{tab|via-search-box}
+
+1. Click the **search** (<i class="search_icon zulip-icon
+   zulip-icon-search"></i>) icon in the top bar to open the [search
+   box](/help/search-for-messages).
+
+1. Start typing a user's name. You'll be able to select DMs with that user
+   from the list of suggestions.
+
+1. *(optional)* Continue to add users via the search box for a group DM
+   conversation.
+
+!!! tip ""
+
+    You can also type `dm-including` in the search box to find all 1:1 and group
+    DM conversations that include a particular user.
+
+{tab|via-compose-box}
+
+1. Click the **New direct message** button at the bottom of the app, or use the
+   <kbd>X</kbd> keyboard shortcut to [open the compose box](/help/open-the-compose-box).
+
+1. Start typing a user's name in the recipient bar, and select their name from
+   the list of suggestions. Continue to add users for a group DM conversation.
+
+1. Click the highlighted **Go to conversation** (<i class="zulip-icon
+   zulip-icon-chevron-right"></i>) button at the top of the compose box, or use
+   the <kbd>Ctrl</kbd> + <kbd>.</kbd> keyboard shortcut to view that DM
+   conversation.
+
+{end_tabs}
 
 ## Find a direct message conversation
 
@@ -34,16 +75,21 @@ If using Zulip in a browser or desktop, there are several ways to access an exis
 
 {tab|desktop-web}
 
-1. If the **DIRECT MESSAGES** section in the left sidebar is collapsed, click on
-   the **DIRECT MESSAGES** heading to expand it.
+1. If the **direct messages** section in the left sidebar is collapsed, click on
+   the **direct messages** heading to expand it.
 1. At the bottom of the list of your recent direct messages, click **more
    conversations**. If you don't see this link, you are already viewing all of
    your direct message conversations.
 1. Type the name of a participant in the conversation you're looking for.
 
+!!! tip ""
+
+    To return to the channel list in the left sidebar, click the **back to
+    channels** link above the search box.
+
 {end_tabs}
 
-## Access all DMs
+## View direct message feed
 
 {start_tabs}
 
@@ -51,7 +97,7 @@ If using Zulip in a browser or desktop, there are several ways to access an exis
 
 1. In the left sidebar, click the **Direct message feed**
    (<i class="zulip-icon zulip-icon-all-messages"></i>) icon to the right of the
-   **Direct messages** label, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
+   **direct messages** heading, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
    keyboard shortcut.
 
 {tab|mobile}

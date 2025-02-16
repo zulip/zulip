@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from enum import IntEnum
+from enum import Enum, IntEnum
 from types import UnionType
 from typing import TYPE_CHECKING, Optional, TypedDict
 from uuid import uuid4
@@ -146,6 +146,13 @@ class DigestWeekdayEnum(IntEnum):
     FRIDAY = 4
     SATURDAY = 5
     SUNDAY = 6
+
+
+class MessageEditHistoryVisibilityPolicyEnum(Enum):
+    # The case is used by Pydantic in the API
+    all = 1
+    moves = 2
+    none = 3
 
 
 class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
@@ -390,7 +397,10 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     # Whether users have access to message edit history
-    allow_edit_history = models.BooleanField(default=True)
+    message_edit_history_visibility_policy = models.PositiveSmallIntegerField(
+        default=MessageEditHistoryVisibilityPolicyEnum.all.value,
+    )
+    MESSAGE_EDIT_HISTORY_VISIBILITY_POLICY_TYPES = list(MessageEditHistoryVisibilityPolicyEnum)
 
     # Defaults for new users
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
@@ -651,7 +661,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # Define the types of the various automatically managed properties
     property_types: dict[str, type | UnionType] = dict(
-        allow_edit_history=bool,
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
         default_code_block_language=str,
@@ -675,6 +684,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         message_content_allowed_in_email_notifications=bool,
         message_content_edit_limit_seconds=int | None,
         message_content_delete_limit_seconds=int | None,
+        message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum,
         move_messages_between_streams_limit_seconds=int | None,
         move_messages_within_stream_limit_seconds=int | None,
         message_retention_days=int,
@@ -1202,61 +1212,6 @@ def get_realm_by_id(realm_id: int) -> Realm:
     return Realm.objects.get(id=realm_id)
 
 
-def get_realm_with_settings(realm_id: int) -> Realm:
-    # Prefetch the following settings:
-    # This also prefetches can_access_all_users_group setting,
-    # even when it cannot be set to anonymous groups because
-    # the setting is used when fetching users in the realm.
-    # * All the settings that can be set to anonymous groups.
-    # * Announcements streams.
-    return Realm.objects.select_related(
-        "moderation_request_channel",
-        "create_multiuse_invite_group",
-        "create_multiuse_invite_group__named_user_group",
-        "can_access_all_users_group",
-        "can_access_all_users_group__named_user_group",
-        "can_add_custom_emoji_group",
-        "can_add_custom_emoji_group__named_user_group",
-        "can_add_subscribers_group",
-        "can_add_subscribers_group__named_user_group",
-        "can_create_bots_group",
-        "can_create_bots_group__named_user_group",
-        "can_create_groups",
-        "can_create_groups__named_user_group",
-        "can_create_public_channel_group",
-        "can_create_public_channel_group__named_user_group",
-        "can_create_private_channel_group",
-        "can_create_private_channel_group__named_user_group",
-        "can_create_web_public_channel_group",
-        "can_create_web_public_channel_group__named_user_group",
-        "can_create_write_only_bots_group",
-        "can_create_write_only_bots_group__named_user_group",
-        "can_delete_any_message_group",
-        "can_delete_any_message_group__named_user_group",
-        "can_delete_own_message_group",
-        "can_delete_own_message_group__named_user_group",
-        "can_invite_users_group",
-        "can_invite_users_group__named_user_group",
-        "can_manage_all_groups",
-        "can_manage_all_groups__named_user_group",
-        "can_mention_many_users_group",
-        "can_mention_many_users_group__named_user_group",
-        "can_move_messages_between_channels_group",
-        "can_move_messages_between_channels_group__named_user_group",
-        "can_move_messages_between_topics_group",
-        "can_move_messages_between_topics_group__named_user_group",
-        "can_summarize_topics_group",
-        "can_summarize_topics_group__named_user_group",
-        "direct_message_initiator_group",
-        "direct_message_initiator_group__named_user_group",
-        "direct_message_permission_group",
-        "direct_message_permission_group__named_user_group",
-        "new_stream_announcements_stream",
-        "signup_announcements_stream",
-        "zulip_update_announcements_stream",
-    ).get(id=realm_id)
-
-
 def require_unique_names(realm: Realm | None) -> bool:
     if realm is None:
         # realm is None when a new realm is being created.
@@ -1286,13 +1241,11 @@ def get_corresponding_policy_value_for_group_setting(
     realm: Realm,
     group_setting_name: str,
     valid_policy_enums: list[int],
+    system_groups_name_dict: dict[int, str],
 ) -> int:
-    setting_group = getattr(realm, group_setting_name)
-    if (
-        hasattr(setting_group, "named_user_group")
-        and setting_group.named_user_group.is_system_group
-    ):
-        system_group_name = setting_group.named_user_group.name
+    setting_group_id = getattr(realm, group_setting_name + "_id")
+    if setting_group_id in system_groups_name_dict:
+        system_group_name = system_groups_name_dict[setting_group_id]
         if group_setting_name == "can_mention_many_users_group":
             # Wildcard mention policy uses different set of enums than other policy settings.
             return Realm.SYSTEM_GROUPS_TO_WILDCARD_MENTION_POLICY_MAP.get(

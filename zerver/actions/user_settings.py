@@ -576,24 +576,78 @@ def do_change_user_setting(
             status = UserPresence.LEGACY_STATUS_ACTIVE_INT
             presence_time = timezone_now()
         else:
-            # HACK: Remove existing presence data for the current user
-            # when disabling presence. This hack will go away when we
-            # replace our presence data structure with a simpler model
-            # that doesn't separate individual clients.
-            UserPresence.objects.filter(user_profile_id=user_profile.id).delete()
-
-            # We create a single presence entry for the user, old
-            # enough to be guaranteed to be treated as offline by
-            # correct clients, such that the user will, for as long as
-            # presence remains disabled, appear to have been last
-            # online a few minutes before they disabled presence.
+            # We want to ensure the user's presence data is such that
+            # they will be treated as offline by correct clients,
+            # There are two cases:
             #
-            # We add a small additional offset as a fudge factor in
-            # case of clock skew.
-            status = UserPresence.LEGACY_STATUS_IDLE_INT
-            presence_time = timezone_now() - timedelta(
-                seconds=settings.OFFLINE_THRESHOLD_SECS + 120
+            # (1) If the user's presence was current, we backdate it
+            #     so that the user will, for as long as presence
+            #     remains disabled, appear to have been last online a
+            #     few minutes before they disabled presence.
+            #
+            # (2) If the user only has a presence older than what our
+            #     backdate would be, we keep the original value - it
+            #     already guarantees that the user will appear to be
+            #     offline.
+            backdated_presence_time = timezone_now() - timedelta(
+                # We add a small additional offset as a fudge factor in
+                # case of clock skew.
+                seconds=settings.OFFLINE_THRESHOLD_SECS
+                + settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS
+                + 10
             )
+            minimum_previous_presence_time = backdated_presence_time - timedelta(
+                seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS + 10
+            )
+
+            try:
+                presence: UserPresence | None = UserPresence.objects.get(user_profile=user_profile)
+                assert presence is not None
+                assert presence.last_connected_time is not None
+
+                original_last_active_time = presence.last_active_time
+                if presence.last_connected_time <= backdated_presence_time:
+                    # This is case (2), so we don't need to do
+                    # anything. presence is already as intended.
+                    # last_active_time <= last_connected_time always holds, so
+                    # last_active_time <= backdated_presence_time is also ensured here.
+                    return
+
+                # do_update_user_presence will only send an event if
+                # the presence event it receives is sufficiently newer
+                # than whatever it had before, so we backdate the
+                # existing presence data if necessary to ensure that
+                # our new update event will be seen as new by clients.
+                presence_time = backdated_presence_time
+                presence.last_connected_time = min(
+                    minimum_previous_presence_time, presence.last_connected_time
+                )
+                update_fields = ["last_connected_time"]
+
+                if (
+                    original_last_active_time is None
+                    or original_last_active_time < backdated_presence_time
+                ):
+                    # If the user's last_active_time was old enough (or nonexistent), we don't want to perturb
+                    # it, as it's already in a correct state. Thus we only do_update_user_presence with an
+                    # IDLE status - which will only update the last_connected_time.
+                    status = UserPresence.LEGACY_STATUS_IDLE_INT
+                else:
+                    assert presence.last_active_time is not None
+                    presence.last_active_time = min(
+                        minimum_previous_presence_time, presence.last_active_time
+                    )
+                    update_fields.append("last_active_time")
+                    status = UserPresence.LEGACY_STATUS_ACTIVE_INT
+                presence.save(update_fields=update_fields)
+
+            except UserPresence.DoesNotExist:
+                # If the user has no presence data at all, that should
+                # logically get consistent treatment with having very
+                # old presence data (case (2) above). We want to leave
+                # their presence state intact - so just return without
+                # doing anything.
+                return
 
         # do_update_user_presence doesn't allow being run inside another
         # transaction.atomic block, so we need to use on_commit here to ensure

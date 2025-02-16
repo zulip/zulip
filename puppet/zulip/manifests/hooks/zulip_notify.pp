@@ -2,9 +2,9 @@
 #
 class zulip::hooks::zulip_notify {
   include zulip::hooks::base
+  include zulip::hooks::zulip_common
 
   zulip::hooks::file { [
-    'common/zulip_notify.sh',
     'pre-deploy.d/zulip_notify.hook',
     'post-deploy.d/zulip_notify.hook',
   ]: }

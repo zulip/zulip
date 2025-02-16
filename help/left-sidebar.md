@@ -1,7 +1,9 @@
 # Left sidebar
 
 The left sidebar in the Zulip web and desktop apps helps you navigate your
-conversations. It has three main sections:
+conversations, and [start new
+ones](#start-a-new-conversation-from-the-left-sidebar). It has three main
+sections:
 
 - **Views** provide various ways to get an overview of your messages.
 - The **direct messages** section shows your [direct
@@ -29,7 +31,9 @@ information you need in the moment.
 
 {start_tabs}
 
-1. Click the triangle to the left of **VIEWS** in the left sidebar.
+{tab|desktop-web}
+
+1. Click the triangle to the left of the **views** heading in the left sidebar.
 
 {end_tabs}
 
@@ -37,53 +41,99 @@ information you need in the moment.
 
 {start_tabs}
 
-1. Click the triangle to the left of **DIRECT MESSAGES** in the left sidebar.
+{tab|desktop-web}
+
+1. Click the triangle to the left of the **direct messages** heading in the left
+   sidebar.
 
 {end_tabs}
 
 ### Show more direct message conversations
-
 {start_tabs}
 
-1. If the **DIRECT MESSAGES** section in the left sidebar is collapsed, click the triangle to the
-   left of **DIRECT MESSAGES** to expand it.
+{tab|desktop-web}
 
-1. Click **MORE CONVERSATIONS** at the bottom of the list of recent DM conversations.
-
-!!! tip ""
-
-    To return to the channel list in the left sidebar, click **BACK TO CHANNELS**.
+{!view-dms-left-sidebar.md!}
 
 {end_tabs}
-
 
 ### Show all topics in a channel
 
 {start_tabs}
 
+{tab|desktop-web}
+
 1. Click on a channel in the left sidebar.
 
-1. Click **SHOW ALL TOPICS** at the bottom of the list of recent topics in the
+1. Click **show all topics** at the bottom of the list of recent topics in the
    selected channel.
 
 !!! tip ""
 
-     To return to the channel list in the left sidebar, click **BACK TO
-     CHANNELS**.
+     To return to the channel list in the left sidebar, click the **back to
+     channels** link above the search box.
 
 {end_tabs}
 
-### Hide or show the left sidebar
+### Show the left sidebar
 
 {start_tabs}
 
-1. Above the left sidebar, click the <i class="fa fa-reorder"></i> icon.
+{tab|desktop-web}
+
+1. At the top left corner, click the <i class="zulip-icon zulip-icon-panel-left"></i> icon.
+
+{end_tabs}
+
+### Hide the left sidebar
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. At the top left corner, click the <i class="zulip-icon zulip-icon-panel-left-dashed"></i> icon.
 
 {end_tabs}
 
 ## Configure where channel links in the left sidebar go
 
 {!configure-channel-links.md!}
+
+## Start a new conversation from the left sidebar
+
+You can start any new conversation from the left sidebar, regardless of what
+you’re currently viewing.
+
+### Start a new direct message conversation
+{start_tabs}
+
+{tab|desktop-web}
+
+1. Click the **plus** (<i class="zulip-icon zulip-icon-square-plus"></i>)
+   button next to the **direct messages** heading in the left sidebar.
+
+1. Start typing the name of the person or [group](/help/user-groups) you want to
+   message, and select their name from the list of suggestions. You can continue
+   adding as many message recipients as you like.
+
+{!compose-and-send-message.md!}
+
+!!! keyboard_tip ""
+
+    You can also use the <kbd>X</kbd> keyboard shortcut to start a new direct
+    message conversation.
+
+{end_tabs}
+
+### Start a new topic
+
+{start_tabs}
+
+{tab|via-left-sidebar}
+
+{!start-topic-via-left-sidebar.md!}
+
+{end_tabs}
 
 ## Related articles
 * [Reading strategies](/help/reading-strategies)

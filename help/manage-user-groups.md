@@ -202,6 +202,7 @@ group.
 ## Related articles
 
 * [User groups](/help/user-groups)
+* [View group members](/help/view-group-members)
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Create user groups](/help/create-user-groups)
 * [Moving to Zulip](/help/moving-to-zulip)

@@ -772,11 +772,6 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
             assert acting_user is not None
             send_bot_owner_update_events(user_profile, acting_user, previous_owner)
 
-    if bot_owner_changed:
-        from zerver.actions.bots import remove_bot_from_inaccessible_private_streams
-
-        remove_bot_from_inaccessible_private_streams(user_profile, acting_user=acting_user)
-
     subscribed_recipient_ids = Subscription.objects.filter(
         user_profile_id=user_profile.id, active=True, recipient__type=Recipient.STREAM
     ).values_list("recipient__type_id", flat=True)

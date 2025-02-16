@@ -5,7 +5,9 @@
 # by a test in test_events.py with a schema checker here.
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
+import inspect
 from collections.abc import Callable
+from enum import Enum
 from pprint import PrettyPrinter
 from typing import cast
 
@@ -112,7 +114,7 @@ from zerver.lib.event_types import (
     PlanTypeData,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
-from zerver.lib.types import AnonymousSettingGroupDict
+from zerver.lib.types import UserGroupMembersDict
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 
 
@@ -426,7 +428,10 @@ def check_realm_update(
         return
 
     property_type = Realm.property_types[prop]
-    assert isinstance(value, property_type)
+    if inspect.isclass(property_type) and issubclass(property_type, Enum):
+        assert isinstance(value, str)
+    else:
+        assert isinstance(value, property_type)
 
 
 def check_realm_default_update(
@@ -530,7 +535,7 @@ def check_stream_update(
         assert value in Stream.STREAM_POST_POLICY_TYPES
     elif prop in Stream.stream_permission_group_settings:
         assert extra_keys == set()
-        assert isinstance(value, int | AnonymousSettingGroupDict)
+        assert isinstance(value, int | UserGroupMembersDict)
     elif prop == "first_message_id":
         assert extra_keys == set()
         assert isinstance(value, int)

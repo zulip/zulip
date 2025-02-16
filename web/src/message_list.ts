@@ -538,23 +538,17 @@ export class MessageList {
     }
 
     show_edit_topic_on_recipient_row($recipient_row: JQuery, $form: JQuery): void {
-        $recipient_row.find(".topic_edit_form").append($form);
-        $recipient_row.find(".on_hover_topic_edit").hide();
+        $recipient_row.find(".topic_edit").append($form);
         $recipient_row.find(".stream_topic").hide();
         $recipient_row.find(".topic_edit").show();
-        $recipient_row.find(".always_visible_topic_edit").hide();
-        $recipient_row.find(".on_hover_topic_resolve").hide();
-        $recipient_row.find(".on_hover_topic_unresolve").hide();
+        $recipient_row.find(".recipient-bar-control").hide();
     }
 
     hide_edit_topic_on_recipient_row($recipient_row: JQuery): void {
         $recipient_row.find(".stream_topic").show();
-        $recipient_row.find(".on_hover_topic_edit").show();
-        $recipient_row.find(".topic_edit_form").empty();
+        $recipient_row.find(".topic_edit").empty();
         $recipient_row.find(".topic_edit").hide();
-        $recipient_row.find(".always_visible_topic_edit").show();
-        $recipient_row.find(".on_hover_topic_resolve").show();
-        $recipient_row.find(".on_hover_topic_unresolve").show();
+        $recipient_row.find(".recipient-bar-control").show();
     }
 
     reselect_selected_id(): void {
@@ -581,19 +575,17 @@ export class MessageList {
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
 
-        if (!this.is_combined_feed_view) {
-            if (
-                this.visibly_empty() &&
-                this.data.fetch_status.has_found_oldest() &&
-                this.data.fetch_status.has_found_newest()
-            ) {
-                // Show the empty narrow message only if we're certain
-                // that the view doesn't have messages that we're
-                // waiting for the server to send us.
-                narrow_banner.show_empty_narrow_message();
-            } else {
-                narrow_banner.hide_empty_narrow_message();
-            }
+        if (
+            this.visibly_empty() &&
+            this.data.fetch_status.has_found_oldest() &&
+            this.data.fetch_status.has_found_newest()
+        ) {
+            // Show the empty narrow message only if we're certain
+            // that the view doesn't have messages that we're
+            // waiting for the server to send us.
+            narrow_banner.show_empty_narrow_message();
+        } else {
+            narrow_banner.hide_empty_narrow_message();
         }
         this.rerender_view();
     }

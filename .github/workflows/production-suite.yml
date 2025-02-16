@@ -11,9 +11,9 @@ on:
       - manage.py
       - pnpm-lock.yaml
       - puppet/**
-      - requirements/**
       - scripts/**
       - tools/**
+      - uv.lock
       - web/babel.config.js
       - web/postcss.config.js
       - web/third/**
@@ -69,7 +69,7 @@ jobs:
 
       - name: Create cache directories
         run: |
-          dirs=(/srv/zulip-{venv,emoji}-cache)
+          dirs=(/srv/zulip-emoji-cache)
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
 
@@ -79,12 +79,12 @@ jobs:
           path: /__w/.pnpm-store
           key: v1-pnpm-store-jammy-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: Restore python cache
+      - name: Restore uv cache
         uses: actions/cache@v4
         with:
-          path: /srv/zulip-venv-cache
-          key: v1-venv-jammy-${{ hashFiles('requirements/dev.txt') }}
-          restore-keys: v1-venv-jammy
+          path: ~/.cache/uv
+          key: uv-jammy-${{ hashFiles('uv.lock') }}
+          restore-keys: uv-jammy-
 
       - name: Restore emoji cache
         uses: actions/cache@v4
@@ -108,6 +108,9 @@ jobs:
           set -x
           path="$(pnpm store path)"
           [[ "$path" == /__w/.pnpm-store/* ]]
+
+      - name: Minimize uv cache
+        run: uv cache prune --ci
 
       - name: Generate failure report string
         id: failure_report_string
@@ -182,7 +185,7 @@ jobs:
 
       - name: Create cache directories
         run: |
-          dirs=(/srv/zulip-{venv,emoji}-cache)
+          dirs=(/srv/zulip-emoji-cache)
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
 
@@ -280,7 +283,7 @@ jobs:
 
       - name: Create cache directories
         run: |
-          dirs=(/srv/zulip-{venv,emoji}-cache)
+          dirs=(/srv/zulip-emoji-cache)
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
 

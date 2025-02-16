@@ -284,7 +284,7 @@
 
     /* these are converting grey things to "new grey".
        :disabled rules are exploded for CSS selector performance reasons. */
-    button:disabled,
+    button:disabled:not(.action-button, .icon-button),
     option:disabled,
     select:disabled,
     textarea:disabled,
@@ -700,17 +700,6 @@
     #recent_view_loading_messages_indicator {
         & path {
             fill: hsl(0deg 0% 100%);
-        }
-    }
-
-    .small_square_button {
-        &.small_square_x {
-            background-color: hsl(0deg 0% 95%);
-            color: hsl(0deg 0% 42%);
-
-            &:hover {
-                color: hsl(0deg 0% 18%);
-            }
         }
     }
 

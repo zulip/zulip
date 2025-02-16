@@ -26,6 +26,7 @@ import * as common from "./common.ts";
 import * as compose from "./compose.js";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_notifications from "./compose_notifications.ts";
+import * as compose_paste from "./compose_paste.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_reply from "./compose_reply.ts";
@@ -35,7 +36,6 @@ import * as compose_textarea from "./compose_textarea.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as condense from "./condense.ts";
-import * as copy_and_paste from "./copy_and_paste.ts";
 import * as desktop_integration from "./desktop_integration.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as drafts from "./drafts.ts";
@@ -154,6 +154,7 @@ import * as user_status from "./user_status.ts";
 import * as user_status_ui from "./user_status_ui.ts";
 import * as user_topic_popover from "./user_topic_popover.ts";
 import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 import * as widgets from "./widgets.js";
 
 // This is where most of our initialization takes place.
@@ -187,6 +188,7 @@ function initialize_compose_box() {
                 giphy_enabled: giphy_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
                 max_topic_length: realm.max_topic_length,
+                empty_string_topic_display_name: util.get_final_topic_display_name(""),
             }),
         ),
     );
@@ -297,13 +299,6 @@ export function initialize_kitchen_sink_stuff() {
     } else {
         $("body").addClass("more-dense-mode");
     }
-
-    // To keep the specificity same for the CSS related to hiding the
-    // sidebars, we add the class to the body which is then later replaced
-    // by the class to hide right / left sidebar. We can take our time to do
-    // this since we are still showing the loading indicator screen and
-    // the rendered sidebars hasn't been displayed to the user yet.
-    $("body").addClass("default-sidebar-behaviour");
 
     $(window).on("blur", () => {
         $(document.body).addClass("window_blurred");
@@ -567,7 +562,7 @@ export function initialize_everything(state_data) {
     add_stream_options_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
-    copy_and_paste.initialize();
+    compose_paste.initialize();
     overlays.initialize();
     invite.initialize();
     message_view_header.initialize();
@@ -576,7 +571,7 @@ export function initialize_everything(state_data) {
     compose_recipient.initialize();
     compose_pm_pill.initialize({
         on_pill_create_or_remove() {
-            compose_recipient.update_placeholder_text();
+            compose_recipient.update_compose_area_placeholder_text();
             compose_recipient.check_posting_policy_for_compose_box();
         },
     });

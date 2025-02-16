@@ -40,7 +40,7 @@ def remove_reaction(
     emoji_code: str | None = None,
     reaction_type: str = "unicode_emoji",
 ) -> HttpResponse:
-    message = access_message(user_profile, message_id, lock_message=True)
+    message = access_message(user_profile, message_id, lock_message=True, is_modifying_message=True)
 
     if emoji_code is None:
         if emoji_name is None:

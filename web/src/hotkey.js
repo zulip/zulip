@@ -15,7 +15,7 @@ import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
 import * as compose_state from "./compose_state.ts";
 import * as compose_textarea from "./compose_textarea.ts";
 import * as condense from "./condense.ts";
-import * as copy_and_paste from "./copy_and_paste.ts";
+import * as copy_messages from "./copy_messages.ts";
 import * as deprecated_feature_notice from "./deprecated_feature_notice.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as emoji from "./emoji.ts";
@@ -50,6 +50,7 @@ import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as search from "./search.ts";
+import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
@@ -1143,7 +1144,7 @@ export function process_hotkey(e, hotkey) {
             navigate.page_down();
             return true;
         case "copy_with_c":
-            copy_and_paste.copy_handler();
+            copy_messages.copy_handler();
             return true;
     }
 
@@ -1228,7 +1229,8 @@ export function process_hotkey(e, hotkey) {
                 return true;
             }
 
-            reactions.toggle_emoji_reaction(msg, first_reaction.emoji_name);
+            const canonical_name = emoji.get_emoji_name(first_reaction.emoji_code);
+            reactions.toggle_emoji_reaction(msg, canonical_name);
             return true;
         }
         case "toggle_topic_visibility_policy":
@@ -1252,7 +1254,10 @@ export function process_hotkey(e, hotkey) {
             return true;
         }
         case "view_edit_history": {
-            if (realm.realm_allow_edit_history) {
+            if (
+                realm.realm_message_edit_history_visibility_policy !==
+                message_edit_history_visibility_policy_values.never.code
+            ) {
                 message_edit_history.fetch_and_render_message_history(msg);
                 $("#message-history-overlay .exit-sign").trigger("focus");
                 return true;

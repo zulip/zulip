@@ -124,6 +124,6 @@ would have used had the cache not existed. In practice, bugs are
 always possible, so be mindful of this possibility.
 
 A consequence of this caching is that test jobs for branches which
-modify `package.json`, `requirements/`, and other key dependencies
+modify `package.json`, `pyproject.toml`, and other key dependencies
 will be significantly slower than normal, because they won't get to
 benefit from the cache.

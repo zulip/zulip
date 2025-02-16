@@ -1479,8 +1479,8 @@ li.topic-list-item {
     .user-circle {
         /* Tighten the line-height to match the icon's size... */
         line-height: 1;
-        /* ...which is approximately 11px at 16px/1em. */
-        font-size: 0.6875em;
+        /* ...which is approximately 8px at 15px/1em. */
+        font-size: 0.5333em;
     }
 
     .unread_count {

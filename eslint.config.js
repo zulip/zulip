@@ -26,14 +26,12 @@ export default [
             "var",
             "web/generated",
             "web/third",
-            "zulip-current-venv",
-            "zulip-py3-venv",
         ],
     },
     js.configs.recommended,
     importPlugin.flatConfigs.recommended,
     ...compat.extends("plugin:no-jquery/recommended", "plugin:no-jquery/deprecated"),
-    unicorn.configs["flat/recommended"],
+    unicorn.configs.recommended,
     prettier,
     {
         plugins: {

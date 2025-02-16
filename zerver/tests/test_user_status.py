@@ -1,6 +1,8 @@
 from typing import Any
 
 import orjson
+import time_machine
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_status import (
@@ -11,6 +13,7 @@ from zerver.lib.user_status import (
 )
 from zerver.models import UserProfile, UserStatus
 from zerver.models.clients import get_client
+from zerver.models.presence import UserPresence
 
 
 def user_status_info(user: UserProfile, acting_user: UserProfile | None = None) -> UserInfoDict:
@@ -191,8 +194,20 @@ class UserStatusTest(ZulipTestCase):
     def test_endpoints(self) -> None:
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
+        now = timezone_now()
 
         self.login_user(hamlet)
+
+        # Set up an initial presence state for the user.
+        UserPresence.objects.filter(user_profile=hamlet).delete()
+        with time_machine.travel(now, tick=False):
+            result = self.api_post(
+                hamlet,
+                "/api/v1/users/me/presence",
+                dict(status="active"),
+                HTTP_USER_AGENT="ZulipAndroid/1.0",
+            )
+            self.assert_json_success(result)
 
         # Try to omit parameter--this should be an error.
         payload: dict[str, Any] = {}

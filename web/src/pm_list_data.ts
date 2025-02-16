@@ -47,6 +47,7 @@ type DisplayObject = {
     is_group: boolean;
     is_bot: boolean;
     has_unread_mention: boolean;
+    is_deactivated: boolean;
 };
 
 export function get_conversations(search_string = ""): DisplayObject[] {
@@ -86,6 +87,9 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             unread.num_unread_mentions_for_user_ids_strings(user_ids_string) > 0;
         const is_group = user_ids_string.includes(",");
         const is_active = user_ids_string === active_user_ids_string;
+        const is_deactivated = !people.is_active_user_for_popover(
+            Number.parseInt(user_ids_string, 10) || 0,
+        );
 
         let user_circle_class;
         let status_emoji_info;
@@ -93,7 +97,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
 
         if (!is_group) {
             const user_id = Number.parseInt(user_ids_string, 10);
-            user_circle_class = buddy_data.get_user_circle_class(user_id);
+            user_circle_class = buddy_data.get_user_circle_class(user_id, is_deactivated);
             const recipient_user_obj = people.get_by_user_id(user_id);
 
             if (recipient_user_obj.is_bot) {
@@ -116,6 +120,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             is_group,
             is_bot,
             has_unread_mention,
+            is_deactivated,
         };
         display_objects.push(display_object);
     }

@@ -29,7 +29,11 @@
     </td>
     {{else if display_last_active_column}}
     <td class="last_active">
-        {{ last_active_date }}
+        {{#if last_active_date}}
+            {{last_active_date}}
+        {{else}}
+            <div class="loading-placeholder"></div>
+        {{/if}}
     </td>
     {{/if}}
     {{#if can_modify}}

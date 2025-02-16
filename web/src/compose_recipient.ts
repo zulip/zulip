@@ -16,7 +16,7 @@ import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
-import type {Option} from "./dropdown_widget.ts";
+import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {realm} from "./state_data.ts";
@@ -32,6 +32,8 @@ type DirectMessagesOption = {
     unique_id: string | number;
     name: string;
 };
+
+let compose_select_recipient_dropdown_widget: DropdownWidget;
 
 function composing_to_current_topic_narrow(): boolean {
     return (
@@ -175,7 +177,7 @@ function switch_message_type(message_type: MessageType): void {
         private_message_recipient: compose_state.private_message_recipient(),
     };
     update_compose_for_message_type(opts);
-    update_placeholder_text();
+    update_compose_area_placeholder_text();
     compose_ui.set_focus(opts);
 }
 
@@ -263,6 +265,7 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
     compose_state.set_selected_recipient_id(recipient_id);
     compose_state.set_recipient_edited_manually(true);
     on_compose_select_recipient_update();
+    compose_select_recipient_dropdown_widget.item_clicked = true;
     dropdown.hide();
     event.preventDefault();
     event.stopPropagation();
@@ -296,6 +299,11 @@ function focus_compose_recipient(): void {
 
 // NOTE: Since tippy triggers this on `mousedown` it is always triggered before say a `click` on `textarea`.
 function on_hidden_callback(): void {
+    if (!compose_select_recipient_dropdown_widget.item_clicked) {
+        // If the dropdown was NOT closed due to selecting an item,
+        // don't do anything.
+        return;
+    }
     if (compose_state.get_message_type() === "stream") {
         // Always move focus to the topic input even if it's not empty,
         // since it's likely the user will want to update the topic
@@ -308,6 +316,7 @@ function on_hidden_callback(): void {
             $("textarea#compose-textarea").trigger("focus");
         }
     }
+    compose_select_recipient_dropdown_widget.item_clicked = false;
 }
 
 export function handle_middle_pane_transition(): void {
@@ -317,7 +326,7 @@ export function handle_middle_pane_transition(): void {
 }
 
 export function initialize(): void {
-    new dropdown_widget.DropdownWidget({
+    compose_select_recipient_dropdown_widget = new dropdown_widget.DropdownWidget({
         widget_name: "compose_select_recipient",
         get_options: get_options_for_recipient_widget,
         item_click_callback,
@@ -331,7 +340,8 @@ export function initialize(): void {
         tippy_props: {
             offset: [-10, 5],
         },
-    }).setup();
+    });
+    compose_select_recipient_dropdown_widget.setup();
 
     // `input` isn't relevant for streams since it registers as a change only
     // when an item in the dropdown is selected.
@@ -348,7 +358,52 @@ export function initialize(): void {
     $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
 }
 
-export let update_placeholder_text = (): void => {
+export function update_topic_displayed_text(
+    topic_name: string | undefined,
+    has_topic_focus = false,
+): void {
+    if (topic_name === undefined) {
+        topic_name = "";
+    }
+    // When topics are mandatory, we just call topic() as usual.
+    if (realm.realm_mandatory_topics) {
+        compose_state.topic(topic_name);
+        return;
+    }
+    // Otherwise, we have some adjustments to make to display:
+    // * a placeholder with the default topic name stylized
+    // * the empty string topic stylized
+    const $input = $("input#stream_message_recipient_topic");
+    const is_empty_string_topic = topic_name === "";
+    const recipient_widget_hidden =
+        $(".compose_select_recipient-dropdown-list-container").length === 0;
+    const $topic_not_mandatory_placeholder = $("#topic-not-mandatory-placeholder");
+
+    // reset
+    $input.attr("placeholder", "");
+    $input.removeClass("empty-topic-display");
+    $topic_not_mandatory_placeholder.css({visibility: "hidden"});
+    $topic_not_mandatory_placeholder.hide();
+
+    function update_placeholder_visibility(): void {
+        $topic_not_mandatory_placeholder.css(
+            "visibility",
+            $input.val() === "" ? "visible" : "hidden",
+        );
+    }
+
+    if (is_empty_string_topic && !has_topic_focus && recipient_widget_hidden) {
+        $input.attr("placeholder", util.get_final_topic_display_name(""));
+        $input.addClass("empty-topic-display");
+    } else {
+        $topic_not_mandatory_placeholder.show(10, update_placeholder_visibility);
+        $input.on("input", update_placeholder_visibility);
+    }
+
+    compose_state.topic(topic_name);
+}
+
+export let update_compose_area_placeholder_text = (): void => {
     const $textarea: JQuery<HTMLTextAreaElement> = $("textarea#compose-textarea");
     // Change compose placeholder text only if compose box is open.
     if (!$textarea.is(":visible")) {
@@ -375,8 +430,10 @@ export let update_placeholder_text = (): void => {
     compose_ui.autosize_textarea($textarea);
 };
 
-export function rewire_update_placeholder_text(value: typeof update_placeholder_text): void {
-    update_placeholder_text = value;
+export function rewire_update_compose_area_placeholder_text(
+    value: typeof update_compose_area_placeholder_text,
+): void {
+    update_compose_area_placeholder_text = value;
 }
 
 // This function addresses the issue of the placeholder not reappearing in Firefox

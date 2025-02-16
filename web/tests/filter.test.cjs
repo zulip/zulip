@@ -1563,11 +1563,16 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "resolved"}];
-    string = "topics marked as resolved";
+    string = "resolved topics";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "followed"}];
     string = "followed topics";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    // operands with their own negative words, like resolved.
+    narrow = [{operator: "is", operand: "resolved", negated: true}];
+    string = "unresolved topics";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "something_we_do_not_support"}];
@@ -2251,7 +2256,7 @@ test("navbar_helpers", ({override}) => {
             terms: is_resolved,
             is_common_narrow: true,
             icon: "check",
-            title: "translated: Topics marked as resolved",
+            title: "translated: Resolved topics",
             redirect_url_with_search: "/#narrow/topics/is/resolved",
         },
         {

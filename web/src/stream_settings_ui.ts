@@ -39,6 +39,7 @@ import * as stream_edit_toggler from "./stream_edit_toggler.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
+import * as stream_settings_containers from "./stream_settings_containers.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamPermissionGroupSetting} from "./stream_types.ts";
 import * as stream_ui_updates from "./stream_ui_updates.ts";
@@ -192,6 +193,8 @@ export function update_stream_privacy(
     const active_data = stream_settings_components.get_active_data();
     if (active_data.id === sub.stream_id) {
         stream_settings_components.set_right_panel_title(sub);
+        const $edit_container = stream_settings_containers.get_edit_container(sub);
+        stream_ui_updates.update_can_subscribe_group_label($edit_container);
     }
 
     // Update navbar if needed
@@ -229,6 +232,15 @@ export function update_subscribers_ui(sub: StreamSubscription): void {
     update_left_panel_row(sub);
     stream_edit_subscribers.update_subscribers_list(sub);
     message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
+}
+
+export function update_subscription_elements(sub: StreamSubscription): void {
+    if (!overlays.streams_open()) {
+        return;
+    }
+
+    update_left_panel_row(sub);
+    stream_ui_updates.update_settings_button_for_sub(sub);
 }
 
 export function add_sub_to_table(sub: StreamSubscription): void {

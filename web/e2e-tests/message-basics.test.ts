@@ -6,7 +6,7 @@ import * as common from "./lib/common.ts";
 
 async function get_stream_li(page: Page, stream_name: string): Promise<string> {
     const stream_id = await common.get_stream_id(page, stream_name);
-    assert(stream_id !== undefined);
+    assert.ok(stream_id !== undefined);
     return `#stream_filters [data-stream-id="${CSS.escape(stream_id.toString())}"]`;
 }
 

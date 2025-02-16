@@ -32,6 +32,7 @@ import * as recent_senders from "./recent_senders.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import type {UpdateMessageEvent} from "./server_event_types.ts";
+import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
@@ -419,7 +420,10 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             // edits have edit_history logged for both before any
             // potential narrowing as part of the topic edit loop.
             if (event.orig_content !== undefined) {
-                if (realm.realm_allow_edit_history) {
+                if (
+                    realm.realm_message_edit_history_visibility_policy ===
+                    message_edit_history_visibility_policy_values.always.code
+                ) {
                     // Note that we do this for topic edits separately, below.
                     // If an event changed both content and topic, we'll generate
                     // two client-side events, which is probably good for display.
@@ -543,7 +547,10 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             }
 
             for (const moved_message of event_messages) {
-                if (realm.realm_allow_edit_history) {
+                if (
+                    realm.realm_message_edit_history_visibility_policy !==
+                    message_edit_history_visibility_policy_values.never.code
+                ) {
                     /* Simulate the format of server-generated edit
                      * history events. This logic ensures that all
                      * messages that were moved are displayed as such

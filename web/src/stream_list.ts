@@ -859,14 +859,25 @@ export function initialize_tippy_tooltips(): void {
         target: "#stream_filters li .subscription_block .stream-name",
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
+            // check for "Go to channel feed" tooltip conditions first.
             const stream_id = stream_id_for_elt($(instance.reference).parents("li.narrow-filter"));
             const current_narrow_stream_id = narrow_state.stream_id();
             const current_topic = narrow_state.topic();
-            if (!(current_narrow_stream_id === stream_id && current_topic)) {
-                return false;
+            if (current_narrow_stream_id === stream_id && current_topic !== undefined) {
+                instance.setContent(ui_util.parse_html(render_go_to_channel_feed_tooltip()));
+                return undefined;
             }
-            instance.setContent(ui_util.parse_html(render_go_to_channel_feed_tooltip()));
-            return undefined;
+            // Then check for truncation
+            const stream_name_element = instance.reference;
+            assert(stream_name_element instanceof HTMLElement);
+
+            if (stream_name_element.offsetWidth < stream_name_element.scrollWidth) {
+                const stream_name = stream_name_element.textContent ?? "";
+                instance.setContent(stream_name);
+                return undefined;
+            }
+
+            return false;
         },
         appendTo: () => document.body,
     });
@@ -890,7 +901,7 @@ export function set_event_handlers({
         const current_narrow_stream_id = narrow_state.stream_id();
         const current_topic = narrow_state.topic();
 
-        if (current_narrow_stream_id === stream_id && current_topic) {
+        if (current_narrow_stream_id === stream_id && current_topic !== undefined) {
             const channel_feed_url = hash_util.by_stream_url(stream_id);
             browser_history.go_to_location(channel_feed_url);
             return;

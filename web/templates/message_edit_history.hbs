@@ -29,8 +29,9 @@
                     <div class="messagebox-content">
                         {{#if topic_edited}}
                         <div class="message_content message_edit_history_content">
-                            <p>{{t "Topic" }}: <span class="highlight_text_inserted">{{ new_topic }}</span>
-                                <span class="highlight_text_deleted">{{ prev_topic}}</span>
+                            <p>{{t "Topic" }}:
+                                <span class="highlight_text_inserted {{#if is_empty_string_new_topic}}empty-topic-display{{/if}}">{{ new_topic_display_name }}</span>
+                                <span class="highlight_text_deleted {{#if is_empty_string_prev_topic}}empty-topic-display{{/if}}">{{ prev_topic_display_name }}</span>
                             </p>
                         </div>
                         {{/if}}

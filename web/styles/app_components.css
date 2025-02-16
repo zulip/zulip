@@ -1119,6 +1119,10 @@ input.settings_text_input {
                 word-wrap: unset;
             }
 
+            .copy-overlay-message {
+                font-size: 1.2em;
+            }
+
             .restore-overlay-message {
                 cursor: pointer;
                 color: hsl(170deg 48% 54%);
@@ -1402,5 +1406,17 @@ input.settings_text_input {
     &:focus {
         background-color: var(--background-color-active-dropdown-item);
         outline: none;
+    }
+}
+
+/* Styling for invalid inputs */
+input.invalid-input {
+    /* The use of !important is necessary here to override
+       border-color specified for text input elements in
+       dark_theme.css which has a higher specificity. */
+    border-color: var(--color-invalid-input-border) !important;
+
+    &:focus {
+        box-shadow: var(--color-invalid-input-box-shadow);
     }
 }

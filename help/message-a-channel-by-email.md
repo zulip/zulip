@@ -32,6 +32,9 @@ API](/api/send-message).
 
 1. Click **Generate email address** under **Email address**.
 
+1. Select **Who should be the sender of the Zulip messages for this email
+   address**.
+
 1. Toggle the configuration options as desired.
 
 1. Click **Copy address** to add the channel email address to your clipboard.
@@ -48,7 +51,15 @@ up in Zulip.
 
 ## Configuration options
 
-The options below control which parts of the email are included in the
+You can configure **who should be the sender of the Zulip messages** for the
+generated email address, with the following options:
+
+* **Email Gateway bot**: This option makes it easy to see that the message
+  was sent via email.
+* **You**: Messages will look the same as messages you send from the Zulip UI.
+* [Any bot you own](/help/view-your-bots)
+
+The following options control which parts of the email are included in the
 Zulip message.
 
 * **The sender's email address**: Adds `From: <Sender email address>` to
@@ -74,3 +85,4 @@ Zulip message.
 ## Related articles
 
 * [Using Zulip via email](/help/using-zulip-via-email)
+* [Bots overview](/help/bots-overview)

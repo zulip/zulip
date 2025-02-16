@@ -1,8 +1,8 @@
 <div class="input-group">
-    {{!-- We are using snake case for the id since setting_name is always
-    in snake case and it would be weird to have the resultant id be a mix
-    of two types of cases. --}}
-    <label class="group-setting-label" id="group_setting_label_{{setting_name}}">
+    {{!-- We are using snake case for one of the classes since setting_name
+    is always in snake case and it would be weird to have the resultant id
+    be a mix of two types of cases. --}}
+    <label class="group-setting-label {{setting_name}}_label">
         {{label}}
         {{#if label_parens_text}}(<i>{{label_parens_text}}</i>){{/if}}
         {{#if help_link}}

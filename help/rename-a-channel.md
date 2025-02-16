@@ -42,5 +42,6 @@ and Unicode emoji.
 
 ## Related articles
 
+* [View channel information](/help/view-channel-information)
 * [Change a channel's description](/help/change-the-channel-description)
 * [Channel permissions](/help/channel-permissions)

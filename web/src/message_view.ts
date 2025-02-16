@@ -51,7 +51,10 @@ import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui.ts";
-import {web_mark_read_on_scroll_policy_values} from "./settings_config.ts";
+import {
+    message_edit_history_visibility_policy_values,
+    web_mark_read_on_scroll_policy_values,
+} from "./settings_config.ts";
 import * as spectators from "./spectators.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import {realm} from "./state_data.ts";
@@ -540,7 +543,9 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
 
                 if (
                     !narrow_matches_target_message &&
-                    (narrow_exists_in_edit_history || !realm.realm_allow_edit_history)
+                    (narrow_exists_in_edit_history ||
+                        realm.realm_message_edit_history_visibility_policy ===
+                            message_edit_history_visibility_policy_values.never.code)
                 ) {
                     const adjusted_terms = Filter.adjusted_terms_if_moved(
                         raw_terms,
@@ -1373,7 +1378,7 @@ export function to_compose_target(): void {
         // grey-out the message view instead of narrowing to an empty view.
         const terms = [{operator: "channel", operand: stream_id.toString()}];
         const topic = compose_state.topic();
-        if (topic !== "") {
+        if (topic !== "" || !realm.realm_mandatory_topics) {
             terms.push({operator: "topic", operand: topic});
         }
         show(terms, opts);

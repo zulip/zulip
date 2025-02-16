@@ -243,6 +243,7 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 
 export const simple_dropdown_realm_settings_schema = realm_schema.pick({
     realm_org_type: true,
+    realm_message_edit_history_visibility_policy: true,
 });
 export type SimpleDropdownRealmSettings = z.infer<typeof simple_dropdown_realm_settings_schema>;
 
@@ -1431,7 +1432,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
     if (time_limit_settings.length > 0) {
         disable_save_button =
             should_disable_save_button_for_time_limit_settings(time_limit_settings);
-    } else if ($subsection_elem.attr("id") === "org-other-settings") {
+    } else if ($subsection_elem.attr("id") === "org-compose-settings") {
         disable_save_button = should_disable_save_button_for_jitsi_server_url_setting();
         const $button_wrapper = $subsection_elem.find<tippy.PopperElement>(
             ".subsection-changes-save",

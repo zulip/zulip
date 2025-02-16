@@ -6,7 +6,7 @@ import render_user_pill from "../templates/user_pill.hbs";
 import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
 import * as common from "./common.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
-import {Filter, create_user_pill_context} from "./filter.ts";
+import {Filter} from "./filter.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -196,7 +196,7 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         !check_validity(
             last_complete_term,
             terms.slice(-1),
-            ["dm", "pm-with"],
+            ["dm", "dm-including", "pm-with"],
             [{operator: "channel"}],
         )
     ) {
@@ -222,6 +222,15 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         return [];
     }
 
+    const excluded_emails = new Set<string>();
+    for (const term of terms) {
+        if (term.operator === "dm-including") {
+            for (const email of term.operand.split(",")) {
+                excluded_emails.add(email);
+            }
+        }
+    }
+
     const operand = last.operand;
     const negated = last.negated;
 
@@ -243,6 +252,8 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         last_part = operand.slice(last_comma_index + 1);
     }
 
+    const dedupedEmails = [...new Set(all_but_last_part.split(","))].join(",");
+
     // We don't suggest a person if their email is already present in the
     // operand (not including the last part).
     const parts = [...all_but_last_part.split(","), people.my_current_email()];
@@ -259,49 +270,41 @@ function get_group_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestio
         }
         all_users_but_last_part.push(user);
     }
-    const user_pill_contexts = all_users_but_last_part.map((person) =>
-        create_user_pill_context(person),
-    );
 
     const person_matcher = people.build_person_matcher(last_part);
-    let persons = people.filter_all_persons((person) => {
-        if (parts.includes(person.email)) {
-            return false;
-        }
-        return last_part === "" || person_matcher(person);
-    });
+    let persons = people.filter_all_persons(
+        (person) =>
+            !excluded_emails.has(person.email) && (last_part === "" || person_matcher(person)),
+    );
+    // Exclude the current user from group suggestions.
+    persons = persons.filter((person) => person.email !== people.my_current_email());
 
     persons.sort(compare_by_direct_message_group(parts));
 
     // Take top 15 persons, since they're ordered by pm_recipient_count.
     persons = persons.slice(0, 15);
 
-    const prefix = Filter.operator_to_prefix("dm", negated);
+    const prefix = Filter.operator_to_prefix(last_complete_term.operator, negated);
+    const operator = last_complete_term.operator;
 
     const person_highlighter = make_person_highlighter(last_part);
 
     return persons.map((person) => {
         const term = {
-            operator: "dm",
-            operand: all_but_last_part + "," + person.email,
+            operator,
+            operand: dedupedEmails + "," + person.email,
             negated,
         };
-
-        let terms: NarrowTerm[] = [term];
+        let suggestion_terms = [term];
         if (negated) {
-            terms = [{operator: "is", operand: "dm"}, term];
+            suggestion_terms = [{operator: "is", operand: "dm", negated: undefined}, term];
         }
-
-        const all_user_pill_contexts = [
-            ...user_pill_contexts,
-            highlight_person(person, person_highlighter),
-        ];
-
+        const new_user_pill = highlight_person(person, person_highlighter);
         return {
             description_html: prefix,
-            search_string: Filter.unparse(terms),
+            search_string: Filter.unparse(suggestion_terms),
             is_people: true,
-            users: all_user_pill_contexts.map((user_pill_context) => ({user_pill_context})),
+            users: [{user_pill_context: new_user_pill}],
         };
     });
 }
@@ -589,12 +592,29 @@ function get_special_filter_suggestions(
     // Negating suggestions on is_search_operand_negated is required for
     // suggesting negated terms.
     if (last.negated === true || is_search_operand_negated) {
-        suggestions = suggestions.map((suggestion) => ({
-            search_string: "-" + suggestion.search_string,
-            description_html: "exclude " + suggestion.description_html,
-            incompatible_patterns: suggestion.incompatible_patterns,
-            is_people: false,
-        }));
+        suggestions = suggestions
+            .map((suggestion) => {
+                // If the search_string is "is:resolved", we want to suggest "Unresolved topics"
+                // instead of "Exclude resolved topics".
+                if (suggestion.search_string === "is:resolved") {
+                    return {
+                        ...suggestion,
+                        search_string: "-" + suggestion.search_string,
+                        description_html: "unresolved topics",
+                    };
+                } else if (suggestion.search_string === "-is:resolved") {
+                    return null;
+                }
+                return {
+                    ...suggestion,
+                    search_string: "-" + suggestion.search_string,
+                    description_html: "exclude " + suggestion.description_html,
+                };
+            })
+            .filter(
+                (suggestion): suggestion is SuggestionAndIncompatiblePatterns =>
+                    suggestion !== null,
+            );
     }
 
     const last_string = Filter.unparse([last]).toLowerCase();
@@ -704,7 +724,18 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
         },
         {
             search_string: "is:resolved",
-            description_html: "topics marked as resolved",
+            description_html: "resolved topics",
+            is_people: false,
+            incompatible_patterns: [
+                {operator: "is", operand: "resolved"},
+                {operator: "is", operand: "dm"},
+                {operator: "dm"},
+                {operator: "dm-including"},
+            ],
+        },
+        {
+            search_string: "-is:resolved",
+            description_html: "unresolved topics",
             is_people: false,
             incompatible_patterns: [
                 {operator: "is", operand: "resolved"},
@@ -926,7 +957,8 @@ class Attacher {
                 const last_base_string = last_base_term.search_string;
                 const new_search_string = suggestion.search_string;
                 if (
-                    new_search_string.startsWith("dm:") &&
+                    (new_search_string.startsWith("dm:") ||
+                        new_search_string.startsWith("dm-including:")) &&
                     new_search_string.includes(last_base_string)
                 ) {
                     suggestion_line = [...this.base.slice(0, -1), suggestion];

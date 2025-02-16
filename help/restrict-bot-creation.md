@@ -12,7 +12,7 @@ Zulip lets you create three types of [bots](/help/bots-overview):
 You can configure who can create incoming webhook bots (which are more limited
 in what they can do), and who can create any bot. Both permissions can be
 assigned to any combination of [roles](/help/user-roles), [groups](/help/user-groups), and
-individual [users](/help/manage-a-user).
+individual [users](/help/introduction-to-users).
 
 !!! warn ""
 

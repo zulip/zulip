@@ -298,8 +298,12 @@ function format_dm(
     let user_circle_class: string | false | undefined;
     let is_bot = false;
     if (recipient_ids.length === 1 && recipient_ids[0] !== undefined) {
-        is_bot = people.get_by_user_id(recipient_ids[0]).is_bot;
-        user_circle_class = is_bot ? false : buddy_data.get_user_circle_class(recipient_ids[0]);
+        const user_id = recipient_ids[0];
+        const is_deactivated = !people.is_active_user_for_popover(user_id);
+        is_bot = people.get_by_user_id(user_id).is_bot;
+        user_circle_class = is_bot
+            ? false
+            : buddy_data.get_user_circle_class(recipient_ids[0], is_deactivated);
     }
     const has_unread_mention = unread.num_unread_mentions_for_user_ids_strings(user_ids_string) > 0;
 
@@ -1602,7 +1606,7 @@ export function initialize(): void {
         }
         const stream_id = Number($elt.attr("data-stream-id"));
         const topic = $elt.attr("data-topic-name");
-        if (topic) {
+        if (topic !== undefined) {
             unread_ops.mark_topic_as_read(stream_id, topic);
         } else {
             unread_ops.mark_stream_as_read(stream_id);

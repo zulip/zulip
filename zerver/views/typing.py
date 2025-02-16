@@ -80,7 +80,10 @@ def send_message_edit_notification_backend(
     operator: Annotated[Literal["start", "stop"], ApiParamConfig("op")],
     message_id: Json[int],
 ) -> HttpResponse:
-    message = access_message(user_profile, message_id)
+    # Technically, this endpoint doesn't modify the message, but we're
+    # attempting to send a typing notification that we're editing the
+    # message.
+    message = access_message(user_profile, message_id, is_modifying_message=True)
     validate_user_can_edit_message(user_profile, message, edit_limit_buffer=0)
     recipient = message.recipient
 

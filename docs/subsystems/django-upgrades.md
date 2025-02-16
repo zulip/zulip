@@ -15,7 +15,7 @@ new major versions of Django. Here are the steps:
   much of the changes for the migration as we can independently from
   the big cutover.
 - Check the version support of the third-party Django packages we use
-  (`git grep django requirements/` to see a list), upgrade any as
+  (`git grep django pyproject.toml` to see a list), upgrade any as
   needed and file bugs upstream for any that lack support. Look into
   fixing said bugs.
 - Look at the pieces of Django code that we've copied and then

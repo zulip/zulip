@@ -22,7 +22,7 @@ async function await_user_hidden(page: Page, name: string): Promise<void> {
 
 async function add_user_to_stream(page: Page, name: string): Promise<void> {
     const user_id = await common.get_user_id_from_name(page, name);
-    assert(user_id !== undefined);
+    assert.ok(user_id !== undefined);
     await page.evaluate((user_id) => {
         zulip_test.add_user_id_to_new_stream(user_id);
     }, user_id);

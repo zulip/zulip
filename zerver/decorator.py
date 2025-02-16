@@ -944,6 +944,7 @@ def authenticated_json_view(
 # from command-line tools into Django.  We protect them from the
 # outside world by checking a shared secret, and also the originating
 # IP (for now).
+@typed_endpoint
 def authenticate_internal_api(request: HttpRequest, *, secret: str) -> bool:
     return is_local_addr(request.META["REMOTE_ADDR"]) and constant_time_compare(
         secret, settings.SHARED_SECRET
@@ -966,11 +967,10 @@ def internal_api_view(
         @csrf_exempt
         @require_post
         @wraps(view_func)
-        @typed_endpoint
         def _wrapped_func_arguments(
-            request: HttpRequest, /, *args: ParamT.args, secret: str, **kwargs: ParamT.kwargs
+            request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
         ) -> HttpResponse:
-            if not authenticate_internal_api(request, secret=secret):
+            if not authenticate_internal_api(request):  # type: ignore[call-arg] # @typed_endpoint fills in secret from the request
                 raise AccessDeniedError
             request_notes = RequestNotes.get_notes(request)
             is_tornado_request = request_notes.tornado_handler_id is not None

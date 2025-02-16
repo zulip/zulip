@@ -153,22 +153,39 @@
         place-self: center center;
         /* Tighten the line-height to match the icon's size... */
         line-height: 1;
-        /* ...which is approximately 11px at 16px/1em. */
-        font-size: 0.6875em;
+        /* ...which is approximately 8px at 15px/1em in Vlad's design. */
+        font-size: 0.5333em;
     }
 
     .user_sidebar_entry.with_avatar {
-        .user-profile-picture {
+        .user-profile-picture-container {
             /* Establish positioning context for user circle. */
             position: relative;
+            /* TODO: Express this as part of the grid on
+               .selectable_sidebar_block. */
+            margin-right: 11px;
+
+            &:not(:has(.user-circle-offline)) .user-profile-picture {
+                /* The over-avatar user circle width is 15.5px at 20px/1em;
+                   we adjust the border radius here to avoid any pixels
+                   from the avatar bleeding through. */
+                border-bottom-right-radius: 0.3875em; /* 7.75px at 20px/1em */
+            }
+        }
+
+        .user-profile-picture {
+            /* Push back on the margin-right usually allotted here;
+               we put it on .user-profile-picture-container instead,
+               so that user circles occupy the corner of the image. */
+            margin-right: 0;
         }
 
         .user-circle {
             position: absolute;
             /* 10px at 16px/1em */
             font-size: 0.625em;
-            bottom: -1px;
-            right: -1px;
+            bottom: -0.5px;
+            right: -0.5px;
             background-color: var(--color-background);
             /* A 1.5px border provides better results than
                a 1px border, especially at smaller font sizes. */
@@ -388,13 +405,15 @@
        that controls remain aligned with the username,
        even when there is a status line shown below.
 
-       The 26px column for the vdots is less than the
+       The 25px column for the vdots is less than the
        30px allotted in the left sidebar, but it holds
        the username area constant, so that no ellipsis
-       appears on the username on hover. */
+       appears on the username on hover. The 25px value
+       is necessary for correct vdots alignment with the
+       filter row's vdots. */
     grid-template:
         "row-content ending-anchor-element" var(--line-height-sidebar-row)
-        "row-content ." auto / minmax(0, 1fr) 26px;
+        "row-content ." auto / minmax(0, 1fr) var(--right-sidebar-vdots-width);
     align-content: baseline;
     margin-right: var(--width-simplebar-scroll-hover);
     margin-left: var(--right-sidebar-toggle-width-offset);
@@ -501,8 +520,12 @@
         color: var(--color-vdots-visible);
         justify-content: center;
         display: grid;
-        width: 25px;
+        width: var(--right-sidebar-vdots-width);
         margin-left: 5px;
+        /* Push back against default right-sidebar
+           spacing for better vdots alignment. */
+        margin-right: 0;
+        padding-left: 0;
 
         &:hover {
             color: var(--color-vdots-hover);

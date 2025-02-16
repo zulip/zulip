@@ -1,8 +1,8 @@
 import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill.ts";
-import {$t} from "./i18n.ts";
 import * as people from "./people.ts";
+import {realm} from "./state_data.ts";
 import * as sub_store from "./sub_store.ts";
 
 let message_type: "stream" | "private" | undefined;
@@ -142,10 +142,6 @@ export function rewire_topic(value: typeof topic): void {
     topic = value;
 }
 
-export function empty_topic_placeholder(): string {
-    return $t({defaultMessage: "(no topic)"});
-}
-
 // We can't trim leading whitespace in `compose_textarea` because
 // of the indented syntax for multi-line code blocks.
 export const message_content = get_or_set("textarea#compose-textarea", true);
@@ -236,7 +232,8 @@ export function has_savable_message_content(): boolean {
 
 export function has_full_recipient(): boolean {
     if (message_type === "stream") {
-        return stream_id() !== undefined && topic() !== "";
+        const has_topic = topic() !== "" || !realm.realm_mandatory_topics;
+        return stream_id() !== undefined && has_topic;
     }
     return private_message_recipient() !== "";
 }

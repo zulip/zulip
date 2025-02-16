@@ -7,6 +7,10 @@
         border-radius: 5px;
         position: absolute;
         overflow: hidden;
+        /* We bump the z-index to keep the search box
+           clickable despite position-based layout
+           adjustments. */
+        z-index: 1;
     }
 
     .search_icon {
@@ -189,7 +193,7 @@
         background: transparent;
         text-overflow: ellipsis;
         overflow: hidden;
-        white-space: nowrap;
+        white-space: pre-wrap;
         flex-grow: 1;
 
         color: var(--color-text-search);
@@ -232,7 +236,7 @@
         }
 
         &:not(.focused) {
-            max-height: var(--search-box-height);
+            height: var(--search-box-height);
             overflow: hidden;
 
             .search-input-and-pills {

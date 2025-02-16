@@ -53,6 +53,7 @@ organization's structure in Zulip's permissions system.
 ## Related articles
 
 * [Mention a user or group](/help/mention-a-user-or-group)
+* [View group members](/help/view-group-members)
 * [Create user groups](/help/create-user-groups)
 * [Manage user groups](/help/manage-user-groups)
 * [Moving to Zulip](/help/moving-to-zulip)

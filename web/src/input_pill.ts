@@ -332,8 +332,8 @@ export function create<ItemType extends {type: string}>(
                     if (ret) {
                         // clear the input.
                         funcs.clear(this);
-                        e.stopPropagation();
                     }
+                    e.stopPropagation();
                 }
 
                 return;

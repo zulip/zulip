@@ -53,6 +53,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     HostRequestMock,
     avatar_disk_path,
+    dns_txt_answer,
     find_key_by_email,
     get_test_image_file,
     load_subdomain_token,
@@ -4135,8 +4136,11 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(mirror_dummy.role, UserProfile.ROLE_GUEST)
 
     @patch(
-        "DNS.dnslookup",
-        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+        "dns.resolver.resolve",
+        return_value=dns_txt_answer(
+            "sipbtest.passwd.ns.athena.mit.edu.",
+            "sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh",
+        ),
     )
     def test_registration_of_mirror_dummy_user(self, ignored: Any) -> None:
         password = "test"
@@ -4216,8 +4220,11 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_logged_in_user_id(user_profile.id)
 
     @patch(
-        "DNS.dnslookup",
-        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+        "dns.resolver.resolve",
+        return_value=dns_txt_answer(
+            "sipbtest.passwd.ns.athena.mit.edu.",
+            "sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh",
+        ),
     )
     def test_registration_of_active_mirror_dummy_user(self, ignored: Any) -> None:
         """

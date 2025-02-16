@@ -1,3 +1,0 @@
-https://github.com/zulip/pip/archive/50e61dcc78d0da8a041e4fecc566f40b2b0604df.zip#egg=pip==20.3.4+git  # Our hack for installing specific commits from Git requires --use-deprecated=legacy-resolver: https://github.com/pypa/pip/issues/5780
-setuptools<71.0.2  # Newer setuptools fools old pip into thinking typing_extensions is already installed
-wheel

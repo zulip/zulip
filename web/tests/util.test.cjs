@@ -511,6 +511,22 @@ run_test("get_final_topic_display_name", ({override}) => {
     assert.deepEqual(util.get_final_topic_display_name(""), "random topic name");
 });
 
+run_test("is_topic_name_considered_empty", ({override}) => {
+    // Topic is not considered empty if it is distinct string
+    // other than "(no topic)", or realm_empty_topic_display_name.
+    assert.ok(!util.is_topic_name_considered_empty("some topic"));
+
+    // Topic is considered empty if it is an empty string.
+    assert.ok(util.is_topic_name_considered_empty(""));
+
+    // Topic is considered empty if it is equal to "(no topic)".
+    assert.ok(util.is_topic_name_considered_empty("(no topic)"));
+
+    // Topic name is considered empty if it is equal to realm_empty_topic_display_name.
+    override(realm, "realm_empty_topic_display_name", "general chat");
+    assert.ok(util.is_topic_name_considered_empty("general chat"));
+});
+
 run_test("get_retry_backoff_seconds", () => {
     const xhr_500_error = {
         status: 500,

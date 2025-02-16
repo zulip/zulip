@@ -18,28 +18,13 @@ from zerver.lib.cache import (
     cache_set_many,
     get_remote_cache_requests,
     get_remote_cache_time,
-    user_profile_by_api_key_cache_key,
-    user_profile_by_id_cache_key,
     user_profile_narrow_by_id_cache_key,
 )
 from zerver.lib.safe_session_cached_db import SessionStore
 from zerver.lib.sessions import session_engine
 from zerver.models import Client, UserProfile
 from zerver.models.clients import get_client_cache_key
-from zerver.models.users import base_get_user_narrow_queryset, base_get_user_queryset
-
-
-def get_users() -> QuerySet[UserProfile]:
-    return base_get_user_queryset().filter(long_term_idle=False, realm__in=get_active_realm_ids())
-
-
-def user_cache_items(
-    items_for_remote_cache: dict[str, tuple[UserProfile]], user_profile: UserProfile
-) -> None:
-    items_for_remote_cache[user_profile_by_api_key_cache_key(user_profile.api_key)] = (
-        user_profile,
-    )
-    items_for_remote_cache[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
+from zerver.models.users import base_get_user_narrow_queryset
 
 
 def get_narrow_users() -> QuerySet[UserProfile]:
@@ -102,7 +87,6 @@ def get_active_realm_ids() -> QuerySet[RealmCount, int]:
 cache_fillers: dict[
     str, tuple[Callable[[], Iterable[Any]], Callable[[dict[str, Any], Any], None], int, int]
 ] = {
-    "user": (get_users, user_cache_items, 3600 * 24 * 7, 10000),
     "user_narrow": (get_narrow_users, user_narrow_cache_items, 3600 * 24 * 7, 10000),
     "client": (
         Client.objects.all,

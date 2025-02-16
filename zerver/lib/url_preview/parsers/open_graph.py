@@ -10,7 +10,7 @@ from .base import BaseParser
 class OpenGraphParser(BaseParser):
     @override
     def extract_data(self) -> UrlEmbedData:
-        meta = self._soup.findAll("meta")
+        meta = self._soup.find_all("meta")
 
         data = UrlEmbedData()
 

@@ -11,24 +11,26 @@ sent](/help/view-messages-sent-by-a-user).
 
 {tab|user}
 
-- Their avatar.
+- Their profile picture.
 - Their name.
+- Their [role](/help/user-roles) in the organization.
+- Their [status and availability](/help/status-and-availability), and whether
+  the account has been [deactivated](/help/deactivate-or-reactivate-a-user).
+- Their current [local time](/help/change-your-timezone).
 - Their email address, if you [have
   permission](/help/configure-email-visibility) to view it.
-- Their [role](/help/user-roles) in the organization.
 - The custom profile fields
   [selected](/help/custom-profile-fields#display-custom-fields-on-user-card) by
   administrators to be featured on user cards.
-- Their current [local time](/help/change-your-timezone).
-- Their [status and availability](/help/status-and-availability).
 
 {tab|bot}
 
-- Its avatar.
+- Its profile picture.
 - Its name.
 - Its owner's name.
 - Its email address, if you [have
 permission](/help/configure-email-visibility) to view it.
+- Whether the bot has been [deactivated](/help/deactivate-or-reactivate-a-bot).
 
 {end_tabs}
 
@@ -59,5 +61,6 @@ permission](/help/configure-email-visibility) to view it.
 
 ## Related articles
 
-- [View someone's profile](/help/view-someones-profile)
-- [Message actions](/help/message-actions)
+* [Introduction to users](/help/introduction-to-users)
+* [View someone's profile](/help/view-someones-profile)
+* [Message actions](/help/message-actions)

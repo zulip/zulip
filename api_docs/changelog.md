@@ -20,6 +20,92 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 360**
+
+* [`GET /messages/{message_id}`](/api/get-message), [`GET
+  /messages/{message_id}/read_receipts`](/api/get-read-receipts):
+  Messages from an archived channels can now be read through these API
+  endpoints, if the channel's access control permissions permit doing
+  so.
+
+**Feature level 359**
+
+* `PATCH /bots/{bot_user_id}`: Previously, changing the owner of a bot
+  unsubscribed the bot from any channels that the new owner was not
+  subscribed to. This behavior was removed in favor of documenting the
+  security trade-off associated with giving bots read access to
+  sensitive channel content.
+
+**Feature level 358**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events): Changed `allow_edit_history`
+  boolean field to `message_edit_history_visibility_policy` integer field to
+  support an intermediate field for `Moves only` edit history of messages.
+* [`POST /register`](/api/register-queue): `realm_allow_edit_history` field is
+  deprecated and has been replaced by `realm_message_edit_history_visibility_policy`.
+  The value of `realm_allow_edit_history` is set to `False` if
+  `realm_message_edit_history_visibility_policy` is configured as "None",
+  and `True` for "Moves only" or "All" message edit history.
+
+**Feature level 357**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_subscribe_group`
+  field to Stream and Subscription objects.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_subscribe_group` parameter to support setting and changing the
+  user group whose members can subscribe to the specified stream.
+
+**Feature level 356**
+
+* [`GET /streams`](/api/get-streams): The new parameter
+  `include_can_access_content`, if set to True, returns all the
+  channels that the user making the request has content access to.
+* [`GET /streams`](/api/get-streams): Rename `include_all_active` to
+  `include_all` since the separate `exclude_archived` parameter is
+  what controls whether to include archived channels. The
+  `include_all` parameter is now supported for non-administrators.
+
+**Feature level 355**
+
+* [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /messages/flags`](/api/update-message-flags):
+  Added `ignored_because_not_subscribed_channels` field in the response, which
+  is a list of the channels whose messages were skipped to mark as unread
+  because the user is not subscribed to them.
+
+**Feature level 354**
+
+* [`GET /messages`](/api/get-messages), [`GET
+  /messages/{message_id}`](/api/get-message), [`POST
+  /messages/flags/narrow`]: Users can access messages in unsubscribed
+  private channels that are accessible only via groups that grant
+  content access.
+* [`GET /messages/{message_id}/read_receipts`](/api/get-read-receipts):
+  Users can access read receipts in unsubscribed private channels that are
+  accessible only via groups that grant content access.
+* [`POST /messages/{message_id}/reactions`](/api/add-reaction),
+  [`DELETE /messages/{message_id}/reactions`](/api/remove-reaction):
+  Users can react to messages in unsubscribed private channels that are
+  accessible only via groups that grant content access.
+* `POST /submessage`: Users can interact with polls and similar
+  widgets in messages in unsubscribed private channels that are
+  accessible only via groups that grant content access.
+* [`PATCH /messages/{message_id}`](/api/update-message): Users can
+  edit messages they have posted in unsubscribed private channels that
+  are accessible only via groups that grant content access.
+* [`POST
+  /message_edit_typing`](/api/set-typing-status-for-message-edit):
+  Users can generate typing notifications when editing messages in
+  unsubscribed private channels that are accessible only via groups
+  that grant content access.
+* [`POST /messages`](/api/send-message): Users can send messages to
+  private channels with shared history without subscribing if they are
+  part of groups that grant content access and also in
+  `can_send_message_group`.
+
 **Feature level 353**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
@@ -114,7 +200,7 @@ format used by the Zulip server that they are interacting with.
   `POST /zulip-services/verify/{access_token}/`: Added new API
   endpoints for transferring Zulip services registrations.
 * `POST /remotes/server/register`: Added new response format for
-  hostnames that are already registere.
+  hostnames that are already registered.
 
 **Feature level 344**
 
@@ -191,7 +277,7 @@ deactivated groups.
 * `POST /calls/bigbluebutton/create`: Added a `voice_only` parameter
   controlling whether the call should be voice-only, in which case we
   keep cameras disabled for this call. Now the call creator is a
-  moderator and all other joinees are viewers.
+  moderator and all other joiners are viewers.
 
 **Feature level 336**
 

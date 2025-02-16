@@ -260,6 +260,21 @@ export const common_policy_values = {
     },
 };
 
+export const message_edit_history_visibility_policy_values = {
+    always: {
+        code: "all",
+        description: $t({defaultMessage: "Show edits and moves"}),
+    },
+    moves_only: {
+        code: "moves",
+        description: $t({defaultMessage: "Move history only"}),
+    },
+    never: {
+        code: "none",
+        description: $t({defaultMessage: "Don't allow"}),
+    },
+};
+
 export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),
@@ -492,7 +507,7 @@ export const realm_deletion_in_values = {
         description: $t({defaultMessage: "30 days"}),
         default: false,
     },
-    ninty_days: {
+    ninety_days: {
         value: 90 * 24 * 60,
         description: $t({defaultMessage: "90 days"}),
         default: false,
@@ -662,6 +677,7 @@ export const all_group_setting_labels = {
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
         can_send_message_group: $t({defaultMessage: "Who can post to this channel"}),
         can_administer_channel_group: $t({defaultMessage: "Who can administer this channel"}),
+        can_subscribe_group: $t({defaultMessage: "Who can subscribe to this channel"}),
         can_remove_subscribers_group: $t({
             defaultMessage: "Who can unsubscribe anyone from this channel",
         }),
@@ -752,12 +768,14 @@ export const owner_editable_realm_group_permission_settings = new Set([
 export const stream_group_permission_settings: StreamGroupSettingName[] = [
     "can_send_message_group",
     "can_administer_channel_group",
+    "can_subscribe_group",
     "can_add_subscribers_group",
     "can_remove_subscribers_group",
 ];
 
 export const stream_group_permission_settings_requiring_content_access: StreamGroupSettingName[] = [
     "can_add_subscribers_group",
+    "can_subscribe_group",
 ];
 
 // Order of settings is important, as this list is used to
@@ -1072,12 +1090,12 @@ export const system_user_groups_list = [
     {
         name: "role:everyone",
         dropdown_option_name: $t({defaultMessage: "Admins, moderators, members and guests"}),
-        display_name: $t({defaultMessage: "Everyone"}),
+        display_name: $t({defaultMessage: "Everyone including guests"}),
     },
     {
         name: "role:members",
         dropdown_option_name: $t({defaultMessage: "Admins, moderators and members"}),
-        display_name: $t({defaultMessage: "Members"}),
+        display_name: $t({defaultMessage: "Everyone except guests"}),
     },
     {
         name: "role:fullmembers",
@@ -1105,6 +1123,8 @@ export const system_user_groups_list = [
         display_name: $t({defaultMessage: "Nobody"}),
     },
 ];
+
+export const alternate_members_group_typeahead_matching_name = $t({defaultMessage: "Members"});
 
 export const user_topic_visibility_policy_values = {
     followed: {

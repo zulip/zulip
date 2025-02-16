@@ -231,6 +231,29 @@ export function initialize(): void {
         },
     });
 
+    tippy.delegate("body", {
+        target: "#add-todo-modal .todo-description-container",
+        onShow(instance) {
+            const $elem = $(instance.reference);
+
+            /* Due to height: 0, data-reference-hidden for tooltip is set on the tooltip and can
+            cause the tooltip to hide. We should  use .show-when-reference-hidden here too since we
+            want data-reference-hidden to work when user scrolls here.*/
+            $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
+
+            if ($elem.find(".todo-description-input").is(":disabled")) {
+                instance.setContent(
+                    $t({
+                        defaultMessage: "Enter a task before adding a description.",
+                    }),
+                );
+                return undefined;
+            }
+            return false;
+        },
+        appendTo: () => document.body,
+    });
+
     $("body").on(
         "blur",
         ".message_control_button, .delete-selected-drafts-button-container",
@@ -668,6 +691,15 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".generate-channel-email-button-container.disabled_setting_tooltip",
         content: $t({defaultMessage: "You do not have permission to post in this channel."}),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".disabled-tooltip",
+        trigger: "focus mouseenter",
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
