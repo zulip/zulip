@@ -353,6 +353,15 @@ select.settings_select {
     word-break: normal;
 }
 
+.last_active {
+    .loading_indicator_spinner {
+        width: 2.7143em; /* 38px at 14px em */
+        display: flex;
+        align-items: center;
+        margin: 0;
+    }
+}
+
 .input-group {
     margin: 0 0 20px;
 
