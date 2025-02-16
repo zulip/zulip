@@ -11,7 +11,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_set_realm_property,
 )
-from zerver.actions.streams import do_deactivate_stream
+from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import messages_for_ids
@@ -428,7 +428,9 @@ class EditMessageTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
 
-        self.make_stream("privatestream", invite_only=True, history_public_to_subscribers=False)
+        stream = self.make_stream(
+            "privatestream", invite_only=True, history_public_to_subscribers=False
+        )
         self.subscribe(hamlet, "privatestream")
         msg_id = self.send_stream_message(
             hamlet, "privatestream", topic_name="editing", content="before edit"
@@ -455,6 +457,28 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid message(s)")
         content = Message.objects.get(id=msg_id).content
         self.assertEqual(content, "test can edit before unsubscribing")
+
+        hamlet_group = check_add_user_group(
+            hamlet.realm,
+            "prospero_group",
+            [hamlet],
+            acting_user=hamlet,
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_add_subscribers_group",
+            hamlet_group,
+            acting_user=None,
+        )
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "having content access after unsubscribing",
+            },
+        )
+        self.assert_json_success(result)
+        content = Message.objects.get(id=msg_id).content
+        self.assertEqual(content, "having content access after unsubscribing")
 
     def test_edit_message_guest_in_unsubscribed_public_stream(self) -> None:
         guest_user = self.example_user("polonius")
