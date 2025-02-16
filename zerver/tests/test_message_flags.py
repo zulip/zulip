@@ -6,7 +6,8 @@ from django.db import connection
 from typing_extensions import override
 
 from zerver.actions.message_flags import do_update_message_flags
-from zerver.actions.streams import do_change_stream_permission
+from zerver.actions.streams import do_change_stream_group_based_setting, do_change_stream_permission
+from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
@@ -35,6 +36,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
+from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
@@ -1807,14 +1809,55 @@ class MessageAccessTests(ZulipTestCase):
 
         # Testing messages accessibility for an unsubscribed user
         unsubscribed_user = self.example_user("ZOE")
+        unsubscribed_guest = self.example_user("polonius")
         filtered_messages = self.assert_bulk_access(
             unsubscribed_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=5,
+            bulk_access_stream_messages_query_count=2,
+        )
+        self.assert_length(filtered_messages, 0)
+
+        # Testing messages accessibility for an unsubscribed user
+        # present in `can_add_subscribers_group`
+        unsubscribed_user_group = check_add_user_group(
+            unsubscribed_user.realm,
+            "unsubscribed_user_group",
+            [unsubscribed_user, unsubscribed_guest],
+            acting_user=unsubscribed_user,
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_add_subscribers_group",
+            unsubscribed_user_group,
+            acting_user=None,
+        )
+        filtered_messages = self.assert_bulk_access(
+            unsubscribed_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=5,
+            bulk_access_stream_messages_query_count=3,
+        )
+        self.assert_length(filtered_messages, 2)
+        filtered_messages = self.assert_bulk_access(
+            unsubscribed_guest,
             message_ids,
             stream,
             bulk_access_messages_query_count=4,
             bulk_access_stream_messages_query_count=1,
         )
         self.assert_length(filtered_messages, 0)
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=unsubscribed_user.realm
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_add_subscribers_group",
+            nobody_group,
+            acting_user=None,
+        )
 
         # Adding more message ids to the list increases the query size
         # for bulk_access_messages but not

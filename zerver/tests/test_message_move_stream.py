@@ -13,6 +13,7 @@ from zerver.actions.streams import do_change_stream_group_based_setting, do_chan
 from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.message import has_message_access
 from zerver.lib.streams import (
+    UserGroupMembershipDetails,
     can_access_stream_metadata_user_ids,
     update_stream_active_status_for_realm,
 )
@@ -1314,6 +1315,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                     has_user_message=lambda: has_user_message,
                     stream=stream,
                     is_subscribed=is_subscribed,
+                    user_group_membership_details=UserGroupMembershipDetails(
+                        user_recursive_group_ids=None
+                    ),
                 ),
                 has_access,
             )
@@ -1710,6 +1714,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             True,
         )
@@ -1726,6 +1733,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             False,
         )
@@ -1750,6 +1760,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             False,
         )
@@ -1784,6 +1797,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             True,
         )
@@ -1800,6 +1816,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             False,
         )
@@ -1817,6 +1836,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: False,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             False,
         )
@@ -1843,6 +1865,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             True,
         )
@@ -1853,6 +1878,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             True,
         )
@@ -1884,6 +1912,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: False,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             False,
         )
@@ -1901,6 +1932,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: False,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             False,
         )
@@ -1926,6 +1960,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             True,
         )
