@@ -399,6 +399,14 @@
                 margin-left: 5px;
             }
 
+            .zulip-icon-volume-up {
+                background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 4H3V12H5L9 16V0L5 4Z' fill='%23333333'/%3E%3Cpath d='M11 5.5V10.5C11 11.3284 11.6716 12 12.5 12C13.3284 12 14 11.3284 14 10.5V5.5C14 4.67157 13.3284 4 12.5 4C11.6716 4 11 4.67157 11 5.5Z' fill='%23333333'/%3E%3C/svg%3E%0A");
+            }
+            
+            .zulip-icon-pause {
+                background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 4H7V12H5V4Z' fill='%23333333'/%3E%3Cpath d='M9 4H11V12H9V4Z' fill='%23333333'/%3E%3C/svg%3E%0A");
+            }
+            
             .sender_name {
                 display: inline-flex;
                 font-weight: 700;
