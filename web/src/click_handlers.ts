@@ -248,58 +248,75 @@ export function initialize(): void {
         starred_messages_ui.toggle_starred_and_update_server(message);
     });
 
+    function resetButtonState(button) {
+        // Reset the button icon and tooltip
+        button.find("i")
+            .removeClass("zulip-icon-pause")
+            .addClass("zulip-icon-unmute");
+        
+        // Reset tooltip
+        const tooltipTemplate = document.querySelector('#tts-tooltip-template');
+        if (tooltipTemplate) {
+            button.attr('data-tooltip-template-id', 'tts-tooltip-template');
+        }
+    }
+    
+    // This code is for Text To Speech Feature for each message
     let currentUtterance = null; // Store the currently speaking utterance
     let currentButton = null; // Store the button associated with the current speech
-
+    
     $("#main_div").on("click", ".tts_button", function (e) {
         e.stopPropagation();
-
+    
         const button = $(this);
         const messageBox = button.closest(".messagebox");
-
+    
         if (!messageBox.length) {
             console.error("Error: Could not find .messagebox for clicked button");
             return;
         }
-
+    
         const messageElement = messageBox.find(".message_content.rendered_markdown");
-
+    
         if (!messageElement.length) {
             console.error("Error: Could not find .message_content inside messagebox");
             return;
         }
-
+    
         const text = messageElement.text().trim();
         if (!text) {
             console.error("Error: Message text is empty");
             return;
         }
-
+    
         // If the same button is clicked again, toggle pause/resume
         if (button.is(currentButton) && window.speechSynthesis.speaking) {
             window.speechSynthesis.cancel();
             resetButtonState(button);
             return;
         }
-
+    
         // Stop any currently speaking utterance (if different message)
         if (currentUtterance) {
             window.speechSynthesis.cancel();
             resetButtonState(currentButton);
         }
-
+    
         // Create a new utterance for the new message
         const utterance = new SpeechSynthesisUtterance(text);
         currentUtterance = utterance;
         currentButton = button; // Store this button as the currently active one
-
-        // Update UI before speaking
-        button.text("Pause").find("i")
-            .removeClass("zulip-icon-volume-up")
+    
+        // Update UI before speaking (change icon and tooltip for "Pause")
+        button.find("i")
+            .removeClass("zulip-icon-unmute")
             .addClass("zulip-icon-pause");
-
+    
+        // Update tooltip to "Pause"
+        button.attr('data-tooltip-template-id', 'tts-pause-tooltip-template');
+    
         window.speechSynthesis.speak(utterance);
-
+    
         // When speech ends, reset the button
         utterance.onend = () => {
             resetButtonState(button);
@@ -307,17 +324,7 @@ export function initialize(): void {
             currentButton = null;
         };
     });
-
-    // Function to reset button UI
-    function resetButtonState(button) {
-        if (button) {
-            button.text("Speak").find("i")
-                .removeClass("zulip-icon-pause")
-                .addClass("zulip-icon-volume-up");
-        }
-    }
-
-
+    
     $("#main_div").on("click", ".message_reaction", function (this: HTMLElement, e) {
         e.stopPropagation();
 
