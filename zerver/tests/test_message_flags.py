@@ -1732,10 +1732,11 @@ class MessageAccessTests(ZulipTestCase):
         user: UserProfile,
         message_ids: list[int],
         stream: Stream,
-        bulk_access_messages_count: int,
+        *,
+        bulk_access_messages_query_count: int,
         bulk_access_stream_messages_query_count: int,
     ) -> list[Message]:
-        with self.assert_database_query_count(bulk_access_messages_count):
+        with self.assert_database_query_count(bulk_access_messages_query_count):
             messages = [
                 Message.objects.select_related("recipient").get(id=message_id)
                 for message_id in sorted(message_ids)
@@ -1776,7 +1777,11 @@ class MessageAccessTests(ZulipTestCase):
         # Message sent before subscribing wouldn't be accessible by later
         # subscribed user as stream has protected history
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, message_ids, stream, 4, 2
+            later_subscribed_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=4,
+            bulk_access_stream_messages_query_count=2,
         )
         self.assert_length(filtered_messages, 1)
         self.assertEqual(filtered_messages[0].id, message_two_id)
@@ -1792,13 +1797,23 @@ class MessageAccessTests(ZulipTestCase):
         # Message sent before subscribing are accessible by user as stream
         # now don't have protected history
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, message_ids, stream, 4, 2
+            later_subscribed_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=4,
+            bulk_access_stream_messages_query_count=2,
         )
         self.assert_length(filtered_messages, 2)
 
         # Testing messages accessibility for an unsubscribed user
         unsubscribed_user = self.example_user("ZOE")
-        filtered_messages = self.assert_bulk_access(unsubscribed_user, message_ids, stream, 4, 1)
+        filtered_messages = self.assert_bulk_access(
+            unsubscribed_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=4,
+            bulk_access_stream_messages_query_count=1,
+        )
         self.assert_length(filtered_messages, 0)
 
         # Adding more message ids to the list increases the query size
@@ -1810,14 +1825,24 @@ class MessageAccessTests(ZulipTestCase):
             self.send_stream_message(user, stream_name, "Message four"),
         ]
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, more_message_ids, stream, 6, 2
+            later_subscribed_user,
+            more_message_ids,
+            stream,
+            bulk_access_messages_query_count=6,
+            bulk_access_stream_messages_query_count=2,
         )
         self.assert_length(filtered_messages, 4)
 
         # Test private message access for service bot
         service_bot = self.example_user("outgoing_webhook_bot")
         self.subscribe(service_bot, stream_name)
-        filtered_messages = self.assert_bulk_access(service_bot, more_message_ids, stream, 6, 2)
+        filtered_messages = self.assert_bulk_access(
+            service_bot,
+            more_message_ids,
+            stream,
+            bulk_access_messages_query_count=6,
+            bulk_access_stream_messages_query_count=2,
+        )
         self.assert_length(filtered_messages, 4)
 
         # Verify an exception is thrown if called where the passed
@@ -1853,18 +1878,34 @@ class MessageAccessTests(ZulipTestCase):
 
         # All public stream messages are always accessible
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, message_ids, stream, 4, 1
+            later_subscribed_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=4,
+            bulk_access_stream_messages_query_count=1,
         )
         self.assert_length(filtered_messages, 2)
 
         unsubscribed_user = self.example_user("ZOE")
-        filtered_messages = self.assert_bulk_access(unsubscribed_user, message_ids, stream, 4, 1)
+        filtered_messages = self.assert_bulk_access(
+            unsubscribed_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=4,
+            bulk_access_stream_messages_query_count=1,
+        )
         self.assert_length(filtered_messages, 2)
 
         # Test public message access for service bot
         service_bot = self.example_user("outgoing_webhook_bot")
         self.subscribe(service_bot, stream_name)
-        filtered_messages = self.assert_bulk_access(service_bot, message_ids, stream, 4, 1)
+        filtered_messages = self.assert_bulk_access(
+            service_bot,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=4,
+            bulk_access_stream_messages_query_count=1,
+        )
         self.assert_length(filtered_messages, 2)
 
 
