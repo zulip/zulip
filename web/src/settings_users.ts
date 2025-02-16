@@ -363,7 +363,14 @@ function get_last_active(user: User): string {
         return timerender.render_now(new Date(user.date_joined)).time_str;
     }
     if (!last_active_date) {
-        return $t({defaultMessage: "Loading…"});
+        setTimeout(() => {
+            loading.make_indicator(
+                $(
+                    `.user_row[data-user-id='${CSS.escape(user.user_id.toString())}'] .loading-placeholder`,
+                ),
+            );
+        }, 0);
+        return "";
     }
     return timerender.render_now(last_active_date).time_str;
 }
