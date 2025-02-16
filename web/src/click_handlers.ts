@@ -3,7 +3,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
-import { z } from "zod";
+import {z} from "zod";
 
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
@@ -13,7 +13,7 @@ import * as buddy_data from "./buddy_data.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as compose_state from "./compose_state.ts";
-import { media_breakpoints_num } from "./css_variables.ts";
+import {media_breakpoints_num} from "./css_variables.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
@@ -23,7 +23,7 @@ import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as navigate from "./navigate.ts";
-import { page_params } from "./page_params.ts";
+import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as reactions from "./reactions.ts";
@@ -39,7 +39,7 @@ import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as topic_list from "./topic_list.ts";
 import * as ui_util from "./ui_util.ts";
-import { parse_html } from "./ui_util.ts";
+import {parse_html} from "./ui_util.ts";
 import * as util from "./util.ts";
 
 export function initialize(): void {
@@ -47,7 +47,7 @@ export function initialize(): void {
 
     function initialize_long_tap(): void {
         const MS_DELAY = 750;
-        const meta: { touchdown: boolean; current_target: number | undefined; invalid?: boolean } = {
+        const meta: {touchdown: boolean; current_target: number | undefined; invalid?: boolean} = {
             touchdown: false,
             current_target: undefined,
         };
@@ -208,7 +208,7 @@ export function initialize(): void {
         if (page_params.is_spectator) {
             return;
         }
-        compose_reply.respond_to_message({ trigger: "message click" });
+        compose_reply.respond_to_message({trigger: "message click"});
         e.stopPropagation();
     };
 
@@ -248,50 +248,50 @@ export function initialize(): void {
         starred_messages_ui.toggle_starred_and_update_server(message);
     });
 
-    function resetButtonState(button: JQuery<HTMLElement>): void {
+    function resetButtonState(button: JQuery): void {
         // Ensure button contains an icon before modifying it
         const icon = button.find("i");
-        if (icon.length) {
+        if (icon.length > 0) {
             icon.removeClass("zulip-icon-pause").addClass("zulip-icon-unmute");
         }
-    
+
         // Reset tooltip safely
         if (document.querySelector("#tts-tooltip-template")) {
             button.attr("data-tooltip-template-id", "tts-tooltip-template");
         }
     }
-    
+
     let currentUtterance: SpeechSynthesisUtterance | null = null; // Store the currently speaking utterance
-    let currentButton: JQuery<HTMLElement> | null = null; // Store the button associated with the current speech
-    
+    let currentButton: JQuery | null = null; // Store the button associated with the current speech
+
     $("#main_div").on("click", ".tts_button", function (e: JQuery.ClickEvent): void {
         e.stopPropagation();
-    
-        const button: JQuery<HTMLElement> = $(this);
-        const messageBox: JQuery<HTMLElement> = button.closest(".messagebox");
-    
+
+        const button: JQuery = $(this);
+        const messageBox: JQuery = button.closest(".messagebox");
+
         if (messageBox.length === 0) {
             return; // Avoid unnecessary errors
         }
-    
-        const messageElement: JQuery<HTMLElement> = messageBox.find(".message_content.rendered_markdown");
-    
+
+        const messageElement: JQuery = messageBox.find(".message_content.rendered_markdown");
+
         if (messageElement.length === 0) {
             return;
         }
-    
+
         const text: string = messageElement.text().trim();
         if (text.length === 0) {
             return;
         }
-    
+
         // If the same button is clicked again, toggle pause/resume
         if (button.is(currentButton) && window.speechSynthesis.speaking) {
             window.speechSynthesis.cancel();
             resetButtonState(button);
             return;
         }
-    
+
         // Stop any currently speaking utterance (if different message)
         if (currentUtterance) {
             window.speechSynthesis.cancel();
@@ -299,25 +299,25 @@ export function initialize(): void {
                 resetButtonState(currentButton);
             }
         }
-    
+
         // Create a new utterance for the new message
         const utterance: SpeechSynthesisUtterance = new SpeechSynthesisUtterance(text);
         currentUtterance = utterance;
         currentButton = button; // Store this button as the currently active one
-    
+
         // Ensure button contains an icon before modifying it
         const icon = button.find("i");
-        if (icon.length) {
+        if (icon.length > 0) {
             icon.removeClass("zulip-icon-unmute").addClass("zulip-icon-pause");
         }
-    
+
         // Update tooltip safely
         if (document.querySelector("#tts-pause-tooltip-template")) {
             button.attr("data-tooltip-template-id", "tts-pause-tooltip-template");
         }
-    
+
         window.speechSynthesis.speak(utterance);
-    
+
         // When speech ends, reset the button
         utterance.onend = (): void => {
             resetButtonState(button);
@@ -325,7 +325,6 @@ export function initialize(): void {
             currentButton = null;
         };
     });
-    
 
     $("#main_div").on("click", ".message_reaction", function (this: HTMLElement, e) {
         e.stopPropagation();
@@ -505,7 +504,7 @@ export function initialize(): void {
             }
             e.preventDefault();
             const row_id = get_row_id_for_narrowing(this);
-            message_view.narrow_by_recipient(row_id, { trigger: "message header" });
+            message_view.narrow_by_recipient(row_id, {trigger: "message header"});
         },
     );
 
@@ -515,7 +514,7 @@ export function initialize(): void {
         }
         e.preventDefault();
         const row_id = get_row_id_for_narrowing(this);
-        message_view.narrow_by_topic(row_id, { trigger: "message header" });
+        message_view.narrow_by_topic(row_id, {trigger: "message header"});
     });
 
     // SIDEBARS
@@ -540,7 +539,7 @@ export function initialize(): void {
 
         const $li = $(e.target).parents("li");
 
-        activity_ui.narrow_for_user({ $li });
+        activity_ui.narrow_for_user({$li});
 
         e.preventDefault();
         e.stopPropagation();
@@ -598,7 +597,7 @@ export function initialize(): void {
                 // it will be removed and we need to attach it on an element which will remain in the DOM.
                 const target_node = get_target_node(instance);
                 // We only need to know if any of the `li` elements were removed.
-                const config = { attributes: false, childList: true, subtree };
+                const config = {attributes: false, childList: true, subtree};
                 const callback: MutationCallback = function (mutationsList) {
                     for (const mutation of mutationsList) {
                         // Hide instance if reference is in the removed node list.
