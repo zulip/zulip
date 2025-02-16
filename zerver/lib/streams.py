@@ -372,6 +372,15 @@ def is_user_in_can_add_subscribers_group(
     return group_allowed_to_add_subscribers_id in user_recursive_group_ids
 
 
+def is_user_in_groups_granting_content_access(
+    stream: Stream, user_recursive_group_ids: set[int]
+) -> bool:
+    # Important: The caller must have verified the acting user is not
+    # a guest, to enforce that can_add_subscribers_group has
+    # allow_everyone_group=False.
+    return is_user_in_can_add_subscribers_group(stream, user_recursive_group_ids)
+
+
 def is_user_in_can_remove_subscribers_group(
     stream: Stream, user_recursive_group_ids: set[int]
 ) -> bool:
@@ -520,7 +529,7 @@ def user_has_content_access(
 
     # This check must be after the user_profile.is_guest check, since
     # allow_everyone_group=False for can_add_subscribers_group.
-    if is_user_in_can_add_subscribers_group(
+    if is_user_in_groups_granting_content_access(
         stream, user_group_membership_details.user_recursive_group_ids
     ):
         return True
@@ -1094,7 +1103,7 @@ def filter_stream_authorization(
                 get_recursive_membership_groups(user_profile).values_list("id", flat=True)
             )
             # The above has checked that the user is not a guest for the below settings.
-            if is_user_in_can_add_subscribers_group(stream, user_recursive_group_ids):
+            if is_user_in_groups_granting_content_access(stream, user_recursive_group_ids):
                 continue
 
         unauthorized_streams.append(stream)
