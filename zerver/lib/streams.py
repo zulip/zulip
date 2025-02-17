@@ -86,6 +86,7 @@ class StreamDict(TypedDict, total=False):
     can_administer_channel_group: UserGroup | None
     can_send_message_group: UserGroup | None
     can_remove_subscribers_group: UserGroup | None
+    can_subscribe_group: UserGroup | None
 
 
 def get_stream_permission_policy_name(
@@ -256,6 +257,7 @@ def create_stream_if_needed(
     can_administer_channel_group: UserGroup | None = None,
     can_send_message_group: UserGroup | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
+    can_subscribe_group: UserGroup | None = None,
     acting_user: UserProfile | None = None,
     setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
 ) -> tuple[Stream, bool]:
@@ -370,6 +372,7 @@ def create_streams_if_needed(
             can_administer_channel_group=stream_dict.get("can_administer_channel_group", None),
             can_send_message_group=stream_dict.get("can_send_message_group", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
+            can_subscribe_group=stream_dict.get("can_subscribe_group", None),
             acting_user=acting_user,
             setting_groups_dict=setting_groups_dict,
         )
@@ -1398,6 +1401,7 @@ def stream_to_dict(
     can_administer_channel_group = setting_groups_dict[stream.can_administer_channel_group_id]
     can_send_message_group = setting_groups_dict[stream.can_send_message_group_id]
     can_remove_subscribers_group = setting_groups_dict[stream.can_remove_subscribers_group_id]
+    can_subscribe_group = setting_groups_dict[stream.can_subscribe_group_id]
 
     stream_post_policy = get_stream_post_policy_value_based_on_group_setting(
         stream.can_send_message_group
@@ -1409,6 +1413,7 @@ def stream_to_dict(
         can_administer_channel_group=can_administer_channel_group,
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
+        can_subscribe_group=can_subscribe_group,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
         description=stream.description,

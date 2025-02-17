@@ -271,6 +271,7 @@ def update_stream_backend(
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
+    can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
     # Most settings updates only require metadata access, not content
     # access. We will check for content access further when and where
@@ -602,6 +603,7 @@ def add_subscriptions_backend(
     can_administer_channel_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_send_message_group: Json[int | AnonymousSettingGroupDict] | None = None,
     can_remove_subscribers_group: Json[int | AnonymousSettingGroupDict] | None = None,
+    can_subscribe_group: Json[int | AnonymousSettingGroupDict] | None = None,
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
@@ -681,6 +683,7 @@ def add_subscriptions_backend(
         stream_dict_copy["can_remove_subscribers_group"] = group_settings_map[
             "can_remove_subscribers_group"
         ]
+        stream_dict_copy["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
 
         stream_dicts.append(stream_dict_copy)
 
