@@ -1758,6 +1758,7 @@ label.preferences-radio-choice-label {
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
+        resize: vertical;
 
     &:focus {
         border-color: hsl(206.5deg 80% 62% / 80%);
