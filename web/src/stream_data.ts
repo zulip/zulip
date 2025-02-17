@@ -22,7 +22,6 @@ import type {
     StreamSpecificNotificationSettings,
     StreamSubscription,
 } from "./sub_store.ts";
-import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
@@ -506,13 +505,10 @@ export function has_metadata_access(sub: StreamSubscription): boolean {
         return true;
     }
 
-    // Users that can add other subscribers to a private channel
-    // have content access to that channel. Having content access
-    // should give them metadata access to that private channel even
-    // when unsubscribed.
-    const can_add_subscribers = user_groups.is_user_in_setting_group(
+    const can_add_subscribers = settings_data.user_has_permission_for_group_setting(
         sub.can_add_subscribers_group,
-        people.my_current_user_id(),
+        "can_add_subscribers_group",
+        "stream",
     );
     if (can_add_subscribers) {
         return true;
@@ -543,12 +539,10 @@ export function has_content_access(sub: StreamSubscription): boolean {
         return false;
     }
 
-    // This is after the is_guest check, because this setting has
-    // allow_everyone_group=false.  TODO: Consider adding a
-    // is_user_in_setting_group wrapper abstraction that handles this detail automatically.
-    const can_add_subscribers = user_groups.is_user_in_setting_group(
+    const can_add_subscribers = settings_data.user_has_permission_for_group_setting(
         sub.can_add_subscribers_group,
-        people.my_current_user_id(),
+        "can_add_subscribers_group",
+        "stream",
     );
     if (can_add_subscribers) {
         return true;
@@ -574,9 +568,10 @@ function can_administer_channel(sub: StreamSubscription): boolean {
         return true;
     }
 
-    return user_groups.is_user_in_setting_group(
+    return settings_data.user_has_permission_for_group_setting(
         sub.can_administer_channel_group,
-        people.my_current_user_id(),
+        "can_administer_channel_group",
+        "stream",
     );
 }
 
@@ -660,9 +655,10 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
         return true;
     }
 
-    return user_groups.is_user_in_setting_group(
+    return settings_data.user_has_permission_for_group_setting(
         sub.can_add_subscribers_group,
-        people.my_current_user_id(),
+        "can_add_subscribers_group",
+        "stream",
     );
 }
 
@@ -698,9 +694,10 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
         return true;
     }
 
-    return user_groups.is_user_in_setting_group(
+    return settings_data.user_has_permission_for_group_setting(
         sub.can_remove_subscribers_group,
-        people.my_current_user_id(),
+        "can_remove_subscribers_group",
+        "stream",
     );
 }
 
