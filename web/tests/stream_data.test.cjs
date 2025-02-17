@@ -1694,3 +1694,24 @@ test("has_content_access", ({override}) => {
     assert.equal(stream_data.has_content_access(social), true);
     social.can_add_subscribers_group = nobody_group.id;
 });
+
+test("can_preview", ({override_rewire}) => {
+    const social = {
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        history_public_to_subscribers: true,
+        can_add_subscribers_group: nobody_group.id,
+        can_administer_channel_group: nobody_group.id,
+    };
+
+    override_rewire(stream_data, "has_content_access", () => true);
+    assert.equal(stream_data.can_preview(social), true);
+    social.history_public_to_subscribers = false;
+    assert.equal(stream_data.can_preview(social), false);
+    social.history_public_to_subscribers = true;
+    assert.equal(stream_data.can_preview(social), true);
+    override_rewire(stream_data, "has_content_access", () => false);
+    assert.equal(stream_data.can_preview(social), false);
+});

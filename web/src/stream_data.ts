@@ -517,7 +517,7 @@ export function has_metadata_access(sub: StreamSubscription): boolean {
     return false;
 }
 
-export function has_content_access(sub: StreamSubscription): boolean {
+export let has_content_access = (sub: StreamSubscription): boolean => {
     if (sub.is_web_public) {
         return true;
     }
@@ -557,6 +557,10 @@ export function has_content_access(sub: StreamSubscription): boolean {
     // content.
 
     return true;
+};
+
+export function rewire_has_content_access(value: typeof has_content_access): void {
+    has_content_access = value;
 }
 
 function can_administer_channel(sub: StreamSubscription): boolean {
@@ -619,7 +623,10 @@ export function can_access_topic_history(sub: StreamSubscription): boolean {
 }
 
 export function can_preview(sub: StreamSubscription): boolean {
-    return sub.subscribed || !sub.invite_only || sub.previously_subscribed;
+    if (!sub.history_public_to_subscribers) {
+        return false;
+    }
+    return has_content_access(sub);
 }
 
 export function can_change_permissions_requiring_content_access(sub: StreamSubscription): boolean {
