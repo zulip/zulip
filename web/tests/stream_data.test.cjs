@@ -102,6 +102,11 @@ const me_group = {
     direct_subgroup_ids: new Set([]),
 };
 
+function initialize_and_override_current_user(user_id, override) {
+    people.initialize_current_user(user_id);
+    override(current_user, "user_id", user_id);
+}
+
 function test(label, f) {
     run_test(label, (helpers) => {
         helpers.override(current_user, "is_admin", false);
@@ -109,7 +114,7 @@ function test(label, f) {
         helpers.override(current_user, "is_guest", false);
         people.init();
         people.add_active_user(me);
-        people.initialize_current_user(me.user_id);
+        initialize_and_override_current_user(me.user_id, helpers.override);
         stream_data.clear_subscriptions();
         user_groups.initialize({
             realm_user_groups: [
@@ -534,7 +539,7 @@ test("admin_options", ({override}) => {
 
     // Test with can_administer_channel_group set to moderators.
     override(current_user, "is_admin", false);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     sub = make_sub(moderators_group.id);
     assert.ok(!is_realm_admin(sub));
     assert.ok(can_change_stream_permissions_requiring_metadata_access(sub));
@@ -1270,42 +1275,45 @@ test("can_unsubscribe_others", ({override}) => {
     };
     stream_data.add_sub(sub);
 
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
     sub.can_remove_subscribers_group = moderators_group.id;
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
     sub.can_remove_subscribers_group = everyone_group.id;
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
 
     // With the setting set to user defined group not including admin,
     // admin can still unsubscribe others.
     sub.can_remove_subscribers_group = students.id;
     override(current_user, "is_admin", true);
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     override(current_user, "is_admin", false);
     sub.can_administer_channel_group = admins_group.id;
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     sub.can_administer_channel_group = nobody_group.id;
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
+    override(current_user, "is_guest", true);
+    assert.equal(stream_data.can_unsubscribe_others(sub), false);
+    override(current_user, "is_guest", false);
 
     // This isn't a real state, but we want coverage on !can_view_subscribers.
     sub.can_remove_subscribers_group = everyone_group.id;
@@ -1330,54 +1338,60 @@ test("can_subscribe_others", ({override}) => {
     };
     stream_data.add_sub(sub);
 
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), false);
 
     sub.can_add_subscribers_group = moderators_group.id;
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), false);
 
     sub.can_add_subscribers_group = everyone_group.id;
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
 
     // With the setting set to user defined group not including admin,
     // admin can still subscribe others.
     sub.can_add_subscribers_group = students.id;
     override(current_user, "is_admin", true);
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
     override(current_user, "is_admin", false);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), false);
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
+    override(current_user, "is_guest", true);
+    assert.equal(stream_data.can_subscribe_others(sub), false);
+    override(current_user, "is_guest", false);
 
     // A user belonging to `can_add_subscribers_group` can subscribe
     // others without being subscribed to a private channel.
     sub.subscribed = false;
     sub.invite_only = true;
+    override(current_user, "is_guest", false);
     assert.equal(stream_data.can_subscribe_others(sub), true);
+    override(current_user, "is_guest", true);
+    assert.equal(stream_data.can_subscribe_others(sub), false);
     sub.can_add_subscribers_group = nobody_group.id;
 
     // User with administrator privileges cannot subscribe others to a
     // private channel they are not subscribed to.
     override(current_user, "is_admin", true);
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), false);
     override(current_user, "is_admin", false);
     sub.can_administer_channel_group = students.id;
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), false);
 });
 
@@ -1570,6 +1584,9 @@ test("has_metadata_access", ({override}) => {
     assert.equal(stream_data.has_metadata_access(social), false);
     social.can_administer_channel_group = me_group.id;
     assert.equal(stream_data.has_metadata_access(social), true);
+    override(current_user, "is_guest", true);
+    assert.equal(stream_data.has_metadata_access(social), false);
+    override(current_user, "is_guest", false);
     social.can_administer_channel_group = nobody_group.id;
 
     // Users that can add other subscribers to a private channel
@@ -1579,6 +1596,9 @@ test("has_metadata_access", ({override}) => {
     assert.equal(stream_data.has_metadata_access(social), false);
     social.can_add_subscribers_group = me_group.id;
     assert.equal(stream_data.has_metadata_access(social), true);
+    override(current_user, "is_guest", true);
+    assert.equal(stream_data.has_metadata_access(social), false);
+    override(current_user, "is_guest", false);
     social.can_add_subscribers_group = nobody_group.id;
 
     // Non-admin and non-guest user should have access to public
