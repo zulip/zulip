@@ -31,6 +31,7 @@ from zerver.actions.user_groups import (
 )
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.create_user import create_user
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
@@ -47,6 +48,7 @@ from zerver.lib.user_groups import (
     get_recursive_subgroups_union_for_groups,
     get_role_based_system_groups_dict,
     get_subgroup_ids,
+    get_system_user_group_by_name,
     get_user_group_member_ids,
     has_user_group_access_for_subgroup,
     is_any_user_in_group,
@@ -475,6 +477,19 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertTrue(has_user_group_access_for_subgroup(zulip_group, iago))
         self.assertTrue(has_user_group_access_for_subgroup(moderators_group, iago))
 
+    def test_get_system_user_group_by_name(self) -> None:
+        realm = get_realm("zulip")
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+
+        self.assertEqual(
+            get_system_user_group_by_name(SystemGroups.MODERATORS, realm.id), moderators_group
+        )
+
+        with self.assertRaisesRegex(JsonableError, "Invalid system group name."):
+            get_system_user_group_by_name("hamletcharacters", realm.id)
+
 
 class UserGroupAPITestCase(UserGroupTestCase):
     def test_user_group_create(self) -> None:
@@ -708,6 +723,23 @@ class UserGroupAPITestCase(UserGroupTestCase):
         help_group = NamedUserGroup.objects.get(name="help", realm=hamlet.realm)
         # We do not create a new UserGroup object in such case.
         self.assertEqual(getattr(help_group, setting_name).id, moderators_group.id)
+
+        params = {
+            "name": "devops",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Devops team",
+        }
+        params[setting_name] = orjson.dumps(
+            {
+                "direct_members": [],
+                "direct_subgroups": [],
+            }
+        ).decode()
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        devops_group = NamedUserGroup.objects.get(name="devops", realm=hamlet.realm)
+        # We do not create a new UserGroup object in such case.
+        self.assertEqual(getattr(devops_group, setting_name).id, nobody_group.id)
 
         internet_group = NamedUserGroup.objects.get(
             name="role:internet", realm=hamlet.realm, is_system_group=True
@@ -995,14 +1027,27 @@ class UserGroupAPITestCase(UserGroupTestCase):
             [marketing_group, moderators_group],
         )
 
-        params[setting_name] = orjson.dumps({"new": marketing_group.id}).decode()
         previous_setting_id = getattr(support_group, setting_name).id
+        params[setting_name] = orjson.dumps(
+            {
+                "new": {
+                    "direct_members": [],
+                    "direct_subgroups": [],
+                }
+            }
+        ).decode()
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
+        # Test that the previous UserGroup object is deleted.
+        self.assertFalse(UserGroup.objects.filter(id=previous_setting_id).exists())
+        self.assertEqual(getattr(support_group, setting_name).id, nobody_group.id)
+
+        params[setting_name] = orjson.dumps({"new": marketing_group.id}).decode()
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
         support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
 
-        # Test that the previous UserGroup object is deleted.
-        self.assertFalse(UserGroup.objects.filter(id=previous_setting_id).exists())
         self.assertEqual(getattr(support_group, setting_name).id, marketing_group.id)
 
         owners_group = NamedUserGroup.objects.get(
