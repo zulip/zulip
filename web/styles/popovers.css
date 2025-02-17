@@ -542,7 +542,8 @@ ul.popover-group-menu-member-list {
         }
 
         .stream-privacy {
-            display: inline-block;
+            display: flex;
+            align-items: center;
         }
 
         .filter-icon i {
@@ -635,17 +636,21 @@ ul.popover-group-menu-member-list {
                 & td {
                     padding: 4px 0;
 
-                    &:first-of-type {
-                        padding-left: 10px;
-                    }
-
-                    &:last-of-type {
-                        padding-right: 10px;
-                    }
-
                     &.remove_subscription,
                     &.remove_member {
                         text-align: right;
+                        padding-right: 10px;
+                    }
+
+                    &.user-profile-channel-row,
+                    &.user-profile-group-row {
+                        text-align: left;
+                        padding-left: 10px;
+
+                        & .user-profile-channel-container {
+                            display: flex;
+                            gap: 3px;
+                        }
                     }
                 }
             }
