@@ -1,9 +1,11 @@
 <tr data-stream-id="{{stream_id}}">
     <td class="user-profile-channel-row">
-        <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
-            {{> stream_privacy . }}
-        </span>
-        <a class="user-profile-channel-list-item" href="{{stream_edit_url}}">{{name}}</a>
+        <div class="user-profile-channel-container">
+            <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
+                {{> stream_privacy . }}
+            </span>
+            <a class="user-profile-channel-list-item" href="{{stream_edit_url}}">{{name}}</a>
+        </div>
     </td>
     {{#if show_unsubscribe_button}}
     <td class="remove_subscription">
