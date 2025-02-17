@@ -718,6 +718,7 @@ paths:
                                         "stream_weekly_traffic": null,
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
+                                        "can_subscribe_group": 2,
                                         "subscribers": [10],
                                       },
                                     ],
@@ -1355,6 +1356,7 @@ paths:
                                         "is_announcement_only": false,
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
+                                        "can_subscribe_group": 2,
                                         "stream_weekly_traffic": null,
                                       },
                                     ],
@@ -10642,12 +10644,16 @@ paths:
         created. The initial [channel settings](/api/update-stream) will be determined
         by the optional parameters, like `invite_only`, detailed below.
 
-        Note that the ability to subscribe oneself and/or other users to a specified
-        channel depends on the [channel's type: private, public, or
-        web-public](/help/channel-permissions).
+        Note that the ability to subscribe oneself and/or other users
+        to a specified channel depends on the [channel's permissions
+        settings](/help/channel-permissions).
 
-        **Changes**: Before Zulip 10.0 (feature level 349), a user cannot
-        subscribe other users to a private channel without being subscribed
+        **Changes**: Before Zulip 10.0 (feature level 357), the
+        `can_subscribe_group` permission, which allows members of the
+        group to subscribe themselves to the channel, did not exist.
+
+        Before Zulip 10.0 (feature level 349), a user cannot subscribe
+        other users to a private channel without being subscribed
         to that channel themselves. Now, If a user is part of
         `can_add_subscribers_group`, they can subscribe themselves or other
         users to a private channel without being subscribed to that channel.
@@ -10798,6 +10804,8 @@ paths:
                   $ref: "#/components/schemas/CanAdministerChannelGroup"
                 can_send_message_group:
                   $ref: "#/components/schemas/CanSendMessageGroup"
+                can_subscribe_group:
+                  $ref: "#/components/schemas/CanSubscribeGroup"
               required:
                 - subscriptions
             encoding:
@@ -10824,6 +10832,8 @@ paths:
               can_administer_channel_group:
                 contentType: application/json
               can_send_message_group:
+                contentType: application/json
+              can_subscribe_group:
                 contentType: application/json
       responses:
         "200":
@@ -15374,6 +15384,7 @@ paths:
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
                                 can_send_message_group: {}
+                                can_subscribe_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -20440,6 +20451,7 @@ paths:
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
                                 can_send_message_group: {}
+                                can_subscribe_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -20481,6 +20493,7 @@ paths:
                                 - first_message_id
                                 - is_announcement_only
                                 - can_remove_subscribers_group
+                                - can_subscribe_group
                                 - stream_weekly_traffic
                                 - is_recently_active
                     example:
@@ -20492,6 +20505,7 @@ paths:
                             {
                               "can_add_subscribers_group": 10,
                               "can_remove_subscribers_group": 10,
+                              "can_subscribe_group": 10,
                               "creator_id": null,
                               "date_created": 1691057093,
                               "description": "A private channel",
@@ -20513,6 +20527,7 @@ paths:
                             {
                               "can_add_subscribers_group": 9,
                               "can_remove_subscribers_group": 9,
+                              "can_subscribe_group": 10,
                               "creator_id": 12,
                               "date_created": 1691057093,
                               "description": "A default public channel",
@@ -20599,6 +20614,7 @@ paths:
                             "stream_post_policy": 1,
                             "can_add_subscribers_group": 2,
                             "can_remove_subscribers_group": 2,
+                            "can_subscribe_group": 2,
                             "stream_weekly_traffic": null,
                           },
                       }
@@ -20861,6 +20877,32 @@ paths:
                         }
 
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_subscribe_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to subscribe themselves to this channel
+                        expressed as an [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        Everyone, excluding guests, can subscribe to any public channel
+                        irrespective of this setting.
+
+                        Users in this group can subscribe to a private channel as well.
+
+                        Note that a user must [have content access](/help/channel-permissions)
+                        to a channel and permission to administer the channel in order to
+                        modify this setting.
+
+                        **Changes**: New in Zulip 10.0 (feature level 357).
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
+
             encoding:
               is_private:
                 contentType: application/json
@@ -20877,6 +20919,8 @@ paths:
               can_administer_channel_group:
                 contentType: application/json
               can_send_message_group:
+                contentType: application/json
+              can_subscribe_group:
                 contentType: application/json
       responses:
         "200":
@@ -22622,6 +22666,7 @@ components:
             can_remove_subscribers_group: {}
             can_administer_channel_group: {}
             can_send_message_group: {}
+            can_subscribe_group: {}
             stream_weekly_traffic:
               type: integer
               nullable: true
@@ -22655,6 +22700,7 @@ components:
             - is_announcement_only
             - can_remove_subscribers_group
             - stream_weekly_traffic
+            - can_subscribe_group
     BasicChannelBase:
       type: object
       description: |
@@ -22809,6 +22855,8 @@ components:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
         can_send_message_group:
           $ref: "#/components/schemas/CanSendMessageGroup"
+        can_subscribe_group:
+          $ref: "#/components/schemas/CanSubscribeGroup"
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -23873,6 +23921,8 @@ components:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
         can_send_message_group:
           $ref: "#/components/schemas/CanSendMessageGroup"
+        can_subscribe_group:
+          $ref: "#/components/schemas/CanSubscribeGroup"
         is_archived:
           type: boolean
           description: |
@@ -25606,6 +25656,25 @@ components:
             **Changes**: New in Zulip 10.0 (feature level 333). Previously
             `stream_post_policy` field used to control the permission to
             post in the channel.
+
+            [setting-values]: /api/group-setting-values
+    CanSubscribeGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to subscribe themselves to this channel.
+
+            Everyone, excluding guests, can subscribe to any public channel
+            irrespective of this setting.
+
+            Users in this group can subscribe to a private channel as well.
+
+            Note that a user must [have content access](/help/channel-permissions)
+            to a channel and permission to administer the channel in order to
+            modify this setting.
+
+            **Changes**: New in Zulip 10.0 (feature level 357).
 
             [setting-values]: /api/group-setting-values
     LinkifierPattern:
