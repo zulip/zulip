@@ -890,7 +890,8 @@ export function validate_message_length($container: JQuery, trigger_flash = true
     if (message_too_long_for_compose) {
         if (trigger_flash) {
             $textarea.addClass("flash");
-            setTimeout(() => $textarea.removeClass("flash"), 1500);
+            // This must be synchronized with the `flash` CSS.
+            setTimeout(() => $textarea.removeClass("flash"), 500);
         }
         return false;
     }
