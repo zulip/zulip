@@ -2523,6 +2523,20 @@
         hsl(0deg 35% 92%),
         hsl(0deg 52% 18%)
     );
+
+    /* Info density update UI */
+    --color-info-density-control-border: light-dark(
+        hsl(0deg 0% 0% / 20%),
+        hsl(0deg 0% 90% / 20%)
+    );
+    --color-info-denisty-button-icon: light-dark(
+        hsl(229deg 9% 36%),
+        hsl(0deg 0% 100% / 80%)
+    );
+    --color-info-density-button-hover-background: light-dark(
+        hsl(229deg 9% 36% / 7%),
+        hsl(229deg 10% 50% / 30%)
+    );
 }
 
 %dark-theme {
