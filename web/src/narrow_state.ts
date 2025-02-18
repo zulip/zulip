@@ -100,12 +100,10 @@ export function set_compose_defaults(): {
     // if they are uniquely specified in the narrow view.
 
     if (single.has("channel")) {
-        // The raw stream name from collect_single may be an arbitrary
-        // unvalidated string from the URL fragment and thus not be valid.
-        // So we look up the resolved stream and return that if appropriate.
-        const sub = stream_sub();
-        if (sub !== undefined) {
-            opts.stream_id = sub.stream_id;
+        // Only set opts.stream_id if it is a valid stream ID.
+        const narrow_stream_id = stream_id(filter(), true);
+        if (narrow_stream_id !== undefined) {
+            opts.stream_id = narrow_stream_id;
         }
     }
 
@@ -124,7 +122,14 @@ export function set_compose_defaults(): {
     return opts;
 }
 
-export let stream_id = (current_filter: Filter | undefined = filter()): number | undefined => {
+export let stream_id = (
+    current_filter: Filter | undefined = filter(),
+    // If true, we'll return undefined if the filter contains a
+    // stream_id, but that stream ID is not present in stream_data
+    // (whether because it's an invalid channel ID, or because the
+    // channel is not accessible to this user).
+    only_valid_id = false,
+): number | undefined => {
     if (current_filter === undefined) {
         return undefined;
     }
@@ -132,7 +137,7 @@ export let stream_id = (current_filter: Filter | undefined = filter()): number |
     if (stream_operands.length === 1 && stream_operands[0] !== undefined) {
         const id = Number.parseInt(stream_operands[0], 10);
         if (!Number.isNaN(id)) {
-            return id;
+            return only_valid_id ? stream_data.get_sub_by_id(id)?.stream_id : id;
         }
     }
     return undefined;
@@ -261,7 +266,7 @@ export let _possible_unread_message_ids = (message_list_filter: Filter): number[
     // If we do return a result, it will be a subset of unread
     // message ids but possibly a superset of unread message ids
     // that match our filter.
-    let filter_stream: StreamSubscription | undefined;
+    let filter_stream_id: number | undefined;
     let topic_name: string | undefined;
     let filter_pm_string: string | undefined;
 
@@ -283,20 +288,20 @@ export let _possible_unread_message_ids = (message_list_filter: Filter): number[
         message_list_filter.can_bucket_by("channel", "topic", "with") ||
         message_list_filter.can_bucket_by("channel", "topic")
     ) {
-        filter_stream = stream_sub(message_list_filter);
+        filter_stream_id = stream_id(message_list_filter, true);
         topic_name = topic(message_list_filter);
-        if (filter_stream === undefined || topic_name === undefined) {
+        if (filter_stream_id === undefined || topic_name === undefined) {
             return [];
         }
-        return unread.get_msg_ids_for_topic(filter_stream.stream_id, topic_name);
+        return unread.get_msg_ids_for_topic(filter_stream_id, topic_name);
     }
 
     if (message_list_filter.can_bucket_by("channel")) {
-        filter_stream = stream_sub(message_list_filter);
-        if (filter_stream === undefined) {
+        filter_stream_id = stream_id(message_list_filter, true);
+        if (filter_stream_id === undefined) {
             return [];
         }
-        return unread.get_msg_ids_for_stream(filter_stream.stream_id);
+        return unread.get_msg_ids_for_stream(filter_stream_id);
     }
 
     if (

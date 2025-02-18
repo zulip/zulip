@@ -363,7 +363,7 @@ function maybe_shrink_list(
 
     // We want to always show PM recipients even if they're inactive.
     const pm_ids_set = narrow_state.pm_ids_set();
-    const stream_id = narrow_state.stream_id();
+    const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
     const filter_by_stream_id =
         stream_id &&
         peer_data.get_subscriber_count(stream_id) <= max_channel_size_to_show_all_subscribers;
@@ -452,7 +452,7 @@ function get_filtered_user_id_list(
 
         // We want to show subscribers even if they're inactive, if there are few
         // enough subscribers in the channel.
-        const stream_id = narrow_state.stream_id();
+        const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
         if (stream_id) {
             const subscribers = peer_data.get_subscribers(stream_id);
             if (subscribers.length <= max_channel_size_to_show_all_subscribers) {

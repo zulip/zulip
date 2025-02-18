@@ -53,7 +53,7 @@ export function get_recipient_label(message?: ComposeClosedMessage): RecipientLa
             // For empty narrows where there's a clear reply target,
             // i.e. stream+topic or a single direct message conversation,
             // we label the button as replying to the thread.
-            const stream_id = narrow_state.stream_sub()?.stream_id;
+            const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
             const topic = narrow_state.topic();
             if (stream_id !== undefined && topic !== undefined) {
                 return get_stream_recipient_label(stream_id, topic);

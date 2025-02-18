@@ -177,7 +177,7 @@ export function update_stream_privacy(
 
     // Update UI elements
     update_left_panel_row(sub);
-    if (narrow_state.stream_sub()?.stream_id === sub.stream_id) {
+    if (narrow_state.stream_id(narrow_state.filter(), true) === sub.stream_id) {
         // Rerender message list if we are narrowed to the stream.
         message_lists.current?.rerender();
     }
