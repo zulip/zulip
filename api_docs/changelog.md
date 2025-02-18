@@ -45,6 +45,10 @@ format used by the Zulip server that they are interacting with.
   Users can generate typing notifications when editing messages in
   unsubscribed private channels that are accessible only via groups
   that grant content access.
+* [`POST /messages`](/api/send-message): Users can send messages to
+  private channels with shared history without subscribing if they are
+  part of groups that grant content access and also in
+  `can_send_message_group`.
 
 **Feature level 353**
 

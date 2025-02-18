@@ -521,6 +521,17 @@ def access_stream_for_send_message(
         # Bots can send to any stream their owner can.
         return
 
+    user_recursive_group_ids = set(
+        get_recursive_membership_groups(sender).values_list("id", flat=True)
+    )
+
+    if (
+        stream.history_public_to_subscribers
+        and is_user_in_groups_granting_content_access(stream, user_recursive_group_ids)
+        and not sender.is_guest
+    ):
+        return
+
     # All other cases are an error.
     raise JsonableError(
         _("Not authorized to send to channel '{channel_name}'").format(channel_name=stream.name)
