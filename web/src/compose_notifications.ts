@@ -27,6 +27,7 @@ export function notify_unmute(muted_narrow: string, stream_id: number, topic_nam
             muted_narrow,
             stream_id,
             topic_name,
+            is_empty_string_topic: topic_name === "",
             classname: compose_banner.CLASSNAMES.unmute_topic_notification,
             banner_type: "",
             button_text: $t({defaultMessage: "Unmute topic"}),
