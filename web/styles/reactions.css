@@ -166,11 +166,11 @@
 
 .emoji-picker-popover {
     padding: 0;
-    height: 370px;
+    height: fit-content;
     user-select: none;
 
     .emoji-popover {
-        width: 250px;
+        width: 16.6667em; /* 250px at 15px/em */
 
         .emoji-popover-category-tabs {
             /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
@@ -181,12 +181,12 @@
             overflow: hidden;
 
             .emoji-popover-tab-item {
+                font-size: 1.0667em; /* 16px at 15px/em */
                 display: inline-block;
-                padding-top: 8px;
-                width: 25px;
-                height: 25px;
+                padding-top: 0.5em; /* 8px at 16px/em */
+                width: 1.5625em; /* 25px at 16px/em */
+                height: 1.5625em; /* 25px at 16px/em */
                 text-align: center;
-                font-size: 16px;
                 cursor: pointer;
                 /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
                 flex-grow: 1;
@@ -205,27 +205,27 @@
             position: relative;
             overflow: hidden auto;
             display: block;
-            width: 247px;
-            padding-left: 3px;
+            width: 16.4667em; /* 247px at 15px/em */
+            padding-left: 0.2em; /* 3px at 15px/em */
         }
 
         .emoji-popover-emoji-map {
-            height: 250px;
+            height: 16.6667em; /* 250px at 15px/em */
 
             .emoji-popover-subheading {
                 font-weight: 600;
-                padding: 5px 3px;
+                padding: 0.3333em 0.2em; /* 5px 3px at 15px/em */
             }
         }
 
         .emoji-popover-emoji {
             display: inline-block;
             margin: 0;
-            padding: 6px;
+            padding: 0.4em; /* 6px at 15px/em */
             cursor: pointer;
             border-radius: 0.5em;
-            height: 25px;
-            width: 25px;
+            height: 1.6667em; /* 25px at 15px/em */
+            width: 1.6667em; /* 25px at 15px/em */
 
             &:focus {
                 background-color: var(
@@ -256,17 +256,18 @@
             }
 
             .emoji {
-                top: 6px;
+                height: 1.6667em; /* 25px at 15px/em */
+                width: 1.6667em; /* 25px at 15px/em */
             }
         }
 
         .emoji-search-results-container {
-            height: 283px;
+            height: 18.8667em; /* 283px at 15px/em */
 
             .emoji-popover-results-heading {
+                font-size: 1.1333em; /* 17px at 15px/em */
                 font-weight: 600;
-                padding: 5px 3px 3px 5px;
-                font-size: 17px;
+                padding: 0.2941em 0.1765em 0.1765em 0.2941em; /* 5px 3px 3px 5px at 17px/em */
             }
         }
     }
@@ -274,24 +275,24 @@
     .emoji-showcase-container {
         position: relative;
         background-color: var(--color-background-emoji-picker-popover);
-        min-height: 44px;
-        width: 250px;
+        min-height: 2.9333em; /* 44px at 15px/em */
+        width: 16.6667em; /* 250px at 15px/em */
         border-radius: 0 0 3px 3px;
 
         .emoji-preview {
             position: absolute;
-            width: 32px;
-            height: 32px;
-            left: 5px;
-            top: 6px;
+            width: 2.1333em; /* 32px at 15px/em */
+            height: 2.1333em; /* 32px at 15px/em */
+            left: 0.3333em; /* 5px at 15px/em */
+            top: 0.4em; /* 6px at 15px/em */
             margin-top: 0;
         }
 
         .emoji-canonical-name {
+            font-size: 1.0667em; /* 16px at 15px/em */
             position: relative;
-            top: 12px;
-            margin-left: 50px;
-            font-size: 16px;
+            top: 0.75em; /* 12px at 16px/em */
+            margin-left: 3.125em; /* 50px at 16px/em */
             font-weight: 600;
             white-space: nowrap;
             text-overflow: ellipsis;
