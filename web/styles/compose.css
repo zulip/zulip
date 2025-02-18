@@ -1618,10 +1618,10 @@ textarea.new_message_textarea {
 }
 
 .saved_snippets-dropdown-list-container {
-    width: 250px;
+    width: 17.8571em; /* 250px at 14px/em */
 
     .dropdown-list .dropdown-list-item-common-styles {
-        padding: 5px 10px;
+        padding: 0.3571em 0.7143em; /* 5px 10px at 14px/em */
         display: flex;
         flex-direction: column;
 
@@ -1632,7 +1632,7 @@ textarea.new_message_textarea {
         .dropdown-list-item-description {
             white-space: nowrap;
             font-weight: 400;
-            font-size: 13px;
+            font-size: 0.9283em; /* 13px at 14px/em */
             opacity: 0.8;
             padding: 0;
             text-overflow: ellipsis;
