@@ -4,10 +4,12 @@ import * as tippy from "tippy.js";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
 import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
+import render_information_density_update_button_tooltip from "../templates/information_density_update_button_tooltip.hbs";
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
 import {$t} from "./i18n.ts";
+import * as information_density from "./information_density.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as stream_data from "./stream_data.ts";
@@ -698,6 +700,30 @@ export function initialize(): void {
         target: ".disabled-tooltip",
         trigger: "focus mouseenter",
         appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#personal-menu-dropdown .info-density-button-container",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "bottom",
+        onShow(instance) {
+            const button_container = instance.reference;
+            assert(button_container instanceof HTMLElement);
+
+            const tooltip_context =
+                information_density.get_tooltip_context_for_info_density_buttons(
+                    $(button_container).find(".info-density-button"),
+                );
+            instance.setContent(
+                ui_util.parse_html(
+                    render_information_density_update_button_tooltip(tooltip_context),
+                ),
+            );
+        },
         onHidden(instance) {
             instance.destroy();
         },
