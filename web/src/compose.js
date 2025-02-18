@@ -159,6 +159,8 @@ export function send_message_success(request, data) {
             compose_notifications.notify_unmute(muted_narrow, request.stream_id, request.topic);
         }
     }
+
+    do_post_send_tasks();
 }
 
 export let send_message = (request = create_message_object()) => {
@@ -318,7 +320,6 @@ export let finish = (scheduling_message = false) => {
     } else {
         send_message();
     }
-    do_post_send_tasks();
     return true;
 };
 
@@ -372,6 +373,7 @@ function schedule_message_to_custom_date() {
         });
         compose_banner.clear_message_sent_banners();
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
+        do_post_send_tasks();
     };
 
     const error = function (xhr) {
