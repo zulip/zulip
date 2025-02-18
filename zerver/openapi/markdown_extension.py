@@ -26,6 +26,7 @@ from zerver.openapi.openapi import (
     NO_EXAMPLE,
     Parameter,
     check_additional_imports,
+    check_non_api_v1_or_json_pattern,
     check_requires_administrator,
     check_requires_owner,
     check_web_app_pending_implementation,
@@ -206,10 +207,19 @@ def render_javascript_code_example(
     return code_example
 
 
-def curl_method_arguments(endpoint: str, method: str, api_url: str) -> list[str]:
+def get_endpoint_base_url(endpoint: str, method: str, api_url: str) -> str:
+    if check_non_api_v1_or_json_pattern(endpoint, method):  # nocoverage
+        return api_url.removesuffix("/api")
+    return f"{api_url}/v1"
+
+
+def curl_method_arguments(
+    method: str, api_url: str, *, endpoint: str, example_endpoint: str
+) -> list[str]:
+    url = get_endpoint_base_url(endpoint, method, api_url) + example_endpoint
+
     # We also include the -sS verbosity arguments here.
     method = method.upper()
-    url = f"{api_url}/v1{endpoint}"
     valid_methods = ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"]
     if method == "GET":
         # Then we need to make sure that each -d option translates to becoming
@@ -310,9 +320,16 @@ def generate_curl_example(
             continue
         example_value = get_openapi_param_example_value_as_string(endpoint, method, parameter)
         format_dict[parameter.name] = example_value
-    example_endpoint = endpoint.format_map(format_dict)
 
-    curl_first_line_parts = ["curl", *curl_method_arguments(example_endpoint, method, api_url)]
+    curl_first_line_parts = [
+        "curl",
+        *curl_method_arguments(
+            method,
+            api_url,
+            endpoint=endpoint,
+            example_endpoint=endpoint.format_map(format_dict),
+        ),
+    ]
     lines.append(shlex.join(curl_first_line_parts))
 
     if operation_security is None:
@@ -526,6 +543,8 @@ class APIHeaderPreprocessor(BasePreprocessor):
         path, method = function.rsplit(":", 1)
         raw_title = get_openapi_summary(path, method)
         description_dict = get_openapi_description(path, method)
+        base_url = get_endpoint_base_url(path, method, self.api_url)
+
         return [
             *("# " + line for line in raw_title.splitlines()),
             *(
@@ -536,7 +555,7 @@ class APIHeaderPreprocessor(BasePreprocessor):
             *(["{!api-admin-only.md!}"] if check_requires_administrator(path, method) else []),
             *(["{!api-owner-only.md!}"] if check_requires_owner(path, method) else []),
             "",
-            f"`{method.upper()} {self.api_url}/v1{path}`",
+            f"`{method.upper()} {base_url}{path}`",
             "",
             *description_dict.splitlines(),
         ]
