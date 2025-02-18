@@ -80,9 +80,7 @@
     border: 1px solid var(--color-border-popover-menu);
     border-radius: 6px;
     box-shadow: var(--box-shadow-popover-menu);
-    /* Popover menus should scale no smaller than 15px,
-       but scale up with the base font-size. */
-    font-size: max(15px, var(--base-font-size-px));
+    font-size: 1.0714em; /* 15px at 14px em */
 
     > .tippy-content {
         padding: 0;
