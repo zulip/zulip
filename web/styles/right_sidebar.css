@@ -164,17 +164,34 @@
     }
 
     .user_sidebar_entry.with_avatar {
-        .user-profile-picture {
+        .user-profile-picture-container {
             /* Establish positioning context for user circle. */
             position: relative;
+            /* TODO: Express this as part of the grid on
+               .selectable_sidebar_block. */
+            margin-right: 11px;
+
+            &:not(:has(.user-circle-offline)) .user-profile-picture {
+                /* The over-avatar user circle width is 15.5px at 20px/1em;
+                   we adjust the border radius here to avoid any pixels
+                   from the avatar bleeding through. */
+                border-bottom-right-radius: 0.3875em; /* 7.75px at 20px/1em */
+            }
+        }
+
+        .user-profile-picture {
+            /* Push back on the margin-right usually allotted here;
+               we put it on .user-profile-picture-container instead,
+               so that user circles occupy the corner of the image. */
+            margin-right: 0;
         }
 
         .user-circle {
             position: absolute;
             /* 10px at 16px/1em */
             font-size: 0.625em;
-            bottom: -1px;
-            right: -1px;
+            bottom: -0.5px;
+            right: -0.5px;
             background-color: var(--color-background);
             /* A 1.5px border provides better results than
                a 1px border, especially at smaller font sizes. */

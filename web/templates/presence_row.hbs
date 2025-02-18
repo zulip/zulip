@@ -16,13 +16,15 @@
                 </div>
             </a>
         {{else if user_list_style.WITH_AVATAR}}
-            <div class="user-profile-picture avatar-preload-background">
-                <img loading="lazy" src="{{profile_picture}}"/>
-                {{#if (eq user_circle_class "user-circle-deactivated")}}
-                <span class="fa fa-ban {{user_circle_class}} user-circle"></span>
-                {{else}}
-                <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
-                {{/if}}
+            <div class="user-profile-picture-container">
+                <div class="user-profile-picture avatar-preload-background">
+                    <img loading="lazy" src="{{profile_picture}}"/>
+                    {{#if (eq user_circle_class "user-circle-deactivated")}}
+                    <span class="fa fa-ban {{user_circle_class}} user-circle"></span>
+                    {{else}}
+                    <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
+                    {{/if}}
+                </div>
             </div>
             <a class="user-presence-link" href="{{href}}">
                 <div class="user-name-and-status-wrapper">
