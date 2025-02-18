@@ -20,6 +20,7 @@ import type {PseudoMentionUser, User} from "./people.ts";
 import * as pm_conversations from "./pm_conversations.ts";
 import * as pygments_data from "./pygments_data.ts";
 import * as recent_senders from "./recent_senders.ts";
+import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamPill, StreamPillData} from "./stream_pill.ts";
@@ -485,9 +486,15 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
     ];
     const email_okay_matches = [...email_results.word_boundary_matches];
 
-    const groups_results = typeahead.triage_raw(query, groups, (g) =>
-        user_groups.get_display_group_name(g.name),
-    );
+    const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
+        if (g.name === "role:members") {
+            return [
+                user_groups.get_display_group_name(g.name),
+                settings_config.alternate_members_group_typeahead_matching_name,
+            ];
+        }
+        return [user_groups.get_display_group_name(g.name)];
+    });
     const groups_good_matches = [
         ...groups_results.exact_matches,
         ...groups_results.begins_with_case_sensitive_matches,
@@ -685,9 +692,15 @@ export let sort_group_setting_options = ({
         users_name_results.no_matches,
         (p) => p.user.email,
     );
-    const groups_results = typeahead.triage_raw(query, groups, (g) =>
-        user_groups.get_display_group_name(g.name),
-    );
+    const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
+        if (g.name === "role:members") {
+            return [
+                user_groups.get_display_group_name(g.name),
+                settings_config.alternate_members_group_typeahead_matching_name,
+            ];
+        }
+        return [user_groups.get_display_group_name(g.name)];
+    });
 
     const exact_matches = sort_group_setting_items([
         ...groups_results.exact_matches,
@@ -889,6 +902,20 @@ export function query_matches_stream_name(query: string, stream: StreamPillData)
 }
 
 export function query_matches_group_name(query: string, user_group: UserGroupPillData): boolean {
+    if (user_group.name === "role:members") {
+        return (
+            typeahead.query_matches_string_in_order(
+                query,
+                user_groups.get_display_group_name(user_group.name),
+                "",
+            ) ||
+            typeahead.query_matches_string_in_order(
+                query,
+                settings_config.alternate_members_group_typeahead_matching_name,
+                "",
+            )
+        );
+    }
     return typeahead.query_matches_string_in_order(
         query,
         user_groups.get_display_group_name(user_group.name),
