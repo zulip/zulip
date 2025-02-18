@@ -1518,6 +1518,36 @@
     --color-user-circle-idle: light-dark(#f5b266, #ae640a);
     --color-user-circle-offline: light-dark(#c1c6d7, #454854);
     --color-user-circle-deactivated: hsl(0deg 0% 50%);
+    --gradient-user-circle-idle: linear-gradient(
+        to right,
+        var(--color-user-circle-idle) 5%,
+        light-dark(
+                color-mix(
+                    in srgb,
+                    var(--color-user-circle-idle) 78.9%,
+                    transparent
+                ),
+                var(--color-user-circle-idle)
+            )
+            25%,
+        transparent 100%
+    );
+    /* To avoid the avatar bleeding through, we rewrite
+       the gradient with an explicit background color. */
+    --gradient-user-circle-idle-avatar: linear-gradient(
+        to right,
+        var(--color-user-circle-idle) 5%,
+        light-dark(
+                color-mix(
+                    in srgb,
+                    var(--color-user-circle-idle) 78.9%,
+                    var(--color-background)
+                ),
+                var(--color-user-circle-idle)
+            )
+            25%,
+        var(--color-background) 100%
+    );
     --color-copy-button: light-dark(
         /* hsl(229deg 9% 36%) corresponds to --grey-600.
            We use the hsl() equivalent directly since postcss-color-mix-function

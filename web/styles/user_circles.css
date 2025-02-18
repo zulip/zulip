@@ -3,13 +3,13 @@
 }
 
 .user-circle-idle {
-    background: linear-gradient(
-        to right,
-        var(--color-user-circle-idle) 25%,
-        transparent
-    );
+    background: var(--gradient-user-circle-idle);
     background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+.with_avatar .user-circle-idle {
+    background: var(--gradient-user-circle-idle-avatar);
 }
 
 .user-circle-offline {
