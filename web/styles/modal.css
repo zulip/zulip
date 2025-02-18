@@ -541,6 +541,7 @@
                 .todo-description-container {
                     flex: 1 1 auto;
                     display: flex;
+                    min-width: 0;
 
                     .todo-description-input {
                         flex-grow: 1;
