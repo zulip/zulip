@@ -35,6 +35,7 @@ from zerver.openapi.openapi import (
     get_openapi_summary,
     get_parameters_description,
     get_responses_description,
+    is_avatar_endpoint,
     openapi_spec,
 )
 
@@ -210,6 +211,10 @@ def curl_method_arguments(endpoint: str, method: str, api_url: str) -> list[str]
     method = method.upper()
     url = f"{api_url}/v1{endpoint}"
     valid_methods = ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"]
+    if is_avatar_endpoint(endpoint, method):
+        # For the avatar endpoints we redirect the client to the actual
+        # avatar URL.
+        return ["-sL", url]
     if method == "GET":
         # Then we need to make sure that each -d option translates to becoming
         # a GET parameter (in the URL) and not a POST parameter (in the body).
@@ -323,7 +328,8 @@ def generate_curl_example(
 
     if authentication_required:
         lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
-
+    if is_avatar_endpoint(endpoint, method):
+        lines.append("    -o avatar.png")
     for parameter in parameters:
         if parameter.kind == "path":
             continue
