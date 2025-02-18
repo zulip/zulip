@@ -1013,7 +1013,7 @@ h4.user_group_setting_subsection_title {
         .tab-container {
             .ind-tab {
                 padding: 3px 4px;
-                min-width: 80px;
+                min-width: 5.7142em; /* 80px at 14px/em */
                 width: auto;
                 display: flex;
             }
