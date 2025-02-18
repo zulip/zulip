@@ -444,8 +444,16 @@ def fix_message_rendered_content(
                         mention["data-user-group-id"] = str(user_group_id_map[old_user_group_id])
                 message[rendered_content_key] = str(soup)
 
-            # Trigger thumbnailing of all thumbnails in the message
-            get_user_upload_previews(realm.id, message[content_key], lock=True)
+            # Enqueue thumbnailing of all thumbnails in the message.
+            # We do this without taking a lock on the ImageAttachment
+            # rows, because the race here is that the images
+            # referenced by this message were encountered previously,
+            # and are currently being thumbnailed -- which will
+            # worst-case result in the images being enqueued a second
+            # time, and a no-op when those are processed.  The return
+            # value will also be out of date -- but that is irrelevant
+            # in this use case.
+            get_user_upload_previews(realm.id, message[content_key])
 
             continue
 
