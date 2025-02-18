@@ -97,6 +97,8 @@ type PersonalMenuContext = {
     status_emoji_info: UserStatusEmojiInfo | undefined;
     user_color_scheme: number;
     color_scheme_values: ColorSchemeValues;
+    web_font_size_px: number;
+    web_line_height_percent: number;
 };
 
 type GearMenuContext = {
@@ -337,6 +339,10 @@ export function get_personal_menu_content_context(): PersonalMenuContext {
         // user color scheme
         user_color_scheme: user_settings.color_scheme,
         color_scheme_values: settings_config.color_scheme_values,
+
+        // info density values
+        web_font_size_px: user_settings.web_font_size_px,
+        web_line_height_percent: user_settings.web_line_height_percent,
     };
 }
 

@@ -1434,3 +1434,65 @@ input.invalid-input {
     text-overflow: ellipsis;
     overflow: hidden;
 }
+
+.info-density-controls {
+    .button-group {
+        border-radius: 5px;
+        border: 1px solid var(--color-info-density-control-border);
+        width: 100%;
+        display: grid;
+        grid-auto-flow: column;
+
+        .info-density-button-container {
+            display: inline-flex;
+            flex-direction: column;
+
+            &:first-of-type {
+                .info-density-button {
+                    border-top-left-radius: 5px;
+                    border-bottom-left-radius: 5px;
+                }
+            }
+
+            &:last-of-type {
+                .info-density-button {
+                    border-top-right-radius: 5px;
+                    border-bottom-right-radius: 5px;
+                }
+            }
+        }
+
+        .info-density-button {
+            border: none;
+            background-color: var(--color-background-popover);
+            padding: 0.25em 0.4375em;
+            display: inline-flex;
+            align-items: center;
+            vertical-align: unset;
+            justify-content: center;
+            margin: 0;
+
+            &:hover:not(:disabled) {
+                background-color: var(
+                    --color-info-density-button-hover-background
+                );
+            }
+
+            &:focus {
+                outline: none;
+            }
+
+            &:disabled {
+                cursor: default;
+                opacity: 0.4;
+            }
+
+            .zulip-icon {
+                display: flex;
+                align-items: center;
+                color: var(--color-info-denisty-button-icon);
+                opacity: 0.7;
+            }
+        }
+    }
+}

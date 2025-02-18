@@ -821,7 +821,6 @@ export function dispatch_normal_event(event) {
                 "color_scheme",
                 "default_language",
                 "demote_inactive_streams",
-                "dense_mode",
                 "display_emoji_reaction_users",
                 "emojiset",
                 "enter_sends",
@@ -837,9 +836,7 @@ export function dispatch_normal_event(event) {
                 "web_animate_image_previews",
                 "web_channel_default_view",
                 "web_escape_navigates_to_home_view",
-                "web_font_size_px",
                 "web_home_view",
-                "web_line_height_percent",
                 "web_mark_read_on_scroll_policy",
                 "web_navigate_to_sent_message",
                 "web_stream_unreads_count_display_policy",
@@ -904,19 +901,19 @@ export function dispatch_normal_event(event) {
                 );
                 activity_ui.build_user_sidebar();
             }
-            if (event.property === "dense_mode") {
-                $("body").toggleClass("less-dense-mode");
-                $("body").toggleClass("more-dense-mode");
-                information_density.set_base_typography_css_variables();
-                information_density.calculate_timestamp_widths();
-            }
             if (
+                event.property === "dense_mode" ||
                 event.property === "web_font_size_px" ||
                 event.property === "web_line_height_percent"
             ) {
-                information_density.set_base_typography_css_variables();
-                information_density.calculate_timestamp_widths();
+                // We just ignore events for "dense_mode", "web_font_size_px"
+                // and "web_line_height_percent" settings as we are fine
+                // with a window not being updated due to changes being done
+                // from another window and also helps in avoiding weird issues
+                // on clicking the "+"/"-" buttons multiple times quickly when
+                // updating these settings.
             }
+
             if (event.property === "web_mark_read_on_scroll_policy") {
                 unread_ui.update_unread_banner();
             }

@@ -1,0 +1,30 @@
+<div class="button-group" data-property="{{property}}">
+    {{#if for_settings_ui}}
+        <div class="info-density-button-container">
+            <button class="info-density-button default-button" aria-label="{{#if (eq property "web_font_size_px")}}{{t 'Set font size to default'}}{{else}}{{t 'Set line spacing to default' }}{{/if}}">
+                <i class="zulip-icon {{default_icon_class}}" aria-hidden="true"></i>
+            </button>
+        </div>
+    {{/if}}
+    {{#if for_settings_ui}}
+        <span class="display-value">{{display_value}}</span>
+    {{/if}}
+    <input class="current-value prop-element" id="{{prefix}}{{property}}" data-setting-widget-type="info-density-setting" type="hidden" value="{{property_value}}" />
+    <div class="info-density-button-container">
+        <button class="info-density-button decrease-button" aria-label="{{#if (eq property "web_font_size_px")}}{{t 'Decrease font size'}}{{else}}{{t 'Decrease line spacing' }}{{/if}}">
+            <i class="zulip-icon zulip-icon-minus" aria-hidden="true"></i>
+        </button>
+    </div>
+    {{#unless for_settings_ui}}
+        <div class="info-density-button-container">
+            <button class="info-density-button default-button" aria-label="{{#if (eq property "web_font_size_px")}}{{t 'Set font size to default'}}{{else}}{{t 'Set line spacing to default' }}{{/if}}">
+                <i class="zulip-icon {{default_icon_class}}" aria-hidden="true"></i>
+            </button>
+        </div>
+    {{/unless}}
+    <div class="info-density-button-container">
+        <button class="info-density-button increase-button" aria-label="{{#if (eq property "web_font_size_px")}}{{t 'Increase font size'}}{{else}}{{t 'Increase line spacing' }}{{/if}}">
+            <i class="zulip-icon zulip-icon-plus" aria-hidden="true"></i>
+        </button>
+    </div>
+</div>
