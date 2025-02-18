@@ -30,7 +30,11 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
-from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
+from zerver.actions.streams import (
+    do_change_stream_group_based_setting,
+    do_change_stream_permission,
+    do_deactivate_stream,
+)
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
@@ -76,15 +80,24 @@ from zerver.views.message_send import InvalidMirrorInputError
 
 class MessagePOSTTest(ZulipTestCase):
     def _send_and_verify_message(
-        self, user: UserProfile, stream_name: str, error_msg: str | None = None
+        self,
+        user: UserProfile,
+        stream_name: str,
+        error_msg: str | None = None,
+        *,
+        allow_unsubscribed_sender: bool = False,
     ) -> None:
         if error_msg is None:
-            msg_id = self.send_stream_message(user, stream_name)
+            msg_id = self.send_stream_message(
+                user, stream_name, allow_unsubscribed_sender=allow_unsubscribed_sender
+            )
             result = self.api_get(user, "/api/v1/messages/" + str(msg_id))
             self.assert_json_success(result)
         else:
             with self.assertRaisesRegex(JsonableError, error_msg):
-                self.send_stream_message(user, stream_name)
+                self.send_stream_message(
+                    user, stream_name, allow_unsubscribed_sender=allow_unsubscribed_sender
+                )
 
     def test_message_to_stream_by_name(self) -> None:
         """
@@ -423,6 +436,101 @@ class MessagePOSTTest(ZulipTestCase):
             notification_bot, stream, "Test topic", "Test message by notification bot"
         )
         self.assertEqual(self.get_last_message().content, "Test message by notification bot")
+
+    def test_can_send_message_group_permission_for_streams(self) -> None:
+        realm = get_realm("zulip")
+        othello = self.example_user("othello")
+
+        stream_name = "private_stream"
+        stream = self.make_stream(
+            stream_name, realm, invite_only=True, history_public_to_subscribers=True
+        )
+        self._send_and_verify_message(
+            othello, stream_name, "Not authorized to send to channel 'private_stream"
+        )
+
+        othello_group = self.create_or_update_anonymous_group_for_setting([othello], [])
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", othello_group, acting_user=othello
+        )
+
+        self.subscribe(othello, stream_name)
+        self._send_and_verify_message(othello, stream_name)
+        self.unsubscribe(othello, stream_name)
+
+        do_change_stream_group_based_setting(
+            stream, "can_add_subscribers_group", othello_group, acting_user=othello
+        )
+        self._send_and_verify_message(othello, stream_name, allow_unsubscribed_sender=True)
+
+        # history_public_to_subscribers is False
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=othello,
+        )
+        self._send_and_verify_message(
+            othello,
+            stream_name,
+            "Not authorized to send to channel 'private_stream",
+            allow_unsubscribed_sender=True,
+        )
+
+        # invite_only should not matter while sending message, since we
+        # might add the ability for guests to join public channels via
+        # `can_join_group` in the future and in that case
+        # `history_public_to_subscribers` might be a relevant property
+        # for public channels
+        guest_user = self.example_user("polonius")
+        guest_user_group = self.create_or_update_anonymous_group_for_setting([guest_user], [])
+        do_change_stream_group_based_setting(
+            stream, "can_send_message_group", guest_user_group, acting_user=othello
+        )
+        do_change_stream_permission(
+            stream,
+            invite_only=False,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=othello,
+        )
+        self._send_and_verify_message(
+            guest_user,
+            stream_name,
+            "Not authorized to send to channel 'private_stream",
+            allow_unsubscribed_sender=True,
+        )
+
+        do_change_stream_permission(
+            stream,
+            invite_only=False,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=othello,
+        )
+        self._send_and_verify_message(
+            guest_user,
+            stream_name,
+            "Not authorized to send to channel 'private_stream",
+            allow_unsubscribed_sender=True,
+        )
+        # Guest not subscribed to a public stream should be able to
+        # send a message to that channel if they are part of both a
+        # group providing content access and `can_send_message_group`
+        # for that channel and `history_public_to_subscribers` is
+        # True.
+        #
+        # But can_add_subscribers_group has !allow_everyone_group.
+        do_change_stream_group_based_setting(
+            stream, "can_add_subscribers_group", guest_user_group, acting_user=othello
+        )
+        self._send_and_verify_message(
+            guest_user,
+            stream_name,
+            "Not authorized to send to channel 'private_stream",
+            allow_unsubscribed_sender=True,
+        )
 
     def test_api_message_with_default_to(self) -> None:
         """
