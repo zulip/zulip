@@ -10290,6 +10290,7 @@ paths:
       operationId: get-file-temporary-url
       summary: Get public temporary URL
       tags: ["messages"]
+      x-non-api-v1-path: true
       description: |
         Get a temporary URL for access to the file that doesn't require authentication.
 
