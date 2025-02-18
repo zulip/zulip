@@ -272,9 +272,8 @@ def generate_openapi_fixture(endpoint: str, method: str) -> list[str]:
         openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"]
     ):
         if int(status_code) in REDIRECT_RESPONSE_STATUS_CODE:  # nocoverage
-            # For endpoints endpoints that redirects the caller, there
-            # won't be any request body so we skip building the JSON
-            # body response example.
+            # For endpoints that redirects the caller, there won't be any
+            # request body so we skip building the JSON body response example.
             description = get_schema(endpoint, method, status_code)["description"]
             fixture.extend(description.strip().splitlines())
             continue
@@ -336,6 +335,11 @@ def get_endpoint_from_operationid(operationid: str) -> tuple[str, str]:
 
 def get_openapi_paths() -> set[str]:
     return set(openapi_spec.openapi()["paths"].keys())
+
+
+def check_non_v1_api_pattern(endpoint: str, method: str) -> bool:
+    """Fetch if the endpoint is not v1_api_and_json_patterns."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get("x-non-api-v1-path", False)
 
 
 NO_EXAMPLE = object()
