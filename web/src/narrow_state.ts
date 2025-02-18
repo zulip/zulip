@@ -101,9 +101,9 @@ export function set_compose_defaults(): {
     // if they are uniquely specified in the narrow view.
 
     if (single.has("channel")) {
-        // The raw stream name from collect_single may be an arbitrary
-        // unvalidated string from the URL fragment and thus not be valid.
-        // So we look up the resolved stream and return that if appropriate.
+        // The channel ID from collect_single may not correspond to a valid
+        // or accessible channel, so we look up the channel data, and return
+        // that if appropriate.
         const sub = stream_sub();
         if (sub !== undefined) {
             opts.stream_id = sub.stream_id;
@@ -222,7 +222,7 @@ export let get_first_unread_info = (
 ): {flavor: "cannot_compute" | "not_found"} | {flavor: "found"; msg_id: number} => {
     const cannot_compute_response: {flavor: "cannot_compute"} = {flavor: "cannot_compute"};
     if (current_filter === undefined) {
-        // we don't yet support the all-messages view
+        // We're in either the inbox or recent conversations view.
         blueslip.error("unexpected call to get_first_unread_info");
         return cannot_compute_response;
     }
@@ -398,14 +398,9 @@ export function narrowed_by_stream_reply(current_filter: Filter | undefined = fi
 }
 
 export function is_for_stream_id(stream_id: number, filter?: Filter): boolean {
-    // This is not perfect, since we still track narrows by
-    // name, not id, but at least the interface is good going
-    // forward.
     const narrow_sub = stream_sub(filter);
-
     if (narrow_sub === undefined) {
         return false;
     }
-
     return stream_id === narrow_sub.stream_id;
 }
