@@ -1106,6 +1106,8 @@ export const system_user_groups_list = [
     },
 ];
 
+export const alternate_members_group_typeahead_matching_name = $t({defaultMessage: "Members"});
+
 export const user_topic_visibility_policy_values = {
     followed: {
         code: 3,

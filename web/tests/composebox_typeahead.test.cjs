@@ -529,7 +529,7 @@ const admins = user_group_item({
 });
 
 const members = user_group_item({
-    name: "Members",
+    name: "role:members",
     id: 6,
     creator_id: null,
     date_created: 1596710000,
@@ -1659,7 +1659,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     );
     assert_typeahead_equals(
         "test @_**o",
-        mentions_with_silent_marker([othello_item, cordelia_item, admins], true),
+        mentions_with_silent_marker([othello_item, cordelia_item, admins, members], true),
     );
     assert_typeahead_equals(
         "test @*o",
@@ -1762,6 +1762,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 othello_item,
                 hamletcharacters,
                 call_center,
+                members,
             ],
             true,
         ),
@@ -1778,7 +1779,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     );
     assert_typeahead_equals(
         "test @_o",
-        mentions_with_silent_marker([othello_item, cordelia_item, admins], true),
+        mentions_with_silent_marker([othello_item, cordelia_item, admins, members], true),
     );
     assert_typeahead_equals("test @z", []);
     assert_typeahead_equals("test @_z", []);
