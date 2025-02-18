@@ -1469,11 +1469,11 @@ textarea.new_message_textarea {
         color: var(--color-text-default);
 
         .stream-privacy-type-icon {
-            font-size: 13px;
-            width: 13px;
-            height: 13px;
+            font-size: 0.9285em; /* 13px at 14px em */
+            width: 1em;
+            height: 1em;
             position: relative;
-            top: 2px;
+            top: 0.1428em; /* 2px at 13px font-size at 14px em */
         }
     }
 
