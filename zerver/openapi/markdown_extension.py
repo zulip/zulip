@@ -35,6 +35,7 @@ from zerver.openapi.openapi import (
     get_openapi_summary,
     get_parameters_description,
     get_responses_description,
+    is_avatar_endpoint,
     openapi_spec,
 )
 
@@ -206,6 +207,12 @@ def render_javascript_code_example(
 
 
 def curl_method_arguments(endpoint: str, method: str, api_url: str) -> list[str]:
+    if is_avatar_endpoint(endpoint, method):
+        # For the avatar endpoints we redirect the client to the actual
+        # avatar URL.
+        api_url = api_url.removesuffix("/api")
+        url = f"{api_url}{endpoint}"
+        return ["-si", url]
     # We also include the -sS verbosity arguments here.
     method = method.upper()
     url = f"{api_url}/v1{endpoint}"
@@ -276,7 +283,8 @@ def generate_curl_example(
     operation = endpoint + ":" + method.lower()
     operation_entry = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     global_security = openapi_spec.openapi()["security"]
-
+    if is_avatar_endpoint(endpoint, method):
+        api_url = api_url.removesuffix("/api")
     parameters = get_openapi_parameters(endpoint, method)
     operation_request_body = operation_entry.get("requestBody", None)
     operation_security = operation_entry.get("security", None)
@@ -310,6 +318,8 @@ def generate_curl_example(
     elif operation_security == []:
         if operation in insecure_operations:
             authentication_required = False
+        elif is_avatar_endpoint(endpoint, method):
+            authentication_required = False
         else:
             raise AssertionError(
                 "Unknown operation without a securityScheme. Please update insecure_operations."
@@ -324,7 +334,8 @@ def generate_curl_example(
         auth_email = "ZULIP_ORG_ID" if is_zilencer_endpoint else DEFAULT_AUTH_EMAIL
         auth_api_key = "ZULIP_ORG_KEY" if is_zilencer_endpoint else DEFAULT_AUTH_API_KEY
         lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
-
+    if is_avatar_endpoint(endpoint, method):
+        lines.append("    | grep -i ^location:")
     for parameter in parameters:
         if parameter.kind == "path":
             continue
