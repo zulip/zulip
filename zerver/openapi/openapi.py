@@ -338,6 +338,11 @@ def get_openapi_paths() -> set[str]:
     return set(openapi_spec.openapi()["paths"].keys())
 
 
+def check_non_v1_api_pattern(endpoint: str, method: str) -> bool:
+    """Fetch if the endpoint is not v1_api_and_json_patterns."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get("x-non-api-v1-path", False)
+
+
 NO_EXAMPLE = object()
 
 
