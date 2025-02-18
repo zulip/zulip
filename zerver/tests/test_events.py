@@ -241,6 +241,7 @@ from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
     get_role_based_system_groups_dict,
 )
+from zerver.lib.users import check_group_permission_updates_for_deactivating_user
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -3837,6 +3838,113 @@ class NormalActionsTest(BaseAction):
                 acting_user=self.user_profile,
             )
         check_user_settings_update("events[0]", events[0])
+
+    def test_group_permission_update_events_on_user_deactivation(self) -> None:
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        self.user_profile = iago
+
+        realm = self.user_profile.realm
+        stream_name = "whatever"
+        stream = self.make_stream(stream_name, realm)
+
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        hamlet = self.example_user("hamlet")
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet], [moderators_group]
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_groups",
+            setting_group,
+            acting_user=None,
+        )
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_public_channel_group",
+            setting_group,
+            acting_user=None,
+        )
+
+        hamlet.refresh_from_db()
+        self.user_profile.refresh_from_db()
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet, othello], [])
+        do_change_stream_group_based_setting(
+            stream,
+            "can_remove_subscribers_group",
+            setting_group,
+            acting_user=None,
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_stream_group_based_setting(
+            stream,
+            "can_add_subscribers_group",
+            setting_group,
+            acting_user=None,
+        )
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet, othello], [moderators_group]
+        )
+        do_change_user_group_permission_setting(
+            hamletcharacters_group,
+            "can_mention_group",
+            setting_group,
+            acting_user=None,
+        )
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_user_group_permission_setting(
+            hamletcharacters_group,
+            "can_manage_group",
+            setting_group,
+            acting_user=None,
+        )
+
+        group_setting_updates = check_group_permission_updates_for_deactivating_user(hamlet)
+
+        with self.verify_action(num_events=5) as events:
+            do_deactivate_user(
+                hamlet, acting_user=self.user_profile, group_setting_updates=group_setting_updates
+            )
+
+        check_realm_update_dict("events[0]", events[0])
+        self.assertEqual(
+            events[0]["data"]["can_create_groups"],
+            moderators_group.id,
+        )
+        self.assertEqual(
+            events[0]["data"]["can_create_public_channel_group"],
+            nobody_group.id,
+        )
+        check_stream_update("events[1]", events[1])
+        self.assertEqual(events[1]["property"], "can_add_subscribers_group")
+        self.assertEqual(events[1]["value"], nobody_group.id)
+
+        check_stream_update("events[2]", events[2])
+        self.assertEqual(events[2]["property"], "can_remove_subscribers_group")
+        self.assertEqual(
+            events[2]["value"],
+            AnonymousSettingGroupDict(direct_subgroups=[], direct_members=[othello.id]),
+        )
+
+        check_user_group_update("events[3]", events[3], {"can_manage_group", "can_mention_group"})
+        self.assertEqual(events[3]["data"]["can_manage_group"], nobody_group.id)
+        self.assertEqual(
+            events[3]["data"]["can_mention_group"],
+            AnonymousSettingGroupDict(
+                direct_members=[othello.id], direct_subgroups=[moderators_group.id]
+            ),
+        )
 
 
 class RealmPropertyActionTest(BaseAction):

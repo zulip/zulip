@@ -1084,3 +1084,28 @@ def get_group_setting_value_for_audit_log_data(
         return setting_value
 
     return asdict(setting_value)
+
+
+def get_anonymous_group_setting_dict_from_ids(
+    group_ids: list[int],
+) -> dict[int, AnonymousSettingGroupDict]:
+    anonymous_group_members = UserGroupMembership.objects.filter(
+        user_group_id__in=group_ids
+    ).values_list("user_group_id", "user_profile_id")
+    anonymous_group_subgroups = GroupGroupMembership.objects.filter(
+        supergroup_id__in=group_ids
+    ).values_list("supergroup_id", "subgroup_id")
+
+    group_members_dict = {}
+    for group_id in group_ids:
+        group_members_dict[group_id] = AnonymousSettingGroupDict(
+            direct_members=[], direct_subgroups=[]
+        )
+
+    for user_group_id, user_profile_id in anonymous_group_members:
+        group_members_dict[user_group_id].direct_members.append(user_profile_id)
+
+    for supergroup_id, subgroup_id in anonymous_group_subgroups:
+        group_members_dict[supergroup_id].direct_subgroups.append(subgroup_id)
+
+    return group_members_dict
