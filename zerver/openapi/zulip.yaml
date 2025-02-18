@@ -10276,6 +10276,7 @@ paths:
       operationId: get-file-temporary-url
       summary: Get public temporary URL for an uploaded file
       tags: ["messages"]
+      x-non-api-v1-path: true
       description: |
         Get a temporary URL for access to an [uploaded file](/api/upload-file)
         that doesn't require authentication.
