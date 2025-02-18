@@ -358,7 +358,8 @@
 .edit-content-container:has(
         .message_edit_content.textarea-approaching-limit.flash
     ) {
-    animation: message-limit-flash 0.5s ease-in-out 3;
+    /* This should align with the timing in compose_validate.validate_message_length. */
+    animation: message-limit-flash 0.5s ease-in-out 1;
 }
 
 #message-content-container .composebox-buttons {
