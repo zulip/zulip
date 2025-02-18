@@ -485,7 +485,9 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
     ];
     const email_okay_matches = [...email_results.word_boundary_matches];
 
-    const groups_results = typeahead.triage_raw(query, groups, (g) => g.name);
+    const groups_results = typeahead.triage_raw(query, groups, (g) =>
+        user_groups.get_display_group_name(g.name),
+    );
     const groups_good_matches = [
         ...groups_results.exact_matches,
         ...groups_results.begins_with_case_sensitive_matches,
