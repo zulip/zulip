@@ -50,7 +50,7 @@ from zerver.lib.streams import (
 from zerver.lib.thumbnail import (
     THUMBNAIL_ACCEPT_IMAGE_TYPES,
     BadImageError,
-    get_user_upload_previews,
+    generate_user_upload_previews,
     maybe_thumbnail,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -445,7 +445,7 @@ def fix_message_rendered_content(
                 message[rendered_content_key] = str(soup)
 
             # Trigger thumbnailing of all thumbnails in the message
-            get_user_upload_previews(realm.id, message[content_key], lock=True)
+            generate_user_upload_previews(realm.id, message[content_key], lock=True)
 
             continue
 
