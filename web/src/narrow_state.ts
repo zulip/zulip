@@ -131,6 +131,8 @@ export let stream_id = (current_filter: Filter | undefined = filter()): number |
     }
     const stream_operands = current_filter.operands("channel");
     if (stream_operands.length === 1 && stream_operands[0] !== undefined) {
+        // If the operand is not a valid channel ID, then
+        // it is an empty string, and this will return NaN.
         return Number.parseInt(stream_operands[0], 10);
     }
     return undefined;
@@ -142,25 +144,20 @@ export function rewire_stream_id(value: typeof stream_id): void {
 
 export function stream_name(current_filter: Filter | undefined = filter()): string | undefined {
     const id = stream_id(current_filter);
-    if (id === undefined) {
+    if (id === undefined || Number.isNaN(id)) {
         return undefined;
     }
-    const sub = stream_data.get_sub_by_id(id);
-    return sub?.name;
+    return stream_data.get_sub_by_id(id)?.name;
 }
 
 export function stream_sub(
     current_filter: Filter | undefined = filter(),
 ): StreamSubscription | undefined {
-    if (current_filter === undefined) {
+    const id = stream_id(current_filter);
+    if (id === undefined || Number.isNaN(id)) {
         return undefined;
     }
-    const stream_operands = current_filter.operands("channel");
-
-    if (stream_operands.length !== 1 || stream_operands[0] === undefined) {
-        return undefined;
-    }
-    return stream_data.get_sub_by_id_string(stream_operands[0]);
+    return stream_data.get_sub_by_id(id);
 }
 
 export let topic = (current_filter: Filter | undefined = filter()): string | undefined => {
