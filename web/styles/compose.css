@@ -592,7 +592,7 @@
 }
 
 .message-limit-indicator:not(:empty) {
-    font-size: 12px;
+    font-size: 0.8571em; /* 12px at 14px/em */
     color: var(--color-limit-indicator);
     width: max-content;
 
