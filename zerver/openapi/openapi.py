@@ -256,6 +256,13 @@ def check_additional_imports(endpoint: str, method: str) -> list[str] | None:
     )
 
 
+def check_non_api_v1_or_json_pattern(endpoint: str, method: str) -> bool:
+    """Fetch if the endpoint is not v1_api_and_json_patterns."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
+        "x-non-api-v1-or-json-pattern", False
+    )
+
+
 def get_responses_description(endpoint: str, method: str) -> str:
     """Fetch responses description of an endpoint."""
     return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
