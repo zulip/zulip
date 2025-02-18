@@ -147,22 +147,17 @@ export function stream_name(current_filter: Filter | undefined = filter()): stri
     if (id === undefined) {
         return undefined;
     }
-    const sub = stream_data.get_sub_by_id(id);
-    return sub?.name;
+    return stream_data.get_sub_by_id(id)?.name;
 }
 
 export function stream_sub(
     current_filter: Filter | undefined = filter(),
 ): StreamSubscription | undefined {
-    if (current_filter === undefined) {
+    const id = stream_id(current_filter);
+    if (id === undefined) {
         return undefined;
     }
-    const stream_operands = current_filter.operands("channel");
-
-    if (stream_operands.length !== 1 || stream_operands[0] === undefined) {
-        return undefined;
-    }
-    return stream_data.get_sub_by_id_string(stream_operands[0]);
+    return stream_data.get_sub_by_id(id);
 }
 
 export let topic = (current_filter: Filter | undefined = filter()): string | undefined => {
