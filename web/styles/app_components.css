@@ -883,13 +883,12 @@ input.settings_text_input {
     .save-discard-widget-button {
         border-radius: 5px;
         border: 1px solid hsl(0deg 0% 80%);
-        padding: 0.2143em 1em 0.2857em 0.7857em; /* 3px 14px 4px 11px at 14px/em */
         text-decoration: none;
         color: hsl(0deg 0% 47%);
-        min-width: 80px;
-        /* Limit the height of the button */
-        line-height: 1.2;
-        vertical-align: text-bottom;
+        min-width: 5.7142em; /* 80px at 14px/em */
+        display: flex;
+        align-items: center;
+        height: 1.8429em; /* 25.8px at 14px/em */
 
         &:hover,
         &:focus {
@@ -945,7 +944,7 @@ input.settings_text_input {
         .save-discard-widget-button-icon {
             vertical-align: middle;
             margin-right: 3px;
-            font-size: 15px;
+            font-size: 1.0714em; /* 15px at 14px/em */
             font-weight: 400;
         }
 
