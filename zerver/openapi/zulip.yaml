@@ -25355,6 +25355,7 @@ paths:
       summary: Get a user's avatar
       tags: ["users"]
       x-non-api-v1-path: true
+      security: []
       description: |
         Fetch the avatar for a single user in the organization, identified by their
         user ID. This endpoint responds with an HTTP redirect to the avatar's URL,
@@ -25462,6 +25463,7 @@ paths:
       summary: Get a user's medium avatar
       tags: ["users"]
       x-non-api-v1-path: true
+      security: []
       description: |
         Fetch the medium-sized avatar for a single user in the organization,
         identified by their email. This endpoint responds with an HTTP redirect
