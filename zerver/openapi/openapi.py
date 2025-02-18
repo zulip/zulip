@@ -342,6 +342,10 @@ def check_non_v1_api_pattern(endpoint: str, method: str) -> bool:
     return openapi_spec.openapi()["paths"][endpoint][method.lower()].get("x-non-api-v1-path", False)
 
 
+def is_avatar_endpoint(path: str, method: str) -> bool:
+    return path.startswith("/avatar/") and method.upper() == "GET"
+
+
 NO_EXAMPLE = object()
 
 
