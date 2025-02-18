@@ -1275,6 +1275,17 @@ ul.popover-group-menu-member-list {
         position: relative;
         top: -1px;
     }
+
+    .info-density-controls {
+        display: flex;
+        padding: 0.125em 0.625em;
+        gap: 0.5em;
+
+        .zulip-icon {
+            width: 0.933em;
+            height: 0.933em;
+        }
+    }
 }
 
 #help-menu-dropdown,

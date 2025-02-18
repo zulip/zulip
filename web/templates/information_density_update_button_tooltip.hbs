@@ -1,0 +1,35 @@
+<div id="information_density_tooltip_template">
+    <div class="tooltip-inner-content">
+        <span>
+            {{#if is_default_button}}
+                {{#if is_current_value_default}}
+                    {{#if (eq property "web_font_size_px")}}
+                        {{#tr}}<i>Current font size: default ({default_value_string})</i>{{/tr}}
+                    {{else}}
+                        {{#tr}}<i>Current line spacing: default ({default_value_string})</i>{{/tr}}
+                    {{/if}}
+                {{else}}
+                    {{#tr}}
+                        Reset to default ({default_value_string})
+                    {{/tr}}
+                    <br />
+                    {{#if (eq property "web_font_size_px")}}
+                        {{#tr}}
+                            <i>Current font size: {current_value_string}</i>
+                        {{/tr}}
+                    {{else}}
+                        {{#tr}}
+                            <i>Current line spacing: {current_value_string}</i>
+                        {{/tr}}
+                    {{/if}}
+                {{/if}}
+            {{else}}
+                {{#if disabled_text}}
+                    {{disabled_text}}
+                {{else}}
+                    {{new_value_string}}
+                {{/if}}
+            {{/if}}
+        </span>
+    </div>
+</div>

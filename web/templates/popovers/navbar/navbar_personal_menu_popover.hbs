@@ -115,6 +115,46 @@
                         <span class="slider"></span>
                     </div>
                 </li>
+                <li role="none" class="popover-menu-list-item">
+                    <div class="info-density-controls">
+                        <div class="font-size-button-group button-group" data-property="web_font_size_px">
+                            <input class="current-value" hidden="true" value="{{web_font_size_px}}" />
+                            <div class="info-density-button-container">
+                                <button class="info-density-button decrease-button" aria-label="{{t 'Decrease font size' }}">
+                                    <i class="zulip-icon zulip-icon-minus" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <div class="info-density-button-container">
+                                <button class="info-density-button default-button" aria-label="{{t 'Set font size to default' }}">
+                                    <i class="zulip-icon zulip-icon-type-big" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <div class="info-density-button-container">
+                                <button class="info-density-button increase-button" aria-label="{{t 'Increase font size' }}">
+                                    <i class="zulip-icon zulip-icon-plus" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="line-height-button-group button-group" data-property="web_line_height_percent">
+                            <input class="current-value" hidden="true" value="{{web_line_height_percent}}" />
+                            <div class="info-density-button-container">
+                                <button class="info-density-button decrease-button" aria-label="{{t 'Decrease line spacing' }}">
+                                    <i class="zulip-icon zulip-icon-minus" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <div class="info-density-button-container">
+                                <button class="info-density-button default-button" aria-label="{{t 'Set line spacing to default' }}">
+                                    <i class="zulip-icon zulip-icon-line-height-big" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <div class="info-density-button-container">
+                                <button class="info-density-button increase-button" aria-label="{{t 'Increase line spacing' }}">
+                                    <i class="zulip-icon zulip-icon-plus" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </li>
                 {{!-- Group 4 --}}
                 <li role="separator" class="popover-menu-separator"></li>
                 <li role="none" class="link-item popover-menu-list-item">

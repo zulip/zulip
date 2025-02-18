@@ -1,5 +1,7 @@
 import $ from "jquery";
+import {z} from "zod";
 
+import {$t} from "./i18n.ts";
 import {stringify_time} from "./timerender.ts";
 import {user_settings} from "./user_settings.ts";
 
@@ -47,6 +49,32 @@ export const LEGACY_LINE_HEIGHT_PERCENT = 122;
 
 export const NON_COMPACT_MODE_FONT_SIZE_PX = 16;
 export const NON_COMPACT_MODE_LINE_HEIGHT_PERCENT = 140;
+
+export const INFO_DENSITY_VALUES_DICT = {
+    web_font_size_px: {
+        default: NON_COMPACT_MODE_FONT_SIZE_PX,
+        minimum: 12,
+        maximum: 20,
+        // by how much the value will be changed on clicking +/- buttons.
+        step_value: 1,
+    },
+    web_line_height_percent: {
+        default: NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
+        minimum: 122,
+        maximum: 158,
+        // by how much the value will be changed on clicking +/- buttons.
+        step_value: 9,
+    },
+};
+
+export const MIN_VALUES = {
+    web_font_size_px: 12,
+    web_line_height_percent: 122,
+};
+export const MAX_VALUES = {
+    web_font_size_px: 20,
+    web_line_height_percent: 158,
+};
 
 function set_vertical_alignment_values(line_height_unitless: number): void {
     // We work in ems to keep this agnostic to the font size.
@@ -170,4 +198,158 @@ export function initialize(): void {
     // and use the largest to set `--message-box-timestamp-column-width`
     calculate_timestamp_widths();
     determine_container_query_support();
+}
+
+export const information_density_properties_schema = z.enum([
+    "web_font_size_px",
+    "web_line_height_percent",
+]);
+
+export function enable_or_disable_control_buttons($container: JQuery): void {
+    const info_density_properties = z
+        .array(information_density_properties_schema)
+        .parse(["web_font_size_px", "web_line_height_percent"]);
+    for (const property of info_density_properties) {
+        const $button_group = $container.find(`[data-property='${CSS.escape(property)}']`);
+        const $current_elem = $button_group.find<HTMLInputElement>(".current-value");
+        const current_value = Number.parseInt($current_elem.val()!, 10);
+
+        $button_group
+            .find(".default-button")
+            .prop("disabled", current_value === INFO_DENSITY_VALUES_DICT[property].default);
+        $button_group
+            .find(".increase-button")
+            .prop("disabled", current_value >= INFO_DENSITY_VALUES_DICT[property].maximum);
+        $button_group
+            .find(".decrease-button")
+            .prop("disabled", current_value <= INFO_DENSITY_VALUES_DICT[property].minimum);
+    }
+}
+
+export function get_new_value_for_information_density_settings(
+    $elem: JQuery,
+    changed_property: "web_font_size_px" | "web_line_height_percent",
+): number {
+    const $current_elem = $elem.closest(".button-group").find<HTMLInputElement>(".current-value");
+    const current_value = Number.parseInt($current_elem.val()!, 10);
+
+    let new_value;
+    if ($elem.hasClass("default-button")) {
+        new_value = INFO_DENSITY_VALUES_DICT[changed_property].default;
+    } else if ($elem.hasClass("increase-button")) {
+        new_value = current_value + INFO_DENSITY_VALUES_DICT[changed_property].step_value;
+    } else {
+        new_value = current_value - INFO_DENSITY_VALUES_DICT[changed_property].step_value;
+    }
+    $current_elem.val(current_value);
+
+    return new_value;
+}
+
+export function update_information_density_settings(
+    $elem: JQuery,
+    changed_property: "web_font_size_px" | "web_line_height_percent",
+    new_value: number,
+): {
+    web_font_size_px?: number;
+    web_line_height_percent?: number;
+    dense_mode?: boolean;
+} {
+    const changed_settings: {
+        web_font_size_px?: number;
+        web_line_height_percent?: number;
+        dense_mode?: boolean;
+    } = {};
+    changed_settings[changed_property] = new_value;
+
+    user_settings[changed_property] = new_value;
+    $elem.closest(".button-group").find(".current-value").val(new_value);
+
+    set_base_typography_css_variables();
+    calculate_timestamp_widths();
+
+    if (
+        user_settings.dense_mode &&
+        (user_settings.web_font_size_px !== LEGACY_FONT_SIZE_PX ||
+            user_settings.web_line_height_percent !== LEGACY_LINE_HEIGHT_PERCENT)
+    ) {
+        user_settings.dense_mode = false;
+        changed_settings.dense_mode = false;
+        $("body").addClass("less-dense-mode");
+        $("body").removeClass("more-dense-mode");
+    }
+
+    return changed_settings;
+}
+
+export function get_string_display_value_for_line_height(setting_value: number): string {
+    const display_value = (setting_value - NON_COMPACT_MODE_LINE_HEIGHT_PERCENT) / 9;
+
+    if (display_value % 1 === 0) {
+        // If value is an integer, we just return here to avoid showing
+        // 1.0 for 1.
+        return display_value.toString();
+    }
+
+    return display_value.toFixed(1);
+}
+
+export function get_tooltip_context_for_info_density_buttons(
+    $elem: JQuery,
+): Record<string, string | boolean> {
+    const property = information_density_properties_schema.parse(
+        $elem.closest(".button-group").attr("data-property"),
+    );
+
+    const is_default_button = $elem.hasClass("default-button");
+    const new_value = get_new_value_for_information_density_settings($elem, property);
+    const default_value = INFO_DENSITY_VALUES_DICT[property].default;
+    const current_value = Number.parseInt(
+        $elem.closest(".button-group").find<HTMLInputElement>(".current-value").val()!,
+        10,
+    );
+    const is_current_value_default = current_value === default_value;
+
+    let default_value_string = "";
+    let current_value_string = "";
+    let new_value_string = "";
+    let disabled_text = "";
+
+    if ($elem.prop("disabled") && !is_default_button) {
+        let display_value = current_value.toString();
+        if (property === "web_line_height_percent") {
+            display_value = get_string_display_value_for_line_height(current_value);
+        }
+        if ($elem.hasClass("increase-button")) {
+            disabled_text = $t(
+                {defaultMessage: "Already at maximum ({display_value})"},
+                {display_value},
+            );
+        } else {
+            disabled_text = $t(
+                {defaultMessage: "Already at minimum ({display_value})"},
+                {display_value},
+            );
+        }
+    }
+
+    if (property === "web_font_size_px") {
+        default_value_string = default_value.toString() + "pt";
+        current_value_string = current_value.toString() + "pt";
+        new_value_string = new_value.toString() + "pt";
+    } else {
+        default_value_string = get_string_display_value_for_line_height(default_value);
+        current_value_string = get_string_display_value_for_line_height(current_value);
+        new_value_string = get_string_display_value_for_line_height(new_value);
+    }
+
+    return {
+        is_default_button,
+        is_current_value_default,
+        default_value_string,
+        current_value_string,
+        new_value_string,
+        property,
+        disabled_text,
+    };
 }
