@@ -76,7 +76,7 @@ export let $current_focus_elem: JQuery | "table" = "table";
 // If user clicks a topic in Recent Conversations, then
 // we store that topic here so that we can restore focus
 // to that topic when user revisits.
-let last_visited_topic = "";
+let last_visited_topic: string | undefined;
 let row_focus = 0;
 // Start focus on the topic column, so Down+Enter works to visit a topic.
 let col_focus = 1;
@@ -410,7 +410,7 @@ export function revive_current_focus(): boolean {
 
     if (is_table_focused()) {
         assert(topics_widget !== undefined);
-        if (last_visited_topic) {
+        if (last_visited_topic !== undefined) {
             // If the only message in the topic was deleted,
             // then the topic will not be in Recent Conversations data.
             if (recent_view_data.conversations.get(last_visited_topic) !== undefined) {
@@ -425,7 +425,7 @@ export function revive_current_focus(): boolean {
                     row_focus = last_visited_topic_index;
                 }
             }
-            last_visited_topic = "";
+            last_visited_topic = undefined;
         }
         set_table_focus(row_focus, col_focus);
         return true;
@@ -1471,7 +1471,7 @@ export function focus_clicked_element(
     row_focus = topic_row_index;
 
     if (col === COLUMNS.topic) {
-        last_visited_topic = topic_key ?? "";
+        last_visited_topic = topic_key ?? undefined;
     }
     // Set compose_closed_ui reply button text.  The rest of the table
     // focus logic should be a noop.
