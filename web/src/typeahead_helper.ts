@@ -163,6 +163,7 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
         ),
         pronouns,
         secondary: person.user.delivery_email,
+        show_comma: person.user.delivery_email !== null,
     };
 
     return render_typeahead_item(typeahead_arguments);
