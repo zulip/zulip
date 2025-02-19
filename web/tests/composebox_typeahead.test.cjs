@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
+const example_settings = require("./lib/example_settings.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -26,9 +27,6 @@ const compose_validate = mock_esm("../src/compose_validate", {
 const input_pill = mock_esm("../src/input_pill");
 const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
-});
-mock_esm("../src/settings_data", {
-    user_can_access_all_other_users: () => true,
 });
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
 
@@ -267,43 +265,6 @@ const light_command = {
     info: "translated: Switch to light theme",
 };
 const light_command_item = slash_item(light_command);
-
-const sweden_stream = stream_item({
-    name: "Sweden",
-    description: "Cold, mountains and home decor.",
-    stream_id: 1,
-    subscribed: true,
-});
-const denmark_stream = stream_item({
-    name: "Denmark",
-    description: "Vikings and boats, in a serene and cold weather.",
-    stream_id: 2,
-    subscribed: true,
-});
-const netherland_stream = stream_item({
-    name: "The Netherlands",
-    description: "The Netherlands, city of dream.",
-    stream_id: 3,
-    subscribed: false,
-});
-const mobile_stream = stream_item({
-    name: "Mobile",
-    description: "Mobile development",
-    stream_id: 4,
-    subscribed: false,
-});
-const mobile_team_stream = stream_item({
-    name: "Mobile team",
-    description: "Mobile development team",
-    stream_id: 5,
-    subscribed: true,
-});
-
-stream_data.add_sub(sweden_stream);
-stream_data.add_sub(denmark_stream);
-stream_data.add_sub(netherland_stream);
-stream_data.add_sub(mobile_stream);
-stream_data.add_sub(mobile_team_stream);
 
 const name_to_codepoint = {};
 for (const [key, val] of emojis_by_name.entries()) {
@@ -546,6 +507,53 @@ const members = user_group_item({
     deactivated: false,
 });
 
+const sweden_stream = stream_item({
+    name: "Sweden",
+    description: "Cold, mountains and home decor.",
+    stream_id: 1,
+    subscribed: true,
+    can_administer_channel_group: support.id,
+    can_add_subscribers_group: support.id,
+});
+const denmark_stream = stream_item({
+    name: "Denmark",
+    description: "Vikings and boats, in a serene and cold weather.",
+    stream_id: 2,
+    subscribed: true,
+    can_administer_channel_group: support.id,
+    can_add_subscribers_group: support.id,
+});
+const netherland_stream = stream_item({
+    name: "The Netherlands",
+    description: "The Netherlands, city of dream.",
+    stream_id: 3,
+    subscribed: false,
+    can_administer_channel_group: support.id,
+    can_add_subscribers_group: support.id,
+});
+const mobile_stream = stream_item({
+    name: "Mobile",
+    description: "Mobile development",
+    stream_id: 4,
+    subscribed: false,
+    can_administer_channel_group: support.id,
+    can_add_subscribers_group: support.id,
+});
+const mobile_team_stream = stream_item({
+    name: "Mobile team",
+    description: "Mobile development team",
+    stream_id: 5,
+    subscribed: true,
+    can_administer_channel_group: support.id,
+    can_add_subscribers_group: support.id,
+});
+
+stream_data.add_sub(sweden_stream);
+stream_data.add_sub(denmark_stream);
+stream_data.add_sub(netherland_stream);
+stream_data.add_sub(mobile_stream);
+stream_data.add_sub(mobile_team_stream);
+
 const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,
     emoji_code: emoji_dict.emoji_code,
@@ -573,6 +581,12 @@ function test(label, f) {
     run_test(label, (helpers) => {
         people.init();
         user_groups.init();
+        helpers.override(
+            realm,
+            "server_supported_permission_settings",
+            example_settings.server_supported_permission_settings,
+        );
+        helpers.override(realm, "realm_can_access_all_users_group", members.id);
 
         people.add_active_user(ali);
         people.add_active_user(alice);

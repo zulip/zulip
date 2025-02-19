@@ -1008,10 +1008,12 @@ export function get_candidates(
 
         completing = "stream";
         token = current_token;
-        const candidate_list: StreamPillData[] = stream_data.get_unsorted_subs().map((sub) => ({
-            ...sub,
-            type: "stream",
-        }));
+        const candidate_list: StreamPillData[] = stream_data
+            .get_unsorted_subs_with_content_access()
+            .map((sub) => ({
+                ...sub,
+                type: "stream",
+            }));
         const matcher = get_stream_matcher(token);
         const matches = candidate_list.filter((item) => matcher(item));
         return typeahead_helper.sort_streams(matches, token);

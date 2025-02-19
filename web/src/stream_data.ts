@@ -330,6 +330,10 @@ export function get_unsorted_subs(): StreamSubscription[] {
     return [...stream_info.values()];
 }
 
+export function get_unsorted_subs_with_content_access(): StreamSubscription[] {
+    return [...stream_info.values()].filter((sub) => has_content_access(sub));
+}
+
 export function num_subscribed_subs(): number {
     return stream_info.num_true_items();
 }
