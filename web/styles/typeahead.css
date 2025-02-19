@@ -199,6 +199,12 @@
         align-self: center;
     }
 
+    /*
+    Negates the extra 3px left margin from `.status-emoji` in zulip.css, which,
+    combined with .typeahead-text-container's `gap`, created unintended spacing.
+    The typeahead's spacing is now managed only by `gap` in
+    .typeahead-text-container.
+    */
     .status-emoji {
         margin-left: 0;
     }
