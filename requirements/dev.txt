@@ -461,7 +461,6 @@ click==8.1.8 \
     #   gitlint-core
     #   litellm
     #   pip-tools
-    #   pyre-check
     #   semgrep
     #   zulip
 click-option-group==0.5.6 \
@@ -620,10 +619,6 @@ cssselect==1.2.0 \
     #   parsel
     #   scrapy
     #   talon-core
-dataclasses-json==0.5.7 \
-    --hash=sha256:bc285b5f892094c3a53d558858a88553dd6a61a11ab1a8128a0e554385dcc5dd \
-    --hash=sha256:c2c11bc8214fbf709ffc369d11446ff6945254a7f09128154a7620613d8fda90
-    # via pyre-check
 decorator==5.1.1 \
     --hash=sha256:637996211036b6385ef91435e4fae22989472f9d571faba8927ba8253acbc330 \
     --hash=sha256:b8c3f85900b9dc423225913c5aace94729fe1fa9763b38939a95226f02d37186
@@ -1401,44 +1396,6 @@ lazy-object-proxy==1.10.0 \
     --hash=sha256:edb45bb8278574710e68a6b021599a10ce730d156e5b254941754a9cc0b17d03 \
     --hash=sha256:fec03caabbc6b59ea4a638bee5fce7117be8e99a4103d9d5ad77f15d6f81020c
     # via openapi-spec-validator
-libcst==1.6.0 \
-    --hash=sha256:05c32de72553cb93ff606c7d2421ce1eab1f0740c8c4b715444e2ae42f42b1b6 \
-    --hash=sha256:0c0fb2f7b74605832cc38d79e9d104f92a8aaeec7bf8f2759b20c5ba3786a321 \
-    --hash=sha256:1b8370d0f7092a17b7fcda0e1539d0162cf35a0c19af94842b09c9dddc382acd \
-    --hash=sha256:1bd00399d20bf93590b6f02647f8be08e2b730e050e6b7360f669254e69c98f5 \
-    --hash=sha256:1bd11863889b630fe41543b4eb5e2dd445447a7f89e6b58229e83c9e52a74942 \
-    --hash=sha256:2f02d0da6dfbad44e6ec4d1e5791e17afe95d9fe89bce4374bf109fd9c103a50 \
-    --hash=sha256:2f3c85602e5a6d3aec0a8fc74230363f943004d7c2b2a6a1c09b320b61692241 \
-    --hash=sha256:31e45f88d4a9a8e5b690ed14a564fcbace14b10f5e7b6797d6d97f4226b395da \
-    --hash=sha256:38f3f25d4f5d8713cdb6a7bd41d75299de3c2416b9890a34d9b05417b8e64c1d \
-    --hash=sha256:3fb953fc0155532f366ff40f6a23f191250134d6928e02074ae4eb3531fa6c30 \
-    --hash=sha256:48406225378ee9208edb1e5a10451bea810262473af1a2f2473737fd16d34e3a \
-    --hash=sha256:4cd011fcd79b76be216440ec296057780223674bc2566662c4bc50d3c5ecd58e \
-    --hash=sha256:5786240358b122ad901bb0b7e6b7467085b2317333233d7c7d7cac46388fbd77 \
-    --hash=sha256:5ac6d68364031f0b554d8920a69b33f25ec6ef351fa31b4e8f3676abb729ce36 \
-    --hash=sha256:63a8893dfc344b9b08bfaf4e433b16a7e2e9361f8362fa73eaecc4d379c328ba \
-    --hash=sha256:69b705f5b1faa66f115ede52a970d7613d3a8fb988834f853f7fb46870a041d2 \
-    --hash=sha256:6a12a4766ce5874ccb31a1cc095cff47e2fb35755954965fe77458d9e5b361a8 \
-    --hash=sha256:8bf59a21e9968dc4e7c301fac660bf54bc7d4dcadc0b1abf31b1cac34e800555 \
-    --hash=sha256:8e4fcd791cab0fe8287b6edd0d78512b6475b87d906562a5d2d0999cb6d23b8d \
-    --hash=sha256:91242ccbae6e7a070b33ebe03d3677c54bf678653538fbaa89597a59e4a13b2d \
-    --hash=sha256:96506807dc01c9efcea8ab57d9ea18fdc87b85514cc8ee2f8568fab6df861f02 \
-    --hash=sha256:984512829a80f963bfc1803342219a4264a8d4206df0a30eae9bce921357a938 \
-    --hash=sha256:a9e71a046b4a91950125967f5ee67389f25a2511103e5595508f0591a5f50bc0 \
-    --hash=sha256:b3d274115d134a550fe8a0b38780a28a659d4a35ac6068c7c92fffe6661b519c \
-    --hash=sha256:bdc95df61838d708adb37e18af1615491f6cac59557fd11077664dd956fe4528 \
-    --hash=sha256:bfcd78a5e775f155054ed50d047a260cd23f0f6a89ef2a57e10bdb9c697680b8 \
-    --hash=sha256:c4486921bebd33d67bbbd605aff8bfaefd2d13dc73c20c1fde2fb245880b7fd6 \
-    --hash=sha256:c527472093b5b64ffa65d33c472da38952827abbca18c786d559d6d6122bc891 \
-    --hash=sha256:cd2b28688dabf0f7a166b47ab1c7d5c0b6ef8c9a05ad932618471a33fe591a4a \
-    --hash=sha256:d25132f24edc24895082589645dbb8972c0eff6c9716ff71932fa72643d7c74f \
-    --hash=sha256:d45513f6cd3dbb2a80cf21a53bc6e6e560414edea17c474c784100e10aebe921 \
-    --hash=sha256:d65550ac686bff9395398afacbc88fe812363703a4161108e8a6db066d30b96e \
-    --hash=sha256:dac722aade8796a1e78662c3ed424f0ab9f1dc0e8fdf3088610354cdd709e53f \
-    --hash=sha256:df3f452e074893dfad7746a041caeb3cde75bd9fbca4ea7b223012e112d1da8c \
-    --hash=sha256:e80ecdbe3fa43b3793cae8fa0b07a985bd9a693edbe6e9d076f5422ecadbf0db \
-    --hash=sha256:f8c70a124d7a7d326abdc9a6261013c57d36f21c6c6370de5dd3e6a040c4ee5e
-    # via pyre-check
 line-profiler==4.2.0 \
     --hash=sha256:0048360a2afbd92c0b423f8207af1f6581d85c064c0340b0d02c63c8e0c8292c \
     --hash=sha256:09e10f25f876514380b3faee6de93fb0c228abba85820ba1a591ddb3eb451a96 \
@@ -1726,16 +1683,6 @@ markupsafe==3.0.2 \
     # via
     #   jinja2
     #   werkzeug
-marshmallow==3.26.1 \
-    --hash=sha256:3350409f20a70a7e4e11a27661187b77cdcaeb20abca41c1454fe33636bea09c \
-    --hash=sha256:e6d8affb6cb61d39d26402096dc0aee12d5a26d490a121f118d2e81dc0719dc6
-    # via
-    #   dataclasses-json
-    #   marshmallow-enum
-marshmallow-enum==1.5.1 \
-    --hash=sha256:38e697e11f45a8e64b4a1e664000897c659b60aa57bfa18d44e226a9920b6e58 \
-    --hash=sha256:57161ab3dbfde4f57adeb12090f39592e992b9c86d206d02f6bd03ebec60f072
-    # via dataclasses-json
 matplotlib-inline==0.1.7 \
     --hash=sha256:8423b23ec666be3d16e16b60bdd8ac4e86e840ebd1dd11a30b9f117f2fa0ab90 \
     --hash=sha256:df192d39a4ff8f21b1895d72e6a13f5fcc5099f00fa84384e0ea28c2cc0653ca
@@ -1984,7 +1931,6 @@ mypy-extensions==1.0.0 \
     # via
     #   black
     #   mypy
-    #   typing-inspect
 myst-parser==4.0.1 \
     --hash=sha256:5cfea715e4f3574138aecbf7d54132296bfd72bb614d31168f48c477a830a7c4 \
     --hash=sha256:9134e88959ec3b5780aedf8a99680ea242869d012e8821db3126d427edc9c95d
@@ -2106,7 +2052,6 @@ packaging==24.2 \
     # via
     #   black
     #   huggingface-hub
-    #   marshmallow
     #   parsel
     #   scrapy
     #   semgrep
@@ -2286,20 +2231,6 @@ protobuf==5.29.3 \
     #   googleapis-common-protos
     #   grpcio-status
     #   proto-plus
-psutil==7.0.0 \
-    --hash=sha256:101d71dc322e3cffd7cea0650b09b3d08b8e7c4109dd6809fe452dfd00e58b25 \
-    --hash=sha256:1e744154a6580bc968a0195fd25e80432d3afec619daf145b9e5ba16cc1d688e \
-    --hash=sha256:1fcee592b4c6f146991ca55919ea3d1f8926497a713ed7faaf8225e174581e91 \
-    --hash=sha256:39db632f6bb862eeccf56660871433e111b6ea58f2caea825571951d4b6aa3da \
-    --hash=sha256:4b1388a4f6875d7e2aff5c4ca1cc16c545ed41dd8bb596cefea80111db353a34 \
-    --hash=sha256:4cf3d4eb1aa9b348dec30105c55cd9b7d4629285735a102beb4441e38db90553 \
-    --hash=sha256:7be9c3eba38beccb6495ea33afd982a44074b78f28c434a1f51cc07fd315c456 \
-    --hash=sha256:84df4eb63e16849689f76b1ffcb36db7b8de703d1bc1fe41773db487621b6c17 \
-    --hash=sha256:a5f098451abc2828f7dc6b58d44b532b22f2088f4999a937557b603ce72b1993 \
-    --hash=sha256:ba3fcef7523064a6c9da440fc4d6bd07da93ac726b5733c29027d7dc95b39d99
-    # via
-    #   pyre-check
-    #   testslide
 psycopg2==2.9.10 \
     --hash=sha256:0435034157049f6846e95103bd8f5a668788dd913a7c30162ca9503fdf542cb4 \
     --hash=sha256:12ec0b40b0273f95296233e8750441339298e6a572f7039da5b260e3c8b60e11 \
@@ -2501,7 +2432,6 @@ pygments==2.19.1 \
     #   jsx-lexer
     #   rich
     #   sphinx
-    #   testslide
 pyinotify==0.9.6 \
     --hash=sha256:9c998a5d7606ca835065cdabc013ae6c66eb9ea76a00a1e3bc6e0cfe2b4f71f4
     # via -r requirements/dev.in
@@ -2590,15 +2520,6 @@ pypng==0.20220715.0 \
     --hash=sha256:4a43e969b8f5aaafb2a415536c1a8ec7e341cd6a3f957fd5b5f32a4cfeed902c \
     --hash=sha256:739c433ba96f078315de54c0db975aee537cbc3e1d0ae4ed9aab0ca1e427e2c1
     # via qrcode
-pyre-check==0.9.23 \
-    --hash=sha256:3f4baf99145e06af416a2444e50b9e90b183585c053ab476004729ed9ba6902c \
-    --hash=sha256:6362f0d8af2d513c90fc863a142009d8d7cbf0aa762ec37cad194684bd962ae5 \
-    --hash=sha256:71ae076a75293a6fbb9025c3aa1e7a81a4dfd7a6da8a884f4c39deed2e4e3f3a
-    # via -r requirements/dev.in
-pyre-extensions==0.0.32 \
-    --hash=sha256:5396715f14ea56c4d5fd0a88c57ca7e44faa468f905909edd7de4ad90ed85e55 \
-    --hash=sha256:a63ba6883ab02f4b1a9f372ed4eb4a2f4c6f3d74879aa2725186fdfcfe3e5c68
-    # via pyre-check
 python-binary-memcached==0.31.4 \
     --hash=sha256:f183bc67fd218c01ebc0bf4e9929a210dd5aa07fda53d5b627d0b443b76e2818 \
     --hash=sha256:f7a74f212567e37520dd550f0d088b99bb4bae01034d3078135bfc16285960f9
@@ -2715,7 +2636,6 @@ pyyaml==6.0.2 \
     # via
     #   huggingface-hub
     #   jsonschema-path
-    #   libcst
     #   moto
     #   myst-parser
     #   responses
@@ -3253,10 +3173,6 @@ stripe==11.5.0 \
     --hash=sha256:3b2cd47ed3002328249bff5cacaee38d5e756c3899ab425d3bd07acdaf32534a \
     --hash=sha256:bc3e0358ffc23d5ecfa8aafec1fa4f048ee8107c3237bcb00003e68c8c96fa02
     # via -r requirements/common.in
-tabulate==0.9.0 \
-    --hash=sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c \
-    --hash=sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f
-    # via pyre-check
 https://github.com/zulip/talon/archive/e3879d82331aa8b5a87e9d41b3ba3693caa24cd2.zip#egg=talon-core==1.6.0+git&subdirectory=talon-core \
     --hash=sha256:ecd16ee13fa1d82582cec992c96f1996e9f825873b7ef6f72eb6d1820766f1a8
     # via -r requirements/common.in
@@ -3264,9 +3180,6 @@ tblib==3.0.0 \
     --hash=sha256:80a6c77e59b55e83911e1e607c649836a69c103963c5f28a46cbeef44acf8129 \
     --hash=sha256:93622790a0a29e04f0346458face1e144dc4d32f493714c6c3dff82a4adb77e6
     # via -r requirements/dev.in
-testslide==2.7.1 \
-    --hash=sha256:d25890d5c383f673fac44a5f9e2561b7118d04f29f2c2b3d4f549e6db94cb34d
-    # via pyre-check
 tiktoken==0.9.0 \
     --hash=sha256:03935988a91d6d3216e2ec7c645afbb3d870b37bcb67ada1943ec48678e7ee33 \
     --hash=sha256:11a20e67fdf58b0e2dea7b8654a288e481bb4fc0289d3ad21291f8d0849915fb \
@@ -3429,10 +3342,6 @@ twisted==24.11.0 \
     --hash=sha256:695d0556d5ec579dcc464d2856b634880ed1319f45b10d19043f2b57eb0115b5 \
     --hash=sha256:fe403076c71f04d5d2d789a755b687c5637ec3bcd3b2b8252d76f2ba65f54261
     # via scrapy
-typeguard==2.13.3 \
-    --hash=sha256:00edaa8da3a133674796cf5ea87d9f4b4c367d77476e185e80251cc13dfbb8c4 \
-    --hash=sha256:5e3e3be01e887e7eafae5af63d1f36c849aaa94e3a0112097312aabfa16284f1
-    # via testslide
 types-awscrt==0.23.10 \
     --hash=sha256:7391bf502f6093221e68da8fb6a2af7ec67a98d376c58d5b76cc3938f449d121 \
     --hash=sha256:965659260599b421564204b895467684104a2c0311bbacfd3c2423b8b0d3f3e9
@@ -3565,8 +3474,6 @@ typing-extensions==4.12.2 \
     #   pydantic
     #   pydantic-core
     #   pyopenssl
-    #   pyre-check
-    #   pyre-extensions
     #   qrcode
     #   referencing
     #   rich
@@ -3574,17 +3481,9 @@ typing-extensions==4.12.2 \
     #   sqlalchemy2-stubs
     #   stripe
     #   twisted
-    #   typing-inspect
     #   zulint
     #   zulip
     #   zulip-bots
-typing-inspect==0.9.0 \
-    --hash=sha256:9ee6fc59062311ef8547596ab6b955e1b8aa46242d854bfc78f4f6b0eff35f9f \
-    --hash=sha256:b23fc42ff6f6ef6954e4852c1fb512cdd18dbea03134f91f856a95ccc9461f78
-    # via
-    #   dataclasses-json
-    #   pyre-check
-    #   pyre-extensions
 uhashring==2.3 \
     --hash=sha256:7ee8a25ca495a97effad10bd563c83b4054a6d7606d9530757049a04edab9297 \
     --hash=sha256:9f76187e8d8e82f6e5519c995eef1f1bf44d4a5e0fc4fdd1219a044b10040612
