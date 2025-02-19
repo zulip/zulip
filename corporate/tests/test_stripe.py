@@ -5970,7 +5970,7 @@ class InvoiceTest(StripeTestCase):
 
         # Add an extra user
         do_create_user(
-            "email-exra-user",
+            "email-extra-user",
             "password-extra-user",
             get_realm("zulip"),
             "name-extra-user",
