@@ -114,6 +114,10 @@ export function update_on_recipient_change(): void {
     drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
     compose_validate.validate_and_update_send_button_status();
+
+    // Clear the topic moved banner when the recipient
+    // is changed or compose box is closed.
+    compose_validate.clear_topic_moved_info();
 }
 
 export let check_posting_policy_for_compose_box = (): void => {
