@@ -175,7 +175,7 @@ test("changing_topics", () => {
     // Test defensive code.  Trying to update a message we don't know
     // about should be a no-op.
     event = {
-        topic: "brunch",
+        topic: "supper",
     };
     unread.update_unread_topics(other_message, event);
 
