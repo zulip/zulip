@@ -534,14 +534,14 @@
     grid-area: scroller-backward;
     justify-content: flex-start;
     border-radius: 0 0 0 3px;
-    background: var(--color-compose-background-scroll-backward);
+    background: var(--gradient-compose-scroll-backward);
 
     &:hover {
-        background: var(--color-compose-background-scroll-backward-hover);
+        background: var(--gradient-compose-scroll-backward-hover);
     }
 
     &:active {
-        background: var(--color-compose-background-scroll-backward-active);
+        background: var(--gradient-compose-scroll-backward-active);
 
         .scroller-backward-icon {
             /* Subtly shift arrow in scroll direction. */
@@ -554,14 +554,14 @@
     grid-area: scroller-forward;
     justify-content: flex-end;
     border-radius: 0 0 3px;
-    background: var(--color-compose-background-scroll-forward);
+    background: var(--gradient-compose-scroll-forward);
 
     &:hover {
-        background: var(--color-compose-background-scroll-forward-hover);
+        background: var(--gradient-compose-scroll-forward-hover);
     }
 
     &:active {
-        background: var(--color-compose-background-scroll-forward-active);
+        background: var(--gradient-compose-scroll-forward-active);
 
         .scroller-forward-icon {
             /* Subtly shift arrow in scroll direction. */

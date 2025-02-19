@@ -594,7 +594,7 @@
     --size-color-swatch: 1em;
     --grid-gap-color-swatch: 1em;
     --padding-color-swatch-list: 0.6666em;
-    --color-background-custom-swatch-gradient: conic-gradient(
+    --gradient-custom-swatch: conic-gradient(
         from 0deg at 50% 50% in oklch longer hue,
         oklch(70% 0.3 0deg) 0%,
         oklch(70% 0.3 0deg) 100%
@@ -1176,36 +1176,36 @@
         hsl(0deg 0% 67%)
     );
     --color-compose-scroll-icon: hsl(0deg 0% 50%);
-    --color-compose-background-scroll-backward: linear-gradient(
+    --gradient-compose-scroll-backward: linear-gradient(
         90deg,
         light-dark(hsl(234deg 100% 95%), hsl(234deg 21% 24%)) 35%,
         light-dark(hsl(234deg 100% 95%), hsl(234deg 21% 24% / 76.9%)) 50%,
         transparent 100%
     );
-    --color-compose-background-scroll-backward-hover: linear-gradient(
+    --gradient-compose-scroll-backward-hover: linear-gradient(
         90deg,
         light-dark(hsl(234deg 100% 93%), hsl(234deg 30% 28%)) 35%,
         light-dark(hsl(234deg 100% 93%), hsl(234deg 30% 28% / 76.9%)) 50%,
         transparent 100%
     );
-    --color-compose-background-scroll-backward-active: linear-gradient(
+    --gradient-compose-scroll-backward-active: linear-gradient(
         90deg,
         light-dark(hsl(234deg 100% 90%), hsl(234deg 35% 30%)) 45%,
         transparent 100%
     );
-    --color-compose-background-scroll-forward: linear-gradient(
+    --gradient-compose-scroll-forward: linear-gradient(
         90deg,
         transparent 0%,
         light-dark(hsl(234deg 100% 95%), hsl(234deg 21% 24% / 76.9%)) 50%,
         light-dark(hsl(234deg 100% 95%), hsl(234deg 21% 24%)) 65%
     );
-    --color-compose-background-scroll-forward-hover: linear-gradient(
+    --gradient-compose-scroll-forward-hover: linear-gradient(
         90deg,
         transparent 0%,
         light-dark(hsl(234deg 100% 93%), hsl(234deg 30% 28% / 76.9%)) 50%,
         light-dark(hsl(234deg 100% 93%), hsl(234deg 30% 28%)) 65%
     );
-    --color-compose-background-scroll-forward-active: linear-gradient(
+    --gradient-compose-scroll-forward-active: linear-gradient(
         90deg,
         transparent 0%,
         light-dark(hsl(234deg 100% 90%), hsl(234deg 35% 30%)) 55%
