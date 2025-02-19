@@ -150,6 +150,7 @@
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
+* [“*General chat*” topic](/help/general-chat-topic)
 * [Delete a topic](/help/delete-a-topic)
 
 ## Notifications
