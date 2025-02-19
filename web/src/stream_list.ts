@@ -862,7 +862,7 @@ export function initialize_tippy_tooltips(): void {
             const stream_id = stream_id_for_elt($(instance.reference).parents("li.narrow-filter"));
             const current_narrow_stream_id = narrow_state.stream_id();
             const current_topic = narrow_state.topic();
-            if (!(current_narrow_stream_id === stream_id && current_topic)) {
+            if (!(current_narrow_stream_id === stream_id && current_topic !== undefined)) {
                 return false;
             }
             instance.setContent(ui_util.parse_html(render_go_to_channel_feed_tooltip()));
