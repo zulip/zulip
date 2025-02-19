@@ -2,6 +2,7 @@
 import re
 from collections.abc import Callable
 from functools import wraps
+from typing import Concatenate
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils.translation import gettext as _
@@ -20,7 +21,9 @@ from zerver.models import UserProfile
 ParamT = ParamSpec("ParamT")
 
 
-def slack_error_handler(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+def slack_error_handler(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     """
     A decorator that catches JsonableError exceptions and returns a
     Slack-compatible error response in the format:
@@ -29,7 +32,7 @@ def slack_error_handler(view_func: Callable[..., HttpResponse]) -> Callable[...,
 
     @wraps(view_func)
     def wrapped_view(
-        request: HttpRequest, *args: ParamT.args, **kwargs: ParamT.kwargs
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
     ) -> HttpResponse:
         try:
             return view_func(request, *args, **kwargs)
