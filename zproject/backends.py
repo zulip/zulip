@@ -1715,7 +1715,7 @@ def social_auth_sync_user_attributes(
 
 
 def social_associate_user_helper(
-    backend: BaseAuth, return_data: dict[str, Any], *args: Any, **kwargs: Any
+    backend: "SocialAuthMixin", return_data: dict[str, Any], *args: Any, **kwargs: Any
 ) -> HttpResponse | UserProfile | None:
     """Responsible for doing the Zulip account lookup and validation parts
     of the Zulip social auth pipeline (similar to the authenticate()
@@ -1875,6 +1875,7 @@ def social_auth_associate_user(
     later stages of settings.SOCIAL_AUTH_PIPELINE, such as
     social_auth_finish, as kwargs.
     """
+    assert isinstance(backend, SocialAuthMixin)
     partial_token = backend.strategy.request_data().get("partial_token")
     return_data: dict[str, Any] = {}
     user_profile = social_associate_user_helper(backend, return_data, *args, **kwargs)
@@ -2213,15 +2214,15 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
                 **kwargs,
             )
         elif team_id is not None:
-            backend = GithubTeamOAuth2(self.strategy, self.redirect_uri)
+            team_backend = GithubTeamOAuth2(self.strategy, self.redirect_uri)
             try:
-                return backend.user_data(access_token, *args, **kwargs)
+                return team_backend.user_data(access_token, *args, **kwargs)
             except AuthFailed:
                 return dict(auth_failed_reason="GitHub user is not member of required team")
         elif org_name is not None:
-            backend = GithubOrganizationOAuth2(self.strategy, self.redirect_uri)
+            organization_backend = GithubOrganizationOAuth2(self.strategy, self.redirect_uri)
             try:
-                return backend.user_data(access_token, *args, **kwargs)
+                return organization_backend.user_data(access_token, *args, **kwargs)
             except AuthFailed:
                 return dict(auth_failed_reason="GitHub user is not member of required organization")
 
