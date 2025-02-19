@@ -134,7 +134,7 @@ that registration and saving the updated secret in
             "/api/v1/remotes/server/register", request
         )
 
-        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False, raise_on_error=True)
 
         if response.json()["created"]:
             print(
