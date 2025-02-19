@@ -156,7 +156,8 @@ function get_notification_title(
             return title_prefix + " " + title_suffix;
         case "stream": {
             const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-            title_suffix = " (#" + stream_name + " > " + message.topic + ")";
+            const topic_display_name = util.get_final_topic_display_name(message.topic);
+            title_suffix = " (#" + stream_name + " > " + topic_display_name + ")";
             break;
         }
     }
