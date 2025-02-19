@@ -114,7 +114,7 @@ export let render_typeahead_item = (args: {
 }): string => {
     const has_image = args.img_src !== undefined;
     const has_status = args.status_emoji_info !== undefined;
-    const has_secondary = args.secondary !== undefined;
+    const has_secondary = args.secondary !== undefined && args.secondary !== null;
     const has_secondary_html = args.secondary_html !== undefined;
     const has_pronouns = args.pronouns !== undefined;
     return render_typeahead_list_item({
@@ -163,7 +163,6 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
         ),
         pronouns,
         secondary: person.user.delivery_email,
-        show_comma: person.user.delivery_email !== null,
     };
 
     return render_typeahead_item(typeahead_arguments);
