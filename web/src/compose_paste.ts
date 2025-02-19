@@ -7,9 +7,13 @@ import TurndownService from "turndown";
 
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as util from "./util.ts";
+
+const MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT = 2000;
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -606,7 +610,16 @@ export function try_stream_topic_syntax_text(text: string): string | null {
     return syntax_text;
 }
 
-export function paste_handler(this: HTMLTextAreaElement, event: JQuery.TriggeredEvent): void {
+function create_text_file(text: string, filename: string): File {
+    const blob = new Blob([text], {type: "text/plain"});
+    return new File([blob], filename, {type: "text/plain"});
+}
+
+export function paste_handler(
+    this: HTMLTextAreaElement,
+    event: JQuery.TriggeredEvent,
+    upload_pasted_file: (pasted_file: File) => void,
+): void {
     assert(event.originalEvent instanceof ClipboardEvent);
     const clipboardData = event.originalEvent.clipboardData;
     if (!clipboardData) {
@@ -620,10 +633,35 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
 
     if (clipboardData.getData) {
         const $textarea = $(this);
+        const existing_text_length = $textarea.val()!.length;
         const paste_text = clipboardData.getData("text");
         let paste_html = clipboardData.getData("text/html");
         // Trim the paste_text to accommodate sloppy copying
         const trimmed_paste_text = paste_text.trim();
+        const pasted_text_length = paste_text.length;
+
+        const is_pasted_text_too_large = pasted_text_length > realm.max_message_length;
+
+        const is_combined_text_too_large =
+            pasted_text_length + existing_text_length > realm.max_message_length;
+
+        const is_paste_large_enough_for_file =
+            pasted_text_length >= MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT;
+
+        // If the pasted or combined text is too large, create a "pasted text.txt" file
+        // and upload it instead of inserting the text directly.
+        if (
+            (is_pasted_text_too_large || is_combined_text_too_large) &&
+            is_paste_large_enough_for_file
+        ) {
+            const filename = `${$t({defaultMessage: "Pasted text"})}.txt`;
+            const pasted_file = create_text_file(paste_text, filename);
+            upload_pasted_file(pasted_file);
+
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
 
         // Only intervene to generate formatted links when dealing
         // with a URL and a URL-safe range selection.
@@ -685,7 +723,23 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
     }
 }
 
-export function initialize(): void {
-    $<HTMLTextAreaElement>("textarea#compose-textarea").on("paste", paste_handler);
-    $("body").on("paste", "textarea.message_edit_content", paste_handler);
+export function initialize({
+    upload_pasted_file,
+}: {
+    upload_pasted_file: (pasted_file: File) => void;
+}): void {
+    $<HTMLTextAreaElement>("textarea#compose-textarea").on(
+        "paste",
+        function (this: HTMLTextAreaElement, event: JQuery.TriggeredEvent) {
+            paste_handler.call(this, event, upload_pasted_file);
+        },
+    );
+
+    $("body").on(
+        "paste",
+        "textarea.message_edit_content",
+        function (this: HTMLTextAreaElement, event: JQuery.TriggeredEvent) {
+            paste_handler.call(this, event, upload_pasted_file);
+        },
+    );
 }
