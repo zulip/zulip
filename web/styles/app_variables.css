@@ -1176,77 +1176,39 @@
         hsl(0deg 0% 67%)
     );
     --color-compose-scroll-icon: hsl(0deg 0% 50%);
-    --color-compose-background-scroll-backward: light-dark(
-        linear-gradient(
-            90deg,
-            hsl(234deg 100% 95%) 50%,
-            hsl(0deg 0% 100% / 0%) 100%
-        ),
-        linear-gradient(
-            90deg,
-            hsl(234deg 21% 24%) 35%,
-            hsl(225deg 9% 5% / 0%) 100%
-        )
+    --color-compose-background-scroll-backward: linear-gradient(
+        90deg,
+        light-dark(hsl(234deg 100% 95%), hsl(234deg 21% 24%)) 35%,
+        light-dark(hsl(234deg 100% 95%), hsl(234deg 21% 24% / 76.9%)) 50%,
+        transparent 100%
     );
-    --color-compose-background-scroll-backward-hover: light-dark(
-        linear-gradient(
-            90deg,
-            hsl(234deg 100% 93%) 50%,
-            hsl(0deg 0% 100% / 0%) 100%
-        ),
-        linear-gradient(
-            90deg,
-            hsl(234deg 30% 28%) 35%,
-            hsl(225deg 9% 5% / 0%) 100%
-        )
+    --color-compose-background-scroll-backward-hover: linear-gradient(
+        90deg,
+        light-dark(hsl(234deg 100% 93%), hsl(234deg 30% 28%)) 35%,
+        light-dark(hsl(234deg 100% 93%), hsl(234deg 30% 28% / 76.9%)) 50%,
+        transparent 100%
     );
-    --color-compose-background-scroll-backward-active: light-dark(
-        linear-gradient(
-            90deg,
-            hsl(234deg 100% 90%) 45%,
-            hsl(0deg 0% 100% / 0%) 100%
-        ),
-        linear-gradient(
-            90deg,
-            hsl(234deg 35% 30%) 45%,
-            hsl(225deg 9% 5% / 0%) 100%
-        )
+    --color-compose-background-scroll-backward-active: linear-gradient(
+        90deg,
+        light-dark(hsl(234deg 100% 90%), hsl(234deg 35% 30%)) 45%,
+        transparent 100%
     );
-    --color-compose-background-scroll-forward: light-dark(
-        linear-gradient(
-            90deg,
-            hsl(0deg 0% 100% / 0%) 0%,
-            hsl(234deg 100% 95%) 50%
-        ),
-        linear-gradient(
-            90deg,
-            hsl(225deg 9% 5% / 0%) 0%,
-            hsl(234deg 21% 24%) 65%
-        )
+    --color-compose-background-scroll-forward: linear-gradient(
+        90deg,
+        transparent 0%,
+        light-dark(hsl(234deg 100% 95%), hsl(234deg 21% 24% / 76.9%)) 50%,
+        light-dark(hsl(234deg 100% 95%), hsl(234deg 21% 24%)) 65%
     );
-    --color-compose-background-scroll-forward-hover: light-dark(
-        linear-gradient(
-            90deg,
-            hsl(0deg 0% 100% / 0%) 0%,
-            hsl(234deg 100% 93%) 50%
-        ),
-        linear-gradient(
-            90deg,
-            hsl(225deg 9% 5% / 0%) 0%,
-            hsl(234deg 30% 28%) 65%
-        )
+    --color-compose-background-scroll-forward-hover: linear-gradient(
+        90deg,
+        transparent 0%,
+        light-dark(hsl(234deg 100% 93%), hsl(234deg 30% 28% / 76.9%)) 50%,
+        light-dark(hsl(234deg 100% 93%), hsl(234deg 30% 28%)) 65%
     );
-    --color-compose-background-scroll-forward-active: light-dark(
-        linear-gradient(
-            90deg,
-            hsl(0deg 0% 100% / 0%) 0%,
-            hsl(234deg 100% 90%) 55%
-        ),
-        linear-gradient(
-            90deg,
-            hsl(225deg 9% 5% / 0%) 0%,
-            hsl(234deg 35% 30%) 55%
-        )
+    --color-compose-background-scroll-forward-active: linear-gradient(
+        90deg,
+        transparent 0%,
+        light-dark(hsl(234deg 100% 90%), hsl(234deg 35% 30%)) 55%
     );
 
     /* Text colors */
@@ -1801,18 +1763,8 @@
         hsl(0deg 0% 14%)
     );
     --color-background-inbox-row-hover: light-dark(
-        linear-gradient(
-            0deg,
-            hsl(0deg 0% 0% / 5%) 0%,
-            hsl(0deg 0% 0% / 5%) 100%
-        ),
-        hsl(0deg 0% 100%),
-        linear-gradient(
-            0deg,
-            hsl(0deg 0% 100% / 5%) 0%,
-            hsl(0deg 0% 100% / 5%) 100%
-        ),
-        hsl(0deg 0% 14.12%)
+        color-mix(in srgb, hsl(0deg 0% 0%) 5%, hsl(0deg 0% 100%)),
+        color-mix(in srgb, hsl(0deg 0% 100%) 5%, hsl(0deg 0% 14.12%))
     );
     --color-background-button-inbox-selected: light-dark(
         hsl(0deg 0% 0% / 5%),
