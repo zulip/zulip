@@ -2804,9 +2804,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         )
         raise AuthFailed(self, error_msg)
 
-    def process_logout(self, subdomain: str, idp_name: str) -> HttpResponse | None:
+    def process_logout_request(self, subdomain: str, idp_name: str) -> HttpResponse | None:
         """
-        We override process_logout, because we need to customize
+        We don't use process_logout, because we need to customize
         the way of revoking sessions and introduce NameID validation.
 
         The python-social-auth and python3-saml implementations expect a simple
@@ -2936,7 +2936,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         # in the python3-saml library, ensuring it received the correct kind of XML document
         # and finishes processing it.
         # (1) We received a SAMLRequest - the only SAMLRequest we accept is a LogoutRequest,
-        #     so we call process_logout().
+        #     so we call process_logout_request().
         # (2) We received a SAMLResponse and it looks like a LogoutResponse - we call
         #     process_logout_response()
         # (3) We received a SAMLResponse that's not a LogoutResponse. We proceed to treat it
@@ -2947,7 +2947,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         # If for any reason, an XML document that doesn't match the expected type is passed
         # to these *_process() functions, it will be rejected.
         if isinstance(saml_document, SAMLRequest):
-            return self.process_logout(subdomain, idp_name)
+            return self.process_logout_request(subdomain, idp_name)
         elif isinstance(saml_document, SAMLResponse) and saml_document.is_logout_response():
             return SAMLSPInitiatedLogout.process_logout_response(saml_document, idp_name)
 
