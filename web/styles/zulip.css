@@ -1594,11 +1594,13 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
         @extend %hide-right-sidebar;
     }
 
-    &.fluid_layout_width {
-        #compose-content,
-        .app-main .column-middle {
-            margin-right: 7px;
-        }
+    #navbar-middle {
+        margin-right: var(--right-column-collapsed-sidebar-width);
+    }
+
+    #compose-content,
+    .app-main .column-middle {
+        margin-right: 7px;
     }
 }
 
@@ -1715,7 +1717,7 @@ body:not(.hide-left-sidebar) {
 @container header-container (width < $cq_xl_min) {
     #navbar-middle {
         /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
-        margin-right: calc(var(--header-height) * 4 + 3px);
+        margin-right: var(--right-column-collapsed-sidebar-width);
     }
 }
 
