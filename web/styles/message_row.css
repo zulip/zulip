@@ -912,6 +912,14 @@ of the base style defined for a read-only textarea in dark mode. */
     cursor: default;
 }
 
+/* Placehold the control buttons, unless there's a failure. */
+.locally-echoed
+    .messagebox:hover
+    .message_controls
+    .message_control_button:not(.failed_message_action) {
+    visibility: hidden;
+}
+
 .recipient_row {
     /* See https://stackoverflow.com/questions/2717480/css-selector-for-first-element-with-class/8539107#8539107
        for details on how this works */
