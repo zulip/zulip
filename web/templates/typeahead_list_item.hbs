@@ -48,7 +48,7 @@
     {{> status_emoji status_emoji_info}}
     {{~/if}}
     {{~#if has_pronouns}}
-        <span class="pronouns">{{pronouns}}{{#if (or has_secondary_html has_secondary)}},{{/if}}</span>
+        <span class="pronouns">{{pronouns}}{{#if (or has_secondary_html show_comma)}},{{/if}}</span>
     {{~/if}}
     {{~#if has_secondary_html}}
     <span class="autocomplete_secondary rendered_markdown single-line-rendered-markdown">{{rendered_markdown secondary_html}}</span>
