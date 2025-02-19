@@ -83,7 +83,7 @@ export function start_tracking_message(opts: {local_id: string; locally_echoed: 
     }
 
     if (messages.has(local_id)) {
-        blueslip.error("We are re-using a local_id");
+        blueslip.error("We are reusing a local_id");
         return;
     }
 
