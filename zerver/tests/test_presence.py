@@ -1043,7 +1043,7 @@ class GetRealmStatusesTest(ZulipTestCase):
 
         # Othello's presence status is disabled so it won't be reported.
         self.assertEqual(set(json["presences"].keys()), {hamlet.email})
-        # However, UserActivit Interval still gets updated.
+        # However, the UserActivityInterval still gets updated.
         self.assertEqual(UserActivityInterval.objects.filter(user_profile=othello).count(), 1)
 
         result = self.api_post(

@@ -114,7 +114,7 @@ format used by the Zulip server that they are interacting with.
   `POST /zulip-services/verify/{access_token}/`: Added new API
   endpoints for transferring Zulip services registrations.
 * `POST /remotes/server/register`: Added new response format for
-  hostnames that are already registere.
+  hostnames that are already registered.
 
 **Feature level 344**
 
@@ -191,7 +191,7 @@ deactivated groups.
 * `POST /calls/bigbluebutton/create`: Added a `voice_only` parameter
   controlling whether the call should be voice-only, in which case we
   keep cameras disabled for this call. Now the call creator is a
-  moderator and all other joinees are viewers.
+  moderator and all other joiners are viewers.
 
 **Feature level 336**
 
