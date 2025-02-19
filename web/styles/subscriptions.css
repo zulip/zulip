@@ -579,7 +579,7 @@ h4.user_group_setting_subsection_title {
                 color: inherit;
                 display: flex;
                 align-items: center;
-                gap: 5px;
+                gap: 0.2381em; /* 5px at 21px/em */
 
                 &:hover {
                     color: inherit;
@@ -598,7 +598,7 @@ h4.user_group_setting_subsection_title {
             .stream-info-title,
             .user-group-info-title {
                 display: none;
-                font-size: 1.5em;
+                font-size: 1.5em; /* 21px at 14px/em */
                 line-height: 1;
                 font-weight: 600;
                 word-break: break-all;
@@ -607,7 +607,7 @@ h4.user_group_setting_subsection_title {
                     display: flex;
 
                     .zulip-icon {
-                        font-size: 20px;
+                        font-size: 0.9524em; /* 20px at 21px/em */
                     }
                 }
             }
@@ -1103,7 +1103,7 @@ h4.user_group_setting_subsection_title {
             }
 
             .zulip-icon {
-                font-size: 18px;
+                font-size: 1.2857em; /* 18px at 14px/em */
             }
         }
 
