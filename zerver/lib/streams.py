@@ -194,8 +194,11 @@ def get_users_dict_with_metadata_access_to_streams_via_permission_groups(
 ) -> dict[int, set[int]]:
     can_administer_group_ids = {stream.can_administer_channel_group_id for stream in streams}
     can_add_subscriber_group_ids = {stream.can_add_subscribers_group_id for stream in streams}
+    can_subscribe_group_ids = {stream.can_subscribe_group_id for stream in streams}
 
-    all_permission_group_ids = list(can_administer_group_ids | can_add_subscriber_group_ids)
+    all_permission_group_ids = list(
+        can_administer_group_ids | can_add_subscriber_group_ids | can_subscribe_group_ids
+    )
 
     recursive_subgroups = get_root_id_annotated_recursive_subgroups_for_groups(
         all_permission_group_ids, realm_id
@@ -229,6 +232,7 @@ def get_users_dict_with_metadata_access_to_streams_via_permission_groups(
         users_with_metadata_access_dict[stream.id] = (
             group_members_dict[stream.can_administer_channel_group_id]
             | group_members_dict[stream.can_add_subscribers_group_id]
+            | group_members_dict[stream.can_subscribe_group_id]
         )
 
     return users_with_metadata_access_dict
@@ -416,13 +420,23 @@ def is_user_in_can_add_subscribers_group(
     return group_allowed_to_add_subscribers_id in user_recursive_group_ids
 
 
+def is_user_in_can_subscribe_group(stream: Stream, user_recursive_group_ids: set[int]) -> bool:
+    # Important: The caller must have verified the acting user
+    # is not a guest, to enforce that can_subscribe_group has
+    # allow_everyone_group=False.
+    group_allowed_to_subscribe_id = stream.can_subscribe_group_id
+    return group_allowed_to_subscribe_id in user_recursive_group_ids
+
+
 def is_user_in_groups_granting_content_access(
     stream: Stream, user_recursive_group_ids: set[int]
 ) -> bool:
     # Important: The caller must have verified the acting user is not
     # a guest, to enforce that can_add_subscribers_group has
     # allow_everyone_group=False.
-    return is_user_in_can_add_subscribers_group(stream, user_recursive_group_ids)
+    return is_user_in_can_subscribe_group(
+        stream, user_recursive_group_ids
+    ) or is_user_in_can_add_subscribers_group(stream, user_recursive_group_ids)
 
 
 def is_user_in_can_remove_subscribers_group(
@@ -582,7 +596,8 @@ def user_has_content_access(
         )
 
     # This check must be after the user_profile.is_guest check, since
-    # allow_everyone_group=False for can_add_subscribers_group.
+    # allow_everyone_group=False for can_add_subscribers_group and
+    # can_subscribe_group.
     if is_user_in_groups_granting_content_access(
         stream, user_group_membership_details.user_recursive_group_ids
     ):
@@ -647,6 +662,7 @@ def has_metadata_access_to_channel_via_groups(
     user_recursive_group_ids: set[int],
     can_administer_channel_group_id: int,
     can_add_subscribers_group_id: int,
+    can_subscribe_group_id: int,
 ) -> bool:
     for setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
         permission_configuration = Stream.stream_permission_group_settings[setting_name]
@@ -659,6 +675,7 @@ def has_metadata_access_to_channel_via_groups(
     return (
         can_administer_channel_group_id in user_recursive_group_ids
         or can_add_subscribers_group_id in user_recursive_group_ids
+        or can_subscribe_group_id in user_recursive_group_ids
     )
 
 
@@ -696,6 +713,7 @@ def check_basic_stream_access(
             user_group_membership_details.user_recursive_group_ids,
             stream.can_administer_channel_group_id,
             stream.can_add_subscribers_group_id,
+            stream.can_subscribe_group_id,
         ):
             return True
 
@@ -926,7 +944,8 @@ def can_access_stream_metadata_user_ids(stream: Stream) -> set[int]:
         return public_stream_user_ids(stream)
     else:
         # for a private stream, it's subscribers plus channel admins
-        # and users belonging to `can_add_subscribers_group`.
+        # and users belonging to `can_add_subscribers_group` or
+        # `can_subscribe_group`.
         return (
             private_stream_user_ids(stream.id)
             | {user.id for user in stream.realm.get_admin_users_and_bots()}

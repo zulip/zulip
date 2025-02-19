@@ -358,6 +358,7 @@ def validate_user_access_to_subscribers(user_profile: UserProfile | None, stream
             "invite_only": stream.invite_only,
             "can_administer_channel_group_id": stream.can_administer_channel_group_id,
             "can_add_subscribers_group_id": stream.can_add_subscribers_group_id,
+            "can_subscribe_group_id": stream.can_subscribe_group_id,
         },
         # We use a lambda here so that we only compute whether the
         # user is subscribed if we have to
@@ -429,6 +430,7 @@ def validate_user_access_to_subscribers_helper(
         user_group_membership_details.user_recursive_group_ids,
         stream_dict["can_administer_channel_group_id"],
         stream_dict["can_add_subscribers_group_id"],
+        stream_dict["can_subscribe_group_id"],
     ):
         return
 
@@ -595,6 +597,7 @@ def has_metadata_access_to_previously_subscribed_stream(
     user_recursive_group_ids: set[int],
     can_administer_channel_group_id: int,
     can_add_subscribers_group_id: int,
+    can_subscribe_group_id: int,
 ) -> bool:
     if stream_dict["is_web_public"]:
         return True
@@ -608,6 +611,7 @@ def has_metadata_access_to_previously_subscribed_stream(
             user_recursive_group_ids,
             can_administer_channel_group_id,
             can_add_subscribers_group_id,
+            can_subscribe_group_id,
         )
 
     return True
@@ -714,12 +718,14 @@ def gather_subscriptions_helper(
         else:
             can_administer_channel_group_id = raw_stream_dict["can_administer_channel_group_id"]
             can_add_subscribers_group_id = raw_stream_dict["can_add_subscribers_group_id"]
+            can_subscribe_group_id = raw_stream_dict["can_subscribe_group_id"]
             if has_metadata_access_to_previously_subscribed_stream(
                 user_profile,
                 stream_dict,
                 user_recursive_group_ids,
                 can_administer_channel_group_id,
                 can_add_subscribers_group_id,
+                can_subscribe_group_id,
             ):
                 """
                 User who are no longer subscribed to a stream that they don't have
@@ -748,11 +754,13 @@ def gather_subscriptions_helper(
         is_public = not raw_stream_dict["invite_only"]
         can_administer_channel_group_id = raw_stream_dict["can_administer_channel_group_id"]
         can_add_subscribers_group_id = raw_stream_dict["can_add_subscribers_group_id"]
+        can_subscribe_group_id = raw_stream_dict["can_subscribe_group_id"]
         has_metadata_access = has_metadata_access_to_channel_via_groups(
             user_profile,
             user_recursive_group_ids,
             can_administer_channel_group_id,
             can_add_subscribers_group_id,
+            can_subscribe_group_id,
         )
         if is_public or user_profile.is_realm_admin or has_metadata_access:
             slim_stream_dict = build_stream_dict_for_never_sub(
