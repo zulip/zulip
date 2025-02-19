@@ -187,6 +187,7 @@ class Stream(models.Model):
 
     stream_permission_group_settings_requiring_content_access = [
         "can_add_subscribers_group",
+        "can_subscribe_group",
     ]
     assert set(stream_permission_group_settings_requiring_content_access).issubset(
         stream_permission_group_settings.keys()
@@ -195,6 +196,7 @@ class Stream(models.Model):
     stream_permission_group_settings_granting_metadata_access = [
         "can_add_subscribers_group",
         "can_administer_channel_group",
+        "can_subscribe_group",
     ]
     assert set(stream_permission_group_settings_granting_metadata_access).issubset(
         stream_permission_group_settings.keys()
