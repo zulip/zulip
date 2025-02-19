@@ -26,7 +26,7 @@
     align-items: center;
     font-family: "Source Code Pro", monospace;
     padding: 10px;
-    font-size: 0.85rem;
+    font-size: 0.85em; /* 13.6px at 16px/em (previously 0.85rem) */
     background-color: hsl(0deg 0% 98%);
     border: 1px solid hsl(0deg 0% 87%);
     border-radius: 4px;
@@ -40,8 +40,8 @@
     white-space: normal;
 }
 
-.copy-email-address {
-    font-size: 16px;
+.stream-email .copy-email-address {
+    font-size: 1.1765em; /* 16px at 13.6px/em */
 }
 
 .sub_setting_checkbox {
