@@ -3292,7 +3292,6 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
 
 class AppleAuthMixin:
-    BACKEND_CLASS = AppleAuthBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_APPLE_KEY"
     AUTHORIZATION_URL = "https://appleid.apple.com/auth/authorize"
     ACCESS_TOKEN_URL = "https://appleid.apple.com/auth/token"
@@ -3329,6 +3328,7 @@ class AppleAuthMixin:
 
 
 class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
+    BACKEND_CLASS = AppleAuthBackend
     LOGIN_URL = "/accounts/login/social/apple"
     SIGNUP_URL = "/accounts/register/social/apple"
 
@@ -3462,6 +3462,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
 
 
 class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
+    BACKEND_CLASS = AppleAuthBackend
     SIGNUP_URL = "/complete/apple/"
     LOGIN_URL = "/complete/apple/"
 
