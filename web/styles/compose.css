@@ -1180,8 +1180,8 @@ textarea.new_message_textarea {
 
     .zulip-icon-send {
         display: block;
-        font-size: 17px;
-        line-height: 16px;
+        font-size: 1.2143em; /* 17px at 14px/em */
+        line-height: 0.9412; /* 16px at 17px/em */
     }
 
     .loader {
