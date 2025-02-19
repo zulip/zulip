@@ -1383,15 +1383,6 @@ textarea.new_message_textarea {
             display: none;
         }
     }
-
-    .compose_draft_button {
-        font-size: 15px;
-        font-weight: 600;
-        font-family: "Source Sans 3 VF", sans-serif;
-        padding: 0 5px;
-        position: relative;
-        top: 0.7px;
-    }
 }
 
 .less-dense-mode {
