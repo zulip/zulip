@@ -208,7 +208,7 @@ class TestMiscStuff(ZulipTestCase):
 
         """
         If we are assigning colors to a user with 24+ streams, we have to start
-        re-using old colors.  Our algorithm basically uses recipient_id % 24, so
+        reusing old colors.  Our algorithm basically uses recipient_id % 24, so
         the following code reflects the worse case scenario that our new
         streams have recipient ids spaced out by exact multiples of 24.  We
         don't try to work around this edge case, since users who really depend

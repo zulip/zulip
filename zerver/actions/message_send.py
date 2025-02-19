@@ -1456,7 +1456,7 @@ def send_rate_limited_pm_notification_to_bot_owner(
         return
 
     # We warn the user once every 5 minutes to avoid a flood of
-    # direct messages on a misconfigured integration, re-using the
+    # direct messages on a misconfigured integration, reusing the
     # UserProfile.last_reminder field, which is not used for bots.
     last_reminder = sender.last_reminder
     waitperiod = timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
