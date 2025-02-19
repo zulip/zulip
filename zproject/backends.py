@@ -2013,6 +2013,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
 
     standard_relay_params = [*settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION, "next"]
 
+    @override
     def auth_complete(self, *args: Any, **kwargs: Any) -> HttpResponse | None:
         """This is a small wrapper around the core `auth_complete` method of
         python-social-auth, designed primarily to prevent 500s for
@@ -2127,6 +2128,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             )
         ]
 
+    @override
     def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> dict[str, str]:
         """This patched user_data function lets us combine together the 3
         social auth backends into a single Zulip backend for GitHub OAuth2"""
@@ -2260,6 +2262,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 
     # This method replaces a method from python-social-auth; it is adapted to store
     # the state_token data in Redis.
+    @override
     def get_or_create_state(self) -> str:
         """Creates the Oauth2 state parameter in first step of the flow,
         before redirecting the user to the IdP (aka Apple).
@@ -2295,6 +2298,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
         )
         return state
 
+    @override
     def validate_state(self) -> str | None:
         """
         This method replaces a method from python-social-auth; it is
@@ -2320,6 +2324,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
                 self.strategy.session_set(param, value)
         return request_state
 
+    @override
     def get_user_details(self, response: dict[str, Any]) -> dict[str, Any]:
         """
         Overridden to correctly grab the user's name from the request params,
@@ -2395,6 +2400,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 
 
 class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
+    @override
     def get_user_details(self, attributes: dict[str, Any]) -> dict[str, Any]:
         """
         Overridden to support plumbing of additional Attributes
@@ -2599,12 +2605,14 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                     del settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
         super().__init__(*args, **kwargs)
 
+    @override
     def get_idp(self, idp_name: str) -> ZulipSAMLIdentityProvider:
         """Given the name of an IdP, get a SAMLIdentityProvider instance.
         Forked to use our subclass of SAMLIdentityProvider for more flexibility."""
         idp_config = self.setting("ENABLED_IDPS")[idp_name]
         return ZulipSAMLIdentityProvider(idp_name, **idp_config)
 
+    @override
     def auth_url(self) -> str:
         """Get the URL to which we must redirect in order to
         authenticate the user. Overriding the original SAMLAuth.auth_url.
@@ -2694,6 +2702,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         else:
             return request_subdomain
 
+    @override
     def _check_entitlements(
         self, idp: SAMLIdentityProvider, attributes: dict[str, list[str]]
     ) -> None:
@@ -3037,6 +3046,7 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
     # configuration from.
     OIDC_ENDPOINT = settings_dict.get("oidc_url")
 
+    @override
     def get_key_and_secret(self) -> tuple[str, str]:
         client_id = self.settings_dict.get("client_id", "")
         assert isinstance(client_id, str)
