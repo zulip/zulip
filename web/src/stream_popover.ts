@@ -336,6 +336,7 @@ export async function build_move_topic_to_stream_popover(
         disable_topic_input?: boolean;
         message_placement?: "first" | "intermediate" | "last";
         stream: sub_store.StreamSubscription | undefined;
+        max_topic_length: number;
     } = {
         topic_name,
         empty_string_topic_display_name,
@@ -346,6 +347,7 @@ export async function build_move_topic_to_stream_popover(
         notify_old_thread: message_edit.notify_old_thread_default,
         from_message_actions_popover: message !== undefined,
         only_topic_edit,
+        max_topic_length: realm.max_topic_length,
     };
 
     // When the modal is opened for moving the whole topic from left sidebar,
