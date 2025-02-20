@@ -2250,7 +2250,7 @@ class BillingSession(ABC):
             return  # nocoverage
 
         min_licenses = self.min_licenses_for_plan(plan.tier)
-        if min_licenses > renewal_license_count:  # nocoverage
+        if min_licenses > renewal_license_count:
             # If we are renewing less licenses than the minimum required for the plan, we need to
             # adjust `license_at_next_renewal` for the customer.
             raise BillingError(
@@ -2891,7 +2891,9 @@ class BillingSession(ABC):
     ) -> int:
         customer = self.get_customer()
         if customer is not None and customer.minimum_licenses:
-            assert customer.monthly_discounted_price or customer.annual_discounted_price
+            # This could be either because the customer has a fixed
+            # monthly_discounted_price or annual_discounted_price, or
+            # because we wanted to override their minimum.
             return customer.minimum_licenses
 
         if tier == CustomerPlan.TIER_SELF_HOSTED_BASIC:
