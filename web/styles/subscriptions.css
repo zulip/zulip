@@ -577,6 +577,9 @@ h4.user_group_setting_subsection_title {
 
             & a {
                 color: inherit;
+                display: flex;
+                align-items: center;
+                gap: 5px;
 
                 &:hover {
                     color: inherit;
@@ -601,12 +604,10 @@ h4.user_group_setting_subsection_title {
                 word-break: break-all;
 
                 .large-icon {
-                    display: inline-block;
+                    display: flex;
 
                     .zulip-icon {
                         font-size: 20px;
-                        position: relative;
-                        top: 3px;
                     }
                 }
             }
@@ -1103,8 +1104,6 @@ h4.user_group_setting_subsection_title {
 
             .zulip-icon {
                 font-size: 18px;
-                position: relative;
-                top: 1px;
             }
         }
 
