@@ -298,13 +298,6 @@ export function initialize_kitchen_sink_stuff() {
         $("body").addClass("more-dense-mode");
     }
 
-    // To keep the specificity same for the CSS related to hiding the
-    // sidebars, we add the class to the body which is then later replaced
-    // by the class to hide right / left sidebar. We can take our time to do
-    // this since we are still showing the loading indicator screen and
-    // the rendered sidebars hasn't been displayed to the user yet.
-    $("body").addClass("default-sidebar-behaviour");
-
     $(window).on("blur", () => {
         $(document.body).addClass("window_blurred");
     });
