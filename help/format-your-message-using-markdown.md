@@ -174,6 +174,12 @@ below.
 
 {!to-do-lists-examples.md!}
 
+!!! tip ""
+
+    You can also use the **Add to-do list** (<i class="zulip-icon
+    zulip-icon-todo-list"></i>) button in the compose box to create a
+    shared to-do list. [Learn more](/help/collaborative-to-do-lists).
+
 ## Paragraph and section formatting
 
 {!paragraphs-and-sections-intro.md!}

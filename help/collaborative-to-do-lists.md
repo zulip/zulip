@@ -12,21 +12,21 @@
 
 1. Make sure the compose box is empty.
 
-1. Click the **Add to-do list** (<i class="zulip-icon zulip-icon-todo-list"></i>) icon at
-   the bottom of the compose box.
+1. Click the **Add to-do list** (<i class="zulip-icon
+   zulip-icon-todo-list"></i>) icon at the bottom of the compose box.
 
-1. Fill out todo-list information as desired, and click **Create to-do list** to insert todo-list
-   formatting.
+1. Fill out todo-list information as desired, and click **Create to-do
+   list** to insert todo-list formatting.
 
-1. Click the **Send** (<i class="zulip-icon zulip-icon-send"></i>) button, or
-   use a [keyboard shortcut](/help/configure-send-message-keys) to send your
-   message.
+1. Click the **Send** (<i class="zulip-icon zulip-icon-send"></i>)
+   button, or use a [keyboard shortcut](/help/configure-send-message-keys)
+   to send your message.
 
 !!! tip ""
 
     To reorder the list of todos, click and drag the **vertical dots**
-    (<i class="zulip-icon zulip-icon-grip-vertical"></i>) to the left of each
-    option. To delete an option, click the **trash**
+    (<i class="zulip-icon zulip-icon-grip-vertical"></i>) to the left of
+    each option. To delete an option, click the **trash**
     (<i class="fa fa-trash-o"></i>) icon to the right of it.
 
 {tab|via-markdown}
@@ -54,7 +54,7 @@
 
 {start_tabs}
 
-1. Fill out the **New task** field and optionally the **Description**
+1. Fill out the **New task** field, and optionally the **Description**
    field at the bottom of the to-do list.
 
 1. Click **Add task** to add the new task to the to-do list.
