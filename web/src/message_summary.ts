@@ -62,6 +62,7 @@ export function get_narrow_summary(channel_id: number, topic_name: string): void
                         const summary_html = render_topic_summary({
                             summary_markdown,
                         });
+                        $("#topic-summary-modal .modal__content").addClass("rendered_markdown");
                         $("#topic-summary-modal .modal__content").html(summary_html);
                         rendered_markdown.update_elements(
                             $("#topic-summary-modal .modal__content"),
