@@ -1462,7 +1462,7 @@ export function initialize(): void {
         hide_user_profile();
     });
 
-    $("body").on("click", "#user-profile-modal .stream_list_item", () => {
+    $("body").on("click", "#user-profile-modal .user-profile-channel-list-item", () => {
         hide_user_profile();
     });
 
