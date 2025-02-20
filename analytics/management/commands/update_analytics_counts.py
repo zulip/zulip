@@ -95,4 +95,4 @@ class Command(ZulipBaseCommand):
             logger.info("Sleeping %d seconds before reporting...", delay)
             time.sleep(delay)
 
-            send_server_data_to_push_bouncer(consider_usage_statistics=True)
+            send_server_data_to_push_bouncer(consider_usage_statistics=True, raise_on_error=True)

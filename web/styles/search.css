@@ -189,7 +189,7 @@
         background: transparent;
         text-overflow: ellipsis;
         overflow: hidden;
-        white-space: nowrap;
+        white-space: pre-wrap;
         flex-grow: 1;
 
         color: var(--color-text-search);

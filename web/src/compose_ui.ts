@@ -541,16 +541,16 @@ export function handle_scrolling_formatting_buttons(event: JQuery.ScrollEvent): 
 
     // If we're within 4px of the start or end of the formatting buttons,
     // go ahead and hide the respective scrolling button
-    const hide_scroll_button_threshhold_px = 4;
+    const hide_scroll_button_threshold_px = 4;
 
     $button_container.addClass("can-scroll-forward can-scroll-backward");
 
     assert(typeof button_bar_left_scroll === "number");
 
-    if (button_bar_left_scroll >= button_bar_max_left_scroll - hide_scroll_button_threshhold_px) {
+    if (button_bar_left_scroll >= button_bar_max_left_scroll - hide_scroll_button_threshold_px) {
         $button_container.removeClass("can-scroll-forward");
     }
-    if (button_bar_left_scroll <= hide_scroll_button_threshhold_px) {
+    if (button_bar_left_scroll <= hide_scroll_button_threshold_px) {
         $button_container.removeClass("can-scroll-backward");
     }
 }

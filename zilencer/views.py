@@ -1060,7 +1060,12 @@ def update_remote_realm_data_for_server(
 
     try:
         RemoteRealm.objects.bulk_create(new_remote_realms)
-    except IntegrityError:
+    except IntegrityError as e:
+        logger.info(
+            "update_remote_realm_data_for_server:server:%s:IntegrityError creating RemoteRealm rows: %s",
+            server.id,
+            e,
+        )
         raise JsonableError(_("Duplicate registration detected."))
 
     uuid_to_realm_dict = {str(realm.uuid): realm for realm in server_realms_info}

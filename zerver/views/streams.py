@@ -93,6 +93,7 @@ from zerver.lib.user_groups import (
     access_user_group_for_setting,
     get_group_setting_value_for_api,
     get_role_based_system_groups_dict,
+    get_system_user_group_by_name,
     parse_group_setting_value,
     validate_group_setting_value_change,
 )
@@ -100,6 +101,7 @@ from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, Stream, UserMessage, UserProfile, UserTopic
+from zerver.models.groups import SystemGroups
 from zerver.models.users import get_system_bot
 
 
@@ -393,6 +395,7 @@ def update_stream_backend(
             check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name, user_profile)
 
+    nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
     request_settings_dict = locals()
     for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
         assert setting_name in request_settings_dict
@@ -400,11 +403,13 @@ def update_stream_backend(
             continue
 
         setting_value = request_settings_dict[setting_name]
-        new_setting_value = parse_group_setting_value(setting_value.new)
+        new_setting_value = parse_group_setting_value(setting_value.new, nobody_group)
 
         expected_current_setting_value = None
         if setting_value.old is not None:
-            expected_current_setting_value = parse_group_setting_value(setting_value.old)
+            expected_current_setting_value = parse_group_setting_value(
+                setting_value.old, nobody_group
+            )
 
         current_value = getattr(stream, setting_name)
         current_setting_api_value = get_group_setting_value_for_api(current_value)
@@ -618,7 +623,11 @@ def add_subscriptions_backend(
         assert setting_name in request_settings_dict
         if request_settings_dict[setting_name] is not None:
             setting_request_value = request_settings_dict[setting_name]
-            setting_value = parse_group_setting_value(setting_request_value)
+            if system_groups_name_dict is None:
+                system_groups_name_dict = get_role_based_system_groups_dict(realm)
+            setting_value = parse_group_setting_value(
+                setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
+            )
             group_settings_map[setting_name] = access_user_group_for_setting(
                 setting_value,
                 user_profile,

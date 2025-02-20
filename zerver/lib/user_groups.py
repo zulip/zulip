@@ -127,6 +127,13 @@ def get_user_group_by_id_in_realm(
         raise JsonableError(_("Invalid user group"))
 
 
+def get_system_user_group_by_name(group_name: str, realm_id: int) -> NamedUserGroup:
+    if group_name not in SystemGroups.GROUP_DISPLAY_NAME_MAP:
+        raise JsonableError(_("Invalid system group name."))
+
+    return NamedUserGroup.objects.get(name=group_name, realm_id=realm_id, is_system_group=True)
+
+
 def access_user_group_to_read_membership(user_group_id: int, realm: Realm) -> NamedUserGroup:
     return get_user_group_by_id_in_realm(user_group_id, realm, for_read=True)
 
@@ -1031,12 +1038,16 @@ def get_server_supported_permission_settings() -> ServerSupportedPermissionSetti
 
 def parse_group_setting_value(
     setting_value: int | AnonymousSettingGroupDict,
+    nobody_group: NamedUserGroup,
 ) -> int | AnonymousSettingGroupDict:
     if isinstance(setting_value, int):
         return setting_value
 
     if len(setting_value.direct_members) == 0 and len(setting_value.direct_subgroups) == 1:
         return setting_value.direct_subgroups[0]
+
+    if len(setting_value.direct_members) == 0 and len(setting_value.direct_subgroups) == 0:
+        return nobody_group.id
 
     return setting_value
 

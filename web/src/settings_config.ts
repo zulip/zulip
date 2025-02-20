@@ -492,7 +492,7 @@ export const realm_deletion_in_values = {
         description: $t({defaultMessage: "30 days"}),
         default: false,
     },
-    ninty_days: {
+    ninety_days: {
         value: 90 * 24 * 60,
         description: $t({defaultMessage: "90 days"}),
         default: false,
@@ -1072,12 +1072,12 @@ export const system_user_groups_list = [
     {
         name: "role:everyone",
         dropdown_option_name: $t({defaultMessage: "Admins, moderators, members and guests"}),
-        display_name: $t({defaultMessage: "Everyone"}),
+        display_name: $t({defaultMessage: "Everyone including guests"}),
     },
     {
         name: "role:members",
         dropdown_option_name: $t({defaultMessage: "Admins, moderators and members"}),
-        display_name: $t({defaultMessage: "Members"}),
+        display_name: $t({defaultMessage: "Everyone except guests"}),
     },
     {
         name: "role:fullmembers",
@@ -1105,6 +1105,8 @@ export const system_user_groups_list = [
         display_name: $t({defaultMessage: "Nobody"}),
     },
 ];
+
+export const alternate_members_group_typeahead_matching_name = $t({defaultMessage: "Members"});
 
 export const user_topic_visibility_policy_values = {
     followed: {

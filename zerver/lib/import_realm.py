@@ -409,7 +409,7 @@ def fix_message_rendered_content(
             # similar syntax in the rendered HTML.
             soup = BeautifulSoup(message[rendered_content_key], "html.parser")
 
-            user_mentions = soup.findAll("span", {"class": "user-mention"})
+            user_mentions = soup.find_all("span", {"class": "user-mention"})
             if len(user_mentions) != 0:
                 user_id_map = ID_MAP["user_profile"]
                 for mention in user_mentions:
@@ -426,7 +426,7 @@ def fix_message_rendered_content(
                         mention["data-user-id"] = str(user_id_map[old_user_id])
                 message[rendered_content_key] = str(soup)
 
-            stream_mentions = soup.findAll("a", {"class": "stream"})
+            stream_mentions = soup.find_all("a", {"class": "stream"})
             if len(stream_mentions) != 0:
                 stream_id_map = ID_MAP["stream"]
                 for mention in stream_mentions:
@@ -435,7 +435,7 @@ def fix_message_rendered_content(
                         mention["data-stream-id"] = str(stream_id_map[old_stream_id])
                 message[rendered_content_key] = str(soup)
 
-            user_group_mentions = soup.findAll("span", {"class": "user-group-mention"})
+            user_group_mentions = soup.find_all("span", {"class": "user-group-mention"})
             if len(user_group_mentions) != 0:
                 user_group_id_map = ID_MAP["usergroup"]
                 for mention in user_group_mentions:
@@ -444,8 +444,16 @@ def fix_message_rendered_content(
                         mention["data-user-group-id"] = str(user_group_id_map[old_user_group_id])
                 message[rendered_content_key] = str(soup)
 
-            # Trigger thumbnailing of all thumbnails in the message
-            get_user_upload_previews(realm.id, message[content_key], lock=True)
+            # Enqueue thumbnailing of all thumbnails in the message.
+            # We do this without taking a lock on the ImageAttachment
+            # rows, because the race here is that the images
+            # referenced by this message were encountered previously,
+            # and are currently being thumbnailed -- which will
+            # worst-case result in the images being enqueued a second
+            # time, and a no-op when those are processed.  The return
+            # value will also be out of date -- but that is irrelevant
+            # in this use case.
+            get_user_upload_previews(realm.id, message[content_key])
 
             continue
 

@@ -311,7 +311,7 @@ export function stream_and_topic_exist_in_edit_history(
     }
 
     for (const edit_history_event of message.edit_history) {
-        if (!edit_history_event.prev_stream && !edit_history_event.prev_topic) {
+        if (!edit_history_event.prev_stream && edit_history_event.prev_topic === undefined) {
             // Message was not moved in this edit event.
             continue;
         }
@@ -324,7 +324,7 @@ export function stream_and_topic_exist_in_edit_history(
             message_dict.stream_id = edit_history_event.prev_stream;
         }
 
-        if (edit_history_event.prev_topic) {
+        if (edit_history_event.prev_topic !== undefined) {
             // This edit event changed the topic.  We expect the
             // following to be true due to the invariants of the edit
             // history data structure:

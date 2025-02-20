@@ -82,8 +82,9 @@ function retrieve_search_query_data(): SearchData {
             const stream_name = stream_data.get_valid_sub_by_id_string(stream_id).name;
             search_string_result.stream_query = stream_name;
         }
-        if (topic) {
-            search_string_result.topic_query = topic;
+        if (topic !== undefined) {
+            search_string_result.topic_query = util.get_final_topic_display_name(topic);
+            search_string_result.is_empty_string_topic = topic === "";
         }
     }
 

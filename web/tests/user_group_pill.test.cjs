@@ -112,7 +112,7 @@ run_test("display_value", () => {
     );
     assert.deepEqual(
         user_group_pill.display_pill(everyone),
-        "translated HTML: translated: Everyone: 5 users",
+        "translated HTML: translated: Everyone including guests: 5 users",
     );
 });
 

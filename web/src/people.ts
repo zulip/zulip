@@ -778,6 +778,14 @@ export function sender_is_guest(message: Message): boolean {
     return false;
 }
 
+export function sender_is_deactivated(message: Message): boolean {
+    const sender_id = message.sender_id;
+    if (sender_id) {
+        return !is_active_user_for_popover(message.sender_id);
+    }
+    return false;
+}
+
 export function is_valid_bot_user(user_id: number): boolean {
     const user = maybe_get_user_by_id(user_id, true);
     return user?.is_bot ?? false;

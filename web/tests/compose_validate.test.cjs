@@ -37,7 +37,7 @@ const realm = {};
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
-const user_settings = {defualt_language: "en"};
+const user_settings = {default_language: "en"};
 initialize_user_settings({user_settings});
 
 const me = {

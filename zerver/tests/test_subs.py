@@ -208,7 +208,7 @@ class TestMiscStuff(ZulipTestCase):
 
         """
         If we are assigning colors to a user with 24+ streams, we have to start
-        re-using old colors.  Our algorithm basically uses recipient_id % 24, so
+        reusing old colors.  Our algorithm basically uses recipient_id % 24, so
         the following code reflects the worse case scenario that our new
         streams have recipient ids spaced out by exact multiples of 24.  We
         don't try to work around this edge case, since users who really depend
@@ -708,6 +708,28 @@ class TestCreateStreams(ZulipTestCase):
         # testing another setting value.
         stream.delete()
 
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=realm
+        )
+
+        subscriptions = [{"name": "new_stream", "description": "New stream"}]
+        extra_post_data[setting_name] = orjson.dumps(
+            {"direct_members": [], "direct_subgroups": []}
+        ).decode()
+        result = self.subscribe_via_post(
+            user,
+            subscriptions,
+            extra_post_data,
+            allow_fail=True,
+            subdomain="zulip",
+        )
+        self.assert_json_success(result)
+        stream = get_stream("new_stream", realm)
+        self.assertEqual(getattr(stream, setting_name).id, nobody_group.id)
+        # Delete the created stream, so we can create a new one for
+        # testing another setting value.
+        stream.delete()
+
         subscriptions = [{"name": "new_stream", "description": "New stream"}]
         owners_group = NamedUserGroup.objects.get(
             name="role:owners", is_system_group=True, realm=realm
@@ -728,9 +750,6 @@ class TestCreateStreams(ZulipTestCase):
         stream.delete()
 
         subscriptions = [{"name": "new_stream", "description": "New stream"}]
-        nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=realm
-        )
         extra_post_data[setting_name] = orjson.dumps(nobody_group.id).decode()
         result = self.subscribe_via_post(
             user,

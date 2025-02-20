@@ -42,7 +42,7 @@
 
 .custom-color-swatch-icon {
     border-radius: 50%;
-    background: var(--color-background-custom-swatch-gradient);
+    background: var(--gradient-custom-swatch);
 }
 
 .color-picker-popover .message-header-contents {

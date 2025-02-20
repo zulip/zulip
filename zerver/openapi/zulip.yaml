@@ -20725,7 +20725,7 @@ paths:
                         to administer the channel in order to modify this setting.
 
                         **Changes**: Prior to Zulip 10.0 (feature level 349), channel administrators
-                        could not unsubscribe other users if they were not an orgnization
+                        could not unsubscribe other users if they were not an organization
                         administrator or part of `can_remove_subscribers_group`. Realm administrators
                         were not allowed to unsubscribe other users from a private channel if they
                         were not subscribed to that channel.

@@ -61,9 +61,6 @@ python-debian
 # Pattern-based lint tool
 semgrep<1.80.0  # https://github.com/semgrep/semgrep/issues/10408
 
-# Contains Pysa, a security-focused static analyzer
-pyre-check
-
 # For sorting versions when uploading releases
 natsort
 
