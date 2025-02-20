@@ -218,7 +218,7 @@ test("stream delete (normal)", ({override}) => {
 
     override(settings_streams, "update_default_streams_table", noop);
 
-    narrow_state.is_for_stream_id = () => true;
+    narrow_state.narrowed_to_stream_id = () => true;
 
     let bookend_updates = 0;
     override(message_lists.current, "update_trailing_bookend", () => {
@@ -317,7 +317,7 @@ test("stream delete (stream is selected in compose)", ({override}) => {
 
     override(settings_streams, "update_default_streams_table", noop);
 
-    narrow_state.is_for_stream_id = () => true;
+    narrow_state.narrowed_to_stream_id = () => true;
 
     let bookend_updates = 0;
     override(message_lists.current, "update_trailing_bookend", () => {

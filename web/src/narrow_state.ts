@@ -397,15 +397,10 @@ export function narrowed_by_stream_reply(current_filter: Filter | undefined = fi
     return terms.length === 1 && current_filter.operands("channel").length === 1;
 }
 
-export function is_for_stream_id(stream_id: number, filter?: Filter): boolean {
-    // This is not perfect, since we still track narrows by
-    // name, not id, but at least the interface is good going
-    // forward.
-    const narrow_sub = stream_sub(filter);
-
-    if (narrow_sub === undefined) {
+export function narrowed_to_stream_id(stream_id_to_check: number, filter?: Filter): boolean {
+    const current_stream_id = stream_id(filter);
+    if (current_stream_id === undefined) {
         return false;
     }
-
-    return stream_id === narrow_sub.stream_id;
+    return stream_id_to_check === current_stream_id;
 }

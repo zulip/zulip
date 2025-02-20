@@ -44,7 +44,7 @@ test("stream", () => {
     const test_stream = {name: "Test", stream_id: test_stream_id};
     stream_data.add_sub(test_stream);
 
-    assert.ok(!narrow_state.is_for_stream_id(test_stream.stream_id));
+    assert.ok(!narrow_state.narrowed_to_stream_id(test_stream_id));
 
     set_filter([
         ["stream", test_stream_id.toString()],
@@ -57,7 +57,7 @@ test("stream", () => {
     assert.equal(narrow_state.stream_id(), test_stream_id);
     assert.equal(narrow_state.stream_sub().stream_id, test_stream.stream_id);
     assert.equal(narrow_state.topic(), "Bar");
-    assert.ok(narrow_state.is_for_stream_id(test_stream.stream_id));
+    assert.ok(narrow_state.narrowed_to_stream_id(test_stream_id));
 
     const expected_terms = [
         {negated: false, operator: "channel", operand: test_stream_id.toString()},

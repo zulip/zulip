@@ -630,7 +630,7 @@ export function dispatch_normal_event(event) {
                 case "delete":
                     for (const stream_id of event.stream_ids) {
                         const was_subscribed = sub_store.get(stream_id).subscribed;
-                        const is_narrowed_to_stream = narrow_state.is_for_stream_id(stream_id);
+                        const is_narrowed_to_stream = narrow_state.narrowed_to_stream_id(stream_id);
                         stream_data.delete_sub(stream_id);
                         stream_settings_ui.remove_stream(stream_id);
                         message_view_header.maybe_rerender_title_area_for_stream(stream_id);
