@@ -13,7 +13,6 @@ const message_lists = zrequire("message_lists");
 
 const popover_menus_data = zrequire("popover_menus_data");
 const people = zrequire("people");
-const compose_state = zrequire("compose_state");
 const user_groups = zrequire("user_groups");
 const {MessageListData} = zrequire("message_list_data");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -280,7 +279,7 @@ test("not_my_message_view_source_and_move", ({override}) => {
             type: "stream",
             unread: false,
             collapsed: false,
-            topic: compose_state.empty_topic_placeholder(),
+            topic: "New topic",
             edit_history: [
                 {
                     prev_content: "Previous content",
