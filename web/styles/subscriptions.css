@@ -588,6 +588,7 @@ h4.user_group_setting_subsection_title {
             .user-group-info-title {
                 display: none;
                 font-size: 1.5em;
+                margin: 0px 24px;
                 line-height: 1;
                 font-weight: 600;
                 word-break: break-all;
