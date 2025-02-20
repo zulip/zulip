@@ -14,7 +14,6 @@ import render_single_message from "../templates/single_message.hbs";
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as compose_fade from "./compose_fade.ts";
-import * as compose_state from "./compose_state.ts";
 import * as condense from "./condense.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -88,7 +87,6 @@ export type MessageGroup = {
     | {
           is_stream: true;
           all_visibility_policies: AllVisibilityPolicies;
-          always_visible_topic_edit: boolean;
           display_recipient: string;
           invite_only: boolean;
           is_subscribed: boolean;
@@ -96,7 +94,6 @@ export type MessageGroup = {
           is_web_public: boolean;
           just_unsubscribed?: boolean;
           match_topic: string | undefined;
-          on_hover_topic_edit: boolean;
           recipient_bar_color: string;
           stream_id: number;
           stream_name?: string;
@@ -300,35 +297,14 @@ function get_timestr(message: Message): string {
 }
 
 function get_topic_edit_properties(message: Message): {
-    always_visible_topic_edit: boolean;
-    on_hover_topic_edit: boolean;
     is_topic_editable: boolean;
     user_can_resolve_topic: boolean;
 } {
-    let always_visible_topic_edit = false;
-    let on_hover_topic_edit = false;
-
     const is_topic_editable = message_edit.is_topic_editable(message);
-
     // if a user who can edit a topic, can resolve it as well
     const user_can_resolve_topic = is_topic_editable;
 
-    if (is_topic_editable) {
-        // Messages with no topics should always have an edit icon visible
-        // to encourage updating them. Admins can also edit any topic.
-        if (
-            message.type === "stream" &&
-            message.topic === compose_state.empty_topic_placeholder()
-        ) {
-            always_visible_topic_edit = true;
-        } else {
-            on_hover_topic_edit = true;
-        }
-    }
-
     return {
-        always_visible_topic_edit,
-        on_hover_topic_edit,
         is_topic_editable,
         user_can_resolve_topic,
     };
