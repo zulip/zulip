@@ -48,9 +48,7 @@
             {{/each}}
 
             {{! edit topic pencil icon }}
-            {{#if always_visible_topic_edit}}
-                <i class="fa fa-pencil always_visible_topic_edit recipient_bar_icon hidden-for-spectators" data-tippy-content="{{t 'Edit topic'}}" role="button" tabindex="0" aria-label="{{t 'Edit topic' }}"></i>
-            {{else if on_hover_topic_edit}}
+            {{#if is_topic_editable}}
                 <i class="fa fa-pencil on_hover_topic_edit recipient_bar_icon hidden-for-spectators" data-tippy-content="{{t 'Edit topic'}}" role="button" tabindex="0" aria-label="{{t 'Edit topic' }}"></i>
             {{/if}}
 
