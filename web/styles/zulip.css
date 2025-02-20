@@ -234,6 +234,12 @@ p.n-margin {
     box-shadow: 0 0 30px hsl(0deg 0% 0% / 25%);
     z-index: 110;
 
+    @container app (width < $cq_md_min) {
+        width: calc(90% - 30px);
+        left: 5%;
+        top: 5%;
+    }
+
     &.show-feedback-container {
         display: block;
         animation: feedback-slide-in 0.6s forwards;
@@ -1651,42 +1657,8 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
             margin-left: 7px;
         }
     }
-}
 
-body:not(.hide-left-sidebar) {
-    /* User can clearly see the unread count in the left sidebar. So,
-       we don't need an indicator here as it will only serve as a disctraction. */
-    #header-container .column-left .left-sidebar-toggle-unreadcount {
-        display: none !important;
-    }
-}
-
-@media (width < $xl_min) {
-    .app-main {
-        @extend %hide-right-sidebar;
-    }
-
-    .app-main .column-middle {
-        margin-right: 7px;
-    }
-
-    #navbar-middle {
-        /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
-        margin-right: calc(var(--header-height) * 4 + 3px);
-    }
-
-    #typing_notifications,
-    #scheduled_message_indicator,
-    #compose-content {
-        margin-right: 7px;
-    }
-
-    .hide-left-sidebar {
-        #compose-content,
-        .app-main .column-middle {
-            margin-left: 7px;
-        }
-
+    @container header-container (width < $cq_xl_min) {
         #realm-navbar-icon-logo {
             display: inline-block;
         }
@@ -1703,29 +1675,64 @@ body:not(.hide-left-sidebar) {
             margin-left: var(--left-sidebar-width-with-realm-icon-logo);
         }
     }
+
+    @container app (width < $cq_xl_min) {
+        #compose-content,
+        .app-main .column-middle {
+            margin-left: 7px;
+        }
+    }
 }
 
-@media (width < $md_min) {
+body:not(.hide-left-sidebar) {
+    /* User can clearly see the unread count in the left sidebar. So,
+       we don't need an indicator here as it will only serve as a disctraction. */
+    #header-container .column-left .left-sidebar-toggle-unreadcount {
+        display: none !important;
+    }
+}
+
+/* We have some regrettable but temporarily necessary code duplication
+   in the queries that follow.
+
+   In browsers that support spec-aligned, em-aware container queries,
+   we query on the app-main container. That enables breakpoints that
+   look best at a chose base font size.
+
+   However, in browsers that lag the spec, we fall back to the original
+   media queries. The layout will not look as good as it could, but
+   essential scrolling behavior will be maintained. */
+
+@container header-container (width < $cq_xl_min) {
+    #navbar-middle {
+        /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
+        margin-right: calc(var(--header-height) * 4 + 3px);
+    }
+}
+
+@container app (width < $cq_xl_min) {
     .app-main {
-        @extend %hide-left-sidebar;
+        @extend %hide-right-sidebar;
+
+        .column-middle {
+            margin-right: 7px;
+        }
     }
 
+    #typing_notifications,
+    #scheduled_message_indicator,
+    #compose-content {
+        margin-right: 7px;
+    }
+}
+
+@container header-container (width < $cq_md_min) {
     .header-main .column-left {
         display: none;
     }
 
-    .app-main .column-middle {
-        margin-left: 7px;
-        margin-right: 7px;
-    }
-
     #navbar-middle {
         margin-left: 0;
-    }
-
-    .app-main .column-middle .column-middle-inner {
-        margin-left: 0;
-        margin-right: 0;
     }
 
     #streamlist-toggle {
@@ -1735,11 +1742,21 @@ body:not(.hide-left-sidebar) {
     .top-navbar-container {
         margin-left: 40px;
     }
+}
 
-    #feedback_container {
-        width: calc(90% - 30px);
-        left: 5%;
-        top: 5%;
+@container app (width < $cq_md_min) {
+    .app-main {
+        @extend %hide-left-sidebar;
+
+        .column-middle {
+            margin-left: 7px;
+            margin-right: 7px;
+        }
+
+        .column-middle .column-middle-inner {
+            margin-left: 0;
+            margin-right: 0;
+        }
     }
 
     #typing_notifications,
@@ -1748,6 +1765,101 @@ body:not(.hide-left-sidebar) {
         margin-left: 7px;
     }
 }
+
+/* Begin fallback media queries. */
+@media (width < $xl_min) {
+    .without-container-query-support {
+        .app-main {
+            @extend %hide-right-sidebar;
+
+            .column-middle {
+                margin-right: 7px;
+            }
+        }
+
+        #navbar-middle {
+            /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
+            margin-right: calc(var(--header-height) * 4 + 3px);
+        }
+
+        #typing_notifications,
+        #scheduled_message_indicator,
+        #compose-content {
+            margin-right: 7px;
+        }
+
+        .hide-left-sidebar {
+            #compose-content,
+            .app-main .column-middle {
+                margin-left: 7px;
+            }
+
+            #realm-navbar-icon-logo {
+                display: inline-block;
+            }
+
+            #realm-navbar-wide-logo {
+                display: none;
+            }
+
+            #top_navbar .column-left {
+                width: auto;
+            }
+
+            #navbar-middle {
+                margin-left: var(--left-sidebar-width-with-realm-icon-logo);
+            }
+        }
+    }
+}
+
+@media (width < $md_min) {
+    .without-container-query-support {
+        .app-main {
+            @extend %hide-left-sidebar;
+
+            .column-middle {
+                margin-left: 7px;
+                margin-right: 7px;
+            }
+
+            .column-middle .column-middle-inner {
+                margin-left: 0;
+                margin-right: 0;
+            }
+        }
+
+        .header-main .column-left {
+            display: none;
+        }
+
+        #navbar-middle {
+            margin-left: 0;
+        }
+
+        #streamlist-toggle {
+            display: block;
+        }
+
+        .top-navbar-container {
+            margin-left: 40px;
+        }
+
+        #feedback_container {
+            width: calc(90% - 30px);
+            left: 5%;
+            top: 5%;
+        }
+
+        #typing_notifications,
+        #scheduled_message_indicator,
+        #compose-content {
+            margin-left: 7px;
+        }
+    }
+}
+
+/* End fallback media queries. */
 
 @media (height < $short_navbar_cutoff_height) {
     .app-main .column-right.expanded .right-sidebar,
@@ -1810,6 +1922,9 @@ body:not(.hide-left-sidebar) {
     }
 }
 
+/* As these adjustments are properly the province of
+   the viewport, we do not present these mm_min queries
+   in a corresponding container query block. */
 @media (width < $mm_min) {
     html {
         overflow-x: hidden;
