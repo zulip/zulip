@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
+os_info="$(
+    . /etc/os-release
+    printf '%s\n' "$ID"
+)"
+read -r os_id <<<"$os_info"
+
+if [ "$os_id" = debian ] && ! [ -e /usr/share/doc/groonga-apt-source/copyright ]; then
     pgroonga_apt_sign_key=$(readlink -f "$LIST_PATH/pgroonga-packages.groonga.org.asc")
 
     remove_pgroonga_apt_tmp_dir() {
