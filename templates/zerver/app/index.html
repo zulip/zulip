@@ -11,6 +11,7 @@
 {% endblock %}
 
 {% block customhead %}
+<link rel="manifest" href="{{ static('app.webmanifest') }}" />
 {% if enable_gravatar %}<link rel="dns-prefetch" href="https://secure.gravatar.com" />
 {% endif -%}
 {% if s3_avatar_public_url_prefix %}<link rel="dns-prefetch" href="{{ s3_avatar_public_url_prefix }}" />
