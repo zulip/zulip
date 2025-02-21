@@ -3844,6 +3844,10 @@ class RealmPropertyActionTest(BaseAction):
         bool_tests: list[bool] = [True, False, True]
         test_values: dict[str, Any] = dict(
             default_language=["es", "de", "en"],
+            default_welcome_bot_custom_message=[
+                "Welcome Bot Custom Message",
+                "New Welcome Bot Custom Message",
+            ],
             description=["Realm description", "New description"],
             digest_weekday=[0, 1, 2],
             message_retention_days=[10, 20],

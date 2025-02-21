@@ -1924,6 +1924,10 @@ class RealmAPITest(ZulipTestCase):
         test_values: dict[str, Any] = dict(
             default_language=["de", "en"],
             default_code_block_language=["javascript", ""],
+            default_welcome_bot_custom_message=[
+                "Welcome Bot Custom Message",
+                "New Welcome Bot Custom Message",
+            ],
             description=["Realm description", "New description"],
             digest_weekday=[0, 1, 2],
             message_retention_days=[10, 20],
