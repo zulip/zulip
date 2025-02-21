@@ -703,7 +703,7 @@
         }
     }
 
-    .small_square_button {
+    .topic_edit_button {
         &.small_square_x {
             background-color: hsl(0deg 0% 95%);
             color: hsl(0deg 0% 42%);
