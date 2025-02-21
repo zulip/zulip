@@ -26,6 +26,8 @@ const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
     warn_if_topic_resolved: noop,
     stream_wildcard_mention_allowed: () => true,
+    warn_if_mentioning_unsubscribed_group: noop,
+    initialize: noop,
 });
 const input_pill = mock_esm("../src/input_pill");
 const message_user_ids = mock_esm("../src/message_user_ids", {

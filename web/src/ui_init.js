@@ -34,6 +34,7 @@ import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
 import * as compose_setup from "./compose_setup.js";
 import * as compose_textarea from "./compose_textarea.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
+import * as compose_validate from "./compose_validate.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as condense from "./condense.ts";
 import * as desktop_integration from "./desktop_integration.ts";
@@ -603,6 +604,7 @@ export function initialize_everything(state_data) {
     composebox_typeahead.initialize({
         on_enter_send: compose.finish,
     });
+    compose_validate.initialize();
     compose_textarea.initialize();
     upload.initialize();
     search.initialize({

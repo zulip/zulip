@@ -3,6 +3,7 @@ import _ from "lodash";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
+import render_compose_mention_group_warning from "../templates/compose_banner/compose_mention_group_warning.hbs";
 import render_guest_in_dm_recipient_warning from "../templates/compose_banner/guest_in_dm_recipient_warning.hbs";
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
@@ -28,7 +29,9 @@ import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import type {UserOrMention} from "./typeahead_helper.ts";
+import {toggle_user_group_info_popover} from "./user_group_popover.ts";
 import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
 import * as util from "./util.ts";
 
 let user_acknowledged_stream_wildcard = false;
@@ -341,7 +344,59 @@ export function warn_if_mentioning_unsubscribed_user(
         }
     }
 }
+export function warn_if_mentioning_unsubscribed_group(
+    mentioned_group: UserGroup,
+    $textarea: JQuery<HTMLTextAreaElement>,
+    is_silent: boolean,
+): void {
+    if (is_silent) {
+        return;
+    }
 
+    const stream_id = get_stream_id_for_textarea($textarea);
+    if (!stream_id) {
+        // One could imagine doing something with DMs here, but given
+        // all DMs are given the same notification prevalence as
+        // mentions, it doesn't seem useful.
+        return;
+    }
+
+    const group_members = user_groups.get_recursive_group_members(mentioned_group);
+    let any_member_subscribed = false;
+    for (const user_id of group_members) {
+        if (
+            stream_data.is_user_subscribed(stream_id, user_id) &&
+            people.is_person_active(user_id)
+        ) {
+            any_member_subscribed = true;
+            break;
+        }
+    }
+    if (any_member_subscribed) {
+        return;
+    }
+
+    const $banner_container = compose_banner.get_compose_banner_container($textarea);
+    if (
+        $banner_container.find(
+            `.${CSS.escape(compose_banner.CLASSNAMES.group_entirely_not_subscribed)}`,
+        ).length > 0
+    ) {
+        // Don't add a second banner if one is already present.
+        // TODO: This should work like warn_if_mentioning_unsubscribed_user,
+        // where we actually check if it's the same group.
+        return;
+    }
+
+    const context = {
+        group_id: mentioned_group.id,
+        group_name: mentioned_group.name,
+        banner_type: compose_banner.WARNING,
+        classname: compose_banner.CLASSNAMES.group_entirely_not_subscribed,
+    };
+    const new_row_html = render_compose_mention_group_warning(context);
+    compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
+}
 // Called when clearing the compose box and similar contexts to clear
 // the warning for composing to a resolved topic, if present. Also clears
 // the state for whether this warning has already been shown in the
@@ -982,4 +1037,16 @@ export function convert_mentions_to_silent_in_direct_messages(
 
     const silent_mention_text = people.get_mention_syntax(full_name, user_id, true);
     return silent_mention_text;
+}
+
+export function initialize(): void {
+    $("body").on(
+        "click",
+        ".view_user_group_mention",
+        function (this: HTMLElement, e: JQuery.ClickEvent) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggle_user_group_info_popover(this, undefined);
+        },
+    );
 }
