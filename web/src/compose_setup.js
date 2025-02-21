@@ -108,7 +108,11 @@ export function initialize() {
 
     // Updates compose max-height and scroll to bottom button position when
     // there is a change in compose height like when a compose banner is displayed.
-    const update_compose_max_height = new ResizeObserver(resize.reset_compose_message_max_height);
+    const update_compose_max_height = new ResizeObserver((_entries) => {
+        requestAnimationFrame(() => {
+            resize.reset_compose_message_max_height();
+        });
+    });
     update_compose_max_height.observe(document.querySelector("#compose"));
 
     function get_input_info(event) {
