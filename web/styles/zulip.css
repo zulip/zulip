@@ -862,7 +862,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
     width: 206px;
 
     &.header-v {
-        height: 18px;
+        height: 1.2em; /* 18px at 15px/em */
         display: inline-block;
         padding: 0 3px;
         vertical-align: baseline;
@@ -1154,9 +1154,9 @@ nav {
 .topic_edit_button {
     padding: 0;
     border: none;
-    font-size: 12px;
-    width: 18px;
-    height: 18px;
+    font-size: 0.8em; /* 12px at 15px/em */
+    width: 1.5em; /* 18px at 12px/em */
+    height: 1.5em; /* 18px at 12px/em */
     border-radius: 4px;
 
     &:focus {
@@ -1375,7 +1375,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 
 #topic_edit_form {
     display: flex;
-    gap: 5px;
+    gap: 0.3333em; /* 5px at 15px/em */
     align-items: center;
     margin: 0;
     padding-left: 20px;
