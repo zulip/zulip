@@ -1,9 +1,15 @@
+import re
+from collections.abc import Iterable, Sequence
+from typing import Any
 from urllib.parse import unquote, urlsplit
 
 from django.conf import settings
 
+from zerver.lib.narrow import BadNarrowOperatorError
 from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.topic import DB_TOPIC_NAME
+from zerver.models.messages import Message
+from zerver.models.realms import Realm
 
 
 def is_same_server_message_link(url: str) -> bool:
@@ -141,3 +147,120 @@ def parse_narrow_url(
 
         terms.append(NarrowTerm(operator, operand, negated))
     return terms
+
+
+class Filter:
+    def __init__(self, terms: Sequence[NarrowTerm], realm: Realm) -> None:
+        self._terms: list[NarrowTerm] = list(terms)
+        self._realm: Realm = realm
+        self._setup_filter(terms)
+
+    @staticmethod
+    def reformat_channel_operand(operand: str | int) -> str | int:
+        match operand:
+            case int():
+                return operand
+            case str():
+                if operand.strip() == "":
+                    raise BadNarrowOperatorError("Invalid 'channel' operand")
+                if operand.isdigit():
+                    return int(operand)
+                if result := parse_recipient_slug(operand.lower()):
+                    assert isinstance(result[0], int)
+                    return result[0]
+                # if it's not a channel ID nor encoded channel slug, it's
+                # probably a channel name.
+                return operand
+
+    @staticmethod
+    def reformat_dm_operand(operand: str | int | Iterable[Any]) -> str | list[int]:
+        match operand:
+            case int():
+                return [operand]
+            case str():
+                if operand.isdigit():
+                    return [int(operand)]
+                if operand.strip() == "":
+                    raise BadNarrowOperatorError("Invalid user ID")
+                return operand.lower()
+            case Iterable():
+                try:
+                    user_ids = [int(id) for id in operand]
+                    assert user_ids != []
+                    return user_ids
+                except (ValueError, AssertionError):
+                    raise BadNarrowOperatorError("Invalid user ID")
+
+    @staticmethod
+    def canonicalize_term(term: NarrowTerm) -> NarrowTerm:
+        operator = canonicalize_operator_synonyms(term.operator)
+        operand = term.operand
+        match operator:
+            case "channel" if isinstance(operand, str | int):
+                operand = Filter.reformat_channel_operand(operand)
+
+            case "channels" if str(operand) in {"public", "web-public"}:
+                pass
+
+            case "dm":
+                operand = Filter.reformat_dm_operand(operand)
+
+            case "dm-including" | "sender" if isinstance(operand, str | int):
+                operand = int(operand) if str(operand).isdigit() else str(operand).lower()
+                if str(operand).strip() == "":
+                    raise BadNarrowOperatorError("Invalid user ID")
+            case "has":
+                # images -> image, etc.
+                operand = re.sub(r"s$", "", str(operand))
+                if operand not in {"attachment", "image", "link", "reaction"}:
+                    raise BadNarrowOperatorError(f"unknown '{operator}' operand {operand!s}")
+
+            case "id" | "near" | "with" if isinstance(operand, int | str):
+                if not str(operand).isdigit() or int(operand) > Message.MAX_POSSIBLE_MESSAGE_ID:
+                    raise BadNarrowOperatorError("Invalid message ID")
+                operand = int(operand)
+
+            case "is" if isinstance(operand, str):
+                operand = operand.lower()
+                if operand == "private":
+                    # "is:private" was renamed to "is:dm"
+                    operand = "dm"
+                if operand not in {
+                    "dm",
+                    "starred",
+                    "unread",
+                    "mentioned",
+                    "alerted",
+                    "resolved",
+                    "followed",
+                }:
+                    raise BadNarrowOperatorError(f"unknown '{operator}' operand {operand!s}")
+
+            case "search":
+                # The mac app automatically substitutes regular quotes with curly
+                # quotes when typing in the search bar.  Curly quotes don't trigger our
+                # phrase search behavior, however.  So, we replace all instances of
+                # curly quotes with regular quotes when doing a search.  This is
+                # unlikely to cause any problems and is probably what the user wants.
+                operand = re.sub(r"[\u201C\u201D]", '"', str(operand).lower())
+
+            case "topic" if isinstance(operand, str):
+                pass
+
+            case _:
+                raise BadNarrowOperatorError(f"unknown '{operator}' operand {operand!s}")
+
+        return NarrowTerm(operator, operand, term.negated)
+
+    def _canonicalize_terms(self, terms_mixed_case: Sequence[NarrowTerm]) -> list[NarrowTerm]:
+        return [Filter.canonicalize_term(term) for term in terms_mixed_case]
+
+    def _fix_terms(self, terms: Sequence[NarrowTerm]) -> list[NarrowTerm]:
+        terms = self._canonicalize_terms(terms)
+        return terms
+
+    def _setup_filter(self, terms: Sequence[NarrowTerm]) -> None:
+        self._terms = self._fix_terms(terms)
+
+    def terms(self) -> list[NarrowTerm]:
+        return self._terms
