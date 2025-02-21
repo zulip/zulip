@@ -18,14 +18,15 @@ class kandra::aws_tools {
   }
 
   if ! $is_ec2 {
-    if $facts['os']['architecture'] != 'amd64' {
-      # We would need to build aws_signing_helper from source
-      fail('Only amd64 hosts supported on non-EC2')
+    if $facts['os']['architecture'] == 'amd64' {
+      $archname = 'X86_64'
+    } else {
+      $archname = 'Aarch64'
     }
     $helper_version = $zulip::common::versions['aws_signing_helper']['version']
     zulip::external_dep { 'aws_signing_helper':
       version => $helper_version,
-      url     => "https://rolesanywhere.amazonaws.com/releases/${helper_version}/X86_64/Linux/aws_signing_helper",
+      url     => "https://rolesanywhere.amazonaws.com/releases/${helper_version}/${archname}/Linux/aws_signing_helper",
       before  => File['/root/.aws/config'],
     }
     file { '/srv/zulip-aws-tools/bin/aws_signing_helper':

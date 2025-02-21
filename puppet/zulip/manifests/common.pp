@@ -50,45 +50,46 @@ class zulip::common {
   $versions = {
     # https://github.com/cactus/go-camo/releases
     'go-camo' => {
-      'version'   => '2.5.1',
-      'goversion' => '1225',
+      'version'   => '2.6.1',
+      'goversion' => '1234',
       'sha256'    => {
-        'amd64'   => '6b66a926fb6f3e93db63069eef79682b540618d4976ce7e1b917f3ae3e8b986e',
-        'aarch64' => 'cee9b1dc3a62efb104d8aa73d5dcee41c161cec1aeeee0f0004a76819e3a117f',
+        'amd64'   => '25cf8aba4506c3fca02aba2f86c1c8f88be06798f129ce4a5d121b2f3801979e',
+        'aarch64' => 'e9f6815c21846baf90d0d9db6038119c968634b5fd8b4806e362176b4aa832a2',
       },
     },
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.22.5',
+      'version' => '1.24.0',
       'sha256'  => {
-        'amd64'   => '904b924d435eaea086515bc63235b192ea441bd8c9b198c507e85009e6e4c7f0',
-        'aarch64' => '8d21325bfcf431be3660527c1a39d3d9ad71535fabdf5041c826e44e31642b5a',
+        'amd64'   => 'dea9ca38a0b852a74e81c26134671af7c0fbe65d81b0dc1c5bfe22cf7d4c8858',
+        'aarch64' => 'c3fa6d16ffa261091a5617145553c71d21435ce547e44cc6dfb7470865527cc7',
       },
     },
 
     # https://github.com/stripe/smokescreen/tags
     'smokescreen-src' => {
-      'version' => '85c4c64e1e01b899456d42459966a106f66c7cd5',
+      'version' => 'bffe947fa6f682884d48592ff7e9ed13bb7941a4',
       # Source code, so arch-invariant sha256
-      'sha256'  => 'f8cc99cb708cbd549e06099628ef286a5fdda73bb327d8c140d3014441bfefc2',
+      'sha256'  => 'f1fb51b6b10e106fb269025c51c7c1ac8d9c5359cdcc4d94277f1bd254b09924',
     },
 
     # https://github.com/tus/tusd/releases
+    # Keep in sync with tools/setup/install-tusd
     'tusd' => {
-      'version' => '2.5.0',
+      'version' => '2.6.0',
       'sha256'  => {
-        'amd64'   => 'f4cbdb8d228b28f46c3e7b9e29e5db262e7416f7ca1033c6c5e8186cf6c7381c',
-        'aarch64' => 'b2101951789857765d64c33d672a38b5825946163aa058b208fc862867cdc405',
+        'amd64'   => '8616b1985a7494da91b019972ad8f7be5a2238f802eed7d097917af20e6f8186',
+        'aarch64' => '474c46502c19fb633b9fa4e518e4dfcce9f445b119663757332a9485b525b599',
       },
     },
 
     # https://github.com/wal-g/wal-g/releases
     'wal-g' => {
-      'version' => '3.0.0',
+      'version' => '3.0.5',
       'sha256'  => {
-        'amd64'   => '430de92c8b76cade37e2f849394b761841278fb5e3a3992af3aa15c123163163',
-        'aarch64' => '2223b18d62cfba32ad037ffbe515c365bd627a61f7051dd77340fc5d9e873bc6',
+        'amd64'   => '367ee2863f5f46fde8ab89ce289ca3a43fab3117f8d580029c502b0462580846',  # The ubuntu-22.04 version
+        'aarch64' => 'b09cb8955518520d48289a8dd6ac91322b6e41ff484a87e151a4317dff7054c2',  # There is only an ubuntu-20.04 version
       },
     },
 
@@ -96,80 +97,79 @@ class zulip::common {
 
     # https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html
     'aws_signing_helper' => {
-      'version' => '1.1.1',
+      'version' => '1.4.0',
       'sha256'  => {
-        'amd64' => '3761071497510ae1bde82aa31e34bbb63b9701deb932434e786a8479062b2b9b',
-        # aarch64 would need to compile from source:
-        # https://github.com/aws/rolesanywhere-credential-helper/tree/main
+        'amd64'   => '4166504134ffd368023b50a2c6f960d22e9be06ad4b4d03ecd9e647bf9d9a17b',
+        'aarch64' => '37d0ba5f8fecae8922424625541aaef38697ed44c20f729f4be62af7c0c0d324',
       },
     },
 
     # https://release-registry.services.sentry.io/apps/sentry-cli/latest
     'sentry-cli' => {
-      'version' => '2.36.4',
+      'version' => '2.42.1',
       'sha256'  => {
-        'amd64'   => '22ba24c7019fc7f2ffc72307fa6a0ff5981f4254184f1e99777abc81aa4f8dde',
-        'aarch64' => 'a638db3d6d7356c4ad5556d288d8a13d57530a05bc73bc5f1b3e0edc46284967',
+        'amd64'   => 'b9d7e2471e7860323f77c6417b6e402c49deacba0f961429a1b95dd245fb9607',
+        'aarch64' => '672fe1d63d6ebbf4b8c59c43e1b75869367378f05088843cf6641562a8c446e2',
       },
     },
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '11.1.0',
+      'version' => '11.5.2',
       'sha256'  => {
-        'amd64'   => '33822a0b275ea4f216c9a3bdda53d1dba668e3e9873dc52104bc565bcbd8d856',
-        'aarch64' => '80b36751c29593b8fdb72906bd05f8833631dd826b8447bcdc9ba9bb0f6122aa',
+        'amd64'   => '205b16da72842143a6fa1849126b7bd74b5d12a609387d3d037fb104440ea349',
+        'aarch64' => 'f87b23b02b89feba93e2d020ad5e1b420c8ac0d3ff6ff57b6818fcf3781da50a',
       },
     },
 
     # https://prometheus.io/download/#node_exporter
     'node_exporter' => {
-      'version' => '1.8.2',
+      'version' => '1.9.0',
       'sha256'  => {
-        'amd64'   => '6809dd0b3ec45fd6e992c19071d6b5253aed3ead7bf0686885a51d85c6643c66',
-        'aarch64' => '627382b9723c642411c33f48861134ebe893e70a63bcc8b3fc0619cd0bfac4be',
+        'amd64'   => 'e7b65ea30eec77180487d518081d3dcb121b975f6d95f1866dfb9156c5b24075',
+        'aarch64' => '5314fae1efff19abf807cfc8bd7dadbd47a35565c1043c236ffb0689dc15ef4f',
       },
     },
 
     # https://github.com/prometheus-community/postgres_exporter/tags
     'postgres_exporter' => {
-      'version' => '0.15.0',
+      'version' => '0.16.0',
       'sha256'  => {
-        'amd64'   => 'cb89fc5bf4485fb554e0d640d9684fae143a4b2d5fa443009bd29c59f9129e84',
-        'aarch64' => '29ba62d538b92d39952afe12ee2e1f4401250d678ff4b354ff2752f4321c87a0',
+        'amd64'   => '5763bd10108e9739e7857377deeb43d2addf07c4c4f4d4c882a08847c15bfd61',
+        'aarch64' => 'd88c7d663e4d6a914bca71d2c4a684225e2336c20c62cdce215b2970d2a49b72',
       },
     },
 
     # https://github.com/prometheus-community/postgres_exporter/pull/843
     'postgres_exporter-src' => {
-      'version' => '30c04e2049aead94ff23fc4862ee187003b5de35',
-      'sha256'  => 'ec45b77f7f2915b28c68678aa83e6fcdeed19b92ecff800425fb78b1b7e67bf8',
+      'version' => '0024e4842054d5c043a0a9c8122e367338f8974c',
+      'sha256'  => '9f9122711b332605080e9cfef42326b34ea4360f8246d12a097c5cfc01e3a580',
     },
 
     # https://github.com/ncabatoff/process-exporter/releases
     'process_exporter' => {
-      'version' => '0.8.3',
+      'version' => '0.8.5',
       'sha256'  => {
-        'amd64'   => '249db36771a4e66eaacca0ce31294de200df30eaf59a190c46639b98c5815969',
-        'aarch64' => 'dc40582d4779d8df8356cad56b130a7c909c4df07d62e7852fa5d5cb6d12ee50',
+        'amd64'   => '30b20325adc4542cf1a3bba85c1135921b7a07b39061bcab298a498b4737aeda',
+        'aarch64' => '8792c2453c52c521846caca382acb940b96e0c09777fee349dae340ac66362ad',
       }
     },
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.53.1',
+      'version' => '2.53.3',
       'sha256'  => {
-        'amd64'   => '2234aa0f66d9f9b854144f6faaaed72a316df7a680d9dad7cb48e49a6fa5332c',
-        'aarch64' => 'a7f28c83c3c943b953a9d00860bd3f2422464fb7c27a3c4037ef1ce2a41592b5',
+        'amd64'   => 'ebe549477a699c464a0cef0d8d55c0cc9972a1b301fc910b5f260cfc3e08f6a3',
+        'aarch64' => '36d72895b6369c1b6ee51e897f903edc2a9f41d1bee82c5d517f3179276d3cdc',
       },
     },
 
     # https://github.com/oliver006/redis_exporter/releases
     'redis_exporter' => {
-      'version' => '1.62.0',
+      'version' => '1.67.0',
       'sha256'  => {
-        'amd64'   => 'a09f92a6b366e37c654e50522c7b80e4a625396b2499fd42cf17e1aa91e56d5e',
-        'aarch64' => 'da7a75ed4a3fe5c01ebb6192a2172b85b79dd7c06cb6e69aa927362454c69788',
+        'amd64'   => '32c5ac73b128f1463e311e639b061704fb8b84c9469d0bfef4ee4a2d920457cd',
+        'aarch64' => '5ca41ca7e64aa3976bc51a6042b422260dd983559c5c1fc7b13a4a91f0be7dbc',
       },
     },
 
@@ -184,10 +184,10 @@ class zulip::common {
 
     # https://vector.dev/download/
     'vector' => {
-      'version' => '0.39.0',
+      'version' => '0.44.0',
       'sha256'  => {
-        'amd64'   => '95c242a440e905bd36b8b5f803b7e546a5bd0ae1b6ffb4082e00bcd73d5b0dd4',
-        'aarch64' => '6a67df30ab657bc84a1a3e7024592c9d78869bf86b8c23aafe09ecdb28cfdf01',
+        'amd64'   => '77b44e7d73a1cdac019f3ff01d5d5de767e236384541bc366fdcc517a6857b0b',
+        'aarch64' => '701978e5766acfcc06b8b15884ebd34f0d5b3ffdef6dc391372c853b26301c1d',
       },
     },
   }
