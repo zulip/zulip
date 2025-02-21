@@ -1,8 +1,13 @@
+from typing import Any, TypeAlias
+
 import orjson
 
+from zerver.lib.narrow import BadNarrowOperatorError
 from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.url_decoding import is_same_server_message_link, parse_narrow_url
+from zerver.lib.url_decoding import Filter, is_same_server_message_link, parse_narrow_url
+
+NarrowTermFixtureT: TypeAlias = dict[str, dict[str, list[dict[str, Any]]]]
 
 
 class URLDecodeTest(ZulipTestCase):
@@ -31,3 +36,22 @@ class NarrowURLDecodeTest(ZulipTestCase):
                         NarrowTerm(**term) for term in expected_output
                     ]
                     self.assertListEqual(parsed_terms, expected_narrow_terms)
+
+
+class NarrowTermFilterTest(ZulipTestCase):
+    def test_initialize_narrow_terms(self) -> None:
+        tests: NarrowTermFixtureT = orjson.loads(self.fixture_data("narrow_term_fixture.json"))
+        for test_name, test_case in tests.items():
+            narrow_terms_input = [NarrowTerm(**term) for term in test_case["valid_terms"]]
+            filter_instance = Filter(narrow_terms_input)
+            actual_output = filter_instance.terms()
+
+            with self.subTest(name=test_name):
+                expected_output: list[NarrowTerm] = [
+                    NarrowTerm(**term) for term in test_case["expected_output"]
+                ]
+                self.assertListEqual(actual_output, expected_output)
+
+                for invalid_term in test_case["invalid_terms"]:
+                    with self.assertRaises(BadNarrowOperatorError):
+                        Filter([NarrowTerm(**invalid_term)])
