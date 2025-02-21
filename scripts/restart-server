@@ -98,6 +98,7 @@ if has_application_server():
                 [
                     "zulip_deliver_scheduled_emails",
                     "zulip_deliver_scheduled_messages",
+                    "zulip_clear_expired_user_statuses",
                 ]
             )
         )
