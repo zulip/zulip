@@ -22,12 +22,7 @@ desktop apps.
 
 {tab|via-left-sidebar}
 
-1. If the **direct messages** section in the left sidebar is collapsed, click on
-   the **direct messages** heading to expand it.
-
-1. Click on a recent DM conversation to view it, or click **more
-   conversations**. If you don't see this link, then you are already viewing all
-   of your direct message conversations.
+{!view-dms-left-sidebar.md!}
 
 {tab|via-right-sidebar}
 
@@ -86,6 +81,11 @@ desktop apps.
    conversations**. If you don't see this link, you are already viewing all of
    your direct message conversations.
 1. Type the name of a participant in the conversation you're looking for.
+
+!!! tip ""
+
+    To return to the channel list in the left sidebar, click the **back to
+    channels** link above the search box.
 
 {end_tabs}
 
