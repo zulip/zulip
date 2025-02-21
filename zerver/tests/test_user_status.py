@@ -462,4 +462,3 @@ class UserStatusTest(ZulipTestCase):
             user_status_info(hamlet),
             dict(status_text="at the beach", away=True),
         )
-        
