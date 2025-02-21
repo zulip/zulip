@@ -1,0 +1,195 @@
+{
+    "channel_operator_validations": {
+        "valid_terms": [
+            { "operator": "stream", "operand": 13, "negated": false },
+            { "operator": "channel", "operand": "13", "negated": false },
+            { "operator": "channel", "operand": 13, "negated": false },
+            { "operator": "channel", "operand": "Denmark", "negated": false },
+            { "operator": "channel", "operand": "13-Denmark", "negated": false }
+        ],
+        "expected_output": [
+            { "operator": "channel", "operand": 13, "negated": false },
+            { "operator": "channel", "operand": 13, "negated": false },
+            { "operator": "channel", "operand": 13, "negated": false },
+            { "operator": "channel", "operand": "Denmark", "negated": false },
+            { "operator": "channel", "operand": 13, "negated": false }
+        ],
+        "invalid_terms": [
+            { "operator": "channel", "operand": [1, 2, 3], "negated": false },
+            { "operator": "channel", "operand": " ", "negated": false }
+        ]
+    },
+    "channels_operator_validations": {
+        "valid_terms": [
+            { "operator": "streams", "operand": "public", "negated": false },
+            { "operator": "channels", "operand": "web-public", "negated": false }
+        ],
+        "expected_output": [
+            { "operator": "channels", "operand": "public", "negated": false },
+            { "operator": "channels", "operand": "web-public", "negated": false }
+        ],
+        "invalid_terms": [
+            { "operator": "channels", "operand": [1, 2, 3], "negated": false },
+            { "operator": "channels", "operand": "unkown-channels-operand", "negated": false },
+            { "operator": "channels", "operand": "Denmark", "negated": false }
+        ]
+    },
+    "topic_operator_validation": {
+        "valid_terms": [
+            { "operator": "subject", "operand": "Topic Name", "negated": false }
+        ],
+        "expected_output": [
+            { "operator": "topic", "operand": "Topic Name", "negated": false }
+        ],
+        "invalid_terms": [
+            { "operator": "topic", "operand": [1, 2, 3], "negated": false }
+        ]
+    },
+    "dm_operator_validations": {
+        "valid_terms": [
+            { "operator": "pm-with", "operand": 1, "negated": false },
+            { "operator": "dm", "operand": "1", "negated": false },
+            { "operator": "dm", "operand": [1, 2, 3], "negated": false },
+            { "operator": "dm", "operand": ["1", "2", "3"], "negated": false },
+            { "operator": "dm", "operand": "porco@zulip.com", "negated": false },
+            { "operator": "dm", "operand": "PoRcO@ZUlIp.Com", "negated": false },
+            { "operator": "dm", "operand": "totoro@zulip.com, nausicaa@zulip.com, ponyo@zulip.com", "negated": false }
+        ],
+        "expected_output": [
+            { "operator": "dm", "operand": [1], "negated": false },
+            { "operator": "dm", "operand": [1], "negated": false },
+            { "operator": "dm", "operand": [1, 2, 3], "negated": false },
+            { "operator": "dm", "operand": [1, 2, 3], "negated": false },
+            { "operator": "dm", "operand": "porco@zulip.com", "negated": false },
+            { "operator": "dm", "operand": "porco@zulip.com", "negated": false },
+            { "operator": "dm", "operand": "totoro@zulip.com, nausicaa@zulip.com, ponyo@zulip.com", "negated": false }
+        ],
+        "invalid_terms": [
+            { "operator": "dm", "operand": ["totoro@zulip.com", "2", "3"], "negated": false },
+            { "operator": "dm", "operand": [], "negated": false },
+            { "operator": "dm", "operand": " ", "negated": false },
+            { "operator": "dm", "operand": ["totoro@zulip.com", "nausicaa@zulip.com", "ponyo@zulip.com"], "negated": false }
+        ]
+    },
+    "dm_including_operator_validations": {
+        "valid_terms": [
+            { "operator": "group-pm-with", "operand": "1", "negated": false },
+            { "operator": "dm-including", "operand": 1, "negated": false },
+            { "operator": "dm-including", "operand": "sophie@zulip.com", "negated": false }
+        ],
+        "expected_output": [
+            { "operator": "dm-including", "operand": 1, "negated": false },
+            { "operator": "dm-including", "operand": 1, "negated": false },
+            { "operator": "dm-including", "operand": "sophie@zulip.com", "negated": false }
+        ],
+        "invalid_terms": [
+            { "operator": "dm-including", "operand": [1, 2, 3], "negated": false },
+            { "operator": "dm-including", "operand": " ", "negated": false }
+        ]
+    },
+    "sender_operator_validations": {
+        "valid_terms": [
+            { "operator": "from", "operand": "1", "negated": false },
+            { "operator": "sender", "operand": 1, "negated": false },
+            { "operator": "sender", "operand": "kiki@zulip.com", "negated": false }
+        ],
+        "expected_output": [
+            { "operator": "sender", "operand": 1, "negated": false },
+            { "operator": "sender", "operand": 1, "negated": false },
+            { "operator": "sender", "operand": "kiki@zulip.com", "negated": false }
+        ],
+        "invalid_terms": [
+            { "operator": "dm-including", "operand": [1, 2, 3], "negated": false },
+            { "operator": "dm-including", "operand": " ", "negated": false }
+        ]
+    },
+    "is_operator_validations": {
+        "valid_terms": [
+            { "operator": "is", "operand": "private", "negated": false },
+            { "operator": "is", "operand": "starred", "negated": false },
+            { "operator": "is", "operand": "MENTIONED", "negated": false }
+        ],
+        "expected_output": [
+            { "operator": "is", "operand": "dm", "negated": false },
+            { "operator": "is", "operand": "starred", "negated": false },
+            { "operator": "is", "operand": "mentioned", "negated": false }
+        ],
+        "invalid_terms": [
+            { "operator": "is", "operand": "unknown_operand", "negated": false }
+        ]
+    },
+    "has_operator_validation": {
+        "valid_terms": [
+            { "operator": "has", "operand": "images", "negated": false },
+            { "operator": "has", "operand": "links", "negated": false }
+        ],
+        "expected_output": [
+            { "operator": "has", "operand": "image", "negated": false },
+            { "operator": "has", "operand": "link", "negated": false }
+        ],
+        "invalid_terms": [
+            { "operator": "has", "operand": "unknown", "negated": false }
+        ]
+    },
+    "search_operator_validation": {
+        "valid_terms": [
+            { "operator": "search", "operand": "Hello \u201cWorld\u201d", "negated": false }
+        ],
+        "expected_output": [
+            { "operator": "search", "operand": "hello \"world\"", "negated": false }
+        ],
+        "invalid_terms": []
+    },
+    "near_operator_validation": {
+        "valid_terms": [
+            { "operator": "near", "operand": "1", "negated": false },
+            { "operator": "near", "operand": 1, "negated": false }
+        ],
+        "expected_output": [
+            { "operator": "near", "operand": 1, "negated": false },
+            { "operator": "near", "operand": 1, "negated": false }
+        ],
+        "invalid_terms": [
+            { "operator": "near", "operand": "abc", "negated": false },
+            { "operator": "near", "operand": [1,2,3], "negated": false },
+            { "operator": "near", "operand": " ", "negated": false }
+        ]
+    },
+    "with_operator_validation": {
+        "valid_terms": [
+            { "operator": "with", "operand": "1", "negated": false },
+            { "operator": "with", "operand": 1, "negated": false }
+        ],
+        "expected_output": [
+            { "operator": "with", "operand": 1, "negated": false },
+            { "operator": "with", "operand": 1, "negated": false }
+        ],
+        "invalid_terms": [
+            { "operator": "with", "operand": "abc", "negated": false },
+            { "operator": "with", "operand": [1,2,3], "negated": false },
+            { "operator": "with", "operand": " ", "negated": false }
+        ]
+    },
+    "id_operator_validation":{
+        "valid_terms": [
+            { "operator": "id", "operand": "1", "negated": false },
+            { "operator": "id", "operand": 1, "negated": false }
+        ],
+        "expected_output": [
+            { "operator": "id", "operand": 1, "negated": false },
+            { "operator": "id", "operand": 1, "negated": false }
+        ],
+        "invalid_terms": [
+            { "operator": "id", "operand": "abc", "negated": false },
+            { "operator": "id", "operand": [1,2,3], "negated": false },
+            { "operator": "id", "operand": " ", "negated": false }
+        ]
+    },
+    "unknown_operator": {
+        "valid_terms": [],
+        "expected_output": [],
+        "invalid_terms": [
+            { "operator": "unknown_operator", "operand": "someoperand", "negated": false }
+        ]
+    }
+}
