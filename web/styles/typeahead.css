@@ -155,7 +155,7 @@
 
     #typeahead-header-text {
         color: var(--color-dropdown-item);
-        font-size: 12px;
+        font-size: 0.8571em; /* 12px at 14px/em */
     }
 
     a strong.typeahead-strong-section {
