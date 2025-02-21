@@ -72,7 +72,6 @@ from zerver.lib.stream_traffic import (
 from zerver.lib.streams import (
     StreamDict,
     StreamsCategorizedByPermissionsForAddingSubscribers,
-    UserGroupMembershipDetails,
     access_stream_by_id,
     access_stream_by_name,
     can_access_stream_history,
@@ -108,7 +107,7 @@ from zerver.lib.types import (
     NeverSubscribedStreamDict,
     SubscriptionInfo,
 )
-from zerver.lib.user_groups import is_user_in_group
+from zerver.lib.user_groups import UserGroupMembershipDetails, is_user_in_group
 from zerver.models import (
     Attachment,
     DefaultStream,

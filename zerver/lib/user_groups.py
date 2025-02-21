@@ -76,6 +76,11 @@ class LockedUserGroupContext:
     recursive_subgroups: list[NamedUserGroup]
 
 
+@dataclass
+class UserGroupMembershipDetails:
+    user_recursive_group_ids: set[int] | None
+
+
 def has_user_group_access_for_subgroup(
     user_group: NamedUserGroup,
     user_profile: UserProfile,

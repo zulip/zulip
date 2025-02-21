@@ -20,14 +20,10 @@ from zerver.actions.invites import (
 from zerver.decorator import require_member_or_admin
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.response import json_success
-from zerver.lib.streams import (
-    UserGroupMembershipDetails,
-    access_stream_by_id,
-    get_streams_to_which_user_cannot_add_subscribers,
-)
+from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_cannot_add_subscribers
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
-from zerver.lib.user_groups import access_user_group_for_update
+from zerver.lib.user_groups import UserGroupMembershipDetails, access_user_group_for_update
 from zerver.models import MultiuseInvite, NamedUserGroup, PreregistrationUser, Stream, UserProfile
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.

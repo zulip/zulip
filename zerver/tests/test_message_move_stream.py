@@ -13,13 +13,13 @@ from zerver.actions.streams import do_change_stream_group_based_setting, do_chan
 from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.message import has_message_access
 from zerver.lib.streams import (
-    UserGroupMembershipDetails,
     can_access_stream_metadata_user_ids,
     update_stream_active_status_for_realm,
 )
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.url_encoding import near_stream_message_url
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, Stream, UserMessage, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm

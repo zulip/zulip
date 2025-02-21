@@ -28,7 +28,6 @@ from zerver.lib.stream_subscription import (
     num_subscribers_for_stream_id,
 )
 from zerver.lib.streams import (
-    UserGroupMembershipDetails,
     can_access_stream_history,
     get_web_public_streams_queryset,
     is_user_in_groups_granting_content_access,
@@ -41,6 +40,7 @@ from zerver.lib.topic import (
 )
 from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
     get_recursive_membership_groups,
     user_has_permission_for_group_setting,
 )
