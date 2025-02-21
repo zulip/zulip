@@ -912,6 +912,7 @@ class OpenAPIAttributesTest(ZulipTestCase):
             "scheduled_messages",
             "mobile",
             "invites",
+            "navigation_views",
         ]
         paths = OpenAPISpec(OPENAPI_SPEC_PATH).openapi()["paths"]
         for path, path_item in paths.items():

@@ -1218,7 +1218,7 @@ class FetchQueriesTest(ZulipTestCase):
         realm = get_realm_with_settings(realm_id=user.realm_id)
 
         with (
-            self.assert_database_query_count(47),
+            self.assert_database_query_count(48),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=realm)
@@ -1232,6 +1232,7 @@ class FetchQueriesTest(ZulipTestCase):
             message=1,
             muted_topics=1,
             muted_users=1,
+            navigation_views=1,
             onboarding_steps=1,
             presence=1,
             realm=1,
