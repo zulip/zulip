@@ -1,8 +1,9 @@
 import orjson
 
+from zerver.lib.exceptions import BadNarrowOperatorError
 from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.url_decoding import is_same_server_message_link, parse_narrow_url
+from zerver.lib.url_decoding import Filter, is_same_server_message_link, parse_narrow_url
 
 
 class URLDecodeTest(ZulipTestCase):
@@ -31,3 +32,38 @@ class NarrowURLDecodeTest(ZulipTestCase):
                         NarrowTerm(**term) for term in expected_output
                     ]
                     self.assertListEqual(parsed_terms, expected_narrow_terms)
+
+
+class NarrowTermFilterTest(ZulipTestCase):
+    def test_initialize_narrow_terms(self) -> None:
+        tests = orjson.loads(self.fixture_data("narrow_term_fixture.json"))
+        for test_name, test_case in tests.items():
+            with self.subTest(name=test_name):
+                narrow_terms_input = [NarrowTerm(**term) for term in test_case["valid_terms"]]
+                filter_instance = Filter(narrow_terms_input)
+                actual_output = filter_instance.terms()
+
+                expected_output: list[NarrowTerm] = [
+                    NarrowTerm(**term) for term in test_case["expected_output"]
+                ]
+                self.assertListEqual(actual_output, expected_output)
+
+                for invalid_term in test_case["invalid_terms"]:
+                    with self.assertRaises(BadNarrowOperatorError):
+                        Filter([NarrowTerm(**invalid_term)])
+
+    def test_overlong_digit_operands(self) -> None:
+        overlong_digits = "9" * 4301
+        for operator in ["id", "near", "with"]:
+            with self.subTest(operator=operator), self.assertRaises(BadNarrowOperatorError):
+                Filter([NarrowTerm(operator, overlong_digits, False)])
+
+        # Too long to be an ID, so these are kept as a channel name or email.
+        for operator in ["channel", "dm-including", "mentions", "sender"]:
+            with self.subTest(operator=operator):
+                term = NarrowTerm(operator, overlong_digits, False)
+                self.assertEqual(Filter([term]).terms(), [term])
+        self.assertEqual(
+            Filter([NarrowTerm("dm", overlong_digits, False)]).terms(),
+            [NarrowTerm("dm", overlong_digits, False)],
+        )
