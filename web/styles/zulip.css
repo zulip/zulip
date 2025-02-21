@@ -859,7 +859,6 @@ div.focused-message-list.is-conversation-view .recipient_row {
 }
 
 .inline_topic_edit {
-    margin-bottom: 5px;
     width: 206px;
 
     &.header-v {
@@ -1159,7 +1158,6 @@ nav {
     width: 18px;
     height: 18px;
     border-radius: 4px;
-    margin-bottom: 3px;
 
     &:focus {
         outline: none;
@@ -1376,12 +1374,12 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 #topic_edit_form {
-    display: inline-block;
+    display: flex;
+    gap: 5px;
+    align-items: center;
     margin: 0;
-    height: 22px;
     padding-left: 20px;
     padding-right: 3px;
-    line-height: 22px;
     margin-left: -15px;
 }
 
