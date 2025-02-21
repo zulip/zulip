@@ -62,7 +62,6 @@ from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     StreamDict,
-    UserGroupMembershipDetails,
     access_default_stream_group_by_id,
     access_stream_by_id,
     access_stream_by_name,
@@ -90,6 +89,7 @@ from zerver.lib.typed_endpoint_validators import check_color
 from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
+    UserGroupMembershipDetails,
     access_user_group_for_setting,
     get_group_setting_value_for_api,
     get_role_based_system_groups_dict,

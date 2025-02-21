@@ -25,6 +25,7 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import AnonymousSettingGroupDict, APIStreamDict
 from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
     get_recursive_group_members,
     get_recursive_membership_groups,
     get_role_based_system_groups_dict,
@@ -547,11 +548,6 @@ def check_for_exactly_one_stream_arg(stream_id: int | None, stream: str | None) 
 
     if stream_id is not None and stream is not None:
         raise IncompatibleParametersError(["stream_id", "stream"])
-
-
-@dataclass
-class UserGroupMembershipDetails:
-    user_recursive_group_ids: set[int] | None
 
 
 def user_has_content_access(

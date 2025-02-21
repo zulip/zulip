@@ -19,7 +19,6 @@ from zerver.lib.stream_subscription import (
 )
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.streams import (
-    UserGroupMembershipDetails,
     get_group_setting_value_dict_for_streams,
     get_setting_values_for_group_settings,
     get_stream_post_policy_value_based_on_group_setting,
@@ -38,7 +37,7 @@ from zerver.lib.types import (
     SubscriptionInfo,
     SubscriptionStreamDict,
 )
-from zerver.lib.user_groups import get_recursive_membership_groups
+from zerver.lib.user_groups import UserGroupMembershipDetails, get_recursive_membership_groups
 from zerver.models import Realm, Stream, Subscription, UserProfile
 from zerver.models.streams import get_all_streams
 
