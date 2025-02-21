@@ -1,0 +1,255 @@
+{
+    "channel": [
+        {
+            "term": { "operator": "stream", "operand": 13, "negated": false },
+            "canonical_term": { "operator": "channel", "operand": 13, "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "channel", "operand": 13, "negated": true },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "channel", "operand": "Denmark", "negated": false },
+            "is_valid": false
+        },
+        {
+            "term": { "operator": "channel", "operand": [1, 2, 3], "negated": false },
+            "is_valid": false
+        }
+    ],
+    "channels": [
+        {
+            "term": { "operator": "streams", "operand": "public", "negated": false },
+            "canonical_term": { "operator": "channels", "operand": "public", "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "channels", "operand": "Web-Public", "negated": false },
+            "canonical_term": { "operator": "channels", "operand": "web-public", "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "channels", "operand": "archived", "negated": true },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "channels", "operand": "Denmark", "negated": false },
+            "canonical_term": { "operator": "channels", "operand": "denmark", "negated": false },
+            "is_valid": false
+        }
+    ],
+    "topic": [
+        {
+            "term": { "operator": "subject", "operand": "Topic Name", "negated": false },
+            "canonical_term": { "operator": "topic", "operand": "Topic Name", "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "topic", "operand": "", "negated": false },
+            "is_valid": true
+        }
+    ],
+    "date": [
+        {
+            "term": { "operator": "date", "operand": "2024-02-29", "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "date", "operand": "2024-02-29", "negated": true },
+            "is_valid": false
+        },
+        {
+            "term": { "operator": "date", "operand": "2023-02-29", "negated": false },
+            "is_valid": false
+        },
+        {
+            "term": { "operator": "date", "operand": "2024-2-29", "negated": false },
+            "is_valid": false
+        },
+        {
+            "term": { "operator": "date", "operand": "20240229", "negated": false },
+            "is_valid": false
+        },
+        {
+            "term": { "operator": "date", "operand": "1969-12-31", "negated": false },
+            "is_valid": false
+        },
+        {
+            "term": { "operator": "date", "operand": "9999-01-01", "negated": false },
+            "is_valid": false
+        },
+        {
+            "term": { "operator": "date", "operand": 20240229, "negated": false },
+            "is_valid": false
+        }
+    ],
+    "dm": [
+        {
+            "term": { "operator": "pm-with", "operand": [1], "negated": false },
+            "canonical_term": { "operator": "dm", "operand": [1], "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "dm", "operand": [1, 2, 3], "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "dm", "operand": "Porco@zulip.com", "negated": false },
+            "is_valid": false
+        },
+        {
+            "term": { "operator": "dm", "operand": [1, -1], "negated": false },
+            "is_valid": false
+        }
+    ],
+    "dm-including": [
+        {
+            "term": { "operator": "group-pm-with", "operand": [1, 2], "negated": false },
+            "canonical_term": { "operator": "dm-including", "operand": [1, 2], "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "dm-including", "operand": "sophie@zulip.com", "negated": false },
+            "is_valid": false
+        }
+    ],
+    "sender": [
+        {
+            "term": { "operator": "from", "operand": 1, "negated": false },
+            "canonical_term": { "operator": "sender", "operand": 1, "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "sender", "operand": "Kiki@zulip.com", "negated": false },
+            "is_valid": false
+        },
+        {
+            "term": { "operator": "sender", "operand": -1, "negated": false },
+            "is_valid": false
+        }
+    ],
+    "mentions": [
+        {
+            "term": { "operator": "mentions", "operand": 1, "negated": true },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "mentions", "operand": [1, 2], "negated": false },
+            "is_valid": false
+        }
+    ],
+    "in": [
+        {
+            "term": { "operator": "in", "operand": "home", "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "in", "operand": "ALL", "negated": false },
+            "canonical_term": { "operator": "in", "operand": "all", "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "in", "operand": "unknown_operand", "negated": false },
+            "is_valid": false
+        }
+    ],
+    "is": [
+        {
+            "term": { "operator": "is", "operand": "private", "negated": false },
+            "canonical_term": { "operator": "is", "operand": "dm", "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "is", "operand": "mentioned", "negated": true },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "is", "operand": "MENTIONED", "negated": false },
+            "is_valid": false
+        },
+        {
+            "term": { "operator": "is", "operand": "unknown_operand", "negated": false },
+            "is_valid": false
+        }
+    ],
+    "has": [
+        {
+            "term": { "operator": "has", "operand": "images", "negated": false },
+            "canonical_term": { "operator": "has", "operand": "image", "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "has", "operand": "reaction", "negated": true },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "has", "operand": "Links", "negated": false },
+            "canonical_term": { "operator": "has", "operand": "Link", "negated": false },
+            "is_valid": false
+        }
+    ],
+    "search": [
+        {
+            "term": { "operator": "search", "operand": "Hello “World”", "negated": false },
+            "canonical_term": { "operator": "search", "operand": "Hello \"World\"", "negated": false },
+            "is_valid": true
+        }
+    ],
+    "near": [
+        {
+            "term": { "operator": "near", "operand": 1, "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "near", "operand": 1, "negated": true },
+            "is_valid": false
+        },
+        {
+            "term": { "operator": "near", "operand": "²", "negated": false },
+            "is_valid": false
+        },
+        {
+            "term": { "operator": "near", "operand": [1, 2, 3], "negated": false },
+            "is_valid": false
+        }
+    ],
+    "with": [
+        {
+            "term": { "operator": "with", "operand": "2147483648", "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "with", "operand": "abc", "negated": false },
+            "is_valid": false
+        }
+    ],
+    "id": [
+        {
+            "term": { "operator": "id", "operand": "9007199254740991", "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "id", "operand": "009007199254740991", "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "id", "operand": "9007199254740992", "negated": false },
+            "is_valid": false
+        },
+        {
+            "term": { "operator": "id", "operand": -9007199254740991, "negated": false },
+            "is_valid": true
+        },
+        {
+            "term": { "operator": "id", "operand": 9007199254740992, "negated": false },
+            "is_valid": false
+        }
+    ],
+    "unknown_operator": [
+        {
+            "term": { "operator": "unknown_operator", "operand": "SomeOperand", "negated": false },
+            "is_valid": false
+        }
+    ]
+}
