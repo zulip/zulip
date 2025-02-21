@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+ git config pull.rebase true   #!/usr/bin/env bash
 set -e
 
 # usage: clean-branches

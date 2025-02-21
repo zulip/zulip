@@ -153,7 +153,7 @@ def update_user_status_admin(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    target_user_id: PathOnly[Json[int]],
+    user_id: PathOnly[Json[int]],
     away: Json[bool] | None = None,
     status_text: Annotated[
         str | None, StringConstraints(strip_whitespace=True, max_length=60)
@@ -162,7 +162,7 @@ def update_user_status_admin(
     emoji_code: str | None = None,
     emoji_type: Annotated[str | None, ApiParamConfig("reaction_type")] = None,
 ) -> HttpResponse:
-    target_user = access_user_by_id(user_profile, target_user_id, for_admin=True)
+    target_user = access_user_by_id(user_profile, user_id, for_admin=True)
     if not user_profile.can_admin_user(target_user):
         raise JsonableError(_("Insufficient permission"))
 
