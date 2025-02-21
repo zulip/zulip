@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {JSDOM} = require("jsdom");
 
 const katex_tests = require("../../zerver/tests/fixtures/katex_test_cases.json");
+const {parse} = require("../src/markdown.ts");
 
 const {zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -256,6 +257,15 @@ run_test("paste_handler_converter", () => {
     assert.equal(copy_and_paste.paste_handler_converter(input), "     \n\n$ 20.00\n\n$ 7.00");
 
     // Math block tests
+
+    /*
+      This first batch of math block tests uses captured fixtures
+        (`input`). This lets us verify behavior like the empty
+        `.katex-display` divs in case of newlines in the
+        `original_markdown` See
+        https://github.com/zulip/zulip/pull/32629#discussion_r1883810127
+    */
+
     for (const math_block_test of katex_tests.math_block_tests) {
         input = math_block_test.input;
         assert.equal(
@@ -264,20 +274,33 @@ run_test("paste_handler_converter", () => {
         );
     }
 
-    // Inline Math Expression tests
+    // This next batch of tests round-trips the LaTeX syntax through
+    // the Markdown processor and then the paste handler.
+    const dummy_helper_config = {
+        should_translate_emoticons: () => false,
+        get_linkifier_map: () => new Map(),
+    };
+    assert.equal(dummy_helper_config.should_translate_emoticons(), false);
+    assert.deepEqual(dummy_helper_config.get_linkifier_map(), new Map());
+
     for (const inline_math_expression_test of katex_tests.inline_math_expression_tests) {
-        input = inline_math_expression_test.input;
+        const paste_html = parse({
+            raw_content: inline_math_expression_test.original_markup,
+            helper_config: dummy_helper_config,
+        }).content;
         assert.equal(
-            copy_and_paste.paste_handler_converter(input),
+            copy_and_paste.paste_handler_converter(paste_html),
             inline_math_expression_test.expected_output,
         );
     }
 
-    // Span conversion check
     for (const span_conversion_test of katex_tests.text_node_to_span_conversion_tests) {
-        input = span_conversion_test.input;
+        const paste_html = parse({
+            raw_content: span_conversion_test.original_markup,
+            helper_config: dummy_helper_config,
+        }).content;
         assert.equal(
-            copy_and_paste.paste_handler_converter(input),
+            copy_and_paste.paste_handler_converter(paste_html),
             span_conversion_test.expected_output,
         );
     }
