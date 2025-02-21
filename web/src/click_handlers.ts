@@ -40,6 +40,7 @@ import * as stream_popover from "./stream_popover.ts";
 import * as topic_list from "./topic_list.ts";
 import * as ui_util from "./ui_util.ts";
 import {parse_html} from "./ui_util.ts";
+import {toggle_user_group_info_popover} from "./user_group_popover.ts";
 import * as util from "./util.ts";
 
 export function initialize(): void {
@@ -977,5 +978,9 @@ export function initialize(): void {
 
     $(".settings-header.mobile .fa-chevron-left").on("click", () => {
         settings_panel_menu.mobile_deactivate_section();
+    });
+    $("body").on("click", ".view_user_group_mention", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        toggle_user_group_info_popover(this, undefined);
     });
 }
