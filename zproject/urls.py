@@ -431,8 +431,8 @@ v1_api_and_json_patterns = [
     rest_path("users/<user_id_or_email>/presence", GET=get_presence_backend),
     rest_path("realm/presence", GET=get_statuses_for_realm),
     rest_path("users/me/status", POST=update_user_status_backend),
-    rest_path("users/<user_id>/status", POST=update_user_status_admin),
-    rest_path("users/<int:target_user_id>/status", GET=get_status_backend),
+    rest_path("users/<int:user_id>/status_from_admin", POST=update_user_status_admin),
+    rest_path("users/<int:user_id>/status", GET=get_status_backend),
     # user_groups -> zerver.views.user_groups
     rest_path("user_groups", GET=get_user_groups),
     rest_path("user_groups/create", POST=add_user_group),

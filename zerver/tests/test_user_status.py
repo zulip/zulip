@@ -181,10 +181,11 @@ class UserStatusTest(ZulipTestCase):
         )
 
     def update_status_and_assert_event(
-        self, payload: dict[str, Any], expected_event: dict[str, Any], num_events: int = 1
+        self, payload: dict[str, Any], url: str, expected_event: dict[str, Any], num_events: int = 1
     ) -> None:
         with self.capture_send_event_calls(expected_num_events=num_events) as events:
-            result = self.client_post("/json/users/me/status", payload)
+            # result = self.client_post("/json/users/me/status", payload)
+            result = self.client_post(url, payload)
         self.assert_json_success(result)
         if num_events == 1:
             self.assertEqual(events[0]["event"], expected_event)
@@ -193,6 +194,7 @@ class UserStatusTest(ZulipTestCase):
 
     def test_endpoints(self) -> None:
         hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
         realm = hamlet.realm
         now = timezone_now()
 
@@ -251,6 +253,7 @@ class UserStatusTest(ZulipTestCase):
                 away=orjson.dumps(True).decode(),
                 status_text="on vacation",
             ),
+            url="/json/users/me/status",
             expected_event=dict(
                 type="user_status", user_id=hamlet.id, away=True, status_text="on vacation"
             ),
@@ -279,6 +282,7 @@ class UserStatusTest(ZulipTestCase):
             payload=dict(
                 emoji_name="car",
             ),
+            url="/json/users/me/status",
             expected_event=dict(
                 type="user_status",
                 user_id=hamlet.id,
@@ -316,6 +320,7 @@ class UserStatusTest(ZulipTestCase):
             payload=dict(
                 emoji_name="",
             ),
+            url="/json/users/me/status",
             expected_event=dict(
                 type="user_status",
                 user_id=hamlet.id,
@@ -339,6 +344,7 @@ class UserStatusTest(ZulipTestCase):
         # Now revoke "away" status.
         self.update_status_and_assert_event(
             payload=dict(away=orjson.dumps(False).decode()),
+            url="/json/users/me/status",
             expected_event=dict(type="user_status", user_id=hamlet.id, away=False),
             num_events=4,
         )
@@ -357,6 +363,7 @@ class UserStatusTest(ZulipTestCase):
         # The server will trim the whitespace here.
         self.update_status_and_assert_event(
             payload=dict(status_text="   in office  "),
+            url="/json/users/me/status",
             expected_event=dict(type="user_status", user_id=hamlet.id, status_text="in office"),
         )
         self.assertEqual(
@@ -374,6 +381,7 @@ class UserStatusTest(ZulipTestCase):
         # And finally clear your info.
         self.update_status_and_assert_event(
             payload=dict(status_text=""),
+            url="/json/users/me/status",
             expected_event=dict(type="user_status", user_id=hamlet.id, status_text=""),
         )
         self.assertEqual(
@@ -391,6 +399,7 @@ class UserStatusTest(ZulipTestCase):
         # Turn on "away" status again.
         self.update_status_and_assert_event(
             payload=dict(away=orjson.dumps(True).decode()),
+            url="/json/users/me/status",
             expected_event=dict(type="user_status", user_id=hamlet.id, away=True),
             num_events=4,
         )
@@ -404,6 +413,7 @@ class UserStatusTest(ZulipTestCase):
         # And set status text while away.
         self.update_status_and_assert_event(
             payload=dict(status_text="   at the beach  "),
+            url="/json/users/me/status",
             expected_event=dict(type="user_status", user_id=hamlet.id, status_text="at the beach"),
         )
         self.assertEqual(
@@ -430,3 +440,26 @@ class UserStatusTest(ZulipTestCase):
             result_dict["status"],
             {},
         )
+        # Test url users/<int:user_id>/status_from_admin
+        self.login("polonius")
+        payload = {
+            "status_text": "In a meeting",
+            "emoji_code": "1f4bb",
+            "emoji_name": "car",
+            "reaction_type": "realm_emoji",
+        }
+        result = self.client_post(f"/json/users/{hamlet.id}/status_from_admin", payload)
+        self.assert_json_error(result, "Insufficient permission")
+
+        # Log in as iago, default admin user
+        self.login_user(iago)
+        self.update_status_and_assert_event(
+            payload=dict(status_text="   at the beach  "),
+            url=f"/json/users/{hamlet.id}/status_from_admin",
+            expected_event=dict(type="user_status", user_id=hamlet.id, status_text="at the beach"),
+        )
+        self.assertEqual(
+            user_status_info(hamlet),
+            dict(status_text="at the beach", away=True),
+        )
+        
