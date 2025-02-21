@@ -70,7 +70,7 @@ from zerver.lib.streams import (
     access_web_public_stream,
     check_stream_name_available,
     do_get_streams,
-    filter_stream_authorization,
+    filter_stream_authorization_for_adding_subscribers,
     get_group_setting_value_dict_for_streams,
     get_stream_permission_default_group,
     get_stream_permission_policy_name,
@@ -699,7 +699,7 @@ def add_subscriptions_backend(
         setting_groups_dict=setting_groups_dict,
     )
 
-    streams_categorized_by_permissions = filter_stream_authorization(
+    streams_categorized_by_permissions = filter_stream_authorization_for_adding_subscribers(
         user_profile, existing_streams, is_subscribing_other_users
     )
     authorized_streams = streams_categorized_by_permissions.authorized_streams

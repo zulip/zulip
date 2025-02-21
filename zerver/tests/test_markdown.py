@@ -19,6 +19,7 @@ from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.realm_emoji import do_remove_realm_emoji
 from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     check_add_user_group,
@@ -3290,6 +3291,51 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
         self.assertEqual(
             markdown_convert_wrapper(content),
             f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/channel/{core_stream.id}-core/topic/testing">#{core_stream.name} &gt; testing</a></p>',
+        )
+
+        private_stream = self.make_stream("private", realm, invite_only=True)
+        content = "#**private>testing**"
+        self.assertEqual(
+            markdown_convert_wrapper(content),
+            f'<p><a class="stream-topic" data-stream-id="{private_stream.id}" href="/#narrow/channel/{private_stream.id}-private/topic/testing">#{private_stream.name} &gt; testing</a></p>',
+        )
+
+        # Permalink would not be generated if a user has metadata
+        # access to a stream but not content access.
+        cordelia_group = self.create_or_update_anonymous_group_for_setting([cordelia], [])
+        do_change_stream_group_based_setting(
+            private_stream,
+            "can_administer_channel_group",
+            cordelia_group,
+            acting_user=None,
+        )
+        msg = Message(
+            sender=cordelia,
+            sending_client=get_client("test"),
+            realm=realm,
+        )
+        content = "#**private>testing**"
+        self.assertEqual(
+            render_message_markdown(msg, content, acting_user=cordelia).rendered_content,
+            "<p>#<strong>private&gt;testing</strong></p>",
+        )
+
+        # User has content access now, so permalink would be generated.
+        do_change_stream_group_based_setting(
+            private_stream,
+            "can_add_subscribers_group",
+            cordelia_group,
+            acting_user=None,
+        )
+        msg = Message(
+            sender=cordelia,
+            sending_client=get_client("test"),
+            realm=realm,
+        )
+        content = "#**private>testing**"
+        self.assertEqual(
+            render_message_markdown(msg, content, acting_user=cordelia).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{private_stream.id}" href="/#narrow/channel/{private_stream.id}-private/topic/testing">#{private_stream.name} &gt; testing</a></p>',
         )
 
     def test_message_id_multiple(self) -> None:
