@@ -258,3 +258,16 @@ export function show_left_sidebar_menu_icon(element: Element): void {
 export function hide_left_sidebar_menu_icon(): void {
     $(".left_sidebar_menu_icon_visible").removeClass("left_sidebar_menu_icon_visible");
 }
+
+export function matches_viewport_state(state_string: string): boolean {
+    const app_main = document.querySelector(".app-main");
+    if (app_main instanceof HTMLElement) {
+        const app_main_after_content = getComputedStyle(app_main, ":after").content ?? "";
+        /* The .content property includes the quotation marks, so we
+           strip them before splitting on the empty space. */
+        const app_main_after_content_array = app_main_after_content.replaceAll('"', "").split(" ");
+
+        return app_main_after_content_array.includes(state_string);
+    }
+    return false;
+}

@@ -495,6 +495,15 @@ body.has-overlay-scrollbar {
     height: 100%;
     min-height: 100%;
 
+    &::after {
+        /* We use `content` values to determine
+           viewport state from JavaScript; this
+           hides the values without disrupting
+           the document flow. */
+        position: absolute;
+        display: none;
+    }
+
     .column-left .left-sidebar,
     .column-right .right-sidebar {
         position: fixed;
@@ -1860,6 +1869,55 @@ body:not(.hide-left-sidebar) {
 }
 
 /* End fallback media queries. */
+
+/* Begin viewport state queries. */
+
+/* We sometimes need the state of the viewport in JavaScript;
+   by setting values on `content:`, we can query instead for
+   those, independent of whether it's a container or media query
+   responsible for layout. See for example `sidebar_ui.ts`.
+
+   These queries for greater than or equal to should be ordered
+   smallest to largest. */
+
+/* Adjustments for smaller viewports are critical
+   regardless of info-density settings, so we
+   don't include a container-query check here. */
+@media (width < $md_min) {
+    .app-main::after {
+        content: "lt_md_min";
+    }
+}
+
+@container app (width >= $cq_md_min) {
+    .app-main::after {
+        content: "gte_md_min";
+    }
+}
+
+@media (width >= $md_min) {
+    .without-container-query-support {
+        .app-main::after {
+            content: "gte_md_min";
+        }
+    }
+}
+
+@container app (width >= $cq_xl_min) {
+    .app-main::after {
+        content: "gte_md_min gte_xl_min";
+    }
+}
+
+@media (width >= $xl_min) {
+    .without-container-query-support {
+        .app-main::after {
+            content: "gte_md_min gte_xl_min";
+        }
+    }
+}
+
+/* End viewport state queries. */
 
 @media (height < $short_navbar_cutoff_height) {
     .app-main .column-right.expanded .right-sidebar,

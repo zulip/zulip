@@ -12,7 +12,6 @@ import render_presence_rows from "../templates/presence_rows.hbs";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import type {BuddyUserInfo} from "./buddy_data.ts";
-import {media_breakpoints_num} from "./css_variables.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -26,6 +25,7 @@ import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import {INTERACTIVE_HOVER_DELAY} from "./tippyjs.ts";
+import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
@@ -174,7 +174,7 @@ export class BuddyList extends BuddyListConf {
                 e.stopPropagation();
                 const $elem = $(this);
                 let placement: "left" | "auto" = "left";
-                if (window.innerWidth < media_breakpoints_num.md) {
+                if (ui_util.matches_viewport_state("lt_md_min")) {
                     // On small devices display tooltips based on available space.
                     // This will default to "bottom" placement for this tooltip.
                     placement = "auto";
