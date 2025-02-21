@@ -703,17 +703,6 @@
         }
     }
 
-    .topic_edit_button {
-        &.topic_edit_cancel {
-            background-color: hsl(0deg 0% 95%);
-            color: hsl(0deg 0% 42%);
-
-            &:hover {
-                color: hsl(0deg 0% 18%);
-            }
-        }
-    }
-
     & a:not(:active):focus,
     button:not(.action-button, .icon-button):focus,
     i.fa:focus,

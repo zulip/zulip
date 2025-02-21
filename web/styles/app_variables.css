@@ -691,6 +691,15 @@
         hsl(0deg 0% 97%),
         hsl(0deg 0% 97% / 8%)
     );
+    --color-background-topic-edit-cancel: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 95%)
+    );
+    --color-icon-topic-edit-cancel: light-dark(
+        hsl(0deg 0% 47%),
+        hsl(0deg 0% 42%)
+    );
+    --color-icon-hover-topic-edit-cancel: hsl(0deg 0% 18%);
     /* We mix an opaque version with the background for
        replicating the color on .sidebar-topic-check, which
        will mask a portion of the topic-grouping bracket. */
