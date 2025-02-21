@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db.models import Q
 from django_stubs_ext import StrPromise
 
-from zerver.lib.streams import filter_stream_authorization
+from zerver.lib.streams import UserGroupMembershipDetails, get_content_access_streams
 from zerver.lib.topic import get_first_message_for_user_in_topic
 from zerver.lib.user_groups import get_root_id_annotated_recursive_subgroups_for_groups
 from zerver.lib.users import get_inaccessible_user_ids
@@ -200,7 +200,7 @@ class MentionBackend:
                 )
                 result[row["name"]] = row["id"]
         else:
-            authorization = filter_stream_authorization(
+            content_access_streams = get_content_access_streams(
                 acting_user,
                 list(
                     Stream.objects.filter(
@@ -209,9 +209,11 @@ class MentionBackend:
                         functools.reduce(lambda a, b: a | b, q_list),
                     )
                 ),
-                is_subscribing_other_users=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             )
-            for stream in authorization.authorized_streams:
+            for stream in content_access_streams:
                 assert stream.recipient_id is not None
                 self.stream_cache[stream.name] = ChannelInfo(
                     stream.id, stream.recipient_id, stream.history_public_to_subscribers

@@ -560,6 +560,7 @@ def user_has_content_access(
     user_group_membership_details: UserGroupMembershipDetails,
     *,
     is_subscribed: bool,
+    exclude_zephyr_realms_from_public_check: bool = False,
 ) -> bool:
     if stream.is_web_public:
         return True
@@ -569,6 +570,9 @@ def user_has_content_access(
 
     if user_profile.is_guest:
         return False
+
+    if exclude_zephyr_realms_from_public_check and not stream.invite_only:
+        return True
 
     if stream.is_public():
         return True
@@ -1040,6 +1044,7 @@ def get_streams_to_which_user_cannot_add_subscribers(
     user_profile: UserProfile,
     *,
     allow_default_streams: bool = False,
+    user_group_membership_details: UserGroupMembershipDetails,
 ) -> list[Stream]:
     # IMPORTANT: This function expects its callers to have already
     # checked that the user can access the provided channels, and thus
@@ -1056,9 +1061,10 @@ def get_streams_to_which_user_cannot_add_subscribers(
     if user_profile.is_realm_admin:
         return []
 
-    user_recursive_group_ids = set(
-        get_recursive_membership_groups(user_profile).values_list("id", flat=True)
-    )
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
     if allow_default_streams:
         default_stream_ids = get_default_stream_ids_for_realm(user_profile.realm_id)
 
@@ -1075,10 +1081,14 @@ def get_streams_to_which_user_cannot_add_subscribers(
         if allow_default_streams and stream.id in default_stream_ids:
             continue
 
-        if is_user_in_can_administer_channel_group(stream, user_recursive_group_ids):
+        if is_user_in_can_administer_channel_group(
+            stream, user_group_membership_details.user_recursive_group_ids
+        ):
             continue
 
-        if not is_user_in_can_add_subscribers_group(stream, user_recursive_group_ids):
+        if not is_user_in_can_add_subscribers_group(
+            stream, user_group_membership_details.user_recursive_group_ids
+        ):
             result.append(stream)
 
     return result
@@ -1097,21 +1107,21 @@ def can_administer_accessible_channel(channel: Stream, user_profile: UserProfile
 
 
 @dataclass
-class StreamsCategorizedByPermissions:
+class StreamsCategorizedByPermissionsForAddingSubscribers:
     authorized_streams: list[Stream]
     unauthorized_streams: list[Stream]
     streams_to_which_user_cannot_add_subscribers: list[Stream]
 
 
-def filter_stream_authorization(
-    user_profile: UserProfile, streams: Collection[Stream], is_subscribing_other_users: bool = False
-) -> StreamsCategorizedByPermissions:
+def get_content_access_streams(
+    user_profile: UserProfile,
+    streams: Collection[Stream],
+    user_group_membership_details: UserGroupMembershipDetails,
+    *,
+    exclude_zephyr_realms_from_public_check: bool = False,
+) -> list[Stream]:
     if len(streams) == 0:
-        return StreamsCategorizedByPermissions(
-            authorized_streams=[],
-            unauthorized_streams=[],
-            streams_to_which_user_cannot_add_subscribers=[],
-        )
+        return []
 
     recipient_ids = [stream.recipient_id for stream in streams]
     subscribed_recipient_ids = set(
@@ -1120,52 +1130,70 @@ def filter_stream_authorization(
         ).values_list("recipient_id", flat=True)
     )
 
-    unauthorized_streams: list[Stream] = []
+    content_access_streams: list[Stream] = []
+
+    for stream in streams:
+        is_subscribed = stream.recipient_id in subscribed_recipient_ids
+        if user_has_content_access(
+            user_profile,
+            stream,
+            user_group_membership_details,
+            is_subscribed=is_subscribed,
+            exclude_zephyr_realms_from_public_check=exclude_zephyr_realms_from_public_check,
+        ):
+            content_access_streams.append(stream)
+
+    return content_access_streams
+
+
+def filter_stream_authorization_for_adding_subscribers(
+    user_profile: UserProfile, streams: Collection[Stream], is_subscribing_other_users: bool = False
+) -> StreamsCategorizedByPermissionsForAddingSubscribers:
+    if len(streams) == 0:
+        return StreamsCategorizedByPermissionsForAddingSubscribers(
+            authorized_streams=[],
+            unauthorized_streams=[],
+            streams_to_which_user_cannot_add_subscribers=[],
+        )
+
+    # For adding subscribers, we consider streams in zephyr realm
+    # public.
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    content_access_streams = get_content_access_streams(
+        user_profile,
+        streams,
+        user_group_membership_details,
+        exclude_zephyr_realms_from_public_check=True,
+    )
+    content_access_stream_ids = {stream.id for stream in content_access_streams}
+
     streams_to_which_user_cannot_add_subscribers: list[Stream] = []
     if is_subscribing_other_users:
         streams_to_which_user_cannot_add_subscribers = (
-            get_streams_to_which_user_cannot_add_subscribers(list(streams), user_profile)
+            get_streams_to_which_user_cannot_add_subscribers(
+                content_access_streams,
+                user_profile,
+                user_group_membership_details=user_group_membership_details,
+            )
         )
 
-    for stream in streams:
-        # Deactivated streams are not accessible
-        if stream.deactivated:
-            unauthorized_streams.append(stream)
-            continue
-
-        # The user is authorized for their own streams
-        if stream.recipient_id in subscribed_recipient_ids:
-            continue
-
-        # Web-public streams are accessible even to guests
-        if stream.is_web_public:
-            continue
-
-        if user_profile.is_guest:
-            unauthorized_streams.append(stream)
-            continue
-
-        # Members and administrators are authorized for public streams
-        if not stream.invite_only:
-            continue
-
-        if stream.invite_only:
-            user_recursive_group_ids = set(
-                get_recursive_membership_groups(user_profile).values_list("id", flat=True)
-            )
-            # The above has checked that the user is not a guest for the below settings.
-            if is_user_in_groups_granting_content_access(stream, user_recursive_group_ids):
-                continue
-
-        unauthorized_streams.append(stream)
-
-    authorized_streams = [
+    unauthorized_streams = [
         stream
         for stream in streams
-        if stream.id not in {stream.id for stream in unauthorized_streams}
-        and stream.id not in {stream.id for stream in streams_to_which_user_cannot_add_subscribers}
+        if stream.deactivated or stream.id not in content_access_stream_ids
     ]
-    return StreamsCategorizedByPermissions(
+    unauthorized_stream_ids = {stream.id for stream in unauthorized_streams}
+
+    stream_ids_to_which_user_cannot_add_subscribers = {
+        stream.id for stream in streams_to_which_user_cannot_add_subscribers
+    }
+    authorized_streams = [
+        stream
+        for stream in content_access_streams
+        if stream.id not in stream_ids_to_which_user_cannot_add_subscribers
+        and stream.id not in unauthorized_stream_ids
+    ]
+    return StreamsCategorizedByPermissionsForAddingSubscribers(
         authorized_streams=authorized_streams,
         unauthorized_streams=unauthorized_streams,
         streams_to_which_user_cannot_add_subscribers=streams_to_which_user_cannot_add_subscribers,
