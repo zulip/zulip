@@ -355,10 +355,12 @@ select.settings_select {
 
 .last_active {
     .loading_indicator_spinner {
-        width: 2.7143em; /* 38px at 14px em */
+        width: 1.25em;
+        height: auto;
         display: flex;
         align-items: center;
         margin: 0;
+        margin-left: 0.5em; /* The spinner is left-justified with a slight left margin to look good. */
     }
 }
 
