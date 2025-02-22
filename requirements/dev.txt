@@ -3173,8 +3173,8 @@ stripe==11.5.0 \
     --hash=sha256:3b2cd47ed3002328249bff5cacaee38d5e756c3899ab425d3bd07acdaf32534a \
     --hash=sha256:bc3e0358ffc23d5ecfa8aafec1fa4f048ee8107c3237bcb00003e68c8c96fa02
     # via -r requirements/common.in
-https://github.com/zulip/talon/archive/e3879d82331aa8b5a87e9d41b3ba3693caa24cd2.zip#egg=talon-core==1.6.0+git&subdirectory=talon-core \
-    --hash=sha256:ecd16ee13fa1d82582cec992c96f1996e9f825873b7ef6f72eb6d1820766f1a8
+https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed.zip#egg=talon-core==1.6.0+git&subdirectory=talon-core \
+    --hash=sha256:f4400383e96e5ad186fa38f6c0617819dab348a5ca39c421f6e2ef7b85b369b4
     # via -r requirements/common.in
 tblib==3.0.0 \
     --hash=sha256:80a6c77e59b55e83911e1e607c649836a69c103963c5f28a46cbeef44acf8129 \
