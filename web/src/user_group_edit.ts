@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import {z} from "zod";
@@ -14,6 +15,7 @@ import render_stream_group_permission_settings from "../templates/user_group_set
 import render_user_group_membership_status from "../templates/user_group_settings/user_group_membership_status.hbs";
 import render_user_group_permission_settings from "../templates/user_group_settings/user_group_permission_settings.hbs";
 import render_user_group_settings from "../templates/user_group_settings/user_group_settings.hbs";
+import render_user_group_settings_empty_notice from "../templates/user_group_settings/user_group_settings_empty_notice.hbs";
 import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -1540,27 +1542,58 @@ export function maybe_reset_right_panel(groups_list_data: UserGroup[]): void {
 export function update_empty_left_panel_message(): void {
     // Check if we have any groups in panel to decide whether to
     // display a notice.
-    let has_groups;
     const is_your_groups_tab_active =
         get_active_data().$tabs.first().attr("data-tab-key") === "your-groups";
-    if (is_your_groups_tab_active) {
-        has_groups = user_groups.get_user_groups_of_user(people.my_current_user_id()).length;
-    } else {
-        has_groups = user_groups.get_realm_user_groups().length;
+
+    let current_group_filter =
+        z.string().optional().parse(filters_dropdown_widget.value()) ??
+        FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS;
+
+    // When the dropdown menu is hidden.
+    if ($("#user-group-edit-filter-options").is(":hidden")) {
+        current_group_filter = FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS;
     }
-    if (has_groups) {
+
+    if ($(".user-groups-list").find(".group-row:visible").length > 0) {
         $(".no-groups-to-show").hide();
         return;
     }
-    if (is_your_groups_tab_active) {
-        $(".all_groups_tab_empty_text").hide();
-        $(".your_groups_tab_empty_text").show();
-    } else {
-        $(".your_groups_tab_empty_text").hide();
-        $(".all_groups_tab_empty_text").show();
-    }
-    $(".no-groups-to-show").show();
+
+    const empty_user_group_list_message = get_empty_user_group_list_message(
+        current_group_filter,
+        is_your_groups_tab_active,
+    );
+
+    const args = {
+        empty_user_group_list_message,
+        can_create_user_groups:
+            settings_data.user_can_create_user_groups() && realm.zulip_plan_is_not_limited,
+        all_groups_tab: !is_your_groups_tab_active,
+    };
+
+    $(".no-groups-to-show").html(render_user_group_settings_empty_notice(args)).show();
 }
+
+function get_empty_user_group_list_message(
+    current_group_filter: string,
+    is_your_groups_tab_active: boolean,
+): string {
+    const is_searching = $("#search_group_name").val() !== "";
+    if (is_searching || current_group_filter !== FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS) {
+        return $t({defaultMessage: "There are no groups matching your filters."});
+    }
+
+    if (is_your_groups_tab_active) {
+        return $t({defaultMessage: "You are not a member of any user groups."});
+    }
+    return $t({
+        defaultMessage: "There are no user groups you can view in this organization.",
+    });
+}
+
+const throttled_update_empty_left_panel_message = _.throttle(() => {
+    update_empty_left_panel_message();
+}, 100);
 
 export function remove_deactivated_user_from_all_groups(user_id: number): void {
     const all_user_groups = user_groups.get_realm_user_groups(true);
@@ -1746,6 +1779,8 @@ export function setup_page(callback: () => void): void {
                     );
                 },
                 onupdate() {
+                    // We throttle this to not call this check on every keypress
+                    throttled_update_empty_left_panel_message();
                     if (user_group_components.active_group_id !== undefined) {
                         const active_group = user_groups.get_user_group_from_id(
                             user_group_components.active_group_id,
