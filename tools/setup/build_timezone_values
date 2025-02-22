@@ -3,7 +3,9 @@ import json
 import os
 import sys
 import zoneinfo
+from datetime import datetime
 
+# Define paths
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 sys.path.insert(0, ZULIP_PATH)
 
@@ -11,14 +13,40 @@ from zerver.lib.timezone import get_canonical_timezone_map
 
 OUT_PATH = os.path.join(ZULIP_PATH, "web", "generated", "timezones.json")
 
+def get_gmt_offset(tz_name):
+    """Get GMT offset for a timezone in the format GMT ±HH:MM."""
+    try:
+        now = datetime.now(zoneinfo.ZoneInfo(tz_name))
+        offset = now.utcoffset()
+
+        if offset is None:
+            return "GMT +00:00"  # Default to UTC if offset is missing
+
+        offset_seconds = offset.total_seconds()
+        hours, remainder = divmod(abs(offset_seconds), 3600)
+        minutes = remainder // 60
+        sign = "+" if offset_seconds >= 0 else "-"
+
+        return f"GMT {sign}{int(hours):02}:{int(minutes):02}"
+    except Exception as e:
+        print(f"Error processing {tz_name}: {e}")
+        return "GMT +00:00"
+
+# Get the list of timezones
+timezones = sorted(
+    zoneinfo.available_timezones()
+    - {"Factory", "localtime"}
+    - set(get_canonical_timezone_map())
+)
+
+# Create a dictionary with GMT offsets
+timezone_data = [
+    {"name": tz, "gmtOffset": get_gmt_offset(tz)}
+    for tz in timezones
+]
+
+# Save to JSON
 with open(OUT_PATH, "w") as f:
-    json.dump(
-        {
-            "timezones": sorted(
-                zoneinfo.available_timezones()
-                - {"Factory", "localtime"}
-                - set(get_canonical_timezone_map())
-            )
-        },
-        f,
-    )
+    json.dump({"timezones": timezone_data}, f, indent=4)
+
+print(f"✅ Timezones file generated: {OUT_PATH}")
