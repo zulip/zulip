@@ -1431,7 +1431,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
     if (time_limit_settings.length > 0) {
         disable_save_button =
             should_disable_save_button_for_time_limit_settings(time_limit_settings);
-    } else if ($subsection_elem.attr("id") === "org-other-settings") {
+    } else if ($subsection_elem.attr("id") === "org-compose-settings") {
         disable_save_button = should_disable_save_button_for_jitsi_server_url_setting();
         const $button_wrapper = $subsection_elem.find<tippy.PopperElement>(
             ".subsection-changes-save",
