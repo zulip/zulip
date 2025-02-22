@@ -58,7 +58,8 @@ firebase-admin
 html2text
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
 # and chardet, cchardet: https://github.com/mailgun/talon/pull/239
-https://github.com/zulip/talon/archive/e3879d82331aa8b5a87e9d41b3ba3693caa24cd2.zip#egg=talon-core==1.6.0+git&subdirectory=talon-core
+# and fix invalid escape sequences: https://github.com/mailgun/talon/pull/245
+https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed.zip#egg=talon-core==1.6.0+git&subdirectory=talon-core
 
 # Needed for inlining the CSS in emails
 css-inline
