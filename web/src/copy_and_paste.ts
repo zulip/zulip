@@ -154,7 +154,36 @@ function remove_div(_div: JQuery, ranges: Range[]): void {
     }, 0);
 }
 
-export function copy_handler(): void {
+async function copy_selection_to_clipboard(selection: Selection): Promise<void> {
+    const range = selection.getRangeAt(0);
+    const div = document.createElement("div");
+    div.append(range.cloneContents());
+    const html_content = div.innerHTML.trim();
+    const plain_text = selection.toString().trim();
+
+    // Reference: https://stackoverflow.com/a/77305170/21940401
+    if (typeof ClipboardItem !== "undefined") {
+        // Shiny new Clipboard API, not fully supported in Firefox.
+        // https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API#browser_compatibility
+        const html = new Blob([html_content], {type: "text/html"});
+        const text = new Blob([plain_text], {type: "text/plain"});
+        const data = new ClipboardItem({"text/html": html, "text/plain": text});
+        await navigator.clipboard.write([data]);
+    } else {
+        // Fallback using the deprecated `document.execCommand`.
+        // https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand#browser_compatibility
+        const cb = (e: ClipboardEvent): void => {
+            e.clipboardData?.setData("text/html", html_content);
+            e.clipboardData?.setData("text/plain", plain_text);
+            e.preventDefault();
+        };
+        document.addEventListener("copy", cb);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        document.execCommand("copy");
+        document.removeEventListener("copy", cb);
+    }
+}
+export async function copy_handler(): Promise<void> {
     // This is the main handler for copying message content via
     // `Ctrl+C` in Zulip (note that this is totally independent of the
     // "select region" copy behavior on Linux; that is handled
@@ -194,16 +223,14 @@ export function copy_handler(): void {
         // TODO: Add a reference for this statement, I just tested
         // it in console for various selection directions and found this
         // to be the case not sure why there is no online reference for it.
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        document.execCommand("copy");
+        await copy_selection_to_clipboard(selection);
         return;
     }
 
     if (!skip_same_td_check && start_id === end_id) {
         // Check whether the selection both starts and ends in the
         // same message.  If so, Let the browser handle this.
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        document.execCommand("copy");
+        await copy_selection_to_clipboard(selection);
         return;
     }
 
