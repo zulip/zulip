@@ -131,6 +131,9 @@ export function update_view_on_deactivate(user_id: number): void {
 
     should_redraw_active_users_list = true;
     should_redraw_deactivated_users_list = true;
+
+    active_users_role_dropdown.render(active_section.filters.role_code);
+    deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
 }
 
 export function update_view_on_reactivate(user_id: number): void {
@@ -149,6 +152,9 @@ export function update_view_on_reactivate(user_id: number): void {
 
     should_redraw_active_users_list = true;
     should_redraw_deactivated_users_list = true;
+
+    active_users_role_dropdown.render(active_section.filters.role_code);
+    deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
 }
 
 function add_value_to_filters(
