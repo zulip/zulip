@@ -400,4 +400,11 @@ export function initialize(): void {
             instance.destroy();
         },
     });
+
+    message_list_tooltip(".message_expander, .message_condenser", {
+        delay: LONG_HOVER_DELAY,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }
