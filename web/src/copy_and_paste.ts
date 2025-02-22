@@ -183,6 +183,69 @@ async function copy_selection_to_clipboard(selection: Selection): Promise<void> 
         document.removeEventListener("copy", cb);
     }
 }
+
+// We want to grab the closest katex-display up the tree
+// in cases where we can resolve the selected katex expression
+// from a math block into an inline expression.
+// The returned element from this function
+// is the one we call 'closest' on.
+function get_nearest_html_element(node: Node | null): Element | null {
+    if (node === null || node instanceof Element) {
+        return node;
+    }
+    return node.parentElement;
+}
+
+/*
+    This is done to make the copying within math blocks smarter.
+    We mutate the selection for selecting singular katex expressions
+    within math blocks when applicable, which will be
+    converted into the inline $$<expr>$$ syntax.
+
+    In case when a single expression or its subset is selected
+    within a math block, we adjust the selection so that it
+    selects the katex span which is parenting that expression.
+    This converts the selection into an inline expression as
+    per the turndown rules below.
+
+    We want to do avoid this behavior if the selection
+    spreads across multiple katex displays i.e. the
+    focus and anchor are not part of the same katex-display.
+*/
+function improve_katex_selection_range(selection: Selection): void {
+    const anchor_element = get_nearest_html_element(selection.anchorNode);
+    const focus_element = get_nearest_html_element(selection.focusNode);
+    // If the anchor and focus end up in different katex-displays, this selection
+    // isn't meant to be an inline expression, so we perform an early return.
+    if (
+        focus_element &&
+        anchor_element &&
+        focus_element?.closest(".katex-display") !== anchor_element?.closest(".katex-display")
+    ) {
+        return;
+    }
+
+    if (anchor_element) {
+        const parent = anchor_element.closest(".katex-display");
+        const is_math_block = parent !== null && parent !== selection.anchorNode;
+        if (is_math_block) {
+            const range = document.createRange();
+            range.selectNodeContents(parent);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    } else if (focus_element) {
+        const parent = focus_element.closest(".katex-display");
+        const is_math_block = parent !== null && parent !== selection.focusNode;
+        if (is_math_block) {
+            const range = document.createRange();
+            range.selectNodeContents(parent);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+}
+
 export async function copy_handler(): Promise<void> {
     // This is the main handler for copying message content via
     // `Ctrl+C` in Zulip (note that this is totally independent of the
@@ -201,6 +264,8 @@ export async function copy_handler(): Promise<void> {
 
     const selection = window.getSelection();
     assert(selection !== null);
+    improve_katex_selection_range(selection);
+
     const analysis = analyze_selection(selection);
     const ranges = analysis.ranges;
     const start_id = analysis.start_id;
