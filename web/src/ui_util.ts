@@ -22,14 +22,62 @@ export function place_caret_at_end(el: HTMLElement): void {
     }
 }
 
-export function replace_emoji_with_text($element: JQuery): void {
+function extract_emoji_code_from_class(emoji_class_string: string | undefined): string | undefined {
+    if (emoji_class_string === undefined) {
+        return undefined;
+    }
+
+    const classes = emoji_class_string.split(/\s+/);
+    const regex = /^emoji-([0-9a-fA-F-]+)$/;
+
+    for (const cls of classes) {
+        const match = regex.exec(cls);
+        if (match) {
+            return match?.[1] ?? undefined;
+        }
+    }
+    return undefined;
+}
+
+export function convert_emoji_element_to_unicode($emoji_elt: JQuery): string {
+    // This is a custom emoji, we do not have corresponding emoji
+    // unicode for these so we return original markdown.
+    if ($emoji_elt.is("img")) {
+        return $emoji_elt.attr("alt") ?? "";
+    }
+
+    const emoji_class_string = $emoji_elt.attr("class");
+    const emoji_code_hex_string = extract_emoji_code_from_class(emoji_class_string);
+    if (emoji_code_hex_string === undefined) {
+        return $emoji_elt.text();
+    }
+
+    const emoji_code_parts = emoji_code_hex_string.split("-");
+    const emoji_unicode = emoji_code_parts
+        .map((emoji_code) => {
+            const emoji_code_int = Number.parseInt(emoji_code, 16);
+            // Validate the parameter passed to String.fromCodePoint() (here, emoji_code_int).
+            // "An integer between 0 and 0x10FFFF (inclusive) representing a Unicode code point."
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/fromCodePoint
+            // for details.
+            if (
+                Number.isNaN(emoji_code_int) ||
+                !(emoji_code_int >= 0 && emoji_code_int <= 0x10ffff)
+            ) {
+                blueslip.error("Invalid unicode codepoint for emoji", {emoji_code_int});
+                return $emoji_elt.text();
+            }
+            return String.fromCodePoint(emoji_code_int);
+        })
+        .join("");
+    return emoji_unicode;
+}
+
+export function convert_unicode_eligible_emoji_to_unicode($element: JQuery): void {
     $element
         .find(".emoji")
         .text(function () {
-            if ($(this).is("img")) {
-                return $(this).attr("alt") ?? "";
-            }
-            return $(this).text();
+            return convert_emoji_element_to_unicode($(this));
         })
         .contents()
         .unwrap();
