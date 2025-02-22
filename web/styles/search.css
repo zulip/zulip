@@ -296,7 +296,7 @@
                 grid-template-columns:
                     var(--length-input-pill-image) minmax(0, 1fr)
                     var(--length-input-pill-exit);
-
+                align-content: center;
                 /* Don't inherit large line-height for user pills themselves, either. */
                 line-height: 1.1;
 
