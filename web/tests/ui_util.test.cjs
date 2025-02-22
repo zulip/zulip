@@ -67,3 +67,15 @@ run_test("potentially_collapse_quotes", ({override_rewire}) => {
         expected_texts,
     );
 });
+
+run_test("replace_emoji_name_with_emoji_unicode", () => {
+    const $emoji = $.create("span").attr("class", "emoji emoji-1f419");
+    $emoji.is = () => false;
+
+    const octopus_emoji = "🐙";
+    assert.equal(octopus_emoji, ui_util.convert_emoji_element_to_unicode($emoji));
+
+    $emoji.attr("class", "emoji emoji-1f468-200d-1f373");
+    const man_cook_emoji = "👨‍🍳";
+    assert.equal(man_cook_emoji, ui_util.convert_emoji_element_to_unicode($emoji));
+});

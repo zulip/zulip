@@ -40,7 +40,7 @@ function get_notification_content(message: Message | TestNotificationMessage): s
     let content;
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
-    ui_util.replace_emoji_with_text($content);
+    ui_util.convert_unicode_eligible_emoji_to_unicode($content);
     ui_util.change_katex_to_raw_latex($content);
     ui_util.potentially_collapse_quotes($content);
     spoilers.hide_spoilers_in_notification($content);
