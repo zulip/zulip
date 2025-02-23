@@ -336,7 +336,10 @@ function get_props_for_popover_centering(
     return {
         arrow: false,
         getReferenceClientRect: () => new DOMRect(0, 0, 0, 0),
-        placement: "top",
+        // Since we are resetting the reference to (0,0) in DOM the placement here doesn't matter
+        // Using "bottom" placement as it works well with Popper's positioning system
+        // when the popover exceeds window height
+        placement: "bottom",
         popperOptions: {
             modifiers: [
                 {
