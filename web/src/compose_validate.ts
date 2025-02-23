@@ -841,7 +841,12 @@ export function validate_message_length($container: JQuery): boolean {
     const $textarea = $container.find<HTMLTextAreaElement>(".message-textarea");
     // Match the behavior of compose_state.message_content of trimming trailing whitespace
     const text = $textarea.val()!.trimEnd();
+
     const message_too_long_for_compose = text.length > realm.max_message_length;
+    // Usually, check_overflow_text maintains this, but since we just
+    // did the check, make sure it's up to date.
+    set_message_too_long_for_compose(message_too_long_for_compose);
+
     if (message_too_long_for_compose) {
         $textarea.addClass("flash");
         setTimeout(() => $textarea.removeClass("flash"), 1500);
