@@ -70,8 +70,8 @@
                 padding: 0.3125em;
                 margin: 0;
                 position: relative;
-                /* Width of the button, 27px at 16px font-size at 14px em */
-                right: 1.6875em;
+                /* Give 2px space to right at 16px font-size */
+                right: 0.125em;
 
                 &:focus {
                     outline: none;
@@ -94,10 +94,13 @@
         }
 
         #inbox-search {
+            /* Give space for 30px cross icon at 16px font-size */
+            margin-right: -1.875em;
+            flex-grow: 1;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
-            width: var(--width-inbox-search);
+            max-width: var(--width-inbox-search);
             height: var(--height-inbox-search);
             /* top/bottom default 1px padding / 14px em */
             /* left padding 30px / 14px em */
