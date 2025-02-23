@@ -31,6 +31,7 @@ import * as stream_data from "./stream_data.ts";
 import type {StreamPillData} from "./stream_pill.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import type * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
@@ -88,6 +89,7 @@ export type TopicSuggestion = {
     // is_channel_link will be used when we want to only render the stream as an
     // option in the topic typeahead while having #**stream_name> as the token.
     is_channel_link: boolean;
+    is_shortcut_syntax_used: boolean;
     stream_data: StreamPillData;
 };
 
@@ -931,27 +933,45 @@ export function get_candidates(
 
         // Matches '#**stream name>some text' at the end of a split.
         const stream_topic_regex = /#\*\*([^*>]+)>([^*\n]*)$/;
-        const should_begin_typeahead = stream_topic_regex.test(split[0]);
+        // Matches '#>some text', which is a shortcut to
+        // link to topics in the channel currently composing to.
+        // `>` is enclosed in a capture group to use the below
+        // code path for both syntaxes.
+        const shortcut_regex = /#(>)([^*\n]*)$/;
+
+        const stream_topic_tokens = stream_topic_regex.exec(split[0]);
+        const topic_shortcut_tokens = shortcut_regex.exec(split[0]);
+        const tokens = stream_topic_tokens ?? topic_shortcut_tokens;
+        const should_begin_typeahead = tokens !== null;
         if (should_begin_typeahead) {
             completing = "topic_list";
-            const tokens = stream_topic_regex.exec(split[0]);
-            assert(tokens !== null);
-            if (tokens[1]) {
-                const stream_name = tokens[1];
-                token = tokens[2] ?? "";
-
-                // Don't autocomplete if there is a space following '>'
-                if (token.startsWith(" ")) {
-                    return [];
+            let sub: sub_store.StreamSubscription | undefined;
+            let is_shortcut_syntax_used = false;
+            if (tokens[1] === ">") {
+                // The shortcut syntax is used.
+                const stream_id = compose_state.stream_id();
+                if (stream_id !== undefined) {
+                    sub = stream_data.get_sub_by_id(stream_id);
                 }
+                is_shortcut_syntax_used = true;
+            } else {
+                const stream_name = tokens[1];
+                assert(stream_name !== undefined);
+                sub = stream_data.get_sub_by_name(stream_name);
+            }
 
-                const stream_id = stream_data.get_stream_id(stream_name);
-                const sub = stream_data.get_sub_by_name(stream_name);
-                assert(sub !== undefined);
+            token = tokens[2] ?? "";
+
+            // Don't autocomplete if there is a space following '>'
+            if (token.startsWith(" ")) {
+                return [];
+            }
+            // If we aren't composing to a channel, `sub` would be undefined.
+            if (sub !== undefined) {
                 // We always show topic suggestions after the user types a stream, and let them
                 // pick between just showing the stream (the first option, when nothing follows ">")
                 // or adding a topic.
-                const topic_list = topics_seen_for(stream_id);
+                const topic_list = topics_seen_for(sub.stream_id);
 
                 if (should_show_custom_query(token, topic_list)) {
                     topic_list.push(token);
@@ -962,6 +982,7 @@ export function get_candidates(
                     topic,
                     type: "topic_list",
                     is_channel_link: false,
+                    is_shortcut_syntax_used,
                     stream_data: {
                         ...sub,
                         type: "stream",
@@ -979,9 +1000,10 @@ export function get_candidates(
                 // Add link to channel if and only if nothing is typed after '>'
                 if (token.length === 0) {
                     topic_suggestion_candidates.unshift({
-                        topic: stream_name,
+                        topic: sub.name,
                         type: "topic_list",
                         is_channel_link: true,
+                        is_shortcut_syntax_used,
                         stream_data: {
                             ...sub,
                             type: "stream",
@@ -1226,8 +1248,8 @@ export function content_typeahead_selected(
             // will cause encoding issues.
             // "beginning" contains all the text before the cursor, so we use lastIndexOf to
             // avoid any other stream+topic mentions in the message.
-            const syntax_start_index = beginning.lastIndexOf("#**");
-
+            const syntax_text = item.is_shortcut_syntax_used ? "#>" : "#**";
+            const syntax_start_index = beginning.lastIndexOf(syntax_text);
             let replacement_text;
             if (item.is_channel_link) {
                 // The user opted to select only the stream and not specify a topic.
