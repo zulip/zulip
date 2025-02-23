@@ -1227,20 +1227,18 @@ export function content_typeahead_selected(
             // "beginning" contains all the text before the cursor, so we use lastIndexOf to
             // avoid any other stream+topic mentions in the message.
             const syntax_start_index = beginning.lastIndexOf("#**");
-            // Get the stream name, not including "#**" at the start or ">" at the end.
-            const topic_start_index = beginning.lastIndexOf(">");
-            const stream_name = beginning.slice(syntax_start_index + 3, topic_start_index);
 
+            let replacement_text;
             if (item.is_channel_link) {
                 // The user opted to select only the stream and not specify a topic.
-                beginning = beginning.slice(0, syntax_start_index);
-                beginning += topic_link_util.get_stream_link_syntax(stream_name) + " ";
-                break;
+                replacement_text = topic_link_util.get_stream_link_syntax(item.stream_data.name);
+            } else {
+                replacement_text = topic_link_util.get_stream_topic_link_syntax(
+                    item.stream_data.name,
+                    item.topic,
+                );
             }
-            beginning =
-                beginning.slice(0, syntax_start_index) +
-                topic_link_util.get_stream_topic_link_syntax(stream_name, item.topic) +
-                " ";
+            beginning = beginning.slice(0, syntax_start_index) + replacement_text + " ";
             break;
         }
         case "time_jump": {
