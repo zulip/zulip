@@ -860,6 +860,7 @@ export function validate(scheduling_message: boolean): boolean {
     const no_message_content = /^\s*$/.test(message_content);
     if (no_message_content) {
         $("textarea#compose-textarea").toggleClass("invalid", true);
+        $("textarea#compose-textarea").trigger("focus");
         return false;
     }
 
