@@ -547,12 +547,21 @@ const mobile_team_stream = stream_item({
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
 });
+const broken_link_stream = stream_item({
+    name: "A* Algorithm",
+    description: "A `*` in the stream name produces a broken #**stream>topic** link",
+    stream_id: 6,
+    subscribed: true,
+    can_administer_channel_group: support.id,
+    can_add_subscribers_group: support.id,
+});
 
 stream_data.add_sub(sweden_stream);
 stream_data.add_sub(denmark_stream);
 stream_data.add_sub(netherland_stream);
 stream_data.add_sub(mobile_stream);
 stream_data.add_sub(mobile_team_stream);
+stream_data.add_sub(broken_link_stream);
 
 const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,
@@ -869,6 +878,9 @@ test("content_typeahead_selected", ({override}) => {
         {
             topic: "testing",
             type: "topic_list",
+            stream_data: {
+                name: "Sweden",
+            },
         },
         query,
         input_element,
@@ -882,6 +894,28 @@ test("content_typeahead_selected", ({override}) => {
         {
             topic: "testing",
             type: "topic_list",
+            stream_data: {
+                name: "Sweden",
+            },
+        },
+        query,
+        input_element,
+    );
+    expected_value = "Hello #**Sweden>testing** ";
+    assert.equal(actual_value, expected_value);
+
+    // shortcut syntax for topic_list
+    compose_state.set_stream_id(sweden_stream.stream_id);
+    query = "Hello #>";
+    ct.get_or_set_token_for_testing("");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "testing",
+            type: "topic_list",
+            is_shortcut_syntax_used: true,
+            stream_data: {
+                name: "Sweden",
+            },
         },
         query,
         input_element,
@@ -896,6 +930,9 @@ test("content_typeahead_selected", ({override}) => {
             topic: "Sweden",
             type: "topic_list",
             is_channel_link: false,
+            stream_data: {
+                name: "Sweden",
+            },
         },
         query,
         input_element,
@@ -906,15 +943,38 @@ test("content_typeahead_selected", ({override}) => {
     ct.get_or_set_token_for_testing("");
     actual_value = ct.content_typeahead_selected(
         {
-            topic: "Sweden",
+            topic: "",
             type: "topic_list",
             is_channel_link: true,
+            stream_data: {
+                name: "Sweden",
+            },
         },
         query,
         input_element,
     );
     expected_value = "Hello #**Sweden** ";
     assert.equal(actual_value, expected_value);
+
+    compose_state.set_stream_id(broken_link_stream.stream_id);
+    query = "Hello #>";
+    ct.get_or_set_token_for_testing("");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "",
+            type: "topic_list",
+            is_channel_link: true,
+            is_shortcut_syntax_used: true,
+            stream_data: {
+                name: "A* Algorithm",
+            },
+        },
+        query,
+        input_element,
+    );
+    expected_value = "Hello [#A&#42; Algorithm](#narrow/channel/6-A*-Algorithm) ";
+    assert.equal(actual_value, expected_value);
+
     // syntax
     ct.get_or_set_completing_for_tests("syntax");
 
@@ -1941,6 +2001,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     function typed_topics(topics) {
         const matches_list = topics.map((topic) => ({
             is_channel_link: false,
+            is_shortcut_syntax_used: false,
             stream_data: {
                 ...stream_data.get_sub_by_name("Sweden"),
                 rendered_description: "",
