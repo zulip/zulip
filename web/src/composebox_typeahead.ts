@@ -1233,7 +1233,8 @@ export function content_typeahead_selected(
 
             if (item.is_channel_link) {
                 // The user opted to select only the stream and not specify a topic.
-                beginning = beginning.slice(0, syntax_start_index) + "#**" + stream_name + "** ";
+                beginning = beginning.slice(0, syntax_start_index);
+                beginning += topic_link_util.get_stream_link_syntax(stream_name) + " ";
                 break;
             }
             beginning =
