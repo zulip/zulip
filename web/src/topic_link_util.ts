@@ -97,3 +97,12 @@ export function get_stream_topic_link_syntax(stream_name: string, topic_name: st
     }
     return `#**${stream_name}>${topic_name}**`;
 }
+
+export function get_stream_link_syntax(stream_name: string): string {
+    // If the topic name is such that it will generate an invalid #**stream>topic** syntax,
+    // we revert to generating the normal markdown syntax for a link.
+    if (will_produce_broken_stream_topic_link(stream_name)) {
+        return get_fallback_markdown_link(stream_name);
+    }
+    return `#**${stream_name}**`;
+}
