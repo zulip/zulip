@@ -6,7 +6,7 @@ from urllib.parse import unquote, urlsplit
 from django.conf import settings
 
 from zerver.lib.narrow import BadNarrowOperatorError
-from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.narrow_helpers import NarrowTerm, NarrowTermOperandT
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.models.messages import Message
 from zerver.models.realms import Realm
@@ -280,3 +280,8 @@ class Filter:
 
     def terms(self) -> list[NarrowTerm]:
         return self._terms
+
+    def operands(self, operator: str) -> list[NarrowTermOperandT]:
+        return [
+            term.operand for term in self.terms() if term.operator == operator and not term.negated
+        ]
