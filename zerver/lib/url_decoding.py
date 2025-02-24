@@ -1,5 +1,6 @@
 import re
 from collections.abc import Iterable, Sequence
+from functools import cmp_to_key
 from typing import Any
 from urllib.parse import unquote, urlsplit
 
@@ -153,6 +154,7 @@ class Filter:
     def __init__(self, terms: Sequence[NarrowTerm], realm: Realm) -> None:
         self._terms: list[NarrowTerm] = list(terms)
         self._realm: Realm = realm
+        self._sorted_term_types: list[str] | None = None
         self._setup_filter(terms)
 
     @staticmethod
@@ -261,6 +263,50 @@ class Filter:
             result += "-" + str(term.operand)
 
         return result
+
+    @staticmethod
+    def sorted_term_types(term_types: list[str]) -> list[str]:
+        # Keep this algorithm in sync with the the static method of the same name in
+        # `filter.Filter` in the frontend.
+        levels: Sequence[str] = [
+            "in",
+            "channels-public",
+            "channel",
+            "topic",
+            "dm",
+            "dm-including",
+            "with",
+            "sender",
+            "near",
+            "id",
+            "is-alerted",
+            "is-mentioned",
+            "is-dm",
+            "is-starred",
+            "is-unread",
+            "is-resolved",
+            "is-followed",
+            "has-link",
+            "has-image",
+            "has-attachment",
+            "search",
+        ]
+
+        def level(term_type: str) -> int:
+            try:
+                return levels.index(term_type)
+            except ValueError:
+                return 999
+
+        def compare(a: str, b: str) -> int:
+            return level(a) - level(b)
+
+        return sorted(term_types, key=cmp_to_key(compare))
+
+    def _build_sorted_term_types(self) -> list[str]:
+        term_types = [Filter.term_type(term) for term in self._terms]
+        self._sorted_term_types = Filter.sorted_term_types(term_types)
+        return self._sorted_term_types
 
     def _canonicalize_terms(self, terms_mixed_case: Sequence[NarrowTerm]) -> list[NarrowTerm]:
         return [Filter.canonicalize_term(term) for term in terms_mixed_case]
