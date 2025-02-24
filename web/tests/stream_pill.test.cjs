@@ -45,6 +45,7 @@ const denmark = {
     subscribed: true,
     can_administer_channel_group: nobody_group.id,
     can_add_subscribers_group: nobody_group.id,
+    can_subscribe_group: nobody_group.id,
 };
 const sweden = {
     stream_id: 102,
@@ -52,6 +53,7 @@ const sweden = {
     subscribed: false,
     can_administer_channel_group: nobody_group.id,
     can_add_subscribers_group: nobody_group.id,
+    can_subscribe_group: nobody_group.id,
 };
 const germany = {
     stream_id: 103,
@@ -60,6 +62,7 @@ const germany = {
     invite_only: true,
     can_administer_channel_group: nobody_group.id,
     can_add_subscribers_group: nobody_group.id,
+    can_subscribe_group: nobody_group.id,
 };
 
 peer_data.set_subscribers(denmark.stream_id, [1, 2, 77]);

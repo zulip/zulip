@@ -26,6 +26,14 @@ exports.server_supported_permission_settings = {
             default_group_name: "role:administrators",
             allowed_system_groups: [],
         },
+        can_subscribe_group: {
+            require_system_group: false,
+            allow_internet_group: false,
+            allow_nobody_group: true,
+            allow_everyone_group: false,
+            default_group_name: "role:nobody",
+            allowed_system_groups: [],
+        },
     },
     realm: {
         create_multiuse_invite_group: {

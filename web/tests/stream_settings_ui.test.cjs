@@ -80,6 +80,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         can_add_subscribers_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -95,6 +96,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         can_add_subscribers_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -110,6 +112,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_remove_subscribers_group: admins_group.id,
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -125,6 +128,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         can_add_subscribers_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -140,6 +144,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         can_add_subscribers_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -155,6 +160,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         can_add_subscribers_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -170,6 +176,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         can_add_subscribers_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -185,6 +192,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
         can_add_subscribers_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };

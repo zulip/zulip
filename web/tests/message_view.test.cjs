@@ -35,6 +35,7 @@ mock_esm("../src/compose_banner", {
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
+    user_has_permission_for_group_setting: () => true,
 });
 mock_esm("../src/spectators", {
     login_to_access() {},

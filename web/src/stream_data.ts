@@ -518,6 +518,37 @@ export function has_metadata_access(sub: StreamSubscription): boolean {
         return true;
     }
 
+    const can_subscribe = settings_data.user_has_permission_for_group_setting(
+        sub.can_subscribe_group,
+        "can_subscribe_group",
+        "stream",
+    );
+    if (can_subscribe) {
+        return true;
+    }
+
+    return false;
+}
+
+export function has_content_access_via_group_permissions(sub: StreamSubscription): boolean {
+    const can_add_subscribers = settings_data.user_has_permission_for_group_setting(
+        sub.can_add_subscribers_group,
+        "can_add_subscribers_group",
+        "stream",
+    );
+    if (can_add_subscribers) {
+        return true;
+    }
+
+    const can_subscribe = settings_data.user_has_permission_for_group_setting(
+        sub.can_subscribe_group,
+        "can_subscribe_group",
+        "stream",
+    );
+    if (can_subscribe) {
+        return true;
+    }
+
     return false;
 }
 
@@ -543,12 +574,7 @@ export let has_content_access = (sub: StreamSubscription): boolean => {
         return false;
     }
 
-    const can_add_subscribers = settings_data.user_has_permission_for_group_setting(
-        sub.can_add_subscribers_group,
-        "can_add_subscribers_group",
-        "stream",
-    );
-    if (can_add_subscribers) {
+    if (has_content_access_via_group_permissions(sub)) {
         return true;
     }
 
@@ -584,18 +610,20 @@ function can_administer_channel(sub: StreamSubscription): boolean {
 }
 
 export function can_toggle_subscription(sub: StreamSubscription): boolean {
-    // You can always remove your subscription if you're subscribed.
-    //
-    // One can only join a stream if it is public (!invite_only) and
-    // your role is Member or above (!is_guest).
-    // Spectators cannot subscribe to any streams.
-    //
-    // Note that the correctness of this logic relies on the fact that
-    // one cannot be subscribed to a deactivated stream.
-    return (
-        (sub.subscribed || (!current_user.is_guest && !(sub.invite_only || sub.is_archived))) &&
-        !page_params.is_spectator
-    );
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    // Currently, you can always remove your subscription if you're subscribed.
+    if (sub.subscribed) {
+        return true;
+    }
+
+    if (has_content_access(sub)) {
+        return true;
+    }
+
+    return false;
 }
 
 export function get_current_user_and_their_bots_with_post_messages_permission(
