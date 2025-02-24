@@ -38,6 +38,7 @@ unsubscribe other users to channels.
 ## Related articles
 
 * [Introduction to channels](/help/introduction-to-channels)
+* [View channel information](/help/view-channel-information)
 * [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
 * [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)
 * [Subscribe users to a channel](/help/subscribe-users-to-a-channel)

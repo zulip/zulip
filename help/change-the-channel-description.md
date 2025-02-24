@@ -51,6 +51,7 @@ disabled. Use Markdown formatting to include a link to a website, Zulip
 
 ## Related articles
 
+* [View channel information](/help/view-channel-information)
 * [Rename a channel](/help/rename-a-channel)
 * [Markdown formatting][markdown-formatting]
 * [Channel permissions](/help/channel-permissions)

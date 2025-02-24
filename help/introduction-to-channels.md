@@ -46,3 +46,4 @@
 * [Introduction to topics](/help/introduction-to-topics)
 * [Create channels](/help/create-channels)
 * [Channel permissions](/help/channel-permissions)
+* [View channel information](/help/view-channel-information)
