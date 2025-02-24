@@ -1328,6 +1328,9 @@ export function initialize_topic_edit_typeahead(
             return topics_seen_for(stream_id);
         },
         items: max_num_items,
+        getCustomItemClassname() {
+            return "topic-edit-typeahead";
+        },
     });
 }
 

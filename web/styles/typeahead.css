@@ -67,6 +67,17 @@
                 gap: 0;
             }
 
+            &.topic-edit-typeahead {
+                display: flex;
+                flex-wrap: wrap;
+
+                .typeahead-strong-section {
+                    /* We want to wrap the topic but preserve
+                       original white spaces sequence too. */
+                    white-space: pre-wrap;
+                }
+            }
+
             .typeahead-text-container {
                 display: flex;
                 align-self: center;
