@@ -1068,6 +1068,14 @@ textarea.new_message_textarea {
         }
     }
 
+    #topic-not-mandatory-placeholder {
+        position: absolute;
+        padding: 5px 6px;
+        display: none;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
     /* Styles for new conversation button in the recipient_box */
     #recipient_box_clear_topic_button {
         /* Set the border radius smaller, relative to the parent */
@@ -1093,7 +1101,7 @@ textarea.new_message_textarea {
     }
 
     #stream_message_recipient_topic:not(.empty-topic-display):placeholder-shown
-        + #recipient_box_clear_topic_button {
+        ~ #recipient_box_clear_topic_button {
         visibility: hidden;
     }
     /* This will reset the bootstrap margin-bottom: 10px value for the inputs */

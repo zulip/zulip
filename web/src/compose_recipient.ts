@@ -370,23 +370,36 @@ export function update_topic_displayed_text(
         compose_state.topic(topic_name);
         return;
     }
-    // Otherwise, we have some adjustments to make to display the
-    // general topic as a stylized placeholder
+    // Otherwise, we have some adjustments to make to display:
+    // * a placeholder with the default topic name stylized
+    // * the empty string topic stylized
     const $input = $("input#stream_message_recipient_topic");
     const is_empty_string_topic = topic_name === "";
-    let topic_placeholder_text = $t({defaultMessage: "Topic"});
     const recipient_widget_hidden =
         $(".compose_select_recipient-dropdown-list-container").length === 0;
+    const $topic_not_mandatory_placeholder = $("#topic-not-mandatory-placeholder");
 
-    // Remove any stale references to the empty topic display
+    // reset
+    $input.attr("placeholder", "");
     $input.removeClass("empty-topic-display");
+    $topic_not_mandatory_placeholder.css({visibility: "hidden"});
+    $topic_not_mandatory_placeholder.hide();
 
-    if (is_empty_string_topic && !has_topic_focus && recipient_widget_hidden) {
-        topic_placeholder_text = util.get_final_topic_display_name("");
-        $input.addClass("empty-topic-display");
+    function update_placeholder_visibility(): void {
+        $topic_not_mandatory_placeholder.css(
+            "visibility",
+            $input.val() === "" ? "visible" : "hidden",
+        );
     }
 
-    $input.attr("placeholder", topic_placeholder_text);
+    if (is_empty_string_topic && !has_topic_focus && recipient_widget_hidden) {
+        $input.attr("placeholder", util.get_final_topic_display_name(""));
+        $input.addClass("empty-topic-display");
+    } else {
+        $topic_not_mandatory_placeholder.show(10, update_placeholder_visibility);
+        $input.on("input", update_placeholder_visibility);
+    }
+
     compose_state.topic(topic_name);
 }
 

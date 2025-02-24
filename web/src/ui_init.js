@@ -154,6 +154,7 @@ import * as user_status from "./user_status.ts";
 import * as user_status_ui from "./user_status_ui.ts";
 import * as user_topic_popover from "./user_topic_popover.ts";
 import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 import * as widgets from "./widgets.js";
 
 // This is where most of our initialization takes place.
@@ -187,6 +188,7 @@ function initialize_compose_box() {
                 giphy_enabled: giphy_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
                 max_topic_length: realm.max_topic_length,
+                empty_string_topic_display_name: util.get_final_topic_display_name(""),
             }),
         ),
     );

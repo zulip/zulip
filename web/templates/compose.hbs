@@ -57,6 +57,12 @@
                             </div>
                             <div id="compose_recipient_box">
                                 <input type="text" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
+                                <span id="topic-not-mandatory-placeholder" class="placeholder">
+                                    {{#tr}}
+                                        Enter a topic (skip for <z-empty-string-topic-display-name></z-empty-string-topic-display-name>)
+                                        {{#*inline "z-empty-string-topic-display-name"}}<span class="empty-topic-display">{{empty_string_topic_display_name}}</span>{{/inline}}
+                                    {{/tr}}
+                                </span>
                                 <button type="button" id="recipient_box_clear_topic_button" class="tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Clear topic' }}" tabindex="-1">
                                     <i class="zulip-icon zulip-icon-close"></i>
                                 </button>
