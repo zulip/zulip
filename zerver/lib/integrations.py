@@ -188,7 +188,7 @@ class WebhookIntegration(Integration):
     DEFAULT_FUNCTION_PATH = "zerver.webhooks.{name}.view.api_{name}_webhook"
     DEFAULT_URL = "api/v1/external/{name}"
     DEFAULT_CLIENT_NAME = "Zulip{name}Webhook"
-    DEFAULT_DOC_PATH = "{name}/doc.{ext}"
+    DEFAULT_DOC_PATH = "{name}/doc.md"
 
     def __init__(
         self,
@@ -229,7 +229,7 @@ class WebhookIntegration(Integration):
         self.url = url
 
         if doc is None:
-            doc = self.DEFAULT_DOC_PATH.format(name=name, ext="md")
+            doc = self.DEFAULT_DOC_PATH.format(name=name)
         self.doc = doc
 
         if dir_name is None:
