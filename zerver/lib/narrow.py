@@ -427,6 +427,12 @@ class NarrowBuilder:
         elif operand == "followed":
             cond = get_followed_topic_condition_sa(self.user_profile.id)
             return query.where(maybe_negate(cond))
+        elif operand == "muted":
+            conditions = exclude_muting_conditions(
+                self.user_profile, [NarrowParameter(operator="is", operand="muted")]
+            )
+            return query.where(maybe_negate(not_(and_(*conditions))))
+
         raise BadNarrowOperatorError("unknown 'is' operand " + operand)
 
     _alphanum = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
