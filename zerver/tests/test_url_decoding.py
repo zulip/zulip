@@ -57,6 +57,26 @@ class NarrowTermFilterTest(ZulipTestCase):
                 term = NarrowTerm(operator, overlong_digits, False)
                 self.assertFalse(Filter.is_valid_canonical_term(term))
 
+    def test_fix_redundant_is_private(self) -> None:
+        dm_term = NarrowTerm(negated=False, operator="dm", operand=[1])
+        near_term = NarrowTerm(negated=False, operator="near", operand=2)
+        negated_is_dm_term = NarrowTerm(negated=True, operator="is", operand="dm")
+        narrow_filter = Filter(
+            [
+                NarrowTerm(negated=False, operator="is", operand="private"),
+                dm_term,
+                near_term,
+                negated_is_dm_term,
+            ]
+        )
+        self.assertEqual(narrow_filter.terms(), [dm_term, near_term, negated_is_dm_term])
+
+        # A negated `dm` term doesn't make `is:dm` redundant.
+        negated_dm_term = NarrowTerm(negated=True, operator="dm", operand=[1])
+        is_dm_term = NarrowTerm(negated=False, operator="is", operand="dm")
+        narrow_filter = Filter([negated_dm_term, is_dm_term])
+        self.assertEqual(narrow_filter.terms(), [negated_dm_term, is_dm_term])
+
     def test_filter_from_parsed_narrow_url(self) -> None:
         terms = parse_narrow_url("https://example.com/#narrow/channel/13-Denmark/topic/x/near/5")
         assert terms is not None
