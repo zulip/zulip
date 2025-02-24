@@ -12,8 +12,7 @@ specified topic.
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings**, toggle
-   **Require topics in channel messages**.
+1. Under **Compose settings**, toggle **Require topics in channel messages**.
 
 {!save-changes.md!}
 

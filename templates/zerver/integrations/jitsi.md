@@ -9,7 +9,7 @@ instance of Jitsi Meet.
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings**, select **Jitsi Meet** from the **Call provider**
+1. Under **Compose settings**, select **Jitsi Meet** from the **Call provider**
    dropdown.
 
 1. _(optional)_ Select **Custom URL** from the **Jitsi server URL** dropdown,
