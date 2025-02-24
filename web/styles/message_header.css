@@ -122,8 +122,8 @@
         display: flex;
         padding: 5px 0 5px 10px;
         font-weight: 600;
-        height: 1.2142em; /* 17px at 14px em */
-        line-height: 1.2142em; /* 17px at 14px em */
+        height: 1.4142em; /* 19px at 14px em */
+        line-height: 1.4142em; /* 19px at 14px em */
         color: var(--color-text-message-header);
 
         &:hover {
