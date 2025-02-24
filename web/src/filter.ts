@@ -1747,6 +1747,13 @@ export class Filter {
         return false;
     }
 
+    may_contain_multiple_conversations(): boolean {
+        return !(
+            (this.has_operator("channel") && this.has_operator("topic")) ||
+            this.has_operator("dm")
+        );
+    }
+
     excludes_muted_topics(): boolean {
         return (
             // not narrowed to a topic
