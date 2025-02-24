@@ -4,11 +4,7 @@
         {{#if is_group}}
         <span class="conversation-partners-icon zulip-icon zulip-icon-dm-groups-3"></span>
         {{else}}
-        {{#if is_deactivated}}
-        <span class="conversation-partners-icon fa fa-ban {{user_circle_class}} user_circle"></span>
-        {{else}}
         <span class="conversation-partners-icon zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
-        {{/if}}
         {{/if}}
 
         <a href="{{url}}" class="conversation-partners">

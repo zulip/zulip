@@ -155,12 +155,6 @@
         line-height: 1;
         /* ...which is approximately 8px at 15px/1em in Vlad's design. */
         font-size: 0.5333em;
-
-        &.user-circle-deactivated {
-            color: var(--color-user-circle-offline);
-            /* TODO: Check this font-size value. */
-            font-size: 0.85em;
-        }
     }
 
     .user_sidebar_entry.with_avatar {

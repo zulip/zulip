@@ -97,7 +97,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
 
         if (!is_group) {
             const user_id = Number.parseInt(user_ids_string, 10);
-            user_circle_class = buddy_data.get_user_circle_class(user_id);
+            user_circle_class = buddy_data.get_user_circle_class(user_id, is_deactivated);
             const recipient_user_obj = people.get_by_user_id(user_id);
 
             if (recipient_user_obj.is_bot) {
