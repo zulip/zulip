@@ -1052,7 +1052,6 @@ input.settings_text_input {
 
     .overlay-messages-list {
         padding: 10px 25px;
-        overflow: auto;
 
         .no-overlay-messages {
             display: block;
