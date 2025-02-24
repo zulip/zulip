@@ -189,6 +189,32 @@ class BotIntegration(Integration):
         self.doc = doc
 
 
+class PythonAPIIntegration(Integration):
+    def __init__(
+        self,
+        name: str,
+        categories: list[str],
+        client_name: str | None = None,
+        logo: str | None = None,
+        secondary_line_text: str | None = None,
+        display_name: str | None = None,
+        doc: str | None = None,
+        stream_name: str | None = None,
+        legacy: bool = False,
+    ) -> None:
+        super().__init__(
+            name,
+            categories,
+            client_name=client_name,
+            logo=logo,
+            secondary_line_text=secondary_line_text,
+            display_name=display_name,
+            doc=doc,
+            stream_name=stream_name,
+            legacy=legacy,
+        )
+
+
 class WebhookIntegration(Integration):
     DEFAULT_FUNCTION_PATH = "zerver.webhooks.{name}.view.api_{name}_webhook"
     DEFAULT_URL = "api/v1/external/{name}"
@@ -505,22 +531,31 @@ INTEGRATIONS: dict[str, Integration] = {
         "big-blue-button", ["communication"], display_name="BigBlueButton"
     ),
     "capistrano": Integration("capistrano", ["deployment"], display_name="Capistrano"),
-    "codebase": Integration("codebase", ["version-control"]),
     "discourse": Integration("discourse", ["communication"]),
     "email": Integration("email", ["communication"]),
     "errbot": Integration("errbot", ["meta-integration", "bots"]),
     "giphy": Integration("giphy", ["misc"], display_name="GIPHY"),
-    "git": Integration("git", ["version-control"], stream_name="commits"),
     "github-actions": Integration(
         "github-actions", ["continuous-integration"], display_name="GitHub Actions"
     ),
-    "google-calendar": Integration(
-        "google-calendar", ["productivity"], display_name="Google Calendar"
-    ),
     "hubot": Integration("hubot", ["meta-integration", "bots"]),
-    "irc": Integration("irc", ["communication"], display_name="IRC"),
-    "jenkins": Integration("jenkins", ["continuous-integration"]),
-    "jira-plugin": Integration(
+    "jitsi": Integration("jitsi", ["communication"], display_name="Jitsi Meet"),
+    "mastodon": Integration("mastodon", ["communication"]),
+    "notion": Integration("notion", ["productivity"]),
+    "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
+    "phabricator": Integration("phabricator", ["version-control"]),
+    "puppet": Integration("puppet", ["deployment"]),
+    "redmine": Integration("redmine", ["project-management"]),
+    "zoom": Integration("zoom", ["communication"]),
+}
+
+PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
+    PythonAPIIntegration("codebase", ["version-control"]),
+    PythonAPIIntegration("git", ["version-control"], stream_name="commits"),
+    PythonAPIIntegration("google-calendar", ["productivity"], display_name="Google Calendar"),
+    PythonAPIIntegration("irc", ["communication"], display_name="IRC"),
+    PythonAPIIntegration("jenkins", ["continuous-integration"]),
+    PythonAPIIntegration(
         "jira-plugin",
         ["project-management"],
         logo="images/integrations/logos/jira.svg",
@@ -529,33 +564,25 @@ INTEGRATIONS: dict[str, Integration] = {
         stream_name="jira",
         legacy=True,
     ),
-    "jitsi": Integration("jitsi", ["communication"], display_name="Jitsi Meet"),
-    "mastodon": Integration("mastodon", ["communication"]),
-    "matrix": Integration("matrix", ["communication"]),
-    "mercurial": Integration(
+    PythonAPIIntegration("matrix", ["communication"]),
+    PythonAPIIntegration(
         "mercurial", ["version-control"], display_name="Mercurial (hg)", stream_name="commits"
     ),
-    "nagios": Integration("nagios", ["monitoring"]),
-    "notion": Integration("notion", ["productivity"]),
-    "openshift": Integration(
+    PythonAPIIntegration("nagios", ["monitoring"]),
+    PythonAPIIntegration(
         "openshift", ["deployment"], display_name="OpenShift", stream_name="deployments"
     ),
-    "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
-    "perforce": Integration("perforce", ["version-control"]),
-    "phabricator": Integration("phabricator", ["version-control"]),
-    "puppet": Integration("puppet", ["deployment"]),
-    "redmine": Integration("redmine", ["project-management"]),
-    "rss": Integration("rss", ["communication"], display_name="RSS"),
-    "svn": Integration("svn", ["version-control"], display_name="Subversion"),
-    "trac": Integration("trac", ["project-management"]),
-    "twitter": Integration(
+    PythonAPIIntegration("perforce", ["version-control"]),
+    PythonAPIIntegration("rss", ["communication"], display_name="RSS"),
+    PythonAPIIntegration("svn", ["version-control"], display_name="Subversion"),
+    PythonAPIIntegration("trac", ["project-management"]),
+    PythonAPIIntegration(
         "twitter",
         ["customer-support", "marketing"],
         # _ needed to get around adblock plus
         logo="images/integrations/logos/twitte_r.svg",
     ),
-    "zoom": Integration("zoom", ["communication"]),
-}
+]
 
 BOT_INTEGRATIONS: list[BotIntegration] = [
     BotIntegration("github_detail", ["version-control", "bots"], display_name="GitHub Detail"),
@@ -585,6 +612,9 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
         logo="images/integrations/logos/youtub_e.svg",
     ),
 ]
+
+for python_api_integration in PYTHON_API_INTEGRATIONS:
+    INTEGRATIONS[python_api_integration.name] = python_api_integration
 
 for hubot_integration in HUBOT_INTEGRATIONS:
     INTEGRATIONS[hubot_integration.name] = hubot_integration
