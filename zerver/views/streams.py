@@ -928,6 +928,7 @@ def get_streams_backend(
     include_all_active: Json[bool] = False,
     include_default: Json[bool] = False,
     include_owner_subscribed: Json[bool] = False,
+    include_can_access_content: Json[bool] = False,
 ) -> HttpResponse:
     streams = do_get_streams(
         user_profile,
@@ -938,6 +939,7 @@ def get_streams_backend(
         include_all_active=include_all_active,
         include_default=include_default,
         include_owner_subscribed=include_owner_subscribed,
+        include_can_access_content=include_can_access_content,
     )
     return json_success(request, data={"streams": streams})
 

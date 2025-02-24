@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 355  # Last bumped for adding 'ignored_because_not_subscribed_channels'
+API_FEATURE_LEVEL = 356  # Last bumped for adding `include_can_access_content` to get-streams.
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump

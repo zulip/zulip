@@ -20363,6 +20363,16 @@ paths:
             type: boolean
             default: false
           example: true
+        - name: include_can_access_content
+          in: query
+          description: |
+            Include all the channels that the user has content access to.
+
+            **Changes**: New in Zulip 10.0 (feature level 356).
+          schema:
+            type: boolean
+            default: false
+          example: true
       responses:
         "200":
           description: Success.
