@@ -1105,10 +1105,16 @@ textarea.new_message_textarea {
     color: var(--color-compose-recipient-box-text-color);
     background-color: var(--color-compose-recipient-box-background-color);
     border-color: var(--color-compose-recipient-box-border-color);
+    max-width: 30vw;
 
     &.dropdown-widget-button {
         padding: 0 6px;
         border-radius: 4px;
+    }
+
+    .dropdown_widget_value {
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
 }
 
