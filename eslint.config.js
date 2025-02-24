@@ -26,8 +26,6 @@ export default [
             "var",
             "web/generated",
             "web/third",
-            "zulip-current-venv",
-            "zulip-py3-venv",
         ],
     },
     js.configs.recommended,

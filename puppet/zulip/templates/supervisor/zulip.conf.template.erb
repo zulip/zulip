@@ -8,7 +8,7 @@
 ; variables can be expanded using this syntax: "%(ENV_HOME)s".
 
 [program:zulip-django]
-command=nice -n5 /home/zulip/deployments/current/zulip-current-venv/bin/uwsgi --ini /etc/zulip/uwsgi.ini
+command=nice -n5 uv run --no-sync uwsgi --ini /etc/zulip/uwsgi.ini
 environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=100                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)

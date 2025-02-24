@@ -44,19 +44,19 @@ ENDC='\033[0m'
 
 # Make the script independent of the location from where it is executed
 PARENT_PATH=$(
-    cd "$(dirname "${BASH_SOURCE[0]}")"
+    cd "$(dirname "${BASH_SOURCE[0]}")/.."
     pwd -P
 )
 cd "$PARENT_PATH"
-mkdir -p ../var/log
-LOG_PATH="../var/log/provision.log"
+mkdir -p var/log
+LOG_PATH="var/log/provision.log"
 
 echo "PROVISIONING STARTING." >>$LOG_PATH
 
 # PYTHONUNBUFFERED is important to ensure that tracebacks don't get
 # lost far above where they should be in the output.
 export PYTHONUNBUFFERED=1
-./lib/provision.py "$@" 2>&1 | tee -a "$LOG_PATH"
+tools/lib/provision.py "$@" 2>&1 | tee -a "$LOG_PATH"
 failed=${PIPESTATUS[0]}
 
 if [ "$failed" -ne 0 ]; then
@@ -69,13 +69,13 @@ if [ "$failed" -ne 0 ]; then
     echo "* Logs are here: zulip/var/log/provision.log"
     echo -e "$ENDC"
     exit "$failed"
-elif [ "$VIRTUAL_ENV" != "/srv/zulip-py3-venv" ] && [ -z "${SKIP_VENV_SHELL_WARNING}" ]; then
+elif [ "$VIRTUAL_ENV" != "$PARENT_PATH/.venv" ] && [ -z "${SKIP_VENV_SHELL_WARNING}" ]; then
     echo -e "$WARNING"
     echo "WARNING: This shell does not have the Zulip Python 3 virtualenv activated."
     echo "Zulip commands will fail until you activate the virtualenv."
     echo
     echo "To update the shell, run:"
-    echo "    source /srv/zulip-py3-venv/bin/activate"
+    echo "    source $PARENT_PATH/.venv/bin/activate"
     # shellcheck disable=SC2016
     echo 'or just close this shell and start a new one (with Vagrant, `vagrant ssh`).'
     echo -en "$ENDC"

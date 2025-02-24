@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 354  # Last bumped for accounting groups for has_message_acc
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (316, 1)  # bumped 2025-02-21 to patch talon
+PROVISION_VERSION = (317, 0)  # bumped 2025-02-24 to migrate to uv

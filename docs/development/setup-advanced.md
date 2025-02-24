@@ -54,7 +54,7 @@ Zulip and run the following commands:
 ```bash
 # From inside a clone of zulip.git:
 ./tools/provision
-source /srv/zulip-py3-venv/bin/activate
+source .venv/bin/activate
 ./tools/run-dev  # starts the development server
 ```
 
@@ -212,8 +212,8 @@ expected.
 1. Set the `EXTERNAL_HOST` environment variable.
 
    ```console
-   (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ export EXTERNAL_HOST="$(hostname -I | xargs):9991"
-   (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ echo $EXTERNAL_HOST
+   (zulip-server) vagrant@ubuntu-18:/srv/zulip$ export EXTERNAL_HOST="$(hostname -I | xargs):9991"
+   (zulip-server) vagrant@ubuntu-18:/srv/zulip$ echo $EXTERNAL_HOST
    ```
 
    The output will be like:
@@ -234,7 +234,7 @@ expected.
 1. You should now be able to start the Zulip development server.
 
    ```console
-   (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ ./tools/run-dev
+   (zulip-server) vagrant@ubuntu-18:/srv/zulip$ ./tools/run-dev
    ```
 
    The output will look like:

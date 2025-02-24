@@ -293,7 +293,7 @@ simply click **Allow access**.)
 $ # Install/update the Zulip development environment
 $ ./tools/provision
 $ # Enter the Zulip Python environment
-$ source /srv/zulip-py3-venv/bin/activate
+$ source .venv/bin/activate
 $ # Start the development server
 $ ./tools/run-dev
 ```
@@ -681,11 +681,11 @@ Alternatively, you can use a command to terminate/shutdown your WSL2 environment
 
 On Windows with WSL 2, to resume developing you just need to open a new Git
 BASH window. Then change into your `zulip` folder and verify the Python
-environment was properly activated (you should see `(zulip-py3-venv)`). If the
-`(zulip-py3-venv)` part is missing, run:
+environment was properly activated (you should see `(zulip-server)`). If the
+`(zulip-server)` part is missing, run:
 
 ```console
-$ source /srv/zulip-py3-venv/bin/activate
+$ source .venv/bin/activate
 ```
 
 :::
@@ -765,7 +765,7 @@ When reporting your issue, please include the following information:
 The output of `tools/diagnose` run inside the Vagrant guest is also
 usually helpful.
 
-#### Vagrant guest doesn't show (zulip-py3-venv) at start of prompt
+#### Vagrant guest doesn't show (zulip-server) at start of prompt
 
 This is caused by provisioning failing to complete successfully. You
 can see the errors in `var/log/provision.log`; it should end with
@@ -1009,13 +1009,13 @@ Once you've provisioned successfully, you'll get output like this:
 
 ```console
 Zulip development environment setup succeeded!
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip$
+(zulip-server) vagrant@vagrant:/srv/zulip$
 ```
 
-If the `(zulip-py3-venv)` part is missing, this is because your
+If the `(zulip-server)` part is missing, this is because your
 installation failed the first time before the Zulip virtualenv was
 created. You can fix this by just closing the shell and running
-`vagrant ssh` again, or using `source /srv/zulip-py3-venv/bin/activate`.
+`vagrant ssh` again, or using `source .venv/bin/activate`.
 
 Finally, if you encounter any issues that weren't caused by your
 Internet connection, please report them! We try hard to keep Zulip

@@ -125,70 +125,12 @@ Ubuntu 22.04 being the platform requiring 3.10 support. The comments
 in `.github/workflows/zulip-ci.yml` document the Python versions used
 by each supported platform.
 
-We manage Python packages via the Python-standard `requirements.txt`
-system and virtualenvs, but there’s a number of interesting details
-about how Zulip makes this system work well for us that are worth
-highlighting. The system is largely managed by the code in
-`scripts/lib/setup_venv.py`
+We manage third-party Python packages using [uv](https://docs.astral.sh/uv/),
+with our requirements listed in
+[pyproject.toml](https://docs.astral.sh/uv/concepts/projects/layout/#the-pyprojecttoml),
+and locked versions stored in
+[`uv.lock`](https://docs.astral.sh/uv/concepts/projects/layout/#the-lockfile).
 
-- **Using `pip` to manage dependencies**. This is standard in the
-  Python ecosystem, and means we only need to record a list of
-  versions in a `requirements.txt` file to declare what we're using.
-  Since we have a few different installation targets, we maintain
-  several `requirements.txt` format files in the `requirements/`
-  directory (e.g., `dev.in` for development, `prod.in` for
-  production, `docs.in` for ReadTheDocs, `common.in` for the vast
-  majority of packages common to prod and development, etc.). We use
-  `pip install --no-deps` to ensure we only install the packages we
-  explicitly declare as dependencies.
-- **virtualenv with pinned versions**. For a large application like
-  Zulip, it is important to ensure that we're always using consistent,
-  predictable versions of all of our Python dependencies. To ensure
-  this, we install our dependencies in a [virtualenv][] that contains
-  only the packages and versions that Zulip needs, and we always pin
-  exact versions of our dependencies in our `requirements.txt` files.
-  We pin exact versions, not minimum versions, so that installing
-  Zulip won't break if a dependency makes a buggy release. A side
-  effect is that it's easy to debug problems caused by dependency
-  upgrades, since we're always doing those upgrades with an explicit
-  commit updating the `requirements/` directory.
-- **Pinning versions of indirect dependencies**. We "pin" or "lock"
-  the versions of our indirect dependencies files with
-  `tools/update-locked-requirements` (powered by `pip-compile`). What
-  this means is that we have some "source" requirements files, like
-  `requirements/common.in`, that declare the packages that Zulip
-  depends on directly. Those packages have their own recursive
-  dependencies. When adding or removing a dependency from Zulip, one
-  simply edits the appropriate "source" requirements files, and then
-  runs `tools/update-locked-requirements`. That tool will use
-  `pip-compile` to generate the locked requirements files like
-  `prod.txt`, `dev.txt` etc files that explicitly declare versions of
-  all of Zulip's recursive dependencies. For indirect dependencies
-  (i.e. dependencies not explicitly declared in the source
-  requirements files), it provides helpful comments explaining which
-  direct dependency (or dependencies) needed that indirect dependency.
-  The process for using this system is documented in more detail in
-  `requirements/README.md`.
-- **Caching of virtualenvs and packages**. To make updating the
-  dependencies of a Zulip installation efficient, we maintain a cache
-  of virtualenvs named by the hash of the relevant `requirements.txt`
-  file (`scripts/lib/hash_reqs.py`). These caches live under
-  `/srv/zulip-venv-cache/<hash>`. That way, when re-provisioning a
-  development environment or deploying a new production version with
-  the same Python dependencies, no downloading or installation is
-  required: we just use the same virtualenv. When the only changes
-  are upgraded versions, we'll use [virtualenv-clone][] to clone the
-  most similar existing virtualenv and then just upgrade the packages
-  needed, making small version upgrades extremely efficient. And
-  finally, we use `pip`'s built-in caching to ensure that a specific
-  version of a specific package is only downloaded once.
-- **Garbage-collecting caches**. We have a tool,
-  `scripts/lib/clean_venv_cache.py`, which will clean old cached
-  virtualenvs that are no longer in use. In production, the algorithm
-  preserves recent virtualenvs as well as those in use by any current
-  production deployment directory under `/home/zulip/deployments/`.
-  This helps ensure that a Zulip installation doesn't leak large
-  amounts of disk over time.
 - **Scripts**. Often, we want a script running in production to use
   the Zulip virtualenv. To make that work without a lot of duplicated
   code, we have a helpful function,
@@ -203,15 +145,7 @@ highlighting. The system is largely managed by the code in
   `ignore_missing_imports` for the new library. See
   [our mypy docs][mypy-docs] for more details.
 
-### Upgrading packages
-
-See the [README][requirements-readme] file in `requirements/` directory
-to learn how to upgrade a single Python package.
-
 [mypy-docs]: ../testing/mypy.md
-[requirements-readme]: https://github.com/zulip/zulip/blob/main/requirements/README.md#requirements
-[stack-overflow]: https://askubuntu.com/questions/8653/how-to-keep-processes-running-after-ending-ssh-session
-[caching]: https://help.github.com/en/articles/caching-your-github-password-in-git
 
 ## JavaScript and other frontend packages
 

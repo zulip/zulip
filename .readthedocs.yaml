@@ -5,11 +5,15 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.10"
+  jobs:
+    create_environment:
+      - asdf plugin add uv
+      - asdf install uv 0.6.2
+      - asdf global uv 0.6.2
+      - UV_PROJECT_ENVIRONMENT=$READTHEDOCS_VIRTUALENV_PATH uv venv
+    install:
+      - UV_PROJECT_ENVIRONMENT=$READTHEDOCS_VIRTUALENV_PATH uv sync --frozen --only-group=docs
 
 sphinx:
   configuration: docs/conf.py
   fail_on_warning: true
-
-python:
-  install:
-    - requirements: requirements/docs.txt

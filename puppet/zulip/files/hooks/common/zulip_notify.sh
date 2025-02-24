@@ -30,7 +30,7 @@ deploy_environment=$(crudini --get /etc/zulip/zulip.conf machine deploy_type || 
 commit_count=$(git rev-list "${from}..${to}" | wc -l)
 
 zulip_send() {
-    ./zulip-py3-venv/bin/zulip-send \
+    uv run --no-sync zulip-send \
         --site "$zulip_notify_server" \
         --user "$zulip_notify_bot_email" \
         --api-key "$zulip_api_key" \
