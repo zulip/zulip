@@ -10,7 +10,7 @@ import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
-import type {AssignedGroupPermission, GroupSettingName} from "./group_permission_settings.ts";
+import type {AssignedGroupPermission, GroupGroupSettingName} from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t} from "./i18n.ts";
 import {
@@ -242,7 +242,6 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 }
 
 export const simple_dropdown_realm_settings_schema = realm_schema.pick({
-    realm_wildcard_mention_policy: true,
     realm_org_type: true,
 });
 export type SimpleDropdownRealmSettings = z.infer<typeof simple_dropdown_realm_settings_schema>;
@@ -803,15 +802,19 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
             break;
         case "realm_can_add_custom_emoji_group":
         case "realm_can_add_subscribers_group":
+        case "realm_can_create_bots_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
+        case "realm_can_create_write_only_bots_group":
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
         case "realm_can_invite_users_group":
         case "realm_can_manage_all_groups":
+        case "realm_can_mention_many_users_group":
         case "realm_can_move_messages_between_channels_group":
         case "realm_can_move_messages_between_topics_group":
+        case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
         case "realm_direct_message_permission_group": {
@@ -1050,16 +1053,20 @@ export function populate_data_for_realm_settings_request(
                     "can_access_all_users_group",
                     "can_add_custom_emoji_group",
                     "can_add_subscribers_group",
+                    "can_create_bots_group",
                     "can_create_groups",
                     "can_create_private_channel_group",
                     "can_create_public_channel_group",
                     "can_create_web_public_channel_group",
+                    "can_create_write_only_bots_group",
                     "can_manage_all_groups",
                     "can_delete_any_message_group",
                     "can_delete_own_message_group",
                     "can_invite_users_group",
+                    "can_mention_many_users_group",
                     "can_move_messages_between_channels_group",
                     "can_move_messages_between_topics_group",
+                    "can_summarize_topics_group",
                     "create_multiuse_invite_group",
                     "direct_message_initiator_group",
                     "direct_message_permission_group",
@@ -1260,7 +1267,7 @@ export function save_discard_stream_settings_widget_status_handler(
             banner_type: compose_banner.WARNING,
             banner_text: $t({
                 defaultMessage:
-                    "Only subscribers can access or join private channels, so you will lose access to this channel if you convert it to a private channel while not subscribed to it.",
+                    "You will lose access to content in this channel if you make it private. To keep access, subscribe or grant yourself permission to do so under Advanced configurations.",
             }),
             button_text: $t({defaultMessage: "Subscribe"}),
             classname: "stream_privacy_warning",
@@ -1424,7 +1431,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
     if (time_limit_settings.length > 0) {
         disable_save_button =
             should_disable_save_button_for_time_limit_settings(time_limit_settings);
-    } else if ($subsection_elem.attr("id") === "org-other-settings") {
+    } else if ($subsection_elem.attr("id") === "org-compose-settings") {
         disable_save_button = should_disable_save_button_for_jitsi_server_url_setting();
         const $button_wrapper = $subsection_elem.find<tippy.PopperElement>(
             ".subsection-changes-save",
@@ -1482,10 +1489,16 @@ export function initialize_disable_button_hint_popover(
 export function enable_opening_typeahead_on_clicking_label($container: JQuery): void {
     const $group_setting_labels = $container.find(".group-setting-label");
     $group_setting_labels.on("click", (e) => {
+        if ($(e.target).is("a.help_link_widget, a.help_link_widget i")) {
+            // Clicking on the "?" icon should just open the link and there is
+            // no need to open the typeahead or focus the input, so we return.
+            return;
+        }
+
         // Click opens the typeahead.
-        $(e.target).siblings(".pill-container").find(".input").expectOne().trigger("click");
+        $(e.currentTarget).siblings(".pill-container").find(".input").expectOne().trigger("click");
         // Focus puts the cursor into the input.
-        $(e.target).siblings(".pill-container").find(".input").expectOne().trigger("focus");
+        $(e.currentTarget).siblings(".pill-container").find(".input").expectOne().trigger("focus");
     });
 }
 
@@ -1513,15 +1526,19 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_send_message_group", null],
     ["realm_can_add_custom_emoji_group", null],
     ["realm_can_add_subscribers_group", null],
+    ["realm_can_create_bots_group", null],
     ["realm_can_create_groups", null],
     ["realm_can_create_public_channel_group", null],
     ["realm_can_create_private_channel_group", null],
+    ["realm_can_create_write_only_bots_group", null],
     ["realm_can_delete_any_message_group", null],
     ["realm_can_delete_own_message_group", null],
     ["realm_can_invite_users_group", null],
     ["realm_can_manage_all_groups", null],
+    ["realm_can_mention_many_users_group", null],
     ["realm_can_move_messages_between_channels_group", null],
     ["realm_can_move_messages_between_topics_group", null],
+    ["realm_can_summarize_topics_group", null],
     ["realm_create_multiuse_invite_group", null],
     ["realm_direct_message_initiator_group", null],
     ["realm_direct_message_permission_group", null],
@@ -1571,7 +1588,7 @@ export function create_group_setting_widget({
     group,
 }: {
     $pill_container: JQuery;
-    setting_name: GroupSettingName;
+    setting_name: GroupGroupSettingName;
     group?: UserGroup;
 }): GroupSettingPillContainer {
     const pill_widget = group_setting_pill.create_pills($pill_container, setting_name, "group");
@@ -1770,31 +1787,40 @@ export function set_custom_time_inputs_visibility(
 }
 
 export function get_group_assigned_realm_permissions(group: UserGroup): {
+    subsection_key: string;
     subsection_heading: string;
     assigned_permissions: AssignedGroupPermission[];
 }[] {
     const group_assigned_realm_permissions = [];
-    for (const {subsection_heading, settings} of settings_config.realm_group_permission_settings) {
+    for (const {
+        subsection_heading,
+        subsection_key,
+        settings,
+    } of settings_config.realm_group_permission_settings) {
         const assigned_permission_objects = [];
         for (const setting_name of settings) {
             const setting_value = realm[realm_schema.keyof().parse("realm_" + setting_name)];
+            const can_edit = settings_config.owner_editable_realm_group_permission_settings.has(
+                setting_name,
+            )
+                ? current_user.is_owner
+                : current_user.is_admin;
             const assigned_permission_object =
                 group_permission_settings.get_assigned_permission_object(
                     group_setting_value_schema.parse(setting_value),
                     setting_name,
                     group.id,
-                    current_user.is_admin,
+                    can_edit,
                 );
             if (assigned_permission_object !== undefined) {
                 assigned_permission_objects.push(assigned_permission_object);
             }
         }
-        if (assigned_permission_objects.length > 0) {
-            group_assigned_realm_permissions.push({
-                subsection_heading,
-                assigned_permissions: assigned_permission_objects,
-            });
-        }
+        group_assigned_realm_permissions.push({
+            subsection_heading,
+            subsection_key,
+            assigned_permissions: assigned_permission_objects,
+        });
     }
     return group_assigned_realm_permissions;
 }
@@ -1808,9 +1834,20 @@ export function get_group_assigned_stream_permissions(group: UserGroup): {
     const group_assigned_stream_permissions = [];
     for (const sub of subs) {
         const assigned_permission_objects = [];
-        const can_edit_settings = stream_data.can_change_permissions(sub);
+        const can_edit_settings_with_metadata_access =
+            stream_data.can_change_permissions_requiring_metadata_access(sub);
+        const can_edit_settings_with_content_access =
+            stream_data.can_change_permissions_requiring_content_access(sub);
         for (const setting_name of settings_config.stream_group_permission_settings) {
             const setting_value = sub[stream_subscription_schema.keyof().parse(setting_name)];
+            let can_edit_settings = can_edit_settings_with_metadata_access;
+            if (
+                settings_config.stream_group_permission_settings_requiring_content_access.includes(
+                    setting_name,
+                )
+            ) {
+                can_edit_settings = can_edit_settings_with_content_access;
+            }
             const assigned_permission_object =
                 group_permission_settings.get_assigned_permission_object(
                     group_setting_value_schema.parse(setting_value),

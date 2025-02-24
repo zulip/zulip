@@ -51,7 +51,11 @@ export function set_is_searching_users(val: boolean): void {
     is_searching_users = val;
 }
 
-export function get_user_circle_class(user_id: number): string {
+export function get_user_circle_class(user_id: number, use_deactivated_circle = false): string {
+    if (use_deactivated_circle) {
+        return "user-circle-deactivated";
+    }
+
     const status = presence.get_status(user_id);
 
     switch (status) {
@@ -203,8 +207,11 @@ export type BuddyUserInfo = {
     faded?: boolean;
 };
 
-export function info_for(user_id: number): BuddyUserInfo {
-    const user_circle_class = get_user_circle_class(user_id);
+export function info_for(user_id: number, direct_message_recipients: Set<number>): BuddyUserInfo {
+    const is_deactivated = !people.is_person_active(user_id);
+    const is_dm = direct_message_recipients.has(user_id);
+
+    const user_circle_class = get_user_circle_class(user_id, is_deactivated && is_dm);
     const person = people.get_by_user_id(user_id);
 
     const status_emoji_info = user_status.get_status_emoji(user_id);
@@ -317,7 +324,8 @@ export function get_title_data(user_ids_string: string, is_group: boolean): Titl
 }
 
 export function get_items_for_users(user_ids: number[]): BuddyUserInfo[] {
-    const user_info = user_ids.map((user_id) => info_for(user_id));
+    const direct_message_recipients = narrow_state.pm_ids_set();
+    const user_info = user_ids.map((user_id) => info_for(user_id, direct_message_recipients));
     return user_info;
 }
 
@@ -365,6 +373,7 @@ function maybe_shrink_list(
 function filter_user_ids(user_filter_text: string, user_ids: number[]): number[] {
     // This first filter is for whether the user is eligible to be
     // displayed in the right sidebar at all.
+    const direct_message_recipients = narrow_state.pm_ids_set();
     user_ids = user_ids.filter((user_id) => {
         const person = people.maybe_get_user_by_id(user_id, true);
 
@@ -381,8 +390,9 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
             return false;
         }
 
-        if (!people.is_person_active(user_id)) {
-            // Deactivated users are hidden from the right sidebar entirely.
+        const is_dm = direct_message_recipients.has(user_id);
+        if (!people.is_person_active(user_id) && !is_dm) {
+            // Deactivated users are hidden in the buddy list except in DM narrows.
             return false;
         }
 

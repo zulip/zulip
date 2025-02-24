@@ -6,7 +6,8 @@ from django.db import connection
 from typing_extensions import override
 
 from zerver.actions.message_flags import do_update_message_flags
-from zerver.actions.streams import do_change_stream_permission
+from zerver.actions.streams import do_change_stream_group_based_setting, do_change_stream_permission
+from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
@@ -35,6 +36,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
+from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
@@ -428,6 +430,61 @@ class UnreadCountTests(ZulipTestCase):
                     "flag": "starred",
                 },
             )
+        )
+
+        # Testing the response when marking messages as unread in a
+        # narrow that contains messages from unsubscribed streams
+        stream_name = "Test Stream"
+        stream = self.subscribe(user, stream_name)
+        self.subscribe(self.example_user("cordelia"), stream_name)
+        message_id = self.send_stream_message(self.example_user("cordelia"), stream_name, "hello")
+
+        self.assert_json_success(
+            self.client_post(
+                "/json/mark_stream_as_read",
+                {
+                    "stream_id": stream.id,
+                },
+            )
+        )
+        um = UserMessage.objects.get(
+            user_profile_id=user.id,
+            message_id=message_id,
+        )
+        self.assertTrue(um.flags.read)
+
+        # Unsubscribe the user from the stream
+        self.unsubscribe(user, stream_name)
+
+        # Marking recently added message and all other
+        # messages added at the start of the test as unread
+        # from an interleaved public narrow
+        response = self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": message_id,
+                    "num_before": 10,
+                    "num_after": 0,
+                    "narrow": orjson.dumps([{"operator": "streams", "operand": "public"}]).decode(),
+                    "op": "remove",
+                    "flag": "read",
+                },
+            )
+        )
+
+        self.assertEqual(response["processed_count"], 11)
+        self.assertEqual(response["updated_count"], 5)
+        self.assertEqual(response["first_processed_id"], message_ids[0])
+        self.assertEqual(response["last_processed_id"], message_id)
+        self.assertEqual(response["found_oldest"], False)
+        self.assertEqual(response["found_newest"], False)
+        self.assertEqual(response["ignored_because_not_subscribed_channels"], [stream.id])
+        self.assertCountEqual(
+            UserMessage.objects.filter(user_profile_id=user.id, message_id__in=message_ids)
+            .extra(where=[UserMessage.where_unread()])  # noqa: S610
+            .values_list("message_id", flat=True),
+            message_ids,
         )
 
     def test_update_flags_for_narrow_misuse(self) -> None:
@@ -1732,10 +1789,11 @@ class MessageAccessTests(ZulipTestCase):
         user: UserProfile,
         message_ids: list[int],
         stream: Stream,
-        bulk_access_messages_count: int,
+        *,
+        bulk_access_messages_query_count: int,
         bulk_access_stream_messages_query_count: int,
     ) -> list[Message]:
-        with self.assert_database_query_count(bulk_access_messages_count):
+        with self.assert_database_query_count(bulk_access_messages_query_count):
             messages = [
                 Message.objects.select_related("recipient").get(id=message_id)
                 for message_id in sorted(message_ids)
@@ -1776,7 +1834,11 @@ class MessageAccessTests(ZulipTestCase):
         # Message sent before subscribing wouldn't be accessible by later
         # subscribed user as stream has protected history
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, message_ids, stream, 4, 2
+            later_subscribed_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=4,
+            bulk_access_stream_messages_query_count=2,
         )
         self.assert_length(filtered_messages, 1)
         self.assertEqual(filtered_messages[0].id, message_two_id)
@@ -1792,14 +1854,65 @@ class MessageAccessTests(ZulipTestCase):
         # Message sent before subscribing are accessible by user as stream
         # now don't have protected history
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, message_ids, stream, 4, 2
+            later_subscribed_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=4,
+            bulk_access_stream_messages_query_count=2,
         )
         self.assert_length(filtered_messages, 2)
 
         # Testing messages accessibility for an unsubscribed user
         unsubscribed_user = self.example_user("ZOE")
-        filtered_messages = self.assert_bulk_access(unsubscribed_user, message_ids, stream, 4, 1)
+        unsubscribed_guest = self.example_user("polonius")
+        filtered_messages = self.assert_bulk_access(
+            unsubscribed_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=5,
+            bulk_access_stream_messages_query_count=2,
+        )
         self.assert_length(filtered_messages, 0)
+
+        # Testing messages accessibility for an unsubscribed user
+        # present in `can_add_subscribers_group`
+        unsubscribed_user_group = check_add_user_group(
+            unsubscribed_user.realm,
+            "unsubscribed_user_group",
+            [unsubscribed_user, unsubscribed_guest],
+            acting_user=unsubscribed_user,
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_add_subscribers_group",
+            unsubscribed_user_group,
+            acting_user=None,
+        )
+        filtered_messages = self.assert_bulk_access(
+            unsubscribed_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=5,
+            bulk_access_stream_messages_query_count=3,
+        )
+        self.assert_length(filtered_messages, 2)
+        filtered_messages = self.assert_bulk_access(
+            unsubscribed_guest,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=4,
+            bulk_access_stream_messages_query_count=1,
+        )
+        self.assert_length(filtered_messages, 0)
+        nobody_group = NamedUserGroup.objects.get(
+            name="role:nobody", is_system_group=True, realm=unsubscribed_user.realm
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_add_subscribers_group",
+            nobody_group,
+            acting_user=None,
+        )
 
         # Adding more message ids to the list increases the query size
         # for bulk_access_messages but not
@@ -1810,14 +1923,24 @@ class MessageAccessTests(ZulipTestCase):
             self.send_stream_message(user, stream_name, "Message four"),
         ]
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, more_message_ids, stream, 6, 2
+            later_subscribed_user,
+            more_message_ids,
+            stream,
+            bulk_access_messages_query_count=6,
+            bulk_access_stream_messages_query_count=2,
         )
         self.assert_length(filtered_messages, 4)
 
         # Test private message access for service bot
         service_bot = self.example_user("outgoing_webhook_bot")
         self.subscribe(service_bot, stream_name)
-        filtered_messages = self.assert_bulk_access(service_bot, more_message_ids, stream, 6, 2)
+        filtered_messages = self.assert_bulk_access(
+            service_bot,
+            more_message_ids,
+            stream,
+            bulk_access_messages_query_count=6,
+            bulk_access_stream_messages_query_count=2,
+        )
         self.assert_length(filtered_messages, 4)
 
         # Verify an exception is thrown if called where the passed
@@ -1853,18 +1976,34 @@ class MessageAccessTests(ZulipTestCase):
 
         # All public stream messages are always accessible
         filtered_messages = self.assert_bulk_access(
-            later_subscribed_user, message_ids, stream, 4, 1
+            later_subscribed_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=4,
+            bulk_access_stream_messages_query_count=1,
         )
         self.assert_length(filtered_messages, 2)
 
         unsubscribed_user = self.example_user("ZOE")
-        filtered_messages = self.assert_bulk_access(unsubscribed_user, message_ids, stream, 4, 1)
+        filtered_messages = self.assert_bulk_access(
+            unsubscribed_user,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=4,
+            bulk_access_stream_messages_query_count=1,
+        )
         self.assert_length(filtered_messages, 2)
 
         # Test public message access for service bot
         service_bot = self.example_user("outgoing_webhook_bot")
         self.subscribe(service_bot, stream_name)
-        filtered_messages = self.assert_bulk_access(service_bot, message_ids, stream, 4, 1)
+        filtered_messages = self.assert_bulk_access(
+            service_bot,
+            message_ids,
+            stream,
+            bulk_access_messages_query_count=4,
+            bulk_access_stream_messages_query_count=1,
+        )
         self.assert_length(filtered_messages, 2)
 
 

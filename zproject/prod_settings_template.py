@@ -709,9 +709,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ################
 ## Video call integrations.
 ##
-## Controls the Zoom video call integration.  See:
+## Controls the Zoom video call integrations.  See:
 ## https://zulip.readthedocs.io/en/latest/production/video-calls.html
 # VIDEO_ZOOM_CLIENT_ID = "<your Zoom client ID>"
+# VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = "<your Zoom account ID>"
 
 ## Controls the Jitsi Meet video call integration.  By default, the
 ## integration uses the SaaS https://meet.jit.si server.  You can specify
@@ -723,6 +724,22 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## set big_blue_button_secret in zulip-secrets.conf.
 # BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 
+################
+## AI Features
+##
+## Specify the model and provider to use for topic summarization. The
+## `model` field from https://docs.litellm.ai/docs/providers specifies
+## your preferred provider/model combination.
+# TOPIC_SUMMARIZATION_MODEL = "huggingface/meta-llama/Meta-Llama-3-8B-Instruct"
+## Other configuration parameters, passed through to litellm's `completion` call
+## See https://docs.litellm.ai/docs/completion/input
+# TOPIC_SUMMARIZATION_PARAMETERS = {}
+
+## Set usage costs based on your model, and a maximum per-user monthly
+## quota. Units are USD or other currency of your choice.
+# OUTPUT_COST_PER_GIGATOKEN = 500
+# INPUT_COST_PER_GIGATOKEN = 400
+# MAX_PER_USER_MONTHLY_AI_COST = 0.5
 
 ################
 ## Miscellaneous settings.

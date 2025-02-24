@@ -101,12 +101,11 @@ export function generate_pill_html(item: CombinedPill): string {
 }
 
 export function set_up_handlers_for_add_button_state(
-    pill_widget: CombinedPillContainer,
+    pill_widget: CombinedPillContainer | user_group_pill.UserGroupPillWidget,
     $pill_container: JQuery,
 ): void {
     const $pill_widget_input = $pill_container.find(".input");
-    const $pill_widget_button = $pill_container.parent().find(".add-users-button");
-
+    const $pill_widget_button = $pill_container.closest(".add-button-container").find(".button");
     // Disable the add button first time the pill container is created.
     $pill_widget_button.prop("disabled", true);
 
@@ -114,6 +113,8 @@ export function set_up_handlers_for_add_button_state(
     pill_widget.onPillRemove(() =>
         $pill_widget_button.prop("disabled", pill_widget.items().length === 0),
     );
+    // If a pill is added, enable the add button.
+    pill_widget.onPillCreate(() => $pill_widget_button.prop("disabled", false));
     // Disable the add button when there is no pending text that can be converted
     // into a pill and the number of existing pills is zero.
     $pill_widget_input.on("input", () =>

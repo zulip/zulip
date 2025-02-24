@@ -12,15 +12,19 @@ from psycopg2.sql import SQL
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.stream_subscription import (
+    SubscriberPeerInfo,
     get_active_subscriptions_for_stream_id,
     get_stream_subscriptions_for_user,
+    get_user_ids_for_streams,
 )
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.streams import (
     get_group_setting_value_dict_for_streams,
     get_setting_values_for_group_settings,
     get_stream_post_policy_value_based_on_group_setting,
+    get_users_dict_with_metadata_access_to_streams_via_permission_groups,
     get_web_public_streams_queryset,
+    has_metadata_access_to_channel_via_groups,
     subscribed_to_stream,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -33,6 +37,7 @@ from zerver.lib.types import (
     SubscriptionInfo,
     SubscriptionStreamDict,
 )
+from zerver.lib.user_groups import UserGroupMembershipDetails, get_recursive_membership_groups
 from zerver.models import Realm, Stream, Subscription, UserProfile
 from zerver.models.streams import get_all_streams
 
@@ -336,16 +341,20 @@ def validate_user_access_to_subscribers(user_profile: UserProfile | None, stream
     * The stream is invite only, requesting_user is passed, and that user
       does not subscribe to the stream.
     """
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
     validate_user_access_to_subscribers_helper(
         user_profile,
         {
             "realm_id": stream.realm_id,
             "is_web_public": stream.is_web_public,
             "invite_only": stream.invite_only,
+            "can_administer_channel_group_id": stream.can_administer_channel_group_id,
+            "can_add_subscribers_group_id": stream.can_add_subscribers_group_id,
         },
         # We use a lambda here so that we only compute whether the
         # user is subscribed if we have to
         lambda user_profile: subscribed_to_stream(user_profile, stream.id),
+        user_group_membership_details=user_group_membership_details,
     )
 
 
@@ -353,6 +362,7 @@ def validate_user_access_to_subscribers_helper(
     user_profile: UserProfile | None,
     stream_dict: Mapping[str, Any],
     check_user_subscribed: Callable[[UserProfile], bool],
+    user_group_membership_details: UserGroupMembershipDetails,
 ) -> None:
     """Helper for validate_user_access_to_subscribers that doesn't require
     a full stream object.  This function is a bit hard to read,
@@ -401,6 +411,19 @@ def validate_user_access_to_subscribers_helper(
     if user_profile.is_realm_admin:
         return
 
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
+
+    if has_metadata_access_to_channel_via_groups(
+        user_profile,
+        user_group_membership_details.user_recursive_group_ids,
+        stream_dict["can_administer_channel_group_id"],
+        stream_dict["can_add_subscribers_group_id"],
+    ):
+        return
+
     if stream_dict["invite_only"] and not check_user_subscribed(user_profile):
         raise JsonableError(_("Unable to retrieve subscribers for private channel"))
 
@@ -415,6 +438,7 @@ def bulk_get_subscriber_user_ids(
     is_subscribed: bool
     check_user_subscribed = lambda user_profile: is_subscribed
 
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
     for stream_dict in stream_dicts:
         stream_id = stream_dict["id"]
         is_subscribed = stream_id in subscribed_stream_ids
@@ -424,6 +448,7 @@ def bulk_get_subscriber_user_ids(
                 user_profile,
                 stream_dict,
                 check_user_subscribed,
+                user_group_membership_details,
             )
         except JsonableError:
             continue
@@ -492,8 +517,76 @@ def get_subscribers_query(
     return get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=False)
 
 
+def bulk_get_subscriber_peer_info(
+    realm: Realm,
+    streams: Collection[Stream] | QuerySet[Stream],
+    users_with_metadata_access_via_permission_groups: dict[int, set[int]] | None = None,
+) -> SubscriberPeerInfo:
+    """
+    Glossary:
+
+        subscribed_ids:
+            This shows the users who are actually subscribed to the
+            stream, which we generally send to the person subscribing
+            to the stream.
+
+        private_peer_dict:
+            These are the folks that need to know about a new subscriber.
+            It's usually a superset of the subscribers.
+
+            Note that we only compute this for PRIVATE streams.  We
+            let other code handle peers for public streams, since the
+            peers for all public streams are actually the same group
+            of users, and downstream code can use that property of
+            public streams to avoid extra work.
+    """
+
+    subscribed_ids = {}
+    private_peer_dict = {}
+
+    private_streams = {stream for stream in streams if stream.invite_only}
+    private_stream_ids = {stream.id for stream in private_streams}
+    public_stream_ids = {stream.id for stream in streams if not stream.invite_only}
+
+    stream_user_ids = get_user_ids_for_streams(private_stream_ids | public_stream_ids)
+
+    if private_streams:
+        realm_admin_ids = {user.id for user in realm.get_admin_users_and_bots()}
+
+        if users_with_metadata_access_via_permission_groups is None:
+            users_with_metadata_access_via_permission_groups = (
+                get_users_dict_with_metadata_access_to_streams_via_permission_groups(
+                    list(private_streams), realm.id
+                )
+            )
+
+        for stream in private_streams:
+            # Realm admins can see all private stream
+            # subscribers.
+            subscribed_user_ids = stream_user_ids.get(stream.id, set())
+            subscribed_ids[stream.id] = subscribed_user_ids
+            private_peer_dict[stream.id] = (
+                subscribed_user_ids
+                | realm_admin_ids
+                | users_with_metadata_access_via_permission_groups[stream.id]
+            )
+
+    for stream_id in public_stream_ids:
+        subscribed_user_ids = stream_user_ids.get(stream_id, set())
+        subscribed_ids[stream_id] = subscribed_user_ids
+
+    return SubscriberPeerInfo(
+        subscribed_ids=subscribed_ids,
+        private_peer_dict=private_peer_dict,
+    )
+
+
 def has_metadata_access_to_previously_subscribed_stream(
-    user_profile: UserProfile, stream_dict: SubscriptionStreamDict
+    user_profile: UserProfile,
+    stream_dict: SubscriptionStreamDict,
+    user_recursive_group_ids: set[int],
+    can_administer_channel_group_id: int,
+    can_add_subscribers_group_id: int,
 ) -> bool:
     if stream_dict["is_web_public"]:
         return True
@@ -502,7 +595,12 @@ def has_metadata_access_to_previously_subscribed_stream(
         return False
 
     if stream_dict["invite_only"]:
-        return user_profile.is_realm_admin
+        return user_profile.is_realm_admin or has_metadata_access_to_channel_via_groups(
+            user_profile,
+            user_recursive_group_ids,
+            can_administer_channel_group_id,
+            can_add_subscribers_group_id,
+        )
 
     return True
 
@@ -576,6 +674,17 @@ def gather_subscriptions_helper(
     unsubscribed: list[SubscriptionStreamDict] = []
     never_subscribed: list[NeverSubscribedStreamDict] = []
 
+    user_recursive_group_ids = set()
+    # Optimization for the organization administrator code path. We
+    # don't explicitly grant realm admins this permission, but admins
+    # implicitly have the can_administer_channel_group permission for
+    # all channels. user_recursive_group_ids is used to check the
+    # membership of the current user in can_administer_channel_group
+    # which we don't need to calculate in case of a realm admin.
+    if not user_profile.is_realm_admin:
+        user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
     sub_unsub_stream_ids = set()
     for sub_dict in sub_dicts:
         stream_id = get_stream_id(sub_dict)
@@ -595,7 +704,15 @@ def gather_subscriptions_helper(
         if is_active:
             subscribed.append(stream_dict)
         else:
-            if has_metadata_access_to_previously_subscribed_stream(user_profile, stream_dict):
+            can_administer_channel_group_id = raw_stream_dict["can_administer_channel_group_id"]
+            can_add_subscribers_group_id = raw_stream_dict["can_add_subscribers_group_id"]
+            if has_metadata_access_to_previously_subscribed_stream(
+                user_profile,
+                stream_dict,
+                user_recursive_group_ids,
+                can_administer_channel_group_id,
+                can_add_subscribers_group_id,
+            ):
                 """
                 User who are no longer subscribed to a stream that they don't have
                 metadata access to will not receive metadata related to this stream
@@ -621,7 +738,15 @@ def gather_subscriptions_helper(
 
     for raw_stream_dict in never_subscribed_streams:
         is_public = not raw_stream_dict["invite_only"]
-        if is_public or user_profile.is_realm_admin:
+        can_administer_channel_group_id = raw_stream_dict["can_administer_channel_group_id"]
+        can_add_subscribers_group_id = raw_stream_dict["can_add_subscribers_group_id"]
+        has_metadata_access = has_metadata_access_to_channel_via_groups(
+            user_profile,
+            user_recursive_group_ids,
+            can_administer_channel_group_id,
+            can_add_subscribers_group_id,
+        )
+        if is_public or user_profile.is_realm_admin or has_metadata_access:
             slim_stream_dict = build_stream_dict_for_never_sub(
                 raw_stream_dict=raw_stream_dict,
                 recent_traffic=recent_traffic,

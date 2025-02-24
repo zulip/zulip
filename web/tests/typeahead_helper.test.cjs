@@ -171,8 +171,16 @@ const admins_group = {
 };
 const admins_group_item = user_group_item(admins_group);
 
+const members_group = {
+    id: 5,
+    name: "role:members",
+    description: "",
+    members: new Set([]),
+    is_system_group: true,
+};
+
 user_groups.initialize({
-    realm_user_groups: [bob_system_group, bob_group, second_bob_group, admins_group],
+    realm_user_groups: [bob_system_group, bob_group, second_bob_group, admins_group, members_group],
 });
 
 function test(label, f) {
@@ -956,6 +964,46 @@ test("render_stream", ({mock_template}) => {
     assert.ok(rendered);
 });
 
+test("render_stream_topic", ({mock_template}) => {
+    let rendered = false;
+    const streamData = {
+        invite_only: true,
+        is_web_public: false,
+        color: "blue",
+        name: "Design",
+        description: "Design related discussions.",
+        rendered_description: "",
+        subscribed: true,
+    };
+
+    const topic_object = {
+        topic: "Test topic title",
+        stream_data: {
+            invite_only: true,
+            is_web_public: false,
+            color: "blue",
+            name: "Design",
+            description: "Design related discussions.",
+            rendered_description: "",
+            subscribed: true,
+        },
+        type: "topic_list",
+        is_stream_only: false,
+    };
+
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        assert.equal(args.topic, "Test topic title");
+        assert.equal(args.type, "topic_list");
+        assert.equal(args.is_stream_only, false);
+        assert.equal(args.is_stream_topic, true);
+        assert.deepEqual(args.stream_data, streamData);
+        rendered = true;
+        return "typeahead-item-stub";
+    });
+    assert.equal(th.render_stream_topic(topic_object), "typeahead-item-stub");
+    assert.ok(rendered);
+});
+
 test("render_emoji", ({mock_template}) => {
     // Test render_emoji with normal emoji.
     let expected_template_data = {
@@ -1080,6 +1128,7 @@ test("sort_group_setting_options", ({override_rewire}) => {
         b_user_2.full_name,
         b_user_1.full_name,
         b_user_3.full_name,
+        members_group.name,
         admins_group.name,
         a_user.full_name,
         zman.full_name,
@@ -1092,6 +1141,7 @@ test("sort_group_setting_options", ({override_rewire}) => {
         b_user_2.full_name,
         b_user_1.full_name,
         b_user_3.full_name,
+        members_group.name,
         admins_group.name,
         a_user.full_name,
         zman.full_name,
@@ -1102,11 +1152,51 @@ test("sort_group_setting_options", ({override_rewire}) => {
         admins_group.name,
         a_user.full_name,
         bob_system_group.name,
+        members_group.name,
         bob_group.name,
         second_bob_group.name,
         b_user_2.full_name,
         b_user_1.full_name,
         b_user_3.full_name,
+    ]);
+
+    assert.deepEqual(get_group_setting_typeahead_result("me", second_bob_group), [
+        members_group.name,
+        bob_system_group.name,
+        admins_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        b_user_2.full_name,
+        a_user.full_name,
+        b_user_1.full_name,
+        b_user_3.full_name,
+        zman.full_name,
+    ]);
+
+    assert.deepEqual(get_group_setting_typeahead_result("ever", second_bob_group), [
+        members_group.name,
+        bob_system_group.name,
+        admins_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        b_user_2.full_name,
+        a_user.full_name,
+        b_user_1.full_name,
+        b_user_3.full_name,
+        zman.full_name,
+    ]);
+
+    assert.deepEqual(get_group_setting_typeahead_result("translated: members", second_bob_group), [
+        members_group.name,
+        bob_system_group.name,
+        admins_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        b_user_2.full_name,
+        a_user.full_name,
+        b_user_1.full_name,
+        b_user_3.full_name,
+        zman.full_name,
     ]);
 
     override_rewire(bootstrap_typeahead, "MAX_ITEMS", 6);

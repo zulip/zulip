@@ -161,16 +161,12 @@ export function enable_or_disable_group_permission_settings(): void {
 
 type OrganizationSettingsOptions = {
     common_policy_values: SettingOptionValueWithKey[];
-    wildcard_mention_policy_values: SettingOptionValueWithKey[];
 };
 
 export function get_organization_settings_options(): OrganizationSettingsOptions {
     return {
         common_policy_values: settings_components.get_sorted_options_list(
             settings_config.common_policy_values,
-        ),
-        wildcard_mention_policy_values: settings_components.get_sorted_options_list(
-            settings_config.wildcard_mention_policy_values,
         ),
     };
 }
@@ -522,15 +518,19 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             break;
         case "realm_can_add_custom_emoji_group":
         case "realm_can_add_subscribers_group":
+        case "realm_can_create_bots_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
+        case "realm_can_create_write_only_bots_group":
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
         case "realm_can_invite_users_group":
         case "realm_can_manage_all_groups":
+        case "realm_can_mention_many_users_group":
         case "realm_can_move_messages_between_channels_group":
         case "realm_can_move_messages_between_topics_group":
+        case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
         case "realm_direct_message_permission_group": {
@@ -693,6 +693,7 @@ export function discard_realm_default_property_element_changes(elem: HTMLElement
         case "user_list_style":
             // Because this widget has a radio button structure, it
             // needs custom reset code.
+            assert(typeof property_value === "number" || typeof property_value === "string");
             $elem
                 .find(`input[value='${CSS.escape(property_value.toString())}']`)
                 .prop("checked", true);
@@ -1138,28 +1139,35 @@ export let init_dropdown_widgets = (): void => {
         "channel",
     );
 
-    const default_code_language_options = (): dropdown_widget.Option[] => {
-        const options = Object.keys(pygments_data.langs).map((x) => ({
-            name: x,
-            unique_id: x,
-        }));
-
-        const disabled_option = {
-            is_setting_disabled: true,
-            unique_id: "",
-            name: $t({defaultMessage: "No language set"}),
-        };
-
-        options.unshift(disabled_option);
-        return options;
-    };
     set_up_dropdown_widget(
         "realm_default_code_block_language",
-        default_code_language_options,
+        combined_code_language_options,
         "language",
     );
 
     set_up_dropdown_widget_for_realm_group_settings();
+};
+
+export const combined_code_language_options = (): dropdown_widget.Option[] => {
+    // Default language options from pygments_data
+    const default_options = Object.keys(pygments_data.langs).map((x) => ({
+        name: x,
+        unique_id: x,
+    }));
+
+    // Custom playground language options from realm_playgrounds.
+    const playground_options = (realm.realm_playgrounds ?? []).map((playground) => ({
+        name: playground.pygments_language,
+        unique_id: playground.pygments_language,
+    }));
+
+    const disabled_option = {
+        is_setting_disabled: true,
+        unique_id: "",
+        name: $t({defaultMessage: "No language set"}),
+    };
+
+    return [disabled_option, ...playground_options, ...default_options];
 };
 
 export function rewire_init_dropdown_widgets(value: typeof init_dropdown_widgets): void {

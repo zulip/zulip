@@ -196,7 +196,7 @@ run_test("stream links", () => {
 
     assert_parse(
         "#**social>lunch**",
-        '<p><a class="stream-topic" data-stream-id="301" href="/stream-301-topic-lunch">#social &gt; lunch</a></p>',
+        '<p><a class="stream-topic" data-stream-id="301" href="stream-301-topic-lunch">#social &gt; lunch</a></p>',
     );
 });
 

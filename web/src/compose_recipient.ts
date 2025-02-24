@@ -114,6 +114,7 @@ function update_fade(): void {
 export function update_on_recipient_change(): void {
     update_fade();
     update_narrow_to_recipient_visibility();
+    compose_validate.warn_if_guest_in_dm_recipient();
     drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
 }
@@ -343,6 +344,8 @@ export function initialize(): void {
         update_on_recipient_change();
         compose_state.set_recipient_edited_manually(true);
     });
+
+    $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
 }
 
 export let update_placeholder_text = (): void => {
@@ -374,4 +377,16 @@ export let update_placeholder_text = (): void => {
 
 export function rewire_update_placeholder_text(value: typeof update_placeholder_text): void {
     update_placeholder_text = value;
+}
+
+// This function addresses the issue of the placeholder not reappearing in Firefox
+// when the user types into an input field and then deletes the content.
+// The problem arises due to the `contenteditable` attribute, which in some browsers
+// (like Firefox) inserts a <br> tag when the input is emptied. This <br> tag prevents
+// the placeholder from showing up again. The function checks if the input is empty
+// and contains a <br> tag, then removes it to restore the placeholder functionality.
+export function restore_placeholder_in_firefox_for_no_input(): void {
+    if ($("#private_message_recipient").text().trim() === "") {
+        $("#private_message_recipient").empty();
+    }
 }

@@ -280,6 +280,12 @@ export function add_sub_to_table(sub: StreamSubscription): void {
             $("#stream_settings .stream-creation-confirmation-banner").html(
                 render_stream_creation_confirmation_banner(context),
             );
+            // We don't want to reset the created stream in case the
+            // the current user is subscribed to the created stream
+            // We use the name in stream_create to do some actions on
+            // receiving a subscribe event, and we need the stream name
+            // in stream create for that.
+            stream_create.reset_created_stream();
         }
         stream_create.reset_current_user_subscribed_to_created_stream();
     }
@@ -728,7 +734,7 @@ function setup_page(callback: () => void): void {
                 realm.realm_org_type === settings_config.all_org_type_values.business.code,
             disable_message_retention_setting:
                 !realm.zulip_plan_is_not_limited || !current_user.is_owner,
-            group_setting_labels: settings_config.group_setting_labels.stream,
+            group_setting_labels: settings_config.all_group_setting_labels.stream,
         };
 
         const rendered = render_stream_settings_overlay(template_data);

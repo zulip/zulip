@@ -782,7 +782,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 new_stream_id: post_edit_stream_id,
                 new_topic: post_edit_topic,
             });
-            unread.clear_and_populate_unread_mention_topics();
+            unread.clear_and_populate_unread_mentions();
             recent_view_ui.process_topic_edit(
                 old_stream_id,
                 pre_edit_topic,

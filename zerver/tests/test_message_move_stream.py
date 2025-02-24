@@ -1,23 +1,30 @@
 from datetime import timedelta
+from unittest import mock
 
 import orjson
+from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
-from zerver.actions.streams import do_change_stream_group_based_setting
+from zerver.actions.streams import do_change_stream_group_based_setting, do_change_stream_permission
 from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.message import has_message_access
-from zerver.lib.streams import check_update_all_streams_active_status
+from zerver.lib.streams import (
+    can_access_stream_metadata_user_ids,
+    update_stream_active_status_for_realm,
+)
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.url_encoding import near_stream_message_url
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, Stream, UserMessage, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
+from zerver.tornado.django_api import send_event_on_commit
 
 
 class MessageMoveStreamTest(ZulipTestCase):
@@ -1201,7 +1208,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(55), self.assert_memcached_count(14):
+        with self.assert_database_query_count(59), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
@@ -1308,6 +1315,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                     has_user_message=lambda: has_user_message,
                     stream=stream,
                     is_subscribed=is_subscribed,
+                    user_group_membership_details=UserGroupMembershipDetails(
+                        user_recursive_group_ids=None
+                    ),
                 ),
                 has_access,
             )
@@ -1704,6 +1714,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             True,
         )
@@ -1720,6 +1733,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             False,
         )
@@ -1744,6 +1760,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             False,
         )
@@ -1778,6 +1797,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             True,
         )
@@ -1794,6 +1816,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             False,
         )
@@ -1811,6 +1836,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: False,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             False,
         )
@@ -1837,6 +1865,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             True,
         )
@@ -1847,6 +1878,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             True,
         )
@@ -1878,6 +1912,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: False,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             False,
         )
@@ -1895,6 +1932,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: False,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             False,
         )
@@ -1920,6 +1960,9 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
             ),
             True,
         )
@@ -1932,7 +1975,84 @@ class MessageMoveStreamTest(ZulipTestCase):
         # Delete all messages in new stream and mark it as inactive.
         Message.objects.filter(recipient__type_id=new_stream.id, realm=user_profile.realm).delete()
 
-        check_update_all_streams_active_status()
+        with mock.patch("zerver.lib.streams.send_event_on_commit", wraps=send_event_on_commit) as m:
+            update_stream_active_status_for_realm(
+                user_profile.realm, timezone_now() - timedelta(days=10)
+            )
+            self.assertEqual(
+                m.call_args.args,
+                (
+                    new_stream.realm,
+                    dict(
+                        type="stream",
+                        op="update",
+                        property="is_recently_active",
+                        value=False,
+                        stream_id=new_stream.id,
+                        name=new_stream.name,
+                    ),
+                    can_access_stream_metadata_user_ids(new_stream),
+                ),
+            )
+
+        new_stream.refresh_from_db()
+        self.assertFalse(new_stream.is_recently_active)
+
+        # Move the message to new stream should make active again.
+        result = self.client_patch(
+            f"/json/messages/{msg_id_later}",
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_later",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+        self.assert_json_success(result)
+
+        new_stream.refresh_from_db()
+        self.assertTrue(new_stream.is_recently_active)
+
+    def test_move_message_update_private_stream_active_status(self) -> None:
+        # Goal is to test that we only send the stream status update to subscribers.
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        # Mark stream as private
+        do_change_stream_permission(
+            new_stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=user_profile,
+        )
+        # Delete all messages in new stream and mark it as inactive.
+        Message.objects.filter(recipient__type_id=new_stream.id, realm=user_profile.realm).delete()
+
+        with mock.patch("zerver.lib.streams.send_event_on_commit", wraps=send_event_on_commit) as m:
+            update_stream_active_status_for_realm(
+                user_profile.realm, timezone_now() - timedelta(days=10)
+            )
+            self.assertEqual(
+                m.call_args.args,
+                (
+                    new_stream.realm,
+                    dict(
+                        type="stream",
+                        op="update",
+                        property="is_recently_active",
+                        value=False,
+                        stream_id=new_stream.id,
+                        name=new_stream.name,
+                    ),
+                    # Only send the event to users with stream access.
+                    {
+                        9,  # Realm owner (Desdemona)
+                        11,  # Subscriber (iago)
+                    },
+                ),
+            )
+
         new_stream.refresh_from_db()
         self.assertFalse(new_stream.is_recently_active)
 

@@ -358,6 +358,14 @@ test("server_history_end_to_end", () => {
     const history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["topic3", "topic2", "topic1"]);
 
+    for (const topic of topics) {
+        const last_msg_id_in_topic = stream_topic_history.get_latest_known_message_id_in_topic(
+            stream_id,
+            topic.name,
+        );
+        assert.deepEqual(last_msg_id_in_topic, topic.max_id);
+    }
+
     // Try getting server history for a second time.
 
     /* istanbul ignore next */

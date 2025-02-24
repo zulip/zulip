@@ -17,6 +17,8 @@ from django.core.cache.backends.base import BaseCache
 from django.db.models import Q, QuerySet
 from typing_extensions import ParamSpec
 
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments
+
 if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
@@ -51,6 +53,22 @@ def remote_cache_stats_finish() -> None:
     global remote_cache_total_time, remote_cache_total_requests
     remote_cache_total_requests += 1
     remote_cache_total_time += time.time() - remote_cache_time_start
+
+
+def update_cached_cache_key_prefixes() -> list[str]:
+    # Clearing cache keys happens for all cache prefixes at once.
+    # Because the list of cache prefixes can only be derived from
+    # reading disk, we cache the list of cache prefixes, itself, in
+    # the cache.
+    found_prefixes: set[str] = set()
+    for deploy_dir in get_recent_deployments(None):
+        filename = os.path.join(deploy_dir, "var", "remote_cache_prefix")
+        if not os.path.exists(filename):
+            continue
+        with open(filename) as f:
+            found_prefixes.add(f.readline().removesuffix("\n"))
+    caches["default"].set("cache_key_prefixes", list(found_prefixes), timeout=60 * 60 * 24)  # 24h
+    return list(found_prefixes)
 
 
 def get_or_create_key_prefix() -> str:
@@ -89,10 +107,25 @@ def get_or_create_key_prefix() -> str:
         print("Could not read remote cache key prefix file")
         sys.exit(1)
 
+    update_cached_cache_key_prefixes()
     return prefix
 
 
 KEY_PREFIX: str = get_or_create_key_prefix()
+
+
+def get_all_cache_key_prefixes() -> list[str]:
+    if not settings.PRODUCTION or not os.path.exists(DEPLOYMENTS_DIR):
+        return [KEY_PREFIX]
+    return get_all_deployment_cache_key_prefixes()
+
+
+def get_all_deployment_cache_key_prefixes() -> list[str]:
+    stored_prefixes = caches["default"].get("cache_key_prefixes")
+    if stored_prefixes:
+        return stored_prefixes
+
+    return update_cached_cache_key_prefixes()
 
 
 def bounce_key_prefix_for_testing(test_name: str) -> None:
@@ -270,16 +303,13 @@ def safe_cache_set_many(
 
 
 def cache_delete(key: str, cache_name: str | None = None) -> None:
-    final_key = KEY_PREFIX + key
-    validate_cache_key(final_key)
-
-    remote_cache_stats_start()
-    get_cache_backend(cache_name).delete(final_key)
-    remote_cache_stats_finish()
+    cache_delete_many([key], cache_name)
 
 
 def cache_delete_many(items: Iterable[str], cache_name: str | None = None) -> None:
-    keys = [KEY_PREFIX + item for item in items]
+    keys = []
+    for key_prefix in get_all_cache_key_prefixes():
+        keys += [key_prefix + item for item in items]
     for key in keys:
         validate_cache_key(key)
     remote_cache_stats_start()
@@ -409,12 +439,12 @@ def single_user_display_recipient_cache_key(user_id: int) -> str:
     return f"single_user_display_recipient:{user_id}"
 
 
-def user_profile_cache_key_id(email: str, realm_id: int) -> str:
+def user_profile_by_email_realm_id_cache_key(email: str, realm_id: int) -> str:
     return f"user_profile:{hashlib.sha1(email.strip().encode()).hexdigest()}:{realm_id}"
 
 
-def user_profile_cache_key(email: str, realm: "Realm") -> str:
-    return user_profile_cache_key_id(email, realm.id)
+def user_profile_by_email_realm_cache_key(email: str, realm: "Realm") -> str:
+    return user_profile_by_email_realm_id_cache_key(email, realm.id)
 
 
 def user_profile_delivery_email_cache_key(delivery_email: str, realm_id: int) -> str:
@@ -427,6 +457,10 @@ def bot_profile_cache_key(email: str, realm_id: int) -> str:
 
 def user_profile_by_id_cache_key(user_profile_id: int) -> str:
     return f"user_profile_by_id:{user_profile_id}"
+
+
+def user_profile_narrow_by_id_cache_key(user_profile_id: int) -> str:
+    return f"user_profile_narrow_by_id:{user_profile_id}"
 
 
 def user_profile_by_api_key_cache_key(api_key: str) -> str:
@@ -507,14 +541,14 @@ def bot_dicts_in_realm_cache_key(realm_id: int) -> str:
 
 def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm_id: int) -> None:
     # Imported here to avoid cyclic dependency.
-    from zerver.lib.users import get_all_api_keys
     from zerver.models.users import is_cross_realm_bot_email
 
     keys = []
     for user_profile in user_profiles:
         keys.append(user_profile_by_id_cache_key(user_profile.id))
-        keys += map(user_profile_by_api_key_cache_key, get_all_api_keys(user_profile))
-        keys.append(user_profile_cache_key_id(user_profile.email, realm_id))
+        keys.append(user_profile_narrow_by_id_cache_key(user_profile.id))
+        keys.append(user_profile_by_api_key_cache_key(user_profile.api_key))
+        keys.append(user_profile_by_email_realm_id_cache_key(user_profile.email, realm_id))
         keys.append(user_profile_delivery_email_cache_key(user_profile.delivery_email, realm_id))
         if user_profile.is_bot and is_cross_realm_bot_email(user_profile.email):
             # Handle clearing system bots from their special cache.
@@ -672,6 +706,14 @@ def to_dict_cache_key(message: "Message", realm_id: int | None = None) -> str:
 
 def open_graph_description_cache_key(content: bytes, request_url: str) -> str:
     return f"open_graph_description_path:{hashlib.sha1(request_url.encode()).hexdigest()}"
+
+
+def zoom_server_access_token_cache_key(account_id: str) -> str:
+    return f"zoom_server_to_server_access_token:{account_id}"
+
+
+def flush_zoom_server_access_token_cache(account_id: str) -> None:
+    cache_delete(zoom_server_access_token_cache_key(account_id))
 
 
 def flush_message(*, instance: "Message", **kwargs: object) -> None:

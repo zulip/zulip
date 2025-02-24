@@ -31,6 +31,7 @@ from zerver.actions.user_groups import (
 )
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.create_user import create_user
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
@@ -40,11 +41,14 @@ from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.user_groups import (
     get_direct_user_groups,
     get_recursive_group_members,
+    get_recursive_group_members_union_for_groups,
     get_recursive_membership_groups,
     get_recursive_strict_subgroups,
     get_recursive_subgroups,
+    get_recursive_subgroups_union_for_groups,
     get_role_based_system_groups_dict,
     get_subgroup_ids,
+    get_system_user_group_by_name,
     get_user_group_member_ids,
     has_user_group_access_for_subgroup,
     is_any_user_in_group,
@@ -249,6 +253,8 @@ class UserGroupTestCase(ZulipTestCase):
         iago = self.example_user("iago")
         desdemona = self.example_user("desdemona")
         shiva = self.example_user("shiva")
+        aaron = self.example_user("aaron")
+        prospero = self.example_user("prospero")
 
         leadership_group = check_add_user_group(
             realm, "Leadership", [desdemona], acting_user=desdemona
@@ -257,22 +263,38 @@ class UserGroupTestCase(ZulipTestCase):
         staff_group = check_add_user_group(realm, "Staff", [iago], acting_user=iago)
         GroupGroupMembership.objects.create(supergroup=staff_group, subgroup=leadership_group)
 
+        manager_group = check_add_user_group(
+            realm, "Managers", [aaron, prospero], acting_user=aaron
+        )
+        GroupGroupMembership.objects.create(supergroup=manager_group, subgroup=leadership_group)
+
         everyone_group = check_add_user_group(realm, "Everyone", [shiva], acting_user=shiva)
         GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=staff_group)
+        GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=manager_group)
 
         self.assertCountEqual(
-            list(get_recursive_subgroups(leadership_group)), [leadership_group.usergroup_ptr]
+            list(get_recursive_subgroups(leadership_group.id)), [leadership_group.usergroup_ptr]
         )
         self.assertCountEqual(
-            list(get_recursive_subgroups(staff_group)),
+            list(get_recursive_subgroups(staff_group.id)),
             [leadership_group.usergroup_ptr, staff_group.usergroup_ptr],
         )
         self.assertCountEqual(
-            list(get_recursive_subgroups(everyone_group)),
+            list(get_recursive_subgroups(everyone_group.id)),
             [
                 leadership_group.usergroup_ptr,
                 staff_group.usergroup_ptr,
                 everyone_group.usergroup_ptr,
+                manager_group.usergroup_ptr,
+            ],
+        )
+
+        self.assertCountEqual(
+            list(get_recursive_subgroups_union_for_groups([staff_group.id, manager_group.id])),
+            [
+                leadership_group.usergroup_ptr,
+                staff_group.usergroup_ptr,
+                manager_group.usergroup_ptr,
             ],
         )
 
@@ -280,27 +302,44 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertCountEqual(list(get_recursive_strict_subgroups(staff_group)), [leadership_group])
         self.assertCountEqual(
             list(get_recursive_strict_subgroups(everyone_group)),
-            [leadership_group, staff_group],
+            [leadership_group, staff_group, manager_group],
         )
 
-        self.assertCountEqual(list(get_recursive_group_members(leadership_group)), [desdemona])
-        self.assertCountEqual(list(get_recursive_group_members(staff_group)), [desdemona, iago])
+        self.assertCountEqual(list(get_recursive_group_members(leadership_group.id)), [desdemona])
+        self.assertCountEqual(list(get_recursive_group_members(staff_group.id)), [desdemona, iago])
         self.assertCountEqual(
-            list(get_recursive_group_members(everyone_group)), [desdemona, iago, shiva]
+            list(get_recursive_group_members(everyone_group.id)),
+            [desdemona, iago, shiva, aaron, prospero],
+        )
+
+        self.assertCountEqual(
+            list(get_recursive_group_members_union_for_groups([staff_group.id, manager_group.id])),
+            [iago, desdemona, aaron, prospero],
+        )
+        self.assertCountEqual(
+            list(
+                get_recursive_group_members_union_for_groups([leadership_group.id, staff_group.id])
+            ),
+            [desdemona, iago],
         )
 
         self.assertIn(leadership_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
         self.assertIn(staff_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
         self.assertIn(everyone_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
+        self.assertIn(manager_group.usergroup_ptr, get_recursive_membership_groups(desdemona))
 
         self.assertIn(staff_group.usergroup_ptr, get_recursive_membership_groups(iago))
         self.assertIn(everyone_group.usergroup_ptr, get_recursive_membership_groups(iago))
+        self.assertNotIn(manager_group.usergroup_ptr, get_recursive_membership_groups(iago))
 
         self.assertIn(everyone_group.usergroup_ptr, get_recursive_membership_groups(shiva))
 
         do_deactivate_user(iago, acting_user=None)
-        self.assertCountEqual(list(get_recursive_group_members(staff_group)), [desdemona])
-        self.assertCountEqual(list(get_recursive_group_members(everyone_group)), [desdemona, shiva])
+        self.assertCountEqual(list(get_recursive_group_members(staff_group.id)), [desdemona])
+        self.assertCountEqual(
+            list(get_recursive_group_members(everyone_group.id)),
+            [desdemona, shiva, aaron, prospero],
+        )
 
     def test_subgroups_of_role_based_system_groups(self) -> None:
         realm = get_realm("zulip")
@@ -437,6 +476,19 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertFalse(has_user_group_access_for_subgroup(lear_group, iago))
         self.assertTrue(has_user_group_access_for_subgroup(zulip_group, iago))
         self.assertTrue(has_user_group_access_for_subgroup(moderators_group, iago))
+
+    def test_get_system_user_group_by_name(self) -> None:
+        realm = get_realm("zulip")
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+
+        self.assertEqual(
+            get_system_user_group_by_name(SystemGroups.MODERATORS, realm.id), moderators_group
+        )
+
+        with self.assertRaisesRegex(JsonableError, "Invalid system group name."):
+            get_system_user_group_by_name("hamletcharacters", realm.id)
 
 
 class UserGroupAPITestCase(UserGroupTestCase):
@@ -671,6 +723,23 @@ class UserGroupAPITestCase(UserGroupTestCase):
         help_group = NamedUserGroup.objects.get(name="help", realm=hamlet.realm)
         # We do not create a new UserGroup object in such case.
         self.assertEqual(getattr(help_group, setting_name).id, moderators_group.id)
+
+        params = {
+            "name": "devops",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Devops team",
+        }
+        params[setting_name] = orjson.dumps(
+            {
+                "direct_members": [],
+                "direct_subgroups": [],
+            }
+        ).decode()
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        devops_group = NamedUserGroup.objects.get(name="devops", realm=hamlet.realm)
+        # We do not create a new UserGroup object in such case.
+        self.assertEqual(getattr(devops_group, setting_name).id, nobody_group.id)
 
         internet_group = NamedUserGroup.objects.get(
             name="role:internet", realm=hamlet.realm, is_system_group=True
@@ -958,14 +1027,27 @@ class UserGroupAPITestCase(UserGroupTestCase):
             [marketing_group, moderators_group],
         )
 
-        params[setting_name] = orjson.dumps({"new": marketing_group.id}).decode()
         previous_setting_id = getattr(support_group, setting_name).id
+        params[setting_name] = orjson.dumps(
+            {
+                "new": {
+                    "direct_members": [],
+                    "direct_subgroups": [],
+                }
+            }
+        ).decode()
+        result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
+        # Test that the previous UserGroup object is deleted.
+        self.assertFalse(UserGroup.objects.filter(id=previous_setting_id).exists())
+        self.assertEqual(getattr(support_group, setting_name).id, nobody_group.id)
+
+        params[setting_name] = orjson.dumps({"new": marketing_group.id}).decode()
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
         support_group = NamedUserGroup.objects.get(name="support", realm=hamlet.realm)
 
-        # Test that the previous UserGroup object is deleted.
-        self.assertFalse(UserGroup.objects.filter(id=previous_setting_id).exists())
         self.assertEqual(getattr(support_group, setting_name).id, marketing_group.id)
 
         owners_group = NamedUserGroup.objects.get(

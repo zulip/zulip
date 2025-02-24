@@ -46,6 +46,8 @@ type DisplayObject = {
     user_circle_class: string | undefined;
     is_group: boolean;
     is_bot: boolean;
+    has_unread_mention: boolean;
+    is_deactivated: boolean;
 };
 
 export function get_conversations(search_string = ""): DisplayObject[] {
@@ -81,8 +83,13 @@ export function get_conversations(search_string = ""): DisplayObject[] {
         const recipients_string = people.get_recipients(user_ids_string);
 
         const num_unread = unread.num_unread_for_user_ids_string(user_ids_string);
+        const has_unread_mention =
+            unread.num_unread_mentions_for_user_ids_strings(user_ids_string) > 0;
         const is_group = user_ids_string.includes(",");
         const is_active = user_ids_string === active_user_ids_string;
+        const is_deactivated = !people.is_active_user_for_popover(
+            Number.parseInt(user_ids_string, 10) || 0,
+        );
 
         let user_circle_class;
         let status_emoji_info;
@@ -112,6 +119,8 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             user_circle_class,
             is_group,
             is_bot,
+            has_unread_mention,
+            is_deactivated,
         };
         display_objects.push(display_object);
     }

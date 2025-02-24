@@ -76,7 +76,7 @@ export let $current_focus_elem: JQuery | "table" = "table";
 // If user clicks a topic in Recent Conversations, then
 // we store that topic here so that we can restore focus
 // to that topic when user revisits.
-let last_visited_topic = "";
+let last_visited_topic: string | undefined;
 let row_focus = 0;
 // Start focus on the topic column, so Down+Enter works to visit a topic.
 let col_focus = 1;
@@ -410,7 +410,7 @@ export function revive_current_focus(): boolean {
 
     if (is_table_focused()) {
         assert(topics_widget !== undefined);
-        if (last_visited_topic) {
+        if (last_visited_topic !== undefined) {
             // If the only message in the topic was deleted,
             // then the topic will not be in Recent Conversations data.
             if (recent_view_data.conversations.get(last_visited_topic) !== undefined) {
@@ -425,7 +425,7 @@ export function revive_current_focus(): boolean {
                     row_focus = last_visited_topic_index;
                 }
             }
-            last_visited_topic = "";
+            last_visited_topic = undefined;
         }
         set_table_focus(row_focus, col_focus);
         return true;
@@ -606,6 +606,7 @@ type ConversationContext = {
           is_group: boolean;
           is_bot: boolean;
           user_circle_class: string | undefined;
+          has_unread_mention: boolean;
       }
     | {
           is_private: false;
@@ -658,7 +659,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const topic = last_msg.topic;
         const topic_display_name = util.get_final_topic_display_name(topic);
         const is_empty_string_topic = topic === "";
-        const topic_url = hash_util.by_stream_topic_url(stream_id, topic);
+        const topic_url = hash_util.by_channel_topic_permalink(stream_id, topic);
 
         // We hide the row according to filters or if it's muted.
         // We only supply the data to the topic rows and let jquery
@@ -710,6 +711,8 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const recipient_id = last_msg.recipient_id;
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
+        const has_unread_mention =
+            unread.num_unread_mentions_for_user_ids_strings(user_ids_string) > 0;
 
         let is_bot = false;
         let user_circle_class;
@@ -742,6 +745,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
             is_group,
             is_bot,
             user_circle_class,
+            has_unread_mention,
         };
     }
 
@@ -1467,7 +1471,7 @@ export function focus_clicked_element(
     row_focus = topic_row_index;
 
     if (col === COLUMNS.topic) {
-        last_visited_topic = topic_key ?? "";
+        last_visited_topic = topic_key ?? undefined;
     }
     // Set compose_closed_ui reply button text.  The rest of the table
     // focus logic should be a noop.

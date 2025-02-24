@@ -19,14 +19,8 @@ const home_params_schema = default_params_schema
     .extend({
         page_type: z.literal("home"),
         apps_page_url: z.string(),
-        bot_types: z.array(
-            z.object({
-                type_id: z.number(),
-                name: z.string(),
-                allowed: z.boolean(),
-            }),
-        ),
         corporate_enabled: z.boolean(),
+        embedded_bots_enabled: z.boolean(),
         furthest_read_time: z.nullable(z.number()),
         is_spectator: z.boolean(),
         // `language_cookie_name` is only sent for spectators.

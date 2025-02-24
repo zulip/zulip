@@ -203,6 +203,7 @@ export default [
             "@typescript-eslint/explicit-function-return-type": ["error", {allowExpressions: true}],
             "@typescript-eslint/member-ordering": "error",
             "@typescript-eslint/method-signature-style": "error",
+            "@typescript-eslint/no-misused-spread": "off",
             "@typescript-eslint/no-non-null-assertion": "off",
             "@typescript-eslint/no-unnecessary-condition": "off",
             "@typescript-eslint/no-unnecessary-qualifier": "error",

@@ -23,8 +23,9 @@ from zerver.lib.cache import (
     realm_user_dict_fields,
     realm_user_dicts_cache_key,
     user_profile_by_api_key_cache_key,
+    user_profile_by_email_realm_cache_key,
     user_profile_by_id_cache_key,
-    user_profile_cache_key,
+    user_profile_narrow_by_id_cache_key,
 )
 from zerver.lib.types import ProfileData, RawUserDict
 from zerver.lib.utils import generate_api_key
@@ -296,6 +297,9 @@ class UserBaseSettings(models.Model):
 
     EMAIL_ADDRESS_VISIBILITY_TYPES = list(EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.keys())
 
+    # Whether user wants to see AI features in the UI.
+    hide_ai_features = models.BooleanField(default=False)
+
     display_settings_legacy = dict(
         # Don't add anything new to this legacy dict.
         # Instead, see `modern_settings` below.
@@ -359,6 +363,7 @@ class UserBaseSettings(models.Model):
         web_line_height_percent=int,
         web_navigate_to_sent_message=bool,
         web_suggest_update_timezone=bool,
+        hide_ai_features=bool,
     )
 
     modern_notification_settings = dict(
@@ -792,20 +797,19 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def allowed_bot_types(self) -> list[int]:
-        from zerver.models.realms import BotCreationPolicyEnum
-
         allowed_bot_types = []
-        if (
-            self.is_realm_admin
-            or self.realm.bot_creation_policy != BotCreationPolicyEnum.LIMIT_GENERIC_BOTS
-        ):
-            allowed_bot_types.append(UserProfile.DEFAULT_BOT)
-        allowed_bot_types += [
-            UserProfile.INCOMING_WEBHOOK_BOT,
-            UserProfile.OUTGOING_WEBHOOK_BOT,
-        ]
-        if settings.EMBEDDED_BOTS_ENABLED:
-            allowed_bot_types.append(UserProfile.EMBEDDED_BOT)
+        if self.has_permission("can_create_bots_group"):
+            allowed_bot_types.extend(
+                [
+                    UserProfile.DEFAULT_BOT,
+                    UserProfile.INCOMING_WEBHOOK_BOT,
+                    UserProfile.OUTGOING_WEBHOOK_BOT,
+                ]
+            )
+            if settings.EMBEDDED_BOTS_ENABLED:
+                allowed_bot_types.append(UserProfile.EMBEDDED_BOT)
+        elif self.has_permission("can_create_write_only_bots_group"):
+            allowed_bot_types.append(UserProfile.INCOMING_WEBHOOK_BOT)
         return allowed_bot_types
 
     def email_address_is_realm_public(self) -> bool:
@@ -873,6 +877,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     def can_delete_own_message(self) -> bool:
         return self.has_permission("can_delete_own_message_group")
+
+    def can_summarize_topics(self) -> bool:
+        return self.has_permission("can_summarize_topics_group")
 
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
@@ -949,6 +956,25 @@ def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
     return base_get_user_queryset().get(id=user_profile_id)
 
 
+def base_get_user_narrow_queryset() -> QuerySet[UserProfile]:
+    return UserProfile.objects.select_related("realm").only(
+        "id",
+        "bot_type",
+        "is_active",
+        "presence_enabled",
+        "rate_limits",
+        "role",
+        "recipient_id",
+        "realm__string_id",
+        "realm__deactivated",
+    )
+
+
+@cache_with_key(user_profile_narrow_by_id_cache_key, timeout=3600 * 24 * 7)
+def get_user_profile_narrow_by_id(user_profile_id: int) -> UserProfile:
+    return base_get_user_narrow_queryset().get(id=user_profile_id)
+
+
 def get_user_profile_by_email(email: str) -> UserProfile:
     """This function is intended to be used for
     manual manage.py shell work; robust code must use get_user or
@@ -962,12 +988,7 @@ def get_user_profile_by_email(email: str) -> UserProfile:
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600 * 24 * 7)
 def maybe_get_user_profile_by_api_key(api_key: str) -> UserProfile | None:
     try:
-        return UserProfile.objects.select_related(
-            "realm",
-            "realm__can_access_all_users_group",
-            "realm__can_access_all_users_group__named_user_group",
-            "bot_owner",
-        ).get(api_key=api_key)
+        return base_get_user_queryset().get(api_key=api_key)
     except UserProfile.DoesNotExist:
         # We will cache failed lookups with None.  The
         # use case here is that broken API clients may
@@ -1017,7 +1038,7 @@ def get_users_by_delivery_email(emails: set[str], realm: "Realm") -> QuerySet[Us
     return UserProfile.objects.filter(realm=realm).filter(email_filter)
 
 
-@cache_with_key(user_profile_cache_key, timeout=3600 * 24 * 7)
+@cache_with_key(user_profile_by_email_realm_cache_key, timeout=3600 * 24 * 7)
 def get_user(email: str, realm: "Realm") -> UserProfile:
     """Fetches the user by its visible-to-other users username (in the
     `email` field).  For use in API contexts; do not use in

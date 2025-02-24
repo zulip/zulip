@@ -48,12 +48,14 @@ import * as onboarding_steps from "./onboarding_steps.ts";
 import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as rows from "./rows.ts";
+import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import * as typing from "./typing.ts";
 import * as ui_report from "./ui_report.ts";
 import * as upload from "./upload.ts";
 import {the} from "./util.ts";
@@ -309,7 +311,7 @@ export function stream_and_topic_exist_in_edit_history(
     }
 
     for (const edit_history_event of message.edit_history) {
-        if (!edit_history_event.prev_stream && !edit_history_event.prev_topic) {
+        if (!edit_history_event.prev_stream && edit_history_event.prev_topic === undefined) {
             // Message was not moved in this edit event.
             continue;
         }
@@ -322,7 +324,7 @@ export function stream_and_topic_exist_in_edit_history(
             message_dict.stream_id = edit_history_event.prev_stream;
         }
 
-        if (edit_history_event.prev_topic) {
+        if (edit_history_event.prev_topic !== undefined) {
             // This edit event changed the topic.  We expect the
             // following to be true due to the invariants of the edit
             // history data structure:
@@ -656,6 +658,11 @@ function start_edit_with_content(
     }
     const row_id = rows.id($row);
     upload.setup_upload(upload.edit_config(row_id));
+    // Setup dropdown for saved snippets button in the current
+    // message edit control buttons tray.
+    saved_snippets_ui.setup_saved_snippets_dropdown_widget(
+        `.saved-snippets-message-edit-widget[data-message-id="${CSS.escape(row_id.toString())}"]`,
+    );
 }
 
 export function start($row: JQuery, edit_box_open_callback?: () => void): void {
@@ -892,6 +899,8 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     const $form = $(
         render_topic_edit_form({
             max_topic_length: realm.max_topic_length,
+            realm_mandatory_topics: realm.realm_mandatory_topics,
+            empty_string_topic_display_name: util.get_final_topic_display_name(""),
         }),
     );
     message_lists.current.show_edit_topic_on_recipient_row($recipient_row, $form);
@@ -905,10 +914,6 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     const topic = message.topic;
     const $inline_topic_edit_input = $form.find<HTMLInputElement>("input.inline_topic_edit");
     $inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
-    if (topic === "") {
-        const topic_display_name = util.get_final_topic_display_name(topic);
-        $inline_topic_edit_input.attr("placeholder", topic_display_name);
-    }
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
     composebox_typeahead.initialize_topic_edit_typeahead(
         $inline_topic_edit_input,
@@ -936,6 +941,7 @@ export function end_message_row_edit($row: JQuery): void {
 
     const message = message_lists.current.get(row_id);
     if (message !== undefined && currently_editing_messages.has(message.id)) {
+        typing.stop_message_edit_notifications(message.id);
         currently_editing_messages.delete(message.id);
         message_lists.current.hide_edit_message($row);
         compose_call.abort_video_callbacks(message.id.toString());

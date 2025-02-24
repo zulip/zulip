@@ -330,7 +330,7 @@ run_test("custom profile fields", ({override}) => {
     const event = event_fixtures.custom_profile_fields;
     override(settings_profile_fields, "populate_profile_fields", noop);
     override(settings_account, "add_custom_profile_fields_to_settings", noop);
-    override(navbar_alerts, "maybe_show_empty_required_profile_fields_alert", noop);
+    override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
     dispatch(event);
     assert_same(realm.custom_profile_fields, event.fields);
 });
@@ -487,8 +487,7 @@ run_test("realm settings", ({override}) => {
     override(sidebar_ui, "update_invite_user_option", noop);
     override(gear_menu, "rerender", noop);
     override(narrow_title, "redraw_title", noop);
-    override(navbar_alerts, "check_profile_incomplete", noop);
-    override(navbar_alerts, "show_profile_incomplete", noop);
+    override(navbar_alerts, "toggle_organization_profile_incomplete_banner", noop);
     override(compose_banner, "clear_errors", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
@@ -511,28 +510,7 @@ run_test("realm settings", ({override}) => {
         assert.equal(realm[parameter_name], true);
     }
 
-    function test_realm_integer(event, parameter_name) {
-        override(realm, parameter_name, 1);
-        event = {...event};
-        event.value = 2;
-        dispatch(event);
-        assert.equal(realm[parameter_name], 2);
-
-        event = {...event};
-        event.value = 3;
-        dispatch(event);
-        assert.equal(realm[parameter_name], 3);
-
-        event = {...event};
-        event.value = 1;
-        dispatch(event);
-        assert.equal(realm[parameter_name], 1);
-    }
-
-    let event = event_fixtures.realm__update__bot_creation_policy;
-    test_realm_integer(event, "realm_bot_creation_policy");
-
-    event = event_fixtures.realm__update__invite_required;
+    let event = event_fixtures.realm__update__invite_required;
     test_realm_boolean(event, "realm_invite_required");
 
     event = event_fixtures.realm__update__want_advertise_in_communities_directory;
@@ -598,6 +576,7 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_authentication_methods", {Google: {enabled: false, available: true}});
     override(realm, "realm_can_add_custom_emoji_group", 1);
     override(realm, "realm_can_add_subscribers_group", 1);
+    override(realm, "realm_can_create_bots_group", 1);
     override(realm, "realm_can_create_public_channel_group", 1);
     override(realm, "realm_can_invite_users_group", 1);
     override(realm, "realm_can_move_messages_between_topics_group", 1);
@@ -611,7 +590,7 @@ run_test("realm settings", ({override}) => {
         },
     });
     override(settings_org, "populate_auth_methods", noop);
-    override(user_group_edit, "update_setting_in_group_permissions_panel", noop);
+    override(user_group_edit, "update_realm_setting_in_permissions_panel", noop);
     dispatch(event);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
     assert_same(realm.realm_allow_message_editing, true);
@@ -621,6 +600,7 @@ run_test("realm settings", ({override}) => {
     });
     assert_same(realm.realm_can_add_custom_emoji_group, 3);
     assert_same(realm.realm_can_add_subscribers_group, 3);
+    assert_same(realm.realm_can_create_bots_group, 3);
     assert_same(realm.realm_can_create_public_channel_group, 3);
     assert_same(realm.realm_can_invite_users_group, 3);
     assert_same(realm.realm_can_move_messages_between_topics_group, 3);
@@ -928,6 +908,66 @@ run_test("stream_typing", ({override}) => {
         assert_same(args.event.message_type, "stream");
         assert_same(args.event.stream_id, stream_typing_in_id);
         assert_same(args.event.topic, topic_typing_in);
+    }
+});
+
+run_test("message_edit_typing", ({override}) => {
+    override(current_user, "user_id", typing_person1.user_id + 1);
+
+    let event = event_fixtures.message_edit_typing__start;
+    {
+        const stub = make_stub();
+        override(typing_events, "display_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender_id, typing_person1.user_id);
+        assert_same(args.event.message_id, event.message_id);
+    }
+
+    event = event_fixtures.message_edit_typing__stop;
+    {
+        const stub = make_stub();
+        override(typing_events, "hide_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender_id, typing_person1.user_id);
+        assert_same(args.event.message_id, event.message_id);
+    }
+
+    // Get line coverage--we ignore our own typing events.
+    override(current_user, "user_id", typing_person1.user_id);
+    event = event_fixtures.message_edit_typing__start;
+    dispatch(event);
+    override(current_user, "user_id", undefined);
+});
+
+run_test("stream_typing_message_edit", ({override}) => {
+    const stream_typing_in_id = events.stream_typing_in_id;
+
+    let event = event_fixtures.channel_typing_edit_message__start;
+    {
+        const stub = make_stub();
+        override(typing_events, "display_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender_id, typing_person1.user_id);
+        assert_same(args.event.recipient.type, "channel");
+        assert_same(args.event.recipient.channel_id, stream_typing_in_id);
+    }
+
+    event = event_fixtures.channel_typing_edit_message__stop;
+    {
+        const stub = make_stub();
+        override(typing_events, "hide_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender_id, typing_person1.user_id);
+        assert_same(args.event.recipient.type, "channel");
+        assert_same(args.event.recipient.channel_id, stream_typing_in_id);
     }
 });
 
@@ -1380,6 +1420,12 @@ run_test("server_event_dispatch_op_errors", () => {
     server_events_dispatch.dispatch_normal_event({
         type: "typing",
         sender: {user_id: 5},
+        op: "other",
+    });
+    blueslip.expect("error", "Unexpected event type typing_edit_message/other");
+    server_events_dispatch.dispatch_normal_event({
+        type: "typing_edit_message",
+        sender_id: 5,
         op: "other",
     });
     blueslip.expect("error", "Unexpected event type user_group/other");

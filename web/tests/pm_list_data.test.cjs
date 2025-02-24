@@ -6,7 +6,14 @@ const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 
-const unread = mock_esm("../src/unread");
+const unread = mock_esm("../src/unread", {
+    num_unread_mentions_for_user_ids_strings(user_ids_string) {
+        if (user_ids_string === "103") {
+            return true;
+        }
+        return false;
+    },
+});
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
@@ -113,6 +120,7 @@ test("get_conversations", ({override}) => {
         {
             is_bot: false,
             is_active: false,
+            is_deactivated: false,
             is_group: false,
             is_zero: false,
             recipients: "Me Myself",
@@ -123,6 +131,7 @@ test("get_conversations", ({override}) => {
             status_emoji_info: {
                 emoji_code: "20",
             },
+            has_unread_mention: true,
         },
         {
             recipients: "Alice, Bob",
@@ -130,11 +139,13 @@ test("get_conversations", ({override}) => {
             unread: 1,
             is_zero: false,
             is_active: false,
+            is_deactivated: false,
             url: "#narrow/dm/101,102-group",
             user_circle_class: undefined,
             is_group: true,
             is_bot: false,
             status_emoji_info: undefined,
+            has_unread_mention: false,
         },
     ];
 
@@ -159,11 +170,13 @@ test("get_conversations", ({override}) => {
         unread: 0,
         is_zero: true,
         is_active: true,
+        is_deactivated: false,
         url: "#narrow/dm/106-Iago",
         status_emoji_info: {emoji_code: "20"},
         user_circle_class: "user-circle-offline",
         is_group: false,
         is_bot: false,
+        has_unread_mention: false,
     });
     set_pm_with_filter("iago@zulip.com");
     pm_data = pm_list_data.get_conversations();
@@ -198,11 +211,13 @@ test("get_conversations bot", ({override}) => {
             unread: 1,
             is_zero: false,
             is_active: false,
+            is_deactivated: false,
             url: "#narrow/dm/314-Outgoing-webhook",
             status_emoji_info: undefined,
             user_circle_class: "user-circle-offline",
             is_group: false,
             is_bot: true,
+            has_unread_mention: false,
         },
         {
             recipients: "Alice, Bob",
@@ -210,11 +225,13 @@ test("get_conversations bot", ({override}) => {
             unread: 1,
             is_zero: false,
             is_active: false,
+            is_deactivated: false,
             url: "#narrow/dm/101,102-group",
             user_circle_class: undefined,
             status_emoji_info: undefined,
             is_group: true,
             is_bot: false,
+            has_unread_mention: false,
         },
     ];
 

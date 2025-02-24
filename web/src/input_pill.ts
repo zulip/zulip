@@ -15,6 +15,7 @@ export type InputPillConfig = {
     exclude_inaccessible_users?: boolean;
     setting_name?: string;
     setting_type?: "realm" | "stream" | "group";
+    user_id?: number;
 };
 
 type InputPillCreateOptions<ItemType> = {
@@ -29,7 +30,7 @@ type InputPillCreateOptions<ItemType> = {
     ) => ItemType | undefined;
     get_text_from_item: (item: ItemType) => string;
     get_display_value_from_item: (item: ItemType) => string;
-    generate_pill_html?: (item: ItemType) => string;
+    generate_pill_html?: (item: ItemType, disabled?: boolean) => string;
     on_pill_exit?: (
         clicked_pill: HTMLElement,
         all_pills: InputPill<ItemType>[],
@@ -41,6 +42,7 @@ type InputPillCreateOptions<ItemType> = {
 export type InputPill<ItemType> = {
     item: ItemType;
     $element: JQuery;
+    disabled: boolean;
 };
 
 type InputPillStore<ItemType> = {
@@ -65,9 +67,13 @@ type InputPillStore<ItemType> = {
 // These are the functions that are exposed to other modules.
 export type InputPillContainer<ItemType> = {
     appendValue: (text: string) => void;
-    appendValidatedData: (item: ItemType) => void;
+    appendValidatedData: (item: ItemType, disabled?: boolean) => void;
     getByElement: (element: HTMLElement) => InputPill<ItemType> | undefined;
     items: () => ItemType[];
+    removePill: (
+        element: HTMLElement,
+        trigger: RemovePillTrigger,
+    ) => InputPill<ItemType> | undefined;
     onPillCreate: (callback: () => void) => void;
     onPillRemove: (
         callback: (pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void,
@@ -149,18 +155,20 @@ export function create<ItemType extends {type: string}>(
 
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
-        appendValidatedData(item: ItemType) {
+        appendValidatedData(item: ItemType, disabled = false) {
             let pill_html;
             if (store.generate_pill_html !== undefined) {
-                pill_html = store.generate_pill_html(item);
+                pill_html = store.generate_pill_html(item, disabled);
             } else {
                 pill_html = render_input_pill({
                     display_value: store.get_display_value_from_item(item),
+                    disabled,
                 });
             }
             const payload: InputPill<ItemType> = {
                 item,
                 $element: $(pill_html),
+                disabled,
             };
 
             store.pills.push(payload);
@@ -210,6 +218,9 @@ export function create<ItemType extends {type: string}>(
             const idx = store.pills.findIndex((pill) => pill.$element[0] === element);
 
             if (idx !== -1) {
+                if (store.pills[idx]!.disabled) {
+                    return undefined;
+                }
                 store.pills[idx]!.$element.remove();
                 const pill = util.the(store.pills.splice(idx, 1));
                 if (store.onPillRemove !== undefined) {
@@ -235,7 +246,7 @@ export function create<ItemType extends {type: string}>(
         removeLastPill(trigger: RemovePillTrigger, quiet?: boolean) {
             const pill = store.pills.pop();
 
-            if (pill) {
+            if (pill && !pill.disabled) {
                 pill.$element.remove();
                 if (!quiet && store.onPillRemove !== undefined) {
                     store.onPillRemove(pill, trigger);
@@ -480,6 +491,7 @@ export function create<ItemType extends {type: string}>(
         getByElement: funcs.getByElement.bind(funcs),
         getCurrentText: funcs.getCurrentText.bind(funcs),
         items: funcs.items.bind(funcs),
+        removePill: funcs.removePill.bind(funcs),
 
         onPillCreate(callback) {
             store.onPillCreate = callback;

@@ -48,7 +48,6 @@ from zerver.lib.upload import sanitize_name, upload_message_attachment
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
-from zerver.lib.users import get_api_key
 from zerver.models import Attachment, Message, Realm, RealmDomain, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_by_delivery_email
@@ -110,7 +109,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get(url, {"api_key": "invalid"})
         self.assertEqual(response.status_code, 401)
 
-        response = self.client_get(url, {"api_key": get_api_key(user_profile)})
+        response = self.client_get(url, {"api_key": user_profile.api_key})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.getvalue(), b"zulip!")
 
@@ -187,6 +186,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result["Content-Type"], "application/octet-stream")
+        consume_response(result)
 
         uploaded_file = SimpleUploadedFile("somefile.txt", b"zulip!", content_type="")
         result = self.api_post(
@@ -199,6 +199,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result["Content-Type"], "text/plain")
+        consume_response(result)
 
     def test_preserve_provided_content_type(self) -> None:
         uploaded_file = SimpleUploadedFile("somefile.txt", b"zulip!", content_type="image/png")
@@ -212,6 +213,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_get(url)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result["Content-Type"], "image/png")
+        consume_response(result)
 
     # This test will go through the code path for uploading files onto LOCAL storage
     # when Zulip is in DEVELOPMENT mode.
@@ -809,7 +811,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Subscribed user who received the message should be able to view file
         self.login_user(cordelia)
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(9):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -870,7 +872,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Originally subscribed user should be able to view file
         self.login_user(polonius)
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(9):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.getvalue(), b"zulip!")
@@ -1203,10 +1205,24 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             redirect_url = response["Location"]
             self.assertEqual(redirect_url, str(avatar_url(cordelia)) + "&foo=bar")
 
+        with self.settings(
+            ENABLE_GRAVATAR=False, GRAVATAR_REALM_OVERRIDE={get_realm("zulip").id: True}
+        ):
+            response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertTrue("gravatar" in redirect_url)
+
         with self.settings(ENABLE_GRAVATAR=False):
             response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
             redirect_url = response["Location"]
             self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
+
+        with self.settings(
+            ENABLE_GRAVATAR=True, GRAVATAR_REALM_OVERRIDE={get_realm("zulip").id: False}
+        ):
+            response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertTrue("gravatar" not in redirect_url)
 
     def test_get_settings_avatar(self) -> None:
         self.login("hamlet")

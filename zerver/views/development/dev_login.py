@@ -18,7 +18,6 @@ from zerver.lib.exceptions import (
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.typed_endpoint import typed_endpoint
-from zerver.lib.users import get_api_key
 from zerver.lib.validator import validate_login_email
 from zerver.models import Realm, UserProfile
 from zerver.models.realms import get_realm
@@ -139,7 +138,7 @@ def api_dev_fetch_api_key(request: HttpRequest, *, username: str) -> HttpRespons
     assert isinstance(user_profile, UserProfile)
 
     do_login(request, user_profile)
-    api_key = get_api_key(user_profile)
+    api_key = user_profile.api_key
     return json_success(
         request,
         data={"api_key": api_key, "email": user_profile.delivery_email, "user_id": user_profile.id},

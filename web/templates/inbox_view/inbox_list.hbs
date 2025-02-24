@@ -9,6 +9,9 @@
                         <a tabindex="-1" role="button" href="/#narrow/is/private">{{t 'Direct messages'}}</a>
                     </div>
                 </div>
+                <span class="unread_mention_info tippy-zulip-tooltip
+                  {{#unless has_unread_mention}}hidden{{/unless}}"
+                  data-tippy-content="{{t 'You have unread mentions' }}">@</span>
                 <div class="unread-count-focus-outline" tabindex="0">
                     <span class="unread_count tippy-zulip-tooltip on_hover_all_dms_read"
                       data-tippy-content="{{t 'Mark as read' }}"

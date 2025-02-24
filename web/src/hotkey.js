@@ -130,14 +130,15 @@ const keydown_unshift_mappings = {
 
 const keydown_ctrl_mappings = {
     219: {name: "escape", message_view_only: false}, // '['
-    13: {name: "ctrl_enter", message_view_only: true}, // enter
 };
 
 const keydown_cmd_or_ctrl_mappings = {
+    13: {name: "action_with_enter", message_view_only: true}, // 'Enter'
     67: {name: "copy_with_c", message_view_only: false}, // 'C'
     75: {name: "search_with_k", message_view_only: false}, // 'K'
     83: {name: "star_message", message_view_only: true}, // 'S'
     190: {name: "narrow_to_compose_target", message_view_only: true}, // '.'
+    222: {name: "open_saved_snippet_dropdown", message_view_only: true}, // '''
 };
 
 const keydown_alt_mappings = {
@@ -498,6 +499,11 @@ export function process_enter_key(e) {
             return true;
         }
 
+        // Don't send the message if topic box is focused.
+        if (compose.is_topic_input_focused()) {
+            return true;
+        }
+
         return false;
     }
 
@@ -593,10 +599,10 @@ export function process_enter_key(e) {
     return true;
 }
 
-export function process_ctrl_enter_key() {
+export function process_cmd_or_ctrl_enter_key() {
     if ($("#preview_message_area").is(":visible")) {
-        const ctrl_pressed = true;
-        compose.handle_enter_key_with_preview_open(ctrl_pressed);
+        const cmd_or_ctrl_pressed = true;
+        compose.handle_enter_key_with_preview_open(cmd_or_ctrl_pressed);
         return true;
     }
 
@@ -723,8 +729,8 @@ export function process_hotkey(e, hotkey) {
             return process_escape_key(e);
         case "enter":
             return process_enter_key(e);
-        case "ctrl_enter":
-            return process_ctrl_enter_key(e);
+        case "action_with_enter":
+            return process_cmd_or_ctrl_enter_key(e);
         case "tab":
             return process_tab_key();
         case "shift_tab":
@@ -884,6 +890,13 @@ export function process_hotkey(e, hotkey) {
         // Note that there is special handling for Enter/Esc too, but
         // we handle this in other functions.
 
+        if (event_name === "open_saved_snippet_dropdown") {
+            const $messagebox = $(":focus").parents(".messagebox");
+            if ($messagebox.length === 1) {
+                $messagebox.find(".saved_snippets_widget")[0].click();
+            }
+        }
+
         if (event_name === "left_arrow" && compose_state.focus_in_empty_compose()) {
             message_edit.edit_last_sent_message();
             return true;
@@ -994,7 +1007,13 @@ export function process_hotkey(e, hotkey) {
             );
             return true;
         case "query_streams":
-            stream_list.initiate_search();
+            if (pm_list.is_zoomed_in()) {
+                pm_list.focus_pm_search_filter();
+            } else if (stream_list.is_zoomed_in()) {
+                topic_list.focus_topic_search_filter();
+            } else {
+                stream_list.initiate_search();
+            }
             return true;
         case "query_users":
             activity_ui.initiate_search();

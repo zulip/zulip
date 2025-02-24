@@ -2,6 +2,7 @@ class kandra::prod_app_frontend_once {
   include zulip::app_frontend_once
   include zulip::hooks::push_git_ref
   include zulip::hooks::zulip_notify
+  include kandra::hooks::zulip_notify_schema_diff
 
   zulip::cron { 'update-first-visible-message-id':
     hour   => '7',

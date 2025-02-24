@@ -104,9 +104,7 @@
         in the column. */
     grid-template:
         var(--message-box-sender-line-height) repeat(3, auto) /
-        var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
-            3 * var(--message-box-icon-width)
-        )
+        var(--message-box-avatar-column-width) minmax(0, 1fr) max-content
         8px minmax(var(--message-box-timestamp-column-width), max-content);
     /* Named grid areas provide flexibility for positioning grid items
        reliably, even if the row or column definitions of the grid change. */
@@ -128,15 +126,11 @@
             );
     }
 
-    @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
-        grid-template-columns:
-            var(--message-box-avatar-column-width) minmax(0, 1fr) calc(
-                2 * var(--message-box-icon-width)
-            )
-            8px minmax(var(--message-box-timestamp-column-width), max-content);
+    .message_edit_notice {
+        grid-area: edited;
     }
 
-    .message_edit_notice {
+    .edit-notifications {
         grid-area: edited;
     }
 
@@ -380,6 +374,10 @@
             margin-left: 4px;
             /* Unset the padding used on edited notices under the avatar. */
             padding-right: 0;
+
+            &.hide {
+                display: none;
+            }
         }
 
         .message_sender {
@@ -542,10 +540,10 @@
 
     .edit_content {
         /* Icons for editing content are determined on message hover;
-           we set an empty `.edit_content` to have 0 height in order to
-           preserve the layout of the other icons prior to any hovering. */
+           we set an empty `.edit_content` to take the eventual width
+           of whatever icon is displayed, so as to avoid a grid shift. */
         &:empty {
-            height: 0;
+            width: var(--message-box-icon-width);
         }
 
         &:hover {
@@ -768,6 +766,52 @@ of the base style defined for a read-only textarea in dark mode. */
     opacity: 1;
 }
 
+.message-editing-animation {
+    display: inline-flex;
+    align-items: baseline;
+    margin-left: 3px;
+    width: 40px;
+    height: 5px;
+
+    .y-animated-dot {
+        width: 4px;
+        height: 4px;
+        background-color: hsl(0deg 0% 53%);
+        border-radius: 50%;
+        margin-left: 3px;
+        opacity: 0;
+
+        &:nth-child(1) {
+            animation: typing 1s infinite 0.2s;
+        }
+
+        &:nth-child(2) {
+            animation: typing 1s infinite 0.4s;
+        }
+
+        &:nth-child(3) {
+            animation: typing 1s infinite 0.6s;
+        }
+    }
+}
+
+@keyframes typing {
+    0% {
+        opacity: 0;
+        transform: translateY(0);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translateY(-3px);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(0);
+    }
+}
+
 .message_edit_countdown_timer {
     text-align: right;
     display: inline;
@@ -866,6 +910,14 @@ of the base style defined for a read-only textarea in dark mode. */
 .locally-echoed .slow-send-spinner {
     display: unset !important;
     cursor: default;
+}
+
+/* Placehold the control buttons, unless there's a failure. */
+.locally-echoed
+    .messagebox:hover
+    .message_controls
+    .message_control_button:not(.failed_message_action) {
+    visibility: hidden;
 }
 
 .recipient_row {

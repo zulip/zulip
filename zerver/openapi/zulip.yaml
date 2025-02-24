@@ -455,7 +455,7 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When a user changes their time zone setting.
+                                        When a user changes their [profile time zone](/help/change-your-timezone).
                                       properties:
                                         user_id:
                                           type: integer
@@ -472,7 +472,7 @@ paths:
                                         timezone:
                                           type: string
                                           description: |
-                                            The new time zone of the user.
+                                            The IANA identifier of the new profile time zone for the user.
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -2945,6 +2945,163 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent when a user starts editing a message.
+                                Event sent when a user starts typing in a textarea to edit the
+                                content of a message. See the [edit message typing notifications
+                                endpoint](/api/set-typing-status-for-message-edit).
+
+                                Clients requesting `typing_edit_message` event type that have
+                                `receives_typing_notifications` enabled will receive this event if
+                                they would have been notified if the message's content edit were to
+                                be saved (E.g., because they were a direct message recipient or
+                                are a subscribe to the channel).
+
+                                **Changes**: New in Zulip 10.0 (feature level 351). Previously,
+                                typing notifications were not available when editing messages.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - typing_edit_message
+                                op:
+                                  type: string
+                                  enum:
+                                    - start
+                                sender_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the user who sent the message.
+                                message_id:
+                                  type: integer
+                                  description: |
+                                    Indicates the message id of the message that is being edited.
+                                recipient:
+                                  type: object
+                                  description: |
+                                    Object containing details about recipients of message edit typing notification.
+                                  additionalProperties: false
+                                  properties:
+                                    type:
+                                      type: string
+                                      description: |
+                                        Type of message being composed. Must be `"channel"` or `"direct"`.
+                                      enum:
+                                        - direct
+                                        - channel
+                                    channel_id:
+                                      type: integer
+                                      description: |
+                                        Only present if `type` is `"channel"`.
+
+                                        The unique ID of the channel to which message is being edited.
+                                    topic:
+                                      type: string
+                                      description: |
+                                        Only present if `type` is `"channel"`.
+
+                                        Topic within the channel where the message is being edited.
+                                    user_ids:
+                                      type: array
+                                      items:
+                                        type: integer
+                                      description: |
+                                        Present only if `type` is `direct`.
+
+                                        The user IDs of every recipient of this direct message.
+                              example:
+                                {
+                                  "type": "typing_edit_message",
+                                  "op": "start",
+                                  "sender_id": 10,
+                                  "recipient":
+                                    {"type": "direct", "user_ids": [8, 10]},
+                                  "message_id": 7,
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent when a user stops typing in a textarea to edit the
+                                content of a message. See the [edit message typing notifications
+                                endpoint](/api/set-typing-status-for-message-edit).
+
+                                Clients requesting `typing_edit_message` event type that have
+                                `receives_typing_notifications` enabled will receive this event if
+                                they would have been notified if the message's content edit were to
+                                be saved (E.g., because they were a direct message recipient or
+                                are a subscribe to the channel).
+
+                                **Changes**: New in Zulip 10.0 (feature level 351). Previously,
+                                typing notifications were not available when editing messages.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - typing_edit_message
+                                op:
+                                  type: string
+                                  enum:
+                                    - stop
+                                sender_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the user who sent the message.
+                                message_id:
+                                  type: integer
+                                  description: |
+                                    Indicates the message id of the message that is being edited.
+                                recipient:
+                                  type: object
+                                  description: |
+                                    Object containing details about recipients of message edit typing notification.
+                                  additionalProperties: false
+                                  properties:
+                                    type:
+                                      type: string
+                                      description: |
+                                        Type of message being composed. Must be `"channel"` or `"direct"`.
+                                      enum:
+                                        - direct
+                                        - channel
+                                    channel_id:
+                                      type: integer
+                                      description: |
+                                        Only present if `type` is `"channel"`.
+
+                                        The unique ID of the channel to which message is being edited.
+                                    topic:
+                                      type: string
+                                      description: |
+                                        Only present if `type` is `"channel"`.
+
+                                        Topic within the channel where the message is being edited.
+                                    user_ids:
+                                      type: array
+                                      items:
+                                        type: integer
+                                      description: |
+                                        Present only if `type` is `direct`.
+
+                                        The user IDs of every recipient of this direct message.
+                              example:
+                                {
+                                  "type": "typing_edit_message",
+                                  "op": "stop",
+                                  "sender_id": 10,
+                                  "message_id": 31,
+                                  "recipient":
+                                    {"type": "direct", "user_ids": [8, 10]},
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to a user when [message flags][message-flags] are added
                                 to messages.
 
@@ -4452,11 +4609,6 @@ paths:
                                         **Changes**: In Zulip 9.0 (feature level 243), the values in this
                                         dictionary were changed. Previously, the values were a simple boolean
                                         indicating whether the backend is enabled or not.
-                                    bot_creation_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy](/api/roles-and-permissions#permission-levels)
-                                        for which users can create bot users in this organization.
                                     can_access_all_users_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -4480,6 +4632,29 @@ paths:
                                             **Changes**: New in Zulip 10.0 (feature level 299). Previously
                                             `user_group_edit_policy` field used to control the permission
                                             to create user groups.
+                                    can_create_bots_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to create all types of bot users
+                                            in the organization. See also `can_create_write_only_bots_group`.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 344). Previously, this
+                                            permission was controlled by the enum `bot_creation_policy`. Values
+                                            were 1=Members, 2=Generic bots limited to administrators, 3=Administrators.
+                                    can_create_write_only_bots_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to create bot users that
+                                            can only send messages in the organization, i.e. incoming webhooks,
+                                            in addition to the users who are present in `can_create_bots_group`.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 344). Previously, this
+                                            permission was controlled by the enum `bot_creation_policy`. Values
+                                            were 1=Members, 2=Generic bots limited to administrators, 3=Administrators.
                                     can_create_public_channel_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -4576,6 +4751,18 @@ paths:
                                             setting controlled this permission; `true` corresponded to `Admins`, and
                                             `false` to `Members`.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_mention_many_users_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to use wildcard mentions in large channels.
+
+                                            All users will receive a warning/reminder when using mentions in large
+                                            channels, even when permitted to do so.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 352). Previously, this
+                                            permission was controlled by the enum `wildcard_mention_policy`.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_move_messages_between_channels_group:
                                       allOf:
                                         - description: |
@@ -4629,6 +4816,14 @@ paths:
                                               create and edit user groups.
 
                                             [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                                    can_summarize_topics_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the
+                                            set of users who are allowed to use AI summarization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 350).
                                     create_multiuse_invite_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -4730,6 +4925,13 @@ paths:
                                         Whether [new users joining](/help/restrict-account-creation#configuring-email-domain-restrictions)
                                         this organization are required to have an email
                                         address in one of the `realm_domains` configured for the organization.
+                                    enable_guest_user_dm_warning:
+                                      type: boolean
+                                      description: |
+                                        Whether clients should show a warning when a user is composing
+                                        a DM to a guest user in this organization.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 348).
                                     enable_guest_user_indicator:
                                       type: boolean
                                       description: |
@@ -5057,11 +5259,20 @@ paths:
 
                                         - 0 = None
                                         - 1 = Jitsi Meet
-                                        - 3 = Zoom
+                                        - 3 = Zoom (User OAuth integration)
                                         - 4 = BigBlueButton
+                                        - 5 = Zoom (Server to Server OAuth integration)
 
-                                        **Changes**: None added as an option in Zulip 3.0 (feature level 1)
+                                        Note that only one of the [Zoom integrations][zoom-video-calls] can
+                                        be configured on a Zulip server.
+
+                                        **Changes**: In Zulip 10.0 (feature level 353), added the Zoom Server
+                                        to Server OAuth option.
+
+                                        In Zulip 3.0 (feature level 1), added the None option
                                         to disable video call UI.
+
+                                        [zoom-video-calls]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#zoom
                                     waiting_period_threshold:
                                       type: integer
                                       description: |
@@ -5077,28 +5288,6 @@ paths:
                                         Zulip [communities directory](/help/communities-directory).
 
                                         **Changes**: New in Zulip 6.0 (feature level 129).
-                                    wildcard_mention_policy:
-                                      type: integer
-                                      description: |
-                                        The [policy][permission-level] for who can use wildcard mentions in
-                                        large channels.
-
-                                        - 1 = Any user can use wildcard mentions in large channels.
-                                        - 2 = Only members can use wildcard mentions in large channels.
-                                        - 3 = Only [full members][calc-full-member] can use wildcard mentions in large channels.
-                                        - 5 = Only organization administrators can use wildcard mentions in large channels.
-                                        - 6 = Nobody can use wildcard mentions in large channels.
-                                        - 7 = Only organization administrators and moderators can use wildcard mentions in large channels.
-
-                                        All users will receive a warning/reminder when using
-                                        mentions in large channels, even when permitted to do so.
-
-                                        **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
-                                        Zulip 4.0 (feature level 62). Channel administrators option removed in
-                                        Zulip 6.0 (feature level 133).
-
-                                        [permission-level]: /api/roles-and-permissions#permission-levels
-                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     zulip_update_announcements_stream_id:
                                       type: integer
                                       description: |
@@ -6335,6 +6524,16 @@ paths:
                     Clients should use the `max_topic_length` returned by the
                     [`POST /register`](/api/register-queue) endpoint to determine
                     the maximum topic length.
+
+                    Note: When the value of `realm_empty_topic_display_name` found in
+                    the [POST /register](/api/register-queue) response is used for this
+                    parameter, it is interpreted as an empty string.
+
+                    When [topics are required](/help/require-topics), this parameter can't
+                    be `"(no topic)"`, an empty string, or the value of `realm_empty_topic_display_name`.
+
+                    **Changes**: Before Zulip 10.0 (feature level 334), empty string
+                    was not a valid topic name for channel messages.
                   type: string
                   example: Castle
                 scheduled_delivery_timestamp:
@@ -6499,6 +6698,16 @@ paths:
                     Clients should use the `max_topic_length` returned by the
                     [`POST /register`](/api/register-queue) endpoint to determine
                     the maximum topic length.
+
+                    Note: When the value of `realm_empty_topic_display_name` found in
+                    the [POST /register](/api/register-queue) response is used for this
+                    parameter, it is interpreted as an empty string.
+
+                    When [topics are required](/help/require-topics), this parameter can't
+                    be `"(no topic)"`, an empty string, or the value of `realm_empty_topic_display_name`.
+
+                    **Changes**: Before Zulip 10.0 (feature level 334), empty string
+                    was not a valid topic name for channel messages.
                   type: string
                   example: Castle
                 scheduled_delivery_timestamp:
@@ -7182,6 +7391,9 @@ paths:
                     the [POST /register](/api/register-queue) response is used for this
                     parameter, it is interpreted as an empty string.
 
+                    When [topics are required](/help/require-topics), this parameter can't
+                    be `"(no topic)"`, an empty string, or the value of `realm_empty_topic_display_name`.
+
                     **Changes**: Before Zulip 10.0 (feature level 334), empty string
                     was not a valid topic name for channel messages.
 
@@ -7314,8 +7526,10 @@ paths:
                           }
                         description: |
                           An example JSON error response for when the message was rejected because
-                          of the organization's `wildcard_mention_policy` and large number of
-                          subscribers to the channel.
+                          the message contains a stream wildcard mention, but the user doesn't have
+                          permission to use such a mention in this channel as the user is not present
+                          in `can_mention_many_users_group` and the channel contains a large number
+                          of subscribers.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
                           error returned the `"BAD_REQUEST"` code.
@@ -7330,9 +7544,9 @@ paths:
                         description: |
                           An example JSON error response for when the message was rejected because
                           the message contains a topic wildcard mention, but the user doesn't have
-                          permission to use such a mention in this topic due to the
-                          `wildcard_mention_policy` (and large number of participants in this
-                          specific topic).
+                          permission to use such a mention in this topic as the user is not present
+                          in `can_mention_many_users_group` and the topic contains a large number
+                          of participants.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously,
                           `wildcard_mention_policy` was not enforced for topic mentions.
@@ -7679,8 +7893,26 @@ paths:
                           type: integer
                         description: |
                           An array with the IDs of the modified messages.
+                      ignored_because_not_subscribed_channels:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          Only present if the flag is `read` and the operation is `remove`.
+
+                          Zulip has an invariant that all unread messages must be in channels
+                          the user is subscribed to. This field will contain a list of the
+                          channels whose messages were skipped to mark as unread because the
+                          user is not subscribed to them.
+
+                          **Changes**: New in Zulip 10.0 (feature level 355).
                     example:
-                      {"msg": "", "messages": [4, 18, 15], "result": "success"}
+                      {
+                        "msg": "",
+                        "messages": [4, 18, 15],
+                        "ignored_because_not_subscribed_channels": [12, 13, 9],
+                        "result": "success",
+                      }
   /messages/flags/narrow:
     post:
       operationId: update-message-flags-for-narrow
@@ -7875,6 +8107,19 @@ paths:
                           bulk update to decide whether to issue
                           another request anchored at
                           `last_processed_id`).
+                      ignored_because_not_subscribed_channels:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          Only present if the flag is `read` and the operation is `remove`.
+
+                          Zulip has an invariant that all unread messages must be in channels
+                          the user is subscribed to. This field will contain a list of the
+                          channels whose messages were skipped to mark as unread because the
+                          user is not subscribed to them.
+
+                          **Changes**: New in Zulip 10.0 (feature level 355).
                     example:
                       {
                         "result": "success",
@@ -7885,6 +8130,7 @@ paths:
                         "last_processed_id": 55,
                         "found_oldest": false,
                         "found_newest": true,
+                        "ignored_because_not_subscribed_channels": [12, 13, 9],
                       }
   /messages/render:
     post:
@@ -8523,6 +8769,9 @@ paths:
                     the [POST /register](/api/register-queue) response is used for this
                     parameter, it is interpreted as an empty string.
 
+                    When [topics are required](/help/require-topics), this parameter can't
+                    be `"(no topic)"`, an empty string, or the value of `realm_empty_topic_display_name`.
+
                     You can [resolve topics](/help/resolve-a-topic) by editing the topic to
                     `✔ {original_topic}` with the `propagate_mode` parameter set to
                     `"change_all"`. The empty string topic cannot be marked as resolved.
@@ -8747,8 +8996,10 @@ paths:
                           }
                         description: |
                           An example JSON error response for when the message was rejected because
-                          of the organization's `wildcard_mention_policy` and large number of
-                          subscribers to the channel.
+                          the message contains a stream wildcard mention, but the user doesn't have
+                          permission to use such a mention in this channel as the user is not present
+                          in `can_mention_many_users_group` and the channel contains a large number
+                          of subscribers.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
                           error returned the `"BAD_REQUEST"` code.
@@ -8763,9 +9014,9 @@ paths:
                         description: |
                           An example JSON error response for when the message was rejected because
                           the message contains a topic wildcard mention, but the user doesn't have
-                          permission to use such a mention in this topic due to the
-                          `wildcard_mention_policy` (and large number of participants in this
-                          specific topic).
+                          permission to use such a mention in this topic as the user is not present
+                          in `can_mention_many_users_group` and the topic contains a large number
+                          of participants.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously,
                           `wildcard_mention_policy` was not enforced for topic mentions.
@@ -9447,7 +9698,8 @@ paths:
                       timezone:
                         type: string
                         description: |
-                          The time zone of the requesting user.
+                          The IANA identifier of the requesting user's [profile time zone](/help/change-your-timezone),
+                          which is used primarily to display the user's local time to other users.
 
                           **Changes**: New in Zulip 3.0 (feature level 10).
                         example: ""
@@ -10394,7 +10646,13 @@ paths:
         channel depends on the [channel's type: private, public, or
         web-public](/help/channel-permissions).
 
-        **Changes**: Removed `stream_post_policy` and `is_announcement_only`
+        **Changes**: Before Zulip 10.0 (feature level 349), a user cannot
+        subscribe other users to a private channel without being subscribed
+        to that channel themselves. Now, If a user is part of
+        `can_add_subscribers_group`, they can subscribe themselves or other
+        users to a private channel without being subscribed to that channel.
+
+        Removed `stream_post_policy` and `is_announcement_only`
         parameters in Zulip 10.0 (feature level 333), as permission to post
         in the channel is now controlled by `can_send_message_group`.
 
@@ -12006,8 +12264,10 @@ paths:
                   example: true
                 web_suggest_update_timezone:
                   description: |
-                    Whether the user should be shown an alert offering to update their profile time zone
-                    to the time zone of the browser in case they differ.
+                    Whether the user should be shown an alert, offering to update their
+                    [profile time zone](/help/change-your-timezone), when the time displayed
+                    for the profile time zone differs from the current time displayed by the
+                    time zone configured on their device.
 
                     **Changes**: New in Zulip 10.0 (feature level 329).
                   type: boolean
@@ -12223,6 +12483,13 @@ paths:
                     - 2
                     - 3
                   example: 2
+                hide_ai_features:
+                  type: boolean
+                  description: |
+                    Controls whether user wants AI features like topic summarization to
+                    be hidden in all Zulip clients.
+
+                    **Changes**: New in Zulip 10.0 (feature level 350).
                 enable_stream_desktop_notifications:
                   description: |
                     Enable visual desktop notifications for channel messages.
@@ -12533,6 +12800,8 @@ paths:
               user_list_style:
                 contentType: application/json
               web_stream_unreads_count_display_policy:
+                contentType: application/json
+              hide_ai_features:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json
@@ -15066,7 +15335,12 @@ paths:
                           Unlike `never_subscribed`, the user might have messages in their personal
                           message history that were sent to these channels.
 
-                          **Changes**: Removed `email_address` field from the dictionary
+                          **Changes**: Prior to Zulip 10.0 (feature level 349), if a user was
+                          in `can_administer_channel_group` of a channel that they had
+                          unsubscribed from, but not an organization administrator, the channel
+                          in question would not be part of this array.
+
+                          Removed `email_address` field from the dictionary
                           in Zulip 8.0 (feature level 226).
 
                           Removed `role` field from the dictionary
@@ -15131,6 +15405,11 @@ paths:
 
                           Important for clients containing UI where one can browse channels to subscribe
                           to.
+
+                          **Changes**: Prior to Zulip 10.0 (feature level 349), if a user was
+                          in `can_administer_channel_group` of a channel that they never
+                          subscribed to, but not an organization administrator, the channel
+                          in question would not be part of this array.
                       unread_msgs:
                         type: object
                         description: |
@@ -15416,8 +15695,10 @@ paths:
                           web_suggest_update_timezone:
                             type: boolean
                             description: |
-                              Whether the user should be shown an alert offering to update their profile time zone
-                              to the time zone of the browser in case they differ.
+                              Whether the user should be shown an alert, offering to update their
+                              [profile time zone](/help/change-your-timezone), when the time displayed
+                              for the profile time zone differs from the current time displayed by the
+                              time zone configured on their device.
 
                               **Changes**: New in Zulip 10.0 (feature level 329).
                           fluid_layout_width:
@@ -15564,10 +15845,18 @@ paths:
                               - 3 - No channels
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
+                          hide_ai_features:
+                            type: boolean
+                            description: |
+                              Controls whether user wants AI features like topic summarization to
+                              be hidden in all Zulip clients.
+
+                              **Changes**: New in Zulip 10.0 (feature level 350).
                           timezone:
                             type: string
                             description: |
-                              The IANA identifier of the user's [configured time zone](/help/change-your-timezone).
+                              The IANA identifier of the user's [profile time zone](/help/change-your-timezone),
+                              which is used primarily to display the user's local time to other users.
                           enter_sends:
                             type: boolean
                             description: |
@@ -16479,8 +16768,8 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
-                          The time zone configured for the user. This is used primarily to display
-                          the user's time zone to other users.
+                          The user's [profile time zone](/help/change-your-timezone), which is
+                          used primarily to display the user's local time to other users.
 
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
@@ -16537,13 +16826,6 @@ paths:
 
                           **Changes**: New in Zulip 9.0 (feature level 253). Previously, there were
                           only options to disable sending typing notifications.
-                      web_suggest_update_timezone:
-                        type: boolean
-                        description: |
-                          Whether the user should be shown an alert offering to update their profile time zone
-                          to the time zone of the browser in case they differ.
-
-                          **Changes**: New in Zulip 10.0 (feature level 329).
                       enter_sends:
                         deprecated: true
                         type: boolean
@@ -16680,6 +16962,20 @@ paths:
                               setting controlled this permission; `true` corresponded to `Admins`, and
                               `false` to `Members`.
                           - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_mention_many_users_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to use wildcard mentions in large channels.
+
+                              All users will receive a warning/reminder when using mentions in large
+                              channels, even when permitted to do so.
+
+                              **Changes**: New in Zulip 10.0 (feature level 352). Previously, this
+                              permission was controlled by the enum `wildcard_mention_policy`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_can_move_messages_between_channels_group:
                         allOf:
                           - description: |
@@ -16712,13 +17008,6 @@ paths:
                               In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
                               `edit_topic_policy` enum.
                           - $ref: "#/components/schemas/GroupSettingValue"
-                      realm_bot_creation_policy:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy](/api/roles-and-permissions#permission-levels)
-                          for which users can create bot users in this organization.
                       realm_can_create_groups:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
@@ -16730,6 +17019,29 @@ paths:
                               **Changes**: New in Zulip 10.0 (feature level 299). Previously
                               `realm_user_group_edit_policy` field used to control the
                               permission to create user groups.
+                      realm_can_create_bots_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to create all types of bot users
+                              in the organization. See also `can_create_write_only_bots_group`.
+
+                              **Changes**: New in Zulip 10.0 (feature level 344). Previously, this
+                              permission was controlled by the enum `bot_creation_policy`. Values
+                              were 1=Members, 2=Generic bots limited to administrators, 3=Administrators.
+                      realm_can_create_write_only_bots_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to create bot users that
+                              can only send messages in the organization, i.e. incoming webhooks,
+                              in addition to the users who are present in `can_create_bots_group`.
+
+                              **Changes**: New in Zulip 10.0 (feature level 344). Previously, this
+                              permission was controlled by the enum `bot_creation_policy`. Values
+                              were 1=Members, 2=Generic bots limited to administrators, 3=Administrators.
                       realm_can_manage_all_groups:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
@@ -16880,11 +17192,17 @@ paths:
                           [permission-level]: /api/roles-and-permissions#permission-levels
                       realm_wildcard_mention_policy:
                         type: integer
+                        deprecated: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The [policy][permission-level] for who can use wildcard mentions
-                          in large channels.
+                          A deprecated representation of a superset of the users who
+                          have permission to use wildcard mentions in large channels,
+                          available for backwards-compatibility. Clients should use
+                          `can_mention_many_users_group` instead.
+
+                          It is an enum with the following possible values, corresponding
+                          to roles/system groups:
 
                           - 1 = Any user can use wildcard mentions in large channels.
                           - 2 = Only members can use wildcard mentions in large channels.
@@ -16896,9 +17214,14 @@ paths:
                           All users will receive a warning/reminder when using
                           mentions in large channels, even when permitted to do so.
 
-                          **Changes**: In Zulip 6.0 (feature level 133), channel administrators option removed.
+                          **Changes**: Deprecated in Zulip 10.0 (feature level 352) and
+                          replaced by `realm_can_mention_many_users_group`, which
+                          supports finer resolution of configurations, resulting in this
+                          property being inaccurate following that transition.
 
-                          In Zulip 4.0 (feature level 62), moderators option added.
+                          Channel administrators option removed in Zulip 6.0 (feature level 133).
+
+                          Moderators option added in Zulip 4.0 (feature level 62).
 
                           New in Zulip 4.0 (feature level 33).
 
@@ -17086,18 +17409,25 @@ paths:
                       realm_video_chat_provider:
                         type: integer
                         description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
                           The configured [video call provider](/help/start-a-call) for the
                           organization.
 
                           - 0 = None
                           - 1 = Jitsi Meet
-                          - 3 = Zoom
+                          - 3 = Zoom (User OAuth integration)
                           - 4 = BigBlueButton
+                          - 5 = Zoom (Server to Server OAuth integration)
 
-                          **Changes**: None added as an option in Zulip 3.0 (feature level 1)
+                          Note that only one of the [Zoom integrations][zoom-video-calls] can
+                          be configured on a Zulip server.
+
+                          **Changes**: In Zulip 10.0 (feature level 353), added the Zoom Server
+                          to Server OAuth option.
+
+                          In Zulip 3.0 (feature level 1), added the None option
                           to disable video call UI.
+
+                          [zoom-video-calls]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#zoom
                       realm_jitsi_server_url:
                         type: string
                         nullable: true
@@ -17549,6 +17879,15 @@ paths:
                           - 2 = Zulip Cloud free plan (LIMITED)
                           - 3 = Zulip Cloud Standard plan (STANDARD)
                           - 4 = Zulip Cloud Standard plan, sponsored for free (STANDARD_FREE)
+                      realm_enable_guest_user_dm_warning:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether clients should show a warning when a user is composing
+                          a DM to a guest user in this organization.
+
+                          **Changes**: New in Zulip 10.0 (feature level 348).
                       realm_enable_guest_user_indicator:
                         type: boolean
                         description: |
@@ -17570,6 +17909,14 @@ paths:
                               to be of type integer and did not accept anonymous user groups.
 
                               New in Zulip 8.0 (feature level 225).
+                      realm_can_summarize_topics_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the
+                              set of users who are allowed to use AI summarization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 350).
                       zulip_plan_is_not_limited:
                         type: boolean
                         description: |
@@ -17849,6 +18196,16 @@ paths:
 
                           **Changes**: New in Zulip 8.0 (feature level 212). Previously, this value
                           was available as the now-deprecated `jitsi_server_url`.
+                      server_can_summarize_topics:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`
+
+                          Whether topic summarization is enabled in the server or
+                          not depending upon whether `TOPIC_SUMMARIZATION_MODEL`
+                          is set or not.
+
+                          **Changes**: New in Zulip 10.0 (feature level 350).
                       event_queue_longpoll_timeout_seconds:
                         type: integer
                         description: |
@@ -18006,8 +18363,10 @@ paths:
                           web_suggest_update_timezone:
                             type: boolean
                             description: |
-                              Whether the user should be shown an alert offering to update their profile time zone
-                              to the time zone of the browser in case they differ.
+                              Whether the user should be shown an alert, offering to update their
+                              [profile time zone](/help/change-your-timezone), when the time displayed
+                              for the profile time zone differs from the current time displayed by the
+                              time zone configured on their device.
 
                               **Changes**: New in Zulip 10.0 (feature level 329).
                           fluid_layout_width:
@@ -18154,6 +18513,13 @@ paths:
                               - 3 - No channels
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
+                          hide_ai_features:
+                            type: boolean
+                            description: |
+                              Controls whether user wants AI features like topic summarization to
+                              be hidden in all Zulip clients.
+
+                              **Changes**: New in Zulip 10.0 (feature level 350).
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
@@ -19168,8 +19534,10 @@ paths:
                 web_suggest_update_timezone:
                   type: boolean
                   description: |
-                    Whether the user should be shown an alert offering to update their profile time zone
-                    to the time zone of the browser in case they differ.
+                    Whether the user should be shown an alert, offering to update their
+                    [profile time zone](/help/change-your-timezone), when the time displayed
+                    for the profile time zone differs from the current time displayed by the
+                    time zone configured on their device.
 
                     **Changes**: New in Zulip 10.0 (feature level 329).
                   example: true
@@ -19395,9 +19763,17 @@ paths:
                     - 2
                     - 3
                   example: 2
+                hide_ai_features:
+                  type: boolean
+                  description: |
+                    Controls whether user wants AI features like topic summarization to
+                    be hidden in all Zulip clients.
+
+                    **Changes**: New in Zulip 10.0 (feature level 350).
                 timezone:
                   description: |
-                    The IANA identifier of the user's [configured time zone](/help/change-your-timezone).
+                    The IANA identifier of the user's [profile time zone](/help/change-your-timezone),
+                    which is used primarily to display the user's local time to other users.
 
                     **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
                     the `PATCH /settings/display` endpoint.
@@ -19791,6 +20167,8 @@ paths:
               user_list_style:
                 contentType: application/json
               web_stream_unreads_count_display_policy:
+                contentType: application/json
+              hide_ai_features:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json
@@ -20344,12 +20722,16 @@ paths:
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
 
-                        Users who can administer the channel or have the similar
-                        realm-level permission can add subscribers regardless of the value
-                        of this setting.
+                        Users who can administer the channel or have similar realm-level
+                        permissions can add subscribers to a public channel regardless
+                        of the value of this setting.
 
-                        Note that a user must also [have access](/help/channel-permissions) to a
-                        channel in order to modify it.
+                        Users in this group need not be subscribed to a private channel to
+                        add subscribers to it.
+
+                        Note that a user must [have content access](/help/channel-permissions)
+                        to a channel and permission to administer the channel in order to
+                        modify this setting.
 
                         **Changes**: New in Zulip 10.0 (feature level 342). Previously, there was no
                         channel-level setting for this permission.
@@ -20368,13 +20750,20 @@ paths:
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
 
-                        Administrators can always unsubscribe others from a channel.
+                        Organization administrators can unsubscribe others from a channel as though
+                        they were in this group without being explicitly listed here.
 
-                        Note that a user must also [have access](/help/channel-permissions) to a
-                        channel in order to modify it.
+                        Note that a user must have metadata access to a channel and permission
+                        to administer the channel in order to modify this setting.
 
-                        **Changes**: Prior to Zulip 10.0 (feature level 320), this value was
-                        always the integer ID of a system group.
+                        **Changes**: Prior to Zulip 10.0 (feature level 349), channel administrators
+                        could not unsubscribe other users if they were not an organization
+                        administrator or part of `can_remove_subscribers_group`. Realm administrators
+                        were not allowed to unsubscribe other users from a private channel if they
+                        were not subscribed to that channel.
+
+                        Prior to Zulip 10.0 (feature level 320), this value was always the integer
+                        ID of a system group.
 
                         Before Zulip 8.0 (feature level 197), the `can_remove_subscribers_group`
                         setting was named `can_remove_subscribers_group_id`.
@@ -20395,14 +20784,19 @@ paths:
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
 
-                        Administrators can always administer a channel.
+                        Organization administrators can administer every channel as though they were
+                        in this group without being explicitly listed here.
 
-                        Note that a user must also [have access](/help/channel-permissions) to a
-                        channel in order to modify it. The exception to this rule is that
-                        organization administrators can edit channel names and descriptions
-                        without having full access to the channel.
+                        Note that a user must [have content access](/help/channel-permissions) to a
+                        channel in order to add other subscribers to the channel.
 
-                        **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
+                        **Changes**: Prior to Zulip 10.0 (feature level 349) a user needed to
+                        [have content access](/help/channel-permissions) to a channel in order
+                        to modify it. The exception to this rule was that organization
+                        administrators can edit channel names and descriptions without having
+                        full access to the channel.
+
+                        New in Zulip 10.0 (feature level 325). Prior to this
                         change, the permission to administer channels was limited to realm
                         administrators.
                       example:
@@ -20420,8 +20814,8 @@ paths:
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
 
-                        Note that a user must also [have access](/help/channel-permissions) to a
-                        channel in order to post in the channel.
+                        Note that a user must have metadata access to a channel and permission
+                        to administer the channel in order to modify this setting.
 
                         **Changes**: New in Zulip 10.0 (feature level 333). Previously
                         `stream_post_policy` field used to control the permission to
@@ -20836,6 +21230,45 @@ paths:
                     description: |
                       An example JSON error response when the user composes a channel message
                       and `stream_id` is not specified:
+  /message_edit_typing:
+    post:
+      operationId: set-typing-status-for-message-edit
+      summary: Set "typing" status for message editing
+      tags: ["users"]
+      description: |
+        Notify other users whether the current user is editing a message.
+
+        Typing notifications for editing messages follow the same protocol as
+        [set-typing-status](/api/set-typing-status), see that endpoint for details.
+
+        **Changes**: New in Zulip 10.0 (feature level 351). Previously,
+        typing notifications were not available when editing messages.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                op:
+                  description: |
+                    Whether the user has started (`"start"`) or stopped (`"stop"`) editing.
+                  type: string
+                  enum:
+                    - start
+                    - stop
+                  example: start
+                message_id:
+                  description: |
+                    Describes the message id of the message being edited.
+                  type: integer
+                  example: 47
+              required:
+                - op
+                - message_id
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /user_groups/create:
     post:
       operationId: create-user-group
@@ -24379,7 +24812,8 @@ components:
         timezone:
           type: string
           description: |
-            The time zone of the user.
+            The IANA identifier of the user's [profile time zone](/help/change-your-timezone),
+            which is used primarily to display the user's local time to other users.
         avatar_url:
           type: string
           nullable: true
@@ -25059,11 +25493,16 @@ components:
             A [group-setting value][setting-values] defining the set of users
             who have permission to add subscribers to this channel.
 
-            Users who can administer the channel or have the similar realm-level
-            permission can add subscribers regardless of the value of this setting.
+            Users who can administer the channel or have similar realm-level
+            permissions can add subscribers to a public channel regardless
+            of the value of this setting.
 
-            Note that a user must also [have access](/help/channel-permissions) to a
-            channel in order to modify it.
+            Users in this group need not be subscribed to a private channel to
+            add subscribers to it.
+
+            Note that a user must [have content access](/help/channel-permissions)
+            to a channel and permission to administer the channel in order to
+            modify this setting.
 
             **Changes**: New in Zulip 10.0 (feature level 342). Previously, there was no
             channel-level setting for this permission.
@@ -25076,13 +25515,20 @@ components:
             A [group-setting value][setting-values] defining the set of users
             who have permission to remove subscribers from this channel.
 
-            Administrators can always unsubscribe others from a channel.
+            Organization administrators can unsubscribe others from a channel as though
+            they were in this group without being explicitly listed here.
 
-            Note that a user must also [have access](/help/channel-permissions) to a
-            channel in order to modify it.
+            Note that a user must have metadata access to a channel and permission
+            to administer the channel in order to modify this setting.
 
-            **Changes**: Prior to Zulip 10.0 (feature level 320), this value was
-            always the integer ID of a system group.
+            **Changes**: Prior to Zulip 10.0 (feature level 349), channel administrators
+            could not unsubscribe other users if they were not an organization
+            administrator or part of `can_remove_subscribers_group`. Realm administrators
+            were not allowed to unsubscribe other users from a private channel if they
+            were not subscribed to that channel.
+
+            Prior to Zulip 10.0 (feature level 320), this value was always the integer
+            ID of a system group.
 
             Before Zulip 8.0 (feature level 197), the `can_remove_subscribers_group`
             setting was named `can_remove_subscribers_group_id`.
@@ -25097,18 +25543,19 @@ components:
             A [group-setting value][setting-values] defining the set of users
             who have permission to administer this channel.
 
-            Administrators can always administer a channel.
+            Organization administrators can administer every channel as though they were
+            in this group without being explicitly listed here.
 
-            Note that a user must also [have access](/help/channel-permissions) to a
-            channel in order to modify it.
+            Note that a user must have metadata access to a channel and permission
+            to administer the channel in order to modify this setting.
 
-            Users can edit channel name and description without subscribing to the
-            channel, but they need to be subscribed to edit channel permissions and
-            add users. The exception to this rule is that organization administrators
-            can edit channel names and descriptions without having full access to
-            the channel.
+            **Changes**: Prior to Zulip 10.0 (feature level 349) a user needed to
+            [have content access](/help/channel-permissions) to a channel in
+            order to modify it. The exception to this rule was that organization
+            administrators can edit channel names and descriptions without
+            having full access to the channel.
 
-            **Changes**: New in Zulip 10.0 (feature level 325). Prior to this
+            New in Zulip 10.0 (feature level 325). Prior to this
             change, the permission to administer channels was limited to realm
             administrators.
 
@@ -25120,8 +25567,8 @@ components:
             A [group-setting value][setting-values] defining the set of users
             who have permission to post in this channel.
 
-            Note that a user must also [have access](/help/channel-permissions) to a
-            channel in order to post in the channel.
+            Note that a user must have metadata access to a channel and permission
+            to administer the channel in order to modify this setting.
 
             **Changes**: New in Zulip 10.0 (feature level 333). Previously
             `stream_post_policy` field used to control the permission to

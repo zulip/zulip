@@ -97,7 +97,7 @@ LEGACY_STRINGS_MAP = {
     "Only subscribers to this channel can edit channel permissions.": "Only subscribers to this stream can edit stream permissions.",
     "Pin channel to top": "Pin stream to top",
     "Pin channel to top of left sidebar": "Pin stream to top of left sidebar",
-    "Please specify a channel.": "Please specify a stream.",
+    "Please select a channel.": "Please specify a stream.",
     "Private channels cannot be default channels for new users.": "Private streams cannot be default streams for new users.",
     "Receives new channel announcements": "Receives new stream announcements",
     "Require topics in channel messages": "Require topics in stream messages",

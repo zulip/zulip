@@ -26,7 +26,6 @@ from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.soft_deactivation import queue_soft_reactivation
-from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     get_group_setting_value_dict_for_streams,
@@ -34,6 +33,7 @@ from zerver.lib.streams import (
     send_stream_deletion_event,
     stream_to_dict,
 )
+from zerver.lib.subscription_info import bulk_get_subscriber_peer_info
 from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user

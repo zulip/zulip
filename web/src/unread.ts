@@ -50,9 +50,10 @@ const unread_messages = new Set<number>();
 // user within that topic. Use `recent_view_util.get_topic_key` to
 // calculate keys.
 //
-// Functionally a cache; see clear_and_populate_unread_mention_topics
+// Functionally a cache; see clear_and_populate_unread_mentions
 // for how we can refresh it efficiently.
 export const unread_mention_topics = new Map<string, Set<number>>();
+export const unread_mention_dms = new Map<string, Set<number>>();
 
 export type StreamCountInfo = {
     unmuted_count: number;
@@ -604,62 +605,80 @@ class UnreadTopicCounter {
 }
 const unread_topic_counter = new UnreadTopicCounter();
 
-function add_message_to_unread_mention_topics(message_id: number): void {
+function add_message_to_unread_mentions(message_id: number): void {
     const message = message_store.get(message_id);
-    if (message?.type !== "stream") {
-        return;
-    }
-    const topic_key = recent_view_util.get_topic_key(message.stream_id, message.topic);
-    const topic_message_ids = unread_mention_topics.get(topic_key);
-    if (topic_message_ids !== undefined) {
-        topic_message_ids.add(message_id);
-    } else {
-        unread_mention_topics.set(topic_key, new Set([message_id]));
+    if (message?.type === "stream") {
+        const topic_key = recent_view_util.get_topic_key(message.stream_id, message.topic);
+        const topic_message_ids = unread_mention_topics.get(topic_key);
+        if (topic_message_ids !== undefined) {
+            topic_message_ids.add(message_id);
+        } else {
+            unread_mention_topics.set(topic_key, new Set([message_id]));
+        }
+    } else if (message?.type === "private") {
+        const user_ids_string = message.to_user_ids;
+        const dm_message_ids = unread_mention_dms.get(user_ids_string);
+        if (dm_message_ids !== undefined) {
+            dm_message_ids.add(message_id);
+        } else {
+            unread_mention_dms.set(user_ids_string, new Set([message_id]));
+        }
     }
 }
 
-function remove_message_from_unread_mention_topics(message_id: number): void {
+function remove_message_from_unread_mentions(message_id: number): void {
     const stream_topic = unread_topic_counter.reverse_lookup.get(message_id);
-    if (!stream_topic) {
-        // Direct messages and messages that were already not unread
-        // exit here.
-        return;
+    const user_ids_string = unread_direct_message_counter.reverse_lookup.get(message_id);
+    if (stream_topic) {
+        const {stream_id, topic} = stream_topic;
+        const topic_key = recent_view_util.get_topic_key(stream_id, topic);
+        unread_mention_topics.get(topic_key)?.delete(message_id);
+    } else if (user_ids_string) {
+        const dm_message_ids = unread_mention_dms.get(user_ids_string);
+        dm_message_ids?.delete(message_id);
+        if (dm_message_ids?.size === 0) {
+            unread_mention_dms.delete(user_ids_string);
+        }
     }
-    const {stream_id, topic} = stream_topic;
-    const topic_key = recent_view_util.get_topic_key(stream_id, topic);
-    unread_mention_topics.get(topic_key)?.delete(message_id);
 }
 
-export function clear_and_populate_unread_mention_topics(): void {
+export function clear_and_populate_unread_mentions(): void {
     // The unread_mention_topics is an important data structure for
-    // efficiently querying whether a given stream/topic pair contains
-    // unread mentions.
+    // efficiently querying whether a given stream/topic pair and
+    // dm contain unread mentions.
     //
     // It is effectively a cache, since it can be reconstructed from
     // unread_mentions_counter (IDs for all unread mentions) and
-    // unread_topic_counter (Streams/topics for all unread messages).
+    // unread_topic_counter (Streams/topics for all unread messages)/
+    // unread_direct_message_counter.
     //
     // Since this function runs in O(unread mentions) time, we can use
     // it in topic editing code paths where it might be onerous to
     // write custom live-update code; but we should avoid calling it
     // in loops.
     unread_mention_topics.clear();
+    unread_mention_dms.clear();
 
     for (const message_id of unread_mentions_counter) {
         const stream_topic = unread_topic_counter.reverse_lookup.get(message_id);
-        if (!stream_topic) {
-            // Direct messages and messages that were already not unread
-            // exit here.
-            continue;
-        }
-        const {stream_id, topic} = stream_topic;
+        const user_ids_string = unread_direct_message_counter.reverse_lookup.get(message_id);
+        if (stream_topic) {
+            const {stream_id, topic} = stream_topic;
 
-        const topic_key = recent_view_util.get_topic_key(stream_id, topic);
-        const topic_message_ids = unread_mention_topics.get(topic_key);
-        if (topic_message_ids !== undefined) {
-            topic_message_ids.add(message_id);
-        } else {
-            unread_mention_topics.set(topic_key, new Set([message_id]));
+            const topic_key = recent_view_util.get_topic_key(stream_id, topic);
+            const topic_message_ids = unread_mention_topics.get(topic_key);
+            if (topic_message_ids !== undefined) {
+                topic_message_ids.add(message_id);
+            } else {
+                unread_mention_topics.set(topic_key, new Set([message_id]));
+            }
+        } else if (user_ids_string) {
+            const dm_message_ids = unread_mention_dms.get(user_ids_string);
+            if (dm_message_ids !== undefined) {
+                dm_message_ids.add(message_id);
+            } else {
+                unread_mention_dms.set(user_ids_string, new Set([message_id]));
+            }
         }
     }
 }
@@ -813,7 +832,7 @@ export function update_message_for_mention(
     if (!message.unread) {
         unread_mentions_counter.delete(message.id);
         direct_message_with_mention_count.delete(message.id);
-        remove_message_from_unread_mention_topics(message.id);
+        remove_message_from_unread_mentions(message.id);
         return false;
     }
 
@@ -831,14 +850,14 @@ export function update_message_for_mention(
 
     if (is_unmuted_mention || message.mentioned_me_directly) {
         unread_mentions_counter.add(message.id);
-        add_message_to_unread_mention_topics(message.id);
+        add_message_to_unread_mentions(message.id);
         if (message.type === "private") {
             direct_message_with_mention_count.add(message.id);
         }
     } else {
         unread_mentions_counter.delete(message.id);
         direct_message_with_mention_count.delete(message.id);
-        remove_message_from_unread_mention_topics(message.id);
+        remove_message_from_unread_mentions(message.id);
     }
 
     if (content_edited && message.type === "stream") {
@@ -851,12 +870,12 @@ export function mark_as_read(message_id: number): void {
     // We don't need to check anything about the message, since all
     // the following methods are cheap and work fine even if message_id
     // was never set to unread.
-    unread_direct_message_counter.delete(message_id);
 
     // Important: This function uses `unread_topic_counter` to look up
     // the stream/topic for this previously unread message, so much
     // happen before the message is removed from that data structure.
-    remove_message_from_unread_mention_topics(message_id);
+    remove_message_from_unread_mentions(message_id);
+    unread_direct_message_counter.delete(message_id);
     unread_topic_counter.delete(message_id);
     unread_mentions_counter.delete(message_id);
     direct_message_with_mention_count.delete(message_id);
@@ -1012,6 +1031,14 @@ export function get_topics_with_unread_mentions(stream_id: number): Set<string> 
     return unread_topic_counter.get_topics_with_unread_mentions(stream_id);
 }
 
+export function num_unread_mentions_for_user_ids_strings(user_ids_string: string): number {
+    return Number(unread_mention_dms.get(user_ids_string)?.size);
+}
+
+export function num_unread_mentions_in_dms(): number {
+    return unread_mention_dms.size;
+}
+
 export function num_unread_for_user_ids_string(user_ids_string: string): number {
     return unread_direct_message_counter.num_unread(user_ids_string);
 }
@@ -1075,7 +1102,7 @@ export function initialize(params: StateData["unread"]): void {
             direct_message_with_mention_count.add(message_id);
         }
     }
-    clear_and_populate_unread_mention_topics();
+    clear_and_populate_unread_mentions();
 
     for (const obj of unread_msgs.huddles) {
         for (const message_id of obj.unread_message_ids) {

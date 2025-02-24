@@ -45,9 +45,9 @@ class HomeTest(ZulipTestCase):
     # Keep this list sorted!!!
     expected_page_params_keys = [
         "apps_page_url",
-        "bot_types",
         "corporate_enabled",
         "development_environment",
+        "embedded_bots_enabled",
         "furthest_read_time",
         "insecure_desktop_app",
         "is_spectator",
@@ -125,22 +125,25 @@ class HomeTest(ZulipTestCase):
         "realm_authentication_methods",
         "realm_available_video_chat_providers",
         "realm_avatar_changes_disabled",
-        "realm_bot_creation_policy",
         "realm_bot_domain",
         "realm_bots",
         "realm_can_access_all_users_group",
         "realm_can_add_custom_emoji_group",
         "realm_can_add_subscribers_group",
+        "realm_can_create_bots_group",
         "realm_can_create_groups",
         "realm_can_create_private_channel_group",
         "realm_can_create_public_channel_group",
         "realm_can_create_web_public_channel_group",
+        "realm_can_create_write_only_bots_group",
         "realm_can_delete_any_message_group",
         "realm_can_delete_own_message_group",
         "realm_can_invite_users_group",
         "realm_can_manage_all_groups",
+        "realm_can_mention_many_users_group",
         "realm_can_move_messages_between_channels_group",
         "realm_can_move_messages_between_topics_group",
+        "realm_can_summarize_topics_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",
@@ -164,6 +167,7 @@ class HomeTest(ZulipTestCase):
         "realm_embedded_bots",
         "realm_emoji",
         "realm_empty_topic_display_name",
+        "realm_enable_guest_user_dm_warning",
         "realm_enable_guest_user_indicator",
         "realm_enable_read_receipts",
         "realm_enable_spectator_access",
@@ -219,6 +223,7 @@ class HomeTest(ZulipTestCase):
         "saved_snippets",
         "scheduled_messages",
         "server_avatar_changes_disabled",
+        "server_can_summarize_topics",
         "server_emoji_data_url",
         "server_generation",
         "server_inline_image_preview",
@@ -275,7 +280,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         with (
-            self.assert_database_query_count(54),
+            self.assert_database_query_count(56),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page(stream="Denmark")
@@ -358,9 +363,9 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params["is_spectator"], True)
         expected_keys = [
             "apps_page_url",
-            "bot_types",
             "corporate_enabled",
             "development_environment",
+            "embedded_bots_enabled",
             "furthest_read_time",
             "insecure_desktop_app",
             "is_spectator",
@@ -612,7 +617,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(49):
+        with self.assert_database_query_count(51):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.
@@ -1485,3 +1490,37 @@ class HomeTest(ZulipTestCase):
             page_params["state_data"]["realm_push_notifications_enabled_end_timestamp"],
             datetime_to_timestamp(end_timestamp),
         )
+
+
+class TestDocRedirectView(ZulipTestCase):
+    def test_doc_permalink_view(self) -> None:
+        result = self.client_get("/doc-permalinks/usage-statistics")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(
+            result["Location"],
+            "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#uploading-usage-statistics",
+        )
+
+        result = self.client_get("/doc-permalinks/basic-metadata")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(
+            result["Location"],
+            "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#uploading-basic-metadata",
+        )
+
+        result = self.client_get("/doc-permalinks/why-service")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(
+            result["Location"],
+            "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#why-a-push-notification-service-is-necessary",
+        )
+
+        result = self.client_get("/doc-permalinks/registration-transfer")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(
+            result["Location"],
+            "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#moving-your-registration-to-a-new-server",
+        )
+
+        result = self.client_get("/doc-permalinks/invalid-doc-id")
+        self.assertEqual(result.status_code, 404)

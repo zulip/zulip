@@ -175,6 +175,10 @@ test("user_circle, level", ({override}) => {
     set_presence(fred.user_id, undefined);
     assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user-circle-offline");
     assert.equal(buddy_data.level(fred.user_id), 3);
+
+    set_presence(fred.user_id, undefined);
+    assert.equal(buddy_data.get_user_circle_class(fred.user_id, true), "user-circle-deactivated");
+    assert.equal(buddy_data.level(fred.user_id), 3);
 });
 
 test("title_data", ({override}) => {

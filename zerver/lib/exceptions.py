@@ -31,6 +31,7 @@ class ErrorCode(Enum):
     REQUEST_CONFUSING_VAR = auto()
     INVALID_API_KEY = auto()
     INVALID_ZOOM_TOKEN = auto()
+    UNKNOWN_ZOOM_USER = auto()
     UNAUTHENTICATED_USER = auto()
     NONEXISTENT_SUBDOMAIN = auto()
     RATE_LIMIT_HIT = auto()
@@ -56,6 +57,8 @@ class ErrorCode(Enum):
     SYSTEM_GROUP_REQUIRED = auto()
     CANNOT_DEACTIVATE_GROUP_IN_USE = auto()
     CANNOT_ADMINISTER_CHANNEL = auto()
+    REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED = auto()
+    HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR = auto()
 
 
 class JsonableError(Exception):

@@ -16,6 +16,7 @@ import * as add_stream_options_popover from "./add_stream_options_popover.ts";
 import * as alert_words from "./alert_words.ts";
 import {all_messages_data} from "./all_messages_data.ts";
 import * as audible_notifications from "./audible_notifications.ts";
+import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
@@ -46,6 +47,7 @@ import * as emojisets from "./emojisets.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
 import * as giphy_state from "./giphy_state.ts";
+import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hashchange from "./hashchange.ts";
 import * as hotkey from "./hotkey.js";
 import * as i18n from "./i18n.ts";
@@ -54,6 +56,7 @@ import * as information_density from "./information_density.ts";
 import * as invite from "./invite.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigation_area_popovers.ts";
+import * as left_sidebar_tooltips from "./left_sidebar_tooltips.ts";
 import * as lightbox from "./lightbox.ts";
 import * as linkifiers from "./linkifiers.ts";
 import * as local_message from "./local_message.ts";
@@ -95,7 +98,7 @@ import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload_setup from "./reload_setup.js";
 import * as resize_handler from "./resize_handler.ts";
-import * as saved_snippets_ui from "./saved_snippets_ui.ts";
+import * as saved_snippets from "./saved_snippets.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as scheduled_messages_ui from "./scheduled_messages_ui.ts";
@@ -295,13 +298,6 @@ export function initialize_kitchen_sink_stuff() {
         $("body").addClass("more-dense-mode");
     }
 
-    // To keep the specificity same for the CSS related to hiding the
-    // sidebars, we add the class to the body which is then later replaced
-    // by the class to hide right / left sidebar. We can take our time to do
-    // this since we are still showing the loading indicator screen and
-    // the rendered sidebars hasn't been displayed to the user yet.
-    $("body").addClass("default-sidebar-behaviour");
-
     $(window).on("blur", () => {
         $(document.body).addClass("window_blurred");
     });
@@ -442,6 +438,7 @@ export function initialize_everything(state_data) {
     tippyjs.initialize();
     compose_tooltips.initialize();
     message_list_tooltips.initialize();
+    left_sidebar_tooltips.initialize();
     // This populates data for scheduled messages.
     scheduled_messages.initialize(state_data.scheduled_messages);
     scheduled_messages_ui.initialize();
@@ -511,10 +508,11 @@ export function initialize_everything(state_data) {
     });
     inbox_ui.initialize();
     alert_words.initialize(state_data.alert_words);
-    saved_snippets_ui.initialize(state_data.saved_snippets);
+    saved_snippets.initialize(state_data.saved_snippets);
     emojisets.initialize();
     scroll_bar.initialize();
     message_viewport.initialize();
+    banners.initialize();
     navbar_alerts.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
@@ -662,10 +660,18 @@ export function initialize_everything(state_data) {
     topic_list.initialize({
         on_topic_click(stream_id, topic) {
             const sub = sub_store.get(stream_id);
+            const latest_msg_id = stream_topic_history.get_latest_known_message_id_in_topic(
+                stream_id,
+                topic,
+            );
+
+            assert(latest_msg_id !== undefined);
+
             message_view.show(
                 [
                     {operator: "channel", operand: sub.stream_id.toString()},
                     {operator: "topic", operand: topic},
+                    {operator: "with", operand: latest_msg_id},
                 ],
                 {trigger: "sidebar"},
             );
@@ -683,6 +689,8 @@ export function initialize_everything(state_data) {
     message_edit_history.initialize();
     hotkey.initialize();
     desktop_integration.initialize();
+
+    group_permission_settings.initialize();
 
     $("#app-loading").addClass("loaded");
 }

@@ -87,7 +87,7 @@ from zerver.actions.create_user import (
     do_reactivate_user,
 )
 from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
-from zerver.actions.users import do_change_user_role, do_deactivate_user
+from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
@@ -2127,6 +2127,60 @@ class StripeTest(StripeTestCase):
         assert ledger_entry is not None
         self.assertEqual(ledger_entry.licenses, minimum_for_plan_tier)
         self.assertEqual(ledger_entry.licenses_at_next_renewal, minimum_for_plan_tier)
+
+    @mock_stripe()
+    def test_customer_minimum_licenses_for_plan(self, *mocks: Mock) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        # We set set a 1 license minimum the initial upgrade.
+        minimum_for_plan_tier = 1
+        with (
+            patch(
+                "corporate.lib.stripe.BillingSession.min_licenses_for_plan",
+                return_value=minimum_for_plan_tier,
+            ),
+        ):
+            self.add_card_and_upgrade(hamlet, tier=CustomerPlan.TIER_CLOUD_PLUS)
+
+        customer = Customer.objects.first()
+        assert customer is not None
+        assert customer.stripe_customer_id is not None
+        # Check LicenseLedger has the current seat count.
+        ledger_entry = LicenseLedger.objects.last()
+        assert ledger_entry is not None
+        self.assertEqual(ledger_entry.licenses, self.seat_count)
+        self.assertEqual(ledger_entry.licenses_at_next_renewal, self.seat_count)
+
+        # We manually set customer.minimum_licenses to the current seat count,
+        # which is below the general Plus plan minimum licenses.
+        customer.minimum_licenses = self.seat_count
+        customer.save()
+
+        # Next year, they are still invoiced for the current seat count.
+        invoice_plans_as_needed(self.next_year)
+        # Check both invoices (initial and renewal)
+        [invoice0, invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
+        self.assertEqual(
+            [12000 * self.seat_count],
+            [item.amount for item in invoice0.lines],
+        )
+        self.assertEqual(
+            [12000 * self.seat_count],
+            [item.amount for item in invoice1.lines],
+        )
+
+        # Without the minimum_licenses set on the customer, a BillingError is raised when
+        # invoicing plans.
+        customer.minimum_licenses = None
+        customer.save()
+
+        with self.assertRaises(BillingError) as context:
+            invoice_plans_as_needed(self.next_year + timedelta(days=366))
+        error_message = context.exception.error_description
+        self.assertEqual(
+            error_message,
+            "Renewal licenses (6) less than minimum licenses (10) required for plan Zulip Cloud Plus.",
+        )
 
     def test_upgrade_with_tampered_seat_count(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -5854,7 +5908,11 @@ class LicenseLedgerTest(StripeTestCase):
         user = do_create_user("email", "password", get_realm("zulip"), "name", acting_user=None)
         do_deactivate_user(user, acting_user=None)
         do_reactivate_user(user, acting_user=None)
+
         # Not a proper use of do_activate_mirror_dummy_user, but fine for this test
+        change_user_is_active(user, False)
+        user.is_mirror_dummy = True
+        user.save(update_fields=["is_mirror_dummy"])
         do_activate_mirror_dummy_user(user, acting_user=None)
         # Add a guest user
         guest = do_create_user(
@@ -5966,7 +6024,7 @@ class InvoiceTest(StripeTestCase):
 
         # Add an extra user
         do_create_user(
-            "email-exra-user",
+            "email-extra-user",
             "password-extra-user",
             get_realm("zulip"),
             "name-extra-user",

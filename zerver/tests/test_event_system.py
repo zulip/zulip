@@ -27,7 +27,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     stub_event_queue_user_events,
 )
-from zerver.lib.users import get_api_key, get_users_for_api
+from zerver.lib.users import get_users_for_api
 from zerver.models import CustomProfileField, UserMessage, UserPresence, UserProfile
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm, get_realm_with_settings
@@ -627,7 +627,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assert_length(result["realm_bots"], 0)
 
         # additionally the API key for a random bot is not present in the data
-        api_key = get_api_key(self.notification_bot(user_profile.realm))
+        api_key = self.notification_bot(user_profile.realm).api_key
         self.assertNotIn(api_key, str(result))
 
     # Admin users have access to all bots in the realm_bots field
@@ -1218,7 +1218,7 @@ class FetchQueriesTest(ZulipTestCase):
         realm = get_realm_with_settings(realm_id=user.realm_id)
 
         with (
-            self.assert_database_query_count(45),
+            self.assert_database_query_count(47),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=realm)
@@ -1252,7 +1252,7 @@ class FetchQueriesTest(ZulipTestCase):
             starred_messages=1,
             stream=5,
             stop_words=0,
-            subscription=7,
+            subscription=9,
             update_display_settings=0,
             update_global_notifications=0,
             update_message_flags=5,

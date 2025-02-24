@@ -358,7 +358,8 @@
 .edit-content-container:has(
         .message_edit_content.textarea-approaching-limit.flash
     ) {
-    animation: message-limit-flash 0.5s ease-in-out 3;
+    /* This should align with the timing in compose_validate.validate_message_length. */
+    animation: message-limit-flash 0.5s ease-in-out 1;
 }
 
 #message-content-container .composebox-buttons {
@@ -534,14 +535,14 @@
     grid-area: scroller-backward;
     justify-content: flex-start;
     border-radius: 0 0 0 3px;
-    background: var(--color-compose-background-scroll-backward);
+    background: var(--gradient-compose-scroll-backward);
 
     &:hover {
-        background: var(--color-compose-background-scroll-backward-hover);
+        background: var(--gradient-compose-scroll-backward-hover);
     }
 
     &:active {
-        background: var(--color-compose-background-scroll-backward-active);
+        background: var(--gradient-compose-scroll-backward-active);
 
         .scroller-backward-icon {
             /* Subtly shift arrow in scroll direction. */
@@ -554,14 +555,14 @@
     grid-area: scroller-forward;
     justify-content: flex-end;
     border-radius: 0 0 3px;
-    background: var(--color-compose-background-scroll-forward);
+    background: var(--gradient-compose-scroll-forward);
 
     &:hover {
-        background: var(--color-compose-background-scroll-forward-hover);
+        background: var(--gradient-compose-scroll-forward-hover);
     }
 
     &:active {
-        background: var(--color-compose-background-scroll-forward-active);
+        background: var(--gradient-compose-scroll-forward-active);
 
         .scroller-forward-icon {
             /* Subtly shift arrow in scroll direction. */
@@ -592,7 +593,7 @@
 }
 
 .message-limit-indicator:not(:empty) {
-    font-size: 12px;
+    font-size: 0.8571em; /* 12px at 14px/em */
     color: var(--color-limit-indicator);
     width: max-content;
 
@@ -642,12 +643,15 @@
     right: 0;
     color: var(--color-compose-send-control-button);
     background: transparent;
-    font-size: 12.5px;
+    /* 12.5px at 14px em */
+    font-size: 0.8928em;
     font-weight: normal;
-    line-height: 20px;
+    /* 3px 7px at 12.5px font size at 14px em */
+    line-height: 1.6em;
     opacity: 0.7;
     border: 0;
-    padding: 3px 7px;
+    /* 3px 7px at 12.5px font size at 14px em */
+    padding: 0.24em 0.56em;
     border-radius: 8px;
     vertical-align: unset;
     text-shadow: none;
@@ -1185,10 +1189,14 @@ textarea.new_message_textarea {
     color: var(--color-text-popover-menu);
 
     .enter_sends_choice {
-        display: flex;
-        gap: 8px;
         padding: 4px 10px;
-        align-items: flex-start;
+        gap: 0 8px;
+        display: grid;
+        /* 1em and 1.5em were chosen from playing around with different values
+           and picking some that looked reasonable. */
+        grid-template:
+            "radio-button instructions" 1.5em
+            ".            instructions" auto / 1em auto;
 
         &:hover {
             background: var(--color-background-hover-popover-menu);
@@ -1209,8 +1217,12 @@ textarea.new_message_textarea {
         & .enter_sends_choice_radio {
             width: auto;
             cursor: pointer;
-            margin: 4px 0 0;
+            /* Radio buttons scale with height, and here we're just
+               matching that to the active font-size. */
+            height: 1em;
             accent-color: hsl(217deg 100% 60%);
+            grid-area: radio-button;
+            align-self: center;
 
             &:focus {
                 outline: 1px dotted hsl(0deg 0% 20%);
@@ -1233,6 +1245,7 @@ textarea.new_message_textarea {
         flex-shrink: 0;
         gap: 3px;
         white-space: nowrap;
+        grid-area: instructions;
     }
 
     .enter_sends_choice_text {
@@ -1371,15 +1384,6 @@ textarea.new_message_textarea {
             display: none;
         }
     }
-
-    .compose_draft_button {
-        font-size: 15px;
-        font-weight: 600;
-        font-family: "Source Sans 3 VF", sans-serif;
-        padding: 0 5px;
-        position: relative;
-        top: 0.7px;
-    }
 }
 
 .less-dense-mode {
@@ -1407,7 +1411,7 @@ textarea.new_message_textarea {
 
     &.disabled-message-send-controls {
         & button {
-            pointer-events: none;
+            cursor: default;
             opacity: 0.5;
         }
     }
@@ -1457,11 +1461,11 @@ textarea.new_message_textarea {
         color: var(--color-text-default);
 
         .stream-privacy-type-icon {
-            font-size: 13px;
-            width: 13px;
-            height: 13px;
+            font-size: 0.9286em; /* 13px at 14px em */
+            width: 1em;
+            height: 1em;
             position: relative;
-            top: 2px;
+            top: 0.1538em; /* 2px at 13px/em */
         }
     }
 
@@ -1615,21 +1619,21 @@ textarea.new_message_textarea {
 }
 
 .saved_snippets-dropdown-list-container {
-    width: 250px;
+    width: 17.8571em; /* 250px at 14px/em */
 
     .dropdown-list .dropdown-list-item-common-styles {
-        padding: 5px 10px;
+        padding: 0.3571em 0.7143em; /* 5px 10px at 14px/em */
         display: flex;
         flex-direction: column;
 
         .dropdown-list-item-name {
-            line-height: 15px;
+            line-height: 1.2em;
         }
 
         .dropdown-list-item-description {
             white-space: nowrap;
             font-weight: 400;
-            font-size: 13px;
+            font-size: 0.9283em; /* 13px at 14px/em */
             opacity: 0.8;
             padding: 0;
             text-overflow: ellipsis;

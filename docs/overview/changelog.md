@@ -15,77 +15,151 @@ _Unreleased_
 
 #### Highlights
 
+- Redesigned how channel messages without a topic work to be much
+  nicer, displayed as a special _general chat_ topic.
 - Redesigned the left sidebar visually, adding convenient "New topic"
-  and "New direct message" buttons.
+  and "New direct message" buttons, and allowing topics to line-wrap
+  to 2 lines. The collapsed state of the direct messages section now
+  persists across reloads.
 - Redesigned the right sidebar buddy list visually, adding a new "THIS
   CONVERSATION" section showing just the users who've participated
   recently in the currently viewed conversation, and improving its
   filtering component.
+- Replaced the compact mode setting with flexible options for font
+  size and line spacing in the Zulip web app.
 - User groups are now much more powerful, supporting subgroups and
   with new permissions settings for who can administer the group, join
   it, or edit its membership. Permission for creating new groups is
   now separate from permission to administer all groups.
+- Invitation links and emails can now encode initial groups for a user.
 - Most permissions settings in Zulip have been reimplemented with a
   new flexible system based on groups, and can have a value of any
   combination of roles, groups, and individual users. Groups can be
   nested as subgroups of other groups. Groups are now deactivated,
   rather than being fully deleted, so Zulip's audit logs still
   maintain a complete history of permissions changes.
-- Added a right sidebar buddy list style option showing user avatars,
-  designed for smaller organizations.
+- Group settings were redesigned, with many new administration
+  permissions, and a new Permissions panel showing all the permissions
+  that membership in the group grants.
+- Channel administration permissions have been restructured to be
+  based on groups, with new settings for administrering channels,
+  adding subscribers, removing them, and being able to join channels.
+- The access control model for message content in channels has been
+  generalized to allow users to be able to join a private channel at
+  their convenience, without needing to be subscribed. Users who have
+  permission to subscribe themselves to a channel are able to preview
+  and search channel content, just like how non-guest users can access
+  public channels without first subscribing.
+- Added a right sidebar buddy list style option showing user
+  avatars. You can now change the buddy list style directly from a
+  menu in the sidebar.
 - Changes the semantics for when messages are marked as read when
   scrolling the blue selection box past them and the bottom of the
   feed is not visible to avoid shifting one's place when briefly
   visiting a conversation.
-- Reworked the "archive channel" functionality to not mutate their
-  names or make content inaccessible, with a view towards supporting
-  unarchiving channels.
-- Significantly improved the performance of rendering messages in the
-  web application, and optimized common views to load near-instantly,
-  without making any network requests.
+- Reworked the "archive channel" functionality to preserve channel
+  names and content access, with a view towards supporting unarchiving
+  channels.
+- Significantly improved the performance of rendering message feeds in
+  the web application, and improved client-side caching to allow
+  instantly rendering most recently visited views.
+- When you link to a topic in Zulip, that link will now continue to
+  work even when the topic is renamed, move to another channel, or
+  resolved. The URL format references a specific message ID, allowing
+  it to usually point to the correct location when a topic is split
+  via moving some of the messages to another topic.
+- Reworked compose typeahead to make linking both channels and topics
+  in channels easier.
 - Added a new syntax for entering a direct link to a message in the
   compose box; message links pasted in the compose box are
   automatically converted into this syntax. (The original URL is
   accessible via browser undo or plain-text paste).
+- You can now save snippets of message content, and quickly insert
+  them into the message you're composing.
+- You can now see a channel's full description by hovering the inline
+  description in the top-navbar area.
 - Added support for uploading arbitrarily large files using the TUS
   chunked-upload protocol. The existing `MAX_FILE_UPLOAD_SIZE` setting
   will need to updated for most self-hosted installations; see the
   upgrade notes below.
+- Added a new server-to-server Zoom integration, which is much more
+  convenient to set up with current Zoom marketplace policies. The
+  BigBlueButton call provider integration now supports voice-only
+  calls.
+- Added an automated flow for transferring the mobile push
+  notifications service registration for a given domain to a new
+  server, even if the secrets have been lost.
+- Added new typing indicators for when someone is editing a message
+  that you're viewing in the message feed.
 
 #### Full feature changelog
 
-- Redesigned icons for bots, copying, and various other actions.
+- Added installer options for automatically registering for the mobile
+  push notifications service.
 - Added support for syncing user roles with the SCIM integration.
 - Added support for configuring certain custom profile fields to not
   be editable by the user, for fields that are maintained by
   administrators or synced from a third-party service.
-- Added support for personal Microsoft accounts in the EntraID/AzureAD
-  authentication backend.
+- Added support for personal Microsoft accounts in the Microsoft Entra
+  ID (formerly AzureAD) authentication backend. Updated documentation
+  to consistently refer to this authentication method as Entra ID.
+- Added a new "Forward message" option in the message actions menu,
+  similar to "Quote message", but with an intent to send the message
+  elsewhere.
+- Added support for copy/pasting and quoting selections containing
+  LaTeX.
 - Added `*` keyboard shortcut for navigating to starred messages view.
-- Added UI support for data exports with member consent.
+- Added new personal and organization-level settings controlling
+  access to and display of any future AI features.
+- Added UI support for data exports with member consent, including a
+  privacy setting for users to specify whether their private data can
+  be included in data exports.
 - Added new prompt when editing a message to remove the last reference
   to a previously uploaded file.
+- Added new prompt when your timezone doesn't match your profile
+  timezone. The prompt can be disabled via a setting.
+- Added a new configurable warning when composing a direct message
+  including a guest as a recipient.
 - Added the "Enter sends" setting to the Preferences settings
   panel. Previously, it was only accessible in the compose area.
+- Added a wizard for creating collaborative to-do widgets.
 - Added a new channel details menu when clicking channel pills.
-- Added live-update support to reactions, starred messages, followed
-  topics, and similar views that previously did not support it.
+- Added live-update support to several message views: Reactions,
+  Starred messages, `is:followed`, and other views that previously did
+  not support it.
+- Added support for incoming email integration addresses that use a
+  bot user or yourself as the sender, rather than the Email Gateway
+  system bot.
+- Added support for editing group membership on user profiles.
 - Added a clarifying modal the first time a user tries to resolve a
   topic, confirming that they understand it's resolved for everyone.
 - Added informative new error output when attempting to load a data
   export into a Zulip server running a different server version.
+- Added support for scheduling deletion of all data when deactivating
+  an organization.
+- Added support for generating high resolution thumbnails of HEIC and
+  TIFF images so that they can be displayed even on devices that don't
+  support those image formats. Animated images with very high total
+  pixel counts now preview the first few frames, rather than not
+  offering a preview at all.
 - Added a new API endpoint for bulk-fetching messages by ID. Improved
   API support for fetching users by email address.
 - Added API support for changing another user's email address, with a
   `can_change_user_emails` administrative permission issued via
   management shell.
+- Unread mentions in direct messages are now visually decorated with
+  an `@` in lists of conversations, just like unread mentions in
+  channels.
+- The organization settings Users panel now shows how many users have
+  each role.
 - Clicking on the channel name while viewing a topic in a channel is
   now another way to reach the Channel Feed for that channel.
-- New Airbyte integration. Updated GitHub, GitLab, GoCD, Linear, and
-  NewRelic integrations. Removed the OpsBeat integration as the
-  product is defunct.
+- New Airbyte and Onyx integrations. Updated GitHub, GitLab, GoCD,
+  Linear, and NewRelic integrations. Removed the OpsBeat and Desk.com
+  integrations, as the products are defunct. Refreshed the
+  documentation for dozens of integrations.
 - The GitHub webhook now has a flag to filter activity from private
-  repositories.
+  repositories. Fixed several bugs as well.
 - The `ignore_pull_requests` flag for the Travis CI integration was
   removed in favor of Zulip's generic event-filtering support.
 - System bot avatars are now shipped with the server, instead of
@@ -93,13 +167,43 @@ _Unreleased_
 - Deactivated users and bot users are now displayed more consistently
   across the UI.
 - Search results now show the full date on every result.
+- Drafts are no longer removed after 30 days.
 - The year is now always displayed on the first recipient/date bar
   entering the current year (Previously, one might see "June 12, 2022"
   followed by "July 15" and incorrectly think the latter was July 15, 2022).
+- Recipient divider rows in interleaved views now only show UI options
+  when hovered, for a cleaner look.
+- Redesigned how the compose and message-edit UIs present formatting
+  options in narrow windows and handle too-long messages.
+- Redesigned icons for bots, copying, and various other actions.
+- Redesigned the UI for changing your name or email address.
+- Redesigned the top-of-screen banners.
+- Redesigned the modal for moving topics.
+- Redesigned the channel color picker experience.
+- Redesigned how users are displayed across the app to be consistent
+  in how deactivated status, status emoji, guest markers, and other
+  decorations appear.
+- Improved most left sidebar tooltips to be more useful, such as
+  showing unread counts when hovering over icons in a collapsed VIEWS
+  section.
+- Improved how the left sidebar displays the state where one is
+  viewing a non-existent topic (E.g., when starting a topic).
+- Improved how very tall messages are collapsed and navigated over
+  with the arrow keys.
 - Improved hotkey documentation for macOS users with non-Mac keyboards.
 - Improved search keyboard UI in several subtle ways.
-- Improved how guest users are present in the invitation UI.
+- Improved how invitations for guest users work in the invitation UI.
 - Improved bottom-of-feed bookends for unsubscribed channels.
+- Improved top-right navbar area keyboard navigation.
+- Improved Slack data import of integration messages.
+- Improved the Slack incoming webhook integration.
+- Improved the read receipts modal to refresh its data every minute.
+- Improved handling of scheduled messages to be sent very soon.
+- Improved move-topic modal to better guess the initial value for
+  which collection of messages to move.
+- Fixed a bug where new user accounts joining an organization that had
+  been idle in recent months would be created with very few messages
+  in their combined feed.
 - Fixed a nasty bug where messages could be marked as read when they
   arrived onscreen at an unattended computer with Zulip focused.
 - Fixed several bugs involving clicking on message feed elements like
@@ -107,12 +211,35 @@ _Unreleased_
 - Fixed a line-wrapping bug where punctuation could weirdly wrap to
   the next line after mentions or global times.
 - Fixed error handling of 502s caused by timeouts.
+- Fixed password UI handling of attempts to set a password longer than
+  100 characters.
+- Fixed dozens of minor UX issues in the settings UI.
+- Fixed avatars being blurry in the copy settings flow when creating a
+  new account.
+- Fixed several live-update bugs involving moving topics.
 - Fixed several bugs involving deactivated users' group membership.
 - Fixed several bugs in the logical data import/export system.
+- Fixed issues with outgoing webhook bots using the API to interact
+  with messages in private channels.
+- Reimplemented the setting to demote inactive channels in the left
+  sidebar, fixing an issue that could cause the sidebar to constantly
+  rerender while message history was loaded.
+- Fixed the left sidebar sometimes not scrolling properly when
+  navigating to a topic.
 - Fixed several subtle race bugs involving local echo of sent messages.
+- Fixed several subtle bugs involving the compose preview area's height.
+- Fixed languages with custom playgrounds not being offered in the
+  default code block languages UI.
+- Fixed an issue that could cause browser/desktop app windows to
+  reload before a previously suspended laptop had gained reliable
+  access to the network.
 - Fixed buggy URL-escaping of filenames in tooltips.
 - Fixed bugs preventing reliably rolling restart of server processes.
+- Fixed several issues with the "load more" button in the recent view.
 - Fixed handling of several rare race conditions.
+- Fixed animated images incorrectly autoplaying on Firefox, even when
+  the user has configured them to only play on hover.
+- Fixed a bug that allowed the creation of invalid linkifiers.
 - Fixed inconsistencies in display order of group direct message recipients.
 - Renamed `stream` to `channel` in generated URLs, now that enough
   time has passed since `channel` support was added to mobile clients.
@@ -122,6 +249,7 @@ _Unreleased_
   database migrations.
 - Optimized the performance of creating channels with thousands of
   initial subscribers.
+- Optimized the scalability of the presence and events API endpoints.
 - Reduced the size of static assets for an initial page load of the web
   app by 22% using `zopfli` compression. Emoji spritesheets are also
   now 30% smaller thanks to using the modern `webp` format.
@@ -130,6 +258,7 @@ _Unreleased_
   performance and readability of the server project.
 - Migrate almost all of the remaining JavaScript code to TypeScript,
   fixing many minor bugs and latent issues.
+- Upgraded dependencies, including Django 5.1.
 
 #### Upgrade notes for 10.0
 

@@ -532,7 +532,8 @@ input.settings_text_input {
     border: 1px solid var(--color-border-tip);
     border-radius: 4px;
     padding: 10px;
-    font-size: 1rem;
+    /* previously 1rem = 16px at 14px em = 1.1428em */
+    font-size: 1.1428em;
     line-height: 1.5;
     color: hsl(0deg 0% 40%);
 
@@ -1118,6 +1119,10 @@ input.settings_text_input {
                 word-wrap: unset;
             }
 
+            .copy-overlay-message {
+                font-size: 1.2em;
+            }
+
             .restore-overlay-message {
                 cursor: pointer;
                 color: hsl(170deg 48% 54%);
@@ -1158,6 +1163,7 @@ input.settings_text_input {
     justify-content: space-between;
     outline: none;
     color: var(--color-text-default);
+    width: 206px;
 
     &:disabled {
         cursor: not-allowed;
@@ -1380,4 +1386,25 @@ input.settings_text_input {
 
 .text-error {
     color: hsl(1.06deg 44.66% 50.39%);
+}
+
+.sticky-bottom-option {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    color: var(--color-dropdown-item);
+    border: none;
+    border-top: 1px solid var(--color-border-zulip-button);
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+
+    &:hover {
+        color: var(--color-dropdown-item);
+        background-color: var(--background-color-active-dropdown-item);
+    }
+
+    &:focus {
+        background-color: var(--background-color-active-dropdown-item);
+        outline: none;
+    }
 }

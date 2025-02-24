@@ -47,7 +47,12 @@ from zerver.lib.streams import (
     render_stream_description,
     update_stream_active_status_for_realm,
 )
-from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError, maybe_thumbnail
+from zerver.lib.thumbnail import (
+    THUMBNAIL_ACCEPT_IMAGE_TYPES,
+    BadImageError,
+    get_user_upload_previews,
+    maybe_thumbnail,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend, upload_emoji_image
 from zerver.lib.upload.s3 import get_bucket
@@ -404,7 +409,7 @@ def fix_message_rendered_content(
             # similar syntax in the rendered HTML.
             soup = BeautifulSoup(message[rendered_content_key], "html.parser")
 
-            user_mentions = soup.findAll("span", {"class": "user-mention"})
+            user_mentions = soup.find_all("span", {"class": "user-mention"})
             if len(user_mentions) != 0:
                 user_id_map = ID_MAP["user_profile"]
                 for mention in user_mentions:
@@ -421,7 +426,7 @@ def fix_message_rendered_content(
                         mention["data-user-id"] = str(user_id_map[old_user_id])
                 message[rendered_content_key] = str(soup)
 
-            stream_mentions = soup.findAll("a", {"class": "stream"})
+            stream_mentions = soup.find_all("a", {"class": "stream"})
             if len(stream_mentions) != 0:
                 stream_id_map = ID_MAP["stream"]
                 for mention in stream_mentions:
@@ -430,7 +435,7 @@ def fix_message_rendered_content(
                         mention["data-stream-id"] = str(stream_id_map[old_stream_id])
                 message[rendered_content_key] = str(soup)
 
-            user_group_mentions = soup.findAll("span", {"class": "user-group-mention"})
+            user_group_mentions = soup.find_all("span", {"class": "user-group-mention"})
             if len(user_group_mentions) != 0:
                 user_group_id_map = ID_MAP["usergroup"]
                 for mention in user_group_mentions:
@@ -438,6 +443,18 @@ def fix_message_rendered_content(
                     if old_user_group_id in user_group_id_map:
                         mention["data-user-group-id"] = str(user_group_id_map[old_user_group_id])
                 message[rendered_content_key] = str(soup)
+
+            # Enqueue thumbnailing of all thumbnails in the message.
+            # We do this without taking a lock on the ImageAttachment
+            # rows, because the race here is that the images
+            # referenced by this message were encountered previously,
+            # and are currently being thumbnailed -- which will
+            # worst-case result in the images being enqueued a second
+            # time, and a no-op when those are processed.  The return
+            # value will also be out of date -- but that is irrelevant
+            # in this use case.
+            get_user_upload_previews(realm.id, message[content_key])
+
             continue
 
         try:
@@ -453,6 +470,7 @@ def fix_message_rendered_content(
             # words" type feature, and notifications aren't important anyway.
             realm_alert_words_automaton = None
 
+            # This also enqueues thumbnailing for images that are referenced
             rendered_content = markdown_convert(
                 content=content,
                 realm_alert_words_automaton=realm_alert_words_automaton,
@@ -1677,14 +1695,16 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     #
     # Begin by fixing up the Attachment data.
     fix_attachments_data(attachment_data)
-    # Now we're ready create ImageAttachment rows and enqueue thumbnailing
-    # for the images.
-    # This order ensures that during message import, rendered_content will be generated
-    # correctly with image previews.
-    # The important detail here is that we **only** care about having ImageAttachment
-    # rows ready at the time of message import. Thumbnailing happens in a queue worker
-    # in a different process, and we don't care about when it'll complete.
-    create_image_attachments_and_maybe_enqueue_thumbnailing(realm, attachment_data)
+    # Now we're ready create ImageAttachment rows; thumbnailing is
+    # enqueued when the messages are rendered, to prevent races if the
+    # thumbnailing can run _during_ rendering.  This order ensures
+    # that during message import, rendered_content will be generated
+    # with placeholders for all image previews, which are updated into
+    # their thumbnails as thumbnailing comes along after.  The
+    # important detail here is that **only** ImageAttachment rows (not
+    # Attachment rows) are ready (or needed) at the time of message
+    # import.
+    create_image_attachments(realm, attachment_data)
     map_messages_to_attachments(attachment_data)
 
     # Import zerver_message and zerver_usermessage
@@ -2047,9 +2067,7 @@ def fix_attachments_data(attachment_data: TableData) -> None:
                 attachment["content_type"] = guessed_content_type
 
 
-def create_image_attachments_and_maybe_enqueue_thumbnailing(
-    realm: Realm, attachment_data: TableData
-) -> None:
+def create_image_attachments(realm: Realm, attachment_data: TableData) -> None:
     for attachment in attachment_data["zerver_attachment"]:
         if attachment["content_type"] not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
             continue
@@ -2057,12 +2075,13 @@ def create_image_attachments_and_maybe_enqueue_thumbnailing(
         path_id = attachment["path_id"]
         content_type = attachment["content_type"]
 
-        # We don't have to go to S3 to obtain the file. We still have the export
-        # data on disk and stored the absolute path to it.
+        # Since we have it, use the on-disk version of the file to
+        # examine the header and determine if it needs thumbnailing;
+        # the actual thumbnail worker will still need to re-fetch the
+        # image from S3.
         local_filename = path_maps["new_attachment_path_to_local_data_path"][path_id]
         pyvips_source = pyvips.Source.new_from_file(local_filename)
-        maybe_thumbnail(pyvips_source, content_type, path_id, realm.id)
-        continue
+        maybe_thumbnail(pyvips_source, content_type, path_id, realm.id, skip_events=True)
 
 
 def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: set[int]) -> None:

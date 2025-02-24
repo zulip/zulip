@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
 from zerver.actions.message_send import (
@@ -13,6 +14,7 @@ from zerver.actions.message_send import (
     internal_prep_group_direct_message,
     internal_prep_stream_message,
 )
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.lib.topic import messages_for_topic
 from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
@@ -272,6 +274,28 @@ DIRECT MESSAGES to [start a DM]({starting_a_new_direct_message_help_url}).
             quote_or_forward_help_url="/help/quote-or-forward-a-message",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=12,
+        message="""
+- When you [link to a topic]({link_from_anywhere_help_url}) in Zulip, that link
+  will now continue to work even when the topic is
+  [renamed]({rename_a_topic_help_url}), [moved to another
+  channel]({move_content_to_another_channel_help_url}), or
+  [resolved]({resolve_a_topic_help_url}).
+
+**Web and desktop updates**
+- You can now [save snippets]({saved_snippets_help_url}) of message content, and
+quickly insert them into the message you're composing.
+- [Drafts]({drafts_help_url}) are no longer removed after 30 days.
+""".format(
+            link_from_anywhere_help_url="/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere",
+            rename_a_topic_help_url="/help/rename-a-topic",
+            move_content_to_another_channel_help_url="/help/move-content-to-another-channel",
+            resolve_a_topic_help_url="/help/resolve-a-topic",
+            saved_snippets_help_url="/help/saved-snippets",
+            drafts_help_url="/help/view-and-edit-your-message-drafts",
+        ),
+    ),
 ]
 
 
@@ -304,10 +328,10 @@ def internal_prep_group_direct_message_for_old_realm(
         topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
     if realm.zulip_update_announcements_stream is None:
         content = """
-Zulip now supports [configuring]({organization_settings_url}) a stream where Zulip will
+Zulip now supports [configuring]({organization_settings_url}) a channel where Zulip will
 send [updates]({zulip_update_announcements_help_url}) about new Zulip features.
 These notifications are currently turned off in your organization. If you configure
-a stream within one week, your organization will not miss any update messages.
+a channel within one week, your organization will not miss any update messages.
 """.format(
             zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
             organization_settings_url="/#organization/organization-settings",
@@ -317,7 +341,7 @@ a stream within one week, your organization will not miss any update messages.
 Starting tomorrow, users in your organization will receive [updates]({zulip_update_announcements_help_url})
 about new Zulip features in #**{zulip_update_announcements_stream}>{topic_name}**.
 
-If you like, you can [configure]({organization_settings_url}) a different stream for
+If you like, you can [configure]({organization_settings_url}) a different channel for
 these updates (and [move]({move_content_another_stream_help_url}) any updates sent before the
 configuration change), or [turn this feature off]({organization_settings_url}) altogether.
 """.format(
@@ -456,6 +480,10 @@ def send_zulip_update_announcements_to_realm(
             timezone_now() - level_none_to_initial_auditlog.event_time < timedelta(days=7)
         ):
             new_zulip_update_announcements_level = latest_zulip_update_announcements_level
+    elif realm.zulip_update_announcements_stream.deactivated:  # nocoverage
+        # `zulip_update_announcements_stream` should be set to None when its channel is
+        # deactivated. If this condition occurs, there's a bug that needs investigation.
+        raise JsonableError(_("`zulip_update_announcements_stream` is unexpectedly deactivated."))
     else:
         # Wait for 24 hours after sending group DM to allow admins to change the
         # stream for zulip update announcements from it's default value if desired.

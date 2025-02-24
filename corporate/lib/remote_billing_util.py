@@ -103,7 +103,7 @@ def get_remote_realm_and_user_from_session(
     request: HttpRequest,
     realm_uuid: str | None,
 ) -> tuple[RemoteRealm, RemoteRealmBillingUser]:
-    # Cannot use isinstance with TypeDicts, to make mypy know
+    # Cannot use isinstance with TypedDicts, to make mypy know
     # which of the TypedDicts in the Union this is - so just cast it.
     identity_dict = cast(
         RemoteBillingIdentityDict | None,

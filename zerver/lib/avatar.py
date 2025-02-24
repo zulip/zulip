@@ -114,16 +114,25 @@ def get_avatar_field(
         hash_key = user_avatar_base_path_from_ids(user_id, avatar_version, realm_id)
         return get_avatar_url(hash_key, medium=medium)
 
-    return get_gravatar_url(email=email, avatar_version=avatar_version, medium=medium)
+    return get_gravatar_url(
+        email=email,
+        avatar_version=avatar_version,
+        realm_id=realm_id,
+        medium=medium,
+    )
 
 
-def get_gravatar_url(email: str, avatar_version: int, medium: bool = False) -> str:
-    url = _get_unversioned_gravatar_url(email, medium)
+def get_gravatar_url(email: str, avatar_version: int, realm_id: int, medium: bool = False) -> str:
+    url = _get_unversioned_gravatar_url(email, medium, realm_id)
     return append_url_query_string(url, f"version={avatar_version:d}")
 
 
-def _get_unversioned_gravatar_url(email: str, medium: bool) -> str:
-    if settings.ENABLE_GRAVATAR:
+def _get_unversioned_gravatar_url(email: str, medium: bool, realm_id: int) -> str:
+    use_gravatar = settings.ENABLE_GRAVATAR
+    if realm_id in settings.GRAVATAR_REALM_OVERRIDE:
+        use_gravatar = settings.GRAVATAR_REALM_OVERRIDE[realm_id]
+
+    if use_gravatar:
         gravitar_query_suffix = f"&s={MEDIUM_AVATAR_SIZE}" if medium else ""
         hash_key = gravatar_hash(email)
         return f"https://secure.gravatar.com/avatar/{hash_key}?d=identicon{gravitar_query_suffix}"

@@ -11,7 +11,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_set_realm_property,
 )
-from zerver.actions.streams import do_deactivate_stream
+from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import messages_for_ids
@@ -23,7 +23,7 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import Attachment, Message, NamedUserGroup, Realm, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.messages import UserMessage
-from zerver.models.realms import WildcardMentionPolicyEnum, get_realm
+from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
 
@@ -396,8 +396,23 @@ class EditMessageTest(ZulipTestCase):
 
     def test_edit_message_no_content(self) -> None:
         self.login("hamlet")
+        # Check message edit in stream for no content.
         msg_id = self.send_stream_message(
             self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
+        )
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": " ",
+            },
+        )
+        self.assert_json_success(result)
+        content = Message.objects.filter(id=msg_id).values_list("content", flat=True)[0]
+        self.assertEqual(content, "(deleted)")
+
+        # Check message edit in DMs for no content.
+        msg_id = self.send_personal_message(
+            from_user=self.example_user("hamlet"), to_user=self.example_user("cordelia")
         )
         result = self.client_patch(
             f"/json/messages/{msg_id}",
@@ -413,7 +428,9 @@ class EditMessageTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
 
-        self.make_stream("privatestream", invite_only=True, history_public_to_subscribers=False)
+        stream = self.make_stream(
+            "privatestream", invite_only=True, history_public_to_subscribers=False
+        )
         self.subscribe(hamlet, "privatestream")
         msg_id = self.send_stream_message(
             hamlet, "privatestream", topic_name="editing", content="before edit"
@@ -440,6 +457,28 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid message(s)")
         content = Message.objects.get(id=msg_id).content
         self.assertEqual(content, "test can edit before unsubscribing")
+
+        hamlet_group = check_add_user_group(
+            hamlet.realm,
+            "prospero_group",
+            [hamlet],
+            acting_user=hamlet,
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_add_subscribers_group",
+            hamlet_group,
+            acting_user=None,
+        )
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "having content access after unsubscribing",
+            },
+        )
+        self.assert_json_success(result)
+        content = Message.objects.get(id=msg_id).content
+        self.assertEqual(content, "having content access after unsubscribing")
 
     def test_edit_message_guest_in_unsubscribed_public_stream(self) -> None:
         guest_user = self.example_user("polonius")
@@ -694,8 +733,9 @@ class EditMessageTest(ZulipTestCase):
         msg_id = self.send_stream_message(
             hamlet, "Denmark", content="@**Cordelia, Lear's daughter**"
         )
+        message = Message.objects.get(id=msg_id)
 
-        mention_user_ids = get_mentions_for_message_updates(msg_id)
+        mention_user_ids = get_mentions_for_message_updates(message)
         self.assertEqual(mention_user_ids, {cordelia.id})
 
     def test_edit_cases(self) -> None:
@@ -1411,10 +1451,15 @@ class EditMessageTest(ZulipTestCase):
         message_id = self.send_stream_message(cordelia, stream_name, "Hello everyone")
 
         realm = cordelia.realm
-        do_set_realm_property(
+
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
             realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.MODERATORS,
+            "can_mention_many_users_group",
+            moderators_system_group,
             acting_user=None,
         )
 
@@ -1519,10 +1564,15 @@ class EditMessageTest(ZulipTestCase):
         message_id = self.send_stream_message(cordelia, stream_name, "Hello everyone")
 
         realm = cordelia.realm
-        do_set_realm_property(
+
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
             realm,
-            "wildcard_mention_policy",
-            WildcardMentionPolicyEnum.MODERATORS,
+            "can_mention_many_users_group",
+            moderators_system_group,
             acting_user=None,
         )
 

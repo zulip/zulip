@@ -9,6 +9,7 @@ import render_left_sidebar_topic_actions_popover from "../templates/popovers/lef
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
+import * as message_summary from "./message_summary.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
@@ -46,7 +47,7 @@ function get_conversation(instance: tippy.Instance): {
 
 export function initialize(): void {
     popover_menus.register_popover_menu(
-        "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu, .recipient-row-topic-menu",
+        "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu, .recipient-row-topic-menu, .recent_view_focusable .visibility-status-icon",
         {
             ...popover_menus.left_sidebar_tippy_options,
             onShow(instance) {
@@ -72,6 +73,11 @@ export function initialize(): void {
                 const is_topic_empty = context.is_topic_empty;
                 const topic_display_name = context.topic_display_name;
                 const is_empty_string_topic = context.is_empty_string_topic;
+
+                const $elt = $(instance.reference).closest(".recent_view_focusable");
+                if ($elt.length === 1) {
+                    $elt.addClass("topic-popover-visible");
+                }
 
                 if (!stream_id) {
                     popover_menus.hide_current_popover_if_visible(instance);
@@ -159,6 +165,12 @@ export function initialize(): void {
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
 
+                $popper.one("click", ".sidebar-popover-summarize-topic", () => {
+                    message_summary.get_narrow_summary(stream_id, topic_name);
+
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
                 $popper.one("click", ".sidebar-popover-toggle-resolved", () => {
                     message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
                         assert(message_id !== undefined);
@@ -194,6 +206,10 @@ export function initialize(): void {
                 );
             },
             onHidden(instance) {
+                const $elt = $(instance.reference).closest(".recent_view_focusable");
+                if ($elt.length === 1) {
+                    $elt.removeClass("topic-popover-visible");
+                }
                 instance.destroy();
                 popover_menus.popover_instances.topics_menu = null;
                 ui_util.hide_left_sidebar_menu_icon();

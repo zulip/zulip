@@ -93,14 +93,10 @@
                   setting_name="realm_can_add_subscribers_group"
                   label=group_setting_labels.can_add_subscribers_group}}
 
-                <div class="input-group">
-                    <label for="id_realm_wildcard_mention_policy" class="settings-field-label">{{t "Who can notify a large number of users with a wildcard mention" }}
-                        {{> ../help_link_widget link="/help/restrict-wildcard-mentions" }}
-                    </label>
-                    <select name="realm_wildcard_mention_policy" id="id_realm_wildcard_mention_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=wildcard_mention_policy_values}}
-                    </select>
-                </div>
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_mention_many_users_group"
+                  label=group_setting_labels.can_mention_many_users_group
+                  help_link="/help/restrict-wildcard-mentions"}}
             </div>
         </div>
 
@@ -321,6 +317,12 @@
                   is_checked=realm_enable_guest_user_indicator
                   label=admin_settings_label.realm_enable_guest_user_indicator}}
 
+                {{> settings_checkbox
+                  setting_name="realm_enable_guest_user_dm_warning"
+                  prefix="id_"
+                  is_checked=realm_enable_guest_user_dm_warning
+                  label=admin_settings_label.realm_enable_guest_user_dm_warning}}
+
                 {{> ../dropdown_widget_with_label
                   widget_name="realm_can_access_all_users_group"
                   label=group_setting_labels.can_access_all_users_group
@@ -335,12 +337,26 @@
                 {{> settings_save_discard_widget section_name="other-permissions" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
-                <div class="input-group">
-                    <label for="id_realm_bot_creation_policy" class="settings-field-label">{{t "Who can add bots" }}</label>
-                    <select name="realm_bot_creation_policy" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_bot_creation_policy" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=bot_creation_policy_values}}
-                    </select>
-                </div>
+                {{#unless server_can_summarize_topics}}
+                    <div class="tip">
+                        {{#if is_plan_self_hosted}}
+                        {{t "AI summaries are not enabled on this server."}}
+                        {{else}}
+                        {{t "AI summaries are not available on Zulip Cloud yet."}}
+                        {{/if}}
+                    </div>
+                {{/unless}}
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_summarize_topics_group"
+                  label=group_setting_labels.can_summarize_topics_group}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_write_only_bots_group"
+                  label=group_setting_labels.can_create_write_only_bots_group}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_can_create_bots_group"
+                  label=group_setting_labels.can_create_bots_group}}
 
                 {{> group_setting_value_pill_input
                   setting_name="realm_can_add_custom_emoji_group"

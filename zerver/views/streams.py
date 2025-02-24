@@ -65,16 +65,17 @@ from zerver.lib.streams import (
     access_default_stream_group_by_id,
     access_stream_by_id,
     access_stream_by_name,
-    access_stream_for_delete_or_update,
+    access_stream_for_delete_or_update_requiring_metadata_access,
     access_web_public_stream,
     check_stream_name_available,
     do_get_streams,
-    filter_stream_authorization,
+    filter_stream_authorization_for_adding_subscribers,
     get_group_setting_value_dict_for_streams,
     get_stream_permission_default_group,
     get_stream_permission_policy_name,
     list_to_streams,
     stream_to_dict,
+    user_has_content_access,
 )
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.topic import (
@@ -88,9 +89,11 @@ from zerver.lib.typed_endpoint_validators import check_color
 from zerver.lib.types import AnonymousSettingGroupDict
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
+    UserGroupMembershipDetails,
     access_user_group_for_setting,
     get_group_setting_value_for_api,
     get_role_based_system_groups_dict,
+    get_system_user_group_by_name,
     parse_group_setting_value,
     validate_group_setting_value_change,
 )
@@ -98,6 +101,7 @@ from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, Stream, UserMessage, UserProfile, UserTopic
+from zerver.models.groups import SystemGroups
 from zerver.models.users import get_system_bot
 
 
@@ -142,7 +146,9 @@ def user_directly_controls_user(user_profile: UserProfile, target: UserProfile) 
 def deactivate_stream_backend(
     request: HttpRequest, user_profile: UserProfile, stream_id: int
 ) -> HttpResponse:
-    (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
+    (stream, sub) = access_stream_for_delete_or_update_requiring_metadata_access(
+        user_profile, stream_id
+    )
     do_deactivate_stream(stream, acting_user=user_profile)
     return json_success(request)
 
@@ -241,7 +247,7 @@ def remove_default_stream(
     (stream, sub) = access_stream_by_id(
         user_profile,
         stream_id,
-        allow_realm_admin=True,
+        require_content_access=False,
     )
     do_remove_default_stream(stream)
     return json_success(request)
@@ -266,9 +272,12 @@ def update_stream_backend(
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
-    # We allow realm administrators to update the stream name and
-    # description even for private streams.
-    (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
+    # Most settings updates only require metadata access, not content
+    # access. We will check for content access further when and where
+    # required.
+    (stream, sub) = access_stream_for_delete_or_update_requiring_metadata_access(
+        user_profile, stream_id
+    )
 
     # Validate that the proposed state for permissions settings is permitted.
     if is_private is not None:
@@ -321,11 +330,11 @@ def update_stream_backend(
         raise JsonableError(_("A default channel cannot be private."))
 
     # Ensure that a moderation request channel isn't set to public.
-    if not proposed_is_private and user_profile.realm.get_moderation_request_channel() == stream:
+    if not proposed_is_private and user_profile.realm.moderation_request_channel == stream:
         raise JsonableError(_("Moderation request channel must be private."))
 
     if is_private is not None:
-        # We require even realm administrators to be actually
+        # We require even channel administrators to be actually
         # subscribed to make a private stream public, via this
         # stricted access_stream check.
         access_stream_by_id(user_profile, stream_id)
@@ -386,6 +395,7 @@ def update_stream_backend(
             check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name, user_profile)
 
+    nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
     request_settings_dict = locals()
     for setting_name, permission_configuration in Stream.stream_permission_group_settings.items():
         assert setting_name in request_settings_dict
@@ -393,12 +403,12 @@ def update_stream_backend(
             continue
 
         setting_value = request_settings_dict[setting_name]
-        new_setting_value = parse_group_setting_value(setting_value.new, setting_name)
+        new_setting_value = parse_group_setting_value(setting_value.new, nobody_group)
 
         expected_current_setting_value = None
         if setting_value.old is not None:
             expected_current_setting_value = parse_group_setting_value(
-                setting_value.old, setting_name
+                setting_value.old, nobody_group
             )
 
         current_value = getattr(stream, setting_name)
@@ -407,8 +417,18 @@ def update_stream_backend(
         if validate_group_setting_value_change(
             current_setting_api_value, new_setting_value, expected_current_setting_value
         ):
-            if sub is None and stream.invite_only:
-                # Admins cannot change this setting for unsubscribed private streams.
+            user_group_membership_details = UserGroupMembershipDetails(
+                user_recursive_group_ids=None
+            )
+            if (
+                setting_name in Stream.stream_permission_group_settings_requiring_content_access
+                and not user_has_content_access(
+                    user_profile,
+                    stream,
+                    user_group_membership_details,
+                    is_subscribed=sub is not None,
+                )
+            ):
                 raise JsonableError(_("Invalid channel ID"))
             with transaction.atomic(durable=True):
                 user_group = access_user_group_for_setting(
@@ -603,7 +623,11 @@ def add_subscriptions_backend(
         assert setting_name in request_settings_dict
         if request_settings_dict[setting_name] is not None:
             setting_request_value = request_settings_dict[setting_name]
-            setting_value = parse_group_setting_value(setting_request_value, setting_name)
+            if system_groups_name_dict is None:
+                system_groups_name_dict = get_role_based_system_groups_dict(realm)
+            setting_value = parse_group_setting_value(
+                setting_request_value, system_groups_name_dict[SystemGroups.NOBODY]
+            )
             group_settings_map[setting_name] = access_user_group_for_setting(
                 setting_value,
                 user_profile,
@@ -617,9 +641,16 @@ def add_subscriptions_backend(
             group_settings_map[setting_name] = get_stream_permission_default_group(
                 setting_name, system_groups_name_dict, creator=user_profile
             )
-            setting_groups_dict[group_settings_map[setting_name].id] = group_settings_map[
-                setting_name
-            ].id
+            if permission_configuration.default_group_name == "stream_creator_or_nobody":
+                # Default for some settings like "can_administer_channel_group"
+                # is anonymous group with stream creator.
+                setting_groups_dict[group_settings_map[setting_name].id] = (
+                    AnonymousSettingGroupDict(direct_subgroups=[], direct_members=[user_profile.id])
+                )
+            else:
+                setting_groups_dict[group_settings_map[setting_name].id] = group_settings_map[
+                    setting_name
+                ].id
 
     for stream_obj in streams_raw:
         # 'color' field is optional
@@ -668,7 +699,7 @@ def add_subscriptions_backend(
         setting_groups_dict=setting_groups_dict,
     )
 
-    streams_categorized_by_permissions = filter_stream_authorization(
+    streams_categorized_by_permissions = filter_stream_authorization_for_adding_subscribers(
         user_profile, existing_streams, is_subscribing_other_users
     )
     authorized_streams = streams_categorized_by_permissions.authorized_streams
@@ -808,7 +839,7 @@ def send_messages_for_new_subscribers(
             )
 
     if announce and len(created_streams) > 0:
-        new_stream_announcements_stream = user_profile.realm.get_new_stream_announcements_stream()
+        new_stream_announcements_stream = user_profile.realm.new_stream_announcements_stream
         if new_stream_announcements_stream is not None:
             with override_language(new_stream_announcements_stream.realm.default_language):
                 if len(created_streams) > 1:
@@ -876,7 +907,7 @@ def get_subscribers_backend(
     (stream, sub) = access_stream_by_id(
         user_profile,
         stream_id,
-        allow_realm_admin=True,
+        require_content_access=False,
     )
     subscribers = get_subscriber_ids(stream, user_profile)
 
@@ -918,7 +949,7 @@ def get_stream_backend(
     *,
     stream_id: PathOnly[int],
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
+    (stream, sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
 
     recent_traffic = get_streams_traffic({stream.id}, user_profile.realm)
     setting_groups_dict = get_group_setting_value_dict_for_streams([stream])

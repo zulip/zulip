@@ -544,17 +544,6 @@ export function get_time_limit_setting_in_appropriate_unit(
     return {value: time_limit_in_days, unit: "day"};
 }
 
-export function should_display_profile_incomplete_alert(timestamp: number): boolean {
-    const today = new Date(Date.now());
-    const time = new Date(timestamp * 1000);
-    const days_old = difference_in_calendar_days(today, time, display_time_zone);
-
-    if (days_old >= 15) {
-        return true;
-    }
-    return false;
-}
-
 export function get_time_in_timezone(date: Date, timezone: string): number {
     return Date.parse(date.toLocaleString("en-US", {timeZone: timezone}));
 }

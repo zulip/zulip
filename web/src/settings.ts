@@ -52,7 +52,7 @@ export function update_lock_icon_in_sidebar(): void {
 
     $(".org-settings-list .locked").show();
 
-    if (settings_bots.can_create_new_bots()) {
+    if (settings_bots.can_create_incoming_webhooks()) {
         $(".org-settings-list li[data-section='bot-list-admin'] .locked").hide();
     }
 
@@ -99,7 +99,7 @@ export function build_page(): void {
         zuliprc: "zuliprc",
         botserverrc: "botserverrc",
         timezones: timezones.timezones,
-        can_create_new_bots: settings_bots.can_create_new_bots(),
+        can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
         settings_label,
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         web_mark_read_on_scroll_policy_values:
@@ -121,7 +121,6 @@ export function build_page(): void {
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         disabled_notification_settings:
             settings_config.all_notifications(user_settings).disabled_notification_settings,
-        information_section_checkbox_group: settings_config.information_section_checkbox_group,
         information_density_settings: settings_config.get_information_density_preferences(),
         settings_render_only: settings_config.get_settings_render_only(),
         user_can_change_name: settings_data.user_can_change_name(),
@@ -146,8 +145,8 @@ export function build_page(): void {
             settings_config.automatically_follow_or_unmute_topics_policy_values,
     });
 
-    settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"), false);
     $(".settings-box").html(rendered_settings_tab);
+    settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"));
     common.adjust_mac_kbd_tags("#user_enter_sends_label kbd");
 }
 
@@ -180,7 +179,7 @@ export function initialize(): void {
         is_guest: current_user.is_guest,
         show_uploaded_files_section: realm.max_file_upload_size_mib > 0,
         show_emoji_settings_lock: !settings_data.user_can_add_custom_emoji(),
-        can_create_new_bots: settings_bots.can_create_new_bots(),
+        can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
         can_edit_user_panel:
             current_user.is_admin ||
             settings_data.user_can_create_multiuse_invite() ||

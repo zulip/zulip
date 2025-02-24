@@ -69,6 +69,27 @@ out the following files in the [Zulip server repository][server-repo]:
 - `static/js/portico/team.js` - The JavaScript code that processes and
   renders the data received from GitHub.
 
+## Attribution for non-code contributions
+
+As noted above, Zulip's policy is to express appreciation for non-code
+contributions to the project whenever we discuss code contribution
+statistics.
+
+We do not specifically attribute non-code contributions by name, because the
+logistics of giving individual attributions in a consistent and fair way across
+50+ features in a release are far more than we have the capacity to manage.
+
+For context, a significant feature usually involves a half-dozen people or more
+helping with different parts of the work (suggesting ideas, providing technical
+and non-technical feedback, etc.). Contributions can range from multiple rounds
+of PR reviews to a 👍 reaction on someone else's suggestion. Even if one could
+review everything that happened (in itself a daunting task), it may not be clear
+which contributions should "count". At the same time, seeing that your name is
+missing from a list of attributions where it belongs can feel really hurtful.
+
+So, while we cannot thank everyone by name, please know that your contributions
+are deeply appreciated!
+
 [github-list-contrib-endpoint]: https://docs.github.com/en/rest/reference/repos#list-repository-contributors
 [github-contrib-page]: https://docs.github.com/en/repositories/viewing-activity-and-data-for-your-repository/viewing-a-projects-contributors
 [dev-community]: https://zulip.com/development-community/

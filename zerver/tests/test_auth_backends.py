@@ -83,7 +83,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.types import Validator
 from zerver.lib.user_groups import is_user_in_group
-from zerver.lib.users import get_all_api_keys, get_api_key, get_users_for_api
+from zerver.lib.users import get_users_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
@@ -417,6 +417,11 @@ class AuthBackendTest(ZulipTestCase):
         result = self.client_get("/login/")
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "http://zulip.testserver/")
+
+    def test_invalid_login_on_self_hosting_management_subdomain(self) -> None:
+        result = self.client_get("/login/", subdomain="selfhosting")
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("No organization found", result)
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipDummyBackend",))
     def test_no_backend_enabled(self) -> None:
@@ -1284,8 +1289,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assertEqual(query_params["user_id"], [str(hamlet.id)])
 
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
-        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
+        self.assertEqual(
+            otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
+            self.example_user("hamlet").api_key,
+        )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
@@ -1447,8 +1454,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
             self.assertEqual(query_params["email"], [email])
             encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-            user_api_keys = get_all_api_keys(get_user_by_delivery_email(email, realm))
-            self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), user_api_keys)
+            self.assertIn(
+                otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
+                get_user_by_delivery_email(email, realm).api_key,
+            )
             return
         elif desktop_flow_otp:
             self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
@@ -3440,7 +3449,6 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
 
 class AppleAuthMixin:
-    BACKEND_CLASS = AppleAuthBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_APPLE_KEY"
     AUTHORIZATION_URL = "https://appleid.apple.com/auth/authorize"
     ACCESS_TOKEN_URL = "https://appleid.apple.com/auth/token"
@@ -3477,6 +3485,7 @@ class AppleAuthMixin:
 
 
 class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
+    BACKEND_CLASS = AppleAuthBackend
     LOGIN_URL = "/accounts/login/social/apple"
     SIGNUP_URL = "/accounts/register/social/apple"
 
@@ -3610,6 +3619,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
 
 
 class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
+    BACKEND_CLASS = AppleAuthBackend
     SIGNUP_URL = "/complete/apple/"
     LOGIN_URL = "/complete/apple/"
 
@@ -4655,8 +4665,10 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(query_params["realm"], ["http://zulip-mobile.testserver"])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
-        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
+        self.assertEqual(
+            otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
+            self.example_user("hamlet").api_key,
+        )
 
     def test_social_auth_mobile_success_legacy_url(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
@@ -4700,8 +4712,10 @@ class GoogleAuthBackendTest(SocialAuthBase):
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
-        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
+        self.assertIn(
+            otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
+            self.example_user("hamlet").api_key,
+        )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
@@ -5239,8 +5253,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         data = self.assert_json_success(result)
         self.assertEqual(data["email"], self.email)
         self.assertEqual(data["user_id"], self.user_profile.id)
-        user_api_keys = get_all_api_keys(self.user_profile)
-        self.assertIn(data["api_key"], user_api_keys)
+        self.assertEqual(data["api_key"], self.user_profile.api_key)
 
     def test_invalid_email(self) -> None:
         email = "hamlet"
@@ -5931,8 +5944,10 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
-        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
+        self.assertIn(
+            otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
+            self.example_user("hamlet").api_key,
+        )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
@@ -5985,8 +6000,10 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
-        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
+        self.assertIn(
+            otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
+            self.example_user("hamlet").api_key,
+        )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
@@ -7640,7 +7657,7 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
         self.email = self.example_email("hamlet")
         self.realm = get_realm("zulip")
         self.user_profile = get_user_by_delivery_email(self.email, self.realm)
-        self.api_key = get_api_key(self.user_profile)
+        self.api_key = self.user_profile.api_key
         self.raw_user_data = get_users_for_api(
             self.user_profile.realm,
             self.user_profile,

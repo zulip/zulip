@@ -501,21 +501,8 @@ run_test("can_remove_members_user_group", ({override}) => {
 });
 
 run_test("type_id_to_string", () => {
-    page_params.bot_types = [
-        {
-            type_id: 1,
-            name: "Generic bot",
-            allowed: true,
-        },
-        {
-            type_id: 2,
-            name: "Incoming webhook",
-            allowed: true,
-        },
-    ];
-
-    assert.equal(settings_data.bot_type_id_to_string(1), "Generic bot");
-    assert.equal(settings_data.bot_type_id_to_string(2), "Incoming webhook");
+    assert.equal(settings_data.bot_type_id_to_string(1), "translated: Generic bot");
+    assert.equal(settings_data.bot_type_id_to_string(2), "translated: Incoming webhook");
     assert.equal(settings_data.bot_type_id_to_string(5), undefined);
 });
 
@@ -644,4 +631,15 @@ run_test("guests_can_access_all_other_users", () => {
     user_groups.initialize({realm_user_groups: [members, everyone]});
     realm.realm_can_access_all_users_group = everyone.id;
     assert.ok(settings_data.guests_can_access_all_other_users());
+});
+
+run_test("user_can_summarize_topics", ({override}) => {
+    override(realm, "server_can_summarize_topics", true);
+    test_realm_group_settings(
+        "realm_can_summarize_topics_group",
+        settings_data.user_can_summarize_topics,
+    );
+
+    override(realm, "server_can_summarize_topics", false);
+    assert.ok(!settings_data.user_can_summarize_topics());
 });

@@ -2,7 +2,7 @@ import logging
 import secrets
 
 from django.conf import settings
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.cache import patch_cache_control
@@ -266,3 +266,18 @@ def home_real(request: HttpRequest) -> HttpResponse:
 @zulip_login_required
 def desktop_home(request: HttpRequest) -> HttpResponse:
     return redirect(home)
+
+
+def doc_permalinks_view(request: HttpRequest, doc_id: str) -> HttpResponse:
+    DOC_PERMALINK_MAP: dict[str, str] = {
+        "usage-statistics": "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#uploading-usage-statistics",
+        "basic-metadata": "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#uploading-basic-metadata",
+        "why-service": "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#why-a-push-notification-service-is-necessary",
+        "registration-transfer": "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#moving-your-registration-to-a-new-server",
+    }
+
+    redirect_url = DOC_PERMALINK_MAP.get(doc_id)
+    if redirect_url is None:
+        return render(request, "404.html", status=404)
+
+    return HttpResponseRedirect(redirect_url)

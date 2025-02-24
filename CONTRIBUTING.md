@@ -1,129 +1,102 @@
 # Contributing guide
 
-Welcome to the Zulip community!
+Welcome! This is a step-by-step guide on how to get started contributing code to
+the [Zulip](https://zulip.com/) organized team chat [open-source
+project](https://github.com/zulip). Thousands of people use Zulip every day, and
+your work on Zulip will have a meaningful impact on their experience. We hope
+you'll join us!
 
-## Zulip development community
+To learn about ways to contribute without writing code, please see our
+suggestions for how you can [support the Zulip
+project](https://zulip.com/help/support-zulip-project).
 
-The primary communication forum for the Zulip community is the Zulip
-server hosted at [chat.zulip.org](https://chat.zulip.org/):
+## Learning from the docs
 
-- **Users** and **administrators** of Zulip organizations stop by to
-  ask questions, offer feedback, and participate in product design
-  discussions.
-- **Contributors to the project**, including the **core Zulip
-  development team**, discuss ongoing and future projects, brainstorm
-  ideas, and generally help each other out.
+Zulip has a documentation-based approach to onboarding new contributors. As you
+are getting started, this page will be your go-to for figuring out what to do
+next. You will also explore other guides, learning about how to put together
+your first pull request, diving into [Zulip's
+subsystems](https://zulip.readthedocs.io/en/latest/subsystems/index.html), and
+much more. We hope you'll find this process to be a great learning experience.
 
-Everyone is welcome to [sign up](https://chat.zulip.org/) and
-participate — we love hearing from our users! Public channels in the
-community receive thousands of messages a week. We recommend signing
-up using the special invite links for
-[users](https://chat.zulip.org/join/t5crtoe62bpcxyisiyglmtvb/),
-[self-hosters](https://chat.zulip.org/join/wnhv3jzm6afa4raenedanfno/)
-and
-[contributors](https://chat.zulip.org/join/npzwak7vpmaknrhxthna3c7p/)
-to get a curated list of initial channel subscriptions.
+This page will guide you through the following steps:
 
-To learn how to get started participating in the community, including [community
+1. [Getting started](#getting-started)
+1. [Finding an issue to work on](#finding-an-issue-to-work-on)
+1. [Getting help](#getting-help) as you work on your first pull request
+1. Learning [what makes a great Zulip contributor](#what-makes-a-great-zulip-contributor)
+1. [Submitting a pull request](#submitting-a-pull-request)
+1. [Going beyond the first issue](#beyond-the-first-issue)
+
+Any time you feel lost, come back to this guide. The information you need is
+likely somewhere on this page (perhaps in the list of [common
+questions](#common-questions)), or in one of the many references it points to.
+
+If you've done all you can with the documentation and are still feeling stuck,
+join the [Zulip development community](https://zulip.com/development-community/)
+to ask for help! Before you post, be sure to review [community
 norms](https://zulip.com/development-community/#community-norms) and [where to
-post](https://zulip.com/development-community/#where-do-i-send-my-message),
-check out our [Zulip development community
-guide](https://zulip.com/development-community/). The Zulip community is
-governed by a [code of
+post](https://zulip.com/development-community/#where-do-i-send-my-message) your
+question. The Zulip community is governed by a [code of
 conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
 
-## Ways to contribute
+## Getting started
 
-To make a code or documentation contribution, read our
-[step-by-step guide](#your-first-codebase-contribution) to getting
-started with the Zulip codebase. A small sample of the type of work that
-needs doing:
+### Learning how to use Git (the Zulip way)
 
-- Bug squashing and feature development on our Python/Django
-  [backend](https://github.com/zulip/zulip), web
-  [frontend](https://github.com/zulip/zulip),
-  Flutter [mobile app](https://github.com/zulip/zulip-flutter) in beta,
-  or Electron [desktop app](https://github.com/zulip/zulip-desktop).
-- Building out our
-  [Python API and bots](https://github.com/zulip/python-zulip-api) framework.
-- [Writing an integration](https://zulip.com/api/integrations-overview).
-- Improving our [user](https://zulip.com/help/) or
-  [developer](https://zulip.readthedocs.io/en/latest/) documentation.
-- [Reviewing code](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html)
-  and manually testing pull requests.
+Zulip uses GitHub for source control and code review, and becoming familiar with
+Git is essential for navigating and contributing to the Zulip codebase. [Our
+guide to Git](https://zulip.readthedocs.io/en/latest/git/index.html) will help
+you get started even if you've never used Git before.
 
-**Non-code contributions**: Some of the most valuable ways to contribute
-don't require touching the codebase at all. For example, you can:
+If you're familiar with Git, you'll still want to take a look at [our
+Zulip-specific Git
+tools](https://zulip.readthedocs.io/en/latest/git/zulip-tools.html).
 
-- Report issues, including both [feature
-  requests](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html)
-  and [bug
-  reports](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html).
-- [Give feedback](#user-feedback) if you are evaluating or using Zulip.
-- [Participate
-  thoughtfully](https://zulip.readthedocs.io/en/latest/contributing/design-discussions.html)
-  in design discussions.
-- [Sponsor Zulip](https://github.com/sponsors/zulip) through the GitHub sponsors program.
-- [Translate](https://zulip.readthedocs.io/en/latest/translating/translating.html)
-  Zulip into your language.
-- [Stay connected](#stay-connected) with Zulip, and [help others
-  find us](#help-others-find-zulip).
+### Setting up your development environment and diving in
 
-## Your first codebase contribution
+To get started contributing code to Zulip, you will need to set up the
+development environment for the Zulip codebase you want to work on. You'll then
+want to take some time to familiarize yourself with the code.
 
-This section has a step by step guide to starting as a Zulip codebase
-contributor. It's long, but don't worry about doing all the steps perfectly;
-no one gets it right the first time, and there are a lot of people available
-to help.
+#### Server and web app
 
-- First, make an account on the
-  [Zulip community server](https://zulip.com/development-community/),
-  paying special attention to the
-  [community norms](https://zulip.com/development-community/#community-norms).
-  If you'd like, introduce yourself in
-  [#new members](https://chat.zulip.org/#narrow/channel/95-new-members), using
-  your name as the topic. Bonus: tell us about your first impressions of
-  Zulip, and anything that felt confusing/broken or interesting/helpful as you
-  started using the product.
+1. [Install the development
+   environment](https://zulip.readthedocs.io/en/latest/development/overview.html).
+1. Familiarize yourself with [using the development
+   environment](https://zulip.readthedocs.io/en/latest/development/using.html).
+1. Go through the [new application feature
+   tutorial](https://zulip.readthedocs.io/en/latest/tutorials/new-feature-tutorial.html)
+   to get familiar with how the Zulip codebase is organized and how to find code
+   in it.
 
-- Read [What makes a great Zulip contributor](#what-makes-a-great-zulip-contributor).
+#### Flutter-based mobile app
 
-- Set up the development environment for the Zulip codebase you want
-  to work on, and start getting familiar with the code.
-
-  - For the server and web app:
-
-    - [Install the development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
-      getting help in
-      [#provision help](https://chat.zulip.org/#narrow/channel/21-provision-help)
-      if you run into any troubles.
-    - Familiarize yourself with [using the development environment](https://zulip.readthedocs.io/en/latest/development/using.html).
-    - Go through the [new application feature
-      tutorial](https://zulip.readthedocs.io/en/latest/tutorials/new-feature-tutorial.html) to get familiar with
-      how the Zulip codebase is organized and how to find code in it.
-
-  - For the upcoming Flutter-based mobile app:
-    - Set up a development environment following the instructions in
-      [the project README](https://github.com/zulip/zulip-flutter).
-    - Start reading recent commits to see the code we're writing.
-      Use either a [graphical Git viewer][] like `gitk`, or `git log -p`
-      with [the "secret" to reading its output][git-log-secret].
-    - Pick some of the code that appears in those Git commits and
-      that looks interesting. Use your IDE to visit that code
-      and to navigate to related code, reading to see how it works
-      and how the codebase is organized.
-
-- Read the [Zulip guide to
-  Git](https://zulip.readthedocs.io/en/latest/git/index.html) if you
-  are unfamiliar with Git or Zulip's rebase-based Git workflow,
-  getting help in [#git
-  help](https://chat.zulip.org/#narrow/channel/44-git-help) if you run
-  into any troubles. Even Git experts should read the [Zulip-specific
-  Git tools
-  page](https://zulip.readthedocs.io/en/latest/git/zulip-tools.html).
+1. Set up a development environment following the instructions in [the project
+   README](https://github.com/zulip/zulip-flutter).
+1. Start reading recent commits to see the code we're writing.
+   Use either a [graphical Git viewer][] like `gitk`, or `git log -p`
+   with [the "secret" to reading its output][git-log-secret].
+1. Pick some of the code that appears in those Git commits and that looks
+   interesting. Use your IDE to visit that code and to navigate to related code,
+   reading to see how it works and how the codebase is organized.
 
 [graphical Git viewer]: https://zulip.readthedocs.io/en/latest/git/setup.html#get-a-graphical-client
 [git-log-secret]: https://github.com/zulip/zulip-mobile/blob/main/docs/howto/git.md#git-log-secret
+
+#### Desktop app
+
+Follow [this
+documentation](https://github.com/zulip/zulip-desktop/blob/main/development.md)
+to set up the Zulip Desktop development environment.
+
+#### Terminal app
+
+Follow [this
+documentation](https://github.com/zulip/zulip-terminal?tab=readme-ov-file#setting-up-a-development-environment)
+to set up the Zulip Terminal development environment.
+
+## Finding an issue to work on
 
 ### Where to look for an issue
 
@@ -245,16 +218,21 @@ a chat thread in addition to the GitHub issue.
 Please follow the same guidelines as described above: find an issue labeled
 "help wanted", and only pick up one issue at a time to start with.
 
-### Getting help
+## Getting help
 
 You may have questions as you work on your pull request. For example, you might
 not be sure about some details of what's required, or have questions about your
-implementation approach.
+implementation approach. Zulip's maintainers are happy to answer thoughtfully
+posed questions, and discuss any difficulties that might arise as you work on
+your PR.
 
-Zulip's maintainers are happy to answer thoughtfully posed questions, and
-discuss any difficulties that might arise as you work on your PR. You can get
-help in public channels in the [Zulip development
-community](https://zulip.com/development-community/):
+If you haven't done so yet, now is the time to join the [Zulip development
+community](https://zulip.com/development-community/). If you'd like, introduce
+yourself in the [#new
+members](https://chat.zulip.org/#narrow/channel/95-new-members) channel, using
+your name as the [topic](https://zulip.com/help/introduction-to-topics).
+
+You can get help in public channels in the community:
 
 1. **Review** the [Zulip development community
    guidelines](https://zulip.com/development-community/#community-norms).
@@ -281,7 +259,39 @@ Well-posed questions will generally get a response within 1-2 business days.
 There is no need to @-mention anyone when you ask a question, as maintainers
 keep a close eye on all the ongoing discussions.
 
-### Submitting a pull request
+## What makes a great Zulip contributor?
+
+As you're working on your first code contribution, here are some best practices
+to keep in mind.
+
+- [Asking great questions][great-questions]. It's very hard to answer a general
+  question like, "How do I do this issue?" When asking for help, explain your
+  current understanding, including what you've done or tried so far and where
+  you got stuck. Post tracebacks or other error messages if appropriate. For
+  more advice, check out [our guide][great-questions]!
+- Learning and practicing
+  [Git commit discipline](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html).
+- Submitting carefully tested code. See our [detailed guide on how to review
+  code](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code)
+  (yours or someone else's).
+- Posting
+  [screenshots or GIFs](https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html)
+  for frontend changes.
+- Working to [make your pull requests easy to
+  review](https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html).
+- Clearly describing what you have implemented and why. For example, if your
+  implementation differs from the issue description in some way or is a partial
+  step towards the requirements described in the issue, be sure to call
+  out those differences.
+- Being responsive to feedback on pull requests. This means incorporating or
+  responding to all suggested changes, and leaving a note if you won't be
+  able to address things within a few days.
+- Being helpful and friendly on the [Zulip community
+  server](https://zulip.com/development-community/).
+
+[great-questions]: https://zulip.readthedocs.io/en/latest/contributing/asking-great-questions.html
+
+## Submitting a pull request
 
 See the [guide on submitting a pull
 request](https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html)
@@ -295,7 +305,7 @@ how to help the review process move forward.
 It's OK if your first issue takes you a while; that's normal! You'll be able to
 work a lot faster as you build experience.
 
-### Beyond the first issue
+## Beyond the first issue
 
 To find a second issue to work on, we recommend looking through issues with the same
 `area:` label as the last issue you resolved. You'll be able to reuse the
@@ -303,10 +313,7 @@ work you did learning how that part of the codebase works. Also, the path to
 becoming a core developer often involves taking ownership of one of these area
 labels.
 
-For more advice, see [What makes a great Zulip
-contributor?](#what-makes-a-great-zulip-contributor) below.
-
-### Common questions
+## Common questions
 
 - **What if somebody is already working on the issue I want to claim?** There
   are lots of issue to work on! If somebody else is actively working on the
@@ -326,6 +333,22 @@ contributor?](#what-makes-a-great-zulip-contributor) below.
   assignee ends up submitting a pull request first, no worries! You can help by
   providing feedback on their work, or submit your own PR if you think a
   different approach is needed (as described above).
+- **Can I work on an old issue?** Of course! Open issues marked as “help wanted”
+  are generally eligible to be worked on. If you find that the context around
+  the issue has changed (e.g., the UI looks different), do your best to apply
+  the current patterns, and comment on any differences from the spec in your PR
+  description.
+
+  If picking up a bug, start by checking if you can replicate it. If it no longer
+  replicates, post a comment on the issue explaining how you tested the
+  behavior, and what you saw, with screenshots as appropriate. And if you _can_
+  replicate it, fixing it is great!
+
+  If you're starting a major project where the issue was filed more than a
+  couple of years ago, it's a good idea to post to the development community
+  discussion thread for that issue to check if the thinking around it has
+  changed.
+
 - **Can I come up with my own feature idea and work on it?** We welcome
   suggestions of features or other improvements that you feel would be valuable. If you
   have a new feature you'd like to add, you can start a conversation [in our
@@ -366,63 +389,6 @@ contributor?](#what-makes-a-great-zulip-contributor) below.
 
 [reviewable-pull-requests]: https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html
 
-## What makes a great Zulip contributor?
-
-Zulip has a lot of experience working with new contributors. In our
-experience, these are the best predictors of success:
-
-- [Asking great questions][great-questions]. It's very hard to answer a general
-  question like, "How do I do this issue?" When asking for help, explain your
-  current understanding, including what you've done or tried so far and where
-  you got stuck. Post tracebacks or other error messages if appropriate. For
-  more advice, check out [our guide][great-questions]!
-- Learning and practicing
-  [Git commit discipline](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html).
-- Submitting carefully tested code. See our [detailed guide on how to review
-  code](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code)
-  (yours or someone else's).
-- Posting
-  [screenshots or GIFs](https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html)
-  for frontend changes.
-- Working to [make your pull requests easy to
-  review](https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html).
-- Clearly describing what you have implemented and why. For example, if your
-  implementation differs from the issue description in some way or is a partial
-  step towards the requirements described in the issue, be sure to call
-  out those differences.
-- Being responsive to feedback on pull requests. This means incorporating or
-  responding to all suggested changes, and leaving a note if you won't be
-  able to address things within a few days.
-- Being helpful and friendly on the [Zulip community
-  server](https://zulip.com/development-community/).
-
-[great-questions]: https://zulip.readthedocs.io/en/latest/contributing/asking-great-questions.html
-
-## User feedback
-
-Nearly every feature we develop starts with a user request. If you are part
-of a group that is either using or considering using Zulip, we would love to
-hear about your experience with the product. If you're not sure what to
-write, here are some questions we're always very curious to know the answer
-to:
-
-- Evaluation: What is the process by which your organization chose or will
-  choose a group chat product?
-- Pros and cons: What are the pros and cons of Zulip for your organization,
-  and the pros and cons of other products you are evaluating?
-- Features: What are the features that are most important for your
-  organization? In the best-case scenario, what would your chat solution do
-  for you?
-- Onboarding: If you remember it, what was your impression during your first
-  few minutes of using Zulip? What did you notice, and how did you feel? Was
-  there anything that stood out to you as confusing, or broken, or great?
-- Organization: What does your organization do? How big is the organization?
-  A link to your organization's website?
-
-You can contact us in the [#feedback channel of the Zulip development
-community](https://chat.zulip.org/#narrow/channel/137-feedback) or
-by emailing [support@zulip.com](mailto:support@zulip.com).
-
 ## Outreach programs
 
 Zulip regularly participates in [Google Summer of Code
@@ -439,34 +405,3 @@ more about participating in an outreach program with Zulip. Most of our program
 participants end up sticking around the project long-term, and many have become
 core team members, maintaining important parts of the project. We hope you
 apply!
-
-## Stay connected
-
-Even if you are not logging into the development community on a regular basis,
-you can still stay connected with the project.
-
-- Follow us [on Twitter](https://twitter.com/zulip).
-- Subscribe to [our blog](https://blog.zulip.org/).
-- Join or follow the project [on LinkedIn](https://www.linkedin.com/company/zulip-project/).
-
-## Help others find Zulip
-
-Here are some ways you can help others find Zulip:
-
-- Star us on GitHub. There are four main repositories:
-  [server/web](https://github.com/zulip/zulip),
-  [Flutter mobile](https://github.com/zulip/zulip-flutter),
-  [desktop](https://github.com/zulip/zulip-desktop), and
-  [Python API](https://github.com/zulip/python-zulip-api).
-
-- "Like" and retweet [our tweets](https://twitter.com/zulip).
-
-- Upvote and post feedback on Zulip on comparison websites. A couple specific
-  ones to highlight:
-
-  - [AlternativeTo](https://alternativeto.net/software/zulip-chat-server/). You can also
-    [upvote Zulip](https://alternativeto.net/software/slack/) on their page
-    for Slack.
-  - [Add Zulip to your stack](https://stackshare.io/zulip) on StackShare, star
-    it, and upvote the reasons why people like Zulip that you find most
-    compelling.

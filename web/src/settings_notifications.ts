@@ -250,7 +250,6 @@ export function set_up(settings_panel: SettingsPanel): void {
             stream_notification_setting_changed(e.currentTarget);
             return;
         }
-        const setting_name = user_settings_schema.keyof().parse($input_elem.attr("name"));
 
         if ($input_elem.attr("data-setting-widget-type") === "time-limit") {
             // For time-limit settings we should always pass the select element
@@ -264,7 +263,7 @@ export function set_up(settings_panel: SettingsPanel): void {
             // Currently only notification batching setting is the time-limit
             // settings on this page.
             if (
-                setting_name === "email_notifications_batching_period_seconds" &&
+                $input_elem.attr("name") === "email_notifications_batching_period_seconds" &&
                 $input_elem.val() === "custom_period"
             ) {
                 set_notification_batching_ui(
@@ -283,6 +282,7 @@ export function set_up(settings_panel: SettingsPanel): void {
             return;
         }
 
+        const setting_name = user_settings_schema.keyof().parse($input_elem.attr("name"));
         // This filters out the GroupSettingValue
         const setting_value = z
             .union([z.string(), z.number(), z.boolean()])

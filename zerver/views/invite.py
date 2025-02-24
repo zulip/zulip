@@ -23,7 +23,7 @@ from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_cannot_add_subscribers
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
-from zerver.lib.user_groups import access_user_group_for_update
+from zerver.lib.user_groups import UserGroupMembershipDetails, access_user_group_for_update
 from zerver.models import MultiuseInvite, NamedUserGroup, PreregistrationUser, Stream, UserProfile
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
@@ -93,8 +93,12 @@ def access_streams_for_invite(stream_ids: list[int], user_profile: UserProfile) 
             )
         streams.append(stream)
 
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
     streams_to_which_user_cannot_add_subscribers = get_streams_to_which_user_cannot_add_subscribers(
-        streams, user_profile, allow_default_streams=True
+        streams,
+        user_profile,
+        allow_default_streams=True,
+        user_group_membership_details=user_group_membership_details,
     )
     if len(streams_to_which_user_cannot_add_subscribers) > 0:
         raise JsonableError(_("You do not have permission to subscribe other users to channels."))

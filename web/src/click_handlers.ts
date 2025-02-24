@@ -322,7 +322,7 @@ export function initialize(): void {
         );
         e.stopPropagation();
     });
-    $("body").on("click", ".always_visible_topic_edit,.on_hover_topic_edit", function (e) {
+    $("body").on("click", ".on_hover_topic_edit", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.start_inline_topic_edit($recipient_row);
         e.stopPropagation();

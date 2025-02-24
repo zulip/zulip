@@ -2,12 +2,20 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {JSDOM} = require("jsdom");
+
+const katex_tests = require("../../zerver/tests/fixtures/katex_test_cases.json");
+const {parse} = require("../src/markdown.ts");
+
+const {zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+
+const {window} = new JSDOM();
 
 const copy_and_paste = zrequire("copy_and_paste");
 const stream_data = zrequire("stream_data");
 
+set_global("document", {});
 stream_data.add_sub({
     stream_id: 4,
     name: "Rome",
@@ -36,6 +44,11 @@ run_test("try_stream_topic_syntax_text", () => {
         [
             "http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT/near/100",
             "#**Rome>old FAILED EXPORT@100**",
+        ],
+        ["http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic//near/100", "#**Rome>@100**"],
+        [
+            "http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT/with/100",
+            "#**Rome>old FAILED EXPORT**",
         ],
         // malformed urls
         ["http://zulip.zulipdev.com/narrow/channel/4-Rome/topic/old.20FAILED.20EXPORT"],
@@ -116,6 +129,9 @@ run_test("paste_handler_converter", () => {
     assert.equal(copy_and_paste.paste_handler_converter(input), "The `JSDOM` constructor");
 
     // A python code block
+    global.document = window.document;
+    global.window = window;
+    global.Node = window.Node;
     input = `<meta http-equiv="content-type" content="text/html; charset=utf-8"><p>zulip code block in python</p><div class="codehilite zulip-code-block" data-code-language="Python"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s2">"hello"</span><span class="p">)</span>\n<span class="nb">print</span><span class="p">(</span><span class="s2">"world"</span><span class="p">)</span></code></pre></div></meta>`;
     assert.equal(
         copy_and_paste.paste_handler_converter(input),
@@ -239,4 +255,53 @@ run_test("paste_handler_converter", () => {
 
     // Pasting from Excel using ^⇧V should paste formatted text.
     assert.equal(copy_and_paste.paste_handler_converter(input), "     \n\n$ 20.00\n\n$ 7.00");
+
+    // Math block tests
+
+    /*
+      This first batch of math block tests uses captured fixtures
+        (`input`). This lets us verify behavior like the empty
+        `.katex-display` divs in case of newlines in the
+        `original_markdown` See
+        https://github.com/zulip/zulip/pull/32629#discussion_r1883810127
+    */
+
+    for (const math_block_test of katex_tests.math_block_tests) {
+        input = math_block_test.input;
+        assert.equal(
+            copy_and_paste.paste_handler_converter(input),
+            math_block_test.expected_output,
+        );
+    }
+
+    // This next batch of tests round-trips the LaTeX syntax through
+    // the Markdown processor and then the paste handler.
+    const dummy_helper_config = {
+        should_translate_emoticons: () => false,
+        get_linkifier_map: () => new Map(),
+    };
+    assert.equal(dummy_helper_config.should_translate_emoticons(), false);
+    assert.deepEqual(dummy_helper_config.get_linkifier_map(), new Map());
+
+    for (const inline_math_expression_test of katex_tests.inline_math_expression_tests) {
+        const paste_html = parse({
+            raw_content: inline_math_expression_test.original_markup,
+            helper_config: dummy_helper_config,
+        }).content;
+        assert.equal(
+            copy_and_paste.paste_handler_converter(paste_html),
+            inline_math_expression_test.expected_output,
+        );
+    }
+
+    for (const span_conversion_test of katex_tests.text_node_to_span_conversion_tests) {
+        const paste_html = parse({
+            raw_content: span_conversion_test.original_markup,
+            helper_config: dummy_helper_config,
+        }).content;
+        assert.equal(
+            copy_and_paste.paste_handler_converter(paste_html),
+            span_conversion_test.expected_output,
+        );
+    }
 });

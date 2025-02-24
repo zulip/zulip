@@ -8,7 +8,9 @@ import render_topic_list_item from "../templates/topic_list_item.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as popover_menus from "./popover_menus.ts";
+import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as topic_list_data from "./topic_list_data.ts";
@@ -42,6 +44,13 @@ export function clear(): void {
     }
 
     active_widgets.clear();
+}
+
+export function focus_topic_search_filter(): void {
+    popovers.hide_all();
+    sidebar_ui.show_left_sidebar();
+    const $filter = $("#filter-topic-input").expectOne();
+    $filter.trigger("focus");
 }
 
 export function close(): void {

@@ -286,56 +286,6 @@ p.n-margin {
     box-shadow: inset 0 -1px 0 var(--color-navbar-bottom-border);
 }
 
-#navbar_alerts_wrapper {
-    font-size: 1rem;
-    position: relative;
-
-    .alert {
-        /* Since alerts are only rendered into the DOM when they are first
-           displayed, display: block is the right default for this setting. */
-        display: block;
-        margin: 0;
-        padding-top: 12px;
-        padding-bottom: 12px;
-
-        border: none;
-        border-radius: 0;
-
-        text-align: center;
-        text-shadow: none;
-        color: hsl(0deg 0% 100%);
-
-        &.alert-info {
-            background-color: hsl(170deg 46% 54%);
-
-            &.red {
-                background-color: hsl(0deg 46% 54%);
-            }
-        }
-
-        .close {
-            line-height: 24px;
-            position: absolute;
-            right: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .alert-link {
-            color: hsl(169deg 100% 88%);
-            font-weight: 600;
-        }
-
-        &.red .alert-link {
-            color: hsl(0deg 100% 88%);
-        }
-
-        .buttons .alert-link {
-            margin: 0 5px;
-        }
-    }
-}
-
 .app {
     min-width: 100%;
     min-height: 100%;
@@ -1025,6 +975,10 @@ div.focused-message-list.is-conversation-view .recipient_row {
     text-overflow: ellipsis;
 }
 
+.top-navbar-container-allow-description-extension {
+    overflow: visible;
+}
+
 #streamlist-toggle {
     display: none;
     position: absolute;
@@ -1104,11 +1058,11 @@ nav {
 
         .nav-logo {
             display: inline-block;
-            height: 20px;
-            max-width: 200px;
+            height: 1.25em; /* 20px at 16px em */
+            max-width: 12.5em; /* 200px at 16px em */
 
             @media (height < $short_navbar_cutoff_height) {
-                height: 15px;
+                height: 0.9375em; /* 15px at 16px em */
             }
         }
 
@@ -1263,6 +1217,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     vertical-align: bottom;
 }
 
+.add-user-group-container,
 .add_streams_container {
     display: inline-flex;
     align-items: center;
@@ -1296,7 +1251,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 .empty_feed_notice {
-    max-width: 600px;
+    max-width: 42.8571em;
     margin: 0 auto;
     padding: 3em 1em;
     text-align: center;
@@ -1305,7 +1260,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 .empty-feed-notice-title {
     font-size: 1.5em;
     font-weight: 400;
-    line-height: 1;
+    line-height: inherit;
     word-wrap: break-word;
 }
 
@@ -1527,35 +1482,33 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
-    .default-sidebar-behaviour {
-        &.spectator-view.default-sidebar-behaviour {
-            #navbar-middle {
-                /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
-                margin-right: calc(var(--header-height) * 3 + 10px);
-            }
-
-            #help-menu,
-            #gear-menu {
-                position: relative;
-                right: var(--header-height);
-            }
+    .spectator-view {
+        #navbar-middle {
+            /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: calc(var(--header-height) * 3 + 10px);
         }
 
-        &.spectator-view #top_navbar .column-right .spectator_login_buttons {
+        #help-menu,
+        #gear-menu {
+            position: relative;
+            right: var(--header-height);
+        }
+
+        #top_navbar .column-right .spectator_login_buttons {
             display: none;
         }
+    }
 
-        .header-main .column-right {
-            /* For a diminutive right column in the navbar,
-               allow the width to be that of the flexing
-               button elements. */
-            width: auto;
-        }
+    .header-main .column-right {
+        /* For a diminutive right column in the navbar,
+           allow the width to be that of the flexing
+           button elements. */
+        width: auto;
     }
 }
 
 %hide-right-sidebar {
-    .app-main .column-right {
+    .column-right {
         display: none;
 
         &.expanded {
@@ -1589,7 +1542,9 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 .hide-right-sidebar {
-    @extend %hide-right-sidebar;
+    .app-main {
+        @extend %hide-right-sidebar;
+    }
 
     &.fluid_layout_width {
         #compose-content,
@@ -1604,7 +1559,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 %hide-left-sidebar {
-    .app-main .column-left {
+    .column-left {
         display: none;
 
         &.expanded {
@@ -1631,7 +1586,9 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 .hide-left-sidebar {
-    @extend %hide-left-sidebar;
+    .app-main {
+        @extend %hide-left-sidebar;
+    }
 
     &.fluid_layout_width {
         #compose-content,
@@ -1650,23 +1607,23 @@ body:not(.hide-left-sidebar) {
 }
 
 @media (width < $xl_min) {
-    .default-sidebar-behaviour {
+    .app-main {
         @extend %hide-right-sidebar;
+    }
 
-        .app-main .column-middle {
-            margin-right: 7px;
-        }
+    .app-main .column-middle {
+        margin-right: 7px;
+    }
 
-        #navbar-middle {
-            /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
-            margin-right: calc(var(--header-height) * 4 + 3px);
-        }
+    #navbar-middle {
+        /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
+        margin-right: calc(var(--header-height) * 4 + 3px);
+    }
 
-        #typing_notifications,
-        #scheduled_message_indicator,
-        #compose-content {
-            margin-right: 7px;
-        }
+    #typing_notifications,
+    #scheduled_message_indicator,
+    #compose-content {
+        margin-right: 7px;
     }
 
     .hide-left-sidebar {
@@ -1694,46 +1651,46 @@ body:not(.hide-left-sidebar) {
 }
 
 @media (width < $md_min) {
-    .default-sidebar-behaviour {
+    .app-main {
         @extend %hide-left-sidebar;
+    }
 
-        .header-main .column-left {
-            display: none;
-        }
+    .header-main .column-left {
+        display: none;
+    }
 
-        .app-main .column-middle {
-            margin-left: 7px;
-            margin-right: 7px;
-        }
+    .app-main .column-middle {
+        margin-left: 7px;
+        margin-right: 7px;
+    }
 
-        #navbar-middle {
-            margin-left: 0;
-        }
+    #navbar-middle {
+        margin-left: 0;
+    }
 
-        .app-main .column-middle .column-middle-inner {
-            margin-left: 0;
-            margin-right: 0;
-        }
+    .app-main .column-middle .column-middle-inner {
+        margin-left: 0;
+        margin-right: 0;
+    }
 
-        #streamlist-toggle {
-            display: block;
-        }
+    #streamlist-toggle {
+        display: block;
+    }
 
-        .top-navbar-container {
-            margin-left: 40px;
-        }
+    .top-navbar-container {
+        margin-left: 40px;
+    }
 
-        #feedback_container {
-            width: calc(90% - 30px);
-            left: 5%;
-            top: 5%;
-        }
+    #feedback_container {
+        width: calc(90% - 30px);
+        left: 5%;
+        top: 5%;
+    }
 
-        #typing_notifications,
-        #scheduled_message_indicator,
-        #compose-content {
-            margin-left: 7px;
-        }
+    #typing_notifications,
+    #scheduled_message_indicator,
+    #compose-content {
+        margin-left: 7px;
     }
 }
 
@@ -1793,8 +1750,8 @@ body:not(.hide-left-sidebar) {
     }
 
     #top_navbar .column-right #personal-menu .header-button-avatar {
-        width: 20px;
-        height: 20px;
+        width: 1.25em; /* 20px at 16px em */
+        height: 1.25em; /* 20px at 16px em */
     }
 }
 
@@ -2064,12 +2021,12 @@ body:not(.hide-left-sidebar) {
     }
 
     .zulip-icon-gear {
-        font-size: 18px;
+        font-size: 1.125em; /* 18px at 16px em */
     }
 
     .zulip-icon-help-bigger,
     .zulip-icon-user-list {
-        font-size: 20px;
+        font-size: 1.25em; /* 20px at 16px em */
     }
 
     .zulip-icon-help {
@@ -2081,8 +2038,8 @@ body:not(.hide-left-sidebar) {
 
 #personal-menu {
     .header-button-avatar {
-        width: 24px;
-        height: 24px;
+        width: 1.5em; /* 24px at 16px em */
+        height: 1.5em; /* 24px at 16px em */
         background-size: cover;
         border-radius: 4px;
         background-color: var(--color-background-image-loader);
@@ -2090,6 +2047,27 @@ body:not(.hide-left-sidebar) {
     }
 }
 
-.empty-topic-display {
+.empty-topic-display,
+.empty-topic-placeholder-display::placeholder {
     font-style: italic;
+}
+
+.popover-menu-user-avatar-container.deactivated,
+.inline_profile_picture.deactivated {
+    position: relative;
+
+    > img {
+        opacity: 0.5;
+    }
+
+    .deactivated-user-icon {
+        background-color: var(--color-background);
+        color: var(--color-user-circle-deactivated);
+        padding: 2px;
+        font-size: 0.8em;
+        position: absolute;
+        border-radius: 10px;
+        bottom: -2px;
+        right: -2px;
+    }
 }

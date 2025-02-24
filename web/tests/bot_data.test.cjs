@@ -201,7 +201,7 @@ test("test_basics", () => {
         assert.equal(bot, undefined);
     })();
 
-    (function test_get_editable() {
+    (function test_get_all_bots_for_current_user() {
         bot_data.add({...test_bot, user_id: 44, owner_id: me.user_id, is_active: true});
         bot_data.add({
             ...test_bot,
@@ -218,11 +218,6 @@ test("test_basics", () => {
             is_active: true,
         });
 
-        const editable_bots = bot_data.get_editable().map((bot) => bot.email);
-        assert.deepEqual(["bot1@zulip.com", "bot2@zulip.com"], editable_bots);
-    })();
-
-    (function test_get_all_bots_for_current_user() {
         const bots = bot_data.get_all_bots_for_current_user();
 
         assert.equal(bots.length, 2);

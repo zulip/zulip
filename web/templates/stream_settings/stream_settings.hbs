@@ -86,18 +86,18 @@
                     {{stream_id}}
                 </div>
                 {{/with}}
-                {{#if can_access_stream_email}}
                 <div class="input-group stream-email-box">
                     <label for="copy_stream_email_button" class="title inline-block">Email address</label>
                     <p class="field-hint">
                         {{t "You can use email to send messages to Zulip channels."}}
                         {{> ../help_link_widget link="/help/message-a-channel-by-email" }}
                     </p>
-                    <button class="button small rounded copy_email_button" id="copy_stream_email_button" type="button">
-                        <span class="copy_button">{{t "Generate email address" }}</span>
-                    </button>
+                    <span class="generate-channel-email-button-container {{#unless can_access_stream_email}}disabled_setting_tooltip{{/unless}}">
+                        <button class="button small rounded copy_email_button" {{#unless can_access_stream_email}}disabled="disabled"{{/unless}} id="copy_stream_email_button" type="button">
+                            <span class="copy_button">{{t "Generate email address" }}</span>
+                        </button>
+                    </span>
                 </div>
-                {{/if}}
             </div>
         </div>
 
@@ -121,7 +121,7 @@
                     </div>
                 {{/each}}
                 <div class="input-group">
-                    <label class="settings-field-label">{{t "Channel color" }}</label>
+                    <label class="settings-field-label channel-color-label">{{t "Channel color" }}</label>
                     <button class="button small rounded stream-settings-color-selector choose_stream_color" data-stream-id="{{ sub.stream_id }}">
                         <span class="stream-settings-color-preview" style="background: {{sub.color}};"></span>
                         <span class="stream-settings-color-selector-label">{{t "Change color"}}</span>

@@ -38,6 +38,14 @@ const welcome_bot = {
     // cross realm bots have no owner
 };
 
+const email_gateway_bot = {
+    email: "emailgateway@example.com",
+    user_id: 5,
+    full_name: "Email Gateway",
+    is_bot: true,
+    // cross realm bots have no owner
+};
+
 const me = {
     email: "me@example.com",
     user_id: 30,
@@ -378,9 +386,12 @@ test_people("basics", ({override}) => {
     // Add our cross-realm bot.  It won't add to our human
     // count, and it has no owner.
     people.add_cross_realm_user(welcome_bot);
+    people.add_cross_realm_user(email_gateway_bot);
     assert.equal(people.get_bot_owner_user(welcome_bot), undefined);
+    assert.equal(people.get_bot_owner_user(email_gateway_bot), undefined);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.get_by_email(welcome_bot.email).full_name, "Welcome Bot");
+    assert.equal(people.get_by_email(email_gateway_bot.email).full_name, "Email Gateway");
 
     override(settings_data, "user_can_access_all_other_users", () => false);
     assert.equal(
@@ -400,7 +411,11 @@ test_people("basics", ({override}) => {
 
     // get_bot_ids() includes all bot users.
     bot_user_ids = people.get_bot_ids();
-    assert.deepEqual(bot_user_ids, [bot_botson.user_id, welcome_bot.user_id]);
+    assert.deepEqual(bot_user_ids, [
+        bot_botson.user_id,
+        welcome_bot.user_id,
+        email_gateway_bot.user_id,
+    ]);
 
     // The bot doesn't add to our human count.
     assert.equal(people.get_active_human_count(), 1);
@@ -835,6 +850,45 @@ test_people("dm_matches_search_string", () => {
     assert.ok(!result);
 });
 
+test_people("filter_other_guest_ids", ({override}) => {
+    people.add_active_user(emp401);
+    people.add_active_user(emp402);
+    people.add_active_user(guest);
+
+    assert.equal(emp401.user_id, 401);
+    assert.equal(emp402.user_id, 402);
+    assert.equal(guest.user_id, 33);
+
+    let ids = [401, 402];
+    let guest_ids = people.filter_other_guest_ids(ids);
+    assert.equal(guest_ids.length, 0);
+
+    ids = [401, 402, 33];
+    guest_ids = people.filter_other_guest_ids(ids);
+    assert.equal(guest_ids.length, 1);
+    assert.equal(guest_ids[0], 33);
+
+    override(current_user, "is_guest", true);
+    override(current_user, "user_id", 1);
+    // User ID of the current user will not be included in result.
+    guest_ids = people.filter_other_guest_ids([1]);
+    assert.equal(guest_ids.length, 0);
+});
+
+test_people("user_ids_to_full_names_array", () => {
+    people.add_active_user(emp401);
+    people.add_active_user(emp402);
+
+    assert.equal(emp401.user_id, 401);
+    assert.equal(emp402.user_id, 402);
+
+    const ids = [401, 402];
+    const names = people.user_ids_to_full_names_array(ids);
+    assert.equal(names.length, 2);
+    assert.equal(names[0], emp401.full_name);
+    assert.equal(names[1], emp402.full_name);
+});
+
 test_people("multi_user_methods", () => {
     people.add_active_user(emp401);
     people.add_active_user(emp402);
@@ -1054,6 +1108,18 @@ test_people("message_methods", () => {
 
     message = {sender_id: undefined};
     assert.equal(people.sender_is_guest(message), false);
+
+    // Test sender_is_deactivated
+    people.deactivate(maria);
+
+    message = {sender_id: maria.user_id};
+    assert.equal(people.sender_is_deactivated(message), true);
+
+    message = {sender_id: charles.user_id};
+    assert.equal(people.sender_is_deactivated(message), false);
+
+    message = {sender_id: undefined};
+    assert.equal(people.sender_is_deactivated(message), false);
 });
 
 test_people("extract_people_from_message", () => {

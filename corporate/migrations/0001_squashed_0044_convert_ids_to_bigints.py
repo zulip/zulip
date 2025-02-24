@@ -366,7 +366,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="customer",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     ("realm__isnull", False),
                     ("remote_server__isnull", False),
                     ("remote_realm__isnull", False),

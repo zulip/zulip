@@ -6,17 +6,17 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 600;
-    font-size: calc(15em / 14);
-    line-height: 120%;
     position: relative;
     z-index: 0;
     background-color: var(--color-background);
 
     .message-header-contents {
+        font-size: 1.0714em; /* 15px at 14px em */
+        line-height: 1.2;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 2em; /* 28px at 14px em */
+        height: 1.8666em; /* 28px at 15px em */
         border: 1px solid var(--color-message-header-contents-border);
         border-bottom-color: var(--color-message-header-contents-border-bottom);
         border-radius: 7px 7px 0 0;
@@ -223,6 +223,9 @@
         min-width: unset;
         width: 1.1428em; /* 16px at 14px em */
         height: 1.1428em; /* 16px at 14px em */
+        display: flex;
+        justify-content: center;
+        align-items: center;
 
         .hashtag {
             padding-right: 0;
@@ -264,7 +267,6 @@
     }
 }
 
-.always_visible_topic_edit,
 .on_hover_topic_read {
     opacity: 0.7;
 

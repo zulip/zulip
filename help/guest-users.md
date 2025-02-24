@@ -6,12 +6,13 @@ invited to a company's Zulip chat.
 
 Guest users **can**:
 
-- View and send messages in channels they have been added to, including viewing
-  message history in the same way as other channel subscribers.
+- View and send messages in channels they have been subscribed to, including
+  viewing message history in the same way as other channel subscribers.
 
 Guest users **cannot**:
 
-- See private or public channels, unless they have been specifically added to the channel.
+- See private or public channels, unless they have been specifically subscribed
+  to the channel.
 - Create new channels or user groups.
 - Add or manage bots.
 - Add custom emoji.
@@ -37,6 +38,24 @@ pricing](/help/zulip-cloud-billing#temporary-users-and-guests) for guest users.
 {settings_tab|organization-permissions}
 
 1. Under **Guests**, toggle **Display “(guest)” after names of guest users**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
+## Configure warning when composing a DM to a guest
+
+Zulip can display a warning to let users know when recipients for a direct
+message they are composing are guests in your organization. The warning will be
+shown as a banner in the compose box on the web and desktop apps.
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{settings_tab|organization-permissions}
+
+1. Under **Guests**, toggle **Warn when composing a DM to a guest**.
 
 {!save-changes.md!}
 

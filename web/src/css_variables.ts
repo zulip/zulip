@@ -37,6 +37,11 @@ export const media_breakpoints = {
     cb4_min: cb4 + "px",
     cb5_min: cb5 + "px",
     short_navbar_cutoff_height: "600px",
+    // Used for main settings overlay and stream/subscription settings overlay
+    // measured as the width of the overlay itself, not the width of the full
+    // screen. 800px is the breakpoint at the 14px legacy font size, scaled with
+    // em to user-chosen font-size.
+    settings_overlay_sidebar_collapse_breakpoint: 800 / 14 + "em",
 };
 
 export const media_breakpoints_num = {

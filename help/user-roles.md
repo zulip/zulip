@@ -25,9 +25,9 @@ You can also manage permissions with [custom user groups](/help/user-groups).
   organizations](/help/moderating-open-organizations). New members automatically
   become full members after a configurable waiting period.
 
-* **Guest**: Can view and send messages in channels they have been added to.
-  Guests cannot see other channels, unless they have been specifically added to
-  the channel. See [guest users documentation](/help/guest-users) for additional
+* **Guest**: Can view and send messages in channels they have been subscribed to.
+  Guests cannot see other channels, unless they have been specifically subscribed
+  to the channel. See [guest users documentation](/help/guest-users) for additional
   details and configuration options.
 
 * **Billing administrator**: The user who upgrades the organization to

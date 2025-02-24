@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 343  # Last bumped for `stream_ids` field in stream deletion events.
+API_FEATURE_LEVEL = 355  # Last bumped for adding 'ignored_because_not_subscribed_channels'
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 343  # Last bumped for `stream_ids` field in stream deletion
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (310, 0)  # bumped 2024-01-13 to upgrade Python requirements
+PROVISION_VERSION = (316, 0)  # bumped 2025-02-21 to upgrade tusd

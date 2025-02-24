@@ -512,16 +512,20 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_access_all_users_group: int | AnonymousSettingGroupDict | None = None
     can_add_custom_emoji_group: int | AnonymousSettingGroupDict | None = None
     can_add_subscribers_group: int | AnonymousSettingGroupDict | None = None
+    can_create_bots_group: int | AnonymousSettingGroupDict | None = None
     can_create_groups: int | AnonymousSettingGroupDict | None = None
     can_create_public_channel_group: int | AnonymousSettingGroupDict | None = None
     can_create_private_channel_group: int | AnonymousSettingGroupDict | None = None
     can_create_web_public_channel_group: int | AnonymousSettingGroupDict | None = None
+    can_create_write_only_bots_group: int | AnonymousSettingGroupDict | None = None
     can_delete_any_message_group: int | AnonymousSettingGroupDict | None = None
     can_delete_own_message_group: int | AnonymousSettingGroupDict | None = None
     can_invite_users_group: int | AnonymousSettingGroupDict | None = None
     can_manage_all_groups: int | AnonymousSettingGroupDict | None = None
+    can_mention_many_users_group: int | AnonymousSettingGroupDict | None = None
     can_move_messages_between_channels_group: int | AnonymousSettingGroupDict | None = None
     can_move_messages_between_topics_group: int | AnonymousSettingGroupDict | None = None
+    can_summarize_topics_group: int | AnonymousSettingGroupDict | None = None
     direct_message_initiator_group: int | AnonymousSettingGroupDict | None = None
     direct_message_permission_group: int | AnonymousSettingGroupDict | None = None
 
@@ -903,6 +907,47 @@ class EventTypingStop(EventTypingStopCore):
     recipients: list[TypingPerson] | None = None
     stream_id: int | None = None
     topic: str | None = None
+
+
+class RecipientFieldForTypingEditChannelMessage(BaseModel):
+    type: Literal["channel"]
+    channel_id: int | None = None
+    topic: str | None = None
+
+
+class RecipientFieldForTypingEditDirectMessage(BaseModel):
+    type: Literal["direct"]
+    user_ids: list[int] | None = None
+
+
+class EventTypingEditMessageStartCore(BaseEvent):
+    type: Literal["typing_edit_message"]
+    op: Literal["start"]
+    sender_id: int
+    message_id: int
+
+
+class EventTypingEditChannelMessageStart(EventTypingEditMessageStartCore):
+    recipient: RecipientFieldForTypingEditChannelMessage
+
+
+class EventTypingEditDirectMessageStart(EventTypingEditMessageStartCore):
+    recipient: RecipientFieldForTypingEditDirectMessage
+
+
+class EventTypingEditMessageStopCore(BaseEvent):
+    type: Literal["typing_edit_message"]
+    op: Literal["stop"]
+    sender_id: int
+    message_id: int
+
+
+class EventTypingEditChannelMessageStop(EventTypingEditMessageStopCore):
+    recipient: RecipientFieldForTypingEditChannelMessage
+
+
+class EventTypingEditDirectMessageStop(EventTypingEditMessageStopCore):
+    recipient: RecipientFieldForTypingEditDirectMessage
 
 
 class EventUpdateDisplaySettingsCore(BaseEvent):

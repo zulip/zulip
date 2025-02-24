@@ -17,7 +17,7 @@
             <div class="right_part">
                 <span class="pm_status_icon {{#unless is_group}}show-tooltip{{/unless}}" data-tippy-placement="top" data-user-ids-string="{{user_ids_string}}">
                     {{#if is_group}}
-                    <span class="zulip-icon zulip-icon-triple-users"></span>
+                    <span class="conversation-partners-icon zulip-icon zulip-icon-dm-groups-3"></span>
                     {{else if is_bot}}
                     <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
                     {{else}}
@@ -39,6 +39,8 @@
             </div>
             <div class="right_part">
                 {{#if is_private}}
+                <span class="unread_mention_info tippy-zulip-tooltip {{#unless has_unread_mention}}unread_hidden{{/unless}}"
+                  data-tippy-content="{{t 'You have unread mentions' }}">@</span>
                 <div class="recent_topic_actions">
                     <div class="recent_view_focusable" data-col-index="{{ column_indexes.read }}">
                         <span class="unread_count unread_count_pm recent-view-table-unread-count {{#unless unread_count}}unread_hidden{{/unless}} tippy-zulip-tooltip on_hover_topic_read" data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
@@ -52,7 +54,7 @@
                 </div>
                 {{else}}
                 <span class="unread_mention_info tippy-zulip-tooltip {{#unless mention_in_unread}}unread_hidden{{/unless}}"
-                  data-tippy-content="{{t 'You have mentions'}}">@</span>
+                  data-tippy-content="{{t 'You have unread mentions'}}">@</span>
                 <div class="recent_topic_actions">
                     <div class="recent_view_focusable hidden-for-spectators" data-col-index="{{ column_indexes.read }}">
                         <span class="unread_count recent-view-table-unread-count {{#unless unread_count}}unread_hidden{{/unless}} tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
@@ -62,17 +64,13 @@
                     <div class="hidden-for-spectators">
                         <span class="recent_view_focusable change_visibility_policy hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-col-index="{{ column_indexes.mute }}">
                             {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
-                                <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic.'}}"
-                                  role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You follow this topic.' }}"></i>
+                                <i class="zulip-icon zulip-icon-follow recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You follow this topic.'}}" role="button"></i>
                             {{else if (eq visibility_policy all_visibility_policies.UNMUTED)}}
-                                <i class="zulip-icon zulip-icon-unmute-new recipient_bar_icon" data-tippy-content="{{t 'You have unmuted this topic.'}}"
-                                  role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You have unmuted this topic.' }}"></i>
+                                <i class="zulip-icon zulip-icon-unmute-new recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You have unmuted this topic.'}}" role="button"></i>
                             {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
-                                <i class="zulip-icon zulip-icon-mute-new recipient_bar_icon" data-tippy-content="{{t 'You have muted this topic.'}}"
-                                  role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You have muted this topic.' }}"></i>
+                                <i class="zulip-icon zulip-icon-mute-new recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You have muted this topic.'}}" role="button"></i>
                             {{else}}
-                                <i class="zulip-icon zulip-icon-inherit recipient_bar_icon"
-                                  role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'Notifications are based on your configuration for this channel.' }}"></i>
+                                <i class="zulip-icon zulip-icon-more-vertical recent-view-row-topic-menu visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" role="button"></i>
                             {{/if}}
                         </span>
                     </div>

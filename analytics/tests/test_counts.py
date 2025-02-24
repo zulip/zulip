@@ -1952,6 +1952,10 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         user3 = do_create_user(
             "email3", "password", self.default_realm, "full_name", acting_user=None
         )
+        do_deactivate_user(user3, acting_user=None)
+        user3.is_mirror_dummy = True
+        user3.save(update_fields=["is_mirror_dummy"])
+
         user4 = do_create_user(
             "email4", "password", self.default_realm, "full_name", acting_user=None
         )

@@ -226,6 +226,24 @@ class GitHubWebhookTest(WebhookTestCase):
 
         self.check_webhook("issues__demilestoned", expected_topic_name, expected_message)
 
+    def test_issue_transfer_transferred_message(self) -> None:
+        expected_message = "Aditya8840 transferred [issue #4 Fixture collection](https://github.com/CrisisCollab/TestWebhook/issues/4) to [CrisisCollab/admin-frontend-mvp/#4](https://github.com/CrisisCollab/admin-frontend-mvp/issues/4)."
+        expected_topic_name = "TestWebhook / issue #4 Fixture collection"
+        self.check_webhook(
+            "issues__transferred",
+            expected_topic_name,
+            expected_message,
+        )
+
+    def test_issue_transfer_opened_message(self) -> None:
+        expected_message = "[Issue #4 Fixture collection](https://github.com/CrisisCollab/admin-frontend-mvp/issues/4) was transferred from CrisisCollab/TestWebhook."
+        expected_topic_name = "admin-frontend-mvp / issue #4 Fixture collection"
+        self.check_webhook(
+            "issues__opened_via_transfer",
+            expected_topic_name,
+            expected_message,
+        )
+
     def test_membership_msg(self) -> None:
         expected_message = (
             "baxterthehacker added [kdaigle](https://github.com/kdaigle) to the Contractors team."

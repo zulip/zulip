@@ -669,17 +669,18 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         verona = get_stream("verona", realm)
 
-        new_stream_announcements_stream = realm.get_new_stream_announcements_stream()
+        new_stream_announcements_stream = realm.new_stream_announcements_stream
         assert new_stream_announcements_stream is not None
         self.assertEqual(new_stream_announcements_stream.id, verona.id)
         do_deactivate_stream(new_stream_announcements_stream, acting_user=None)
-        self.assertIsNone(realm.get_new_stream_announcements_stream())
+        realm.refresh_from_db()
+        self.assertIsNone(realm.new_stream_announcements_stream)
 
     def test_merge_streams(self) -> None:
         realm = get_realm("zulip")
         denmark = get_stream("Denmark", realm)
         cordelia = self.example_user("cordelia")
-        new_stream_announcements_stream = realm.get_new_stream_announcements_stream()
+        new_stream_announcements_stream = realm.new_stream_announcements_stream
         assert new_stream_announcements_stream is not None
         new_stream_announcements_stream_messages_count = Message.objects.filter(
             realm_id=realm.id, recipient=new_stream_announcements_stream.recipient
@@ -699,8 +700,9 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(get_stream("Atlantis", realm).deactivated, True)
 
         stats = merge_streams(realm, denmark, new_stream_announcements_stream)
+        realm.refresh_from_db()
         self.assertEqual(stats, (2, new_stream_announcements_stream_messages_count, 10))
-        self.assertIsNone(realm.get_new_stream_announcements_stream())
+        self.assertIsNone(realm.new_stream_announcements_stream)
 
     def test_change_signup_announcements_stream(self) -> None:
         # We need an admin user.
@@ -760,11 +762,12 @@ class RealmTest(ZulipTestCase):
         realm.signup_announcements_stream = verona
         realm.save(update_fields=["signup_announcements_stream"])
 
-        signup_announcements_stream = realm.get_signup_announcements_stream()
+        signup_announcements_stream = realm.signup_announcements_stream
         assert signup_announcements_stream is not None
         self.assertEqual(signup_announcements_stream, verona)
         do_deactivate_stream(signup_announcements_stream, acting_user=None)
-        self.assertIsNone(realm.get_signup_announcements_stream())
+        realm.refresh_from_db()
+        self.assertIsNone(realm.signup_announcements_stream)
 
     def test_change_zulip_update_announcements_stream(self) -> None:
         # We need an admin user.
@@ -834,11 +837,12 @@ class RealmTest(ZulipTestCase):
         realm.zulip_update_announcements_stream = verona
         realm.save(update_fields=["zulip_update_announcements_stream"])
 
-        zulip_update_announcements_stream = realm.get_zulip_update_announcements_stream()
+        zulip_update_announcements_stream = realm.zulip_update_announcements_stream
         assert zulip_update_announcements_stream is not None
         self.assertEqual(zulip_update_announcements_stream, verona)
         do_deactivate_stream(zulip_update_announcements_stream, acting_user=None)
-        self.assertIsNone(realm.get_zulip_update_announcements_stream())
+        realm.refresh_from_db()
+        self.assertIsNone(realm.zulip_update_announcements_stream)
 
     def test_change_moderation_request_channel(self) -> None:
         # We need an admin user.
@@ -901,11 +905,12 @@ class RealmTest(ZulipTestCase):
         realm.moderation_request_channel = verona
         realm.save(update_fields=["moderation_request_channel"])
 
-        moderation_request_channel = realm.get_moderation_request_channel()
+        moderation_request_channel = realm.moderation_request_channel
         assert moderation_request_channel is not None
         self.assertEqual(moderation_request_channel, verona)
         do_deactivate_stream(moderation_request_channel, acting_user=None)
-        self.assertIsNone(realm.get_moderation_request_channel())
+        realm.refresh_from_db()
+        self.assertIsNone(realm.moderation_request_channel)
 
     def test_change_realm_default_language(self) -> None:
         # we need an admin user.
@@ -946,14 +951,12 @@ class RealmTest(ZulipTestCase):
         ]
 
         invalid_values = dict(
-            bot_creation_policy=10,
             message_retention_days=10,
             video_chat_provider=10,
             giphy_rating=10,
             waiting_period_threshold=-10,
             digest_weekday=10,
             message_content_delete_limit_seconds=-10,
-            wildcard_mention_policy=10,
             message_content_edit_limit_seconds=0,
             move_messages_within_stream_limit_seconds=0,
             move_messages_between_streams_limit_seconds=0,
@@ -1019,23 +1022,69 @@ class RealmTest(ZulipTestCase):
             get_realm("zulip").video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
         )
 
-        req = {
-            "video_chat_provider": orjson.dumps(
-                Realm.VIDEO_CHAT_PROVIDERS["big_blue_button"]["id"]
-            ).decode()
-        }
+        big_blue_button_provider_id = Realm.VIDEO_CHAT_PROVIDERS["big_blue_button"]["id"]
+        req = {"video_chat_provider": f"{big_blue_button_provider_id}"}
+        with self.settings(BIG_BLUE_BUTTON_SECRET=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {big_blue_button_provider_id}"
+            )
+
+        with self.settings(BIG_BLUE_BUTTON_URL=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {big_blue_button_provider_id}"
+            )
+
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
         self.assertEqual(
             get_realm("zulip").video_chat_provider,
-            Realm.VIDEO_CHAT_PROVIDERS["big_blue_button"]["id"],
+            big_blue_button_provider_id,
         )
 
-        req = {
-            "video_chat_provider": orjson.dumps(Realm.VIDEO_CHAT_PROVIDERS["zoom"]["id"]).decode()
-        }
+        zoom_provider_id = Realm.VIDEO_CHAT_PROVIDERS["zoom"]["id"]
+        req = {"video_chat_provider": f"{zoom_provider_id}"}
+        with self.settings(VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID=None, VIDEO_ZOOM_CLIENT_ID=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, f"Invalid video_chat_provider {zoom_provider_id}")
+
+        with self.settings(
+            VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID=None, VIDEO_ZOOM_CLIENT_SECRET=None
+        ):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, f"Invalid video_chat_provider {zoom_provider_id}")
+
+        with self.settings(VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_success(result)
+            self.assertEqual(
+                get_realm("zulip").video_chat_provider,
+                zoom_provider_id,
+            )
+
+        zoom_server_to_server_provider_id = Realm.VIDEO_CHAT_PROVIDERS["zoom_server_to_server"][
+            "id"
+        ]
+        req = {"video_chat_provider": f"{zoom_server_to_server_provider_id}"}
+        with self.settings(VIDEO_ZOOM_CLIENT_ID=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {zoom_server_to_server_provider_id}"
+            )
+
+        with self.settings(VIDEO_ZOOM_CLIENT_SECRET=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {zoom_server_to_server_provider_id}"
+            )
+
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
+        self.assertEqual(
+            get_realm("zulip").video_chat_provider,
+            zoom_server_to_server_provider_id,
+        )
 
     def test_data_deletion_schedule_when_deactivating_realm(self) -> None:
         self.login("desdemona")
@@ -1880,8 +1929,6 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
-            bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
                 Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],
@@ -2204,6 +2251,33 @@ class RealmAPITest(ZulipTestCase):
         self.assert_json_success(result)
         realm = get_realm("zulip")
         self.assertEqual(getattr(realm, setting_name), admins_group.usergroup_ptr)
+
+        permission_configuration = Realm.REALM_PERMISSION_GROUP_SETTINGS[setting_name]
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        result = self.client_patch(
+            "/json/realm",
+            {
+                setting_name: orjson.dumps(
+                    {
+                        "new": {
+                            "direct_members": [],
+                            "direct_subgroups": [],
+                        },
+                        "old": admins_group.id,
+                    }
+                ).decode()
+            },
+        )
+        if not permission_configuration.allow_nobody_group:
+            self.assert_json_error(
+                result, f"'{setting_name}' setting cannot be set to 'role:nobody' group."
+            )
+        else:
+            self.assert_json_success(result)
+            realm = get_realm("zulip")
+            self.assertEqual(getattr(realm, setting_name), nobody_group.usergroup_ptr)
 
     def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:

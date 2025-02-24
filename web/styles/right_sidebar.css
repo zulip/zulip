@@ -1,5 +1,7 @@
-/* Width of emoji used by user to display status. */
-$user_status_emoji_width: 24px;
+:root {
+    /* Width of emoji used by user to display status. */
+    --user-status-emoji-width: 24px;
+}
 
 .right-sidebar {
     & a:hover {
@@ -78,7 +80,8 @@ $user_status_emoji_width: 24px;
         border-radius: 3px;
 
         & i {
-            font-size: 17px;
+            /* 17px at 16px em */
+            font-size: 1.0625em;
             /* Ensure the icon takes the same baseline
                as the rest of the row, for perfect
                vertical alignment with the username and
@@ -152,6 +155,11 @@ $user_status_emoji_width: 24px;
         line-height: 1;
         /* ...which is approximately 11px at 16px/1em. */
         font-size: 0.6875em;
+
+        &.user-circle-deactivated {
+            color: var(--color-user-circle-offline);
+            font-size: 0.85em;
+        }
     }
 
     .user_sidebar_entry.with_avatar {
@@ -362,7 +370,7 @@ $user_status_emoji_width: 24px;
 
         .user-name {
             display: inline-block;
-            max-width: calc(100% - $user_status_emoji_width);
+            max-width: calc(100% - var(--user-status-emoji-width));
             overflow-x: hidden;
             text-overflow: ellipsis;
         }
@@ -465,11 +473,12 @@ $user_status_emoji_width: 24px;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    margin-bottom: 10px;
-    margin-left: var(--right-sidebar-heading-left-spacing);
+    padding-bottom: 10px;
+    padding-left: var(--right-sidebar-heading-left-spacing);
     /* The scrollbar doesn't extend this high, but we want the three-dot
        menus to line up. */
-    margin-right: var(--width-simplebar-scroll-hover);
+    padding-right: var(--width-simplebar-scroll-hover);
+    background-color: var(--color-background);
 
     #userlist-header-search {
         display: grid;

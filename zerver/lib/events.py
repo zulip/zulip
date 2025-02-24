@@ -314,6 +314,11 @@ def fetch_initial_state_data(
                 Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
             )
         )
+        state["realm_wildcard_mention_policy"] = get_corresponding_policy_value_for_group_setting(
+            realm,
+            "can_mention_many_users_group",
+            Realm.WILDCARD_MENTION_POLICY_TYPES,
+        )
 
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
@@ -354,7 +359,7 @@ def fetch_initial_state_data(
         # can be removed once there are no longer clients relying on it.
         state["realm_url"] = state["realm_uri"] = realm.url
         state["realm_bot_domain"] = realm.get_bot_domain()
-        state["realm_available_video_chat_providers"] = realm.VIDEO_CHAT_PROVIDERS
+        state["realm_available_video_chat_providers"] = realm.get_enabled_video_chat_providers()
         state["settings_send_digest_emails"] = settings.SEND_DIGEST_EMAILS
 
         state["realm_digest_emails_enabled"] = (
@@ -422,25 +427,27 @@ def fetch_initial_state_data(
             else server_default_jitsi_server_url
         )
 
-        moderation_request_channel = realm.get_moderation_request_channel()
+        state["server_can_summarize_topics"] = settings.TOPIC_SUMMARIZATION_MODEL is not None
+
+        moderation_request_channel = realm.moderation_request_channel
         if moderation_request_channel:
             state["realm_moderation_request_channel_id"] = moderation_request_channel.id
         else:
             state["realm_moderation_request_channel_id"] = -1
 
-        new_stream_announcements_stream = realm.get_new_stream_announcements_stream()
+        new_stream_announcements_stream = realm.new_stream_announcements_stream
         if new_stream_announcements_stream:
             state["realm_new_stream_announcements_stream_id"] = new_stream_announcements_stream.id
         else:
             state["realm_new_stream_announcements_stream_id"] = -1
 
-        signup_announcements_stream = realm.get_signup_announcements_stream()
+        signup_announcements_stream = realm.signup_announcements_stream
         if signup_announcements_stream:
             state["realm_signup_announcements_stream_id"] = signup_announcements_stream.id
         else:
             state["realm_signup_announcements_stream_id"] = -1
 
-        zulip_update_announcements_stream = realm.get_zulip_update_announcements_stream()
+        zulip_update_announcements_stream = realm.zulip_update_announcements_stream
         if zulip_update_announcements_stream:
             state["realm_zulip_update_announcements_stream_id"] = (
                 zulip_update_announcements_stream.id
@@ -1379,6 +1386,15 @@ def apply_event(
                         "can_invite_users_group"
                     )
 
+                if key == "can_mention_many_users_group":
+                    state["realm_wildcard_mention_policy"] = (
+                        get_corresponding_policy_value_for_group_setting(
+                            user_profile.realm,
+                            "can_mention_many_users_group",
+                            Realm.WILDCARD_MENTION_POLICY_TYPES,
+                        )
+                    )
+
                 if key == "plan_type":
                     # Then there are some extra fields that also need to be set.
                     state["zulip_plan_is_not_limited"] = value != Realm.PLAN_TYPE_LIMITED
@@ -1532,6 +1548,9 @@ def apply_event(
         pass
     elif event["type"] == "typing":
         # Typing notification events are transient and thus ignored
+        pass
+    elif event["type"] == "typing_edit_message":
+        # Typing message edit notification events are transient and thus ignored
         pass
     elif event["type"] == "attachment":
         # Attachment events are just for updating the "uploads" UI;

@@ -386,7 +386,9 @@ class PermissionTest(ZulipTestCase):
         members = self.assert_json_success(result)["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
-        self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
+        self.assertEqual(
+            hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1, get_realm("zulip").id)
+        )
 
         # client_gravatar is still turned off for admins.  In theory,
         # it doesn't need to be, but client-side changes would be
@@ -399,7 +401,9 @@ class PermissionTest(ZulipTestCase):
         members = self.assert_json_success(result)["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
-        self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
+        self.assertEqual(
+            hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1, get_realm("zulip").id)
+        )
         self.assertEqual(hamlet["delivery_email"], self.example_email("hamlet"))
 
     def test_user_cannot_promote_to_admin(self) -> None:
@@ -1017,7 +1021,7 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(85),
+            self.assert_database_query_count(87),
             self.assert_memcached_count(19),
             self.capture_send_event_calls(expected_num_events=10) as events,
         ):

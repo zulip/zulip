@@ -664,6 +664,7 @@ function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Sugge
                 {operator: "channel"},
                 {operator: "dm"},
                 {operator: "in"},
+                {operator: "topic"},
             ],
         },
         {

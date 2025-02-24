@@ -56,8 +56,8 @@ automated notices to help others understand how content was moved.
 ## Notices about users
 
 You will be notified if someone [subscribes you to a
-channel](/help/add-or-remove-users-from-a-channel#add-users-to-a-channel), or
-changes your [group](/help/user-groups) membership.
+channel](/help/subscribe-users-to-a-channel), or changes your
+[group](/help/user-groups) membership.
 
 ### New user announcements
 

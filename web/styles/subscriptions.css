@@ -21,6 +21,9 @@
 }
 
 .stream-email {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-family: "Source Code Pro", monospace;
     padding: 10px;
     font-size: 0.85rem;
@@ -31,10 +34,14 @@
 
 .stream-email .email-address {
     display: block;
-    margin: auto;
+    flex: 0 0 90%;
     word-wrap: break-word;
     word-break: break-all;
     white-space: normal;
+}
+
+.copy-email-address {
+    font-size: 16px;
 }
 
 .sub_setting_checkbox {
@@ -59,26 +66,34 @@
     margin-right: 10px;
 }
 
+#add_new_user_group {
+    height: var(--settings-overlay-header-button-height);
+}
+
 .create_user_group_plus_button,
 .create_stream_plus_button {
-    font-size: 24px;
     font-weight: 400;
     position: relative;
-    top: 2px;
     border: 1px solid hsl(0deg 0% 80%);
     border-radius: 5px;
     background-color: hsl(0deg 0% 100%);
     color: hsl(0deg 0% 0%);
     margin: 0 0 0 5px;
-    height: 27px;
+    height: 100%;
+    width: var(--settings-overlay-header-button-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &:hover {
         border: 1px solid hsl(0deg 0% 47%);
     }
 
     .create_button_plus_sign {
-        position: relative;
-        top: -5px;
+        line-height: 1em;
+        display: block;
+        font-size: 1.2em;
+        opacity: 0.8;
     }
 
     &:disabled {
@@ -268,8 +283,7 @@ h4.user_group_setting_subsection_title {
 }
 
 .subscriptions-container .subscriptions-header .fa-chevron-left,
-.user-groups-container .user-groups-header .fa-chevron-left,
-#settings_overlay_container .settings-header.mobile .fa-chevron-left {
+.user-groups-container .user-groups-header .fa-chevron-left {
     position: relative;
     transform: translate(-50px, 0);
     opacity: 0;
@@ -326,6 +340,98 @@ h4.user_group_setting_subsection_title {
     }
 }
 
+.subscriptions-container {
+    container: subscriptions / inline-size;
+}
+
+/* There's an awkward width of modal that is wider than the
+   @media breakpoint that collapses the left pane, but still
+   narrow enough (965px at 14px em) that the sort buttons need
+   a second row to be visible without overlapping other UI. */
+@container settings-overlay (width >= $settings_overlay_sidebar_collapse_breakpoint) {
+    @container subscriptions (width < calc(60em + 70px)) {
+        #subscription_overlay .subscriptions-container {
+            .left {
+                .list-toggler-container {
+                    height: 5em;
+                    justify-content: end;
+                    flex-wrap: wrap;
+                }
+
+                .tab-switcher {
+                    margin-right: 0;
+                }
+
+                .tab-switcher:first-child {
+                    /* This forces the other buttons to the next row */
+                    width: 100%;
+                    display: flex;
+                    justify-content: end;
+                }
+            }
+
+            .right .display-type {
+                height: 5em;
+            }
+
+            .streams-list {
+                /* Calculated from several heights and padding/margin measurements
+                in .list-toggler-container and .stream_filter, with some added
+                fiddling to see what worked best at 12px - 20px font sizes.
+                Notably this height is shorter than the similar calculation
+                below because the toggler is taller.
+                When we redesign this area we should make this less brittle. */
+                height: calc(100% - 5.4em - 40px);
+            }
+
+            #stream_settings {
+                height: calc(100% - 5em);
+            }
+        }
+    }
+}
+
+/* Copy all the above styles for the breakpoint where the overlay
+   becomes 40% left pane and 60% right pane, since that automatically
+   qualifies the modal for collapsing the buttons into two rows, and
+   especially for smaller font-sizes this will happen before the
+   breakpoint for the subscriptions container width. */
+@media (width < $lg_min) {
+    @container settings-overlay (width >= $settings_overlay_sidebar_collapse_breakpoint) {
+        #subscription_overlay .subscriptions-container {
+            .left {
+                .list-toggler-container {
+                    height: 5em;
+                    justify-content: end;
+                    flex-wrap: wrap;
+                }
+
+                .tab-switcher {
+                    margin-right: 0;
+                }
+
+                .tab-switcher:first-child {
+                    width: 100%;
+                    display: flex;
+                    justify-content: end;
+                }
+            }
+
+            .right .display-type {
+                height: 5em;
+            }
+
+            .streams-list {
+                height: calc(100% - 5.4em - 40px);
+            }
+
+            #stream_settings {
+                height: calc(100% - 5em);
+            }
+        }
+    }
+}
+
 .user-groups-container,
 .subscriptions-container {
     position: relative;
@@ -339,43 +445,39 @@ h4.user_group_setting_subsection_title {
 
     .list-toggler-container .tab-switcher .ind-tab {
         width: auto;
+        display: flex;
+        padding: 0 10px;
+
+        .fa {
+            font-size: 1em;
+        }
     }
 
     .user-groups-header,
     .subscriptions-header {
-        padding: 12px;
-        text-align: center;
+        height: var(--settings-overlay-header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         text-transform: uppercase;
         font-weight: 700;
         background-color: var(--color-background-modal-bar);
         border-bottom: 1px solid var(--color-border-modal-bar);
 
         .fa-chevron-left {
-            display: none;
-        }
-
-        .user-groups-title,
-        .subscriptions-title {
-            display: inline-block;
-            transform: translate(-13px, 0);
+            visibility: hidden;
         }
 
         .exit {
             font-weight: 600;
-            position: absolute;
-            top: 10px;
-            right: 10px;
             color: hsl(0deg 0% 67%);
             cursor: pointer;
         }
     }
 
     .exit-sign {
-        position: relative;
-        top: 1px;
-        margin-left: 3px;
-        font-size: 1.5rem;
-        line-height: 1;
+        font-size: 1.5em;
+        margin-right: 0.7142em; /* 10px at 14px em */
         font-weight: 600;
         cursor: pointer;
     }
@@ -386,7 +488,7 @@ h4.user_group_setting_subsection_title {
         display: inline-block;
         vertical-align: top;
         width: 50%;
-        height: calc(100% - 45px);
+        height: calc(100% - var(--settings-overlay-header-height));
         margin: 0 -2px;
     }
 
@@ -443,14 +545,14 @@ h4.user_group_setting_subsection_title {
 
         .list-toggler-container {
             align-items: center;
-            padding: 6px 8px;
+            padding: 0 8px;
             border-bottom: 1px solid var(--color-border-modal-bar);
             display: flex;
             justify-content: space-between;
+            height: var(--settings-overlay-subheader-height);
 
             #add_new_subscription {
-                position: relative;
-                top: -2px;
+                height: var(--settings-overlay-header-button-height);
             }
         }
     }
@@ -466,8 +568,10 @@ h4.user_group_setting_subsection_title {
         }
 
         .display-type {
-            padding: 2px;
-            text-align: center;
+            height: var(--settings-overlay-subheader-height);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             font-weight: 600;
             border-bottom: 1px solid var(--color-border-modal-bar);
 
@@ -493,7 +597,6 @@ h4.user_group_setting_subsection_title {
                 display: none;
                 font-size: 1.5em;
                 line-height: 1;
-                margin: 9px;
                 font-weight: 600;
                 word-break: break-all;
 
@@ -556,7 +659,11 @@ h4.user_group_setting_subsection_title {
     position: relative;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
-    height: calc(100% - 85px);
+    /* Calculated from several heights and padding/margin measurements
+    in .list-toggler-container and .stream_filter, with some added
+    fiddling to see what worked best at 12px - 20px font sizes.
+    When we redesign this area we should make this less brittle. */
+    height: calc(100% - 3.4em - 40px);
     width: 100%;
 }
 
@@ -784,11 +891,18 @@ h4.user_group_setting_subsection_title {
     }
 }
 
+#settings_page,
+#groups_overlay,
+#subscription_overlay {
+    container: settings-overlay / inline-size;
+}
+
 #groups_overlay,
 #subscription_overlay {
     .tab-switcher {
         display: flex;
         flex-wrap: nowrap;
+        height: var(--settings-overlay-header-button-height);
     }
 
     #user-group-creation,
@@ -801,14 +915,14 @@ h4.user_group_setting_subsection_title {
         .user-group-creation-simplebar-container {
             height: calc(
                 var(--overlay-container-height) -
-                    var(--subscriptions-overlay-header-height) -
-                    var(--subscriptions-overlay-display-type-height) -
+                    var(--settings-overlay-header-height) -
+                    var(--settings-overlay-subheader-height) -
                     var(--subscriptions-overlay-sticky-footer-height)
             );
             max-height: calc(
                 var(--overlay-container-max-height) -
-                    var(--subscriptions-overlay-header-height) -
-                    var(--subscriptions-overlay-display-type-height) -
+                    var(--settings-overlay-header-height) -
+                    var(--settings-overlay-subheader-height) -
                     var(--subscriptions-overlay-sticky-footer-height)
             );
         }
@@ -830,7 +944,7 @@ h4.user_group_setting_subsection_title {
             border-top: 1px solid var(--color-border-modal-bar);
         }
 
-        @media (width > $md_min) {
+        @container settings-overlay (width > $settings_overlay_sidebar_collapse_breakpoint) {
             .settings-sticky-footer {
                 border-radius: 0 0 6px;
             }
@@ -904,6 +1018,7 @@ h4.user_group_setting_subsection_title {
                 padding: 3px 4px;
                 min-width: 80px;
                 width: auto;
+                display: flex;
             }
         }
 
@@ -1034,7 +1149,7 @@ h4.user_group_setting_subsection_title {
 
     .settings {
         position: relative;
-        height: calc(100% - 45px);
+        height: calc(100% - var(--settings-overlay-header-height));
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
 
@@ -1117,7 +1232,11 @@ div.settings-radio-input-parent {
         float: left;
         width: auto;
         cursor: pointer;
-        margin: 3.5px 0 1px;
+        /* Scale the height with font-size, 14px at 1em */
+        height: 1em;
+        /* This value came from fiddling to find what looked
+           vertically centered at 12px-20px font sizes. */
+        margin-top: 0.15em;
 
         &:focus {
             outline: 1px dotted hsl(0deg 0% 20%);
@@ -1154,16 +1273,20 @@ div.settings-radio-input-parent {
     }
 
     .settings_select {
-        /* Match with select elements in settings page */
-        min-width: 325px;
+        /* Match with select elements in settings page. See there
+           for comments about these values. */
+        box-sizing: unset;
+        width: calc(var(--modal-input-width) - 33px);
         max-width: 100%;
-        height: 30px;
+        padding-top: 4px;
+        padding-bottom: 4px;
+        height: 1.4em;
     }
 
     .dropdown-widget-button {
         /* Match the margin with other input groups around. */
         margin-bottom: 20px;
-        min-width: 325px;
+        min-width: var(--modal-input-width);
         max-width: 100%;
         width: auto;
         height: 30px;
@@ -1181,9 +1304,8 @@ div.settings-radio-input-parent {
 
 .group-permissions .pill-container,
 .stream-permissions .pill-container {
-    /* 319px + 2 * (2px padding) + 2 * (1px border) = 325px, which is the total
-    width of dropdown widget buttons */
-    min-width: 319px;
+    /* Subtract 2 * (2px padding) + 2 * (1px border) */
+    min-width: calc(var(--modal-input-width) - 6px);
     background-color: hsl(0deg 0% 100%);
 
     .input {
@@ -1240,8 +1362,9 @@ div.settings-radio-input-parent {
 }
 
 .stream-settings-color-preview {
-    width: 33px;
-    height: 33px;
+    /* 33px at 12.8 font size (from .button.small) at 14px em */
+    width: 2.5781em;
+    height: 2.5781em;
     margin: -6px 0 -6px -10px;
 }
 
@@ -1283,7 +1406,7 @@ div.settings-radio-input-parent {
 
    Longer-term we should extract this logic two-column-overlay class
    to read more naturally. */
-@media (width < $md_min) {
+@container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
     .user-groups-container,
     .subscriptions-container {
         position: relative;
@@ -1295,7 +1418,7 @@ div.settings-radio-input-parent {
 
         .user-groups-header .fa-chevron-left,
         .subscriptions-header .fa-chevron-left {
-            display: block;
+            visibility: visible;
         }
     }
 
@@ -1308,7 +1431,7 @@ div.settings-radio-input-parent {
         display: block;
         margin: 0;
         width: 100%;
-        height: calc(100% - 45px);
+        height: calc(100% - var(--settings-overlay-header-height));
 
         border: none;
     }
@@ -1319,7 +1442,7 @@ div.settings-radio-input-parent {
         position: absolute;
         left: 101%;
 
-        top: 45px;
+        top: var(--settings-overlay-header-height);
         background-color: var(--color-background-modal);
         border-top: none;
 

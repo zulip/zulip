@@ -1,7 +1,6 @@
 import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill.ts";
-import {$t} from "./i18n.ts";
 import * as people from "./people.ts";
 import * as sub_store from "./sub_store.ts";
 
@@ -17,6 +16,7 @@ let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 // the narrow and the user should still be able to see the banner once after
 // performing these actions
 let recipient_viewed_topic_resolved_banner = false;
+let recipient_guest_ids_for_dm_warning: number[] = [];
 
 export function set_recipient_edited_manually(flag: boolean): void {
     recipient_edited_manually = flag;
@@ -56,6 +56,14 @@ export function set_recipient_viewed_topic_resolved_banner(flag: boolean): void 
 
 export function has_recipient_viewed_topic_resolved_banner(): boolean {
     return recipient_viewed_topic_resolved_banner;
+}
+
+export function set_recipient_guest_ids_for_dm_warning(guest_ids: number[]): void {
+    recipient_guest_ids_for_dm_warning = guest_ids;
+}
+
+export function get_recipient_guest_ids_for_dm_warning(): number[] {
+    return recipient_guest_ids_for_dm_warning;
 }
 
 export function composing(): boolean {
@@ -131,10 +139,6 @@ export let topic = get_or_set("input#stream_message_recipient_topic");
 
 export function rewire_topic(value: typeof topic): void {
     topic = value;
-}
-
-export function empty_topic_placeholder(): string {
-    return $t({defaultMessage: "(no topic)"});
 }
 
 // We can't trim leading whitespace in `compose_textarea` because

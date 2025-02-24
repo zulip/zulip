@@ -108,7 +108,12 @@ from zerver.actions.streams import (
     do_rename_stream,
 )
 from zerver.actions.submessage import do_add_submessage
-from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
+from zerver.actions.typing import (
+    check_send_typing_notification,
+    do_send_direct_message_edit_typing_notification,
+    do_send_stream_message_edit_typing_notification,
+    do_send_stream_typing_notification,
+)
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     bulk_add_members_to_user_groups,
@@ -192,6 +197,10 @@ from zerver.lib.event_schema import (
     check_subscription_peer_remove,
     check_subscription_remove,
     check_subscription_update,
+    check_typing_edit_channel_message_start,
+    check_typing_edit_channel_message_stop,
+    check_typing_edit_direct_message_start,
+    check_typing_edit_direct_message_stop,
     check_typing_start,
     check_typing_stop,
     check_update_display_settings,
@@ -374,6 +383,8 @@ class BaseAction(ZulipTestCase):
         with self.captureOnCommitCallbacks(execute=True):
             yield events
 
+        self.user_profile.refresh_from_db()
+
         # Append to an empty list so the result is accessible through the
         # reference we just yielded.
         events += client.event_queue.contents()
@@ -531,7 +542,7 @@ class NormalActionsTest(BaseAction):
                 )
 
     def test_automatically_follow_topic_where_mentioned(self) -> None:
-        user = self.example_user("hamlet")
+        user = self.user_profile
 
         do_change_user_setting(
             user_profile=user,
@@ -684,7 +695,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(user_creation_user_ids, {othello.id, desdemona.id})
 
     def test_stream_send_message_events(self) -> None:
-        hamlet = self.example_user("hamlet")
+        hamlet = self.user_profile
         for stream_name in ["Verona", "Denmark", "core team"]:
             stream = get_stream(stream_name, hamlet.realm)
             sub = get_subscription(stream.name, hamlet)
@@ -871,7 +882,7 @@ class NormalActionsTest(BaseAction):
         assert isinstance(events[0]["message"]["avatar_url"], str)
 
         do_change_user_setting(
-            self.example_user("hamlet"),
+            hamlet,
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -1442,6 +1453,44 @@ class NormalActionsTest(BaseAction):
             )
         self.assertEqual(events, [])
 
+    def test_edit_direct_message_typing_events(self) -> None:
+        msg_id = self.send_personal_message(self.user_profile, self.example_user("cordelia"))
+        with self.verify_action(state_change_expected=False) as events:
+            do_send_direct_message_edit_typing_notification(
+                self.user_profile,
+                [self.example_user("cordelia").id, self.user_profile.id],
+                msg_id,
+                "start",
+            )
+        check_typing_edit_direct_message_start("events[0]", events[0])
+
+        with self.verify_action(state_change_expected=False) as events:
+            do_send_direct_message_edit_typing_notification(
+                self.user_profile,
+                [self.example_user("cordelia").id, self.user_profile.id],
+                msg_id,
+                "stop",
+            )
+        check_typing_edit_direct_message_stop("events[0]", events[0])
+
+    def test_stream_edit_message_typing_events(self) -> None:
+        channel = get_stream("Denmark", self.user_profile.realm)
+        msg_id = self.send_stream_message(
+            self.user_profile, channel.name, topic_name="editing", content="before edit"
+        )
+        topic_name = "editing"
+        with self.verify_action(state_change_expected=False) as events:
+            do_send_stream_message_edit_typing_notification(
+                self.user_profile, channel.id, msg_id, "start", topic_name
+            )
+        check_typing_edit_channel_message_start("events[0]", events[0])
+
+        with self.verify_action(state_change_expected=False) as events:
+            do_send_stream_message_edit_typing_notification(
+                self.user_profile, channel.id, msg_id, "stop", topic_name
+            )
+        check_typing_edit_channel_message_stop("events[0]", events[0])
+
     def test_custom_profile_fields_events(self) -> None:
         realm = self.user_profile.realm
 
@@ -1938,13 +1987,13 @@ class NormalActionsTest(BaseAction):
         backend = NamedUserGroup.objects.get(name="backend")
         with self.verify_action() as events:
             do_update_user_group_name(backend, "backendteam", acting_user=None)
-        check_user_group_update("events[0]", events[0], "name")
+        check_user_group_update("events[0]", events[0], {"name"})
 
         # Test description update
         description = "Backend team to deal with backend code."
         with self.verify_action() as events:
             do_update_user_group_description(backend, description, acting_user=None)
-        check_user_group_update("events[0]", events[0], "description")
+        check_user_group_update("events[0]", events[0], {"description"})
 
         # Test can_mention_group setting update
         with self.verify_action() as events:
@@ -1955,7 +2004,7 @@ class NormalActionsTest(BaseAction):
                 old_setting_api_value=everyone_group.id,
                 acting_user=None,
             )
-        check_user_group_update("events[0]", events[0], "can_mention_group")
+        check_user_group_update("events[0]", events[0], {"can_mention_group"})
         self.assertEqual(events[0]["data"]["can_mention_group"], moderators_group.id)
 
         setting_group = self.create_or_update_anonymous_group_for_setting(
@@ -1969,7 +2018,7 @@ class NormalActionsTest(BaseAction):
                 old_setting_api_value=moderators_group.id,
                 acting_user=None,
             )
-        check_user_group_update("events[0]", events[0], "can_mention_group")
+        check_user_group_update("events[0]", events[0], {"can_mention_group"})
         self.assertEqual(
             events[0]["data"]["can_mention_group"],
             AnonymousSettingGroupDict(
@@ -2011,14 +2060,14 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action(include_deactivated_groups=True) as events:
             do_deactivate_user_group(api_design, acting_user=None)
-        check_user_group_update("events[0]", events[0], "deactivated")
+        check_user_group_update("events[0]", events[0], {"deactivated"})
 
         with self.verify_action(num_events=0, state_change_expected=False):
             do_update_user_group_name(api_design, "api-deisgn-team", acting_user=None)
 
         with self.verify_action(include_deactivated_groups=True) as events:
             do_update_user_group_name(api_design, "api-deisgn", acting_user=None)
-        check_user_group_update("events[0]", events[0], "name")
+        check_user_group_update("events[0]", events[0], {"name"})
 
     def test_default_stream_groups_events(self) -> None:
         streams = [
@@ -3141,6 +3190,7 @@ class NormalActionsTest(BaseAction):
 
         do_reactivate_user(user_profile, acting_user=None)
         self.set_up_db_for_testing_user_access()
+        self.user_profile.refresh_from_db()
 
         # Test that users who can access the deactivated user
         # do not receive the 'user_group/remove_members' event.
@@ -3160,10 +3210,10 @@ class NormalActionsTest(BaseAction):
         check_user_group_remove_members("events[0]", events[0])
         check_user_group_remove_members("events[1]", events[1])
         check_user_group_remove_members("events[2]", events[2])
-        check_user_group_update("events[3]", events[3], "can_add_members_group")
-        check_user_group_update("events[4]", events[4], "can_manage_group")
+        check_user_group_update("events[3]", events[3], {"can_add_members_group"})
+        check_user_group_update("events[4]", events[4], {"can_manage_group"})
         check_realm_update_dict("events[5]", events[5])
-        check_user_group_update("events[6]", events[6], "can_mention_group")
+        check_user_group_update("events[6]", events[6], {"can_mention_group"})
         self.assertEqual(
             events[3]["data"]["can_add_members_group"],
             AnonymousSettingGroupDict(direct_members=[], direct_subgroups=[]),
@@ -3190,10 +3240,10 @@ class NormalActionsTest(BaseAction):
         check_user_group_remove_members("events[0]", events[0])
         check_user_group_remove_members("events[1]", events[1])
         check_user_group_remove_members("events[2]", events[2])
-        check_user_group_update("events[3]", events[3], "can_add_members_group")
-        check_user_group_update("events[4]", events[4], "can_manage_group")
+        check_user_group_update("events[3]", events[3], {"can_add_members_group"})
+        check_user_group_update("events[4]", events[4], {"can_manage_group"})
         check_realm_update_dict("events[5]", events[5])
-        check_user_group_update("events[6]", events[6], "can_mention_group")
+        check_user_group_update("events[6]", events[6], {"can_mention_group"})
         self.assertEqual(
             events[3]["data"]["can_add_members_group"],
             AnonymousSettingGroupDict(direct_members=[], direct_subgroups=[]),
@@ -3226,7 +3276,7 @@ class NormalActionsTest(BaseAction):
         check_user_group_remove_members("events[0]", events[0])
         check_user_group_remove_members("events[1]", events[1])
         check_user_group_remove_members("events[2]", events[2])
-        check_user_group_update("events[3]", events[3], "can_mention_group")
+        check_user_group_update("events[3]", events[3], {"can_mention_group"})
         check_realm_user_remove("events[4]]", events[4])
         self.assertEqual(
             events[3]["data"]["can_mention_group"],
@@ -3315,10 +3365,10 @@ class NormalActionsTest(BaseAction):
         check_user_group_add_members("events[0]", events[0])
         check_user_group_add_members("events[1]", events[1])
         check_user_group_add_members("events[2]", events[2])
-        check_user_group_update("events[3]", events[3], "can_add_members_group")
-        check_user_group_update("events[4]", events[4], "can_manage_group")
+        check_user_group_update("events[3]", events[3], {"can_add_members_group"})
+        check_user_group_update("events[4]", events[4], {"can_manage_group"})
         check_realm_update_dict("events[5]", events[5])
-        check_user_group_update("events[6]", events[6], "can_mention_group")
+        check_user_group_update("events[6]", events[6], {"can_mention_group"})
         self.assertEqual(
             events[3]["data"]["can_add_members_group"],
             AnonymousSettingGroupDict(direct_members=[user_profile.id], direct_subgroups=[]),
@@ -3799,8 +3849,6 @@ class RealmPropertyActionTest(BaseAction):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[1000, 2000],
-            wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
-            bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
             ],

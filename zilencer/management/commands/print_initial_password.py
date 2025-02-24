@@ -5,7 +5,6 @@ from typing_extensions import override
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.users import get_api_key
 
 
 class Command(ZulipBaseCommand):
@@ -32,4 +31,4 @@ class Command(ZulipBaseCommand):
                 print(f"ERROR: {email} does not look like an email address")
                 continue
             user = self.get_user(email, realm)
-            print(self.fmt % (email, initial_password(email), get_api_key(user)))
+            print(self.fmt % (email, initial_password(email), user.api_key))

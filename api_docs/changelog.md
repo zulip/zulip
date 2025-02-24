@@ -20,6 +20,156 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 355**
+
+* [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /messages/flags`](/api/update-message-flags):
+  Added `ignored_because_not_subscribed_channels` field in the response, which
+  is a list of the channels whose messages were skipped to mark as unread
+  because the user is not subscribed to them.
+
+**Feature level 354**
+
+* [`GET /messages`](/api/get-messages), [`GET
+  /messages/{message_id}`](/api/get-message), [`POST
+  /messages/flags/narrow`]: Users can access messages in unsubscribed
+  private channels that are accessible only via groups that grant
+  content access.
+* [`GET /messages/{message_id}/read_receipts`](/api/get-read-receipts):
+  Users can access read receipts in unsubscribed private channels that are
+  accessible only via groups that grant content access.
+* [`POST /messages/{message_id}/reactions`](/api/add-reaction),
+  [`DELETE /messages/{message_id}/reactions`](/api/remove-reaction):
+  Users can react to messages in unsubscribed private channels that are
+  accessible only via groups that grant content access.
+* `POST /submessage`: Users can interact with polls and similar
+  widgets in messages in unsubscribed private channels that are
+  accessible only via groups that grant content access.
+* [`PATCH /messages/{message_id}`](/api/update-message): Users can
+  edit messages they have posted in unsubscribed private channels that
+  are accessible only via groups that grant content access.
+* [`POST
+  /message_edit_typing`](/api/set-typing-status-for-message-edit):
+  Users can generate typing notifications when editing messages in
+  unsubscribed private channels that are accessible only via groups
+  that grant content access.
+* [`POST /messages`](/api/send-message): Users can send messages to
+  private channels with shared history without subscribing if they are
+  part of groups that grant content access and also in
+  `can_send_message_group`.
+
+**Feature level 353**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Zoom Server to Server OAuth integration added as an option
+  for the realm setting `video_chat_provider`.
+
+**Feature level 352**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_mention_many_users_group`
+  realm setting, which is a [group-setting value](/api/group-setting-values)
+  describing the set of users with permission to use wildcard mentions in large
+  channels.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `wildcard_mention_policy` property, as the permission to use wildcard mentions
+  in large channels is now controlled by `can_mention_many_users_group` setting.
+* [`POST /register`](/api/register-queue): `realm_wildcard_mention_policy`
+  field is deprecated, having been replaced by `can_mention_many_users_group`.
+  Notably, this backwards-compatible `realm_wildcard_mention_policy` value
+  now contains the superset of the true value that best approximates the actual
+  permission setting.
+
+**Feature level 351**
+
+* [`POST /message_edit_typing`](/api/set-typing-status-for-message-edit):
+  Added a new endpoint for sending typing notification when a message is
+  being edited both in streams and direct messages.
+
+* [`GET /events`](/api/get-events): The new `typing_edit_message` event
+  is sent when a user starts editing a message.
+
+**Feature level 350**
+
+* [`POST /register`](/api/register-queue): Added
+  `server_can_summarize_topics` to the response.
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Added `can_summarize_topics_group` realm setting which is
+  a [group-setting value](/api/group-setting-values) describing the set of
+  users with permission to use AI summarization.
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added new `hide_ai_features` option for hiding all AI features in the UI.
+
+**Feature level 349**
+
+* [`POST /users/me/subscriptions`](/api/subscribe): Users belonging to
+  `can_add_subscribers_group` should be able to add subscribers to a
+  private channel without being subscribed to it.
+* [`DELETE /users/me/subscriptions`](/api/get-subscriptions): Channel
+  administrators can now unsubscribe other users even if they are not
+  an organization administrator or part of
+  `can_remove_subscribers_group`.
+* [`PATCH /streams/{stream_id}`](/api/update-stream),
+  [`DELETE /streams/{stream_id}`](/api/archive-stream): Channel and
+  organization administrators can modify all the settings requiring
+  only metadata access without having content access to it. They
+  cannot add subscribers to the channel or change it's privacy setting
+  without having content access to it.
+* [`GET /events`](/api/get-events): All users with metadata access to
+  a channel are now notified when a relevant stream event occurs.
+  Previously, non-admin users who were channel admins or users
+  belonging to `can_add_subscribers_group` were not notified of events
+  for a private channel they were not subscribed to.
+* [`GET /events`](/api/get-events): If a user is a channel
+  administrator for a private channel they are not subscribed to. That
+  channel will now appear either in the `unsubscribed` or
+  `never_subscribed` list in subscription info.
+
+**Feature level 348**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Added `enable_guest_user_dm_warning` setting to decide
+  whether clients should show a warning when a user is composing to a
+  guest user in the organization.
+
+**Feature level 347**
+
+* [Markdown message formatting](/api/message-formatting#links-to-channels-topics-and-messages):
+  Links to topic without a specified message now use the `with`
+  operator to follow moves of topics.
+
+**Feature level 346**
+
+* [Markdown message formatting](/api/message-formatting#links-to-channels-topics-and-messages):
+  Added support for empty string as a valid topic name in syntaxes
+  for linking to topics and messages.
+
+**Feature level 345**
+
+* `POST /remotes/server/register/transfer`,
+  `POST /remotes/server/register/verify_challenge`,
+  `POST /zulip-services/verify/{access_token}/`: Added new API
+  endpoints for transferring Zulip services registrations.
+* `POST /remotes/server/register`: Added new response format for
+  hostnames that are already registered.
+
+**Feature level 344**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added two new realm settings, `can_create_bots_group` which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to create bot users in the organization, and
+  `can_create_write_only_bots_group`  which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission to create bot users who can only send messages in the organization
+  in addition to the users who are in `can_create_bots_group`.
+* `PATCH /realm`, [`GET /events`](/api/get-events): Removed
+  `bot_creation_policy` property, as the permission to create bot users
+  in the organization is now controlled by two new realm settings,
+  `can_create_bots_group` and `can_create_write_only_bots_group`.
+
 **Feature level 343**
 
 * [`GET /events`](/api/get-events): Added a new field `stream_ids` to replace
@@ -79,7 +229,7 @@ deactivated groups.
 * `POST /calls/bigbluebutton/create`: Added a `voice_only` parameter
   controlling whether the call should be voice-only, in which case we
   keep cameras disabled for this call. Now the call creator is a
-  moderator and all other joinees are viewers.
+  moderator and all other joiners are viewers.
 
 **Feature level 336**
 
@@ -195,9 +345,11 @@ deactivated groups.
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
   [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
-  Added new `web_suggest_update_timezone` option to decide whether the user should be
-  shown an alert offering to update their profile time zone to the time zone of the
-  browser in case they differ.
+  Added new `web_suggest_update_timezone` user setting to indicate whether
+  the user should be shown an alert, offering to update their [profile
+  time zone](/help/change-your-timezone), when the time displayed for the
+  profile time zone differs from the current time displayed by the time
+  zone configured on their device.
 
 **Feature level 328**
 

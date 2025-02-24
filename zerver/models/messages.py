@@ -112,6 +112,10 @@ class ArchiveTransaction(models.Model):
     restored = models.BooleanField(default=False, db_index=True)
     restored_timestamp = models.DateTimeField(null=True, db_index=True)
 
+    # ArchiveTransaction objects are regularly deleted. This flag allows tagging
+    # an ArchiveTransaction as protected from such automated deletion.
+    protect_from_deletion = models.BooleanField(default=False, db_index=True)
+
     type = models.PositiveSmallIntegerField(db_index=True)
     # Valid types:
     RETENTION_POLICY_BASED = 1  # Archiving was executed due to automated retention policies
@@ -667,6 +671,7 @@ class ArchivedUserMessage(AbstractUserMessage):
 class ImageAttachment(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     path_id = models.TextField(db_index=True, unique=True)
+    content_type = models.TextField(null=True)
 
     original_width_px = models.IntegerField()
     original_height_px = models.IntegerField()

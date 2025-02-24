@@ -18,12 +18,13 @@
     min-width: max-content;
 
     & > li {
-        word-break: break-word;
+        overflow-wrap: anywhere;
 
         & > a {
             display: flex;
-            padding: 3px 10px;
-            gap: 5px;
+            align-items: center;
+            padding: 0.2142em 0.7142em; /* 3px 10px at 14px em */
+            gap: 0.3571em; /* 5px at 14px em */
             font-weight: normal;
             /* We want to keep this `max-width` less than 320px. */
             max-width: 292px;
@@ -62,6 +63,10 @@
                 margin-left: -2px;
             }
 
+            &.topic-typeahead-link {
+                gap: 0;
+            }
+
             .typeahead-text-container {
                 display: flex;
                 align-self: center;
@@ -70,6 +75,17 @@
                 white-space: nowrap;
                 gap: 3px;
             }
+
+            .compose-stream-name {
+                overflow: visible;
+                gap: 0;
+            }
+        }
+
+        .stream-to-topic-arrow {
+            cursor: default;
+            color: var(--color-compose-chevron-arrow);
+            text-decoration: none;
         }
     }
 
@@ -159,27 +175,43 @@
     }
 }
 
+/* For FontAwesome icons and zulip icons used in place of images for some users. */
 .typeahead-image {
+    font-size: 1.3571em; /* 19px at 14px em */
     display: inline-block;
-    height: 21px;
-    width: 21px;
+    height: 1.1052em; /* 21px at 19px/1em */
+    width: 1.1052em; /* 21px at 19px/1em */
     border-radius: 4px;
 
-    /* For FontAwesome icons and zulip icons used in place of images for some users. */
-    font-size: 19px;
     text-align: center;
 
     &.zulip-icon-triple-users {
-        font-size: 19px;
+        font-size: 1.3571em; /* 19px at 14px em */
     }
 
     &.no-presence-circle {
-        margin-left: 14px;
+        /* 0.6875 * var(--base-font-size) is the width of presence
+        circle, 2px is right margin of the presence circle and
+        0.3571 * var(--base-font-size-px) is gap between the presence
+        circle and avatar. Cannot directly use 0.6875em or 0.3571em
+        since font-size for triple users icon is different from the
+        font size used to calculate presence circle width and gap. */
+        margin-left: calc((0.6875 + 0.3571) * var(--base-font-size-px) + 2px);
     }
 }
 
 .typeahead-text-container {
     i.zulip-icon-bot {
         align-self: center;
+    }
+
+    /*
+    Negates the extra 3px left margin from `.status-emoji` in zulip.css, which,
+    combined with .typeahead-text-container's `gap`, created unintended spacing.
+    The typeahead's spacing is now managed only by `gap` in
+    .typeahead-text-container.
+    */
+    .status-emoji {
+        margin-left: 0;
     }
 }

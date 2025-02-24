@@ -47,6 +47,13 @@ run_test("test by_stream_url", () => {
 
 run_test("test by_stream_topic_url", () => {
     const maybe_get_stream_name = () => "a test stream";
-    const result = internal_url.by_stream_topic_url(123, "test topic", maybe_get_stream_name);
+    // Test stream_topic_url is a traditional topic link when the
+    // message_id to be encoded is undefined.
+    let result = internal_url.by_stream_topic_url(123, "test topic", maybe_get_stream_name);
     assert.equal(result, "#narrow/channel/123-a-test-stream/topic/test.20topic");
+
+    // Test stream_topic_url is a topic permaling when the
+    // message_id to be encoded is not undefined.
+    result = internal_url.by_stream_topic_url(123, "test topic", maybe_get_stream_name, 12);
+    assert.equal(result, "#narrow/channel/123-a-test-stream/topic/test.20topic/with/12");
 });

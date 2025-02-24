@@ -92,11 +92,31 @@ export function postprocess_content(html: string): string {
         }
     }
 
+    for (const ol of template.content.querySelectorAll("ol")) {
+        const list_start = Number(ol.getAttribute("start") ?? 1);
+        // We don't count the first item in the list, as it
+        // will be identical to the start value
+        const list_length = ol.children.length - 1;
+        const max_list_counter = list_start + list_length;
+        // We count the characters in the longest list counter,
+        // and use that to offset the list accordingly in CSS
+        const max_list_counter_string_length = max_list_counter.toString().length;
+        ol.classList.add(`counter-length-${max_list_counter_string_length}`);
+    }
+
     for (const inline_img of template.content.querySelectorAll<HTMLImageElement>(
         "div.message_inline_image > a > img",
     )) {
         inline_img.setAttribute("loading", "lazy");
-        if (inline_img.src.startsWith("/user_uploads/thumbnail/")) {
+        // We can't just check whether `inline_image.src` starts with
+        // `/user_uploads/thumbnail`, even though that's what the
+        // server writes in the markup, because Firefox will have
+        // already prepended the origin to the source of an image.
+        const image_url = new URL(inline_img.src, window.location.origin);
+        if (
+            image_url.origin === window.location.origin &&
+            image_url.pathname.startsWith("/user_uploads/thumbnail/")
+        ) {
             let thumbnail_name = thumbnail.preferred_format.name;
             if (inline_img.dataset.animated === "true") {
                 if (

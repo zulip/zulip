@@ -60,6 +60,7 @@ import * as stream_list from "./stream_list.ts";
 import * as submessage from "./submessage.ts";
 import * as topic_generator from "./topic_generator.ts";
 import * as typing_events from "./typing_events.ts";
+import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
 import {user_settings} from "./user_settings.ts";
@@ -174,12 +175,15 @@ function create_and_update_message_list(
             excludes_muted_topics,
         });
 
+        const original_id_info = {...id_info};
         // Populate the message list if we can apply our filter locally (i.e.
         // with no server help) and we have the message we want to select.
         // Also update id_info accordingly.
         if (!filter.requires_adjustment_for_moved_with_target) {
             const superset_datasets = message_list_data_cache.get_superset_datasets(filter);
             for (const superset_data of superset_datasets) {
+                // Reset properties that might have been set.
+                id_info = Object.assign(id_info, original_id_info);
                 maybe_add_local_messages({
                     id_info,
                     msg_data,
@@ -351,6 +355,14 @@ export type ShowMessageViewOpts = {
     show_more_topics?: boolean;
 };
 
+export function get_id_info(): TargetMessageIdInfo {
+    return {
+        target_id: undefined,
+        final_select_id: undefined,
+        local_select_id: undefined,
+    };
+}
+
 export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): void => {
     /* Main entry point for switching to a new view / message list.
 
@@ -452,12 +464,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         data: {raw_terms, trigger: opts.trigger},
     };
     void Sentry.startSpan({...span_data, name: "narrow"}, async (span) => {
-        const id_info: TargetMessageIdInfo = {
-            target_id: undefined,
-            local_select_id: undefined,
-            final_select_id: undefined,
-        };
-
+        const id_info = get_id_info();
         const terms = filter.terms();
 
         // These two narrowing operators specify what message should be
@@ -998,6 +1005,17 @@ export function maybe_add_local_messages(opts: {
         assert(id_info.final_select_id !== undefined);
 
         if (!load_local_messages(msg_data, superset_data)) {
+            // We don't have the message we want to select locally,
+            // and since our unread data is incomplete, we just
+            // ask server directly for `first_unread`.
+            if (
+                unread.old_unreads_missing &&
+                // Ensure our intent is to narrow to first unread.
+                id_info.final_select_id === unread_info.msg_id &&
+                id_info.target_id === undefined
+            ) {
+                id_info.final_select_id = undefined;
+            }
             return;
         }
 

@@ -137,6 +137,30 @@ exports.fixtures = {
         upload_space_used: 90000,
     },
 
+    channel_typing_edit_message__start: {
+        type: "typing_edit_message",
+        op: "start",
+        sender_id: typing_person1.user_id,
+        message_id: 128,
+        recipient: {
+            type: "channel",
+            channel_id: this.stream_typing_in_id,
+            topic: this.topic_typing_in,
+        },
+    },
+
+    channel_typing_edit_message__stop: {
+        type: "typing_edit_message",
+        op: "stop",
+        sender_id: typing_person1.user_id,
+        message_id: 128,
+        recipient: {
+            type: "channel",
+            channel_id: this.stream_typing_in_id,
+            topic: this.topic_typing_in,
+        },
+    },
+
     custom_profile_fields: {
         type: "custom_profile_fields",
         fields: [
@@ -185,6 +209,28 @@ exports.fixtures = {
 
     invites_changed: {
         type: "invites_changed",
+    },
+
+    message_edit_typing__start: {
+        type: "typing_edit_message",
+        op: "start",
+        sender_id: typing_person1.user_id,
+        message_id: 128,
+        recipient: {
+            type: "direct",
+            user_ids: [typing_person2.user_id],
+        },
+    },
+
+    message_edit_typing__stop: {
+        type: "typing_edit_message",
+        op: "stop",
+        sender_id: typing_person1.user_id,
+        message_id: 128,
+        recipient: {
+            type: "direct",
+            user_ids: [typing_person2.user_id],
+        },
     },
 
     muted_users: {
@@ -264,13 +310,6 @@ exports.fixtures = {
         type: "realm",
         op: "deactivated",
         realm_id: 2,
-    },
-
-    realm__update__bot_creation_policy: {
-        type: "realm",
-        op: "update",
-        property: "bot_creation_policy",
-        value: 1,
     },
 
     realm__update__default_code_block_language: {
@@ -363,6 +402,7 @@ exports.fixtures = {
             },
             can_add_custom_emoji_group: 3,
             can_add_subscribers_group: 3,
+            can_create_bots_group: 3,
             can_create_public_channel_group: 3,
             can_invite_users_group: 3,
             can_move_messages_between_topics_group: 3,

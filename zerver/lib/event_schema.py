@@ -72,6 +72,10 @@ from zerver.lib.event_types import (
     EventSubscriptionPeerRemove,
     EventSubscriptionRemove,
     EventSubscriptionUpdate,
+    EventTypingEditChannelMessageStart,
+    EventTypingEditChannelMessageStop,
+    EventTypingEditDirectMessageStart,
+    EventTypingEditDirectMessageStop,
     EventTypingStart,
     EventTypingStop,
     EventUpdateDisplaySettings,
@@ -194,6 +198,10 @@ check_subscription_peer_remove = make_checker(EventSubscriptionPeerRemove)
 check_subscription_remove = make_checker(EventSubscriptionRemove)
 check_typing_start = make_checker(EventTypingStart)
 check_typing_stop = make_checker(EventTypingStop)
+check_typing_edit_channel_message_start = make_checker(EventTypingEditChannelMessageStart)
+check_typing_edit_direct_message_start = make_checker(EventTypingEditDirectMessageStart)
+check_typing_edit_channel_message_stop = make_checker(EventTypingEditChannelMessageStop)
+check_typing_edit_direct_message_stop = make_checker(EventTypingEditDirectMessageStop)
 check_update_message_flags_add = make_checker(EventUpdateMessageFlagsAdd)
 check_update_message_flags_remove = make_checker(EventUpdateMessageFlagsRemove)
 check_user_group_add = make_checker(EventUserGroupAdd)
@@ -677,12 +685,12 @@ def check_update_message(
     assert expected_keys == actual_keys
 
 
-def check_user_group_update(var_name: str, event: dict[str, object], field: str) -> None:
+def check_user_group_update(var_name: str, event: dict[str, object], fields: set[str]) -> None:
     _check_user_group_update(var_name, event)
 
     assert isinstance(event["data"], dict)
 
-    assert set(event["data"].keys()) == {field}
+    assert set(event["data"].keys()) == fields
 
 
 def check_user_status(var_name: str, event: dict[str, object], fields: set[str]) -> None:

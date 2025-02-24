@@ -10,6 +10,7 @@ import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import {Filter} from "./filter.ts";
 import {$t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as message_flags from "./message_flags.ts";
@@ -199,6 +200,29 @@ function bulk_update_read_flags_for_narrow(
 
                 if (caller_modal_id) {
                     modals.close_if_open(caller_modal_id);
+                }
+
+                // We just marked all the messages in this narrow as read.
+                // Hide the unread banner and resume reading if possible.
+                //
+                // We exclude the `is:unread` term that was included
+                // by the caller for checking whether weot re-enable
+                // resume-reading.
+                //
+                // TODO: Ideally, we'd change the calling convention
+                // to avoid this hacky code, which may behave
+                // incorrectly for some `is:unread` search views.
+                const filter_terms = narrow.filter(
+                    (term) =>
+                        !(
+                            term.operator === "is" &&
+                            term.operand === "unread" &&
+                            term.negated === false
+                        ),
+                );
+                if (message_lists.current?.data.filter.equals(new Filter(filter_terms))) {
+                    message_lists.current?.resume_reading();
+                    unread_ui.hide_unread_banner();
                 }
             }
         },

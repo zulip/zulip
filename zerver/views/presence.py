@@ -40,7 +40,11 @@ def get_presence_backend(
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
 
-    if target.is_bot:
+    # Check bot_type here, rather than is_bot, because that matches
+    # authenticated_json_view's check of .is_incoming_webhook; the
+    # narrow user cache can hence be optimized to only have the
+    # nullable bot_type, as long as this check matches.
+    if target.bot_type is not None:
         raise JsonableError(_("Presence is not supported for bot users."))
 
     if settings.CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE and not check_can_access_user(

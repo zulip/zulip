@@ -163,9 +163,9 @@ def get_issue_body(helper: Helper) -> str:
             else issue["body"].tame(check_none_or(check_string))
         ),
         title=issue["title"].tame(check_string) if include_title else None,
-        assignee_updated=payload["assignee"]["login"].tame(check_string)
-        if "assignee" in payload
-        else None,
+        assignee_updated=(
+            payload["assignee"]["login"].tame(check_string) if "assignee" in payload else None
+        ),
     )
 
 
@@ -687,6 +687,31 @@ def get_tier_changed_body(helper: Helper) -> str:
     ).rstrip()
 
 
+def get_issue_transferred_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "{sender} transferred [issue #{old_issue_number} {title}]({old_issue_url}) to [{new_repo_full_name}/#{new_issue_number}]({new_issue_url})."
+    return template.format(
+        sender=get_sender_name(payload),
+        old_issue_number=payload["issue"]["number"].tame(check_int),
+        old_issue_url=payload["issue"]["html_url"].tame(check_string),
+        title=payload["issue"]["title"].tame(check_string),
+        new_repo_full_name=payload["changes"]["new_repository"]["full_name"].tame(check_string),
+        new_issue_number=payload["changes"]["new_issue"]["number"].tame(check_int),
+        new_issue_url=payload["changes"]["new_issue"]["html_url"].tame(check_string),
+    )
+
+
+def get_issue_opened_via_transfer_body(helper: Helper) -> str:
+    payload = helper.payload
+    template = "[Issue #{new_issue_number} {title}]({new_issue_url}) was transferred from {old_repo_full_name}."
+    return template.format(
+        new_issue_number=payload["issue"]["number"].tame(check_int),
+        new_issue_url=payload["issue"]["html_url"].tame(check_string),
+        title=payload["issue"]["title"].tame(check_string),
+        old_repo_full_name=payload["changes"]["old_repository"]["full_name"].tame(check_string),
+    )
+
+
 def get_subscription(payload: WildValue) -> str:
     return payload["sponsorship"]["tier"]["name"].tame(check_string)
 
@@ -816,6 +841,8 @@ EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str]] = {
     "issue_comment": get_issue_comment_body,
     "issue_labeled_or_unlabeled": get_issue_labeled_or_unlabeled_body,
     "issue_milestoned_or_demilestoned": get_issue_milestoned_or_demilestoned_body,
+    "issues_opened_via_transfer": get_issue_opened_via_transfer_body,
+    "issues_transferred": get_issue_transferred_body,
     "issues": get_issue_body,
     "member": get_member_body,
     "membership": get_membership_body,
@@ -1027,6 +1054,10 @@ def get_zulip_event_name(
             return "issue_labeled_or_unlabeled"
         if action in ("milestoned", "demilestoned"):
             return "issue_milestoned_or_demilestoned"
+        if action == "transferred":
+            return "issues_transferred"
+        if action == "opened" and payload.get("changes", {}).get("old_issue"):
+            return "issues_opened_via_transfer"
         else:
             return "issues"
     elif header_event in EVENT_FUNCTION_MAPPER:

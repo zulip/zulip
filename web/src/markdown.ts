@@ -5,8 +5,12 @@ import assert from "minimalistic-assert";
 import type {Template} from "url-template";
 
 import * as fenced_code from "../shared/src/fenced_code.ts";
+import render_channel_message_link from "../templates/channel_message_link.hbs";
+import render_topic_link from "../templates/topic_link.hbs";
 import marked from "../third/marked/lib/marked.cjs";
 import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
+
+import * as util from "./util.ts";
 
 // This contains zulip's frontend Markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
@@ -637,14 +641,17 @@ function handleStreamTopic({
     stream_topic_hash: (stream_id: number, topic: string) => string;
 }): string | undefined {
     const stream = get_stream_by_name(stream_name);
-    if (stream === undefined || !topic) {
+    if (stream === undefined) {
         return undefined;
     }
     const href = stream_topic_hash(stream.stream_id, topic);
-    const text = `#${stream.name} > ${topic}`;
-    return `<a class="stream-topic" data-stream-id="${_.escape(
-        stream.stream_id.toString(),
-    )}" href="/${_.escape(href)}">${_.escape(text)}</a>`;
+    return render_topic_link({
+        channel_id: stream.stream_id,
+        channel_name: stream.name,
+        topic_display_name: util.get_final_topic_display_name(topic),
+        is_empty_string_topic: topic === "",
+        href,
+    });
 }
 
 function handleStreamTopicMessage({
@@ -666,12 +673,16 @@ function handleStreamTopicMessage({
     stream_topic_hash: (stream_id: number, topic: string) => string;
 }): string | undefined {
     const stream = get_stream_by_name(stream_name);
-    if (stream === undefined || !topic) {
+    if (stream === undefined) {
         return undefined;
     }
     const href = stream_topic_hash(stream.stream_id, topic) + "/near/" + message_id;
-    const text = `#${stream.name} > ${topic} @ 💬`;
-    return `<a class="message-link" href="/${_.escape(href)}">${_.escape(text)}</a>`;
+    return render_channel_message_link({
+        channel_name: stream.name,
+        topic_display_name: util.get_final_topic_display_name(topic),
+        is_empty_string_topic: topic === "",
+        href,
+    });
 }
 
 function handleTex(tex: string, fullmatch: string): string {

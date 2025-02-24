@@ -162,7 +162,7 @@ how to assign roles and permissions for a class.
   (Recommended: Admins only)
 - Set [who can create channels](/help/configure-who-can-create-channels).
   (Recommended: Admins for public channels; Admins, moderators and members for private channels)
-- Set [who can add users to channels](/help/configure-who-can-invite-to-channels).
+- Set [who can subscribe users to channels](/help/configure-who-can-invite-to-channels).
   (Recommended: Admins and moderators)
 - Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: (default) Members for small classes;
@@ -193,7 +193,7 @@ how to assign roles and permissions for a class.
 - Set [who can create channels](/help/configure-who-can-create-channels).
   (Recommended: Admins and moderators for public channels;
    Admins, moderators and members for private channels)
-- Set [who can add users to channels](/help/configure-who-can-invite-to-channels).
+- Set [who can subscribe users to channels](/help/configure-who-can-invite-to-channels).
   (Recommended: Admins and moderators)
 - Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: Admins and moderators)
@@ -271,10 +271,10 @@ A few notes:
 ### How to invite users to join
 
 To simplify subscription management, be sure to set the channels
-students and staff should be added to when you create the
+students and staff should be subscribed to when you create the
 invitations. You may choose to send invitations to course staff
-separately, so that they can immediately be added to private channels
-for your class.
+separately, so that they can immediately be subscribed to private
+channels for your class.
 
 {!how-to-invite-users-to-join.md!}
 
@@ -284,7 +284,7 @@ to [Getting started with Zulip][getting-started] and the guide to
 
 !!! tip ""
 
-    If you create new channels later on, you can add users
+    If you create new channels later on, you can subscribe users
     [by group][create-user-groups] or copy membership from another
     channel (e.g., from Lecture 5 to Lecture 6).
 
@@ -332,7 +332,7 @@ for your own classes or for your department), you will likely want to:
   from the prior term (e.g., because you posted homework solutions),
   [make all the channels from the class private][make-private]. You’ll
   be able to find and reuse content yourself, and [invite course
-  staff][add-to-channel] to these private channels as needed.
+  staff][subscribe-to-channel] to these private channels as needed.
 - You may choose to [deactivate students’ Zulip
   accounts][deactivate-user] when the class is over.
 - [Unpin channels](/help/pin-a-channel) from the class from your
@@ -352,6 +352,6 @@ HTML archive](https://github.com/zulip/zulip-archive) to archive the information
 * [Moderating open organizations](/help/moderating-open-organizations)
 
 [make-private]: /help/change-the-privacy-of-a-channel
-[add-to-channel]: /help/add-or-remove-users-from-a-channel
+[subscribe-to-channel]: /help/subscribe-users-to-a-channel
 [deactivate-user]: /help/deactivate-or-reactivate-a-user#deactivate-a-user
 [getting-started]: /help/getting-started-with-zulip

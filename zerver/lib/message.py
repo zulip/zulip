@@ -27,7 +27,11 @@ from zerver.lib.stream_subscription import (
     get_subscribed_stream_recipient_ids_for_user,
     num_subscribers_for_stream_id,
 )
-from zerver.lib.streams import can_access_stream_history, get_web_public_streams_queryset
+from zerver.lib.streams import (
+    can_access_stream_history,
+    get_web_public_streams_queryset,
+    is_user_in_groups_granting_content_access,
+)
 from zerver.lib.topic import (
     MESSAGE__TOPIC,
     TOPIC_NAME,
@@ -35,7 +39,11 @@ from zerver.lib.topic import (
     messages_for_topic,
 )
 from zerver.lib.types import UserDisplayRecipient
-from zerver.lib.user_groups import user_has_permission_for_group_setting
+from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
+    get_recursive_membership_groups,
+    user_has_permission_for_group_setting,
+)
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
@@ -52,7 +60,6 @@ from zerver.models import (
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
 from zerver.models.messages import get_usermessage_by_message_id
-from zerver.models.realms import WildcardMentionPolicyEnum
 from zerver.models.users import is_cross_realm_bot_email
 
 
@@ -305,7 +312,13 @@ def access_message(
         user_profile=user_profile, message_id=message_id
     ).exists()
 
-    if has_message_access(user_profile, message, has_user_message=has_user_message):
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    if has_message_access(
+        user_profile,
+        message,
+        has_user_message=has_user_message,
+        user_group_membership_details=user_group_membership_details,
+    ):
         return message
     raise JsonableError(_("Invalid message(s)"))
 
@@ -329,7 +342,13 @@ def access_message_and_usermessage(
     user_message = get_usermessage_by_message_id(user_profile, message_id)
     has_user_message = lambda: user_message is not None
 
-    if has_message_access(user_profile, message, has_user_message=has_user_message):
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    if has_message_access(
+        user_profile,
+        message,
+        has_user_message=has_user_message,
+        user_group_membership_details=user_group_membership_details,
+    ):
         return (message, user_message)
     raise JsonableError(_("Invalid message(s)"))
 
@@ -376,6 +395,50 @@ def access_web_public_message(
     return message
 
 
+def has_channel_content_access_helper(
+    stream: Stream,
+    user_profile: UserProfile,
+    user_group_membership_details: UserGroupMembershipDetails,
+    *,
+    is_subscribed: bool | None,
+) -> bool:
+    """
+    Checks whether a user has content access to a channel specifically
+    via being subscribed or group membership.
+
+    Does not consider the implicit permissions associated with web-public
+    or public channels; callers are responsible for that.
+    """
+    if is_subscribed is None:
+        assert stream.recipient_id is not None
+        is_user_subscribed = Subscription.objects.filter(
+            user_profile=user_profile, active=True, recipient_id=stream.recipient_id
+        ).exists()
+    else:
+        is_user_subscribed = is_subscribed
+
+    if is_user_subscribed:
+        return True
+
+    if user_profile.is_guest:
+        # All existing groups granting content access have allow_everyone_group=False.
+        #
+        # TODO: is_user_in_groups_granting_content_access needs to
+        # accept at least `is_guest`, and maybe just the user, when we
+        # have groups granting content access with
+        # allow_everyone_group=True.
+        return False
+
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
+
+    return is_user_in_groups_granting_content_access(
+        stream, user_group_membership_details.user_recursive_group_ids
+    )
+
+
 def has_message_access(
     user_profile: UserProfile,
     message: Message,
@@ -383,6 +446,7 @@ def has_message_access(
     has_user_message: Callable[[], bool],
     stream: Stream | None = None,
     is_subscribed: bool | None = None,
+    user_group_membership_details: UserGroupMembershipDetails,
 ) -> bool:
     """
     Returns whether a user has access to a given message.
@@ -409,14 +473,6 @@ def has_message_access(
         # You can't access messages in deactivated streams
         return False
 
-    def is_subscribed_helper() -> bool:
-        if is_subscribed is not None:
-            return is_subscribed
-
-        return Subscription.objects.filter(
-            user_profile=user_profile, active=True, recipient=message.recipient
-        ).exists()
-
     if stream.is_public() and user_profile.can_access_public_streams():
         return True
 
@@ -425,10 +481,14 @@ def has_message_access(
         # (1) Have directly received the message.
         # AND
         # (2) Be subscribed to the stream.
-        return has_user_message() and is_subscribed_helper()
+        return has_user_message() and has_channel_content_access_helper(
+            stream, user_profile, user_group_membership_details, is_subscribed=is_subscribed
+        )
 
     # is_history_public_to_subscribers, so check if you're subscribed
-    return is_subscribed_helper()
+    return has_channel_content_access_helper(
+        stream, user_profile, user_group_membership_details, is_subscribed=is_subscribed
+    )
 
 
 def event_recipient_ids_for_action_on_messages(
@@ -547,6 +607,7 @@ def bulk_access_messages(
 
     subscribed_recipient_ids = set(get_subscribed_stream_recipient_ids_for_user(user_profile))
 
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
     for message in messages:
         is_subscribed = message.recipient_id in subscribed_recipient_ids
         if has_message_access(
@@ -555,6 +616,7 @@ def bulk_access_messages(
             has_user_message=partial(lambda m: m.id in user_message_set, message),
             stream=streams.get(message.recipient_id) if stream is None else stream,
             is_subscribed=is_subscribed,
+            user_group_membership_details=user_group_membership_details,
         ):
             filtered_messages.append(message)
     return filtered_messages
@@ -578,9 +640,12 @@ def bulk_access_stream_messages_query(
     if stream.is_public() and user_profile.can_access_public_streams():
         return messages
 
-    if not Subscription.objects.filter(
-        user_profile=user_profile, active=True, recipient=stream.recipient
-    ).exists():
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    has_content_access = has_channel_content_access_helper(
+        stream, user_profile, user_group_membership_details, is_subscribed=None
+    )
+
+    if not has_content_access:
         return Message.objects.none()
     if not stream.is_history_public_to_subscribers():
         messages = messages.alias(
@@ -1272,32 +1337,14 @@ def get_recent_private_conversations(user_profile: UserProfile) -> dict[int, dic
     return recipient_map
 
 
-def wildcard_mention_policy_authorizes_user(sender: UserProfile, realm: Realm) -> bool:
+def can_mention_many_users(sender: UserProfile) -> bool:
     """Helper function for 'topic_wildcard_mention_allowed' and
     'stream_wildcard_mention_allowed' to check if the sender is allowed to use
-    wildcard mentions based on the 'wildcard_mention_policy' setting of that realm.
+    wildcard mentions based on the 'can_mention_many_users_group' setting of that realm.
     This check is used only if the participants count in the topic or the subscribers
     count in the stream is greater than 'Realm.WILDCARD_MENTION_THRESHOLD'.
     """
-    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.NOBODY:
-        return False
-
-    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.EVERYONE:
-        return True
-
-    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.ADMINS:
-        return sender.is_realm_admin
-
-    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.MODERATORS:
-        return sender.is_realm_admin or sender.is_moderator
-
-    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.FULL_MEMBERS:
-        return sender.is_realm_admin or (not sender.is_provisional_member and not sender.is_guest)
-
-    if realm.wildcard_mention_policy == WildcardMentionPolicyEnum.MEMBERS:
-        return not sender.is_guest
-
-    raise AssertionError("Invalid wildcard mention policy")
+    return sender.has_permission("can_mention_many_users_group")
 
 
 def topic_wildcard_mention_allowed(
@@ -1305,7 +1352,7 @@ def topic_wildcard_mention_allowed(
 ) -> bool:
     if topic_participant_count <= Realm.WILDCARD_MENTION_THRESHOLD:
         return True
-    return wildcard_mention_policy_authorizes_user(sender, realm)
+    return can_mention_many_users(sender)
 
 
 def stream_wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: Realm) -> bool:
@@ -1315,7 +1362,7 @@ def stream_wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: 
     # applies to a stream as an override.
     if num_subscribers_for_stream_id(stream.id) <= Realm.WILDCARD_MENTION_THRESHOLD:
         return True
-    return wildcard_mention_policy_authorizes_user(sender, realm)
+    return can_mention_many_users(sender)
 
 
 def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: list[int]) -> None:

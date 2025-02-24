@@ -76,6 +76,11 @@ class LockedUserGroupContext:
     recursive_subgroups: list[NamedUserGroup]
 
 
+@dataclass
+class UserGroupMembershipDetails:
+    user_recursive_group_ids: set[int] | None
+
+
 def has_user_group_access_for_subgroup(
     user_group: NamedUserGroup,
     user_profile: UserProfile,
@@ -125,6 +130,13 @@ def get_user_group_by_id_in_realm(
         return user_group
     except NamedUserGroup.DoesNotExist:
         raise JsonableError(_("Invalid user group"))
+
+
+def get_system_user_group_by_name(group_name: str, realm_id: int) -> NamedUserGroup:
+    if group_name not in SystemGroups.GROUP_DISPLAY_NAME_MAP:
+        raise JsonableError(_("Invalid system group name."))
+
+    return NamedUserGroup.objects.get(name=group_name, realm_id=realm_id, is_system_group=True)
 
 
 def access_user_group_to_read_membership(user_group_id: int, realm: Realm) -> NamedUserGroup:
@@ -669,15 +681,19 @@ def get_direct_memberships_of_users(user_group: UserGroup, members: list[UserPro
 # https://code.djangoproject.com/ticket/28919
 
 
-def get_recursive_subgroups(user_group: UserGroup) -> QuerySet[UserGroup]:
+def get_recursive_subgroups_union_for_groups(user_group_ids: list[int]) -> QuerySet[UserGroup]:
     cte = With.recursive(
-        lambda cte: UserGroup.objects.filter(id=user_group.id)
+        lambda cte: UserGroup.objects.filter(id__in=user_group_ids)
         .values(group_id=F("id"))
         .union(
             cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
         )
     )
     return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
+
+
+def get_recursive_subgroups(user_group_id: int) -> QuerySet[UserGroup]:
+    return get_recursive_subgroups_union_for_groups([user_group_id])
 
 
 def get_recursive_strict_subgroups(user_group: UserGroup) -> QuerySet[NamedUserGroup]:
@@ -694,9 +710,16 @@ def get_recursive_strict_subgroups(user_group: UserGroup) -> QuerySet[NamedUserG
     return cte.join(NamedUserGroup, id=cte.col.group_id).with_cte(cte)
 
 
-def get_recursive_group_members(user_group: UserGroup) -> QuerySet[UserProfile]:
+def get_recursive_group_members(user_group_id: int) -> QuerySet[UserProfile]:
+    return get_recursive_group_members_union_for_groups([user_group_id])
+
+
+def get_recursive_group_members_union_for_groups(
+    user_group_ids: list[int],
+) -> QuerySet[UserProfile]:
     return UserProfile.objects.filter(
-        is_active=True, direct_groups__in=get_recursive_subgroups(user_group)
+        is_active=True,
+        direct_groups__in=get_recursive_subgroups_union_for_groups(user_group_ids),
     )
 
 
@@ -728,7 +751,7 @@ def is_user_in_group(
     if direct_member_only:
         return get_user_group_direct_members(user_group=user_group).filter(id=user.id).exists()
 
-    return get_recursive_group_members(user_group=user_group).filter(id=user.id).exists()
+    return get_recursive_group_members(user_group_id=user_group.id).filter(id=user.id).exists()
 
 
 def is_any_user_in_group(
@@ -737,7 +760,7 @@ def is_any_user_in_group(
     if direct_member_only:
         return get_user_group_direct_members(user_group=user_group).filter(id__in=user_ids).exists()
 
-    return get_recursive_group_members(user_group=user_group).filter(id__in=user_ids).exists()
+    return get_recursive_group_members(user_group_id=user_group.id).filter(id__in=user_ids).exists()
 
 
 def get_user_group_member_ids(
@@ -746,7 +769,7 @@ def get_user_group_member_ids(
     if direct_member_only:
         member_ids: Iterable[int] = get_user_group_direct_member_ids(user_group)
     else:
-        member_ids = get_recursive_group_members(user_group).values_list("id", flat=True)
+        member_ids = get_recursive_group_members(user_group.id).values_list("id", flat=True)
 
     return list(member_ids)
 
@@ -771,6 +794,28 @@ def get_recursive_subgroups_for_groups(
         )
     )
     recursive_subgroups = cte.join(NamedUserGroup, id=cte.col.group_id).with_cte(cte)
+    return recursive_subgroups
+
+
+def get_root_id_annotated_recursive_subgroups_for_groups(
+    user_group_ids: Iterable[int], realm_id: int
+) -> QuerySet[NamedUserGroup]:
+    # Same as get_recursive_subgroups_for_groups but keeps track of
+    # each group root_id and annotates it with that group.
+
+    cte = With.recursive(
+        lambda cte: UserGroup.objects.filter(id__in=user_group_ids, realm=realm_id)
+        .values(group_id=F("id"), root_id=F("id"))
+        .union(
+            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                group_id=F("id"), root_id=cte.col.root_id
+            )
+        )
+    )
+    recursive_subgroups = (
+        cte.join(UserGroup, id=cte.col.group_id).with_cte(cte).annotate(root_id=cte.col.root_id)
+    )
+
     return recursive_subgroups
 
 
@@ -998,13 +1043,16 @@ def get_server_supported_permission_settings() -> ServerSupportedPermissionSetti
 
 def parse_group_setting_value(
     setting_value: int | AnonymousSettingGroupDict,
-    setting_name: str,
+    nobody_group: NamedUserGroup,
 ) -> int | AnonymousSettingGroupDict:
     if isinstance(setting_value, int):
         return setting_value
 
     if len(setting_value.direct_members) == 0 and len(setting_value.direct_subgroups) == 1:
         return setting_value.direct_subgroups[0]
+
+    if len(setting_value.direct_members) == 0 and len(setting_value.direct_subgroups) == 0:
+        return nobody_group.id
 
     return setting_value
 
