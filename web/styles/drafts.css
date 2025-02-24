@@ -1,4 +1,6 @@
-.drafts-container {
+.tab-content {
+    display: none;
+
     .header-body {
         display: flex;
         align-items: center;
@@ -27,7 +29,26 @@
                 }
             }
 
+            .delete-selected-outbox-button {
+                &:focus {
+                    background-color: hsl(0deg 0% 93%);
+                }
+            }
+
             .select-drafts-button {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                margin-right: 25px;
+                padding-left: 15px;
+                padding-right: 15px;
+
+                &:focus {
+                    background-color: hsl(0deg 0% 93%);
+                }
+            }
+
+            .select-outbox-button {
                 display: flex;
                 align-items: center;
                 gap: 5px;
@@ -56,6 +77,10 @@
     }
 
     .drafts-list {
+        overflow: auto;
+        overflow-y: auto;
+        max-height: 75vh;
+
         & h2 {
             font-size: 1.1em;
             line-height: normal;
@@ -71,4 +96,45 @@
            the checkbox icon) will work. */
         width: 15px;
     }
+
+    .outbox-selection-checkbox {
+        margin-top: 5px;
+        /* Required to make sure that the checkbox icon stays inside
+            the grid. Any value greater than 13px (original width of
+            the checkbox icon) will work. */
+        width: 15px;
+    }
+}
+
+.drafts-container {
+    .tab-switcher {
+        display: flex;
+        margin-top: 45px;
+        margin-bottom: 10px;
+    }
+
+    .ind-tab {
+        flex: 1;
+        min-width: 120px;
+        max-width: 100%;
+        text-align: center;
+        padding: 6px 12px;
+        white-space: nowrap;
+    }
+
+    @media (width <= 600px) {
+        .ind-tab {
+            min-width: 120px;
+            font-size: 14px;
+        }
+    }
+}
+
+.tab-container {
+    padding: 0 20px;
+}
+
+.tab-content.active {
+    display: block;
+    overflow: hidden;
 }

@@ -10,6 +10,7 @@ import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as drafts from "./drafts.ts";
 import * as echo_state from "./echo_state.ts";
 import * as hash_util from "./hash_util.ts";
 import * as local_message from "./local_message.ts";
@@ -35,9 +36,11 @@ import * as util from "./util.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
+export const delete_message_container: Message[] = [];
+
 type ServerMessage = RawMessage & {local_id?: string};
 
-const send_message_api_response_schema = z.object({
+export const send_message_api_response_schema = z.object({
     id: z.number(),
     automatic_new_visibility_policy: z.number().optional(),
 });
@@ -148,12 +151,14 @@ function failed_message_success(message_id: number): void {
     show_failed_message_success(message_id);
 }
 
-function resend_message(
+export function resend_message(
     message: Message,
     $row: JQuery,
     {
         on_send_message_success,
         send_message,
+        remove_failed_message,
+        add_failed_message_back_to_queue,
     }: {
         on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
         send_message: (
@@ -161,6 +166,8 @@ function resend_message(
             on_success: (raw_data: unknown) => void,
             error: (response: string, _server_error_code: string) => void,
         ) => void;
+        remove_failed_message: (message: Message) => void;
+        add_failed_message_back_to_queue: (message: Message) => void;
     },
 ): void {
     message.content = message.raw_content!;
@@ -168,6 +175,10 @@ function resend_message(
         // retry already in in progress
         return;
     }
+
+    // Remove the message form failed message queue
+    // to resend it manually.
+    remove_failed_message(message);
 
     message.resend = true;
 
@@ -179,6 +190,13 @@ function resend_message(
 
         on_send_message_success(message, data);
 
+        if (message_store.get(message_id) === undefined) {
+            // The application has been reloaded and resend
+            // message is being called via outbox overlay.
+            $row.remove();
+            return;
+        }
+
         // Resend succeeded, so mark as no longer failed
         failed_message_success(message_id);
     }
@@ -188,6 +206,7 @@ function resend_message(
         setTimeout(() => {
             hide_retry_spinner($row);
         }, 300);
+        add_failed_message_back_to_queue(message);
         blueslip.log("Manual resend of message failed");
     }
 
@@ -629,7 +648,7 @@ export function rewire_message_send_error(value: typeof message_send_error): voi
     message_send_error = value;
 }
 
-function abort_message(message: Message): void {
+export function abort_message(message: Message): void {
     // Update the rendered data first since it is most user visible.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);
@@ -638,6 +657,22 @@ function abort_message(message: Message): void {
     for (const msg_list_data of message_lists.non_rendered_data()) {
         msg_list_data.remove([message.id]);
     }
+    const draft_container = drafts.draft_model.get();
+    // Only proceed if the draft exists in draft_container
+    for (const [draft_id, draft] of Object.entries(draft_container)) {
+        if (draft.message?.id === message.id) {
+            // Delete the draft from the model
+            drafts.draft_model.deleteDraft(draft_id);
+
+            // Only remove the row if the draft exists
+            const $draftRow = $(`.outbox-message-row[data-draft-id="${draft_id}"]`);
+            if ($draftRow.length > 0) {
+                $draftRow.remove();
+            }
+        }
+    }
+
+    delete_message_container.push(message);
 }
 
 export function display_slow_send_loading_spinner(message: Message): void {
@@ -655,6 +690,8 @@ export function display_slow_send_loading_spinner(message: Message): void {
 export function initialize({
     on_send_message_success,
     send_message,
+    remove_failed_message,
+    add_failed_message_back_to_queue,
 }: {
     on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
     send_message: (
@@ -662,6 +699,8 @@ export function initialize({
         on_success: (raw_data: unknown) => void,
         error: (response: string, _server_error_code: string) => void,
     ) => void;
+    remove_failed_message: (message: Message) => void;
+    add_failed_message_back_to_queue: (message: Message) => void;
 }): void {
     function on_failed_action(
         selector: string,
@@ -671,6 +710,7 @@ export function initialize({
             {
                 on_send_message_success,
                 send_message,
+                remove_failed_message,
             }: {
                 on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
                 send_message: (
@@ -678,6 +718,8 @@ export function initialize({
                     on_success: (raw_data: unknown) => void,
                     error: (response: string, _server_error_code: string) => void,
                 ) => void;
+                remove_failed_message: (message: Message) => void;
+                add_failed_message_back_to_queue: (message: Message) => void;
             },
         ) => void,
     ): void {
@@ -695,7 +737,12 @@ export function initialize({
                 );
                 return;
             }
-            callback(message, $row, {on_send_message_success, send_message});
+            callback(message, $row, {
+                on_send_message_success,
+                send_message,
+                remove_failed_message,
+                add_failed_message_back_to_queue,
+            });
         });
     }
 

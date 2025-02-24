@@ -2,15 +2,20 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
+import type {z} from "zod";
 
 import render_draft_table_body from "../templates/draft_table_body.hbs";
 
 import * as browser_history from "./browser_history.ts";
+import * as components from "./components.ts";
 import * as compose_actions from "./compose_actions.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import type {FormattedDraft, LocalStorageDraft} from "./drafts.ts";
 import * as drafts from "./drafts.ts";
+import type {send_message_api_response_schema} from "./echo.ts";
+import {abort_message, resend_message} from "./echo.ts";
 import {$t} from "./i18n.ts";
+import type {Message} from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
 import * as overlays from "./overlays.ts";
@@ -67,8 +72,11 @@ function remove_draft($draft_row: JQuery): void {
 
     $draft_row.remove();
 
-    if ($("#drafts_table .overlay-message-row").length === 0) {
+    if ($("#drafts_table .draft-message-row.overlay-message-row").length === 0) {
         $("#drafts_table .no-drafts").show();
+    }
+    if ($("#drafts_table .outbox-messsage-row.overlay-message-row").length === 0) {
+        $("#drafts_table .no-outbox-message").show();
     }
     update_rendered_drafts(
         $("#drafts-from-conversation .overlay-message-row").length > 0,
@@ -123,6 +131,10 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
     },
     items_container_selector: "drafts-container",
     items_list_selector: "drafts-list",
+    get_items_list_selector() {
+        const activeTab = $(".tab-content.active").attr("data-tab-content");
+        return `.tab-content[data-tab-content="${activeTab}"] .drafts-list`;
+    },
     row_item_selector: "draft-message-row",
     box_item_selector: "draft-message-info-box",
     id_attribute_name: "data-draft-id",
@@ -130,6 +142,23 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
 
 export function handle_keyboard_events(event_key: string): void {
     messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
+}
+
+function discard_draft_and_abort_message(draft_id: string, $draftRow: JQuery): void {
+    const draft = drafts.draft_model.getDraft(draft_id);
+
+    if (!draft) {
+        return;
+    }
+
+    const message = draft.message;
+
+    drafts.draft_model.deleteDraft(draft_id);
+    $draftRow.remove();
+
+    if (message) {
+        abort_message(message);
+    }
 }
 
 export function launch(): void {
@@ -167,7 +196,11 @@ export function launch(): void {
         return $t({defaultMessage: "Drafts from {recipient}"}, {recipient});
     }
 
-    function render_widgets(narrow_drafts: FormattedDraft[], other_drafts: FormattedDraft[]): void {
+    function render_widgets(
+        narrow_drafts: FormattedDraft[],
+        other_drafts: FormattedDraft[],
+        outbox_message: FormattedDraft[],
+    ): void {
         $("#drafts_table").empty();
 
         const narrow_drafts_header = get_header_for_narrow_drafts();
@@ -176,9 +209,18 @@ export function launch(): void {
             narrow_drafts_header,
             narrow_drafts,
             other_drafts,
+            outbox_message,
         });
         const $drafts_table = $("#drafts_table");
         $drafts_table.append($(rendered));
+
+        if (narrow_drafts.length === 0) {
+            $("#drafts-from-conversation").hide();
+        }
+        if (other_drafts.length === 0) {
+            $("#other-drafts").hide();
+        }
+
         if ($("#drafts_table .overlay-message-row").length > 0) {
             $("#drafts_table .no-drafts").hide();
             // Update possible dynamic elements.
@@ -188,6 +230,9 @@ export function launch(): void {
             $rendered_drafts.each(function () {
                 rendered_markdown.update_elements($(this));
             });
+        }
+        if ($(".outbox-message-row").length > 0) {
+            $(".no-outbox-message").hide();
         }
         update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
         update_bulk_delete_ui();
@@ -205,6 +250,61 @@ export function launch(): void {
             const draft_id = $draft_row.attr("data-draft-id")!;
             restore_draft(draft_id);
         });
+
+        $(".refresh-failed-message").on("click", (e) => {
+            e.preventDefault();
+
+            const $draftRow = $(e.target).closest(".outbox-message-row");
+            const draft_id = $draftRow.attr("data-draft-id");
+
+            if (!draft_id) {
+                return;
+            }
+
+            const draft = drafts.draft_model.getDraft(draft_id);
+
+            if (!draft) {
+                return;
+            }
+
+            resend_message(draft.message!, $draftRow, {
+                send_message,
+                on_send_message_success,
+                remove_failed_message,
+                add_failed_message_back_to_queue,
+            });
+        });
+
+        $(".remove-failed-message").on("click", (e) => {
+            e.preventDefault();
+
+            const $draftRow = $(e.target).closest(".outbox-message-row");
+            const draft_id = $draftRow.attr("data-draft-id");
+
+            if (draft_id === undefined) {
+                return;
+            }
+
+            discard_draft_and_abort_message(draft_id, $draftRow);
+        });
+
+        const opts = {
+            child_wants_focus: true,
+            selected: 0,
+            values: [
+                {label: $t({defaultMessage: "Drafts"}), key: "drafts"},
+                {label: $t({defaultMessage: "Outbox"}), key: "outbox"},
+            ],
+            callback(_name: string | undefined, key: string) {
+                $(".tab-content").removeClass("active");
+                $(`[data-tab-content="${key}"]`).addClass("active");
+            },
+        };
+
+        const toggler = components.toggle(opts);
+        const $elem = toggler.get();
+        $elem.addClass("tab-container");
+        $elem.prependTo("#draft_overlay .overlay-messages-header");
 
         $("#drafts_table .restore-overlay-message").on(
             "click",
@@ -252,76 +352,192 @@ export function launch(): void {
             });
         });
 
+        $("#drafts_table .overlay_message_controls .outbox-selection-checkbox").on("click", (e) => {
+            const is_checked = is_checkbox_icon_checked($(e.target));
+            toggle_checkbox_icon_state($(e.target), !is_checked);
+            update_bulk_delete_ui();
+        });
+
         $(".select-drafts-button").on("click", (e) => {
             e.preventDefault();
-            const $unchecked_checkboxes = $(".draft-selection-checkbox").filter(function () {
+
+            const $drafts_checkboxes = $(`[data-tab-content="drafts"] .draft-selection-checkbox`);
+
+            const $unchecked_checkboxes = $drafts_checkboxes.filter(function () {
                 return !is_checkbox_icon_checked($(this));
             });
             const check_boxes = $unchecked_checkboxes.length > 0;
-            $(".draft-selection-checkbox").each(function () {
+
+            $drafts_checkboxes.each(function () {
                 toggle_checkbox_icon_state($(this), check_boxes);
             });
+
+            toggle_checkbox_icon_state(
+                $(".select-drafts-button .select-state-indicator"),
+                check_boxes,
+                "drafts",
+            );
+
+            update_bulk_delete_ui();
+        });
+
+        $(".select-outbox-button").on("click", (e) => {
+            e.preventDefault();
+
+            const $outbox_checkboxes = $(`[data-tab-content="outbox"] .outbox-selection-checkbox`);
+
+            const $unchecked_checkboxes = $outbox_checkboxes.filter(function () {
+                return !is_checkbox_icon_checked($(this));
+            });
+            const check_boxes = $unchecked_checkboxes.length > 0;
+
+            $outbox_checkboxes.each(function () {
+                toggle_checkbox_icon_state($(this), check_boxes);
+            });
+
+            toggle_checkbox_icon_state(
+                $(".select-outbox-button .select-state-indicator"),
+                check_boxes,
+                "outbox",
+            );
+
             update_bulk_delete_ui();
         });
 
         $(".delete-selected-drafts-button").on("click", () => {
-            $(".drafts-list")
-                .find(".draft-selection-checkbox.fa-check-square")
+            $(`[data-tab-content="drafts"] .draft-selection-checkbox.fa-check-square`)
                 .closest(".overlay-message-row")
                 .each(function () {
                     remove_draft($(this));
                 });
             update_bulk_delete_ui();
         });
+
+        $(".delete-selected-outbox-button").on("click", (e) => {
+            e.preventDefault();
+
+            $(`[data-tab-content="outbox"] .outbox-selection-checkbox.fa-check-square`)
+                .closest(".overlay-message-row")
+                .each(function () {
+                    const $row = $(this);
+                    const draft_id = $row.attr("data-draft-id");
+
+                    if (draft_id !== undefined) {
+                        const draft = drafts.draft_model.getDraft(draft_id);
+
+                        if (!draft) {
+                            return;
+                        }
+
+                        const message = draft.message;
+
+                        if (!message) {
+                            return;
+                        }
+
+                        abort_message(message);
+
+                        drafts.draft_model.deleteDraft(draft_id);
+                    }
+
+                    $row.remove();
+                });
+
+            update_bulk_delete_ui();
+        });
     }
 
     const all_drafts = drafts.draft_model.get();
-    const narrow_drafts = drafts.filter_drafts_by_compose_box_and_recipient(all_drafts);
+
+    const outbox_message = Object.fromEntries(
+        Object.entries(all_drafts).filter(([_, draft]) => draft.is_sending_saving),
+    );
+
+    const drafts_message = Object.fromEntries(
+        Object.entries(all_drafts).filter(([_, draft]) => !draft.is_sending_saving),
+    );
+
+    const narrow_drafts = drafts.filter_drafts_by_compose_box_and_recipient(drafts_message);
     const other_drafts = _.pick(
-        all_drafts,
-        _.difference(Object.keys(all_drafts), Object.keys(narrow_drafts)),
+        drafts_message,
+        _.difference(Object.keys(drafts_message), Object.keys(narrow_drafts)),
     );
     const formatted_narrow_drafts = format_drafts(narrow_drafts);
     const formatted_other_drafts = format_drafts(other_drafts);
+    const formatted_outbox_message = format_drafts(outbox_message);
 
-    render_widgets(formatted_narrow_drafts, formatted_other_drafts);
+    render_widgets(formatted_narrow_drafts, formatted_other_drafts, formatted_outbox_message);
 
     // We need to force a style calculation on the newly created
     // element in order for the CSS transition to take effect.
     $("#draft_overlay").css("opacity");
 
     open_overlay();
-    const first_element_id = [...formatted_narrow_drafts, ...formatted_other_drafts][0]?.draft_id;
+    const first_element_id = [
+        ...formatted_narrow_drafts,
+        ...formatted_other_drafts,
+        ...formatted_outbox_message,
+    ][0]?.draft_id;
     messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
     setup_event_handlers();
     messages_overlay_ui.initialize_restore_overlay_message_tooltip();
 }
 
 export function update_bulk_delete_ui(): void {
-    const $unchecked_checkboxes = $(".draft-selection-checkbox").filter(function () {
+    const $unchecked_draft_checkboxes = $(".draft-selection-checkbox").filter(function () {
         return !is_checkbox_icon_checked($(this));
     });
-    const $checked_checkboxes = $(".draft-selection-checkbox").filter(function () {
+    const $checked_draft_checkboxes = $(".draft-selection-checkbox").filter(function () {
         return is_checkbox_icon_checked($(this));
     });
+    const $unchecked_outbox_checkboxes = $(".outbox-selection-checkbox").filter(function () {
+        return !is_checkbox_icon_checked($(this));
+    });
+    const $checked_outbox_checkboxes = $(".outbox-selection-checkbox").filter(function () {
+        return is_checkbox_icon_checked($(this));
+    });
+
     const $select_drafts_button = $(".select-drafts-button");
-    const $select_state_indicator = $(".select-drafts-button .select-state-indicator");
+    const $drafts_state_indicator = $(".select-drafts-button .select-state-indicator");
     const $delete_selected_drafts_button = $(".delete-selected-drafts-button");
 
-    if ($checked_checkboxes.length > 0) {
+    const $select_outbox_button = $(".select-outbox-button");
+    const $outbox_state_indicator = $(".select-outbox-button .select-state-indicator");
+    const $delete_selected_outbox_button = $(".delete-selected-outbox-button");
+
+    // Update UI for drafts tab
+    if ($checked_draft_checkboxes.length > 0) {
         $delete_selected_drafts_button.prop("disabled", false);
-        if ($unchecked_checkboxes.length === 0) {
-            toggle_checkbox_icon_state($select_state_indicator, true);
+        if ($unchecked_draft_checkboxes.length === 0) {
+            toggle_checkbox_icon_state($drafts_state_indicator, true, "drafts");
         } else {
-            toggle_checkbox_icon_state($select_state_indicator, false);
+            toggle_checkbox_icon_state($drafts_state_indicator, false, "drafts");
         }
     } else {
-        if ($unchecked_checkboxes.length > 0) {
-            toggle_checkbox_icon_state($select_state_indicator, false);
+        if ($unchecked_draft_checkboxes.length > 0) {
+            toggle_checkbox_icon_state($drafts_state_indicator, false, "drafts");
             $delete_selected_drafts_button.prop("disabled", true);
         } else {
             $select_drafts_button.hide();
             $delete_selected_drafts_button.hide();
+        }
+    }
+
+    // Update UI for outbox tab
+    if ($checked_outbox_checkboxes.length > 0) {
+        $delete_selected_outbox_button.prop("disabled", false);
+        if ($unchecked_outbox_checkboxes.length === 0) {
+            toggle_checkbox_icon_state($outbox_state_indicator, true, "outbox");
+        } else {
+            toggle_checkbox_icon_state($outbox_state_indicator, false, "outbox");
+        }
+    } else {
+        if ($unchecked_outbox_checkboxes.length > 0) {
+            toggle_checkbox_icon_state($outbox_state_indicator, false, "outbox");
+            $delete_selected_outbox_button.prop("disabled", true);
+        } else {
+            $select_outbox_button.hide();
+            $delete_selected_outbox_button.hide();
         }
     }
 }
@@ -342,16 +558,59 @@ export function is_checkbox_icon_checked($checkbox: JQuery): boolean {
     return $checkbox.hasClass("fa-check-square");
 }
 
-export function toggle_checkbox_icon_state($checkbox: JQuery, checked: boolean): void {
-    $checkbox.parent().attr("aria-checked", checked.toString());
-    if (checked) {
-        $checkbox.removeClass("fa-square-o").addClass("fa-check-square");
+export function toggle_checkbox_icon_state(
+    $checkbox: JQuery,
+    checked: boolean,
+    tab?: string,
+): void {
+    const $parent = $checkbox.parent();
+    $parent.attr("aria-checked", checked.toString());
+
+    if (tab) {
+        const buttonClass =
+            tab.toLowerCase() === "drafts" ? "select-drafts-button" : "select-outbox-button";
+        $(`.${buttonClass}`).attr("aria-checked", checked.toString());
+        $(`.${buttonClass} .select-state-indicator`)
+            .toggleClass("fa-square-o", !checked)
+            .toggleClass("fa-check-square", checked);
     } else {
-        $checkbox.removeClass("fa-check-square").addClass("fa-square-o");
+        $checkbox.toggleClass("fa-square-o", !checked).toggleClass("fa-check-square", checked);
     }
 }
 
-export function initialize(): void {
+type PostMessageAPIData = z.output<typeof send_message_api_response_schema>;
+
+let remove_failed_message: (message: Message) => void;
+
+let send_message: (
+    request: Message,
+    on_success: (raw_data: unknown) => void,
+    error: (response: string, _server_error_code: string) => void,
+) => void;
+
+let on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
+
+let add_failed_message_back_to_queue: (message: Message) => void;
+
+export function initialize({
+    on_send_message_success: on_success,
+    send_message: send_message_content,
+    remove_failed_message: remove_failed,
+    add_failed_message_back_to_queue: add_failed_message,
+}: {
+    on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
+    send_message: (
+        request: Message,
+        on_success: (raw_data: unknown) => void,
+        error: (response: string, _server_error_code: string) => void,
+    ) => void;
+    remove_failed_message: (message: Message) => void;
+    add_failed_message_back_to_queue: (message: Message) => void;
+}): void {
+    send_message = send_message_content;
+    on_send_message_success = on_success;
+    remove_failed_message = remove_failed;
+    add_failed_message_back_to_queue = add_failed_message;
     $("body").on("focus", "#drafts_table .overlay-message-info-box", function (this: HTMLElement) {
         messages_overlay_ui.activate_element(this, keyboard_handling_context);
     });
