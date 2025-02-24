@@ -515,6 +515,7 @@ export function show_new_stream_modal(): void {
     $("#stream_creation_form .default-stream input").prop("checked", false);
     update_announce_stream_state();
     stream_ui_updates.update_can_add_subscribers_group_label($("#stream-creation"));
+    stream_ui_updates.update_can_subscribe_group_label($("#stream-creation"));
     stream_ui_updates.update_default_stream_and_stream_privacy_state($("#stream-creation"));
     clear_error_display();
 }
@@ -545,6 +546,7 @@ export function set_up_handlers(): void {
     $container.on("change", ".stream-privacy-values input", () => {
         update_announce_stream_state();
         stream_ui_updates.update_default_stream_and_stream_privacy_state($container);
+        stream_ui_updates.update_can_subscribe_group_label($container);
         // We update the label on `can_add_subscribers_groups` in the
         // listener attached to `.stream-privacy-values input` on
         // `#channels_overlay_container` which covers both stream

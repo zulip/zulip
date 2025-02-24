@@ -287,6 +287,7 @@ export function show_settings_for(node: HTMLElement): void {
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     setup_group_setting_widgets(slim_sub);
     stream_ui_updates.update_can_add_subscribers_group_label($edit_container);
+    stream_ui_updates.update_can_subscribe_group_label($edit_container);
 
     $("#channels_overlay_container").on(
         "click",
@@ -804,6 +805,8 @@ export function initialize(): void {
             );
             if (sub && $subsection.attr("id") === "stream_permission_settings") {
                 stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
+                const $edit_container = stream_settings_containers.get_edit_container(sub);
+                stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
             return true;
         },
@@ -871,6 +874,8 @@ export function initialize(): void {
             settings_org.discard_stream_settings_subsection_changes($subsection, sub);
             if ($subsection.attr("id") === "stream_permission_settings") {
                 stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
+                const $edit_container = stream_settings_containers.get_edit_container(sub);
+                stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
         },
     );

@@ -104,6 +104,9 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             sub,
             group_setting_value_schema.parse(value),
         );
+        if (property === "can_subscribe_group" || property === "can_add_subscribers_group") {
+            stream_settings_ui.update_subscription_elements(sub);
+        }
         user_group_edit.update_stream_setting_in_permissions_panel(
             stream_permission_group_settings_schema.parse(property),
             group_setting_value_schema.parse(value),

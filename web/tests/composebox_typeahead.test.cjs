@@ -514,6 +514,7 @@ const sweden_stream = stream_item({
     subscribed: true,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_subscribe_group: support.id,
 });
 const denmark_stream = stream_item({
     name: "Denmark",
@@ -522,6 +523,7 @@ const denmark_stream = stream_item({
     subscribed: true,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_subscribe_group: support.id,
 });
 const netherland_stream = stream_item({
     name: "The Netherlands",
@@ -530,6 +532,7 @@ const netherland_stream = stream_item({
     subscribed: false,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_subscribe_group: support.id,
 });
 const mobile_stream = stream_item({
     name: "Mobile",
@@ -538,6 +541,7 @@ const mobile_stream = stream_item({
     subscribed: false,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_subscribe_group: support.id,
 });
 const mobile_team_stream = stream_item({
     name: "Mobile team",
@@ -546,6 +550,7 @@ const mobile_team_stream = stream_item({
     subscribed: true,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_subscribe_group: support.id,
 });
 const broken_link_stream = stream_item({
     name: "A* Algorithm",
