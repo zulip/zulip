@@ -154,6 +154,7 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.may_contain_multiple_conversations());
     assert.ok(!filter.can_show_next_unread_topic_conversation_button());
     assert.ok(!filter.can_show_next_unread_dm_conversation_button());
 
@@ -194,6 +195,7 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.may_contain_multiple_conversations());
 
     terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
@@ -212,6 +214,7 @@ test("basics", () => {
     assert.ok(filter.can_bucket_by("channel"));
     assert.ok(filter.can_bucket_by("channel", "topic"));
     assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.may_contain_multiple_conversations());
 
     terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
@@ -231,6 +234,7 @@ test("basics", () => {
     assert.ok(filter.can_bucket_by("channel", "topic"));
     assert.ok(!filter.is_conversation_view());
     assert.ok(filter.is_conversation_view_with_near());
+    assert.ok(!filter.may_contain_multiple_conversations());
     assert.ok(filter.can_show_next_unread_topic_conversation_button());
     assert.ok(!filter.can_show_next_unread_dm_conversation_button());
 
@@ -245,6 +249,7 @@ test("basics", () => {
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.may_contain_multiple_conversations());
 
     // Negated searches are just like positive searches for our purposes, since
     // the search logic happens on the backend and we need to have can_apply_locally()
@@ -258,6 +263,7 @@ test("basics", () => {
     assert.ok(!filter.supports_collapsing_recipients());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.may_contain_multiple_conversations());
     assert.ok(!filter.can_show_next_unread_topic_conversation_button());
     assert.ok(!filter.can_show_next_unread_dm_conversation_button());
 
@@ -272,6 +278,7 @@ test("basics", () => {
     assert.ok(!filter.supports_collapsing_recipients());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.may_contain_multiple_conversations());
 
     terms = [{operator: "channels", operand: "public", negated: true}];
     filter = new Filter(terms);
@@ -283,6 +290,7 @@ test("basics", () => {
     assert.ok(!filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.may_contain_multiple_conversations());
 
     terms = [{operator: "channels", operand: "public"}];
     filter = new Filter(terms);
@@ -295,6 +303,7 @@ test("basics", () => {
     assert.ok(filter.includes_full_stream_history());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.may_contain_multiple_conversations());
 
     // "streams" was renamed to "channels"
     terms = [{operator: "streams", operand: "public"}];
@@ -312,6 +321,7 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.may_contain_multiple_conversations());
     assert.ok(!filter.can_show_next_unread_topic_conversation_button());
     assert.ok(filter.can_show_next_unread_dm_conversation_button());
 
@@ -332,6 +342,7 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.may_contain_multiple_conversations());
     assert.ok(!filter.can_show_next_unread_topic_conversation_button());
     assert.ok(!filter.can_show_next_unread_dm_conversation_button());
 
@@ -344,6 +355,7 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.may_contain_multiple_conversations());
 
     terms = [{operator: "dm", operand: "joe@example.com"}];
     filter = new Filter(terms);
@@ -356,6 +368,7 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
+    assert.ok(!filter.may_contain_multiple_conversations());
 
     terms = [
         {operator: "dm", operand: "joe@example.com"},
@@ -371,6 +384,7 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
     assert.ok(filter.is_conversation_view_with_near());
+    assert.ok(!filter.may_contain_multiple_conversations());
 
     terms = [{operator: "dm", operand: "joe@example.com,jack@example.com"}];
     filter = new Filter(terms);
@@ -382,6 +396,7 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
+    assert.ok(!filter.may_contain_multiple_conversations());
 
     terms = [
         {operator: "dm", operand: "joe@example.com,jack@example.com"},
@@ -395,6 +410,7 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
+    assert.ok(!filter.may_contain_multiple_conversations());
 
     // "pm-with" was renamed to "dm"
     terms = [{operator: "pm-with", operand: "joe@example.com"}];
@@ -412,6 +428,7 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.may_contain_multiple_conversations());
 
     // "group-pm-with" was replaced with "dm-including"
     terms = [{operator: "group-pm-with", operand: "joe@example.com"}];
@@ -428,6 +445,7 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.may_contain_multiple_conversations());
 
     // Highly complex query to exercise
     // filter.supports_collapsing_recipients loop.
@@ -451,6 +469,7 @@ test("basics", () => {
     assert.ok(!filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.may_contain_multiple_conversations());
 
     terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
@@ -468,6 +487,7 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
+    assert.ok(!filter.may_contain_multiple_conversations());
 
     terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
@@ -487,6 +507,7 @@ test("basics", () => {
     assert.ok(filter.is_conversation_view());
     assert.ok(filter.can_bucket_by("channel", "topic", "with"));
     assert.ok(!filter.is_conversation_view_with_near());
+    assert.ok(!filter.may_contain_multiple_conversations());
 
     // "stream" was renamed to "channel"
     terms = [
@@ -505,6 +526,23 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
+
+    terms = [
+        {operator: "channel", operand: "channel_name"},
+        {operator: "channels", operand: "public"},
+        {operator: "topic", operand: "patience"},
+    ];
+    filter = new Filter(terms);
+    assert.ok(!filter.is_keyword_search());
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(!filter.allow_use_first_unread_when_narrowing());
+    assert.ok(filter.includes_full_stream_history());
+    assert.ok(!filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.may_contain_multiple_conversations());
 
     terms = [
         {operator: "channel", operand: "foo", negated: false},
