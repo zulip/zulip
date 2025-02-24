@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
+import render_confirm_mark_as_unread_from_here from "../templates/confirm_dialog/confirm_mark_as_unread_from_here.hbs";
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_skipped_marking_unread from "../templates/skipped_marking_unread.hbs";
 
@@ -43,6 +44,14 @@ let unsubscribed_ignored_channels: number[] = [];
 // the progress indicator experience of 1000, 3000, etc. feels weird.
 const INITIAL_BATCH_SIZE = 1000;
 const FOLLOWUP_BATCH_SIZE = 1000;
+
+// Minimum count of affected messages required to trigger the confirmation
+// dialog when marking messages as unread in an interleaved narrow.
+// When the last message in the narrow is fetched, the exact count is known,
+// otherwise we use the lower bound count.
+const MIN_MARK_AS_UNREAD_COUNT_KNOWN = 50;
+const MIN_MARK_AS_UNREAD_COUNT_LOWER_BOUND = 10;
+const UNREAD_COUNT_STEP_SIZE = 25;
 
 // When you start Zulip, window_focused should be true, but it might not be the
 // case after a server-initiated reload.
@@ -325,34 +334,95 @@ function process_newly_read_message(
 
 export function mark_as_unread_from_here(message_id: number): void {
     assert(message_lists.current !== undefined);
-    const narrow = message_lists.current.data.filter.get_stringified_narrow_for_server_query();
+    const current_filter = message_lists.current.data.filter;
+    const narrow = current_filter.get_stringified_narrow_for_server_query();
     message_lists.current.prevent_reading();
 
-    // If we have already fully fetched the current view, we can
-    // send the server the set of IDs to update, rather than
-    // updating on the basis of the narrow.
-    let message_ids_to_update;
-    if (message_lists.current.data.fetch_status.has_found_newest()) {
-        message_ids_to_update = message_lists.current
-            .all_messages()
-            .filter((msg) => msg.id >= message_id)
-            .map((msg) => msg.id);
+    const has_found_newest = message_lists.current.data.fetch_status.has_found_newest();
+    const may_contain_multiple_conversations = current_filter.may_contain_multiple_conversations();
+
+    function do_mark_unread(message_ids_to_update: number[] | undefined): void {
+        // If we have already fully fetched the current view, we can
+        // send the server the set of IDs to update, rather than
+        // updating on the basis of the narrow.
+        if (message_ids_to_update !== undefined && message_ids_to_update.length < 200) {
+            do_mark_unread_by_ids(message_ids_to_update);
+        } else {
+            const include_anchor = true;
+            const messages_marked_unread_till_now = 0;
+            const num_after = INITIAL_BATCH_SIZE - 1;
+            do_mark_unread_by_narrow(
+                message_id,
+                include_anchor,
+                messages_marked_unread_till_now,
+                num_after,
+                narrow,
+            );
+        }
     }
 
-    if (message_ids_to_update !== undefined && message_ids_to_update.length < 200) {
-        do_mark_unread_by_ids(message_ids_to_update);
+    const locally_available_matching_message_ids = message_lists.current
+        .all_messages()
+        .filter((msg) => msg.id >= message_id && !msg.unread)
+        .map((msg) => msg.id);
+    const locally_available_message_count = locally_available_matching_message_ids.length;
+    let display_count: string;
+
+    if (has_found_newest) {
+        // Since we have the anchor message ID and the newest
+        // messages, we know exactly which messages to mark as unread.
+
+        // If it's a single topic, or the number is small, we just do
+        // the request without a confirmation dialog.
+        if (
+            !may_contain_multiple_conversations ||
+            locally_available_matching_message_ids.length < MIN_MARK_AS_UNREAD_COUNT_KNOWN
+        ) {
+            do_mark_unread(locally_available_matching_message_ids);
+            return;
+        }
+
+        display_count = locally_available_message_count.toString();
+    } else if (locally_available_message_count < UNREAD_COUNT_STEP_SIZE) {
+        display_count = locally_available_message_count.toString();
     } else {
-        const include_anchor = true;
-        const messages_marked_unread_till_now = 0;
-        const num_after = INITIAL_BATCH_SIZE - 1;
-        do_mark_unread_by_narrow(
-            message_id,
-            include_anchor,
-            messages_marked_unread_till_now,
-            num_after,
-            narrow,
-        );
+        // Otherwise, we round down to the nearest
+        // UNREAD_COUNT_STEP_SIZE and display as, e.g., `25+`.
+        const rounded_count =
+            Math.floor(locally_available_message_count / UNREAD_COUNT_STEP_SIZE) *
+            UNREAD_COUNT_STEP_SIZE;
+        display_count = `${rounded_count}+`;
     }
+
+    const context = {
+        // If we don't know how many messages will be affected, but
+        // can't prove the number is more than 10, we avoid showing a
+        // count, since it just seems weird to say "3+ messages will
+        // be marked as read".
+        //
+        // It's not obvious this case is worth having special strings
+        // for, given how unlikely it is. A sample scenario is that
+        // we're be that we're near the fetched bottom of a /near/1
+        // search view where can_apply_locally is false, which will
+        // have triggered a request for the next batch of messages
+        // from the server, but that request has not returned. But it
+        // may happen more offline if the client is intermittantly
+        // offline.
+        show_message_count: locally_available_message_count >= MIN_MARK_AS_UNREAD_COUNT_LOWER_BOUND,
+        count: display_count,
+    };
+
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Mark messages as unread?"}),
+        html_body: render_confirm_mark_as_unread_from_here(context),
+        on_click() {
+            if (has_found_newest) {
+                do_mark_unread(locally_available_matching_message_ids);
+            } else {
+                do_mark_unread(undefined);
+            }
+        },
+    });
 }
 
 function do_mark_unread_by_narrow(
