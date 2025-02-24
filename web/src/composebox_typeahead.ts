@@ -43,6 +43,9 @@ import type {UserPillData} from "./user_pill.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
+/* Maximum channel name length + link syntax (#**>**) + some topic characters */
+const MAX_LOOKBACK_FOR_TYPEAHEAD_COMPLETION = 60 + 6 + 20;
+
 // **********************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
 // **********************************
@@ -423,7 +426,7 @@ export function tokenize_compose_str(s: string): string {
 
     // We limit how far back to scan to limit potential weird behavior
     // in very long messages, and simplify performance analysis.
-    let min_i = s.length - 40;
+    let min_i = s.length - MAX_LOOKBACK_FOR_TYPEAHEAD_COMPLETION;
     if (min_i < 0) {
         min_i = 0;
     }

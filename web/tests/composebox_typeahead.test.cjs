@@ -2014,7 +2014,12 @@ test("tokenizing", () => {
 
     // The following cases are kinda judgment calls...
     // max scanning limit is 40 characters until chars like @, # , / are found
-    assert.equal(ct.tokenize_compose_str("foo @toomanycharactersistooridiculoustocomplete"), "");
+    assert.equal(
+        ct.tokenize_compose_str(
+            "foo @toomanycharactersistooridiculoustoautocompletethatitexceedsalllimits",
+        ),
+        "",
+    );
     assert.equal(ct.tokenize_compose_str("foo #bar@foo"), "#bar@foo");
 });
 
