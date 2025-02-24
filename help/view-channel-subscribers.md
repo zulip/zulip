@@ -20,7 +20,7 @@ unsubscribe other users to channels.
 
 {!channel-menu-subscribers-tab-tip.md!}
 
-{tab|via-right-sidebar}
+{tab|via-left-sidebar}
 
 1. Click on a channel in the left sidebar.
 
