@@ -9,6 +9,7 @@ from django.conf import settings
 from zerver.lib.exceptions import BadNarrowOperatorError
 from zerver.lib.narrow_helpers import (
     NarrowTerm,
+    NarrowTermOperandT,
     supported_channels_operands,
     supported_has_operands,
     supported_in_operands,
@@ -312,3 +313,8 @@ class Filter:
 
     def terms(self) -> list[NarrowTerm]:
         return self._terms
+
+    def operands(self, operator: str) -> list[NarrowTermOperandT]:
+        return [
+            term.operand for term in self.terms() if term.operator == operator and not term.negated
+        ]
