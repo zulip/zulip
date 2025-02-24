@@ -138,6 +138,7 @@
 * [Unsubscribe from a channel](/help/unsubscribe-from-a-channel)
 * [Manage inactive channels](/help/manage-inactive-channels)
 * [Move content to another channel](/help/move-content-to-another-channel)
+* [View channel information](/help/view-channel-information)
 * [View channel subscribers](/help/view-channel-subscribers)
 
 ## Topics
