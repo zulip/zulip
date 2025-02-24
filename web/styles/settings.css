@@ -645,7 +645,8 @@ input[type="checkbox"] {
     padding: 4px 14px;
 }
 
-#user-notification-settings {
+#user-notification-settings,
+#realm-user-default-settings {
     .notification-table {
         thead {
             background-color: var(--color-background-notification-table-thead);
