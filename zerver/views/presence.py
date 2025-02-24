@@ -162,9 +162,10 @@ def update_user_status_admin(
     emoji_code: str | None = None,
     emoji_type: Annotated[str | None, ApiParamConfig("reaction_type")] = None,
 ) -> HttpResponse:
-    target_user = access_user_by_id(user_profile, user_id, for_admin=True)
+    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
+
     if not user_profile.can_admin_user(target_user):
-        raise JsonableError(_("Insufficient permission"))
+        raise JsonableError(_("Insufficient permission to update other user status"))
 
     if status_text is not None:
         status_text = status_text.strip()
