@@ -499,7 +499,6 @@ INTEGRATIONS: dict[str, Integration] = {
     "big-blue-button": Integration(
         "big-blue-button",
         ["communication"],
-        logo="images/integrations/logos/bigbluebutton.svg",
         display_name="BigBlueButton",
         doc="zerver/integrations/big-blue-button.md",
     ),
