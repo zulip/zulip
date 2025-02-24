@@ -67,3 +67,20 @@ class NarrowTermFilterTest(ZulipTestCase):
             Filter([NarrowTerm("dm", overlong_digits, False)]).terms(),
             [NarrowTerm("dm", overlong_digits, False)],
         )
+
+    def test_get_operands(self) -> None:
+        fixture_terms = [
+            NarrowTerm(negated=False, operator="channel", operand="13"),
+            NarrowTerm(negated=False, operator="channel", operand="2"),
+            NarrowTerm(negated=True, operator="channel", operand="88"),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="topic", operand="testing2"),
+            NarrowTerm(negated=False, operator="near", operand="1"),
+            NarrowTerm(negated=False, operator="near", operand="2"),
+        ]
+        narrow_filter = Filter(fixture_terms)
+
+        self.assertEqual(narrow_filter.operands("channel"), [13, 2])
+        self.assertEqual(narrow_filter.operands("topic"), ["testing", "testing2"])
+        self.assertEqual(narrow_filter.operands("near"), [1, 2])
+        self.assertEqual(narrow_filter.operands("stream"), [])
