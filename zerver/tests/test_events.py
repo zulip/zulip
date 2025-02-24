@@ -15,6 +15,7 @@ from typing import Any
 from unittest import mock
 
 import orjson
+import time_machine
 from dateutil.parser import parse as dateparser
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -1773,14 +1774,22 @@ class NormalActionsTest(BaseAction):
 
     def test_away_events(self) -> None:
         client = get_client("website")
+        now = timezone_now()
 
         # Updating user status to away activates the codepath of disabling
-        # the presence_enabled user setting. Correctly simulating the presence
-        # event status for a typical user requires settings the user's date_joined
-        # further into the past. See test_change_presence_enabled for more details,
-        # since it tests that codepath directly.
-        self.user_profile.date_joined = timezone_now() - timedelta(days=15)
-        self.user_profile.save()
+        # the presence_enabled user setting.
+        # See test_change_presence_enabled for more details, since it tests that codepath directly.
+        #
+        # Set up an initial presence state for the user:
+        UserPresence.objects.filter(user_profile=self.user_profile).delete()
+        with time_machine.travel(now, tick=False):
+            result = self.api_post(
+                self.user_profile,
+                "/api/v1/users/me/presence",
+                dict(status="active"),
+                HTTP_USER_AGENT="ZulipAndroid/1.0",
+            )
+            self.assert_json_success(result)
 
         # Set all
         away_val = True
@@ -1807,7 +1816,7 @@ class NormalActionsTest(BaseAction):
             events[3],
             has_email=True,
             presence_key="website",
-            status="active" if not away_val else "idle",
+            status="active",
         )
 
         # Remove all
@@ -1835,7 +1844,7 @@ class NormalActionsTest(BaseAction):
             events[3],
             has_email=True,
             presence_key="website",
-            status="active" if not away_val else "idle",
+            status="active",
         )
 
         # Only set away
@@ -1859,7 +1868,7 @@ class NormalActionsTest(BaseAction):
             events[3],
             has_email=True,
             presence_key="website",
-            status="active" if not away_val else "idle",
+            status="active",
         )
 
         # Only set status_text
@@ -1918,7 +1927,7 @@ class NormalActionsTest(BaseAction):
             # We no longer store information about the client and we simply
             # set the field to 'website' for backwards compatibility.
             presence_key="website",
-            status="idle",
+            status="active",
         )
 
     def test_user_group_events(self) -> None:
@@ -2756,16 +2765,11 @@ class NormalActionsTest(BaseAction):
 
     def test_change_presence_enabled(self) -> None:
         presence_enabled_setting = "presence_enabled"
+        UserPresence.objects.filter(user_profile=self.user_profile).delete()
 
         # Disabling presence will lead to the creation of a UserPresence object for the user
-        # with a last_connected_time slightly preceding the moment of flipping the setting
-        # and last_active_time set to None. The presence API defaults to user_profile.date_joined
-        # for backwards compatibility when dealing with a None value. Thus for this test to properly
-        # check that the presence event emitted will have "idle" status, we need to simulate
-        # the (more realistic) scenario where date_joined is further in the past and not super recent.
-        self.user_profile.date_joined = timezone_now() - timedelta(days=15)
-        self.user_profile.save()
-
+        # with a last_connected_time and last_active_time slightly preceding the moment of flipping the
+        # setting.
         for val in [True, False]:
             with self.verify_action(num_events=3) as events:
                 do_change_user_setting(
@@ -2777,11 +2781,7 @@ class NormalActionsTest(BaseAction):
             check_user_settings_update("events[0]", events[0])
             check_update_global_notifications("events[1]", events[1], val)
             check_presence(
-                "events[2]",
-                events[2],
-                has_email=True,
-                presence_key="website",
-                status="active" if val else "idle",
+                "events[2]", events[2], has_email=True, presence_key="website", status="active"
             )
 
     def test_change_notification_sound(self) -> None:
