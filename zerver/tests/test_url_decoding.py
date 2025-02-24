@@ -62,3 +62,20 @@ class NarrowTermFilterTest(ZulipTestCase):
                 for invalid_term in test_case["invalid_terms"]:
                     with self.assertRaises(BadNarrowOperatorError):
                         Filter([NarrowTerm(**invalid_term)], self.realm)
+
+    def test_get_operands(self) -> None:
+        fixture_terms = [
+            NarrowTerm(negated=False, operator="channel", operand="13"),
+            NarrowTerm(negated=False, operator="channel", operand="2"),
+            NarrowTerm(negated=True, operator="channel", operand="88"),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="topic", operand="testing2"),
+            NarrowTerm(negated=False, operator="near", operand="1"),
+            NarrowTerm(negated=False, operator="near", operand="2"),
+        ]
+        filter = Filter(fixture_terms, self.realm)
+
+        self.assertEqual(filter.operands("channel"), [13, 2])
+        self.assertEqual(filter.operands("topic"), ["testing", "testing2"])
+        self.assertEqual(filter.operands("near"), [1, 2])
+        self.assertEqual(filter.operands("stream"), [])
