@@ -1441,11 +1441,11 @@ def get_streams_for_user(
     include_web_public: bool = False,
     include_subscribed: bool = True,
     exclude_archived: bool = True,
-    include_all_active: bool = False,
+    include_all: bool = False,
     include_owner_subscribed: bool = False,
     include_can_access_content: bool = False,
 ) -> list[Stream]:
-    if include_all_active and not user_profile.is_realm_admin:
+    if include_all and not user_profile.is_realm_admin:
         raise JsonableError(_("User not authorized for this query"))
 
     include_public = include_public and user_profile.can_access_public_streams()
@@ -1458,7 +1458,7 @@ def get_streams_for_user(
     if exclude_archived:
         query = query.filter(deactivated=False)
 
-    if include_all_active:
+    if include_all:
         streams = query.only(
             *Stream.API_FIELDS, "can_send_message_group", "can_send_message_group__named_user_group"
         )
@@ -1614,7 +1614,7 @@ def do_get_streams(
     include_web_public: bool = False,
     include_subscribed: bool = True,
     exclude_archived: bool = True,
-    include_all_active: bool = False,
+    include_all: bool = False,
     include_default: bool = False,
     include_owner_subscribed: bool = False,
     include_can_access_content: bool = False,
@@ -1627,7 +1627,7 @@ def do_get_streams(
         include_web_public,
         include_subscribed,
         exclude_archived,
-        include_all_active,
+        include_all,
         include_owner_subscribed,
         include_can_access_content,
     )

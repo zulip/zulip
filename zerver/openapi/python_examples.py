@@ -827,7 +827,7 @@ def get_user_groups(client: Client) -> int:
 
 
 def test_user_not_authorized_error(nonadmin_client: Client) -> None:
-    result = nonadmin_client.get_streams(include_all_active=True)
+    result = nonadmin_client.get_streams(include_all=True)
     assert_error_response(result)
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "400")
 

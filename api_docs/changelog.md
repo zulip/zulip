@@ -25,6 +25,9 @@ format used by the Zulip server that they are interacting with.
 * [`GET /streams`](/api/get-streams): The new parameter
   `include_can_access_content`, if set to True, returns all the
   channels that the user making the request has content access to.
+* [`GET /streams`](/api/get-streams): Rename `include_all_active` to
+  `include_all` since the separate `exclude_archived` parameter is what
+  controls whether to include archived channels.
 
 **Feature level 355**
 

@@ -20340,8 +20340,31 @@ paths:
         - name: include_all_active
           in: query
           description: |
-            Include all active channels. The user must have administrative privileges
-            to use this parameter.
+            Deprecated parameter to include all channels. The user must
+            have administrative privileges to use this parameter.
+
+            **Changes**: Deprecated in Zulip 10.0 (feature level
+            356). Clients interacting with newer servers should use
+            the equivalent `include_all` parameter, which does not
+            incorrectly hint that this parameter, and not
+            `exclude_archived`, controls whether archived channels
+            appear in the response.
+          schema:
+            type: boolean
+            default: false
+          deprecated: true
+          example: true
+        - name: include_all
+          in: query
+          description: |
+            Include all channels that the user has metadata access to.
+
+            For organization administrators, this will be all channels
+            in the organization, since organization administrators
+            implicitly have metadata access to all channels.
+
+            **Changes**: New in Zulip 10.0 (feature level 356). On older
+            versions, use `include_all_active`, which this replaces.
           schema:
             type: boolean
             default: false
@@ -20525,7 +20548,7 @@ paths:
                       }
                     description: |
                       An example JSON response for when the user is not authorized to use the
-                      `include_all_active` parameter (i.e. because they are not an organization
+                      `include_all` parameter (i.e. because they are not an organization
                       administrator):
   /streams/{stream_id}:
     get:

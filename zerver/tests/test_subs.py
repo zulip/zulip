@@ -246,7 +246,7 @@ class TestMiscStuff(ZulipTestCase):
             user_profile=user_profile,
             include_public=False,
             include_subscribed=False,
-            include_all_active=False,
+            include_all=False,
             include_default=False,
         )
         self.assertEqual(streams, [])
@@ -3219,7 +3219,7 @@ class StreamAdminTest(ZulipTestCase):
 
         # It shows up with `exclude_archived` parameter set to false.
         result = self.client_get(
-            "/json/streams", {"exclude_archived": "false", "include_all_active": "true"}
+            "/json/streams", {"exclude_archived": "false", "include_all": "true"}
         )
         streams = [s["name"] for s in self.assert_json_success(result)["streams"]]
         self.assertIn(deactivated_stream_name, streams)
@@ -6883,9 +6883,10 @@ class GetStreamsTest(ZulipTestCase):
 
     def test_all_active_streams_api(self) -> None:
         url = "/api/v1/streams"
-        data = {"include_all_active": "true"}
+        data = {"include_all": "true"}
+        backward_compatible_data = {"include_all_active": "true"}
 
-        # Check non-superuser can't use include_all_active
+        # Check non-superuser can't use include_all
         normal_user = self.example_user("cordelia")
         result = self.api_get(normal_user, url, data)
         self.assertEqual(result.status_code, 400)
@@ -6896,6 +6897,11 @@ class GetStreamsTest(ZulipTestCase):
 
         result = self.api_get(admin_user, url, data)
         json = self.assert_json_success(result)
+
+        backward_compatible_result = self.api_get(admin_user, url, backward_compatible_data)
+        json_for_backward_compatible_request = self.assert_json_success(backward_compatible_result)
+
+        self.assertEqual(json, json_for_backward_compatible_request)
 
         self.assertIn("streams", json)
         self.assertIsInstance(json["streams"], list)

@@ -925,18 +925,21 @@ def get_streams_backend(
     include_web_public: Json[bool] = False,
     include_subscribed: Json[bool] = True,
     exclude_archived: Json[bool] = True,
+    include_all: Json[bool] = False,
     include_all_active: Json[bool] = False,
     include_default: Json[bool] = False,
     include_owner_subscribed: Json[bool] = False,
     include_can_access_content: Json[bool] = False,
 ) -> HttpResponse:
+    if include_all_active is True:
+        include_all = True
     streams = do_get_streams(
         user_profile,
         include_public=include_public,
         include_web_public=include_web_public,
         include_subscribed=include_subscribed,
         exclude_archived=exclude_archived,
-        include_all_active=include_all_active,
+        include_all=include_all,
         include_default=include_default,
         include_owner_subscribed=include_owner_subscribed,
         include_can_access_content=include_can_access_content,

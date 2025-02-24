@@ -721,7 +721,7 @@ def fetch_initial_state_data(
             state["streams"] = do_get_streams(
                 user_profile,
                 include_web_public=True,
-                include_all_active=user_profile.is_realm_admin,
+                include_all=user_profile.is_realm_admin,
             )
         else:
             # TODO: This line isn't used by the web app because it
