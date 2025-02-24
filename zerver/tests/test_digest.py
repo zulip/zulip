@@ -18,6 +18,7 @@ from zerver.lib.digest import (
     enqueue_emails,
     gather_new_streams,
     get_hot_topics,
+    get_new_messages_count,
     get_recent_topics,
     get_recently_created_streams,
     get_user_stream_map,
@@ -129,9 +130,13 @@ class TestDigestEmailMessages(ZulipTestCase):
             set(emailed_user_ids), {user_id for user_id in user_ids if user_id != hamlet.id}
         )
 
+    @mock.patch("zerver.lib.digest.get_new_messages_count", return_value=0)
     @mock.patch("zerver.lib.digest.send_future_email")
-    def test_enough_traffic(self, mock_send_future_email: mock.MagicMock) -> None:
+    def test_enough_traffic(
+        self, mock_send_future_email: mock.MagicMock, mock_get_new_messages_count: mock.MagicMock
+    ) -> None:
         othello = self.example_user("othello")
+        realm = othello.realm
         self.subscribe(othello, "Verona")
 
         in_the_future = timezone_now().timestamp() + 60
@@ -144,7 +149,19 @@ class TestDigestEmailMessages(ZulipTestCase):
         ) as enough_traffic_mock:
             bulk_handle_digest_email([othello.id], in_the_future)
             mock_send_future_email.assert_called()
-            enough_traffic_mock.assert_called_once_with([], 0)
+            enough_traffic_mock.assert_called_once_with([], 0, 0, False)
+
+        do_set_realm_property(
+            realm, "message_content_allowed_in_email_notifications", False, acting_user=None
+        )
+        mock_get_new_messages_count.return_value = 10
+
+        with mock.patch(
+            "zerver.lib.digest.enough_traffic", return_value=True
+        ) as enough_traffic_mock:
+            bulk_handle_digest_email([othello.id], in_the_future)
+            mock_send_future_email.assert_called()
+            enough_traffic_mock.assert_called_once_with([], 0, 10, True)
 
     @mock.patch("zerver.lib.digest.enough_traffic")
     @mock.patch("zerver.lib.digest.send_future_email")
@@ -539,6 +556,48 @@ class TestDigestEmailMessages(ZulipTestCase):
         )
         self.assertEqual(stream_count, 0)
         self.assertEqual(stream_info["html"], [])
+
+    def test_get_new_messages_count(self) -> None:
+        othello = self.example_user("othello")
+        self.subscribe(othello, "Verona")
+
+        cutoff = timezone_now() - timedelta(days=5)
+        old_human_messages_count = get_new_messages_count(othello, cutoff)
+
+        senders = ["hamlet", "cordelia", "iago", "prospero", "ZOE", "default_bot"]
+        # Exclude messages sent by bots from digests, as only human messages should be considered.
+        new_human_messages_count = len(self.simulate_stream_conversation("Verona", senders)) - 1
+
+        self.assertEqual(
+            get_new_messages_count(othello, cutoff),
+            old_human_messages_count + new_human_messages_count,
+        )
+
+    @mock.patch("zerver.lib.digest.send_future_email")
+    def test_email_digest_when_message_content_is_disabled(
+        self, mock_send_future_email: mock.MagicMock
+    ) -> None:
+        realm = get_realm("zulip")
+        othello = self.example_user("othello")
+        cutoff_date = timezone_now() - timedelta(days=5)
+        cutoff = time.mktime(cutoff_date.timetuple())
+        do_set_realm_property(
+            realm, "message_content_allowed_in_email_notifications", False, acting_user=None
+        )
+
+        # When this test is run in isolation, one additional query is run which
+        # is equivalent to
+        # ContentType.objects.get(app_label='zerver', model='userprofile')
+        # This code is run when we call `confirmation.models.create_confirmation_link`.
+        # To trigger this, we call the one_click_unsubscribe_link function below.
+        one_click_unsubscribe_link(othello, "digest")
+
+        # Clear the LRU cache on the stream topics
+        get_recent_topics.cache_clear()
+        with self.assert_database_query_count(8):
+            bulk_handle_digest_email([othello.id], cutoff)
+
+        self.assertEqual(mock_send_future_email.call_count, 1)
 
     def simulate_stream_conversation(self, stream: str, senders: list[str]) -> list[int]:
         message_ids = []  # List[int]
