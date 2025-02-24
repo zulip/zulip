@@ -106,7 +106,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         position: relative;
-        top: -1px;
+        top: -2px;
 
         & > a {
             color: var(--color-dropdown-item);
