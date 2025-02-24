@@ -39,9 +39,9 @@
         "help-beta",
 
         // Skip walking large generated directories.
+        ".venv",
         "docs/_build",
         "static/webpack-bundles",
         "var",
-        "zulip-py3-venv",
     ],
 }

@@ -11,7 +11,7 @@ From the window where run-dev is running:
 2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth@zulip via ?)
 ^C
 KeyboardInterrupt
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip$ exit
+(zulip-server) vagrant@vagrant:/srv/zulip$ exit
 logout
 Connection to 127.0.0.1 closed.
 $
