@@ -17,14 +17,9 @@ call provider instead.
 
 {start_tabs}
 
-1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
-   the upper right corner of the web or desktop app.
+{settings_tab|organization-settings}
 
-1. Select **Organization settings**.
-
-1. On the left, click **Organization settings**.
-
-1. Under **Other settings**, select Zoom from the **Call provider** dropdown.
+1. Under **Compose settings**, select Zoom from the **Call provider** dropdown.
 
 1. Click **Save changes**.
 

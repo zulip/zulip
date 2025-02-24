@@ -72,7 +72,7 @@ You can configure:
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings**, toggle **Enable read receipts**.
+1. Under **Message feed settings**, toggle **Enable read receipts**.
 
 {!save-changes.md!}
 
