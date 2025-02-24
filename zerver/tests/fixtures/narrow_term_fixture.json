@@ -191,5 +191,17 @@
         "invalid_terms": [
             { "operator": "unknown_operator", "operand": "someoperand", "negated": false }
         ]
+    },
+    "redundant_is_private": {
+        "valid_terms": [
+            { "operator": "is", "operand": "private", "negated": false },
+            { "operator": "dm", "operand": "someone@example.com", "negated": false },
+            { "operator": "near", "operand": "2", "negated": false }
+        ],
+        "expected_output": [
+            { "operator": "dm", "operand": "someone@example.com", "negated": false },
+            { "operator": "near", "operand": 2, "negated": false }
+        ],
+        "invalid_terms": []
     }
 }
