@@ -281,12 +281,30 @@ class Filter:
         return NarrowTerm(operator, operand, term.negated)
 
     @staticmethod
+    def term_type(term: NarrowTerm) -> str:
+        result = "not-" if term.negated else ""
+        result += term.operator
+
+        if term.operator in ["is", "has", "in", "channels"]:
+            result += "-" + str(term.operand)
+
+        return result
+
+    @staticmethod
     def _canonicalize_terms(terms_mixed_case: Sequence[NarrowTerm]) -> list[NarrowTerm]:
         return [Filter.canonicalize_term(term) for term in terms_mixed_case]
 
     @staticmethod
+    def _fix_redundant_is_private(terms: Sequence[NarrowTerm]) -> list[NarrowTerm]:
+        # Every DM is a DM, so drop `is:dm` if on a DM conversation.
+        if not any(Filter.term_type(term) == "dm" for term in terms):
+            return list(terms)
+        return [term for term in terms if Filter.term_type(term) != "is-dm"]
+
+    @staticmethod
     def _fix_terms(terms: Sequence[NarrowTerm]) -> list[NarrowTerm]:
         terms = Filter._canonicalize_terms(terms)
+        terms = Filter._fix_redundant_is_private(terms)
         return terms
 
     def _setup_filter(self, terms: Sequence[NarrowTerm]) -> None:
