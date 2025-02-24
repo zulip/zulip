@@ -65,6 +65,7 @@ class Integration:
     DEFAULT_LOGO_STATIC_PATH_PNG = "images/integrations/logos/{name}.png"
     DEFAULT_LOGO_STATIC_PATH_SVG = "images/integrations/logos/{name}.svg"
     DEFAULT_BOT_AVATAR_PATH = "images/integrations/bot_avatars/{name}.png"
+    DEFAULT_DOC_PATH = "zerver/integrations/{name}.md"
 
     def __init__(
         self,
@@ -108,6 +109,10 @@ class Integration:
         if display_name is None:
             display_name = name.title()
         self.display_name = display_name
+
+        if doc is None:
+            doc = self.DEFAULT_DOC_PATH.format(name=self.name)
+        self.doc = doc
 
         if stream_name is None:
             stream_name = self.name
@@ -495,129 +500,61 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
 ]
 
 INTEGRATIONS: dict[str, Integration] = {
-    "asana": Integration("asana", ["project-management"], doc="zerver/integrations/asana.md"),
+    "asana": Integration("asana", ["project-management"]),
     "big-blue-button": Integration(
-        "big-blue-button",
-        ["communication"],
-        display_name="BigBlueButton",
-        doc="zerver/integrations/big-blue-button.md",
+        "big-blue-button", ["communication"], display_name="BigBlueButton"
     ),
-    "capistrano": Integration(
-        "capistrano",
-        ["deployment"],
-        display_name="Capistrano",
-        doc="zerver/integrations/capistrano.md",
-    ),
-    "codebase": Integration("codebase", ["version-control"], doc="zerver/integrations/codebase.md"),
-    "discourse": Integration(
-        "discourse", ["communication"], doc="zerver/integrations/discourse.md"
-    ),
-    "email": Integration("email", ["communication"], doc="zerver/integrations/email.md"),
-    "errbot": Integration(
-        "errbot", ["meta-integration", "bots"], doc="zerver/integrations/errbot.md"
-    ),
-    "giphy": Integration(
-        "giphy",
-        display_name="GIPHY",
-        categories=["misc"],
-        doc="zerver/integrations/giphy.md",
-    ),
-    "git": Integration(
-        "git", ["version-control"], stream_name="commits", doc="zerver/integrations/git.md"
-    ),
+    "capistrano": Integration("capistrano", ["deployment"], display_name="Capistrano"),
+    "codebase": Integration("codebase", ["version-control"]),
+    "discourse": Integration("discourse", ["communication"]),
+    "email": Integration("email", ["communication"]),
+    "errbot": Integration("errbot", ["meta-integration", "bots"]),
+    "giphy": Integration("giphy", ["misc"], display_name="GIPHY"),
+    "git": Integration("git", ["version-control"], stream_name="commits"),
     "github-actions": Integration(
-        "github-actions",
-        ["continuous-integration"],
-        display_name="GitHub Actions",
-        doc="zerver/integrations/github-actions.md",
+        "github-actions", ["continuous-integration"], display_name="GitHub Actions"
     ),
     "google-calendar": Integration(
-        "google-calendar",
-        ["productivity"],
-        display_name="Google Calendar",
-        doc="zerver/integrations/google-calendar.md",
+        "google-calendar", ["productivity"], display_name="Google Calendar"
     ),
-    "hubot": Integration("hubot", ["meta-integration", "bots"], doc="zerver/integrations/hubot.md"),
-    "irc": Integration(
-        "irc", ["communication"], display_name="IRC", doc="zerver/integrations/irc.md"
-    ),
-    "jenkins": Integration(
-        "jenkins",
-        ["continuous-integration"],
-        doc="zerver/integrations/jenkins.md",
-    ),
+    "hubot": Integration("hubot", ["meta-integration", "bots"]),
+    "irc": Integration("irc", ["communication"], display_name="IRC"),
+    "jenkins": Integration("jenkins", ["continuous-integration"]),
     "jira-plugin": Integration(
         "jira-plugin",
         ["project-management"],
         logo="images/integrations/logos/jira.svg",
         secondary_line_text="(locally installed)",
         display_name="Jira",
-        doc="zerver/integrations/jira-plugin.md",
         stream_name="jira",
         legacy=True,
     ),
-    "jitsi": Integration(
-        "jitsi",
-        ["communication"],
-        display_name="Jitsi Meet",
-        doc="zerver/integrations/jitsi.md",
-    ),
-    "mastodon": Integration(
-        "mastodon",
-        ["communication"],
-        doc="zerver/integrations/mastodon.md",
-    ),
-    "matrix": Integration("matrix", ["communication"], doc="zerver/integrations/matrix.md"),
+    "jitsi": Integration("jitsi", ["communication"], display_name="Jitsi Meet"),
+    "mastodon": Integration("mastodon", ["communication"]),
+    "matrix": Integration("matrix", ["communication"]),
     "mercurial": Integration(
-        "mercurial",
-        ["version-control"],
-        display_name="Mercurial (hg)",
-        doc="zerver/integrations/mercurial.md",
-        stream_name="commits",
+        "mercurial", ["version-control"], display_name="Mercurial (hg)", stream_name="commits"
     ),
-    "nagios": Integration("nagios", ["monitoring"], doc="zerver/integrations/nagios.md"),
-    "notion": Integration("notion", ["productivity"], doc="zerver/integrations/notion.md"),
+    "nagios": Integration("nagios", ["monitoring"]),
+    "notion": Integration("notion", ["productivity"]),
     "openshift": Integration(
-        "openshift",
-        ["deployment"],
-        display_name="OpenShift",
-        doc="zerver/integrations/openshift.md",
-        stream_name="deployments",
+        "openshift", ["deployment"], display_name="OpenShift", stream_name="deployments"
     ),
-    "onyx": Integration(
-        "onyx",
-        ["productivity"],
-        logo="images/integrations/logos/onyx.png",
-        doc="zerver/integrations/onyx.md",
-    ),
-    "perforce": Integration("perforce", ["version-control"], doc="zerver/integrations/perforce.md"),
-    "phabricator": Integration(
-        "phabricator", ["version-control"], doc="zerver/integrations/phabricator.md"
-    ),
-    "puppet": Integration("puppet", ["deployment"], doc="zerver/integrations/puppet.md"),
-    "redmine": Integration("redmine", ["project-management"], doc="zerver/integrations/redmine.md"),
-    "rss": Integration(
-        "rss", ["communication"], display_name="RSS", doc="zerver/integrations/rss.md"
-    ),
-    "svn": Integration(
-        "svn",
-        ["version-control"],
-        display_name="Subversion",
-        doc="zerver/integrations/svn.md",
-    ),
-    "trac": Integration("trac", ["project-management"], doc="zerver/integrations/trac.md"),
+    "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
+    "perforce": Integration("perforce", ["version-control"]),
+    "phabricator": Integration("phabricator", ["version-control"]),
+    "puppet": Integration("puppet", ["deployment"]),
+    "redmine": Integration("redmine", ["project-management"]),
+    "rss": Integration("rss", ["communication"], display_name="RSS"),
+    "svn": Integration("svn", ["version-control"], display_name="Subversion"),
+    "trac": Integration("trac", ["project-management"]),
     "twitter": Integration(
         "twitter",
         ["customer-support", "marketing"],
         # _ needed to get around adblock plus
         logo="images/integrations/logos/twitte_r.svg",
-        doc="zerver/integrations/twitter.md",
     ),
-    "zoom": Integration(
-        "zoom",
-        ["communication"],
-        doc="zerver/integrations/zoom.md",
-    ),
+    "zoom": Integration("zoom", ["communication"]),
 }
 
 BOT_INTEGRATIONS: list[BotIntegration] = [
