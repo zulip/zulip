@@ -1054,7 +1054,7 @@ class MessagePOSTTest(ZulipTestCase):
         with mock.patch(
             "DNS.dnslookup",
             return_value=[
-                ["starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash"]
+                [b"starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash"]
             ],
         ):
             result1 = self.api_post(
@@ -1064,7 +1064,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         with mock.patch(
             "DNS.dnslookup",
-            return_value=[["espuser:*:95494:101:Esp Classroom,,,:/mit/espuser:/bin/athena/bash"]],
+            return_value=[[b"espuser:*:95494:101:Esp Classroom,,,:/mit/espuser:/bin/athena/bash"]],
         ):
             result2 = self.api_post(
                 self.mit_user("espuser"), "/api/v1/messages", msg, subdomain="zephyr"

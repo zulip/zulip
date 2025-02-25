@@ -4136,7 +4136,7 @@ class UserSignUpTest(ZulipTestCase):
 
     @patch(
         "DNS.dnslookup",
-        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+        return_value=[[b"sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
     )
     def test_registration_of_mirror_dummy_user(self, ignored: Any) -> None:
         password = "test"
@@ -4217,7 +4217,7 @@ class UserSignUpTest(ZulipTestCase):
 
     @patch(
         "DNS.dnslookup",
-        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+        return_value=[[b"sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
     )
     def test_registration_of_active_mirror_dummy_user(self, ignored: Any) -> None:
         """

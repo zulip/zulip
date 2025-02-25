@@ -10,7 +10,7 @@ def compute_mit_user_fullname(email: str) -> str:
         match_user = re.match(r"^([a-zA-Z0-9_.-]+)(\|.+)?@mit\.edu$", email.lower())
         if match_user and match_user.group(2) is None:
             answer = DNS.dnslookup(f"{match_user.group(1)}.passwd.ns.athena.mit.edu", DNS.Type.TXT)
-            hesiod_name = answer[0][0].split(":")[4].split(",")[0].strip()
+            hesiod_name = answer[0][0].decode().split(":")[4].split(",")[0].strip()
             if hesiod_name != "":
                 return hesiod_name
         elif match_user:
