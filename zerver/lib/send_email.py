@@ -1,6 +1,8 @@
+import contextlib
 import hashlib
 import logging
 import os
+import re
 import smtplib
 from collections.abc import Callable, Mapping
 from contextlib import suppress
@@ -686,4 +688,21 @@ def log_email_config_errors() -> None:
         logger.error(
             "An SMTP username was set (EMAIL_HOST_USER), but password is unset (EMAIL_HOST_PASSWORD).  "
             "To disable SMTP authentication, set EMAIL_HOST_USER to an empty string."
+        )
+
+
+def maybe_remove_from_suppression_list(email: str) -> None:
+    if settings.EMAIL_HOST is None:
+        return
+
+    maybe_aws = re.match(r"^email-smtp(?:-fips)?\.([^.]+)\.amazonaws\.com$", settings.EMAIL_HOST)
+    if maybe_aws is None:
+        return
+
+    import boto3
+    import botocore
+
+    with contextlib.suppress(botocore.exceptions.ClientError):
+        boto3.client("sesv2", region_name=maybe_aws[1]).delete_suppressed_destination(
+            EmailAddress=email
         )
