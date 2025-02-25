@@ -20,7 +20,8 @@ sent](/help/view-messages-sent-by-a-user).
   [selected](/help/custom-profile-fields#display-custom-fields-on-user-card) by
   administrators to be featured on user cards.
 - Their current [local time](/help/change-your-timezone).
-- Their [status and availability](/help/status-and-availability).
+- Their [status and availability](/help/status-and-availability), and whether
+  the account has been [deactivated](/help/deactivate-or-reactivate-a-user).
 
 {tab|bot}
 
@@ -29,6 +30,7 @@ sent](/help/view-messages-sent-by-a-user).
 - Its owner's name.
 - Its email address, if you [have
 permission](/help/configure-email-visibility) to view it.
+- Whether the bot has been [deactivated](/help/deactivate-or-reactivate-a-bot).
 
 {end_tabs}
 
