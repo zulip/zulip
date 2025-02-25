@@ -25,10 +25,6 @@ Options:
   --self-signed-cert
       Generate a self-signed SSL certificate for the server. This isn’t suitable for
       production use, but may be convenient for testing.  Conflicts with --certbot.
-  --cacert=/path/to/ca.pem
-      Set the CA which used to establish TLS to all public internet sites during the
-      install process; used when this command is run once in a highly-controlled
-      environment to produce an image which is used elsewhere.  Uncommon.
 
   --postgresql-database-name=zulip
       Sets the PostgreSQL database name.
@@ -118,11 +114,6 @@ while true; do
 
         --certbot)
             USE_CERTBOT=1
-            shift
-            ;;
-        --cacert)
-            export CUSTOM_CA_CERTIFICATES="$2"
-            shift
             shift
             ;;
         --self-signed-cert)
