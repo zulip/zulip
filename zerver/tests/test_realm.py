@@ -4,6 +4,7 @@ import random
 import re
 import string
 from datetime import datetime, timedelta
+from enum import Enum
 from typing import Any
 from unittest import mock, skipUnless
 
@@ -957,6 +958,7 @@ class RealmTest(ZulipTestCase):
             waiting_period_threshold=-10,
             digest_weekday=10,
             message_content_delete_limit_seconds=-10,
+            message_edit_history_visibility_policy=10,
             message_content_edit_limit_seconds=0,
             move_messages_within_stream_limit_seconds=0,
             move_messages_between_streams_limit_seconds=0,
@@ -1926,6 +1928,7 @@ class RealmAPITest(ZulipTestCase):
             default_code_block_language=["javascript", ""],
             description=["Realm description", "New description"],
             digest_weekday=[0, 1, 2],
+            message_edit_history_visibility_policy=Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_POLICY_TYPES,
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
@@ -1961,6 +1964,16 @@ class RealmAPITest(ZulipTestCase):
             return
 
         do_set_realm_property(get_realm("zulip"), name, vals[0], acting_user=None)
+
+        if isinstance(vals[0], Enum):
+            for val in vals[1:]:
+                raw_value = val.name
+                value = val.value
+                realm = self.update_with_api(name, raw_value)
+                self.assertEqual(getattr(realm, name), value)
+            realm = self.update_with_api(name, vals[0].name)
+            self.assertEqual(getattr(realm, name), vals[0].value)
+            return
 
         for val in vals[1:]:
             realm = self.update_with_api(name, val)
@@ -2316,6 +2329,13 @@ class RealmAPITest(ZulipTestCase):
         assert invalid_org_type not in vals
         result = self.client_patch("/json/realm", {"org_type": invalid_org_type})
         self.assert_json_error(result, "Invalid org_type")
+
+    def test_invalid_edit_history_visibility(self) -> None:
+        result = self.client_patch(
+            "/json/realm",
+            {"message_edit_history_visibility_policy": "invalid"},
+        )
+        self.assert_json_error(result, "Invalid message_edit_history_visibility_policy")
 
     def update_with_realm_default_api(self, name: str, val: Any) -> None:
         if not isinstance(val, str):

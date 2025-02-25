@@ -14,7 +14,7 @@ from zerver.lib.test_helpers import make_client
 from zerver.lib.topic import TOPIC_LINKS
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import Message, Reaction, Realm, RealmFilter, Recipient, Stream, UserProfile
-from zerver.models.realms import get_realm
+from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 
 
@@ -421,7 +421,7 @@ class MessageHydrationTest(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=True,
             allow_empty_topic_name=True,
-            allow_edit_history=False,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=cordelia,
             realm=cordelia.realm,
         )
@@ -470,7 +470,7 @@ class MessageHydrationTest(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=True,
             allow_empty_topic_name=True,
-            allow_edit_history=False,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=self.example_user("polonius"),
             realm=realm,
         )
@@ -516,7 +516,7 @@ class MessageHydrationTest(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=True,
             allow_empty_topic_name=True,
-            allow_edit_history=False,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=cordelia,
             realm=cordelia.realm,
         )
@@ -562,7 +562,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=True,
             allow_empty_topic_name=True,
-            allow_edit_history=False,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=cordelia,
             realm=cordelia.realm,
         )
@@ -586,7 +586,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=True,
             allow_empty_topic_name=True,
-            allow_edit_history=False,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=cordelia,
             realm=cordelia.realm,
         )
@@ -611,7 +611,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=True,
             allow_empty_topic_name=True,
-            allow_edit_history=False,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=cordelia,
             realm=cordelia.realm,
         )
@@ -648,7 +648,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             apply_markdown=True,
             client_gravatar=True,
             allow_empty_topic_name=True,
-            allow_edit_history=False,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
             user_profile=cordelia,
             realm=cordelia.realm,
         )

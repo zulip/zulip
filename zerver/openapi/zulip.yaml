@@ -4578,11 +4578,6 @@ paths:
                                     irrespective of which of these settings were changed. Now, a separate event
                                     is sent for each changed setting.
                                   properties:
-                                    allow_edit_history:
-                                      type: boolean
-                                      description: |
-                                        Whether this organization is configured to allow users to access
-                                        [message edit history](/help/view-a-messages-edit-history).
                                     allow_message_editing:
                                       type: boolean
                                       description: |
@@ -5062,6 +5057,19 @@ paths:
 
                                         **Changes**: Before Zulip 6.0 (feature level 138), no limit was
                                         represented using the special value `0`.
+                                    message_edit_history_visibility_policy:
+                                      type: string
+                                      description: |
+                                        Which type of message edit history is configured to allow users to
+                                        access [message edit history](/help/view-a-messages-edit-history).
+
+                                        - "all" = All edit history is visible.
+                                        - "moves" = Only moves are visible.
+                                        - "none" = No edit history is visible.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 358), replacing the previous
+                                        `allow_edit_history` boolean setting; `true` corresponds to `all`,
+                                        and `false` to `none`.
                                     moderation_request_channel_id:
                                       type: integer
                                       description: |
@@ -16895,13 +16903,35 @@ paths:
                               type: string
                               description: |
                                 The text describing the emoji set.
+                      realm_message_edit_history_visibility_policy:
+                        type: string
+                        description: |
+                          What typesof message edit history are accessible to users via
+                          [message edit history](/help/view-a-messages-edit-history).
+
+                          - "all" = All edit history is visible.
+                          - "moves" = Only moves are visible.
+                          - "none" = No edit history is visible.
+
+                          **Changes**: New in Zulip 10.0 (feature level 358), replacing the previous
+                          `allow_edit_history` boolean setting; `true` corresponds to `all`,
+                          and `false` to `none`.
                       realm_allow_edit_history:
+                        deprecated: true
                         type: boolean
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether this organization is configured to allow users to access
                           [message edit history](/help/view-a-messages-edit-history).
+
+                          The value of `realm_allow_edit_history` is set as `false` if the
+                          `realm_message_edit_history_visibility_policy` is configured as "None"
+                          and `true` if it is configured as "Moves only" or "All".
+
+                          **Changes**: Deprecated in Zulip 10.0 (feature level 358) and will be
+                          removed in the future, as it is an inaccurate version
+                          `realm_message_edit_history_visibility_policy`, which replaces this field.
                       realm_can_add_custom_emoji_group:
                         allOf:
                           - description: |

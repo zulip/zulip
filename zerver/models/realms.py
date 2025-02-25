@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from enum import IntEnum
+from enum import Enum, IntEnum
 from types import UnionType
 from typing import TYPE_CHECKING, Optional, TypedDict
 from uuid import uuid4
@@ -146,6 +146,13 @@ class DigestWeekdayEnum(IntEnum):
     FRIDAY = 4
     SATURDAY = 5
     SUNDAY = 6
+
+
+class MessageEditHistoryVisibilityPolicyEnum(Enum):
+    # The case is used by Pydantic in the API
+    all = 1
+    moves = 2
+    none = 3
 
 
 class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
@@ -390,7 +397,10 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     # Whether users have access to message edit history
-    allow_edit_history = models.BooleanField(default=True)
+    message_edit_history_visibility_policy = models.PositiveSmallIntegerField(
+        default=MessageEditHistoryVisibilityPolicyEnum.all.value,
+    )
+    MESSAGE_EDIT_HISTORY_VISIBILITY_POLICY_TYPES = list(MessageEditHistoryVisibilityPolicyEnum)
 
     # Defaults for new users
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
@@ -651,7 +661,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # Define the types of the various automatically managed properties
     property_types: dict[str, type | UnionType] = dict(
-        allow_edit_history=bool,
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
         default_code_block_language=str,
@@ -675,6 +684,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         message_content_allowed_in_email_notifications=bool,
         message_content_edit_limit_seconds=int | None,
         message_content_delete_limit_seconds=int | None,
+        message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum,
         move_messages_between_streams_limit_seconds=int | None,
         move_messages_within_stream_limit_seconds=int | None,
         message_retention_days=int,
