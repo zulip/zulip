@@ -127,8 +127,10 @@
 * [User cards](/help/user-cards)
 * [View someone's profile](/help/view-someones-profile)
 * [Direct messages](/help/direct-messages)
-* [User groups](/help/user-groups)
 * [Find administrators](/help/find-administrators)
+
+## Groups
+* [User groups](/help/user-groups)
 
 ## Channels
 * [Introduction to channels](/help/introduction-to-channels)
@@ -171,40 +173,34 @@
 
 # Zulip administration
 
-## Organization basics
+## Organization profile
 * [Organization type](/help/organization-type)
 * [Communities directory](/help/communities-directory)
+* [Linking to your organization](/help/linking-to-zulip)
+* [Change organization URL](/help/change-organization-url)
+* [Deactivate your organization](/help/deactivate-your-organization)
+
+## Import an organization
 * [Import from Mattermost](/help/import-from-mattermost)
 * [Import from Slack](/help/import-from-slack)
 * [Import from Rocket.Chat](/help/import-from-rocketchat)
+* [Export your organization](/help/export-your-organization)
+
+## Account creation and authentication
+* [Configure default new user settings](/help/configure-default-new-user-settings)
+* [Custom profile fields](/help/custom-profile-fields)
+* [Invite new users](/help/invite-new-users)
+* [Restrict account creation](/help/restrict-account-creation)
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [SAML authentication](/help/saml-authentication)
 * [SCIM provisioning](/help/scim)
-* [Export your organization](/help/export-your-organization)
-* [Change organization URL](/help/change-organization-url)
-* [Deactivate your organization](/help/deactivate-your-organization)
-* [Usage statistics](/help/analytics)
-* [Linking to your organization](/help/linking-to-zulip)
-* [GDPR compliance](/help/gdpr-compliance)
 
-## Users
-* [Manage permissions](/help/manage-permissions)
-* [Invite new users](/help/invite-new-users)
-* [Restrict account creation](/help/restrict-account-creation)
-* [User roles](/help/user-roles)
-* [Guest users](/help/guest-users)
+## User management
 * [Manage a user](/help/manage-a-user)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
-* [Custom profile fields](/help/custom-profile-fields)
-* [Configure default new user settings](/help/configure-default-new-user-settings)
-* [Configure organization language](/help/configure-organization-language)
-* [Manage user groups](/help/manage-user-groups)
 * [Change a user's name](/help/change-a-users-name)
 * [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)
 * [Manage a user's group membership](/help/manage-user-group-membership)
-* [Restrict name and email changes](/help/restrict-name-and-email-changes)
-* [Restrict profile picture changes](/help/restrict-profile-picture-changes)
-* [Restrict permissions of new members](/help/restrict-permissions-of-new-members)
 
 ## Channel management
 * [Create a channel](/help/create-a-channel)
@@ -225,14 +221,24 @@
 * [Change the privacy of a channel](/help/change-the-privacy-of-a-channel)
 * [Delete or archive a channel](/help/archive-a-channel)
 
+## Permissions management
+* [Manage permissions](/help/manage-permissions)
+* [Manage user groups](/help/manage-user-groups)
+* [User roles](/help/user-roles)
+* [Guest users](/help/guest-users)
+* [Restrict direct messages](/help/restrict-direct-messages)
+* [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
+* [Restrict message editing](/help/restrict-message-editing-and-deletion)
+* [Restrict moving messages](/help/restrict-moving-messages)
+* [Restrict name and email changes](/help/restrict-name-and-email-changes)
+* [Restrict profile picture changes](/help/restrict-profile-picture-changes)
+* [Restrict permissions of new members](/help/restrict-permissions-of-new-members)
+
 ## Organization settings
+* [Configure organization language](/help/configure-organization-language)
 * [Custom emoji](/help/custom-emoji)
 * [Add a custom linkifier](/help/add-a-custom-linkifier)
 * [Require topics in channel messages](/help/require-topics)
-* [Restrict direct messages](/help/restrict-direct-messages)
-* [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
-* [Restrict moving messages](/help/restrict-moving-messages)
-* [Restrict message editing](/help/restrict-message-editing-and-deletion)
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Image, video and website previews](/help/image-video-and-website-previews)
 * [Hide message content in emails](/help/hide-message-content-in-emails)
@@ -241,6 +247,7 @@
 * [Disable welcome emails](/help/disable-welcome-emails)
 * [Configure automated notices](/help/configure-automated-notices)
 * [Configure multi-language search](/help/configure-multi-language-search)
+* [Usage statistics](/help/analytics)
 
 ## Bots & integrations
 * [Bots overview](/help/bots-overview)
@@ -258,6 +265,7 @@
 * [View Zulip version](/help/view-zulip-version)
 * [Zulip Cloud billing](/help/zulip-cloud-billing)
 * [Self-hosted billing](/help/self-hosted-billing)
+* [GDPR compliance](/help/gdpr-compliance)
 * [Support the Zulip project](/help/support-zulip-project)
 * [Linking to the Zulip website](/help/linking-to-zulip-website)
 * [Contact support](/help/contact-support)
