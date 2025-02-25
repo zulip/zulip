@@ -131,6 +131,7 @@
 
 ## Groups
 * [User groups](/help/user-groups)
+* [View group members](/help/view-group-members)
 
 ## Channels
 * [Introduction to channels](/help/introduction-to-channels)

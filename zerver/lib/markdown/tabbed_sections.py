@@ -89,6 +89,7 @@ TAB_SECTION_LABELS = {
     "via-personal-settings": "Via personal settings",
     "via-channel-settings": "Via channel settings",
     "via-group-settings": "Via group settings",
+    "via-group-card": "Via group card",
     "via-compose-box": "Via compose box",
     "via-search-box": "Via search box",
     "default-subdomain": "Default subdomain",
