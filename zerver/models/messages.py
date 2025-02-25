@@ -163,7 +163,7 @@ class Message(AbstractMessage):
 
     # Name to be used for the empty topic with clients that have not
     # yet migrated to have the `empty_topic_name` client capability.
-    EMPTY_TOPIC_FALLBACK_NAME = "test general chat"
+    EMPTY_TOPIC_FALLBACK_NAME = "general chat"
 
     class Meta:
         indexes = [
@@ -237,6 +237,12 @@ class Message(AbstractMessage):
                 "realm_id",
                 F("id").desc(nulls_last=True),
                 name="zerver_message_realm_id",
+            ),
+            models.Index(
+                # Used by 0680_rename_general_chat_to_empty_string_topic
+                fields=["id"],
+                condition=Q(edit_history__isnull=False),
+                name="zerver_message_edit_history_id",
             ),
         ]
 
