@@ -20548,23 +20548,6 @@ paths:
                             },
                           ],
                       }
-        "400":
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "User not authorized for this query",
-                        "result": "error",
-                      }
-                    description: |
-                      An example JSON response for when the user is not authorized to use the
-                      `include_all` parameter (i.e. because they are not an organization
-                      administrator):
   /streams/{stream_id}:
     get:
       operationId: get-stream-by-id

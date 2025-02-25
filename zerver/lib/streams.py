@@ -566,6 +566,45 @@ def check_for_exactly_one_stream_arg(stream_id: int | None, stream: str | None) 
         raise IncompatibleParametersError(["stream_id", "stream"])
 
 
+def user_has_metadata_access(
+    user_profile: UserProfile,
+    stream: Stream,
+    user_group_membership_details: UserGroupMembershipDetails,
+    *,
+    is_subscribed: bool,
+) -> bool:
+    if stream.is_web_public:
+        return True
+
+    if is_subscribed:
+        return True
+
+    if user_profile.is_guest:
+        return False
+
+    if stream.is_public():
+        return True
+
+    if user_profile.is_realm_admin:
+        return True
+
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
+
+    if has_metadata_access_to_channel_via_groups(
+        user_profile,
+        user_group_membership_details.user_recursive_group_ids,
+        stream.can_administer_channel_group_id,
+        stream.can_add_subscribers_group_id,
+        stream.can_subscribe_group_id,
+    ):
+        return True
+
+    return False
+
+
 def user_has_content_access(
     user_profile: UserProfile,
     stream: Stream,
@@ -1110,6 +1149,36 @@ def can_administer_accessible_channel(channel: Stream, user_profile: UserProfile
     )
 
 
+def get_metadata_access_streams(
+    user_profile: UserProfile,
+    streams: Collection[Stream],
+    user_group_membership_details: UserGroupMembershipDetails,
+) -> list[Stream]:
+    if len(streams) == 0:
+        return []
+
+    recipient_ids = [stream.recipient_id for stream in streams]
+    subscribed_recipient_ids = set(
+        Subscription.objects.filter(
+            user_profile=user_profile, recipient_id__in=recipient_ids, active=True
+        ).values_list("recipient_id", flat=True)
+    )
+
+    metadata_access_streams: list[Stream] = []
+
+    for stream in streams:
+        is_subscribed = stream.recipient_id in subscribed_recipient_ids
+        if user_has_metadata_access(
+            user_profile,
+            stream,
+            user_group_membership_details,
+            is_subscribed=is_subscribed,
+        ):
+            metadata_access_streams.append(stream)
+
+    return metadata_access_streams
+
+
 @dataclass
 class StreamsCategorizedByPermissionsForAddingSubscribers:
     authorized_streams: list[Stream]
@@ -1455,9 +1524,6 @@ def get_streams_for_user(
     include_owner_subscribed: bool = False,
     include_can_access_content: bool = False,
 ) -> list[Stream]:
-    if include_all and not user_profile.is_realm_admin:
-        raise JsonableError(_("User not authorized for this query"))
-
     include_public = include_public and user_profile.can_access_public_streams()
 
     # Start out with all streams in the realm.
@@ -1469,9 +1535,18 @@ def get_streams_for_user(
         query = query.filter(deactivated=False)
 
     if include_all:
-        streams = query.only(
-            *Stream.API_FIELDS, "can_send_message_group", "can_send_message_group__named_user_group"
+        all_streams = list(
+            query.only(
+                *Stream.API_FIELDS,
+                "can_send_message_group",
+                "can_send_message_group__named_user_group",
+                # Both of these fields are need for get_content_access_streams.
+                "is_in_zephyr_realm",
+                "recipient_id",
+            )
         )
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+        return get_metadata_access_streams(user_profile, all_streams, user_group_membership_details)
     else:
         # We construct a query as the or (|) of the various sources
         # this user requested streams from.

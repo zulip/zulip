@@ -7062,21 +7062,100 @@ class GetStreamsTest(ZulipTestCase):
 
         self.assertEqual(actual, expected)
 
-    def test_all_active_streams_api(self) -> None:
+    def test_all_streams_api(self) -> None:
         url = "/api/v1/streams"
         data = {"include_all": "true"}
         backward_compatible_data = {"include_all_active": "true"}
 
-        # Check non-superuser can't use include_all
+        # Normal user should be able to make this request and get all
+        # the streams they have metadata access to.
         normal_user = self.example_user("cordelia")
-        result = self.api_get(normal_user, url, data)
-        self.assertEqual(result.status_code, 400)
+        realm = normal_user.realm
+        normal_user_group = self.create_or_update_anonymous_group_for_setting([normal_user], [])
 
-        # Realm admin users can see all active streams.
+        private_stream_1 = self.make_stream("private_stream_1", realm=realm, invite_only=True)
+        private_stream_2 = self.make_stream("private_stream_2", realm=realm, invite_only=True)
+        private_stream_3 = self.make_stream("private_stream_3", realm=realm, invite_only=True)
+        self.make_stream("private_stream_4", realm=realm, invite_only=True)
+        deactivated_public_stream = self.make_stream(
+            "deactivated_public_stream", realm=realm, invite_only=False
+        )
+        do_deactivate_stream(deactivated_public_stream, acting_user=normal_user)
+
+        self.subscribe(normal_user, private_stream_1.name)
+        do_change_stream_group_based_setting(
+            private_stream_2,
+            "can_add_subscribers_group",
+            normal_user_group,
+            acting_user=normal_user,
+        )
+        do_change_stream_group_based_setting(
+            private_stream_3,
+            "can_administer_channel_group",
+            normal_user_group,
+            acting_user=normal_user,
+        )
+
+        result_stream_names: list[str] = [
+            stream.name
+            for stream in Stream.objects.filter(realm=realm, invite_only=False, deactivated=False)
+        ]
+        result_stream_names.extend(
+            [private_stream_1.name, private_stream_2.name, private_stream_3.name]
+        )
+        with self.assert_database_query_count(8):
+            result = self.api_get(normal_user, url, data)
+        json = self.assert_json_success(result)
+        self.assertEqual(sorted(s["name"] for s in json["streams"]), sorted(result_stream_names))
+
+        # Normal user should be able to make this request and get all
+        # the streams they have metadata access to.
+        guest_user = self.example_user("polonius")
+        guest_user_group = self.create_or_update_anonymous_group_for_setting([guest_user], [])
+
+        self.subscribe(guest_user, private_stream_1.name)
+        self.subscribe(guest_user, "design")
+        do_change_stream_group_based_setting(
+            private_stream_2,
+            "can_add_subscribers_group",
+            guest_user_group,
+            acting_user=normal_user,
+        )
+        do_change_stream_group_based_setting(
+            get_stream("Rome", realm),
+            "can_add_subscribers_group",
+            guest_user_group,
+            acting_user=normal_user,
+        )
+        do_change_stream_group_based_setting(
+            private_stream_3,
+            "can_administer_channel_group",
+            guest_user_group,
+            acting_user=normal_user,
+        )
+        do_change_stream_group_based_setting(
+            get_stream("Denmark", realm),
+            "can_administer_channel_group",
+            guest_user_group,
+            acting_user=normal_user,
+        )
+
+        # Guest user should not gain metadata access to a channel via
+        # `can_add_subscribers_group` or `can_administer_channel_group`
+        # since `allow_everyone_group` if false for both of those groups.
+        result_stream_names = ["Verona", "private_stream_1", "design", "Rome"]
+        with self.assert_database_query_count(7):
+            result = self.api_get(guest_user, url, data)
+        json = self.assert_json_success(result)
+        self.assertEqual(sorted(s["name"] for s in json["streams"]), sorted(result_stream_names))
+
+        # Realm admin users can see all active streams if
+        # `exclude_archived` is not set.
         admin_user = self.example_user("iago")
         self.assertTrue(admin_user.is_realm_admin)
 
-        result = self.api_get(admin_user, url, data)
+        with self.assert_database_query_count(7):
+            result = self.api_get(admin_user, url, data)
         json = self.assert_json_success(result)
 
         backward_compatible_result = self.api_get(admin_user, url, backward_compatible_data)
@@ -7088,20 +7167,41 @@ class GetStreamsTest(ZulipTestCase):
         self.assertIsInstance(json["streams"], list)
 
         stream_names = {s["name"] for s in json["streams"]}
-
+        result_stream_names = [
+            stream.name for stream in Stream.objects.filter(realm=realm, deactivated=False)
+        ]
         self.assertEqual(
-            stream_names,
-            {
-                "Venice",
-                "Denmark",
-                "Scotland",
-                "Verona",
-                "Rome",
-                "core team",
-                "Zulip",
-                "sandbox",
-            },
+            sorted(stream_names),
+            sorted(result_stream_names),
         )
+
+        # Realm admin users can see all streams if `exclude_archived`
+        # is set to false.
+        data = {"include_all": "true", "exclude_archived": "false"}
+        with self.assert_database_query_count(7):
+            result = self.api_get(admin_user, url, data)
+        json = self.assert_json_success(result)
+        stream_names = {s["name"] for s in json["streams"]}
+        result_stream_names = [stream.name for stream in Stream.objects.filter(realm=realm)]
+        self.assertEqual(
+            sorted(stream_names),
+            sorted(result_stream_names),
+        )
+
+        # This case will not happen in practice, we are adding this
+        # test block to add coverage for the case where
+        # `get_metadata_access_streams` returns an empty list without
+        # query if an empty list of streams is passed to it.
+        all_active_streams = Stream.objects.filter(realm=realm, deactivated=False)
+        for stream in all_active_streams:
+            do_deactivate_stream(stream, acting_user=None)
+
+        data = {"include_all": "true"}
+        with self.assert_database_query_count(3):
+            result = self.api_get(admin_user, url, data)
+        json = self.assert_json_success(result)
+        stream_names = {s["name"] for s in json["streams"]}
+        self.assertEqual(stream_names, set())
 
     def test_public_streams_api(self) -> None:
         """
