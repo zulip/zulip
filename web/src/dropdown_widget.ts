@@ -107,6 +107,10 @@ export class DropdownWidget {
     dropdown_input_visible_selector: string;
     prefer_top_start_placement: boolean;
 
+    // TODO: This is only used in one widget, with no implementation
+    // here, so should be generalized or reworked.
+    item_clicked = false;
+
     constructor(options: DropdownWidgetOptions) {
         this.widget_name = options.widget_name;
         this.widget_selector = options.widget_selector ?? `#${CSS.escape(this.widget_name)}_widget`;
