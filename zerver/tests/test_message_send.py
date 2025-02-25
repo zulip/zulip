@@ -50,6 +50,7 @@ from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    dns_txt_answer,
     get_user_messages,
     make_client,
     message_stream_count,
@@ -1052,10 +1053,11 @@ class MessagePOSTTest(ZulipTestCase):
         }
 
         with mock.patch(
-            "DNS.dnslookup",
-            return_value=[
-                [b"starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash"]
-            ],
+            "dns.resolver.resolve",
+            return_value=dns_txt_answer(
+                "starnine.passwd.ns.athena.mit.edu.",
+                "starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash",
+            ),
         ):
             result1 = self.api_post(
                 self.mit_user("starnine"), "/api/v1/messages", msg, subdomain="zephyr"
@@ -1063,8 +1065,11 @@ class MessagePOSTTest(ZulipTestCase):
             self.assert_json_success(result1)
 
         with mock.patch(
-            "DNS.dnslookup",
-            return_value=[[b"espuser:*:95494:101:Esp Classroom,,,:/mit/espuser:/bin/athena/bash"]],
+            "dns.resolver.resolve",
+            return_value=dns_txt_answer(
+                ("espuser.passwd.ns.athena.mit.edu."),
+                "espuser:*:95494:101:Esp Classroom,,,:/mit/espuser:/bin/athena/bash",
+            ),
         ):
             result2 = self.api_post(
                 self.mit_user("espuser"), "/api/v1/messages", msg, subdomain="zephyr"
