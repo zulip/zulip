@@ -1947,9 +1947,6 @@ body:not(.hide-left-sidebar) {
 
 .header-main .column-right {
     display: flex;
-    /* Make the top navbar right column its full width,
-       less 7px of space on the left and right. */
-    width: calc(var(--right-sidebar-width) - 7px - 7px);
     justify-content: flex-end;
     align-items: center;
 
