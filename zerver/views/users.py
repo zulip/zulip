@@ -45,6 +45,7 @@ from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
     CannotDeactivateLastUserError,
+    EmailAlreadyInUseError,
     JsonableError,
     MissingAuthenticationError,
     OrganizationAdministratorRequiredError,
@@ -118,8 +119,9 @@ def deactivate_user_backend(
     user_profile: UserProfile,
     *,
     user_id: PathOnly[int],
-    deactivation_notification_comment: Annotated[str, StringConstraints(max_length=2000)]
-    | None = None,
+    deactivation_notification_comment: (
+        Annotated[str, StringConstraints(max_length=2000)] | None
+    ) = None,
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
@@ -603,7 +605,8 @@ def add_bot_backend(
         raise JsonableError(_("Bad name or username"))
     try:
         get_user_by_delivery_email(email, user_profile.realm)
-        raise JsonableError(_("Email '{email}' already in use").format(email=email))
+        raise EmailAlreadyInUseError
+
     except UserProfile.DoesNotExist:
         pass
 
