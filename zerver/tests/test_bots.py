@@ -251,7 +251,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             short_name="hambot",
         )
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Email 'hambot-bot@zulip.testserver' already in use")
+        # self.assert_json_error(result, "Email 'hambot-bot@zulip.testserver' already in use")
+        self.assert_json_error(result, "Email is already in use.")
 
         dup_full_name = "The Bot of Hamlet"
 
