@@ -917,11 +917,6 @@ div.focused-message-list.is-conversation-view .recipient_row {
     }
 }
 
-.bookend {
-    margin-top: 10px;
-    background-color: transparent;
-}
-
 .information-settings .user-profile-picture,
 .user_sidebar_entry.with_avatar .user-profile-picture,
 .inline_profile_picture {

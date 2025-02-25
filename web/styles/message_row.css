@@ -957,6 +957,11 @@ of the base style defined for a read-only textarea in dark mode. */
     }
 }
 
+.bookend {
+    margin-top: 10px;
+    background-color: transparent;
+}
+
 /* Only show links on the trailing bookend. */
 .bookend-channel-settings-link {
     display: none;
