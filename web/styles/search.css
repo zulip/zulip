@@ -232,7 +232,7 @@
         }
 
         &:not(.focused) {
-            max-height: var(--search-box-height);
+            height: var(--search-box-height);
             overflow: hidden;
 
             .search-input-and-pills {
