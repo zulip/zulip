@@ -373,6 +373,9 @@ class Filter:
     def get_terms(self, operator: str) -> list[NarrowTerm]:
         return [term for term in self.terms() if term.operator == operator]
 
+    def get_terms_with_message_id(self) -> list[NarrowTerm]:
+        return [term for term in self.terms() if term.operator in ["near", "with", "id"]]
+
     def update_term(self, existing_term: NarrowTerm, new_term: NarrowTerm) -> None:
         current_terms = self.terms()
         try:
@@ -458,3 +461,24 @@ class Filter:
         raise BadNarrowOperatorError(  # nocoverage
             "must be a comma-separated emails string or a list of user IDs"
         )
+
+    def generate_base_message_url(self) -> str:
+        is_channel_narrow = self._check_either_channel_or_dm_narrow()
+        if is_channel_narrow:
+            return self.generate_topic_url()
+        else:
+            return self.generate_dm_with_url()
+
+    def generate_message_url(self) -> str:
+        message_terms = self.get_terms_with_message_id()
+
+        if not len(message_terms) == 1:
+            raise InvalidOperatorCombinationError("Requires exactly one operand with message ID")
+
+        message_id = message_terms[0].operand
+        operator = message_terms[0].operator
+        if operator not in {"near", "with"}:
+            raise InvalidOperatorCombinationError("Must be either 'near' or 'with' operand")
+
+        base_url = self.generate_base_message_url()
+        return base_url + f"/{operator}/{message_id}"
