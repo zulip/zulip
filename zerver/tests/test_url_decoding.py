@@ -310,3 +310,74 @@ class NarrowTermFilterTest(ZulipTestCase):
             "Requires exactly one 'dm' operand",
         ):
             terms.generate_dm_with_url()
+
+    def test_generate_near_message_url(self) -> None:
+        # Channel message URL
+        channel_message_terms = [
+            NarrowTerm(negated=False, operator="channel", operand=13),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="near", operand=1),
+        ]
+        terms = Filter(channel_message_terms, self.realm)
+        channel_message_url = terms.generate_message_url()
+        self.assertEqual(channel_message_url, "#narrow/channel/13-Venice/topic/testing/near/1")
+
+        # ID operand
+        channel_message_terms = [
+            NarrowTerm(negated=False, operator="channel", operand=13),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="id", operand=1),
+        ]
+        terms = Filter(channel_message_terms, self.realm)
+        with self.assertRaisesRegex(
+            InvalidOperatorCombinationError,
+            "Must be either 'near' or 'with' operand",
+        ):
+            terms.generate_message_url()
+
+        # Multiple terms with message ID
+        channel_message_terms = [
+            NarrowTerm(negated=False, operator="channel", operand=13),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="id", operand=1),
+            NarrowTerm(negated=False, operator="near", operand=2),
+            NarrowTerm(negated=False, operator="with", operand=3),
+        ]
+        terms = Filter(channel_message_terms, self.realm)
+        with self.assertRaisesRegex(
+            InvalidOperatorCombinationError,
+            "Requires exactly one operand with message ID",
+        ):
+            terms.generate_message_url()
+
+    def test_generate_dm_url(self) -> None:
+        # This is extension of `test_generate_near_message_url`
+        hamlet = self.example_user("hamlet")
+        dm_terms = [
+            NarrowTerm(negated=False, operator="dm", operand=[hamlet.id]),
+            NarrowTerm(negated=False, operator="near", operand=1),
+        ]
+        terms = Filter(dm_terms, self.realm)
+        dm_url = terms.generate_message_url()
+        self.assertEqual(
+            dm_url, f"#narrow/dm/{hamlet.id}-{hash_util_encode(hamlet.full_name)}/near/1"
+        )
+
+        gdm_terms = [
+            NarrowTerm(negated=False, operator="dm", operand=[10, 11]),
+            NarrowTerm(negated=False, operator="near", operand=1),
+        ]
+        terms = Filter(gdm_terms, self.realm)
+        gdm_url = terms.generate_message_url()
+        self.assertEqual(gdm_url, "#narrow/dm/10,11-group/near/1")
+
+    def test_generate_with_message_url(self) -> None:
+        # This is extension of `test_generate_near_message_url`
+        channel_message_terms = [
+            NarrowTerm(negated=False, operator="channel", operand=13),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="with", operand=1),
+        ]
+        terms = Filter(channel_message_terms, self.realm)
+        channel_url = terms.generate_message_url()
+        self.assertEqual(channel_url, "#narrow/channel/13-Venice/topic/testing/with/1")
