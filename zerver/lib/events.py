@@ -429,31 +429,16 @@ def fetch_initial_state_data(
 
         state["server_can_summarize_topics"] = settings.TOPIC_SUMMARIZATION_MODEL is not None
 
-        moderation_request_channel = realm.moderation_request_channel
-        if moderation_request_channel:
-            state["realm_moderation_request_channel_id"] = moderation_request_channel.id
-        else:
-            state["realm_moderation_request_channel_id"] = -1
-
-        new_stream_announcements_stream = realm.new_stream_announcements_stream
-        if new_stream_announcements_stream:
-            state["realm_new_stream_announcements_stream_id"] = new_stream_announcements_stream.id
-        else:
-            state["realm_new_stream_announcements_stream_id"] = -1
-
-        signup_announcements_stream = realm.signup_announcements_stream
-        if signup_announcements_stream:
-            state["realm_signup_announcements_stream_id"] = signup_announcements_stream.id
-        else:
-            state["realm_signup_announcements_stream_id"] = -1
-
-        zulip_update_announcements_stream = realm.zulip_update_announcements_stream
-        if zulip_update_announcements_stream:
-            state["realm_zulip_update_announcements_stream_id"] = (
-                zulip_update_announcements_stream.id
-            )
-        else:
-            state["realm_zulip_update_announcements_stream_id"] = -1
+        for channel_field in [
+            "moderation_request_channel_id",
+            "new_stream_announcements_stream_id",
+            "signup_announcements_stream_id",
+            "zulip_update_announcements_stream_id",
+        ]:
+            if getattr(realm, channel_field) is None:
+                state["realm_" + channel_field] = -1
+            else:
+                state["realm_" + channel_field] = getattr(realm, channel_field)
 
         state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
