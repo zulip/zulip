@@ -956,3 +956,12 @@ of the base style defined for a read-only textarea in dark mode. */
         padding: 8px 6px 8px 4px;
     }
 }
+
+/* Only show links on the trailing bookend. */
+.bookend-channel-settings-link {
+    display: none;
+}
+
+.trailing_bookend .bookend-channel-settings-link {
+    display: inline;
+}
