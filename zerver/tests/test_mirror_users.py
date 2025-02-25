@@ -50,7 +50,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
     @mock.patch(
         "DNS.dnslookup",
-        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+        return_value=[[b"sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
     )
     def test_zephyr_mirror_new_recipient(self, ignored: object) -> None:
         """Test mirror dummy user creation for direct message recipients"""
@@ -80,7 +80,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
     @mock.patch(
         "DNS.dnslookup",
-        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+        return_value=[[b"sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
     )
     def test_zephyr_mirror_new_sender(self, ignored: object) -> None:
         """Test mirror dummy user creation for sender when sending to stream"""
