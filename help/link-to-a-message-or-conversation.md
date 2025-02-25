@@ -89,6 +89,10 @@ In addition, links to messages, topics, and channels are **permanent**:
   channel is [renamed](/help/rename-a-channel) or
   [archived](/help/archive-a-channel).
 
+When you copy a Zulip link and paste it anywhere that accepts HTML
+formatting (e.g., your email, GitHub, docs, etc.), the link will be
+formatted as it would be in Zulip (e.g., [#channel > topic](/)).
+
 ### Get a link to a specific message
 
 This copies to your clipboard a permanent link to the message, displayed in the
@@ -102,8 +106,7 @@ formatted to be easy to read:
 #**channel name>topic name@message ID**
 ```
 
-When you send your message, the link will appear as **#channel name>topic
-name@💬**.
+When you send your message, the link will appear as [#channel > topic @ 💬](/).
 
 {start_tabs}
 
