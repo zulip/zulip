@@ -3,7 +3,7 @@ import re
 from email.headerregistry import Address
 from typing import Any
 
-import DNS
+import dns.resolver
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, password_validation
@@ -66,14 +66,11 @@ def email_is_not_mit_mailing_list(email: str) -> None:
     if address.domain == "mit.edu":
         # Check whether the user exists and can get mail.
         try:
-            DNS.dnslookup(f"{address.username}.pobox.ns.athena.mit.edu", DNS.Type.TXT)
-        except DNS.Base.ServerError as e:
-            if e.rcode == DNS.Status.NXDOMAIN:
-                # This error is Markup only because 1. it needs to render HTML
-                # 2. It's not formatted with any user input.
-                raise ValidationError(MIT_VALIDATION_ERROR)
-            else:
-                raise AssertionError("Unexpected DNS error")
+            dns.resolver.resolve(f"{address.username}.pobox.ns.athena.mit.edu", "TXT")
+        except dns.resolver.NXDOMAIN:
+            # This error is Markup only because 1. it needs to render HTML
+            # 2. It's not formatted with any user input.
+            raise ValidationError(MIT_VALIDATION_ERROR)
 
 
 class OverridableValidationError(ValidationError):
