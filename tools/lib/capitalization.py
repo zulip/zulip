@@ -178,8 +178,6 @@ IGNORED_PHRASES = [
     r"hours",
     r"days",
     r"weeks",
-    # Used in "Who can subscribe others to this channel" label.
-    r"must be subscribed",
     # Used in "Who can subscribe to this channel" label.
     r"everyone except guests can subscribe to any public channel",
 ]
