@@ -2886,15 +2886,6 @@ wheels = [
 ]
 
 [[package]]
-name = "py3dns"
-version = "4.0.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/76/67/d7e745a5248bd7ecf2b76d3a1c8280255cbbdcb21174b171cf3c87740836/py3dns-4.0.2.tar.gz", hash = "sha256:98652e80ecec143c60f78f0e6b341631ca9a7560edd8dddfc864c02902618a39", size = 33982 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/43/1ff28f5302a0f423d4210cacc1f12fb416b6ba1f4c7107e020d264acb625/py3dns-4.0.2-py3-none-any.whl", hash = "sha256:36bffe62b59a72cfa09c03f0bd3473e0126f20ee4285d14c07415dbf6f5fd571", size = 29589 },
-]
-
-[[package]]
 name = "pyahocorasick"
 version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -5055,6 +5046,7 @@ dev = [
     { name = "django-stubs" },
     { name = "django-stubs-ext" },
     { name = "django-two-factor-auth", extra = ["call", "phonenumberslite", "sms"] },
+    { name = "dnspython" },
     { name = "fakeldap" },
     { name = "firebase-admin" },
     { name = "gitlint-core" },
@@ -5084,7 +5076,6 @@ dev = [
     { name = "polib" },
     { name = "prometheus-client" },
     { name = "psycopg2" },
-    { name = "py3dns" },
     { name = "pyahocorasick" },
     { name = "pyasyncore" },
     { name = "pydantic" },
@@ -5181,6 +5172,7 @@ prod = [
     { name = "django-scim2" },
     { name = "django-stubs-ext" },
     { name = "django-two-factor-auth", extra = ["call", "phonenumberslite", "sms"] },
+    { name = "dnspython" },
     { name = "firebase-admin" },
     { name = "google-re2" },
     { name = "greenlet" },
@@ -5202,7 +5194,6 @@ prod = [
     { name = "polib" },
     { name = "prometheus-client" },
     { name = "psycopg2" },
-    { name = "py3dns" },
     { name = "pyahocorasick" },
     { name = "pydantic" },
     { name = "pygments" },
@@ -5269,6 +5260,7 @@ dev = [
     { name = "django-stubs" },
     { name = "django-stubs-ext" },
     { name = "django-two-factor-auth", extras = ["call", "phonenumberslite", "sms"] },
+    { name = "dnspython" },
     { name = "fakeldap" },
     { name = "firebase-admin" },
     { name = "gitlint-core" },
@@ -5298,7 +5290,6 @@ dev = [
     { name = "polib" },
     { name = "prometheus-client" },
     { name = "psycopg2" },
-    { name = "py3dns" },
     { name = "pyahocorasick" },
     { name = "pyasyncore" },
     { name = "pydantic" },
@@ -5396,6 +5387,7 @@ prod = [
     { name = "django-scim2" },
     { name = "django-stubs-ext" },
     { name = "django-two-factor-auth", extras = ["call", "phonenumberslite", "sms"] },
+    { name = "dnspython" },
     { name = "firebase-admin" },
     { name = "google-re2" },
     { name = "greenlet" },
@@ -5417,7 +5409,6 @@ prod = [
     { name = "polib" },
     { name = "prometheus-client" },
     { name = "psycopg2" },
-    { name = "py3dns" },
     { name = "pyahocorasick" },
     { name = "pydantic" },
     { name = "pygments" },
