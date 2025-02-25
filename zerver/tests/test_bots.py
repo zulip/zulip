@@ -1083,7 +1083,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         assert test_bot.bot_owner is not None
         self.assertEqual(test_bot.bot_owner.id, self.example_user("iago").id)
 
-        self.assertFalse(
+        self.assertTrue(
             Subscription.objects.filter(
                 user_profile=test_bot, recipient__type_id=private_stream.id, active=True
             ).exists()
@@ -1359,7 +1359,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(bot_user.bot_owner.id, hamlet.id)
 
         assert private_stream.recipient_id is not None
-        self.assertFalse(
+        self.assertTrue(
             Subscription.objects.filter(
                 user_profile=bot_user, recipient_id=private_stream.recipient_id, active=True
             ).exists()

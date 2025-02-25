@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 359**
+
+* `PATCH /bots/{bot_user_id}`: Previously, changing the owner of a bot
+  unsubscribed the bot from any channels that the new owner was not
+  subscribed to. This behavior was removed in favor of documenting the
+  security trade-off associated with giving bots read access to
+  sensitive channel content.
+
 **Feature level 358**
 
 * `PATCH /realm`, [`GET /events`](/api/get-events): Changed `allow_edit_history`

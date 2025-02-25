@@ -1735,23 +1735,6 @@ def do_get_streams(
     return stream_dicts
 
 
-def get_subscribed_private_streams_for_user(user_profile: UserProfile) -> QuerySet[Stream]:
-    exists_expression = Exists(
-        Subscription.objects.filter(
-            user_profile=user_profile,
-            active=True,
-            is_user_active=True,
-            recipient_id=OuterRef("recipient_id"),
-        ),
-    )
-    subscribed_private_streams = (
-        Stream.objects.filter(realm=user_profile.realm, invite_only=True, deactivated=False)
-        .alias(subscribed=exists_expression)
-        .filter(subscribed=True)
-    )
-    return subscribed_private_streams
-
-
 def notify_stream_is_recently_active_update(stream: Stream, value: bool) -> None:
     event = dict(
         type="stream",

@@ -3116,29 +3116,6 @@ class NormalActionsTest(BaseAction):
         check_realm_bot_add("events[0]", events[0])
         check_realm_user_update("events[1]", events[1], "bot_owner_id")
 
-    def test_peer_remove_events_on_changing_bot_owner(self) -> None:
-        previous_owner = self.example_user("aaron")
-        self.user_profile = self.example_user("iago")
-        bot = self.create_test_bot("test2", previous_owner, full_name="Test2 Testerson")
-        private_stream = self.make_stream("private_stream", invite_only=True)
-        self.make_stream("public_stream")
-        self.subscribe(bot, "private_stream")
-        self.subscribe(self.example_user("aaron"), "private_stream")
-        self.subscribe(bot, "public_stream")
-        self.subscribe(self.example_user("aaron"), "public_stream")
-
-        self.make_stream("private_stream_test", invite_only=True)
-        self.subscribe(self.example_user("iago"), "private_stream_test")
-        self.subscribe(bot, "private_stream_test")
-
-        with self.verify_action(num_events=3) as events:
-            do_change_bot_owner(bot, self.user_profile, previous_owner)
-
-        check_realm_bot_update("events[0]", events[0], "owner_id")
-        check_realm_user_update("events[1]", events[1], "bot_owner_id")
-        check_subscription_peer_remove("events[2]", events[2])
-        self.assertEqual(events[2]["stream_ids"], [private_stream.id])
-
     def test_do_update_outgoing_webhook_service(self) -> None:
         self.user_profile = self.example_user("iago")
         bot = self.create_test_bot(
@@ -3320,13 +3297,13 @@ class NormalActionsTest(BaseAction):
         bot.refresh_from_db()
 
         self.user_profile = self.example_user("iago")
-        with self.verify_action(num_events=9) as events:
+        with self.verify_action(num_events=8) as events:
             do_reactivate_user(bot, acting_user=self.example_user("iago"))
         check_realm_bot_update("events[1]", events[1], "is_active")
         check_realm_bot_update("events[2]", events[2], "owner_id")
         check_realm_user_update("events[3]", events[3], "bot_owner_id")
-        check_subscription_peer_remove("events[4]", events[4])
-        check_stream_delete("events[5]", events[5])
+        check_subscription_peer_add("events[4]", events[4])
+        check_subscription_peer_add("events[5]", events[5])
 
         user_profile = self.example_user("cordelia")
         members_group = NamedUserGroup.objects.get(
