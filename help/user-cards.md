@@ -61,5 +61,6 @@ permission](/help/configure-email-visibility) to view it.
 
 ## Related articles
 
+* [Introduction to users](/help/introduction-to-users)
 * [View someone's profile](/help/view-someones-profile)
 * [Message actions](/help/message-actions)

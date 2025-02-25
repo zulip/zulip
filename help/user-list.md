@@ -77,7 +77,8 @@ user list styles. To avoid distraction, you can
 
 ## Related articles
 
-- [View someone's profile](/help/view-someones-profile)
-- [Status and availability](/help/status-and-availability)
-- [Searching for messages](/help/search-for-messages)
-- [Find administrators](/help/find-administrators)
+* [Introduction to users](/help/introduction-to-users)
+* [View someone's profile](/help/view-someones-profile)
+* [Status and availability](/help/status-and-availability)
+* [Searching for messages](/help/search-for-messages)
+* [Find administrators](/help/find-administrators)

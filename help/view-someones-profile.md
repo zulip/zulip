@@ -74,6 +74,7 @@ Additional tabs showing:
 
 ## Related articles
 
+* [Introduction to users](/help/introduction-to-users)
 * [Edit your profile](/help/edit-your-profile)
 * [Custom profile fields](/help/custom-profile-fields)
 * [User cards](/help/user-cards)

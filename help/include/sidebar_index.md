@@ -122,6 +122,7 @@
 * [Read receipts](/help/read-receipts)
 
 ## People
+* [Introduction to users](/help/introduction-to-users)
 * [User list](/help/user-list)
 * [Status and availability](/help/status-and-availability)
 * [User cards](/help/user-cards)
