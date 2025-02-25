@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 356  # Last bumped for adding `include_can_access_content` t
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (317, 0)  # bumped 2025-02-24 to migrate to uv
+PROVISION_VERSION = (318, 0)  # bumped 2025-02-25 to remove py3dns

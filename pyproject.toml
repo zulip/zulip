@@ -109,7 +109,7 @@ prod = [
   "zulip-bots",
 
   # Used for Hesiod lookups, etc.
-  "py3dns",
+  "dnspython",
 
   # Install Python Social Auth
   "social-auth-app-django",
@@ -385,7 +385,6 @@ module = [
     "django_cte.*",
     "django_otp.*",
     "django_scim.*",
-    "DNS.*",
     "fakeldap.*",
     "firebase_admin.*",
     "gitlint.*",
