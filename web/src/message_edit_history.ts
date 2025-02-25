@@ -17,6 +17,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rows from "./rows.ts";
+import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as spectators from "./spectators.ts";
 import {realm} from "./state_data.ts";
 import {get_recipient_bar_color} from "./stream_color.ts";
@@ -281,13 +282,19 @@ export function handle_keyboard_events(event_key: string): void {
 
 export function initialize(): void {
     $("body").on("mouseenter", ".message_edit_notice", (e) => {
-        if (realm.realm_allow_edit_history) {
+        if (
+            realm.realm_message_edit_history_visibility_policy !==
+            message_edit_history_visibility_policy_values.never.code
+        ) {
             $(e.currentTarget).addClass("message_edit_notice_hover");
         }
     });
 
     $("body").on("mouseleave", ".message_edit_notice", (e) => {
-        if (realm.realm_allow_edit_history) {
+        if (
+            realm.realm_message_edit_history_visibility_policy !==
+            message_edit_history_visibility_policy_values.never.code
+        ) {
             $(e.currentTarget).removeClass("message_edit_notice_hover");
         }
     });
@@ -308,7 +315,10 @@ export function initialize(): void {
             return;
         }
 
-        if (realm.realm_allow_edit_history) {
+        if (
+            realm.realm_message_edit_history_visibility_policy !==
+            message_edit_history_visibility_policy_values.never.code
+        ) {
             fetch_and_render_message_history(message);
             $("#message-history-overlay .exit-sign").trigger("focus");
         }

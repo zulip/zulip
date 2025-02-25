@@ -275,7 +275,6 @@ export const realm_schema = z.object({
     password_min_guesses: z.number(),
     password_min_length: z.number(),
     password_max_length: z.number(),
-    realm_allow_edit_history: z.boolean(),
     realm_allow_message_editing: z.boolean(),
     realm_authentication_methods: z.record(
         z.object({
@@ -375,6 +374,7 @@ export const realm_schema = z.object({
     realm_message_content_allowed_in_email_notifications: z.boolean(),
     realm_message_content_edit_limit_seconds: z.number().nullable(),
     realm_message_content_delete_limit_seconds: z.number().nullable(),
+    realm_message_edit_history_visibility_policy: z.enum(["all", "moves", "none"]),
     realm_message_retention_days: z.number(),
     realm_move_messages_between_streams_limit_seconds: z.number().nullable(),
     realm_move_messages_within_stream_limit_seconds: z.number().nullable(),

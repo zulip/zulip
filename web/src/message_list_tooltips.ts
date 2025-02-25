@@ -13,6 +13,7 @@ import type {Message} from "./message_store.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as reactions from "./reactions.ts";
 import * as rows from "./rows.ts";
+import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import {
@@ -391,7 +392,9 @@ export function initialize(): void {
                     render_message_edit_notice_tooltip({
                         moved: message_container.moved,
                         last_edit_timestr,
-                        realm_allow_edit_history: realm.realm_allow_edit_history,
+                        realm_message_edit_history_is_visible:
+                            realm.realm_message_edit_history_visibility_policy !==
+                            message_edit_history_visibility_policy_values.never.code,
                     }),
                 ),
             );

@@ -260,6 +260,21 @@ export const common_policy_values = {
     },
 };
 
+export const message_edit_history_visibility_policy_values = {
+    always: {
+        code: "all",
+        description: $t({defaultMessage: "Show edits and moves"}),
+    },
+    moves_only: {
+        code: "moves",
+        description: $t({defaultMessage: "Move history only"}),
+    },
+    never: {
+        code: "none",
+        description: $t({defaultMessage: "Don't allow"}),
+    },
+};
+
 export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),
