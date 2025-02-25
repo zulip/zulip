@@ -5,7 +5,8 @@ using [user groups](/help/user-groups), which offer much more flexible
 configuration than the older [roles](/api/roles-and-permissions) system.
 
 !!! warn ""
-    Note that many group-valued settings are configured to require
+
+    **Note**: Many group-valued settings are configured to require
     a single system group for their value via
     `server_supported_permission_settings`, pending web app UI
     changes to fully support group-setting values.
@@ -20,19 +21,19 @@ value**, which can take two forms:
 
 - An integer user group ID, which can be either a named user group
   visible in the UI or a [role-based system group](#system-groups).
-- An object with fields `direct_member_ids` containing a list of
-  integer user IDs and `direct_subgroup_ids` containing a list of
+- An object with fields `direct_member_ids`, containing a list of
+  integer user IDs, and `direct_subgroup_ids`, containing a list of
   integer group IDs. The setting's value is the union of the
   identified collection of users and groups.
 
-Group-setting values in the object form function very much like a
-formal user group object, without requiring the naming and UI clutter
-overhead involved with creating a visible user group just to store the
-value of a single setting.
+Group-setting values in the object form can be thought of as an
+anonymous group. They function very much like a named user group
+object, and remove the naming and UI overhead involved in creating
+a visible user group just to store the value of a single setting.
 
-The server will canonicalize an object with empty `direct_member_ids`
-and with `direct_subgroup_ids` containing just the given group ID to
-the integer format.
+The server will canonicalize an object with an empty `direct_member_ids`
+list and a `direct_subgroup_ids` list that contains just a single group
+ID to the integer format.
 
 ## System groups
 
