@@ -588,6 +588,9 @@ ul.popover-group-menu-member-list {
             text-overflow: ellipsis;
             overflow: hidden;
             margin-bottom: 0;
+            /* Override default modal input width, since that overflows.
+               This is 185px (the default "width: unset" width) at 14px/em */
+            width: 13.2142em;
         }
 
         .group-search:placeholder-shown + #clear_groups_search,
