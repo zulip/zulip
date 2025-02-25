@@ -23,11 +23,13 @@ import type {Message} from "./message_store.ts";
 import * as message_store from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
+import * as narrow_state from "./narrow_state.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import type {MessageDetails} from "./server_event_types.ts";
 import type {NarrowTerm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 import * as unread from "./unread.ts";
@@ -337,6 +339,13 @@ export function mark_as_unread_from_here(message_id: number): void {
     const current_filter = message_lists.current.data.filter;
     const narrow = current_filter.get_stringified_narrow_for_server_query();
     message_lists.current.prevent_reading();
+
+    // We want to prevent messages in archived streams from
+    // being marked as unread using shortcut keys.
+    const stream_id = narrow_state.stream_id();
+    if (stream_id && stream_data.is_stream_archived(stream_id)) {
+        return;
+    }
 
     const has_found_newest = message_lists.current.data.fetch_status.has_found_newest();
     const may_contain_multiple_conversations = current_filter.may_contain_multiple_conversations();
