@@ -172,6 +172,19 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
 
     send_stream_deletion_event(stream.realm, affected_user_ids, [stream], for_archiving=True)
 
+    # We want to mark all messages in the to-be-deactivated stream as
+    # read for all users; otherwise they will pollute queries like
+    # "Get the user's first unread message".  Since this can be an
+    # expensive operation, we do it via the deferred_work queue
+    # processor.
+    for user_id in affected_user_ids:
+        event = {
+            "type": "mark_stream_messages_as_read",
+            "user_profile_id": user_id,
+            "stream_recipient_ids": [stream.recipient_id],
+        }
+        queue_event_on_commit("deferred_work", event)
+
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=stream.realm,
