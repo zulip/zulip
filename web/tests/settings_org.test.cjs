@@ -21,6 +21,7 @@ set_global("document", "document-stub");
 
 const settings_account = zrequire("settings_account");
 const settings_components = zrequire("settings_components");
+const settings_config = zrequire("settings_config");
 const settings_org = zrequire("settings_org");
 const {set_current_user, set_realm} = zrequire("state_data");
 const pygments_data = zrequire("pygments_data");
@@ -349,12 +350,18 @@ function test_discard_changes_button({override}, discard_changes) {
         stopPropagation: noop,
     };
 
-    override(realm, "realm_allow_edit_history", true);
+    override(
+        realm,
+        "realm_message_edit_history_visibility_policy",
+        settings_config.message_edit_history_visibility_policy_values.always.code,
+    );
     override(realm, "realm_allow_message_editing", true);
     override(realm, "realm_message_content_edit_limit_seconds", 3600);
     override(realm, "realm_message_content_delete_limit_seconds", 120);
 
-    const $allow_edit_history = $("#id_realm_allow_edit_history").prop("checked", false);
+    const $message_edit_history_visibility_policy = $(
+        "#id_realm_message_edit_history_visibility_policy",
+    ).val(settings_config.message_edit_history_visibility_policy_values.never.code);
     const $msg_edit_limit_setting = $("#id_realm_message_content_edit_limit_seconds").val(
         "custom_period",
     );
@@ -368,7 +375,10 @@ function test_discard_changes_button({override}, discard_changes) {
         "#id_realm_message_content_delete_limit_minutes",
     ).val(130);
 
-    $allow_edit_history.attr("id", "id_realm_allow_edit_history");
+    $message_edit_history_visibility_policy.attr(
+        "id",
+        "id_realm_message_edit_history_visibility_policy",
+    );
     $msg_edit_limit_setting.attr("id", "id_realm_message_content_edit_limit_seconds");
     $msg_delete_limit_setting.attr("id", "id_realm_message_content_delete_limit_seconds");
     $message_content_edit_limit_minutes.attr("id", "id_realm_message_content_edit_limit_minutes");
@@ -379,7 +389,7 @@ function test_discard_changes_button({override}, discard_changes) {
 
     const $discard_button_parent = $(".settings-subsection-parent");
     $discard_button_parent.set_find_results(".prop-element", [
-        $allow_edit_history,
+        $message_edit_history_visibility_policy,
         $msg_edit_limit_setting,
         $msg_delete_limit_setting,
     ]);
@@ -394,7 +404,10 @@ function test_discard_changes_button({override}, discard_changes) {
 
     discard_changes.call({to_$: () => $(".save-discard-widget-button.discard-button")}, ev);
 
-    assert.equal($allow_edit_history.prop("checked"), true);
+    assert.equal(
+        $message_edit_history_visibility_policy.val(),
+        settings_config.message_edit_history_visibility_policy_values.always.code,
+    );
     assert.equal($msg_edit_limit_setting.val(), "3600");
     assert.equal($message_content_edit_limit_minutes.val(), "60");
     assert.equal($msg_delete_limit_setting.val(), "120");

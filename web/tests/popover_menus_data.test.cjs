@@ -16,6 +16,7 @@ const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const {MessageListData} = zrequire("message_list_data");
 const {set_current_user, set_realm} = zrequire("state_data");
+const settings_config = zrequire("settings_config");
 
 const noop = function () {};
 
@@ -138,7 +139,11 @@ function set_page_params_no_edit_restrictions({override}) {
     page_params.is_spectator = false;
     override(realm, "realm_allow_message_editing", true);
     override(realm, "realm_message_content_edit_limit_seconds", null);
-    override(realm, "realm_allow_edit_history", true);
+    override(
+        realm,
+        "realm_message_edit_history_visibility_policy",
+        settings_config.message_edit_history_visibility_policy_values.always.code,
+    );
     override(realm, "realm_message_content_delete_limit_seconds", null);
     override(realm, "realm_enable_read_receipts", true);
     override(realm, "realm_move_messages_within_stream_limit_seconds", null);

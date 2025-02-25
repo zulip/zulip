@@ -149,11 +149,12 @@
                   is_checked=realm_allow_message_editing
                   label=admin_settings_label.realm_allow_message_editing}}
 
-                {{> settings_checkbox
-                  setting_name="realm_allow_edit_history"
-                  prefix="id_"
-                  is_checked=realm_allow_edit_history
-                  label=admin_settings_label.realm_allow_edit_history}}
+                <div class="input-group">
+                    <label for="id_realm_message_edit_history_visibility_policy" class="settings-field-label">{{t "Allow viewing the history of a message?"}}</label>
+                    <select name="realm_message_edit_history_visibility_policy" id="id_realm_message_edit_history_visibility_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
+                        {{> dropdown_options_widget option_values=message_edit_history_visibility_policy_values}}
+                    </select>
+                </div>
 
                 <div class="input-group time-limit-setting">
                     <label for="id_realm_message_content_edit_limit_seconds" class="settings-field-label">{{t "Time limit for editing messages" }}</label>

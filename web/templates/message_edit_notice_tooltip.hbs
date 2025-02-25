@@ -1,5 +1,5 @@
 <div>
-    {{#if realm_allow_edit_history}}
+    {{#if realm_message_edit_history_is_visible}}
     <div>{{t "View edit history"}}</div>
     {{/if}}
     <div class="tooltip-inner-content italic">
@@ -10,6 +10,6 @@
         {{/if}}
     </div>
 </div>
-{{#if realm_allow_edit_history}}
+{{#if realm_message_edit_history_is_visible}}
 {{tooltip_hotkey_hints "Shift" "H"}}
 {{/if}}
