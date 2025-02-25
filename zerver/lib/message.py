@@ -38,7 +38,7 @@ from zerver.lib.topic import (
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
 )
-from zerver.lib.types import UserDisplayRecipient
+from zerver.lib.types import FormattedEditHistoryEvent, UserDisplayRecipient
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
     get_recursive_membership_groups,
@@ -60,6 +60,7 @@ from zerver.models import (
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
 from zerver.models.messages import get_usermessage_by_message_id
+from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
 from zerver.models.users import is_cross_realm_bot_email
 
 
@@ -218,6 +219,29 @@ def truncate_topic(topic_name: str) -> str:
     return truncate_content(topic_name, MAX_TOPIC_NAME_LENGTH, "...")
 
 
+def visible_edit_history_for_message(
+    message_edit_history_visibility_policy: int,
+    edit_history: list[FormattedEditHistoryEvent],
+) -> list[FormattedEditHistoryEvent]:
+    # Makes sure that we send message edit history to clients
+    # in realms as per `message_edit_history_visibility_policy`.
+    if message_edit_history_visibility_policy == MessageEditHistoryVisibilityPolicyEnum.all.value:
+        return edit_history
+
+    visible_edit_history: list[FormattedEditHistoryEvent] = []
+    for edit_history_event in edit_history:
+        if "prev_content" in edit_history_event:
+            if "prev_topic" in edit_history_event:
+                del edit_history_event["prev_content"]
+                del edit_history_event["prev_rendered_content"]
+                del edit_history_event["content_html_diff"]
+            else:
+                continue
+        visible_edit_history.append(edit_history_event)
+
+    return visible_edit_history
+
+
 def messages_for_ids(
     message_ids: list[int],
     user_message_flags: dict[int, list[str]],
@@ -225,7 +249,7 @@ def messages_for_ids(
     apply_markdown: bool,
     client_gravatar: bool,
     allow_empty_topic_name: bool,
-    allow_edit_history: bool,
+    message_edit_history_visibility_policy: int,
     user_profile: UserProfile | None,
     realm: Realm,
 ) -> list[dict[str, Any]]:
@@ -259,10 +283,17 @@ def messages_for_ids(
         msg_dict.update(flags=flags)
         if message_id in search_fields:
             msg_dict.update(search_fields[message_id])
-        # Make sure that we never send message edit history to clients
-        # in realms with allow_edit_history disabled.
-        if "edit_history" in msg_dict and not allow_edit_history:
-            del msg_dict["edit_history"]
+        if "edit_history" in msg_dict:
+            if (
+                message_edit_history_visibility_policy
+                == MessageEditHistoryVisibilityPolicyEnum.none.value
+            ):
+                del msg_dict["edit_history"]
+            else:
+                visible_edit_history = visible_edit_history_for_message(
+                    message_edit_history_visibility_policy, msg_dict["edit_history"]
+                )
+                msg_dict["edit_history"] = visible_edit_history
         msg_dict["can_access_sender"] = msg_dict["sender_id"] not in inaccessible_sender_ids
         message_list.append(msg_dict)
 

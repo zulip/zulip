@@ -9,6 +9,7 @@ import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import timedelta
+from enum import Enum
 from io import StringIO
 from typing import Any
 from unittest import mock
@@ -3846,6 +3847,7 @@ class RealmPropertyActionTest(BaseAction):
             default_language=["es", "de", "en"],
             description=["Realm description", "New description"],
             digest_weekday=[0, 1, 2],
+            message_edit_history_visibility_policy=Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_POLICY_TYPES,
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[1000, 2000],
@@ -3875,7 +3877,9 @@ class RealmPropertyActionTest(BaseAction):
 
         do_set_realm_property(self.user_profile.realm, name, vals[0], acting_user=self.user_profile)
 
-        if vals[0] != original_val:
+        if vals[0] != original_val and not (
+            isinstance(vals[0], Enum) and vals[0].value == original_val
+        ):
             self.assertEqual(
                 RealmAuditLog.objects.filter(
                     realm=self.user_profile.realm,
@@ -3885,11 +3889,18 @@ class RealmPropertyActionTest(BaseAction):
                 ).count(),
                 1,
             )
-        for count, val in enumerate(vals[1:]):
+        for count, raw_value in enumerate(vals[1:]):
             now = timezone_now()
             state_change_expected = True
-            old_value = vals[count]
             num_events = 1
+            raw_old_value = vals[count]
+
+            if isinstance(raw_value, Enum):
+                value = raw_value.value
+                old_value = raw_old_value.value
+            else:
+                value = raw_value
+                old_value = raw_old_value
 
             with self.verify_action(
                 state_change_expected=state_change_expected, num_events=num_events
@@ -3897,7 +3908,7 @@ class RealmPropertyActionTest(BaseAction):
                 do_set_realm_property(
                     self.user_profile.realm,
                     name,
-                    val,
+                    raw_value,
                     acting_user=self.user_profile,
                 )
 
@@ -3909,7 +3920,7 @@ class RealmPropertyActionTest(BaseAction):
                     acting_user=self.user_profile,
                     extra_data={
                         RealmAuditLog.OLD_VALUE: old_value,
-                        RealmAuditLog.NEW_VALUE: val,
+                        RealmAuditLog.NEW_VALUE: value,
                         "property": name,
                     },
                 ).count(),

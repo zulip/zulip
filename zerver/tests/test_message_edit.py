@@ -23,7 +23,7 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import Attachment, Message, NamedUserGroup, Realm, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.messages import UserMessage
-from zerver.models.realms import get_realm
+from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum, get_realm
 from zerver.models.streams import get_stream
 
 
@@ -50,7 +50,7 @@ class EditMessageTest(ZulipTestCase):
                 apply_markdown=False,
                 client_gravatar=False,
                 allow_empty_topic_name=True,
-                allow_edit_history=True,
+                message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.all.value,
                 user_profile=None,
                 realm=msg.realm,
             )
@@ -513,7 +513,12 @@ class EditMessageTest(ZulipTestCase):
 
     def test_edit_message_history_disabled(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_set_realm_property(user_profile.realm, "allow_edit_history", False, acting_user=None)
+        do_set_realm_property(
+            user_profile.realm,
+            "message_edit_history_visibility_policy",
+            MessageEditHistoryVisibilityPolicyEnum.none,
+            acting_user=None,
+        )
         self.login("hamlet")
 
         # Single-line edit
@@ -944,6 +949,151 @@ class EditMessageTest(ZulipTestCase):
 
         self.assertEqual(message_history[6]["content"], "content 1")
         self.assertEqual(message_history[6]["topic"], "topic 1")
+
+    def test_visible_edit_history_for_message(self) -> None:
+        user = self.example_user("hamlet")
+        self.login("hamlet")
+        stream_1 = self.make_stream("stream 1")
+        stream_2 = self.make_stream("stream 2")
+        stream_3 = self.make_stream("stream 3")
+        self.subscribe(user, stream_1.name)
+        self.subscribe(user, stream_2.name)
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"),
+            "stream 1",
+            topic_name="topic 1",
+            content="content 1",
+        )
+
+        result_1 = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "content 2",
+            },
+        )
+        self.assert_json_success(result_1)
+
+        result_2 = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "topic": "topic 2",
+            },
+        )
+        self.assert_json_success(result_2)
+
+        result_3 = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "stream_id": stream_2.id,
+            },
+        )
+        self.assert_json_success(result_3)
+
+        result_4 = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "topic": "topic 3",
+                "content": "content 3",
+            },
+        )
+        self.assert_json_success(result_4)
+
+        result_5 = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "topic": "topic 4",
+                "stream_id": stream_3.id,
+            },
+        )
+        self.assert_json_success(result_5)
+
+        do_set_realm_property(
+            user.realm,
+            "message_edit_history_visibility_policy",
+            MessageEditHistoryVisibilityPolicyEnum.none,
+            acting_user=None,
+        )
+        result_message_edit_history_none = self.client_get(f"/json/messages/{msg_id}/history")
+        self.assert_json_error(
+            result_message_edit_history_none,
+            "Message edit history is disabled in this organization",
+        )
+
+        do_set_realm_property(
+            user.realm,
+            "message_edit_history_visibility_policy",
+            MessageEditHistoryVisibilityPolicyEnum.moves,
+            acting_user=None,
+        )
+        result_message_edit_history_moves_only = self.client_get(f"/json/messages/{msg_id}/history")
+        json_response = orjson.loads(result_message_edit_history_moves_only.content)
+        message_edit_history_moves_only = json_response["message_history"]
+
+        for edit_history_entry in message_edit_history_moves_only:
+            self.assertNotIn("prev_content", edit_history_entry)
+            self.assertNotIn("prev_rendered_content", edit_history_entry)
+            self.assertNotIn("content_html_diff", edit_history_entry)
+
+        self.assert_length(message_edit_history_moves_only, 5)
+        self.assertEqual(message_edit_history_moves_only[0]["content"], "content 1")
+        self.assertEqual(message_edit_history_moves_only[0]["topic"], "topic 1")
+
+        self.assertEqual(message_edit_history_moves_only[1]["content"], "content 2")
+        self.assertEqual(message_edit_history_moves_only[1]["topic"], "topic 2")
+        self.assertEqual(message_edit_history_moves_only[1]["prev_topic"], "topic 1")
+
+        self.assertEqual(message_edit_history_moves_only[2]["content"], "content 2")
+        self.assertEqual(message_edit_history_moves_only[2]["topic"], "topic 2")
+        self.assertEqual(message_edit_history_moves_only[2]["stream"], stream_2.id)
+        self.assertEqual(message_edit_history_moves_only[2]["prev_stream"], stream_1.id)
+
+        self.assertEqual(message_edit_history_moves_only[3]["content"], "content 3")
+        self.assertEqual(message_edit_history_moves_only[3]["topic"], "topic 3")
+        self.assertEqual(message_edit_history_moves_only[3]["prev_topic"], "topic 2")
+
+        self.assertEqual(message_edit_history_moves_only[4]["content"], "content 3")
+        self.assertEqual(message_edit_history_moves_only[4]["topic"], "topic 4")
+        self.assertEqual(message_edit_history_moves_only[4]["prev_topic"], "topic 3")
+        self.assertEqual(message_edit_history_moves_only[4]["stream"], stream_3.id)
+        self.assertEqual(message_edit_history_moves_only[4]["prev_stream"], stream_2.id)
+
+        do_set_realm_property(
+            user.realm,
+            "message_edit_history_visibility_policy",
+            MessageEditHistoryVisibilityPolicyEnum.all,
+            acting_user=None,
+        )
+        result_message_edit_history_all = self.client_get(f"/json/messages/{msg_id}/history")
+        json_response = orjson.loads(result_message_edit_history_all.content)
+        message_edit_history_all = json_response["message_history"]
+
+        self.assert_length(message_edit_history_all, 6)
+        self.assertEqual(message_edit_history_all[0]["content"], "content 1")
+        self.assertEqual(message_edit_history_all[0]["topic"], "topic 1")
+
+        self.assertEqual(message_edit_history_all[1]["content"], "content 2")
+        self.assertEqual(message_edit_history_all[1]["prev_content"], "content 1")
+        self.assertEqual(message_edit_history_all[1]["topic"], "topic 1")
+
+        self.assertEqual(message_edit_history_all[2]["content"], "content 2")
+        self.assertEqual(message_edit_history_all[2]["topic"], "topic 2")
+        self.assertEqual(message_edit_history_all[2]["prev_topic"], "topic 1")
+
+        self.assertEqual(message_edit_history_all[3]["content"], "content 2")
+        self.assertEqual(message_edit_history_all[3]["topic"], "topic 2")
+        self.assertEqual(message_edit_history_all[3]["stream"], stream_2.id)
+        self.assertEqual(message_edit_history_all[3]["prev_stream"], stream_1.id)
+
+        self.assertEqual(message_edit_history_all[4]["content"], "content 3")
+        self.assertEqual(message_edit_history_all[4]["prev_content"], "content 2")
+        self.assertEqual(message_edit_history_all[4]["topic"], "topic 3")
+        self.assertEqual(message_edit_history_all[4]["prev_topic"], "topic 2")
+
+        self.assertEqual(message_edit_history_all[5]["content"], "content 3")
+        self.assertEqual(message_edit_history_all[5]["topic"], "topic 4")
+        self.assertEqual(message_edit_history_all[5]["prev_topic"], "topic 3")
+        self.assertEqual(message_edit_history_all[5]["stream"], stream_3.id)
+        self.assertEqual(message_edit_history_all[5]["prev_stream"], stream_2.id)
 
     def test_edit_message_content_limit(self) -> None:
         def set_message_editing_params(

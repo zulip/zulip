@@ -458,7 +458,7 @@ def update_message_content(
         members = mention_data.get_group_members(group_id)
         rendering_result.mentions_user_ids.update(members)
 
-    # One could imagine checking realm.allow_edit_history here and
+    # One could imagine checking realm.message_edit_history_visibility_policy here and
     # modifying the events based on that setting, but doing so
     # doesn't really make sense.  We need to send the edit event
     # to clients regardless, and a client already had access to

@@ -5,7 +5,9 @@
 # by a test in test_events.py with a schema checker here.
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
+import inspect
 from collections.abc import Callable
+from enum import Enum
 from pprint import PrettyPrinter
 from typing import cast
 
@@ -426,7 +428,10 @@ def check_realm_update(
         return
 
     property_type = Realm.property_types[prop]
-    assert isinstance(value, property_type)
+    if inspect.isclass(property_type) and issubclass(property_type, Enum):
+        assert isinstance(value, str)
+    else:
+        assert isinstance(value, property_type)
 
 
 def check_realm_default_update(
