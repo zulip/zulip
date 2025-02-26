@@ -5,6 +5,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as clipboard_handler from "./clipboard_handler.ts";
+import {electron_bridge} from "./electron_bridge.ts";
 import * as message_lists from "./message_lists.ts";
 import * as rows from "./rows.ts";
 import * as util from "./util.ts";
@@ -149,7 +150,8 @@ async function copy_selection_to_clipboard(selection: Selection): Promise<void> 
     const plain_text = selection.toString().trim();
 
     // Reference: https://stackoverflow.com/a/77305170/21940401
-    if (typeof ClipboardItem !== "undefined") {
+    // The ClipboardItem API is apparently broken in the electron app.
+    if (typeof ClipboardItem !== "undefined" && electron_bridge !== undefined) {
         // Shiny new Clipboard API, not fully supported in Firefox.
         // https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API#browser_compatibility
         const html = new Blob([html_content], {type: "text/html"});
