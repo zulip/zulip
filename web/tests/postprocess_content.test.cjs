@@ -151,4 +151,18 @@ run_test("message_inline_animated_image_still", ({override}) => {
             "</a>" +
             "</div>",
     );
+
+    // Broken/invalid source URLs in image previews should be
+    // dropped. Inspired by a real message found in chat.zulip.org
+    // history.
+    assert.equal(
+        postprocess_content(
+            '<div class="message_inline_image">' +
+                '<a href="https://zulip.%20[Click%20to%20join%20video%20call](https://meeting.example.com/abcd1234)%20example.com/user_uploads/2/ab/abcd1234/image.png" target="_blank" title="image.png">' +
+                '<img src="https://zulip.%20[Click%20to%20join%20video%20call](https://meeting.example.com/abcd1234)%20example.com/user_uploads/2/ab/abcd1234/image.png">' +
+                "</a>" +
+                "</div>",
+        ),
+        "",
+    );
 });
