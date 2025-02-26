@@ -260,8 +260,6 @@
        that rely on this value, but not necessarily as
        applied to `width:` or `max-width:`. */
     --left-sidebar-width: min(33.3333%, var(--left-sidebar-max-width));
-    /* 40px (toggle icon) + 5px (gap) + 20px logo + 10px right margin */
-    --left-sidebar-width-with-realm-icon-logo: 75px;
     /* 50px per icon * 4 icons + 3px space (legacy) = 203px at 20px/1em */
     --right-column-collapsed-sidebar-width: 10.15em;
     /* 288px at 14px/1em */
