@@ -1,6 +1,5 @@
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip.ts";
 import {Filter} from "./filter.ts";
 import * as message_lists from "./message_lists.ts";
 import {page_params} from "./page_params.ts";
@@ -217,17 +216,13 @@ export function pm_emails_string(
     return operands[0];
 }
 
+// We expect get_first_unread_info and therefore _possible_unread_message_ids
+// to always be called with a filter from a message list.
 export let get_first_unread_info = (
-    current_filter: Filter | undefined = filter(),
+    message_list_filter: Filter,
 ): {flavor: "cannot_compute" | "not_found"} | {flavor: "found"; msg_id: number} => {
     const cannot_compute_response: {flavor: "cannot_compute"} = {flavor: "cannot_compute"};
-    if (current_filter === undefined) {
-        // we don't yet support the all-messages view
-        blueslip.error("unexpected call to get_first_unread_info");
-        return cannot_compute_response;
-    }
-
-    if (!current_filter.can_apply_locally()) {
+    if (!message_list_filter.can_apply_locally()) {
         // For things like search queries, where the server has info
         // that the client isn't privy to, we need to wait for the
         // server to give us a definitive list of messages before
@@ -235,14 +230,14 @@ export let get_first_unread_info = (
         return cannot_compute_response;
     }
 
-    const unread_ids = _possible_unread_message_ids(current_filter);
+    const unread_ids = _possible_unread_message_ids(message_list_filter);
 
     if (unread_ids === undefined) {
         // _possible_unread_message_ids() only works for certain narrows
         return cannot_compute_response;
     }
 
-    const msg_id = current_filter.first_valid_id_from(unread_ids);
+    const msg_id = message_list_filter.first_valid_id_from(unread_ids);
 
     if (msg_id === undefined) {
         return {
@@ -260,9 +255,7 @@ export function rewire_get_first_unread_info(value: typeof get_first_unread_info
     get_first_unread_info = value;
 }
 
-export let _possible_unread_message_ids = (
-    current_filter: Filter | undefined = filter(),
-): number[] | undefined => {
+export let _possible_unread_message_ids = (message_list_filter: Filter): number[] | undefined => {
     // This function currently only returns valid results for
     // certain types of narrows, mostly left sidebar narrows.
     // For more complicated narrows we may return undefined.
@@ -270,13 +263,9 @@ export let _possible_unread_message_ids = (
     // If we do return a result, it will be a subset of unread
     // message ids but possibly a superset of unread message ids
     // that match our filter.
-    if (current_filter === undefined) {
-        return undefined;
-    }
-
-    let sub;
-    let topic_name;
-    let current_filter_pm_string;
+    let filter_stream: StreamSubscription | undefined;
+    let topic_name: string | undefined;
+    let filter_pm_string: string | undefined;
 
     // For the `with` operator, we can only correctly compute the
     // correct channel/topic for lookup unreads in if we either
@@ -290,57 +279,57 @@ export let _possible_unread_message_ids = (
     // If we need to change that assumption, we can try looking up the
     // target message in message_store, but would need to return
     // undefined if the target message is not available.
-    assert(!current_filter.requires_adjustment_for_moved_with_target);
+    assert(!message_list_filter.requires_adjustment_for_moved_with_target);
 
-    if (current_filter.can_bucket_by("channel", "topic", "with")) {
-        sub = stream_sub(current_filter)!;
-        topic_name = topic(current_filter)!;
-        return unread.get_msg_ids_for_topic(sub.stream_id, topic_name);
-    }
-
-    if (current_filter.can_bucket_by("channel", "topic")) {
-        sub = stream_sub(current_filter);
-        topic_name = topic(current_filter);
-        if (sub === undefined || topic_name === undefined) {
+    if (
+        message_list_filter.can_bucket_by("channel", "topic", "with") ||
+        message_list_filter.can_bucket_by("channel", "topic")
+    ) {
+        filter_stream = stream_sub(message_list_filter);
+        topic_name = topic(message_list_filter);
+        if (filter_stream === undefined || topic_name === undefined) {
             return [];
         }
-        return unread.get_msg_ids_for_topic(sub.stream_id, topic_name);
+        return unread.get_msg_ids_for_topic(filter_stream.stream_id, topic_name);
     }
 
-    if (current_filter.can_bucket_by("channel")) {
-        sub = stream_sub(current_filter);
-        if (sub === undefined) {
+    if (message_list_filter.can_bucket_by("channel")) {
+        filter_stream = stream_sub(message_list_filter);
+        if (filter_stream === undefined) {
             return [];
         }
-        return unread.get_msg_ids_for_stream(sub.stream_id);
+        return unread.get_msg_ids_for_stream(filter_stream.stream_id);
     }
 
-    if (current_filter.can_bucket_by("dm", "with") || current_filter.can_bucket_by("dm")) {
-        current_filter_pm_string = pm_ids_string(current_filter);
-        if (current_filter_pm_string === undefined) {
+    if (
+        message_list_filter.can_bucket_by("dm", "with") ||
+        message_list_filter.can_bucket_by("dm")
+    ) {
+        filter_pm_string = pm_ids_string(message_list_filter);
+        if (filter_pm_string === undefined) {
             return [];
         }
-        return unread.get_msg_ids_for_user_ids_string(current_filter_pm_string);
+        return unread.get_msg_ids_for_user_ids_string(filter_pm_string);
     }
 
-    if (current_filter.can_bucket_by("is-dm")) {
+    if (message_list_filter.can_bucket_by("is-dm")) {
         return unread.get_msg_ids_for_private();
     }
 
-    if (current_filter.can_bucket_by("is-mentioned")) {
+    if (message_list_filter.can_bucket_by("is-mentioned")) {
         return unread.get_msg_ids_for_mentions();
     }
 
-    if (current_filter.can_bucket_by("is-starred")) {
+    if (message_list_filter.can_bucket_by("is-starred")) {
         return unread.get_msg_ids_for_starred();
     }
 
-    if (current_filter.can_bucket_by("sender")) {
+    if (message_list_filter.can_bucket_by("sender")) {
         // TODO: see #9352 to make this more efficient
         return unread.get_all_msg_ids();
     }
 
-    if (current_filter.can_apply_locally()) {
+    if (message_list_filter.can_apply_locally()) {
         return unread.get_all_msg_ids();
     }
 
