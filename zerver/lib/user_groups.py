@@ -1,11 +1,10 @@
-from collections import defaultdict
 from collections.abc import Collection, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from typing import Any, TypedDict
 
 from django.db import connection, transaction
-from django.db.models import F, Q, QuerySet
+from django.db.models import F, Q, QuerySet, Value
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import With
@@ -525,25 +524,47 @@ def get_group_setting_value_for_api(
 
 
 def get_setting_value_for_user_group_object(
-    setting_value_group: UserGroup,
-    direct_members_dict: dict[int, list[int]],
-    direct_subgroups_dict: dict[int, list[int]],
+    setting_group_id: int,
+    named_user_group_ids: set[int],
+    members_dict: dict[int, UserGroupMembersDict],
 ) -> int | UserGroupMembersDict:
-    if hasattr(setting_value_group, "named_user_group"):
-        return setting_value_group.id
+    if setting_group_id in named_user_group_ids:
+        return setting_group_id
 
-    direct_members = []
-    if setting_value_group.id in direct_members_dict:
-        direct_members = direct_members_dict[setting_value_group.id]
+    return members_dict[setting_group_id]
 
-    direct_subgroups = []
-    if setting_value_group.id in direct_subgroups_dict:
-        direct_subgroups = direct_subgroups_dict[setting_value_group.id]
 
-    return UserGroupMembersDict(
-        direct_members=direct_members,
-        direct_subgroups=direct_subgroups,
+def get_members_and_subgroups_of_groups(group_ids: list[int]) -> dict[int, UserGroupMembersDict]:
+    user_members = (
+        UserGroupMembership.objects.filter(user_group_id__in=group_ids)
+        .exclude(user_profile__is_active=False)
+        .annotate(
+            member_type=Value("user"),
+        )
+        .values_list("member_type", "user_group_id", "user_profile_id")
     )
+
+    group_subgroups = (
+        GroupGroupMembership.objects.filter(supergroup_id__in=group_ids)
+        .annotate(
+            member_type=Value("group"),
+        )
+        .values_list("member_type", "supergroup_id", "subgroup_id")
+    )
+
+    group_members_dict: dict[int, UserGroupMembersDict] = dict()
+    for group_id in group_ids:
+        group_members_dict[group_id] = UserGroupMembersDict(direct_members=[], direct_subgroups=[])
+
+    all_members = user_members.union(group_subgroups)
+    for member_type, group_id, member_id in all_members:
+        members_dict = group_members_dict[group_id]
+        if member_type == "user":
+            members_dict.direct_members.append(member_id)
+        else:
+            members_dict.direct_subgroups.append(member_id)
+
+    return group_members_dict
 
 
 def user_groups_in_realm_serialized(
@@ -554,51 +575,25 @@ def user_groups_in_realm_serialized(
     Django's ORM doesn't properly support the left join between
     UserGroup and UserGroupMembership that we need.
     """
-    realm_groups = NamedUserGroup.objects.select_related(
-        "can_add_members_group",
-        "can_add_members_group__named_user_group",
-        "can_join_group",
-        "can_join_group__named_user_group",
-        "can_leave_group",
-        "can_leave_group__named_user_group",
-        "can_manage_group",
-        "can_manage_group__named_user_group",
-        "can_mention_group",
-        "can_mention_group__named_user_group",
-        "can_remove_members_group",
-        "can_remove_members_group__named_user_group",
-    ).filter(realm=realm)
+    realm_groups = NamedUserGroup.objects.filter(realm=realm)
 
     if not include_deactivated_groups:
         realm_groups = realm_groups.filter(deactivated=False)
 
-    membership = (
-        UserGroupMembership.objects.filter(user_group__realm=realm)
-        .exclude(user_profile__is_active=False)
-        .values_list("user_group_id", "user_profile_id")
-    )
+    realm_group_ids = {group.id for group in realm_groups}
+    group_settings_ids: set[int] = set()
+    for group in realm_groups:
+        for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+            group_settings_ids.add(getattr(group, setting_name + "_id"))
 
-    group_membership = GroupGroupMembership.objects.filter(subgroup__realm=realm).values_list(
-        "subgroup_id", "supergroup_id"
-    )
+    group_ids_to_fetch_members = list(realm_group_ids | group_settings_ids)
 
-    group_members = defaultdict(list)
-    for user_group_id, user_profile_id in membership:
-        group_members[user_group_id].append(user_profile_id)
-
-    group_subgroups = defaultdict(list)
-    for subgroup_id, supergroup_id in group_membership:
-        group_subgroups[supergroup_id].append(subgroup_id)
+    group_members_dict = get_members_and_subgroups_of_groups(group_ids_to_fetch_members)
 
     group_dicts: dict[int, UserGroupDict] = {}
     for user_group in realm_groups:
-        direct_member_ids = []
-        if user_group.id in group_members:
-            direct_member_ids = group_members[user_group.id]
-
-        direct_subgroup_ids = []
-        if user_group.id in group_subgroups:
-            direct_subgroup_ids = group_subgroups[user_group.id]
+        direct_member_ids = group_members_dict[user_group.id].direct_members
+        direct_subgroup_ids = group_members_dict[user_group.id].direct_subgroups
 
         creator_id = user_group.creator_id
 
@@ -618,22 +613,22 @@ def user_groups_in_realm_serialized(
             direct_subgroup_ids=direct_subgroup_ids,
             is_system_group=user_group.is_system_group,
             can_add_members_group=get_setting_value_for_user_group_object(
-                user_group.can_add_members_group, group_members, group_subgroups
+                user_group.can_add_members_group_id, realm_group_ids, group_members_dict
             ),
             can_join_group=get_setting_value_for_user_group_object(
-                user_group.can_join_group, group_members, group_subgroups
+                user_group.can_join_group_id, realm_group_ids, group_members_dict
             ),
             can_leave_group=get_setting_value_for_user_group_object(
-                user_group.can_leave_group, group_members, group_subgroups
+                user_group.can_leave_group_id, realm_group_ids, group_members_dict
             ),
             can_manage_group=get_setting_value_for_user_group_object(
-                user_group.can_manage_group, group_members, group_subgroups
+                user_group.can_manage_group_id, realm_group_ids, group_members_dict
             ),
             can_mention_group=get_setting_value_for_user_group_object(
-                user_group.can_mention_group, group_members, group_subgroups
+                user_group.can_mention_group_id, realm_group_ids, group_members_dict
             ),
             can_remove_members_group=get_setting_value_for_user_group_object(
-                user_group.can_remove_members_group, group_members, group_subgroups
+                user_group.can_remove_members_group_id, realm_group_ids, group_members_dict
             ),
             deactivated=user_group.deactivated,
         )
