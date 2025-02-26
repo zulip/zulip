@@ -31,7 +31,7 @@ export default [
     js.configs.recommended,
     importPlugin.flatConfigs.recommended,
     ...compat.extends("plugin:no-jquery/recommended", "plugin:no-jquery/deprecated"),
-    unicorn.configs["flat/recommended"],
+    unicorn.configs.recommended,
     prettier,
     {
         plugins: {

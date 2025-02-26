@@ -195,7 +195,8 @@ details summary::-webkit-details-marker {
     height: 0;
     width: 100%;
     transition: none 0.05s;
-    transition-property: height, opacity; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+    transition-property:
+        height, opacity; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
 }
 
 .top-menu-tab-input-unselect:not(:checked) + .top-menu-submenu-backdrop {

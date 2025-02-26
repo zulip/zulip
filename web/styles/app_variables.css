@@ -1810,13 +1810,15 @@
     --color-icons-inbox: light-dark(hsl(0deg 0% 0%), hsl(0deg 0% 100%));
 
     /* Navbar dropdown menu constants - Values from Figma design */
-    --box-shadow-popover-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
+    --box-shadow-popover-menu:
+        0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
         0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 7%),
         0 8.438px 13.9271px 0 hsl(0deg 0% 0% / 8%),
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 9%),
         0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 9%),
         0 41px 80px 0 hsl(0deg 0% 0% / 13%);
-    --box-shadow-gear-menu: 0 2.7798px 4.1129px 0 hsl(0deg 0% 0% / 10%),
+    --box-shadow-gear-menu:
+        0 2.7798px 4.1129px 0 hsl(0deg 0% 0% / 10%),
         0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
         0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
@@ -2527,7 +2529,8 @@
     /* Reaction container colors */
     --font-weight-message-reaction: 550;
     /* Navbar dropdown menu constants - Values from Figma design */
-    --box-shadow-popover-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
+    --box-shadow-popover-menu:
+        0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
         0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
         0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
