@@ -101,6 +101,7 @@
             text-overflow: ellipsis;
             overflow: hidden;
             max-width: var(--width-inbox-search);
+            width: 100%;
             height: var(--height-inbox-search);
             /* top/bottom default 1px padding / 14px em */
             /* left padding 30px / 14px em */
