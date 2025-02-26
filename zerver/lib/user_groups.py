@@ -534,7 +534,20 @@ def get_setting_value_for_user_group_object(
     return members_dict[setting_group_id]
 
 
-def get_members_and_subgroups_of_groups(group_ids: list[int]) -> dict[int, UserGroupMembersDict]:
+def get_group_setting_value_for_register_api(
+    setting_group_id: int,
+    realm_setting_anonymous_group_membership: dict[int, UserGroupMembersDict],
+) -> int | UserGroupMembersDict:
+    if setting_group_id not in realm_setting_anonymous_group_membership:
+        # realm_setting_anonymous_group_membership is defined to contain
+        # the membership of all non-named UserGroup used for realm settings.
+        # Thus, any group ID not present in it must be a named group.
+        return setting_group_id
+
+    return realm_setting_anonymous_group_membership[setting_group_id]
+
+
+def get_members_and_subgroups_of_groups(group_ids: set[int]) -> dict[int, UserGroupMembersDict]:
     user_members = (
         UserGroupMembership.objects.filter(user_group_id__in=group_ids)
         .exclude(user_profile__is_active=False)
@@ -567,9 +580,19 @@ def get_members_and_subgroups_of_groups(group_ids: list[int]) -> dict[int, UserG
     return group_members_dict
 
 
+@dataclass
+class RealmUserGroupsData:
+    api_groups: list[UserGroupDict]
+    system_groups_name_dict: dict[int, str]
+    realm_setting_anonymous_group_membership: dict[int, UserGroupMembersDict]
+
+
 def user_groups_in_realm_serialized(
-    realm: Realm, *, include_deactivated_groups: bool
-) -> list[UserGroupDict]:
+    realm: Realm,
+    *,
+    include_deactivated_groups: bool,
+    realm_setting_group_ids: set[int] | None = None,
+) -> RealmUserGroupsData:
     """This function is used in do_events_register code path so this code
     should be performant.  We need to do 2 database queries because
     Django's ORM doesn't properly support the left join between
@@ -586,11 +609,15 @@ def user_groups_in_realm_serialized(
         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
             group_settings_ids.add(getattr(group, setting_name + "_id"))
 
-    group_ids_to_fetch_members = list(realm_group_ids | group_settings_ids)
+    if realm_setting_group_ids is None:
+        realm_setting_group_ids = set()
+
+    group_ids_to_fetch_members = set(realm_group_ids | group_settings_ids | realm_setting_group_ids)
 
     group_members_dict = get_members_and_subgroups_of_groups(group_ids_to_fetch_members)
 
     group_dicts: dict[int, UserGroupDict] = {}
+    system_groups_name_dict: dict[int, str] = {}
     for user_group in realm_groups:
         direct_member_ids = group_members_dict[user_group.id].direct_members
         direct_subgroup_ids = group_members_dict[user_group.id].direct_subgroups
@@ -603,14 +630,14 @@ def user_groups_in_realm_serialized(
             else None
         )
 
-        group_dicts[user_group.id] = dict(
+        group_dict: UserGroupDict = dict(
             id=user_group.id,
             name=user_group.name,
             creator_id=creator_id,
             date_created=date_created,
             description=user_group.description,
-            members=direct_member_ids,
-            direct_subgroup_ids=direct_subgroup_ids,
+            members=sorted(direct_member_ids),
+            direct_subgroup_ids=sorted(direct_subgroup_ids),
             is_system_group=user_group.is_system_group,
             can_add_members_group=get_setting_value_for_user_group_object(
                 user_group.can_add_members_group_id, realm_group_ids, group_members_dict
@@ -633,11 +660,20 @@ def user_groups_in_realm_serialized(
             deactivated=user_group.deactivated,
         )
 
-    for group_dict in group_dicts.values():
-        group_dict["members"] = sorted(group_dict["members"])
-        group_dict["direct_subgroup_ids"] = sorted(group_dict["direct_subgroup_ids"])
+        group_dicts[user_group.id] = group_dict
+        if user_group.is_system_group:
+            system_groups_name_dict[user_group.id] = user_group.name
 
-    return sorted(group_dicts.values(), key=lambda group_dict: group_dict["id"])
+    realm_setting_anonymous_group_membership = {}
+    for group_id in realm_setting_group_ids:
+        if group_id not in realm_group_ids:
+            realm_setting_anonymous_group_membership[group_id] = group_members_dict[group_id]
+
+    return RealmUserGroupsData(
+        api_groups=sorted(group_dicts.values(), key=lambda group_dict: group_dict["id"]),
+        system_groups_name_dict=system_groups_name_dict,
+        realm_setting_anonymous_group_membership=realm_setting_anonymous_group_membership,
+    )
 
 
 def get_direct_user_groups(user_profile: UserProfile) -> list[UserGroup]:

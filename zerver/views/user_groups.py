@@ -119,7 +119,7 @@ def get_user_groups(
 ) -> HttpResponse:
     user_groups = user_groups_in_realm_serialized(
         user_profile.realm, include_deactivated_groups=include_deactivated_groups
-    )
+    ).api_groups
     return json_success(request, data={"user_groups": user_groups})
 
 

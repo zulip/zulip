@@ -15,8 +15,9 @@ const msg_match_narrow_api_response_schema = z.object({
     messages: z.record(
         z.string(),
         z.object({
-            match_content: z.string(),
-            match_subject: z.string(),
+            match_content: z.string().optional(),
+            match_subject: z.string().optional(),
+            status: z.string().optional(),
         }),
     ),
 });
@@ -49,11 +50,22 @@ export function maybe_add_narrowed_messages(
 
             let new_messages: Message[] = [];
             const elsewhere_messages: Message[] = [];
+            const pending_messages: Message[] = [];
 
             for (const elem of messages) {
                 if (Object.hasOwn(data.messages, elem.id)) {
-                    util.set_match_data(elem, data.messages[elem.id]!);
-                    new_messages.push(elem);
+                    const msg_data = data.messages[elem.id];
+                    if (msg_data?.status === "pending_search_index") {
+                        pending_messages.push(elem);
+                    } else if (msg_data) {
+                        util.set_match_data(elem, {
+                            match_content: msg_data.match_content,
+                            match_subject: msg_data.match_subject,
+                        });
+                        new_messages.push(elem);
+                    } else {
+                        elsewhere_messages.push(elem);
+                    }
                 } else {
                     elsewhere_messages.push(elem);
                 }
@@ -85,6 +97,13 @@ export function maybe_add_narrowed_messages(
             msg_list.add_messages(new_messages);
             unread_ops.process_visible();
             compose_notifications.notify_messages_outside_current_search(elsewhere_messages);
+
+            // Set up retry for pending messages with exponential backoff
+            if (pending_messages.length > 0 && attempt < 5) {
+                setTimeout(() => {
+                    maybe_add_narrowed_messages(pending_messages, msg_list, attempt + 1);
+                }, Math.min(1000 * Math.pow(2, attempt), 30000)); // Max 30 second wait
+            }
         },
         error(xhr) {
             if (!narrow_state.is_message_feed_visible() || msg_list !== message_lists.current) {

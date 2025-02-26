@@ -376,10 +376,20 @@ def messages_in_narrow_backend(
         realm=user_profile.realm,
     )
 
-    if not is_search:
-        # `add_narrow_conditions` adds the following columns only if narrow has search operands.
-        query = query.add_columns(topic_column_sa(), column("rendered_content", Text))
+    # Check for pending messages in fts_update_log if this is a search query
+    pending_msg_ids = []
+    if is_search:
+        pending_query = (
+            select(column("message_id", Integer))
+            .select_from(table("fts_update_log"))
+            .where(column("message_id", Integer).in_(msg_ids))
+        )
+        
+        with get_sqlalchemy_connection() as sa_conn:
+            pending_result = sa_conn.execute(pending_query)
+            pending_msg_ids = [row[0] for row in pending_result]
 
+    # Continue with existing query for non-pending messages
     search_fields = {}
     with get_sqlalchemy_connection() as sa_conn:
         for row in sa_conn.execute(query).mappings():
@@ -395,4 +405,11 @@ def messages_in_narrow_backend(
                 topic_matches,
             )
 
+    # Add special status for pending messages
+    for msg_id in pending_msg_ids:
+        if str(msg_id) not in search_fields:
+            search_fields[str(msg_id)] = {
+                "status": "pending_search_index",
+            }
+    
     return json_success(request, data={"messages": search_fields})
