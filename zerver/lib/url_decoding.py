@@ -334,3 +334,13 @@ class Filter:
 
     def get_terms(self, operator: str) -> list[NarrowTerm]:
         return [term for term in self.terms() if term.operator == operator]
+
+    def update_term(self, existing_term: NarrowTerm, new_term: NarrowTerm) -> None:
+        current_terms = self.terms()
+        try:
+            term_index = current_terms.index(existing_term)
+        except ValueError:
+            raise AssertionError("Invalid term to update")
+        new_terms = self.terms()
+        new_terms[term_index] = new_term
+        self._setup_filter(new_terms)

@@ -147,3 +147,23 @@ class NarrowTermFilterTest(ZulipTestCase):
         ]
         sorted_terms = Filter.sorted_terms(terms)
         self.assertEqual(sorted_terms[-1], unknown_term)
+
+    def test_update_term(self) -> None:
+        base_terms = [
+            NarrowTerm(negated=False, operator="near", operand=1),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+        ]
+
+        old_term = NarrowTerm(negated=False, operator="channel", operand=13)
+        old_terms = [*base_terms, old_term]
+        filter = Filter(old_terms)
+
+        new_term = NarrowTerm(negated=False, operator="channel", operand=12)
+        new_terms = [*base_terms, new_term]
+        filter.update_term(old_term, new_term)
+
+        self.assertEqual(filter.terms(), new_terms)
+
+        filter = Filter(base_terms)
+        with self.assertRaisesRegex(AssertionError, "Invalid term to update"):
+            filter.update_term(old_term, new_term)
