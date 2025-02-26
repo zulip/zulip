@@ -50,6 +50,7 @@ have content access in order to change this configuration.
 * [Channel permissions](/help/channel-permissions)
 * [User roles](/help/user-roles)
 * [User groups](/help/user-groups)
+* [Configure who can subscribe to a channel](/help/configure-who-can-subscribe)
 * [Configure who can unsubscribe anyone from a channel](/help/configure-who-can-unsubscribe-others)
 * [Subscribe users to a channel](/help/subscribe-users-to-a-channel)
 * [Unsubscribe users from a channel](/help/unsubscribe-users-from-a-channel)

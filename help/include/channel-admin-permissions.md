@@ -20,7 +20,7 @@ However, the following actions require specific permissions.
 
 - **Seeing messages and topics**: Restricted to channel subscribers, and user
   who are allowed to subscribe themselves or any user.
-- Subscribing yourself or [other
+- Subscribing [yourself](/help/configure-who-can-subscribe) or [other
   users](/help/configure-who-can-invite-to-channels)
 - Modifying settings that affect content access (e.g., making a channel
   public, or changing who can add subscribers).
