@@ -1300,7 +1300,7 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
     with transaction.atomic(savepoint=False):
         try:
             (message, user_message) = access_message_and_usermessage(
-                user_profile, missed_message["message_id"], lock_message=True
+                user_profile, missed_message["message_id"], lock_message=True, allow_archived_channel=False
             )
         except JsonableError:
             if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():

@@ -529,7 +529,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
 
         with self.settings(MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS=5):
             with (
-                self.assert_database_query_count(5),
+                self.assert_database_query_count(6),
                 self.capture_send_event_calls(expected_num_events=0) as events,
             ):
                 result = self.api_post(sender, "/api/v1/message_edit_typing", params)

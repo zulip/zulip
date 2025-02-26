@@ -313,6 +313,7 @@ def access_message(
     user_profile: UserProfile,
     message_id: int,
     lock_message: bool = False,
+    allow_archived_channel: bool = True,
 ) -> Message:
     """You can access a message by ID in our APIs that either:
     (1) You received or have previously accessed via starring
@@ -339,6 +340,11 @@ def access_message(
     except Message.DoesNotExist:
         raise JsonableError(_("Invalid message(s)"))
 
+    if not allow_archived_channel and message.recipient.type == Recipient.STREAM:
+        stream = Stream.objects.get(id=message.recipient.type_id)
+        if stream.deactivated:
+            raise JsonableError(_("Invalid message(s)"))
+
     has_user_message = lambda: UserMessage.objects.filter(
         user_profile=user_profile, message_id=message_id
     ).exists()
@@ -358,6 +364,7 @@ def access_message_and_usermessage(
     user_profile: UserProfile,
     message_id: int,
     lock_message: bool = False,
+    allow_archived_channel: bool = True,
 ) -> tuple[Message, UserMessage | None]:
     """As access_message, but also returns the usermessage, if any."""
     try:
@@ -369,6 +376,11 @@ def access_message_and_usermessage(
         message = base_query.get(id=message_id)
     except Message.DoesNotExist:
         raise JsonableError(_("Invalid message(s)"))
+
+    if not allow_archived_channel and message.recipient.type == Recipient.STREAM:
+        stream = Stream.objects.get(id=message.recipient.type_id)
+        if stream.deactivated:
+            raise JsonableError(_("Invalid message(s)"))
 
     user_message = get_usermessage_by_message_id(user_profile, message_id)
     has_user_message = lambda: user_message is not None
@@ -498,10 +510,6 @@ def has_message_access(
 
     if stream.realm_id != user_profile.realm_id:
         # You can't access public stream messages in other realms
-        return False
-
-    if stream.deactivated:
-        # You can't access messages in deactivated streams
         return False
 
     if stream.is_public() and user_profile.can_access_public_streams():

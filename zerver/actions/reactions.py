@@ -106,7 +106,7 @@ def check_add_reaction(
     reaction_type: str | None,
 ) -> None:
     message, user_message = access_message_and_usermessage(
-        user_profile, message_id, lock_message=True
+        user_profile, message_id, lock_message=True, allow_archived_channel=False
     )
 
     if emoji_code is None or reaction_type is None:

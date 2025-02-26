@@ -80,7 +80,7 @@ def send_message_edit_notification_backend(
     operator: Annotated[Literal["start", "stop"], ApiParamConfig("op")],
     message_id: Json[int],
 ) -> HttpResponse:
-    message = access_message(user_profile, message_id)
+    message = access_message(user_profile, message_id, allow_archived_channel=False)
     validate_user_can_edit_message(user_profile, message, edit_limit_buffer=0)
     recipient = message.recipient
 
