@@ -36,7 +36,7 @@ irretrievably) removes the message from Zulip.
 
 These permissions can be granted to any combination of
 [roles](/help/user-roles), [groups](/help/user-groups), and individual
-[users](/help/manage-a-user).
+[users](/help/introduction-to-users).
 
 {start_tabs}
 

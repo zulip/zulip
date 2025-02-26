@@ -19,7 +19,7 @@ account and how users access their accounts:
 * You can [restrict the ability to invite new
   users](#change-who-can-send-invitations) to any combination of
   [roles](/help/user-roles), [groups](/help/user-groups), and individual
-  [users](/help/manage-a-user).
+  [users](/help/introduction-to-users).
 
 Regardless of whether invitations are required, you can:
 

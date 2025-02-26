@@ -28,4 +28,5 @@ Users can also be members of [groups](/help/user-groups), and subscribe to
 * [Status and availability](/help/status-and-availability)
 * [User cards](/help/user-cards)
 * [View someone's profile](/help/view-someones-profile)
+* [Manage a user](/help/manage-a-user)
 * [Bots overview](/help/bots-overview)

@@ -1,8 +1,8 @@
 # View group members
 
 User groups can have other [groups](/help/user-groups),
-[roles](/help/user-roles), and individual [users](/help/manage-a-user) as
-members.
+[roles](/help/user-roles), and individual [users](/help/introduction-to-users)
+as members.
 
 {start_tabs}
 
