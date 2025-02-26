@@ -363,3 +363,16 @@ class Filter:
 
     def get_terms(self, operator: str) -> list[NarrowTerm]:
         return [term for term in self.terms() if term.operator == operator]
+
+    def update_term(self, existing_term: NarrowTerm, new_term: NarrowTerm) -> None:
+        """
+        It is recommended to use `Filter.get_terms()` to fetch the term
+        for `existing_term`.
+        """
+        try:
+            term_index = self._terms.index(existing_term)
+        except ValueError:
+            raise AssertionError("Invalid term to update")
+        new_terms = list(self._terms)
+        new_terms[term_index] = new_term
+        self._setup_filter(new_terms)
