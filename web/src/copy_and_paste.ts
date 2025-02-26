@@ -751,17 +751,6 @@ export function paste_handler_converter(
 
         replacement: image_to_zulip_markdown,
     });
-    turndownService.addRule("math", {
-        // We don't have a way to get the original LaTeX code from the rendered
-        // `math` so we drop it to avoid pasting gibberish.
-        // In the future, we could have a data-original-latex feature in Zulip HTML
-        // if we wanted to paste the original LaTeX for Zulip messages.
-        filter: "math",
-
-        replacement() {
-            return "";
-        },
-    });
 
     // We override the original upstream implementation of this rule to make
     // several tweaks:
