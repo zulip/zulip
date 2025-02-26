@@ -109,9 +109,9 @@ export let render_typeahead_item = (args: {
     is_user_group?: boolean;
     stream?: StreamData;
     emoji_code?: string | undefined;
-    is_empty_string_topic?: boolean;
     topic_object?: TopicSuggestion;
     is_stream_topic?: boolean;
+    is_empty_string_topic?: boolean;
 }): string => {
     const has_image = args.img_src !== undefined;
     const has_status = args.status_emoji_info !== undefined;

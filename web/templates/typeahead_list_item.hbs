@@ -24,8 +24,8 @@
     <span role="button" class="conversation-arrow zulip-icon zulip-icon-chevron-right stream-to-topic-arrow"></span>
 </div>
 <div class="typeahead-text-container">
-    <strong class="typeahead-strong-section">
-        {{~ topic ~}}
+    <strong class="typeahead-strong-section{{#if is_empty_string_topic}} empty-topic-display{{/if}}">
+        {{~ topic_display_name ~}}
     </strong>
 </div>
 {{else}}

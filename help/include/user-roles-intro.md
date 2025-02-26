@@ -1,6 +1,6 @@
 Most permissions in Zulip can be granted to any combination of
 [roles](/help/user-roles), [groups](/help/user-groups), and
-individual [users](/help/manage-a-user).
+individual [users](/help/introduction-to-users).
 
 User roles make it convenient to configure permissions for your organization.
 You can decide what role a user will have when you [send them an

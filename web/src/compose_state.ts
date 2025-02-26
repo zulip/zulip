@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as people from "./people.ts";
+import {realm} from "./state_data.ts";
 import * as sub_store from "./sub_store.ts";
 
 let message_type: "stream" | "private" | undefined;
@@ -231,7 +232,8 @@ export function has_savable_message_content(): boolean {
 
 export function has_full_recipient(): boolean {
     if (message_type === "stream") {
-        return stream_id() !== undefined && topic() !== "";
+        const has_topic = topic() !== "" || !realm.realm_mandatory_topics;
+        return stream_id() !== undefined && has_topic;
     }
     return private_message_recipient() !== "";
 }

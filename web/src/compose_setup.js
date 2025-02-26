@@ -10,6 +10,7 @@ import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
 import * as compose_call_ui from "./compose_call_ui.ts";
+import * as compose_fade from "./compose_fade.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
@@ -582,7 +583,8 @@ export function initialize() {
     });
 
     $("textarea#compose-textarea").on("focus", () => {
-        compose_recipient.update_placeholder_text();
+        compose_recipient.update_compose_area_placeholder_text();
+        compose_fade.do_update_all();
         if (narrow_state.narrowed_by_reply()) {
             compose_notifications.maybe_show_one_time_non_interleaved_view_messages_fading_banner();
         } else {
@@ -604,11 +606,18 @@ export function initialize() {
     });
 
     $("input#stream_message_recipient_topic").on("focus", () => {
-        compose_recipient.update_placeholder_text();
+        const $input = $("input#stream_message_recipient_topic");
+        compose_recipient.update_topic_displayed_text($input.val(), true);
+        compose_recipient.update_compose_area_placeholder_text();
+
+        $("input#stream_message_recipient_topic").one("blur", () => {
+            compose_recipient.update_topic_displayed_text($input.val());
+            compose_recipient.update_compose_area_placeholder_text();
+        });
     });
 
     $("input#stream_message_recipient_topic").on("input", () => {
-        compose_recipient.update_placeholder_text();
+        compose_recipient.update_compose_area_placeholder_text();
     });
 
     $("body").on("click", ".formatting_button", function (e) {

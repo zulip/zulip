@@ -85,7 +85,9 @@ export type LanguageSuggestion = {
 
 export type TopicSuggestion = {
     topic: string;
+    topic_display_name: string;
     type: "topic_list";
+    is_empty_string_topic: boolean;
     // is_channel_link will be used when we want to only render the stream as an
     // option in the topic typeahead while having #**stream_name> as the token.
     is_channel_link: boolean;
@@ -223,7 +225,8 @@ function get_topic_matcher(query: string): (topic: string) => boolean {
     query = typeahead.clean_query_lowercase(query);
 
     return function (topic: string): boolean {
-        return typeahead.query_matches_string_in_order(query, topic, " ");
+        const topic_display_name = util.get_final_topic_display_name(topic);
+        return typeahead.query_matches_string_in_order(query, topic_display_name, " ");
     };
 }
 
@@ -980,6 +983,8 @@ export function get_candidates(
                 const matches = topic_list.filter((item) => matcher(item));
                 const matches_list: TopicSuggestion[] = matches.map((topic) => ({
                     topic,
+                    topic_display_name: util.get_final_topic_display_name(topic),
+                    is_empty_string_topic: topic === "",
                     type: "topic_list",
                     is_channel_link: false,
                     is_shortcut_syntax_used,
@@ -994,13 +999,15 @@ export function get_candidates(
                 const topic_suggestion_candidates = typeahead_helper.sorter(
                     token,
                     matches_list,
-                    (x) => x.topic,
+                    (x) => x.topic_display_name,
                 );
 
                 // Add link to channel if and only if nothing is typed after '>'
                 if (token.length === 0) {
                     topic_suggestion_candidates.unshift({
                         topic: sub.name,
+                        topic_display_name: sub.name,
+                        is_empty_string_topic: false,
                         type: "topic_list",
                         is_channel_link: true,
                         is_shortcut_syntax_used,
@@ -1359,7 +1366,7 @@ function get_header_html(): string | false {
     let tip_text = "";
     switch (completing) {
         case "silent_mention":
-            tip_text = $t({defaultMessage: "Silent mentions do not trigger notifications."});
+            tip_text = $t({defaultMessage: "This silent mention won't trigger notifications."});
             break;
         case "syntax":
             if (realm.realm_default_code_block_language !== "") {
@@ -1449,7 +1456,12 @@ export function initialize({
         },
         items: max_num_items,
         highlighter_html(item: string): string {
-            return typeahead_helper.render_typeahead_item({primary: item});
+            const is_empty_string_topic = item === "";
+            const topic_display_name = util.get_final_topic_display_name(item);
+            return typeahead_helper.render_typeahead_item({
+                primary: topic_display_name,
+                is_empty_string_topic,
+            });
         },
         sorter(items: string[], query: string): string[] {
             const sorted = typeahead_helper.sorter(query, items, (x) => x);
@@ -1459,7 +1471,7 @@ export function initialize({
             return sorted;
         },
         option_label(matching_items: string[], item: string): string | false {
-            if (!matching_items.includes(item)) {
+            if (item !== "" && !matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
             }
             return false;

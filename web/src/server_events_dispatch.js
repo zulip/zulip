@@ -283,6 +283,10 @@ export function dispatch_normal_event(event) {
                                 "can_create_web_public_channel_group",
                             );
                         }
+
+                        if (event.property === "mandatory_topics") {
+                            compose_recipient.update_compose_area_placeholder_text();
+                        }
                     }
                     break;
                 case "update_dict":
@@ -1056,7 +1060,7 @@ export function dispatch_normal_event(event) {
 
                 // Update the status text in compose box placeholder when opened to self.
                 if (compose_pm_pill.get_user_ids().includes(event.user_id)) {
-                    compose_recipient.update_placeholder_text();
+                    compose_recipient.update_compose_area_placeholder_text();
                 }
             }
 
