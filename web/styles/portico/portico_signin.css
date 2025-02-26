@@ -569,7 +569,8 @@ html {
             margin-top: 1px;
 
             transition: none 0.3s ease;
-            transition-property: color, font-size, font-weight, transform; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+            transition-property:
+                color, font-size, font-weight, transform; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         }
 
         &.moving-label {
