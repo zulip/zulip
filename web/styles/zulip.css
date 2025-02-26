@@ -920,7 +920,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
 .topic_edit_form {
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: 5px;
     margin: 0;
     padding-right: 5px;
 }
@@ -947,6 +947,13 @@ div.focused-message-list.is-conversation-view .recipient_row {
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
+}
+
+.topic_edit_save {
+    border-color: light-dark(hsla(0deg 0% 0% / 10%), hsla(0deg 0% 0% / 60%));
+    border-width: 1px;
+    border-style: solid;
+    background-clip: padding-box;
 }
 
 .information-settings .user-profile-picture,
