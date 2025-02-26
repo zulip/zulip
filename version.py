@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 371  # Last bumped for Zulip 10.0 release.
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (321, 1)  # bumped 2025-03-26 to generate static/generated/integrations files.
+PROVISION_VERSION = (322, 0)  # bumped 2025-03-26 for updated build_timezone_values.

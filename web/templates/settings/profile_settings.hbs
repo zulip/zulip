@@ -27,7 +27,8 @@
                                 {{/unless}}
 
                                 {{#each timezones}}
-                                    <option value="{{ this }}">{{ this }}</option>
+                                    <option value="{{ this.name }}">{{ this.name }} ({{ this.utc_offset }})</option>
+
                                 {{/each}}
                             </select>
                         </div>
