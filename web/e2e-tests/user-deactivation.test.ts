@@ -20,7 +20,7 @@ async function navigate_to_user_list(page: Page): Promise<void> {
 
 async function user_row(page: Page, name: string): Promise<string> {
     const user_id = await common.get_user_id_from_name(page, name);
-    assert(user_id !== undefined);
+    assert.ok(user_id !== undefined);
     return `.user_row[data-user-id="${CSS.escape(user_id.toString())}"]`;
 }
 
