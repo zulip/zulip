@@ -368,6 +368,8 @@ body.has-overlay-scrollbar {
            the same height and their boxes sit on the
            same invisible line. */
         margin-top: -1px;
+        /* Prevent collisions with the search box. */
+        margin-left: 15px;
 
         & a {
             font-size: calc(16em / 14);
