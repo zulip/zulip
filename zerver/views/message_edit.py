@@ -205,7 +205,7 @@ def delete_message_backend(
     # concurrently are serialized properly with deleting the message; this prevents a deadlock
     # that would otherwise happen because of the other transaction holding a lock on the `Message`
     # row.
-    message = access_message(user_profile, message_id, lock_message=True)
+    message = access_message(user_profile, message_id, lock_message=True, is_modifying_message=True)
     validate_can_delete_message(user_profile, message)
     try:
         do_delete_messages(user_profile.realm, [message], acting_user=user_profile)
