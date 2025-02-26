@@ -8,7 +8,7 @@ import * as topic_link_util from "./topic_link_util.ts";
 
 // The standard Clipboard API do not support custom mime types like
 // text/x-gfm, but this approach does.
-function execute_copy(handle_copy_event: (e: ClipboardEvent) => void): void {
+export function execute_copy(handle_copy_event: (e: ClipboardEvent) => void): void {
     document.addEventListener("copy", handle_copy_event);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     document.execCommand("copy");

@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
 import TurndownService from "turndown";
 
+import * as clipboard_handler from "./clipboard_handler.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
 import * as message_lists from "./message_lists.ts";
@@ -177,10 +178,7 @@ async function copy_selection_to_clipboard(selection: Selection): Promise<void> 
             e.clipboardData?.setData("text/plain", plain_text);
             e.preventDefault();
         };
-        document.addEventListener("copy", cb);
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        document.execCommand("copy");
-        document.removeEventListener("copy", cb);
+        clipboard_handler.execute_copy(cb);
     }
 }
 
