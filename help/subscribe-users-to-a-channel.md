@@ -112,7 +112,7 @@ subscribe the user.
 * [Introduction to channels](/help/introduction-to-channels)
 * [Unsubscribe users from a channel](/help/unsubscribe-users-from-a-channel)
 * [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)
-* [Restrict channel invitations](/help/configure-who-can-invite-to-channels)
+* [Configure who can subscribe other users to channels](/help/configure-who-can-invite-to-channels)
 * [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [User roles](/help/user-roles)
 * [Mention a user or group](/help/mention-a-user-or-group)
