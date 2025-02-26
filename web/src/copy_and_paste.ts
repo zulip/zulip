@@ -206,7 +206,7 @@ function get_nearest_html_element(node: Node | null): Element | null {
     This converts the selection into an inline expression as
     per the turndown rules below.
 
-    We want to do avoid this behavior if the selection
+    We want to avoid this behavior if the selection
     spreads across multiple katex displays i.e. the
     focus and anchor are not part of the same katex-display.
 */
