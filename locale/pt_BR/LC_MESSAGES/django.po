@@ -7044,7 +7044,7 @@ msgstr ""
 #: zerver/views/users.py:814
 #, fuzzy, python-brace-format
 #| msgid "Username already in use"
-msgid "Email '{email}' already in use"
+msgid "Email is already in use"
 msgstr "Nome de usuário já em uso"
 
 #: zerver/views/video_calls.py:49

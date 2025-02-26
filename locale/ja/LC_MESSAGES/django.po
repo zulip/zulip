@@ -6769,7 +6769,7 @@ msgstr "使い捨てメールアドレスはこの組織で許可されていま
 
 #: zerver/views/users.py:814
 #, python-brace-format
-msgid "Email '{email}' already in use"
+msgid "Email is already in use"
 msgstr ""
 
 #: zerver/views/video_calls.py:48

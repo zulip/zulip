@@ -6793,7 +6793,7 @@ msgstr "Wegwerf-E-Mail-Adressen sind in dieser Organisation nicht erlaubt"
 
 #: zerver/views/users.py:814
 #, python-brace-format
-msgid "Email '{email}' already in use"
+msgid "Email is already in use"
 msgstr "E-Mail '{email}' wird bereits verwendet"
 
 #: zerver/views/video_calls.py:48

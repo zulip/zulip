@@ -6759,7 +6759,7 @@ msgstr "એ સંસ્થામાં ડિસ્પોઝબલ ઇમેઇ
 
 #: zerver/views/users.py:814
 #, python-brace-format
-msgid "Email '{email}' already in use"
+msgid "Email is already in use"
 msgstr "'{email}' ઇમેઇલ પહેલેથી વપરાશ કરાયું છે"
 
 #: zerver/views/video_calls.py:48

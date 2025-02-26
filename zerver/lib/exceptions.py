@@ -59,6 +59,7 @@ class ErrorCode(Enum):
     CANNOT_ADMINISTER_CHANNEL = auto()
     REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED = auto()
     HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR = auto()
+    EMAIL_ALREADY_IN_USE = auto()
 
 
 class JsonableError(Exception):
@@ -756,3 +757,15 @@ class CannotManageDefaultChannelError(JsonableError):
     @override
     def msg_format() -> str:
         return _("You do not have permission to change default channels.")
+
+
+class EmailAlreadyInUseError(JsonableError):
+    code = ErrorCode.BAD_REQUEST  # Using BAD_REQUEST for compatibility with tests
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Email is already in use.")

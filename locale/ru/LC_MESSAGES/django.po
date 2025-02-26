@@ -6776,7 +6776,7 @@ msgstr "Одноразовые адреса электронной почты н
 
 #: zerver/views/users.py:814
 #, python-brace-format
-msgid "Email '{email}' already in use"
+msgid "Email is already in use"
 msgstr "Адрес электронной почты '{email}' уже используется"
 
 #: zerver/views/video_calls.py:48
