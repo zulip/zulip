@@ -373,14 +373,6 @@ export class Typeahead<ItemType extends string | object> {
 
         // Call this early to avoid duplicate calls.
         this.shown = true;
-
-        const header_text_html = this.header_html();
-        if (header_text_html) {
-            this.$header.find("span#typeahead-header-text").html(header_text_html);
-            this.$header.show();
-        } else {
-            this.$header.hide();
-        }
         this.mouse_moved_since_typeahead = false;
 
         const input_element = this.input_element;
@@ -563,6 +555,19 @@ export class Typeahead<ItemType extends string | object> {
             }
             return $i;
         });
+
+        // We want to re render the typeahead header for ever update
+        // in user's string since once typeahead is shown after `@`,
+        // header might change depending on whether next character is
+        // `_` (silent mention) or not.
+        const header_text_html = this.header_html();
+
+        if (header_text_html) {
+            this.$header.find("span#typeahead-header-text").html(header_text_html);
+            this.$header.show();
+        } else {
+            this.$header.hide();
+        }
 
         if (this.requireHighlight || this.shouldHighlightFirstResult()) {
             $items[0]!.addClass("active");
