@@ -1359,7 +1359,7 @@ function get_header_html(): string | false {
     let tip_text = "";
     switch (completing) {
         case "silent_mention":
-            tip_text = $t({defaultMessage: "Silent mentions do not trigger notifications."});
+            tip_text = $t({defaultMessage: "This silent mention won't trigger notifications."});
             break;
         case "syntax":
             if (realm.realm_default_code_block_language !== "") {
