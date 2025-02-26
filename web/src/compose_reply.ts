@@ -7,10 +7,11 @@ import * as fenced_code from "../shared/src/fenced_code.ts";
 
 import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
+import * as compose_paste from "./compose_paste.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
-import * as copy_and_paste from "./copy_and_paste.ts";
+import * as copy_messages from "./copy_messages.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
@@ -181,7 +182,7 @@ export let selection_within_message_id = (
     if (!selection.toString()) {
         return undefined;
     }
-    const {start_id, end_id} = copy_and_paste.analyze_selection(selection);
+    const {start_id, end_id} = copy_messages.analyze_selection(selection);
     if (start_id === end_id) {
         return start_id;
     }
@@ -420,7 +421,7 @@ export function get_message_selection(selection = window.getSelection()): string
         } else {
             continue;
         }
-        const markdown_text = copy_and_paste.paste_handler_converter(html_to_convert);
+        const markdown_text = compose_paste.paste_handler_converter(html_to_convert);
         selected_message_content_raw = selected_message_content_raw + "\n" + markdown_text;
     }
     selected_message_content_raw = selected_message_content_raw.trim();

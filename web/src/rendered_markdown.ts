@@ -318,7 +318,7 @@ export const update_elements = ($content: JQuery): void => {
     });
 
     // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element,
-    // and add a `zulip-code-block` class to it to detect it easily in `copy_and_paste.ts`.
+    // and add a `zulip-code-block` class to it to detect it easily in `compose_paste.ts`.
     $content.find("div.codehilite").each(function (): void {
         const $codehilite = $(this);
         const $pre = $codehilite.find("pre");
