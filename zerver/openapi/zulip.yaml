@@ -9427,8 +9427,8 @@ paths:
                   - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
-                        "code": "BAD_REQUEST",
-                        "msg": "Email 'newbie@zulip.com' already in use",
+                        "code": "EMAIL_ALREADY_IN_USE",
+                        "msg": "Email is already in use",
                         "result": "error",
                       }
                     description: |

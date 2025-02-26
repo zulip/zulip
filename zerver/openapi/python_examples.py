@@ -276,7 +276,7 @@ def create_user(client: Client) -> None:
 
     # Test "Email already used error".
     result = client.create_user(request)
-    assert_error_response(result)
+    assert_error_response(result, "EMAIL_ALREADY_IN_USE")
     validate_against_openapi_schema(result, "/users", "post", "400")
 
 

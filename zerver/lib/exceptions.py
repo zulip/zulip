@@ -760,7 +760,7 @@ class CannotManageDefaultChannelError(JsonableError):
 
 
 class EmailAlreadyInUseError(JsonableError):
-    code = ErrorCode.BAD_REQUEST  # Using BAD_REQUEST for compatibility with tests
+    code = ErrorCode.EMAIL_ALREADY_IN_USE
 
     def __init__(self) -> None:
         pass
