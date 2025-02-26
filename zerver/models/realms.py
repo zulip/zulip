@@ -1212,56 +1212,6 @@ def get_realm_by_id(realm_id: int) -> Realm:
     return Realm.objects.get(id=realm_id)
 
 
-def get_realm_with_settings(realm_id: int) -> Realm:
-    # Prefetch the following settings:
-    # This also prefetches can_access_all_users_group setting,
-    # even when it cannot be set to anonymous groups because
-    # the setting is used when fetching users in the realm.
-    # * All the settings that can be set to anonymous groups.
-    return Realm.objects.select_related(
-        "create_multiuse_invite_group",
-        "create_multiuse_invite_group__named_user_group",
-        "can_access_all_users_group",
-        "can_access_all_users_group__named_user_group",
-        "can_add_custom_emoji_group",
-        "can_add_custom_emoji_group__named_user_group",
-        "can_add_subscribers_group",
-        "can_add_subscribers_group__named_user_group",
-        "can_create_bots_group",
-        "can_create_bots_group__named_user_group",
-        "can_create_groups",
-        "can_create_groups__named_user_group",
-        "can_create_public_channel_group",
-        "can_create_public_channel_group__named_user_group",
-        "can_create_private_channel_group",
-        "can_create_private_channel_group__named_user_group",
-        "can_create_web_public_channel_group",
-        "can_create_web_public_channel_group__named_user_group",
-        "can_create_write_only_bots_group",
-        "can_create_write_only_bots_group__named_user_group",
-        "can_delete_any_message_group",
-        "can_delete_any_message_group__named_user_group",
-        "can_delete_own_message_group",
-        "can_delete_own_message_group__named_user_group",
-        "can_invite_users_group",
-        "can_invite_users_group__named_user_group",
-        "can_manage_all_groups",
-        "can_manage_all_groups__named_user_group",
-        "can_mention_many_users_group",
-        "can_mention_many_users_group__named_user_group",
-        "can_move_messages_between_channels_group",
-        "can_move_messages_between_channels_group__named_user_group",
-        "can_move_messages_between_topics_group",
-        "can_move_messages_between_topics_group__named_user_group",
-        "can_summarize_topics_group",
-        "can_summarize_topics_group__named_user_group",
-        "direct_message_initiator_group",
-        "direct_message_initiator_group__named_user_group",
-        "direct_message_permission_group",
-        "direct_message_permission_group__named_user_group",
-    ).get(id=realm_id)
-
-
 def require_unique_names(realm: Realm | None) -> bool:
     if realm is None:
         # realm is None when a new realm is being created.
@@ -1291,13 +1241,11 @@ def get_corresponding_policy_value_for_group_setting(
     realm: Realm,
     group_setting_name: str,
     valid_policy_enums: list[int],
+    system_groups_name_dict: dict[int, str],
 ) -> int:
-    setting_group = getattr(realm, group_setting_name)
-    if (
-        hasattr(setting_group, "named_user_group")
-        and setting_group.named_user_group.is_system_group
-    ):
-        system_group_name = setting_group.named_user_group.name
+    setting_group_id = getattr(realm, group_setting_name + "_id")
+    if setting_group_id in system_groups_name_dict:
+        system_group_name = system_groups_name_dict[setting_group_id]
         if group_setting_name == "can_mention_many_users_group":
             # Wildcard mention policy uses different set of enums than other policy settings.
             return Realm.SYSTEM_GROUPS_TO_WILDCARD_MENTION_POLICY_MAP.get(
