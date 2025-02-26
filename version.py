@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 359  # Last bumped for not adjusting bot subscriptions on ow
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (318, 0)  # bumped 2025-02-25 to remove py3dns
+PROVISION_VERSION = (318, 1)  # bumped 2025-02-26 to upgrade Node.js
