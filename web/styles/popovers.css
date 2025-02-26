@@ -891,6 +891,12 @@ ul.popover-group-menu-member-list {
         margin-top: -20px;
         font-style: italic;
         opacity: 0.7;
+
+        /* For cases where the count isn't displayed, which may primarily
+           occur due to bugs, avoid applying the above negative margin. */
+        &:empty {
+            margin-top: unset;
+        }
     }
 
     .topic_stream_edit_header {
