@@ -1599,6 +1599,12 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
         .app-main .column-middle {
             margin-left: 7px;
         }
+
+        @container header-container (width > $cq_md_min) {
+            #navbar-middle {
+                margin-left: var(--middle-column-left-margin-fluid-layout);
+            }
+        }
     }
 
     @container header-container (width < $cq_xl_min) {
