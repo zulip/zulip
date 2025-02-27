@@ -3,7 +3,33 @@ from typing import Any
 from django.db import connection, migrations, models, transaction
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
-from psycopg2.sql import SQL, Identifier
+from psycopg2.sql import SQL, Identifier, Literal
+
+
+def update_user_topic(channel_ids: list[int], user_topic_model: type[Any]) -> None:
+    if not channel_ids:
+        return
+
+    # Both insert and delete query uses index "zerver_mutedtopic_stream_topic".
+    channel_ids_str = SQL(",").join(map(Literal, channel_ids))
+    query = SQL(
+        """
+        INSERT INTO zerver_usertopic(user_profile_id, stream_id, recipient_id, topic_name, last_updated, visibility_policy)
+        SELECT user_profile_id, stream_id, recipient_id, '', last_updated, visibility_policy
+        FROM zerver_usertopic
+        WHERE stream_id IN ({channel_ids})
+        AND lower(topic_name) = 'general chat'
+        ON CONFLICT (user_profile_id, stream_id, lower(topic_name)) DO UPDATE SET
+        last_updated = EXCLUDED.last_updated,
+        visibility_policy = EXCLUDED.visibility_policy;
+        """
+    ).format(channel_ids=channel_ids_str)
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+
+    user_topic_model.objects.filter(
+        stream_id__in=channel_ids, topic_name__iexact="general chat"
+    ).delete()
 
 
 def update_edit_history(message_model: type[Any]) -> None:
@@ -106,11 +132,7 @@ def rename_general_chat_to_empty_string_topic(
             # updating all UserTopic rows, since it's possible to
             # follow/mute an empty topic. But it does guarantee that
             # we update all rows that have any current effect.
-            #
-            # Uses index "zerver_mutedtopic_stream_topic"
-            UserTopic.objects.filter(
-                stream_id__in=channel_ids, topic_name__iexact="general chat"
-            ).update(topic_name="")
+            update_user_topic(channel_ids, UserTopic)
 
             ArchivedMessage.objects.filter(realm=realm, subject__iexact="general chat").update(
                 subject=""
