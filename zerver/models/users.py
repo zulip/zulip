@@ -408,6 +408,20 @@ class UserBaseSettings(models.Model):
         **modern_settings,
     }
 
+    # Settings that realm administrators cannot modify for users
+    SECURITY_SENSITIVE_USER_SETTINGS = frozenset(
+        {
+            "enable_login_emails",
+            "enable_marketing_emails",
+            "allow_private_data_export",
+            "send_private_typing_notifications",
+            "send_stream_typing_notifications",
+            "send_read_receipts",
+            "presence_enabled",
+            "email_address_visibility",
+        }
+    )
+
     class Meta:
         abstract = True
 
