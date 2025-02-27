@@ -250,7 +250,7 @@ export let upload_files = (
             file_id,
             true,
         );
-        // eslint-disable-next-line no-loop-func
+        // eslint-disable-next-line @typescript-eslint/no-loop-func
         config.upload_banner_cancel_button(file_id).one("click", () => {
             compose_ui.replace_syntax(get_translated_status(file), "", config.textarea());
             compose_ui.autosize_textarea(config.textarea());
@@ -259,7 +259,7 @@ export let upload_files = (
             uppy.removeFile(file_id);
             hide_upload_banner(uppy, config, file_id);
         });
-        // eslint-disable-next-line no-loop-func
+        // eslint-disable-next-line @typescript-eslint/no-loop-func
         config.upload_banner_hide_button(file_id).one("click", () => {
             hide_upload_banner(uppy, config, file_id);
         });

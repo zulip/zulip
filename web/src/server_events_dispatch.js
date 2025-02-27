@@ -97,7 +97,10 @@ import * as user_topics from "./user_topics.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
 
 export function dispatch_normal_event(event) {
-    const noop = function () {};
+    const noop = function () {
+        // Do nothing
+    };
+
     switch (event.type) {
         case "alert_words":
             alert_words.set_words(event.alert_words);
