@@ -49,7 +49,7 @@ from zerver.lib.streams import (
     stream_to_dict,
 )
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info, get_subscribers_query
-from zerver.lib.types import AnonymousSettingGroupDict, APISubscriptionDict
+from zerver.lib.types import APISubscriptionDict, UserGroupMembersDict
 from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
     get_group_setting_value_for_audit_log_data,
@@ -499,7 +499,7 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
     recent_traffic = get_streams_traffic(stream_ids, realm)
 
     streams = [stream_dict[stream_id] for stream_id in stream_ids]
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None
 
     for stream_id, stream_users_ids in altered_user_dict.items():
         stream = stream_dict[stream_id]
@@ -1348,7 +1348,7 @@ def do_change_stream_permission(
     )
 
 
-def get_users_string_with_permission(setting_value: int | AnonymousSettingGroupDict) -> str:
+def get_users_string_with_permission(setting_value: int | UserGroupMembersDict) -> str:
     if isinstance(setting_value, int):
         setting_group = NamedUserGroup.objects.get(id=setting_value)
         return silent_mention_syntax_for_user_group(setting_group)
@@ -1375,8 +1375,8 @@ def get_users_string_with_permission(setting_value: int | AnonymousSettingGroupD
 def send_stream_posting_permission_update_notification(
     stream: Stream,
     *,
-    old_setting_value: int | AnonymousSettingGroupDict,
-    new_setting_value: int | AnonymousSettingGroupDict,
+    old_setting_value: int | UserGroupMembersDict,
+    new_setting_value: int | UserGroupMembersDict,
     acting_user: UserProfile,
 ) -> None:
     sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
@@ -1621,7 +1621,7 @@ def do_change_stream_group_based_setting(
     setting_name: str,
     user_group: UserGroup,
     *,
-    old_setting_api_value: int | AnonymousSettingGroupDict | None = None,
+    old_setting_api_value: int | UserGroupMembersDict | None = None,
     acting_user: UserProfile | None = None,
 ) -> None:
     old_user_group = getattr(stream, setting_name)

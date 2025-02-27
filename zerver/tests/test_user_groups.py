@@ -37,7 +37,7 @@ from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import AnonymousSettingGroupDict
+from zerver.lib.types import UserGroupMembersDict
 from zerver.lib.user_groups import (
     get_direct_user_groups,
     get_recursive_group_members,
@@ -163,7 +163,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[9]["members"], [])
         self.assertEqual(
             user_groups[9]["can_manage_group"],
-            AnonymousSettingGroupDict(direct_members=[11], direct_subgroups=[]),
+            UserGroupMembersDict(direct_members=[11], direct_subgroups=[]),
         )
         self.assertEqual(user_groups[9]["can_mention_group"], everyone_group.id)
         self.assertFalse(user_groups[0]["deactivated"])
@@ -194,14 +194,14 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[10]["description"], "")
         self.assertEqual(user_groups[10]["members"], [othello.id])
 
-        assert isinstance(user_groups[10]["can_manage_group"], AnonymousSettingGroupDict)
+        assert isinstance(user_groups[10]["can_manage_group"], UserGroupMembersDict)
         self.assertEqual(user_groups[10]["can_manage_group"].direct_members, [othello.id])
         self.assertCountEqual(
             user_groups[10]["can_manage_group"].direct_subgroups,
             [admins_system_group.id, hamletcharacters_group.id],
         )
 
-        assert isinstance(user_groups[10]["can_mention_group"], AnonymousSettingGroupDict)
+        assert isinstance(user_groups[10]["can_mention_group"], UserGroupMembersDict)
         self.assertEqual(user_groups[10]["can_mention_group"].direct_members, [othello.id])
         self.assertCountEqual(
             user_groups[10]["can_mention_group"].direct_subgroups,
