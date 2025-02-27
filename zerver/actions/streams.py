@@ -39,7 +39,6 @@ from zerver.lib.streams import (
     can_access_stream_metadata_user_ids,
     check_basic_stream_access,
     get_group_setting_value_dict_for_streams,
-    get_occupied_streams,
     get_stream_permission_policy_name,
     get_stream_post_policy_value_based_on_group_setting,
     get_user_ids_with_metadata_access_via_permission_groups,
@@ -1050,14 +1049,12 @@ def bulk_remove_subscriptions(
         return ([], not_subscribed)
 
     sub_ids_to_deactivate = [sub_info.sub.id for sub_info in subs_to_deactivate]
-    streams_to_unsubscribe = [sub_info.stream for sub_info in subs_to_deactivate]
     # We do all the database changes in a transaction to ensure
     # RealmAuditLog entries are atomically created when making changes.
     with transaction.atomic(savepoint=False):
         Subscription.objects.filter(
             id__in=sub_ids_to_deactivate,
         ).update(active=False)
-        occupied_streams_after = list(get_occupied_streams(realm))
 
         # Log subscription activities in RealmAuditLog
         event_time = timezone_now()
@@ -1086,14 +1083,6 @@ def bulk_remove_subscriptions(
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
         send_user_remove_events_on_removing_subscriptions(realm, altered_user_dict)
-
-    new_vacant_streams = set(streams_to_unsubscribe) - set(occupied_streams_after)
-    new_vacant_private_streams = [stream for stream in new_vacant_streams if stream.invite_only]
-
-    if new_vacant_private_streams:
-        # Deactivate any newly-vacant private streams
-        for stream in new_vacant_private_streams:
-            do_deactivate_stream(stream, acting_user=acting_user)
 
     return (
         removed_sub_tuples,
