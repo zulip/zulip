@@ -1422,24 +1422,6 @@ def ensure_stream(
     )[0]
 
 
-def get_occupied_streams(realm: Realm) -> QuerySet[Stream]:
-    """Get streams with subscribers"""
-    exists_expression = Exists(
-        Subscription.objects.filter(
-            active=True,
-            is_user_active=True,
-            user_profile__realm=realm,
-            recipient_id=OuterRef("recipient_id"),
-        ),
-    )
-    occupied_streams = (
-        Stream.objects.filter(realm=realm, deactivated=False)
-        .alias(occupied=exists_expression)
-        .filter(occupied=True)
-    )
-    return occupied_streams
-
-
 def get_stream_post_policy_value_based_on_group_setting(setting_group: UserGroup) -> int:
     if (
         hasattr(setting_group, "named_user_group")
