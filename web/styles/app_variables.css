@@ -256,6 +256,12 @@
         20.6429em - var(--left-sidebar-right-margin)
     );
     --realm-logo-max-width: 12.5em; /* 200px at 16px em */
+    /* Value updated on realm_logo.render() */
+    --realm-logo-current-width: var(--realm-logo-max-width);
+    /* 10px is just extra margin for content separation */
+    --middle-column-left-margin-fluid-layout: calc(
+        var(--header-height) + var(--realm-logo-current-width) + 10px
+    );
     /* Sidebar width is 1/3 of the screen at smaller
        sizes, but gets held to the left sidebar's max width.
        This is very useful for areas in the CSS codebase
