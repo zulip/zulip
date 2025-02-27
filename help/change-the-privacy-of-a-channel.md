@@ -1,15 +1,18 @@
 # Change the privacy of a channel
 
-{!admin-only.md!}
+{!channel-privacy-types.md!}
 
-Channels can be [web-public](/help/public-access-option), public or private,
-and private channels can have shared or protected history.
-See [channel types and permissions](/help/channel-permissions) for
-details on channel privacy settings.
+Organization administrators and [channel
+administrators](/help/configure-who-can-administer-a-channel) can always make a
+channel private. However, they can only make a private channel public or
+web-public if they have content access to it:
 
-As an organization administrator, you can always make a public channel
-private, but you must be subscribed to a private channel in order to make it
-public.
+{!content-access-definition.md!}
+
+!!! warn ""
+
+    **Warning**: Be careful making a private channel public. All past messages
+    will become accessible, even if the channel previously had protected history.
 
 {start_tabs}
 
@@ -46,11 +49,6 @@ public.
 {end_tabs}
 
 {!automated-notice-channel-event.md!}
-
-!!! warn ""
-
-    **Warning**: Be careful making a private channel public. All past messages
-    will become accessible, even if the channel previously had protected history.
 
 ## Related articles
 
