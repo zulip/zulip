@@ -1,7 +1,5 @@
 # Rename a channel
 
-{!admin-only.md!}
-
 A channel's name can be in any language, and can include spaces, punctuation,
 and Unicode emoji.
 

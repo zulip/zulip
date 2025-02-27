@@ -1,7 +1,5 @@
 # Channel posting policy
 
-{!admin-only.md!}
-
 You can restrict who can send messages to a channel. For example,
 you can set up an announcement channel where only a specific
 [group](/help/user-groups) of users can send messages.
