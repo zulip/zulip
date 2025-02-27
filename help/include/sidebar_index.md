@@ -136,6 +136,7 @@
 
 ## Channels
 * [Introduction to channels](/help/introduction-to-channels)
+* [Subscribe to a channel](/help/introduction-to-channels#browse-and-subscribe-to-channels)
 * [Create a channel](/help/create-a-channel)
 * [Pin a channel](/help/pin-a-channel)
 * [Change the color of a channel](/help/change-the-color-of-a-channel)
