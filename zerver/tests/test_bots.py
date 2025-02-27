@@ -260,7 +260,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             short_name="whatever",
         )
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Name is already in use!")
+        self.assert_json_error(result, "Name is already in use.")
 
     def test_add_bot_with_user_avatar(self) -> None:
         email = "hambot-bot@zulip.testserver"
@@ -1143,7 +1143,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "full_name": already_taken_name,
         }
         result = self.client_patch(url, bot_info)
-        self.assert_json_error(result, "Name is already in use!")
+        self.assert_json_error(result, "Name is already in use.")
 
         # We can use our own name (with extra whitespace), and the
         # server should silently do nothing.
