@@ -114,7 +114,7 @@ from zerver.lib.event_types import (
     PlanTypeData,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
-from zerver.lib.types import AnonymousSettingGroupDict
+from zerver.lib.types import UserGroupMembersDict
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 
 
@@ -535,7 +535,7 @@ def check_stream_update(
         assert value in Stream.STREAM_POST_POLICY_TYPES
     elif prop in Stream.stream_permission_group_settings:
         assert extra_keys == set()
-        assert isinstance(value, int | AnonymousSettingGroupDict)
+        assert isinstance(value, int | UserGroupMembersDict)
     elif prop == "first_message_id":
         assert extra_keys == set()
         assert isinstance(value, int)

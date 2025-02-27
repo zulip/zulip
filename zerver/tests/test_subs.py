@@ -101,11 +101,11 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
 )
 from zerver.lib.types import (
-    AnonymousSettingGroupDict,
     APIStreamDict,
     APISubscriptionDict,
     NeverSubscribedStreamDict,
     SubscriptionInfo,
+    UserGroupMembersDict,
 )
 from zerver.lib.user_groups import UserGroupMembershipDetails, is_user_in_group
 from zerver.models import (
@@ -865,7 +865,7 @@ class TestCreateStreams(ZulipTestCase):
         event_stream = events[0]["event"]["streams"][0]
         self.assertEqual(
             event_stream["can_administer_channel_group"],
-            AnonymousSettingGroupDict(direct_members=[hamlet.id], direct_subgroups=[]),
+            UserGroupMembersDict(direct_members=[hamlet.id], direct_subgroups=[]),
         )
 
         self.assertEqual(event_stream["can_add_subscribers_group"], nobody_group.id)
@@ -7702,7 +7702,7 @@ class GetSubscribersTest(ZulipTestCase):
             if sub["name"] == "stream_1":
                 self.assertEqual(
                     sub["can_remove_subscribers_group"],
-                    AnonymousSettingGroupDict(
+                    UserGroupMembersDict(
                         direct_members=[hamlet.id],
                         direct_subgroups=[admins_group.id],
                     ),
@@ -7710,7 +7710,7 @@ class GetSubscribersTest(ZulipTestCase):
             elif sub["name"] == "stream_2":
                 self.assertEqual(
                     sub["can_remove_subscribers_group"],
-                    AnonymousSettingGroupDict(
+                    UserGroupMembersDict(
                         direct_members=[cordelia.id],
                         direct_subgroups=[admins_group.id],
                     ),
@@ -7797,7 +7797,7 @@ class GetSubscribersTest(ZulipTestCase):
         [stream_5_sub] = [sub for sub in subscribed_streams if sub["name"] == "stream_5"]
         self.assertEqual(
             stream_5_sub["can_send_message_group"],
-            AnonymousSettingGroupDict(
+            UserGroupMembersDict(
                 direct_members=[cordelia.id],
                 direct_subgroups=[admins_group.id],
             ),

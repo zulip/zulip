@@ -19,9 +19,9 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
-    AnonymousSettingGroupDict,
     GroupPermissionSetting,
     ServerSupportedPermissionSettings,
+    UserGroupMembersDict,
 )
 from zerver.models import (
     GroupGroupMembership,
@@ -39,8 +39,8 @@ from zerver.models.realm_audit_logs import AuditLogEventType
 
 @dataclass
 class GroupSettingChangeRequest:
-    new: int | AnonymousSettingGroupDict
-    old: int | AnonymousSettingGroupDict | None = None
+    new: int | UserGroupMembersDict
+    old: int | UserGroupMembersDict | None = None
 
 
 class UserGroupDict(TypedDict):
@@ -52,12 +52,12 @@ class UserGroupDict(TypedDict):
     creator_id: int | None
     date_created: int | None
     is_system_group: bool
-    can_add_members_group: int | AnonymousSettingGroupDict
-    can_join_group: int | AnonymousSettingGroupDict
-    can_leave_group: int | AnonymousSettingGroupDict
-    can_manage_group: int | AnonymousSettingGroupDict
-    can_mention_group: int | AnonymousSettingGroupDict
-    can_remove_members_group: int | AnonymousSettingGroupDict
+    can_add_members_group: int | UserGroupMembersDict
+    can_join_group: int | UserGroupMembersDict
+    can_leave_group: int | UserGroupMembersDict
+    can_manage_group: int | UserGroupMembersDict
+    can_mention_group: int | UserGroupMembersDict
+    can_remove_members_group: int | UserGroupMembersDict
     deactivated: bool
 
 
@@ -457,7 +457,7 @@ def update_or_create_user_group_for_setting(
 
 
 def access_user_group_for_setting(
-    setting_user_group: int | AnonymousSettingGroupDict,
+    setting_user_group: int | UserGroupMembersDict,
     user_profile: UserProfile,
     *,
     setting_name: str,
@@ -512,11 +512,11 @@ def check_user_group_name(group_name: str) -> str:
 
 def get_group_setting_value_for_api(
     setting_value_group: UserGroup,
-) -> int | AnonymousSettingGroupDict:
+) -> int | UserGroupMembersDict:
     if hasattr(setting_value_group, "named_user_group"):
         return setting_value_group.id
 
-    return AnonymousSettingGroupDict(
+    return UserGroupMembersDict(
         direct_members=[
             member.id for member in setting_value_group.direct_members.filter(is_active=True)
         ],
@@ -528,7 +528,7 @@ def get_setting_value_for_user_group_object(
     setting_value_group: UserGroup,
     direct_members_dict: dict[int, list[int]],
     direct_subgroups_dict: dict[int, list[int]],
-) -> int | AnonymousSettingGroupDict:
+) -> int | UserGroupMembersDict:
     if hasattr(setting_value_group, "named_user_group"):
         return setting_value_group.id
 
@@ -540,7 +540,7 @@ def get_setting_value_for_user_group_object(
     if setting_value_group.id in direct_subgroups_dict:
         direct_subgroups = direct_subgroups_dict[setting_value_group.id]
 
-    return AnonymousSettingGroupDict(
+    return UserGroupMembersDict(
         direct_members=direct_members,
         direct_subgroups=direct_subgroups,
     )
@@ -1042,9 +1042,9 @@ def get_server_supported_permission_settings() -> ServerSupportedPermissionSetti
 
 
 def parse_group_setting_value(
-    setting_value: int | AnonymousSettingGroupDict,
+    setting_value: int | UserGroupMembersDict,
     nobody_group: NamedUserGroup,
-) -> int | AnonymousSettingGroupDict:
+) -> int | UserGroupMembersDict:
     if isinstance(setting_value, int):
         return setting_value
 
@@ -1058,14 +1058,14 @@ def parse_group_setting_value(
 
 
 def are_both_group_setting_values_equal(
-    first_setting_value: int | AnonymousSettingGroupDict,
-    second_setting_value: int | AnonymousSettingGroupDict,
+    first_setting_value: int | UserGroupMembersDict,
+    second_setting_value: int | UserGroupMembersDict,
 ) -> bool:
     if isinstance(first_setting_value, int) and isinstance(second_setting_value, int):
         return first_setting_value == second_setting_value
 
-    if isinstance(first_setting_value, AnonymousSettingGroupDict) and isinstance(
-        second_setting_value, AnonymousSettingGroupDict
+    if isinstance(first_setting_value, UserGroupMembersDict) and isinstance(
+        second_setting_value, UserGroupMembersDict
     ):
         return set(first_setting_value.direct_members) == set(
             second_setting_value.direct_members
@@ -1077,9 +1077,9 @@ def are_both_group_setting_values_equal(
 
 
 def validate_group_setting_value_change(
-    current_setting_api_value: int | AnonymousSettingGroupDict,
-    new_setting_value: int | AnonymousSettingGroupDict,
-    expected_current_setting_value: int | AnonymousSettingGroupDict | None,
+    current_setting_api_value: int | UserGroupMembersDict,
+    new_setting_value: int | UserGroupMembersDict,
+    expected_current_setting_value: int | UserGroupMembersDict | None,
 ) -> bool:
     if expected_current_setting_value is not None and not are_both_group_setting_values_equal(
         expected_current_setting_value,
@@ -1094,7 +1094,7 @@ def validate_group_setting_value_change(
 
 
 def get_group_setting_value_for_audit_log_data(
-    setting_value: int | AnonymousSettingGroupDict,
+    setting_value: int | UserGroupMembersDict,
 ) -> int | dict[str, list[int]]:
     if isinstance(setting_value, int):
         return setting_value
