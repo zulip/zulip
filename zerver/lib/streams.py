@@ -874,7 +874,7 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
     check_stream_name(name)
     try:
         get_stream(name, realm)
-        raise JsonableError(_("Channel name already in use."))
+        raise JsonableError(_("Channel name is already in use."))
     except Stream.DoesNotExist:
         pass
 

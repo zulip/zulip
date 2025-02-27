@@ -2160,7 +2160,7 @@ class RealmCreationTest(ZulipTestCase):
     def test_subdomain_check_api(self) -> None:
         result = self.client_get("/json/realm/subdomain/zulip")
         self.assert_in_success_response(
-            ["Subdomain already in use. Please choose a different one."], result
+            ["Subdomain is already in use. Please choose a different one."], result
         )
 
         result = self.client_get("/json/realm/subdomain/zu_lip")
@@ -2990,7 +2990,7 @@ class UserSignUpTest(ZulipTestCase):
         )
         self.assert_in_success_response(
             [
-                "Subdomain already in use. Please choose a different one.",
+                "Subdomain is already in use. Please choose a different one.",
                 'value="Test"',
                 'name="realm_name"',
             ],
