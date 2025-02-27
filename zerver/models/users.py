@@ -410,6 +410,29 @@ class UserBaseSettings(models.Model):
         **modern_settings,
     }
 
+    # Settings where security policy may restrict the ability of
+    # organization administrators to change this setting for other
+    # accounts.
+    #
+    # Core account fields like name and email address are not part of
+    # the property_types framework and thus do not appear here.
+    SECURITY_SENSITIVE_USER_SETTINGS = frozenset(
+        {
+            # Data privacy controls
+            "allow_private_data_export",
+            "email_address_visibility",
+            # Email notification controls
+            "enable_digest_emails",
+            "enable_login_emails",
+            "enable_marketing_emails",
+            # Availability/presence privacy controls
+            "presence_enabled",
+            "send_private_typing_notifications",
+            "send_read_receipts",
+            "send_stream_typing_notifications",
+        }
+    )
+
     class Meta:
         abstract = True
 
