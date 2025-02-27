@@ -114,7 +114,11 @@ run_test("paste_handler_converter", () => {
     /*
         Pasting from another Zulip message
     */
-
+    global.document = window.document;
+    global.window = window;
+    global.Node = window.Node;
+    global.HTMLElement = window.HTMLElement;
+    global.HTMLAnchorElement = window.HTMLAnchorElement;
     // Bold text
     let input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><span style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;"><span> </span>love the<span> </span><b>Zulip</b><b> </b></span><b style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;">Organization</b><span style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;">.</span>';
@@ -129,9 +133,6 @@ run_test("paste_handler_converter", () => {
     assert.equal(compose_paste.paste_handler_converter(input), "The `JSDOM` constructor");
 
     // A python code block
-    global.document = window.document;
-    global.window = window;
-    global.Node = window.Node;
     input = `<meta http-equiv="content-type" content="text/html; charset=utf-8"><p>zulip code block in python</p><div class="codehilite zulip-code-block" data-code-language="Python"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s2">"hello"</span><span class="p">)</span>\n<span class="nb">print</span><span class="p">(</span><span class="s2">"world"</span><span class="p">)</span></code></pre></div></meta>`;
     assert.equal(
         compose_paste.paste_handler_converter(input),
@@ -222,6 +223,40 @@ run_test("paste_handler_converter", () => {
         compose_paste.paste_handler_converter(input),
         "* bulleted\n* nested\n  * nested level 1\n  * nested level 1 continue\n    * nested level 2\n    * nested level 2 continue",
     );
+
+    // Heading from https://arxiv.org/abs/1301.3191
+    input =
+        '<html><body><!--StartFragment--><h1 class="title mathjax" style="font-size: 1.8em !important; font-weight: 700; line-height: 27.9936px; display: block; margin-block: 12px; margin: 0.25em 0px 12px 20px; margin-inline: 20px 0px; color: rgb(0, 0, 0); font-family: &quot;Lucida Grande&quot;, Helvetica, Arial, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Enriched categories as a free cocompletion</h1><br class="Apple-interchange-newline"><!--EndFragment--></body></html>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "Enriched categories as a free cocompletion",
+    );
+
+    // Heading from https://www.sciencedirect.com/science/article/pii/S0001870815004715
+    input =
+        '<html><body><!--StartFragment--><h2 class="section-title u-h4 u-margin-l-top u-margin-xs-bottom" style="box-sizing: border-box; margin-top: 32px !important; margin-right: 0px; margin-bottom: 8px !important; margin-left: 0px; padding: 0px; font-weight: normal !important; font-size: 20px !important; line-height: var(--sd-ui-line-height) !important; color: rgb(31, 31, 31); font-family: ElsevierGulliver, Georgia, "Times New Roman", Times, STIXGeneral, "Cambria Math", "Lucida Sans Unicode", "Microsoft Sans Serif", "Segoe UI Symbol", "Arial Unicode MS", serif, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Abstract</h2><div id="as0010" style="box-sizing: border-box; margin: 0px; padding: 0px; color: rgb(31, 31, 31); font-family: ElsevierGulliver, Georgia, "Times New Roman", Times, STIXGeneral, "Cambria Math", "Lucida Sans Unicode", "Microsoft Sans Serif", "Segoe UI Symbol", "Arial Unicode MS", serif, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><br class="Apple-interchange-newline"><!--EndFragment--></body></html>';
+    assert.equal(compose_paste.paste_handler_converter(input), "Abstract");
+
+    // Heading from https://en.wikipedia.org/wiki/James_Madison
+    input =
+        '<html><body><!--StartFragment--><h1 id="firstHeading" class="firstHeading mw-first-heading" style="color: var(--color-emphasized,#101418); font-weight: normal; margin: 0px; padding: 0px; display: flow-root; word-break: break-word; border: 0px; font-size: 1.8em; font-family: &quot;Linux Libertine&quot;, Georgia, Times, &quot;Source Serif Pro&quot;, serif; line-height: 1.375; overflow-wrap: break-word; flex-grow: 1; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="mw-page-title-main">James Madison</span></h1><div id="p-lang-btn" class="vector-dropdown mw-portlet mw-portlet-lang" style="position: relative; float: right; box-sizing: border-box; flex-shrink: 0; margin-right: -12px; color: rgb(32, 33, 34); font-family: sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"></div><br class="Apple-interchange-newline"><!--EndFragment--></body></html>';
+    assert.equal(compose_paste.paste_handler_converter(input), "James Madison");
+
+    // Heading from https://customer-identity-access-management.hashnode.dev/from-words-to-vectors-understanding-the-magic-of-text-embedding
+    input = `<html><body><!--StartFragment--><div class="mt-6 break-words px-4 text-center font-heading text-3xl font-bold text-slate-900 dark:text-white md:mt-10 md:px-5 md:text-4xl lg:px-8 xl:px-20 xl:text-5xl mb-8 md:mb-14" style="box-sizing: border-box; ...">
+    <h1 class="leading-tight" data-query="post-title">From Words to Vectors: Understanding the Magic of Text Embedding</h1>
+    </div></body></html>`;
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "From Words to Vectors: Understanding the Magic of Text Embedding",
+    );
+
+    // Check we don't double-convert HTML to text.
+    input = `<del>turtles are cool</del>`;
+    assert.equal(compose_paste.paste_handler_converter(input), "turtles are cool");
+
+    input = `<span style="color: rgb(31, 35, 40); font-family: ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;, monospace; font-size: 11.9px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: break-spaces; background-color: rgba(129, 139, 152, 0.12); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">&lt;del&gt;turtles are cool&lt;/del&gt;</span>`;
+    assert.equal(compose_paste.paste_handler_converter(input), "<del>turtles are cool</del>");
 
     // 2 paragraphs with line break/s in between
     input =
