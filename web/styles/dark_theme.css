@@ -479,7 +479,7 @@
     }
 
     #recent_view_table {
-        .zulip-icon-user {
+        .zulip-icon-send-dm {
             opacity: 0.7;
         }
     }
