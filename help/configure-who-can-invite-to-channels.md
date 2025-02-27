@@ -9,7 +9,7 @@ channels](/help/channel-permissions).
 For [private channels](/help/channel-permissions), content access must be
 granted explicitly. Users have content access if:
 
-{!metadata-access-definition.md!}
+{!content-access-definition.md!}
 
 {!admin-only.md!}
 
