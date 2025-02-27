@@ -269,6 +269,7 @@
     --right-sidebar-width: calc(
         var(--right-column-width) - var(--right-sidebar-left-spacing)
     );
+    --right-sidebar-vdots-width: 25px;
     /* The width of the icon is reduced by 2px, to account for 2px
        of top and bottom margin needed for hover backgrounds to
        not touch the row outline. */
