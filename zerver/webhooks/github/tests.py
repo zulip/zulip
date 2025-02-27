@@ -236,7 +236,7 @@ class GitHubWebhookTest(WebhookTestCase):
         )
 
     def test_issue_transfer_opened_message(self) -> None:
-        expected_message = "[Issue #4 Fixture collection](https://github.com/CrisisCollab/admin-frontend-mvp/issues/4) was transferred from CrisisCollab/TestWebhook."
+        expected_message = "[Issue #4 Fixture collection](https://github.com/CrisisCollab/admin-frontend-mvp/issues/4) was transferred from [CrisisCollab/TestWebhook#4](https://github.com/CrisisCollab/TestWebhook/issues/4)."
         expected_topic_name = "admin-frontend-mvp / issue #4 Fixture collection"
         self.check_webhook(
             "issues__opened_via_transfer",
