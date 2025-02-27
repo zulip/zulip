@@ -118,10 +118,9 @@ class NarrowParameter(BaseModel):
             "id",
             "sender",
             "group-pm-with",
-            "dm-including",
             "with",
         ]
-        operators_supporting_ids = ["pm-with", "dm"]
+        operators_supporting_ids = ["pm-with", "dm", "dm-including"]
         operators_non_empty_operand = {"search"}
 
         operator = self.operator
@@ -692,7 +691,7 @@ class NarrowBuilder:
         return set(self_recipient_ids) & set(narrow_recipient_ids)
 
     def by_dm_including(
-        self, query: Select, operand: str | int, maybe_negate: ConditionTransform
+    self, query: Select, operand: str | int | Iterable[int], maybe_negate: ConditionTransform
     ) -> Select:
         # This operator does not support is_web_public_query.
         assert not self.is_web_public_query
@@ -700,46 +699,75 @@ class NarrowBuilder:
 
         self.check_not_both_channel_and_dm_narrow(maybe_negate, is_dm_narrow=True)
 
-        try:
-            if isinstance(operand, str):
+        user_profiles = []
+        if isinstance(operand, str):
+            try:
                 narrow_user_profile = get_user_including_cross_realm(operand, self.realm)
-            else:
+                user_profiles = [narrow_user_profile]
+            except UserProfile.DoesNotExist:
+                raise BadNarrowOperatorError("unknown user " + operand)
+        elif isinstance(operand, int):
+            try:
                 narrow_user_profile = get_user_by_id_in_realm_including_cross_realm(
                     operand, self.realm
                 )
-        except UserProfile.DoesNotExist:
-            raise BadNarrowOperatorError("unknown user " + str(operand))
+                user_profiles = [narrow_user_profile]
+            except UserProfile.DoesNotExist:
+                raise BadNarrowOperatorError("unknown user " + str(operand))
+        else:
+            # Handle the case when operand is a list of user IDs
+            # Collect valid users, ignoring any that don't exist
+            for user_id in operand:
+                try:
+                    user = get_user_by_id_in_realm_including_cross_realm(user_id, self.realm)
+                    user_profiles.append(user)
+                except UserProfile.DoesNotExist:
+                    continue
+            
+            # If no valid users were found, raise an error
+            if not user_profiles:
+                raise BadNarrowOperatorError("No valid users found in " + str(operand))
 
-        # "dm-including" when combined with the user's own ID/email as the operand
+        # "dm-including" when all users in the operand are the current user
         # should return all group and 1:1 direct messages (including direct messages
         # with self), so the simplest query to get these messages is the same as "is:dm".
-        if narrow_user_profile.id == self.user_profile.id:
+        if all(user.id == self.user_profile.id for user in user_profiles):
             cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
 
         # all direct messages including another person (group and 1:1)
-        direct_message_group_recipient_ids = self._get_direct_message_group_recipients(
-            narrow_user_profile
-        )
+        direct_message_group_recipient_ids = set()
+        for user in user_profiles:
+            if user.id != self.user_profile.id:
+                direct_message_group_recipient_ids.update(
+                    self._get_direct_message_group_recipients(user)
+                )
 
-        self_recipient_id = self.user_profile.recipient_id
-        # See note above in `by_dm` about needing bidirectional messages
-        # for direct messages with another person.
+        # conditions for 1:1 direct messages with each specified user
+        one_on_one_conditions = []
+        for user in user_profiles:
+            if user.id != self.user_profile.id:
+                one_on_one_conditions.append(
+                    and_(
+                        column("sender_id", Integer) == user.id,
+                        column("recipient_id", Integer) == self.user_profile.recipient_id,
+                    )
+                )
+                one_on_one_conditions.append(
+                    and_(
+                        column("sender_id", Integer) == self.user_profile.id,
+                        column("recipient_id", Integer) == user.recipient_id,
+                    )
+                )
+
         cond = and_(
             column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
             column("realm_id", Integer) == self.realm.id,
             or_(
-                and_(
-                    column("sender_id", Integer) == narrow_user_profile.id,
-                    column("recipient_id", Integer) == self_recipient_id,
-                ),
-                and_(
-                    column("sender_id", Integer) == self.user_profile.id,
-                    column("recipient_id", Integer) == narrow_user_profile.recipient_id,
-                ),
+                *one_on_one_conditions,
                 and_(
                     column("recipient_id", Integer).in_(direct_message_group_recipient_ids),
-                ),
+                ) if direct_message_group_recipient_ids else false(),
             ),
         )
         return query.where(maybe_negate(cond))
