@@ -36,6 +36,7 @@ export const media_breakpoints = {
 
 export const container_breakpoints = {
     cq_xl_min: xl / base_em_px + "em",
+    cq_lg_min: lg / base_em_px + "em",
     cq_md_min: md / base_em_px + "em",
     cq_mm_min: mm / base_em_px + "em",
 };

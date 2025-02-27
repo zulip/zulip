@@ -1599,11 +1599,11 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
         .app-main .column-middle {
             margin-left: 7px;
         }
+    }
 
-        @container header-container (width > $cq_md_min) {
-            #navbar-middle {
-                margin-left: var(--middle-column-left-margin-fluid-layout);
-            }
+    @container header-container (width > $cq_md_min) {
+        #navbar-middle {
+            margin-left: var(--middle-column-left-margin-fluid-layout);
         }
     }
 
@@ -1613,10 +1613,27 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
         }
     }
 
+    @container header-container (width < $cq_md_min) {
+        #navbar-middle {
+            margin-left: 0;
+        }
+    }
+
     @container app (width < $cq_xl_min) {
         #compose-content,
         .app-main .column-middle {
             margin-left: 7px;
+        }
+    }
+}
+
+/* Media-query fallback for the cinched-up logo presentation. */
+@media (width > $md_min) {
+    .without-container-query-support {
+        &.hide-left-sidebar {
+            #navbar-middle {
+                margin-left: var(--middle-column-left-margin-fluid-layout);
+            }
         }
     }
 }
@@ -1677,7 +1694,10 @@ body:not(.hide-left-sidebar) {
     }
 
     .top-navbar-container {
-        margin-left: 40px;
+        /* The --header-height variable is used to make
+        the squared toggle area, so we offset it
+        accordingly. */
+        margin-left: var(--header-height);
     }
 }
 
