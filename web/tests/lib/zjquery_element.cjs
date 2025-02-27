@@ -25,12 +25,7 @@ function FakeElement(selector, opts) {
     const $self = {
         length: 1,
         [0]: {textContent: text},
-        *[Symbol.iterator]() {
-            // eslint-disable-next-line unicorn/no-for-loop
-            for (let i = 0; i < $self.length; i += 1) {
-                yield $self[i];
-            }
-        },
+        [Symbol.iterator]: Array.prototype.values,
         addClass(class_name) {
             classes.set(class_name, true);
             return $self;
