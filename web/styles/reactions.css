@@ -166,7 +166,9 @@
 
 .emoji-picker-popover {
     padding: 0;
-    height: fit-content;
+    /* TODO: Calculate a more accurate height. This is a bit cut off at 12px and
+       has a bit of white below it at 20px. */
+    height: 24em;
     user-select: none;
 
     .emoji-popover {
