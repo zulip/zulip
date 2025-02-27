@@ -58,13 +58,16 @@ export function show_preview_area() {
     $("#compose").addClass("preview_mode");
     $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", -1);
 
-    const $compose_textarea = $("textarea#compose-textarea");
-    const content = $compose_textarea.val();
-
     $("#compose .markdown_preview").hide();
     $("#compose .undo_markdown_preview").show();
     $("#compose .undo_markdown_preview").trigger("focus");
 
+    render_preview_area();
+}
+
+export function render_preview_area() {
+    const $compose_textarea = $("textarea#compose-textarea");
+    const content = $compose_textarea.val();
     const $preview_message_area = $("#compose .preview_message_area");
     compose_ui.render_and_show_preview(
         $("#compose .markdown_preview_spinner"),

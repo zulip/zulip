@@ -17,6 +17,7 @@ import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
+import * as compose_state from "./compose_state.ts";
 import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
@@ -1310,6 +1311,9 @@ export function render_and_show_preview(
     $preview_content_box: JQuery,
     content: string,
 ): void {
+    const preview_render_count = compose_state.get_preview_render_count() + 1;
+    compose_state.set_preview_render_count(preview_render_count);
+
     function show_preview(rendered_content: string, raw_content?: string): void {
         // content is passed to check for status messages ("/me ...")
         // and will be undefined in case of errors
@@ -1350,6 +1354,12 @@ export function render_and_show_preview(
             url: "/json/messages/render",
             data: {content},
             success(response_data) {
+                if (preview_render_count !== compose_state.get_preview_render_count()) {
+                    // The compose input has already been updated with new raw Markdown
+                    // since this rendering request was sent off to the server, so
+                    // there's nothing to do.
+                    return;
+                }
                 const data = message_render_response_schema.parse(response_data);
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);

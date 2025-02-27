@@ -9,6 +9,7 @@ let message_type: "stream" | "private" | undefined;
 let recipient_edited_manually = false;
 let is_content_unedited_restored_draft = false;
 let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
+let preview_render_count = 0;
 
 // We use this variable to keep track of whether user has viewed the topic resolved
 // banner for the current compose session, for a narrow. This prevents the banner
@@ -65,6 +66,14 @@ export function set_recipient_guest_ids_for_dm_warning(guest_ids: number[]): voi
 
 export function get_recipient_guest_ids_for_dm_warning(): number[] {
     return recipient_guest_ids_for_dm_warning;
+}
+
+export function get_preview_render_count(): number {
+    return preview_render_count;
+}
+
+export function set_preview_render_count(count: number): void {
+    preview_render_count = count;
 }
 
 export function composing(): boolean {
