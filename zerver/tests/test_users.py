@@ -1336,7 +1336,7 @@ class AdminCreateUserTest(ZulipTestCase):
 
         # we can't create the same user twice.
         result = self.client_post("/json/users", valid_params)
-        self.assert_json_error(result, "Email 'romeo@zulip.net' already in use")
+        self.assert_json_error(result, "Email is already in use.")
 
         # Don't allow user to sign up with disposable email.
         realm.emails_restricted_to_domains = False

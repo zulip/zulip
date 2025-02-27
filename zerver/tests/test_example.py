@@ -214,7 +214,7 @@ class TestFullStack(ZulipTestCase):
 
         # Verify error handling when the user already exists.
         result = self.client_post("/json/users", valid_params)
-        self.assert_json_error(result, "Email 'romeo@zulip.net' already in use", 400)
+        self.assert_json_error(result, "Email is already in use.", 400)
 
     def test_tornado_redirects(self) -> None:
         # Let's poke a bit at Zulip's event system.
