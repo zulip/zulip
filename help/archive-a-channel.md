@@ -1,7 +1,5 @@
 # Archive a channel
 
-{!admin-only.md!}
-
 You can archive channels you no longer plan to use. Archiving a channel:
 
 - Removes it from the left sidebar for all users.
