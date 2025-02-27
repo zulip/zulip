@@ -26,8 +26,12 @@ def get_gmt_offset(tz_name: str) -> str:
         offset_seconds = offset.total_seconds()
         hours, remainder = divmod(offset_seconds, 3600)  # Preserve sign directly
         minutes = remainder // 60
+        if minutes == 0:
+            return f"GMT{int(hours):+d}"  # Format as "GMT+9"
+        return f"GMT{int(hours):+d}:{int(minutes):02d}"  # Format as "GMT+9:30"
 
-        return f"GMT({int(hours):+03d}:{int(minutes):02d})"  # New format
+        # return f"GMT({int(hours):+03d}:{int(minutes):02d})"  # New format
+
     except Exception as e:
         print(f"Error processing {tz_name}: {e}")
         return "GMT(+00:00)"  # Ensure consistency
