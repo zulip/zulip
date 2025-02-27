@@ -9428,7 +9428,7 @@ paths:
                   - example:
                       {
                         "code": "BAD_REQUEST",
-                        "msg": "Email 'newbie@zulip.com' already in use",
+                        "msg": "Email is already in use.",
                         "result": "error",
                       }
                     description: |
