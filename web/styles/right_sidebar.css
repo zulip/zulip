@@ -405,13 +405,15 @@
        that controls remain aligned with the username,
        even when there is a status line shown below.
 
-       The 26px column for the vdots is less than the
+       The 25px column for the vdots is less than the
        30px allotted in the left sidebar, but it holds
        the username area constant, so that no ellipsis
-       appears on the username on hover. */
+       appears on the username on hover. The 25px value
+       is necessary for correct vdots alignment with the
+       filter row's vdots. */
     grid-template:
         "row-content ending-anchor-element" var(--line-height-sidebar-row)
-        "row-content ." auto / minmax(0, 1fr) 26px;
+        "row-content ." auto / minmax(0, 1fr) var(--right-sidebar-vdots-width);
     align-content: baseline;
     margin-right: var(--width-simplebar-scroll-hover);
     margin-left: var(--right-sidebar-toggle-width-offset);
@@ -518,8 +520,12 @@
         color: var(--color-vdots-visible);
         justify-content: center;
         display: grid;
-        width: 25px;
+        width: var(--right-sidebar-vdots-width);
         margin-left: 5px;
+        /* Push back against default right-sidebar
+           spacing for better vdots alignment. */
+        margin-right: 0;
+        padding-left: 0;
 
         &:hover {
             color: var(--color-vdots-hover);
