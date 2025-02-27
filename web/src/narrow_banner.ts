@@ -127,11 +127,8 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
     };
     const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
 
-    const current_filter = narrow_state.filter();
-    if (current_filter === undefined) {
-        // We're in either the inbox or recent conversations view.
-        return default_banner;
-    }
+    const current_filter = narrow_state.filter()!;
+
     if (current_filter.is_in_home()) {
         // We're in the combined feed view.
         return {

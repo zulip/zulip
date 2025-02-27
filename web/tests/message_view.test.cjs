@@ -239,16 +239,6 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
-    message_lists.set_current(undefined);
-    narrow_banner.show_empty_narrow_message();
-    assert.equal(
-        $(".empty_feed_notice_main").html(),
-        empty_narrow_html(
-            "translated: There are no messages here.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
-        ),
-    );
-
     // for empty combined feed
     const current_filter = new Filter([{operator: "in", operand: "home"}]);
     message_lists.set_current({data: {filter: current_filter}});
