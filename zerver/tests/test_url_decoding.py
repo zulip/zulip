@@ -3,7 +3,7 @@ from typing import Any, TypeAlias
 import orjson
 from typing_extensions import override
 
-from zerver.lib.narrow import BadNarrowOperatorError
+from zerver.lib.narrow import BadNarrowOperatorError, InvalidOperatorCombinationError
 from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_decoding import Filter, is_same_server_message_link, parse_narrow_url
@@ -157,3 +157,29 @@ class NarrowTermFilterTest(ZulipTestCase):
         filter = Filter(base_terms, self.realm)
         with self.assertRaisesRegex(AssertionError, "Invalid term to update"):
             filter.update_term(old_term, new_term)
+
+    def test_check_not_both_channel_and_dm_narrow(self) -> None:
+        terms = [
+            NarrowTerm(negated=False, operator="channel", operand="13"),
+            NarrowTerm(negated=False, operator="dm", operand="13"),
+        ]
+        with self.assertRaisesRegex(
+            InvalidOperatorCombinationError,
+            "No message can be both a channel message and direct message",
+        ):
+            Filter(terms, self.realm)._check_not_both_channel_and_dm_narrow()
+
+        channel_terms = [
+            NarrowTerm(negated=False, operator="channel", operand=13),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="near", operand=1),
+        ]
+        filter = Filter(channel_terms, self.realm)
+        self.assertTrue(filter._check_not_both_channel_and_dm_narrow())
+
+        dm_terms = [
+            NarrowTerm(negated=False, operator="dm", operand=[13, 2]),
+            NarrowTerm(negated=False, operator="near", operand=1),
+        ]
+        filter = Filter(dm_terms, self.realm)
+        self.assertFalse(filter._check_not_both_channel_and_dm_narrow())

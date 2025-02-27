@@ -6,7 +6,7 @@ from urllib.parse import unquote, urlsplit
 
 from django.conf import settings
 
-from zerver.lib.narrow import BadNarrowOperatorError
+from zerver.lib.narrow import BadNarrowOperatorError, InvalidOperatorCombinationError
 from zerver.lib.narrow_helpers import NarrowTerm, NarrowTermOperandT
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.models.messages import Message
@@ -307,6 +307,29 @@ class Filter:
         term_types = [Filter.term_type(term) for term in self._terms]
         self._sorted_term_types = Filter.sorted_term_types(term_types)
         return self._sorted_term_types
+
+    def _check_not_both_channel_and_dm_narrow(self) -> bool:
+        """
+        Asserts that the given terms does not narrow to both
+        channel and direct message.
+
+        Returns `True` if channel narrow or `False` if direct
+        narrow.
+        """
+        dm_operators = {"dm", "dm-including", "is-dm"}
+        channel_operators = {"channel", "channels-public", "topic"}
+
+        term_types = set(self._build_sorted_term_types())
+
+        has_dm = not term_types.isdisjoint(dm_operators)
+        has_channel = not term_types.isdisjoint(channel_operators)
+
+        if has_dm and has_channel:
+            raise InvalidOperatorCombinationError(
+                "No message can be both a channel message and direct message"
+            )
+
+        return has_channel
 
     def _canonicalize_terms(self, terms_mixed_case: Sequence[NarrowTerm]) -> list[NarrowTerm]:
         return [Filter.canonicalize_term(term) for term in terms_mixed_case]
