@@ -1028,7 +1028,15 @@ textarea.new_message_textarea {
 
 #compose_recipient_box {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    /* When displaying #topic-not-mandatory-placeholder,
+       we let it occupy the entire topic box. Otherwise,
+       we set and preserve named areas for the ordinary
+       topic text and the clear-topic button. */
+    grid-template-columns:
+        [topic-box-start topic-start] minmax(0, 1fr)
+        [topic-end topic-clear-button-start] auto [topic-clear-button-end topic-box-end];
+    grid-template-rows: auto;
+    align-content: center;
     align-items: stretch;
     flex: 1 1 0;
     border: 1px solid var(--color-compose-recipient-box-border-color);
@@ -1051,6 +1059,7 @@ textarea.new_message_textarea {
 
     /* Styles for input in the recipient_box */
     #stream_message_recipient_topic {
+        grid-area: topic;
         color: var(--color-compose-recipient-box-text-color);
         /* Override grid's effective `max-content` min-width */
         overflow: hidden;
@@ -1069,7 +1078,10 @@ textarea.new_message_textarea {
     }
 
     #topic-not-mandatory-placeholder {
-        position: absolute;
+        grid-area: topic-box;
+        white-space: nowrap;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
         padding: 5px 6px;
         display: none;
         visibility: hidden;
@@ -1078,6 +1090,7 @@ textarea.new_message_textarea {
 
     /* Styles for new conversation button in the recipient_box */
     #recipient_box_clear_topic_button {
+        grid-area: topic-clear-button;
         /* Set the border radius smaller, relative to the parent */
         border-radius: 2px;
         padding: 6px;
