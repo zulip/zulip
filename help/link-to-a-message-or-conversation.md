@@ -22,13 +22,16 @@ Channel links are automatically formatted as [#channel name]().
 
 !!! tip ""
 
-    You can create a channel link manually by typing `#**channel name**`.
+    To link to the channel you're composing to, type `#>`, and pick the
+    top option from the autocomplete.
 
 {end_tabs}
 
 When you paste a channel link into Zulip, it's automatically formatted as
 `#**channel name**`. You can paste as plain text if you prefer with <kbd
 data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
+
+You can create a channel link manually by typing `#**channel name**`
 
 ## Link to a topic within Zulip
 
@@ -48,13 +51,17 @@ Topic links are automatically formatted as [#channel > topic]().
 
 !!! tip ""
 
-    You can create a topic link manually by typing `#**channel name>topic name**`.
+    To link to a topic in the channel you're composing to, type `#>`
+    followed by a few letters from the topic name, and pick the desired
+    topic from the autocomplete.
 
 {end_tabs}
 
 When you paste a topic link into Zulip, it's automatically formatted as
 `#**channel name>topic name**`. You can paste as plain text if you prefer with
 <kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
+
+You can create a topic link manually by typing `#**channel name>topic name**`.
 
 ## Link to Zulip from anywhere
 
@@ -121,13 +128,11 @@ When you send your message, the link will appear as [#channel > topic @ 💬](/)
     If using Zulip in a browser, you can also click on the timestamp
     of a message, and copy the URL from your browser's address bar.
 
-!!! tip ""
-
-    When you paste a message link into Zulip, it is automatically
-    formatted for you. You can paste as plain text if you prefer with
-    <kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
-
 {end_tabs}
+
+When you paste a message link into Zulip, it is automatically
+formatted for you. You can paste as plain text if you prefer with
+<kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>.
 
 ### Get a link to a specific topic
 
