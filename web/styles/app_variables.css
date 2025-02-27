@@ -227,7 +227,8 @@
     --left-sidebar-icon-content-gap: 0.4375em;
     /* The space allotted in gridded rows for the toggle icon. */
     --left-sidebar-header-icon-toggle-width: 20px;
-    --left-sidebar-vdots-width: 26px;
+    /* 26px at 16px/1em */
+    --left-sidebar-vdots-width: 1.625em;
     /* Other rows need an offset to preserve a column the
        entire height of the left sidebar for where toggles sit. */
     --left-sidebar-toggle-width-offset: var(
@@ -269,7 +270,8 @@
     --right-sidebar-width: calc(
         var(--right-column-width) - var(--right-sidebar-left-spacing)
     );
-    --right-sidebar-vdots-width: 25px;
+    /* 25px at 16px/1em */
+    --right-sidebar-vdots-width: 1.5625em;
     /* The width of the icon is reduced by 2px, to account for 2px
        of top and bottom margin needed for hover backgrounds to
        not touch the row outline. */
