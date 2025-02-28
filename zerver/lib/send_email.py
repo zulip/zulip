@@ -381,6 +381,14 @@ def send_future_email(
         )
         # For logging the email
 
+    if delay == timedelta(0):
+        # Immediately queue, rather than go through the ScheduledEmail table
+        queue_event_on_commit(
+            "deferred_email_senders",
+            {**email_fields, "to_user_ids": to_user_ids, "to_emails": to_emails},
+        )
+        return
+
     assert (to_user_ids is None) ^ (to_emails is None)
     with transaction.atomic(savepoint=False):
         email = ScheduledEmail.objects.create(
