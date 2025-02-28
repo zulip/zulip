@@ -1354,8 +1354,12 @@ export function render_and_show_preview(
             url: "/json/messages/render",
             data: {content},
             success(response_data) {
-                if (preview_render_count !== compose_state.get_preview_render_count()) {
-                    // The compose input has already been updated with new raw Markdown
+                if (
+                    preview_render_count !== compose_state.get_preview_render_count() ||
+                    !$("#compose").hasClass("preview_mode")
+                ) {
+                    // The user is no longer in preview mode or the compose
+                    // input has already been updated with new raw Markdown
                     // since this rendering request was sent off to the server, so
                     // there's nothing to do.
                     return;
