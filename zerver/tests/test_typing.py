@@ -1,8 +1,10 @@
 import orjson
 
+from zerver.actions.streams import do_deactivate_stream, do_unarchive_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import DirectMessageGroup
 from zerver.models.recipients import get_direct_message_group_hash
+from zerver.models.streams import get_stream
 
 
 class TypingValidateOperatorTest(ZulipTestCase):
@@ -167,6 +169,49 @@ class TypingValidateStreamIdTopicMessageIdArgumentsTest(ZulipTestCase):
                 "type": "stream",
                 "op": "start",
                 "stream_id": str(stream_id),
+                "topic": topic_name,
+            },
+        )
+        self.assert_json_error(result, "Invalid channel ID")
+
+    def test_stream_is_archived(self) -> None:
+        sender = self.example_user("hamlet")
+        stream_name = self.get_streams(sender)[0]
+        stream = get_stream(stream_name, realm=sender.realm)
+        topic_name = "some topic"
+
+        result = self.api_post(
+            sender,
+            "/api/v1/typing",
+            {
+                "type": "stream",
+                "op": "start",
+                "stream_id": str(stream.id),
+                "topic": topic_name,
+            },
+        )
+        self.assert_json_success(result)
+
+        result = self.api_post(
+            sender,
+            "/api/v1/typing",
+            {
+                "type": "stream",
+                "op": "stop",
+                "stream_id": str(stream.id),
+                "topic": topic_name,
+            },
+        )
+        self.assert_json_success(result)
+
+        do_deactivate_stream(stream, acting_user=sender)
+        result = self.api_post(
+            sender,
+            "/api/v1/typing",
+            {
+                "type": "stream",
+                "op": "start",
+                "stream_id": str(stream.id),
                 "topic": topic_name,
             },
         )
@@ -692,6 +737,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         aaron = self.example_user("aaron")
         iago = self.example_user("iago")
         channel_name = self.get_streams(sender)[0]
+        channel = get_stream(channel_name, sender.realm)
 
         for user in [aaron, iago]:
             self.subscribe(user, channel_name)
@@ -713,6 +759,14 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         self.assertEqual(orjson.loads(result.content)["msg"], "")
         event_user_ids = set(events[0]["users"])
         self.assertEqual(expected_user_ids, event_user_ids)
+
+        do_deactivate_stream(channel, acting_user=sender)
+        # No events should be sent if stream is deactivated.
+        with self.capture_send_event_calls(expected_num_events=0) as events:
+            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+        self.assert_json_error(result, "Invalid message(s)")
+        self.assertEqual(events, [])
+        do_unarchive_stream(channel, channel_name, acting_user=sender)
 
         sender.send_stream_typing_notifications = False
         sender.save()
