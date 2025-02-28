@@ -572,49 +572,6 @@ confirm everything is working correctly.
    20.04](#upgrading-from-ubuntu-1804-bionic-to-2004-focal), the next
    in chain of upgrades leading to a supported operating system.
 
-### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
-
-1. Upgrade your server to the latest Zulip `2.0.x` release. You can
-   only upgrade to Zulip `2.1.x` and newer after completing this
-   process, since newer releases don't support Ubuntu 14.04 Trusty.
-
-2. Same as for Ubuntu 18.04 to 20.04.
-
-3. Same as for Ubuntu 18.04 to 20.04.
-
-4. As root, upgrade the database installation and OS configuration to
-   match the new OS version:
-
-   ```bash
-   apt remove upstart -y
-   /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
-   pg_dropcluster 9.5 main --stop
-   systemctl stop postgresql
-   pg_upgradecluster -m upgrade 9.3 main
-   pg_dropcluster 9.3 main
-   apt remove postgresql-9.3
-   systemctl start postgresql
-   service memcached restart
-   ```
-
-5. Finally, we need to reinstall the current version of Zulip, which
-   among other things will recompile Zulip's Python module
-   dependencies for your new version of Python:
-
-   ```bash
-   rm -rf /srv/zulip-venv-cache/*
-   /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
-       /home/zulip/deployments/current/ --ignore-static-assets
-   ```
-
-   This will finish by restarting your Zulip server; you should now be
-   able to navigate to its URL and confirm everything is working
-   correctly.
-
-6. [Upgrade from Ubuntu 16.04 to
-   18.04](#upgrading-from-ubuntu-1604-xenial-to-1804-bionic), the next
-   in chain of upgrades leading to a supported operating system.
-
 ### Upgrading from Debian 11 to 12
 
 1. Upgrade your server to the latest `7.x` release.
