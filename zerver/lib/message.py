@@ -614,6 +614,7 @@ def bulk_access_messages(
     messages: Collection[Message] | QuerySet[Message],
     *,
     stream: Stream | None = None,
+    is_modifying_message: bool,
 ) -> list[Message]:
     """This function does the full has_message_access check for each
     message.  If stream is provided, it is used to avoid unnecessary
