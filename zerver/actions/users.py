@@ -532,7 +532,7 @@ def do_deactivate_user(
 
         change_user_is_active(user_profile, False)
 
-        clear_scheduled_emails(user_profile.id)
+        clear_scheduled_emails([user_profile.id])
         revoke_invites_generated_by_user(user_profile)
 
         event_time = timezone_now()

@@ -480,7 +480,7 @@ def do_change_user_setting(
 
     # Disabling digest emails should clear a user's email queue
     if setting_name == "enable_digest_emails" and not db_setting_value:
-        clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
+        clear_scheduled_emails([user_profile.id], ScheduledEmail.DIGEST)
 
     if setting_name == "email_notifications_batching_period_seconds":
         assert isinstance(old_value, int)
