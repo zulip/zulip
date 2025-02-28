@@ -47,10 +47,9 @@ from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.actions.user_groups import check_add_user_group, do_change_user_group_permission_setting
 from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import change_user_is_active
-from zerver.context_processors import common_context
 from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
-from zerver.lib.send_email import FromAddress, queue_scheduled_emails, send_future_email
+from zerver.lib.send_email import queue_scheduled_emails
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email
@@ -1808,60 +1807,31 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertTrue(find_key_by_email(invitee_email))
         self.check_sent_emails([invitee_email])
 
-        data = {"email": invitee_email, "referrer_email": current_user.email}
-        invitee = PreregistrationUser.objects.get(email=data["email"])
-        referrer = self.example_user(referrer_name)
-        validity_in_minutes = 2 * 24 * 60
-        link = create_confirmation_link(
-            invitee, Confirmation.INVITATION, validity_in_minutes=validity_in_minutes
-        )
-        context = common_context(referrer)
-        context.update(
-            activate_url=link,
-            referrer_name=referrer.full_name,
-            referrer_email=referrer.email,
-            referrer_realm_name=referrer.realm.name,
-        )
-        with self.settings(EMAIL_BACKEND="django.core.mail.backends.console.EmailBackend"):
-            email = data["email"]
-            send_future_email(
-                "zerver/emails/invitation_reminder",
-                referrer.realm,
-                to_emails=[email],
-                from_address=FromAddress.no_reply_placeholder,
-                context=context,
-            )
-        email_jobs_to_deliver = ScheduledEmail.objects.filter(
-            scheduled_timestamp__lte=timezone_now()
-        )
+        email_jobs_to_deliver = ScheduledEmail.objects.all()
         self.assert_length(email_jobs_to_deliver, 1)
-        email_count = len(mail.outbox)
+
+        mail.outbox = []
         for job in email_jobs_to_deliver:
             with self.captureOnCommitCallbacks(execute=True):
                 queue_scheduled_emails(job)
-        self.assert_length(mail.outbox, email_count + 1)
-        self.assertEqual(self.email_envelope_from(mail.outbox[-1]), settings.NOREPLY_EMAIL_ADDRESS)
-        self.assertIn(FromAddress.NOREPLY, self.email_display_from(mail.outbox[-1]))
+        self.assert_length(mail.outbox, 1)
+        self.assertEqual(self.email_envelope_from(mail.outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
 
         # Now verify that signing up clears invite_reminder emails
-        with self.settings(EMAIL_BACKEND="django.core.mail.backends.console.EmailBackend"):
-            email = data["email"]
-            send_future_email(
-                "zerver/emails/invitation_reminder",
-                referrer.realm,
-                to_emails=[email],
-                from_address=FromAddress.no_reply_placeholder,
-                context=context,
-            )
+        mail.outbox = []
+        invitee_email = self.nonreg_email("bob")
+        self.assert_json_success(self.invite(invitee_email, ["Denmark"]))
+        self.assertTrue(find_key_by_email(invitee_email))
+        self.check_sent_emails([invitee_email])
 
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
-            scheduled_timestamp__lte=timezone_now(), type=ScheduledEmail.INVITATION_REMINDER
+            type=ScheduledEmail.INVITATION_REMINDER
         )
         self.assert_length(email_jobs_to_deliver, 1)
 
         self.register(invitee_email, "test")
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
-            scheduled_timestamp__lte=timezone_now(), type=ScheduledEmail.INVITATION_REMINDER
+            type=ScheduledEmail.INVITATION_REMINDER
         )
         self.assert_length(email_jobs_to_deliver, 0)
 
