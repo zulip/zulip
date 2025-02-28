@@ -747,6 +747,7 @@ function setup_page(callback: () => void): void {
             disable_message_retention_setting:
                 !realm.zulip_plan_is_not_limited || !current_user.is_owner,
             group_setting_labels: settings_config.all_group_setting_labels.stream,
+            has_billing_access: settings_data.user_has_billing_access(),
         };
 
         const rendered = render_stream_settings_overlay(template_data);

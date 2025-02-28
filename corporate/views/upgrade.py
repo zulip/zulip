@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 from pydantic import Json
 
 from corporate.lib.billing_types import BillingModality, BillingSchedule, LicenseManagement
@@ -206,6 +207,9 @@ def upgrade_page(
 
     if redirect_url:
         return HttpResponseRedirect(redirect_url)
+
+    if not user.has_billing_access:
+        return HttpResponseRedirect(reverse("billing_page"))
 
     response = render(request, "corporate/billing/upgrade.html", context=context)
     return response

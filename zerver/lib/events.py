@@ -4,6 +4,7 @@ import copy
 import logging
 import time
 from collections.abc import Callable, Collection, Iterable, Sequence
+from dataclasses import dataclass
 from typing import Any
 
 from django.conf import settings
@@ -105,6 +106,56 @@ from zerver.models.realms import (
 from zerver.models.streams import get_default_stream_groups
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
+
+
+@dataclass
+class BillingInfo:
+    show_billing: bool
+    show_plans: bool
+    sponsorship_pending: bool
+    show_remote_billing: bool
+
+
+def get_billing_info(
+    user_profile: UserProfile | None, user_has_billing_access: bool | None = None
+) -> BillingInfo:
+    # See https://zulip.com/help/user-roles for clarity.
+    show_billing = False
+    show_plans = False
+    sponsorship_pending = False
+
+    if user_has_billing_access is None:
+        user_has_billing_access = user_profile is not None and user_profile.has_billing_access
+
+    # We want to always show the remote billing option as long as the user is authorized,
+    # except on zulipchat.com where it's not applicable.
+    show_remote_billing = (
+        (not settings.CORPORATE_ENABLED) and user_profile is not None and user_has_billing_access
+    )
+
+    # This query runs on home page load, so we want to avoid
+    # hitting the database if possible. So, we only run it for the user
+    # types that can actually see the billing info.
+    if settings.CORPORATE_ENABLED and user_profile is not None and user_has_billing_access:
+        from corporate.models import CustomerPlan, get_customer_by_realm
+
+        customer = get_customer_by_realm(user_profile.realm)
+        if customer is not None:
+            if customer.sponsorship_pending:
+                sponsorship_pending = True
+
+            if CustomerPlan.objects.filter(customer=customer).exists():
+                show_billing = True
+
+        if user_profile.realm.plan_type == Realm.PLAN_TYPE_LIMITED:
+            show_plans = True
+
+    return BillingInfo(
+        show_billing=show_billing,
+        show_plans=show_plans,
+        sponsorship_pending=sponsorship_pending,
+        show_remote_billing=show_remote_billing,
+    )
 
 
 def add_realm_logo_fields(state: dict[str, Any], realm: Realm) -> None:
@@ -628,6 +679,17 @@ def fetch_initial_state_data(
         state["can_create_web_public_streams"] = (
             realm.can_create_web_public_channel_group_id in settings_user_recursive_group_ids
         )
+
+        user_has_billing_access = (
+            realm.can_manage_billing_group_id in settings_user_recursive_group_ids
+        )
+        billing_info = get_billing_info(settings_user, user_has_billing_access)
+
+        state["show_billing"] = billing_info.show_billing
+        state["show_plans"] = billing_info.show_plans
+        state["show_remote_billing"] = billing_info.show_remote_billing
+        state["sponsorship_pending"] = billing_info.sponsorship_pending
+
         # TODO/compatibility: Deprecated in Zulip 5.0 (feature level
         # 102); we can remove this once we no longer need to support
         # legacy mobile app versions that read the old property.

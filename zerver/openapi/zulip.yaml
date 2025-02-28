@@ -4813,6 +4813,16 @@ paths:
                                               create and edit user groups.
 
                                             [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                                    can_manage_billing_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to manage plans and billing in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level ZF-51430d). Previously, only owners
+                                            and users with `is_billing_admin` property set to `true` were allowed to
+                                            manage plans and billing.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_summarize_topics_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -17108,6 +17118,16 @@ paths:
                                 create and edit user groups.
 
                               [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                      realm_can_manage_billing_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to manage plans and billing in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level ZF-51430d). Previously, only owners
+                              and users with `is_billing_admin` property set to `true` were allowed to
+                              manage plans and billing.
                       realm_can_create_public_channel_group:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
@@ -18979,6 +18999,39 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is a [guest user](/api/roles-and-permissions).
+                      show_billing:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the user should be shown the "Billing" option.
+
+                          **Changes**: New in Zulip 10.0 (feature level ZF-51430d).
+                      show_plans:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the user should be shown the "Plans and pricing" option.
+
+                          **Changes**: New in Zulip 10.0 (feature level ZF-51430d).
+                      show_remote_billing:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the user should be shown the remote billing option.
+
+                          **Changes**: New in Zulip 10.0 (feature level ZF-51430d).
+                      sponsorship_pending:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the sponsorship is pending in the organization. Note that
+                          this field will always be `false` if the user is not in `can_manage_billing_group`.
+
+                          **Changes**: New in Zulip 10.0 (feature level ZF-51430d).
                       user_id:
                         type: integer
                         description: |

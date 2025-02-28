@@ -221,6 +221,10 @@ const current_user_schema = z.object({
     is_guest: z.boolean(),
     is_moderator: z.boolean(),
     is_owner: z.boolean(),
+    show_billing: z.boolean(),
+    show_plans: z.boolean(),
+    show_remote_billing: z.boolean(),
+    sponsorship_pending: z.boolean(),
     user_id: z.number(),
 });
 
@@ -305,6 +309,7 @@ export const realm_schema = z.object({
     realm_can_delete_own_message_group: group_setting_value_schema,
     realm_can_invite_users_group: group_setting_value_schema,
     realm_can_manage_all_groups: group_setting_value_schema,
+    realm_can_manage_billing_group: group_setting_value_schema,
     realm_can_mention_many_users_group: group_setting_value_schema,
     realm_can_move_messages_between_channels_group: group_setting_value_schema,
     realm_can_move_messages_between_topics_group: group_setting_value_schema,
