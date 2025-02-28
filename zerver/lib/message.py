@@ -314,7 +314,7 @@ def access_message(
     message_id: int,
     lock_message: bool = False,
     *,
-    is_modifying_message: bool = False,
+    is_modifying_message: bool,
 ) -> Message:
     """You can access a message by ID in our APIs that either:
     (1) You received or have previously accessed via starring
@@ -362,7 +362,7 @@ def access_message_and_usermessage(
     message_id: int,
     lock_message: bool = False,
     *,
-    is_modifying_message: bool = False,
+    is_modifying_message: bool,
 ) -> tuple[Message, UserMessage | None]:
     """As access_message, but also returns the usermessage, if any."""
     try:

@@ -965,7 +965,7 @@ def update_narrow_terms_containing_with_operator(
 
     if maybe_user_profile.is_authenticated:
         try:
-            message = access_message(maybe_user_profile, message_id)
+            message = access_message(maybe_user_profile, message_id, is_modifying_message=False)
         except JsonableError:
             can_user_access_target_message = False
     else:
