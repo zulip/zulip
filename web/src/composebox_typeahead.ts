@@ -1359,6 +1359,7 @@ export function initialize_topic_edit_typeahead(
         getCustomItemClassname() {
             return "topic-edit-typeahead";
         },
+        showOnClick: false,
     });
 }
 
