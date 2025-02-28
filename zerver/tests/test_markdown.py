@@ -65,8 +65,10 @@ from zerver.lib.mention import (
     topic_wildcards,
 )
 from zerver.lib.per_request_cache import flush_per_request_caches
+from zerver.lib.streams import user_has_content_access, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, RealmEmoji, RealmFilter, UserMessage, UserProfile
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
@@ -3309,6 +3311,17 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
             cordelia_group,
             acting_user=None,
         )
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+        self.assertTrue(
+            user_has_metadata_access(
+                cordelia, private_stream, user_group_membership_details, is_subscribed=False
+            )
+        )
+        self.assertFalse(
+            user_has_content_access(
+                cordelia, private_stream, user_group_membership_details, is_subscribed=False
+            )
+        )
         msg = Message(
             sender=cordelia,
             sending_client=get_client("test"),
@@ -3326,6 +3339,17 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
             "can_add_subscribers_group",
             cordelia_group,
             acting_user=None,
+        )
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+        self.assertTrue(
+            user_has_metadata_access(
+                cordelia, private_stream, user_group_membership_details, is_subscribed=False
+            )
+        )
+        self.assertTrue(
+            user_has_content_access(
+                cordelia, private_stream, user_group_membership_details, is_subscribed=False
+            )
         )
         msg = Message(
             sender=cordelia,
