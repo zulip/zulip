@@ -2975,7 +2975,12 @@ paths:
                                 sender_id:
                                   type: integer
                                   description: |
-                                    The ID of the user who sent the message.
+                                    The ID of the user who is typing the edit of the
+                                    message.
+
+                                    Clients should be careful to display this user as the person who
+                                    is typing, not that of the sender of the message, in case a
+                                    collaborative editing feature be might be added in the future.
                                 message_id:
                                   type: integer
                                   description: |
