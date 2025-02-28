@@ -1,8 +1,10 @@
 import os
 import warnings
+from datetime import datetime, timezone
 from unittest import mock
 
 import orjson
+import time_machine
 from django.conf import settings
 from typing_extensions import override
 
@@ -123,6 +125,48 @@ class MessagesSummaryTestCase(ZulipTestCase):
         ):
             response = self.client_get("/json/messages/summary")
             self.assert_json_error_contains(response, "Reached monthly limit for AI credits.")
+
+    def test_summarize_messages_in_topic_last_day_of_month(self) -> None:
+        narrow = orjson.dumps([["channel", self.channel_name], ["topic", self.topic_name]]).decode()
+        with open(LLM_FIXTURES_FILE, "rb") as f:
+            fixture_data = orjson.loads(f.read())
+
+        last_day_of_january = datetime(2022, 1, 31, 23, tzinfo=timezone.utc)
+        with time_machine.travel(last_day_of_january, tick=False):
+            # Check that we recorded this usage.
+            with self.settings(
+                TOPIC_SUMMARIZATION_MODEL="groq/llama-3.3-70b-versatile",
+                TOPIC_SUMMARIZATION_API_KEY="test",
+            ):
+                input_tokens = fixture_data["response"]["usage"]["prompt_tokens"]
+                output_tokens = fixture_data["response"]["usage"]["completion_tokens"]
+                credits_used = (output_tokens * settings.OUTPUT_COST_PER_GIGATOKEN) + (
+                    input_tokens * settings.INPUT_COST_PER_GIGATOKEN
+                )
+                self.assertFalse(
+                    UserCount.objects.filter(
+                        property="ai_credit_usage::day", value=credits_used, user_id=self.user.id
+                    ).exists()
+                )
+                with mock.patch("litellm.completion", return_value=fixture_data["response"]):
+                    payload = self.client_get("/json/messages/summary", dict(narrow=narrow))
+                    self.assertEqual(payload.status_code, 200)
+                self.assertTrue(
+                    UserCount.objects.filter(
+                        property="ai_credit_usage::day", value=credits_used, user_id=self.user.id
+                    ).exists()
+                )
+
+            # Check that credit usage limit is hit in the same month.
+            with (
+                self.settings(
+                    TOPIC_SUMMARIZATION_MODEL="groq/llama-3.3-70b-versatile",
+                    MAX_PER_USER_MONTHLY_AI_COST=credits_used / 1000000000,
+                ),
+                mock.patch("litellm.completion", return_value=fixture_data["response"]),
+            ):
+                payload = self.client_get("/json/messages/summary", dict(narrow=narrow))
+                self.assert_json_error_contains(payload, "Reached monthly limit for AI credits.")
 
     def test_permission_to_summarize_message_in_topics(self) -> None:
         narrow = orjson.dumps([["channel", self.channel_name], ["topic", self.topic_name]]).decode()

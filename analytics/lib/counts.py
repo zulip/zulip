@@ -380,6 +380,14 @@ def do_increment_logging_stat(
 
     if stat.frequency == CountStat.DAY:
         end_time = ceiling_to_day(event_time)
+        # Since we set monthly usage limits on AI credit usage,
+        # we want to capture the usage here in the current month
+        # if the event_time is in the current month.
+        if stat.property == "ai_credit_usage::day" and end_time.month != event_time.month:
+            # Shift the `end_time` back 1 minute to bring it back
+            # to the current month.
+            end_time -= timedelta(minutes=1)
+
     elif stat.frequency == CountStat.HOUR:
         end_time = ceiling_to_hour(event_time)
     else:
