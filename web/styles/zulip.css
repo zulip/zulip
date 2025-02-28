@@ -1723,6 +1723,12 @@ body:not(.hide-left-sidebar) {
     }
 }
 
+@container header-container (width <= $cq_sm_min) {
+    .narrow_description {
+        display: none;
+    }
+}
+
 /* Begin fallback media queries. */
 @media (width < $xl_min) {
     .without-container-query-support {
@@ -1800,6 +1806,14 @@ body:not(.hide-left-sidebar) {
         #scheduled_message_indicator,
         #compose-content {
             margin-left: 7px;
+        }
+    }
+}
+
+@media (width <= $sm_min) {
+    .without-container-query-support {
+        .narrow_description {
+            display: none;
         }
     }
 }
