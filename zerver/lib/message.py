@@ -484,7 +484,7 @@ def has_message_access(
     stream: Stream | None = None,
     is_subscribed: bool | None = None,
     user_group_membership_details: UserGroupMembershipDetails,
-    is_modifying_message: bool = False,
+    is_modifying_message: bool,
 ) -> bool:
     """
     Returns whether a user has access to a given message.
@@ -655,6 +655,7 @@ def bulk_access_messages(
             stream=streams.get(message.recipient_id) if stream is None else stream,
             is_subscribed=is_subscribed,
             user_group_membership_details=user_group_membership_details,
+            is_modifying_message=False,
         ):
             filtered_messages.append(message)
     return filtered_messages
