@@ -119,7 +119,7 @@ def get_message_edit_history(
         == MessageEditHistoryVisibilityPolicyEnum.none.value
     ):
         raise JsonableError(_("Message edit history is disabled in this organization"))
-    message = access_message(user_profile, message_id)
+    message = access_message(user_profile, message_id, is_modifying_message=False)
 
     # Extract the message edit history from the message
     if message.edit_history is not None:
@@ -228,7 +228,9 @@ def json_fetch_raw_message(
         message = access_web_public_message(realm, message_id)
         user_profile = None
     else:
-        (message, user_message) = access_message_and_usermessage(maybe_user_profile, message_id)
+        (message, user_message) = access_message_and_usermessage(
+            maybe_user_profile, message_id, is_modifying_message=False
+        )
         user_profile = maybe_user_profile
 
     flags = ["read"]
