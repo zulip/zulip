@@ -261,6 +261,9 @@ export class Typeahead<ItemType extends string | object> {
     // don't set the html content of the div from this module, and
     // it's handled from the caller (or updater function) instead.
     updateElementContent: boolean;
+    // Used to determine whether the typeahead should be shown,
+    // when the user clicks anywhere on the input element.
+    showOnClick: boolean;
     // Used for custom situations where we want to hide the typeahead
     // after selecting an option, instead of the default call to lookup().
     hideAfterSelect: () => boolean;
@@ -307,6 +310,7 @@ export class Typeahead<ItemType extends string | object> {
         this.requireHighlight = options.requireHighlight ?? true;
         this.shouldHighlightFirstResult = options.shouldHighlightFirstResult ?? (() => true);
         this.updateElementContent = options.updateElementContent ?? true;
+        this.showOnClick = options.showOnClick ?? true;
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
         this.getCustomItemClassname = options.getCustomItemClassname;
@@ -825,8 +829,15 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     element_click(): void {
-        // update / hide the typeahead menu if the user clicks anywhere
-        // inside the typing area, to avoid misplaced typeahead insertion.
+        if (!this.showOnClick) {
+            // If showOnClick is false, we don't want to show the typeahead
+            // when the user clicks anywhere on the input element.
+            return;
+        }
+        // Update / hide the typeahead menu if the user clicks anywhere
+        // inside the typing area. This is important in textarea elements
+        // such as the compose box where multiple typeahead can exist,
+        // and we want to prevent misplaced typeahead insertion.
         this.lookup(false);
     }
 
@@ -903,6 +914,7 @@ type TypeaheadOptions<ItemType> = {
     requireHighlight?: boolean;
     shouldHighlightFirstResult?: () => boolean;
     updateElementContent?: boolean;
+    showOnClick?: boolean;
     hideAfterSelect?: () => boolean;
     getCustomItemClassname?: (item: ItemType) => string;
 };
