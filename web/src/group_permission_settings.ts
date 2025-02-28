@@ -133,7 +133,7 @@ export function get_realm_user_groups_for_dropdown_list_widget(
         )!.dropdown_option_name;
 
         return {
-            name: user_groups.get_display_name_for_system_group_option(setting_name, display_name),
+            name: display_name,
             unique_id: group.id,
         };
     });
