@@ -3,7 +3,6 @@ import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
 import {FoldDict} from "./fold_dict.ts";
-import {$t} from "./i18n.ts";
 import type {UserGroupUpdateEvent} from "./server_event_types.ts";
 import * as settings_config from "./settings_config.ts";
 import type {GroupPermissionSetting, GroupSettingValue, StateData} from "./state_data.ts";
@@ -566,17 +565,6 @@ export function is_user_in_setting_group(
         }
     }
     return false;
-}
-
-export function get_display_name_for_system_group_option(
-    setting_name: string,
-    name: string,
-): string {
-    // We use a special label for the "Nobody" system group for clarity.
-    if (setting_name === "direct_message_permission_group" && name === "Nobody") {
-        return $t({defaultMessage: "Direct messages disabled"});
-    }
-    return name;
 }
 
 export function check_system_user_group_allowed_for_setting(
