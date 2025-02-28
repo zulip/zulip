@@ -311,6 +311,7 @@ const ali = {
     user_id: 98,
     full_name: "Ali",
     is_moderator: false,
+    is_bot: false,
 };
 const ali_item = user_item(ali);
 
@@ -319,6 +320,7 @@ const alice = {
     user_id: 99,
     full_name: "Alice",
     is_moderator: false,
+    is_bot: false,
 };
 const alice_item = user_item(alice);
 
@@ -327,6 +329,7 @@ const hamlet = {
     user_id: 100,
     full_name: "King Hamlet",
     is_moderator: false,
+    is_bot: false,
 };
 const hamlet_item = user_item(hamlet);
 
@@ -336,6 +339,7 @@ const othello = {
     full_name: "Othello, the Moor of Venice",
     is_moderator: false,
     delivery_email: null,
+    is_bot: false,
 };
 const othello_item = user_item(othello);
 
@@ -344,6 +348,7 @@ const cordelia = {
     user_id: 102,
     full_name: "Cordelia, Lear's daughter",
     is_moderator: false,
+    is_bot: false,
 };
 const cordelia_item = user_item(cordelia);
 
@@ -352,6 +357,7 @@ const deactivated_user = {
     user_id: 103,
     full_name: "Deactivated User",
     is_moderator: false,
+    is_bot: false,
 };
 const deactivated_user_item = user_item(deactivated_user);
 
@@ -360,6 +366,7 @@ const lear = {
     user_id: 104,
     full_name: "King Lear",
     is_moderator: false,
+    is_bot: false,
 };
 const lear_item = user_item(lear);
 
@@ -368,6 +375,7 @@ const twin1 = {
     is_moderator: false,
     user_id: 105,
     email: "twin1@zulip.com",
+    is_bot: false,
 };
 const twin1_item = user_item(twin1);
 
@@ -376,6 +384,7 @@ const twin2 = {
     is_moderator: false,
     user_id: 106,
     email: "twin2@zulip.com",
+    is_bot: false,
 };
 const twin2_item = user_item(twin2);
 
@@ -384,6 +393,7 @@ const gael = {
     is_moderator: false,
     user_id: 107,
     email: "twin3@zulip.com",
+    is_bot: false,
 };
 const gael_item = user_item(gael);
 
@@ -392,6 +402,7 @@ const hal = {
     is_moderator: false,
     user_id: 108,
     email: "hal@zulip.com",
+    is_bot: false,
 };
 const hal_item = user_item(hal);
 
@@ -400,6 +411,7 @@ const harry = {
     is_moderator: false,
     user_id: 109,
     email: "harry@zulip.com",
+    is_bot: false,
 };
 const harry_item = user_item(harry);
 

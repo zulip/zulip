@@ -260,12 +260,6 @@ export function compare_by_pms(user_a: User, user_b: User): number {
         return 1;
     }
 
-    if (!user_a.is_bot && user_b.is_bot) {
-        return -1;
-    } else if (user_a.is_bot && !user_b.is_bot) {
-        return 1;
-    }
-
     // We use alpha sort as a tiebreaker, which might be helpful for
     // new users.
     if (user_a.full_name < user_b.full_name) {
@@ -506,11 +500,24 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
         return sort_people_for_relevance(items, current_stream_id, current_topic);
     }
 
+    function is_bot(user: UserType): boolean {
+        // broadcasts are not bots by definition.
+        return user.type !== "broadcast" && user.user.is_bot;
+    }
+
+    const [bots, non_bots] = _.partition(users, is_bot);
+
     const {best_users, ok_users, worst_users} = get_user_matches_with_quality(
-        users,
+        non_bots,
         query,
         sort_relevance,
     );
+
+    const {
+        best_users: best_bots,
+        ok_users: ok_bots,
+        worst_users: worst_bots,
+    } = get_user_matches_with_quality(bots, query, sort_relevance);
 
     const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
         if (g.name === "role:members") {
@@ -550,7 +557,15 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
             type: "groups",
         },
         {
+            getter: best_bots,
+            type: "users",
+        },
+        {
             getter: ok_users,
+            type: "users",
+        },
+        {
+            getter: ok_bots,
             type: "users",
         },
         {
@@ -560,6 +575,10 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
         {
             getter: worst_groups,
             type: "groups",
+        },
+        {
+            getter: worst_bots,
+            type: "users",
         },
     ];
 
