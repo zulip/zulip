@@ -2,7 +2,7 @@ from typing import Annotated, Literal
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from pydantic import Json
+from pydantic import Json, NonNegativeInt
 
 from zerver.actions.message_edit import validate_user_can_edit_message
 from zerver.actions.typing import (
@@ -16,7 +16,7 @@ from zerver.lib.message import access_message
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id_for_message, access_stream_for_send_message
 from zerver.lib.topic import maybe_rename_general_chat_to_empty_topic
-from zerver.lib.typed_endpoint import ApiParamConfig, OptionalTopic, typed_endpoint
+from zerver.lib.typed_endpoint import ApiParamConfig, OptionalTopic, PathOnly, typed_endpoint
 from zerver.models import Recipient, UserProfile
 from zerver.models.recipients import get_direct_message_group_user_ids
 
@@ -77,8 +77,8 @@ def send_message_edit_notification_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    message_id: PathOnly[NonNegativeInt],
     operator: Annotated[Literal["start", "stop"], ApiParamConfig("op")],
-    message_id: Json[int],
 ) -> HttpResponse:
     # Technically, this endpoint doesn't modify the message, but we're
     # attempting to send a typing notification that we're editing the

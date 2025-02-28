@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 361**
+
+* [`POST /messages/{message_id}/typing`](/api/set-typing-status-for-message-edit):
+  Renamed `POST /messages/{message_id}/typing` to
+  `POST /message_edit_typing`, passing the one `message_id` parameter
+  in the URL path, for consistency with the rest of the API.
+
 **Feature level 360**
 
 * [`GET /messages/{message_id}`](/api/get-message), [`GET

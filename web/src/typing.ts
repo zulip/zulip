@@ -51,11 +51,10 @@ function send_message_edit_typing_notification_ajax(
     operation: "start" | "stop",
 ): void {
     const data = {
-        message_id: JSON.stringify(message_id),
         op: operation,
     };
     void channel.post({
-        url: "/json/message_edit_typing",
+        url: `/json/messages/${message_id}/typing`,
         data,
         error(xhr) {
             if (xhr.readyState !== 0) {
