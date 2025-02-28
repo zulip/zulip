@@ -99,7 +99,7 @@ export function redraw_user(user_id: number): void {
 }
 
 export function rerender_user_sidebar_participants(): void {
-    if (!narrow_state.stream_id() || !narrow_state.topic()) {
+    if (!narrow_state.stream_id() || narrow_state.topic() === undefined) {
         return;
     }
 
