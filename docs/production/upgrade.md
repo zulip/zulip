@@ -76,22 +76,22 @@ fork](modify.md#making-changes). The process is simple:
 
 ```bash
 # Upgrade to an official release
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 1.8.1
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 9.4
 # Upgrade to a branch (or other Git ref)
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 2.1.x
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 9.x
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git main
 ```
 
 Zulip will automatically fetch the relevant Git commit and upgrade to
 that version of Zulip.
 
-Branches with names like `2.1.x` are stable release branches,
+Branches with names like `9.x` are stable release branches,
 containing the changes planned for the next minor release
-(e.g., 2.1.5); we support these stable release branches as though they
+(e.g., 9.4); we support these stable release branches as though they
 were a published release.
 
 The `main` branch contains changes planned for the next major
-release (e.g., 3.0); see our documentation on [running
+release (e.g., 10.0); see our documentation on [running
 `main`](modify.md#upgrading-to-main) before upgrading to it.
 
 By default, this uses the main upstream Zulip server repository, but
@@ -229,8 +229,8 @@ code, the upgrade will abort.
 The hook is run with the following environment variables set:
 
 - `ZULIP_OLD_VERSION`: The version being upgraded from, which may either be a
-  release name (e.g., `7.0` or `7.0-beta3`) or the output from `git describe`
-  (e.g., `7.0-beta3-2-gdc158b18f2`).
+  release name (e.g., `10.0` or `10.0-beta1`) or the output from `git describe`
+  (e.g., `10.0-beta1-2-abcd158b18f2`).
 - `ZULIP_NEW_VERSION`: The version being upgraded to, in the same format as
   `ZULIP_OLD_VERSION`.
 
@@ -292,9 +292,8 @@ and the latter for `server` contexts.
 ## Upgrading the operating system
 
 When you upgrade the operating system on which Zulip is installed
-(e.g., Ubuntu 20.04 Focal to Ubuntu 22.04 Jammy), you need to take
-some additional steps to update your Zulip installation, documented
-below.
+(e.g., Ubuntu 22.04 to Ubuntu 24.04), you need to take some additional
+steps to update your Zulip installation, documented below.
 
 The steps are largely the same for the various OS upgrades aside from
 the versions of PostgreSQL, so you should be able to adapt these
