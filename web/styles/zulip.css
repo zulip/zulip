@@ -1594,11 +1594,9 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
         @extend %hide-left-sidebar;
     }
 
-    &.fluid_layout_width {
-        #compose-content,
-        .app-main .column-middle {
-            margin-left: 7px;
-        }
+    #compose-content,
+    .app-main .column-middle {
+        margin-left: 7px;
     }
 
     @container header-container (width > $cq_md_min) {
