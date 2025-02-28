@@ -362,6 +362,10 @@
     animation: message-limit-flash 0.5s ease-in-out 1;
 }
 
+.message_edit_content {
+    resize: vertical !important;
+}
+
 #message-content-container .composebox-buttons {
     grid-area: composebox-buttons;
     /* z-index is needed to avoid flickering of cursor and the

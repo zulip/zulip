@@ -1,3 +1,4 @@
+import autosize from "autosize";
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 import _ from "lodash";
@@ -560,6 +561,16 @@ function edit_message($row: JQuery, raw_content: string): void {
     currently_editing_messages.set(message.id, $message_edit_content);
     message_lists.current.show_edit_message($row, $form);
 
+    // Apply saved height if available
+    const message_id = message.id.toString();
+    const saved_height = localStorage.getItem(`textarea_height_${message_id}`);
+    if (saved_height) {
+        $message_edit_content.height(Number.parseInt(saved_height, 10));
+    }
+
+    currently_editing_messages.set(message.id, $message_edit_content);
+    message_lists.current.show_edit_message($row, $form);
+
     // Attach event handlers to `form` instead of `textarea` to allow
     // typeahead to call stopPropagation if it can handle the event
     // and prevent the form from submitting.
@@ -601,15 +612,12 @@ function edit_message($row: JQuery, raw_content: string): void {
         create_copy_to_clipboard_handler($row, the($copy_message), $message_edit_content);
     } else {
         $copy_message.remove();
+        const initialHeight = $message_edit_content.height();
+        autosize($message_edit_content);
+        $message_edit_content.height(initialHeight ?? 100);
+        autosize.update($message_edit_content);
         resize.watch_manual_resize_for_element(the($message_edit_content));
         composebox_typeahead.initialize_compose_typeahead($message_edit_content);
-        compose_ui.handle_keyup(null, $message_edit_content);
-        $message_edit_content.on("keydown", (event) => {
-            compose_ui.handle_keydown(event, $message_edit_content);
-        });
-        $message_edit_content.on("keyup", (event) => {
-            compose_ui.handle_keyup(event, $message_edit_content);
-        });
     }
 
     // Add tooltip and timer
