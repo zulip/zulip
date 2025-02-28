@@ -150,8 +150,6 @@
     .alert {
         @extend .alert-animations;
 
-        /* Use --base-font-size-px to prevent any chaining on the font size */
-        font-size: var(--base-font-size-px);
         border-radius: 4px;
         background-color: hsl(0deg 0% 100%);
 
