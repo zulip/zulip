@@ -1798,7 +1798,9 @@ class MessageAccessTests(ZulipTestCase):
                 Message.objects.select_related("recipient").get(id=message_id)
                 for message_id in sorted(message_ids)
             ]
-            list_result = bulk_access_messages(user, messages, stream=stream)
+            list_result = bulk_access_messages(
+                user, messages, stream=stream, is_modifying_message=False
+            )
         with self.assert_database_query_count(bulk_access_stream_messages_query_count):
             message_query = (
                 Message.objects.select_related("recipient")
@@ -1948,7 +1950,9 @@ class MessageAccessTests(ZulipTestCase):
         other_stream = get_stream("Denmark", unsubscribed_user.realm)
         with self.assertRaises(AssertionError):
             messages = [Message.objects.get(id=id) for id in message_ids]
-            bulk_access_messages(unsubscribed_user, messages, stream=other_stream)
+            bulk_access_messages(
+                unsubscribed_user, messages, stream=other_stream, is_modifying_message=False
+            )
 
         # Verify that bulk_access_stream_messages_query is empty with a stream mismatch
         message_query = Message.objects.select_related("recipient").filter(id__in=message_ids)

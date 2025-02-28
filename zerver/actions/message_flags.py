@@ -349,6 +349,7 @@ def do_update_message_flags(
                         "recipient"
                     )
                 ),
+                is_modifying_message=False,
             )
             if len(historical_messages) != len(historical_message_ids):
                 raise JsonableError(_("Invalid message(s)"))
