@@ -755,13 +755,14 @@ confirm everything is working correctly.
 
 ## Upgrading PostgreSQL
 
-Starting with Zulip 3.0, we use the latest available version of
-PostgreSQL at installation time (currently version 16). Upgrades to
-the version of PostgreSQL are no longer linked to upgrades of the
-distribution; that is, you may opt to upgrade to PostgreSQL 16 while
-running Ubuntu 22.04.
+The major version of PostgreSQL is upgraded separately from the Zulip
+server version. Further, the version of PostgreSQL included with a
+Zulip server is not linked to that of the host OS; the Zulip installer
+uses the latest available version of PostgreSQL at installation time
+(currently, version 16).
 
-Not all versions of Zulip Server support all versions of PostgreSQL, however:
+The following table details which versions each major Zulip Server
+version supports:
 
 ```{include} postgresql-support-table.md
 
@@ -769,12 +770,14 @@ Not all versions of Zulip Server support all versions of PostgreSQL, however:
 
 To upgrade the version of PostgreSQL on the Zulip server:
 
-1. Upgrade your server to the latest Zulip release (at least 3.0).
+1. Upgrade your Zulip server, at least to the latest Zulip maintenance
+   release for your major Zulip version (E.g., upgrade 9.1 to
+   9.4). This ensures you're using the most robust version of the
+   PostgreSQL upgrade tool.
 
 1. Stop the server, as the `zulip` user:
 
    ```bash
-   # On Zulip before 4.0, use `supervisor stop all` instead
    /home/zulip/deployments/current/scripts/stop-server
    ```
 
@@ -793,7 +796,6 @@ To upgrade the version of PostgreSQL on the Zulip server:
 1. As the `zulip` user, start the server again:
 
    ```bash
-   # On Zulip before 4.0, use `restart-server` instead of `start-server` instead
    /home/zulip/deployments/current/scripts/start-server
    ```
 
