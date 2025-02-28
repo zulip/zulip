@@ -24,7 +24,7 @@ from django.core.mail.backends.smtp import EmailBackend
 from django.core.mail.message import sanitize_address
 from django.core.management import CommandError
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import Exists, OuterRef, QuerySet
 from django.db.models.functions import Lower
 from django.http import HttpRequest
 from django.template import loader
@@ -530,25 +530,27 @@ def clear_scheduled_invitation_emails(email: str) -> None:
 
 
 @transaction.atomic(savepoint=False)
-def clear_scheduled_emails(user_id: int, email_type: int | None = None) -> None:
+def clear_scheduled_emails(user_ids: list[int], email_type: int | None = None) -> None:
     # We need to obtain a FOR UPDATE lock on the selected rows to keep a concurrent
     # execution of this function (or something else) from deleting them before we access
     # the .users attribute.
-    items = (
-        ScheduledEmail.objects.filter(users__in=[user_id])
-        .prefetch_related("users")
-        .select_for_update()
-    )
+    items = ScheduledEmail.objects.filter(users__in=user_ids).select_for_update()
     if email_type is not None:
         items = items.filter(type=email_type)
+    item_ids = list(items.values_list("id", flat=True))
+    if not item_ids:
+        return
 
-    for item in items:
-        item.users.remove(user_id)
-        if not item.users.all().exists():
-            # Due to our transaction holding the row lock we have a guarantee
-            # that the obtained COUNT is accurate, thus we can reliably use it
-            # to decide whether to delete the ScheduledEmail row.
-            item.delete()
+    through_model = ScheduledEmail.users.through
+    through_model.objects.filter(
+        scheduledemail_id__in=item_ids, userprofile_id__in=user_ids
+    ).delete()
+
+    # Due to our transaction holding the row lock we have a guarantee
+    # that the obtained COUNT is accurate, thus we can reliably use it
+    # to decide whether to delete the ScheduledEmail row.
+    subquery = through_model.objects.filter(scheduledemail_id=OuterRef("id"))
+    ScheduledEmail.objects.filter(id__in=item_ids).exclude(Exists(subquery)).delete()
 
 
 def handle_send_email_format_changes(job: dict[str, Any]) -> None:
