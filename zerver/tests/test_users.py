@@ -2215,7 +2215,7 @@ class ActivateTest(ZulipTestCase):
             delay=timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
-        clear_scheduled_emails(hamlet.id)
+        clear_scheduled_emails([hamlet.id])
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         self.assertEqual(ScheduledEmail.objects.filter(users=hamlet).count(), 0)
         self.assertEqual(ScheduledEmail.objects.filter(users=iago).count(), 1)
