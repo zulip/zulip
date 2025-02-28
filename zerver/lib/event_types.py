@@ -567,7 +567,6 @@ class RealmUser(BaseModel):
     avatar_version: int
     full_name: str
     is_admin: bool
-    is_billing_admin: bool
     is_owner: bool
     is_bot: bool
     is_guest: bool
@@ -648,7 +647,6 @@ class PersonFullName(BaseModel):
 
 class PersonIsBillingAdmin(BaseModel):
     user_id: int
-    is_billing_admin: bool
 
 
 class PersonRole(BaseModel):

@@ -4869,7 +4869,6 @@ class StripeTest(StripeTestCase):
                         outbox[0].body,
                     )
                     self.assert_length(email.to, 1)
-                    self.assertTrue(recipient.is_billing_admin)
                     email_found = True
             self.assertEqual(row.email_expected_to_be_sent, email_found)
 

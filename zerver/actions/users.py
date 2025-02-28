@@ -691,33 +691,6 @@ def do_change_user_role(
 
 
 @transaction.atomic(savepoint=False)
-def do_change_is_billing_admin(user_profile: UserProfile, value: bool) -> None:
-    event_time = timezone_now()
-    old_value = user_profile.is_billing_admin
-
-    user_profile.is_billing_admin = value
-    user_profile.save(update_fields=["is_billing_admin"])
-
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        event_type=AuditLogEventType.USER_SPECIAL_PERMISSION_CHANGED,
-        event_time=event_time,
-        acting_user=None,
-        modified_user=user_profile,
-        extra_data={
-            RealmAuditLog.OLD_VALUE: old_value,
-            RealmAuditLog.NEW_VALUE: value,
-            "property": "is_billing_admin",
-        },
-    )
-
-    event = dict(
-        type="realm_user", op="update", person=dict(user_id=user_profile.id, is_billing_admin=value)
-    )
-    send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
-
-
-@transaction.atomic(savepoint=False)
 def do_change_can_forge_sender(user_profile: UserProfile, value: bool) -> None:
     event_time = timezone_now()
     old_value = user_profile.can_forge_sender
