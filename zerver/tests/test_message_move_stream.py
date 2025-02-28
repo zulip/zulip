@@ -1318,6 +1318,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                     user_group_membership_details=UserGroupMembershipDetails(
                         user_recursive_group_ids=None
                     ),
+                    is_modifying_message=False,
                 ),
                 has_access,
             )
@@ -1717,6 +1718,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 user_group_membership_details=UserGroupMembershipDetails(
                     user_recursive_group_ids=None
                 ),
+                is_modifying_message=False,
             ),
             True,
         )
@@ -1736,6 +1738,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 user_group_membership_details=UserGroupMembershipDetails(
                     user_recursive_group_ids=None
                 ),
+                is_modifying_message=False,
             ),
             False,
         )
@@ -1763,6 +1766,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 user_group_membership_details=UserGroupMembershipDetails(
                     user_recursive_group_ids=None
                 ),
+                is_modifying_message=False,
             ),
             False,
         )
@@ -1800,6 +1804,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 user_group_membership_details=UserGroupMembershipDetails(
                     user_recursive_group_ids=None
                 ),
+                is_modifying_message=False,
             ),
             True,
         )
@@ -1819,6 +1824,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 user_group_membership_details=UserGroupMembershipDetails(
                     user_recursive_group_ids=None
                 ),
+                is_modifying_message=False,
             ),
             False,
         )
@@ -1839,6 +1845,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 user_group_membership_details=UserGroupMembershipDetails(
                     user_recursive_group_ids=None
                 ),
+                is_modifying_message=False,
             ),
             False,
         )
@@ -1868,6 +1875,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 user_group_membership_details=UserGroupMembershipDetails(
                     user_recursive_group_ids=None
                 ),
+                is_modifying_message=False,
             ),
             True,
         )
@@ -1881,6 +1889,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 user_group_membership_details=UserGroupMembershipDetails(
                     user_recursive_group_ids=None
                 ),
+                is_modifying_message=False,
             ),
             True,
         )
@@ -1915,6 +1924,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 user_group_membership_details=UserGroupMembershipDetails(
                     user_recursive_group_ids=None
                 ),
+                is_modifying_message=False,
             ),
             False,
         )
@@ -1935,6 +1945,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 user_group_membership_details=UserGroupMembershipDetails(
                     user_recursive_group_ids=None
                 ),
+                is_modifying_message=False,
             ),
             False,
         )
@@ -1963,6 +1974,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 user_group_membership_details=UserGroupMembershipDetails(
                     user_recursive_group_ids=None
                 ),
+                is_modifying_message=False,
             ),
             True,
         )
