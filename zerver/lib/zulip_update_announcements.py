@@ -310,9 +310,9 @@ quickly insert them into the message you're composing.
   [subscribe]({who_can_subscribe_url}) and
   [unsubscribe]({who_can_unsubscribe_url}) other users. You can also
   [give]({configure_who_can_subscribe_url}) users and
-  [groups]({user_groups_url}) permission to subscribe to a [private
-  channel]({private_channels_url}), which also allows reading messages in it
-  without subscribing.
+  [groups]({user_groups_url}) permission to read and subscribe to a
+  [private channel]({private_channels_url}), just like everyone other
+  than guests can do with public channels.
 
 **Web and desktop updates**
 - When you copy a Zulip link and paste it anywhere that accepts HTML formatting
