@@ -101,6 +101,9 @@
             text-overflow: ellipsis;
             overflow: hidden;
             max-width: var(--width-inbox-search);
+            /* Setting width to 100% ensures the search box takes the full width of its container,
+               preventing overflow issues by making sure it doesn't exceed the available space. */
+            width: 100%;
             height: var(--height-inbox-search);
             /* top/bottom default 1px padding / 14px em */
             /* left padding 30px / 14px em */
