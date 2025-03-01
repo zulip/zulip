@@ -36,33 +36,31 @@
             </a>
         </span>
         <span class="recipient_bar_controls no-select">
-            <span class="topic_edit hidden-for-spectators">
-                <span class="topic_edit_form"></span>
-            </span>
+            <span class="topic_edit hidden-for-spectators"></span>
 
             {{! exterior links (e.g. to a trac ticket) }}
             {{#each topic_links}}
-                <a href="{{this.url}}" target="_blank" rel="noopener noreferrer" class="external-topic-link no-underline">
+                <a href="{{this.url}}" target="_blank" rel="noopener noreferrer" class="external-topic-link recipient-bar-control no-underline">
                     <i class="fa fa-external-link-square recipient_bar_icon" data-tippy-content="Open {{this.text}}" aria-label="{{t 'External link' }}"></i>
                 </a>
             {{/each}}
 
             {{! edit topic pencil icon }}
             {{#if is_topic_editable}}
-                <i class="fa fa-pencil on_hover_topic_edit recipient_bar_icon hidden-for-spectators" data-tippy-content="{{t 'Edit topic'}}" role="button" tabindex="0" aria-label="{{t 'Edit topic' }}"></i>
+                <i class="fa fa-pencil on_hover_topic_edit recipient-bar-control recipient_bar_icon hidden-for-spectators" data-tippy-content="{{t 'Edit topic'}}" role="button" tabindex="0" aria-label="{{t 'Edit topic' }}"></i>
             {{/if}}
 
             {{#if (and user_can_resolve_topic (not is_empty_string_topic))}}
                 {{#if topic_is_resolved}}
-                    <i class="fa fa-check on_hover_topic_unresolve recipient_bar_icon hidden-for-spectators" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as unresolved' }}" role="button" tabindex="0" aria-label="{{t 'Mark as unresolved' }}"></i>
+                    <i class="fa fa-check on_hover_topic_unresolve recipient-bar-control recipient_bar_icon hidden-for-spectators" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as unresolved' }}" role="button" tabindex="0" aria-label="{{t 'Mark as unresolved' }}"></i>
                 {{else}}
-                    <i class="fa fa-check on_hover_topic_resolve recipient_bar_icon hidden-for-spectators" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as resolved' }}" role="button" tabindex="0" aria-label="{{t 'Mark as resolved' }}"></i>
+                    <i class="fa fa-check on_hover_topic_resolve recipient-bar-control recipient_bar_icon hidden-for-spectators" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as resolved' }}" role="button" tabindex="0" aria-label="{{t 'Mark as resolved' }}"></i>
                 {{/if}}
                 <div class="toggle_resolve_topic_spinner" style="display: none"></div>
             {{/if}}
 
             {{#if is_subscribed}}
-                <span class="change_visibility_policy hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}">
+                <span class="change_visibility_policy recipient-bar-control hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}">
                     {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
                         <i class="zulip-icon zulip-icon-follow recipient_bar_icon" data-tippy-content="{{t 'You follow this topic.'}}"
                           role="button" tabindex="0" aria-haspopup="true" aria-label="{{t 'You follow this topic.' }}"></i>
@@ -80,7 +78,7 @@
             {{/if}}
 
             {{! Topic menu }}
-            <i class="zulip-icon zulip-icon-more-vertical recipient-row-topic-menu recipient_bar_icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}"></i>
+            <i class="zulip-icon zulip-icon-more-vertical recipient-row-topic-menu recipient-bar-control recipient_bar_icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}"></i>
         </span>
         <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
     </div>

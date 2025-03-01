@@ -703,12 +703,14 @@ def get_issue_transferred_body(helper: Helper) -> str:
 
 def get_issue_opened_via_transfer_body(helper: Helper) -> str:
     payload = helper.payload
-    template = "[Issue #{new_issue_number} {title}]({new_issue_url}) was transferred from {old_repo_full_name}."
+    template = "[Issue #{new_issue_number} {title}]({new_issue_url}) was transferred from [{old_repo_full_name}#{old_issue_number}]({old_issue_url})."
     return template.format(
         new_issue_number=payload["issue"]["number"].tame(check_int),
         new_issue_url=payload["issue"]["html_url"].tame(check_string),
         title=payload["issue"]["title"].tame(check_string),
         old_repo_full_name=payload["changes"]["old_repository"]["full_name"].tame(check_string),
+        old_issue_number=payload["changes"]["old_issue"]["number"].tame(check_int),
+        old_issue_url=payload["changes"]["old_issue"]["html_url"].tame(check_string),
     )
 
 

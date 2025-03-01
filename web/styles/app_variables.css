@@ -227,7 +227,8 @@
     --left-sidebar-icon-content-gap: 0.4375em;
     /* The space allotted in gridded rows for the toggle icon. */
     --left-sidebar-header-icon-toggle-width: 20px;
-    --left-sidebar-vdots-width: 26px;
+    /* 26px at 16px/1em */
+    --left-sidebar-vdots-width: 1.625em;
     /* Other rows need an offset to preserve a column the
        entire height of the left sidebar for where toggles sit. */
     --left-sidebar-toggle-width-offset: var(
@@ -260,9 +261,17 @@
        that rely on this value, but not necessarily as
        applied to `width:` or `max-width:`. */
     --left-sidebar-width: min(33.3333%, var(--left-sidebar-max-width));
-    /* 40px (toggle icon) + 5px (gap) + 20px logo + 10px right margin */
-    --left-sidebar-width-with-realm-icon-logo: 75px;
-    --right-sidebar-width: 250px;
+    --right-sidebar-left-spacing: 5px;
+    /* 50px per icon * 4 icons + 3px space (legacy) = 203px at 20px/1em */
+    --right-column-collapsed-sidebar-width: 10.15em;
+    /* 288px at 14px/1em */
+    --right-column-max-width: 20.57em;
+    --right-column-width: clamp(10em, 50%, var(--right-column-max-width));
+    --right-sidebar-width: calc(
+        var(--right-column-width) - var(--right-sidebar-left-spacing)
+    );
+    /* 25px at 16px/1em */
+    --right-sidebar-vdots-width: 1.5625em;
     /* The width of the icon is reduced by 2px, to account for 2px
        of top and bottom margin needed for hover backgrounds to
        not touch the row outline. */
@@ -274,7 +283,6 @@
     --left-sidebar-bottom-scrolling-buffer: calc(
         (var(--legacy-body-line-height-unitless) * 1em) + 0.3571em
     );
-    --right-sidebar-left-spacing: 5px;
     /* Used in both left and right sidebar at the bottom, to allow
        the user to scroll past the bottom-most elements a little bit.
 
@@ -1807,13 +1815,15 @@
     --color-icons-inbox: light-dark(hsl(0deg 0% 0%), hsl(0deg 0% 100%));
 
     /* Navbar dropdown menu constants - Values from Figma design */
-    --box-shadow-popover-menu: 0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
+    --box-shadow-popover-menu:
+        0 2.78px 4.11px 0 hsl(0deg 0% 0% / 6%),
         0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 7%),
         0 8.438px 13.9271px 0 hsl(0deg 0% 0% / 8%),
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 9%),
         0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 9%),
         0 41px 80px 0 hsl(0deg 0% 0% / 13%);
-    --box-shadow-gear-menu: 0 2.7798px 4.1129px 0 hsl(0deg 0% 0% / 10%),
+    --box-shadow-gear-menu:
+        0 2.7798px 4.1129px 0 hsl(0deg 0% 0% / 10%),
         0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
         0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
@@ -2524,7 +2534,8 @@
     /* Reaction container colors */
     --font-weight-message-reaction: 550;
     /* Navbar dropdown menu constants - Values from Figma design */
-    --box-shadow-popover-menu: 0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
+    --box-shadow-popover-menu:
+        0 2.78px 4.12px 0 hsl(0deg 0% 0% / 10%),
         0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
         0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
         0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),

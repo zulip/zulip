@@ -37,7 +37,7 @@ from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import AnonymousSettingGroupDict
+from zerver.lib.types import UserGroupMembersDict
 from zerver.lib.user_groups import (
     get_direct_user_groups,
     get_recursive_group_members,
@@ -104,7 +104,9 @@ class UserGroupTestCase(ZulipTestCase):
         empty_user_group = check_add_user_group(realm, "newgroup", [], acting_user=user)
         do_deactivate_user(self.example_user("hamlet"), acting_user=None)
 
-        user_groups = user_groups_in_realm_serialized(realm, include_deactivated_groups=False)
+        user_groups = user_groups_in_realm_serialized(
+            realm, include_deactivated_groups=False
+        ).api_groups
         self.assert_length(user_groups, 10)
         self.assertEqual(user_groups[0]["id"], user_group.id)
         self.assertEqual(user_groups[0]["creator_id"], user_group.creator_id)
@@ -163,7 +165,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[9]["members"], [])
         self.assertEqual(
             user_groups[9]["can_manage_group"],
-            AnonymousSettingGroupDict(direct_members=[11], direct_subgroups=[]),
+            UserGroupMembersDict(direct_members=[11], direct_subgroups=[]),
         )
         self.assertEqual(user_groups[9]["can_mention_group"], everyone_group.id)
         self.assertFalse(user_groups[0]["deactivated"])
@@ -183,7 +185,9 @@ class UserGroupTestCase(ZulipTestCase):
             },
             acting_user=self.example_user("desdemona"),
         )
-        user_groups = user_groups_in_realm_serialized(realm, include_deactivated_groups=False)
+        user_groups = user_groups_in_realm_serialized(
+            realm, include_deactivated_groups=False
+        ).api_groups
         self.assertEqual(user_groups[10]["id"], new_user_group.id)
         self.assertEqual(user_groups[10]["creator_id"], new_user_group.creator_id)
         self.assertEqual(
@@ -194,14 +198,14 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[10]["description"], "")
         self.assertEqual(user_groups[10]["members"], [othello.id])
 
-        assert isinstance(user_groups[10]["can_manage_group"], AnonymousSettingGroupDict)
+        assert isinstance(user_groups[10]["can_manage_group"], UserGroupMembersDict)
         self.assertEqual(user_groups[10]["can_manage_group"].direct_members, [othello.id])
         self.assertCountEqual(
             user_groups[10]["can_manage_group"].direct_subgroups,
             [admins_system_group.id, hamletcharacters_group.id],
         )
 
-        assert isinstance(user_groups[10]["can_mention_group"], AnonymousSettingGroupDict)
+        assert isinstance(user_groups[10]["can_mention_group"], UserGroupMembersDict)
         self.assertEqual(user_groups[10]["can_mention_group"].direct_members, [othello.id])
         self.assertCountEqual(
             user_groups[10]["can_mention_group"].direct_subgroups,
@@ -215,7 +219,9 @@ class UserGroupTestCase(ZulipTestCase):
             new_user_group, [another_new_group, owners_system_group], acting_user=None
         )
         do_deactivate_user_group(another_new_group, acting_user=None)
-        user_groups = user_groups_in_realm_serialized(realm, include_deactivated_groups=True)
+        user_groups = user_groups_in_realm_serialized(
+            realm, include_deactivated_groups=True
+        ).api_groups
         self.assert_length(user_groups, 12)
         self.assertEqual(user_groups[10]["id"], new_user_group.id)
         self.assertEqual(user_groups[10]["name"], "newgroup2")
@@ -227,13 +233,50 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[11]["name"], "newgroup3")
         self.assertTrue(user_groups[11]["deactivated"])
 
-        user_groups = user_groups_in_realm_serialized(realm, include_deactivated_groups=False)
-        self.assert_length(user_groups, 11)
-        self.assertEqual(user_groups[10]["id"], new_user_group.id)
-        self.assertEqual(user_groups[10]["name"], "newgroup2")
-        self.assertFalse(user_groups[10]["deactivated"])
+        do_change_realm_permission_group_setting(
+            realm, "create_multiuse_invite_group", hamletcharacters_group, acting_user=None
+        )
+        cordelia = self.example_user("cordelia")
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [cordelia], [owners_system_group]
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_create_public_channel_group", setting_group, acting_user=None
+        )
+        realm_setting_group_ids = {
+            realm.create_multiuse_invite_group_id,
+            realm.can_create_public_channel_group_id,
+        }
+
+        realm_user_groups = user_groups_in_realm_serialized(
+            realm, include_deactivated_groups=False, realm_setting_group_ids=realm_setting_group_ids
+        )
+        named_user_groups = realm_user_groups.api_groups
+        self.assert_length(named_user_groups, 11)
+        self.assertEqual(named_user_groups[10]["id"], new_user_group.id)
+        self.assertEqual(named_user_groups[10]["name"], "newgroup2")
+        self.assertFalse(named_user_groups[10]["deactivated"])
         self.assertCountEqual(
-            user_groups[10]["direct_subgroup_ids"], [another_new_group.id, owners_system_group.id]
+            named_user_groups[10]["direct_subgroup_ids"],
+            [another_new_group.id, owners_system_group.id],
+        )
+
+        system_groups_dict = realm_user_groups.system_groups_name_dict
+        self.assertEqual(system_groups_dict[user_group.id], SystemGroups.NOBODY)
+        self.assertEqual(system_groups_dict[owners_system_group.id], SystemGroups.OWNERS)
+        self.assertEqual(system_groups_dict[admins_system_group.id], SystemGroups.ADMINISTRATORS)
+        self.assertEqual(system_groups_dict[everyone_group.id], SystemGroups.EVERYONE)
+
+        realm_setting_anonymous_group_membership = (
+            realm_user_groups.realm_setting_anonymous_group_membership
+        )
+        self.assertEqual(
+            realm_setting_anonymous_group_membership,
+            {
+                realm.can_create_public_channel_group_id: UserGroupMembersDict(
+                    direct_members=[cordelia.id], direct_subgroups=[owners_system_group.id]
+                )
+            },
         )
 
     def test_get_direct_user_groups(self) -> None:

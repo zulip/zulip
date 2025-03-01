@@ -547,6 +547,17 @@ export function get_final_topic_display_name(topic_name: string): string {
     return topic_name;
 }
 
+export function is_topic_name_considered_empty(topic: string): boolean {
+    // NOTE: Use this check only when realm.realm_mandatory_topics is set to true.
+    topic = topic.trim();
+    // When the topic is mandatory in a realm via realm_mandatory_topics, the topic
+    // can't be an empty string, "(no topic)", or realm_empty_topic_display_name.
+    if (topic === "" || topic === "(no topic)" || topic === realm.realm_empty_topic_display_name) {
+        return true;
+    }
+    return false;
+}
+
 export function get_retry_backoff_seconds(
     xhr: JQuery.jqXHR<unknown>,
     attempts: number,

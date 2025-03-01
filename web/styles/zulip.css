@@ -140,7 +140,6 @@ p.n-margin {
 .all-messages-search-caution {
     border-radius: 4px;
     display: none;
-    font-size: 16px;
     margin: 0 auto 12px;
     padding: 5px;
     /* Difference should be 16px to accommodate the icon. */
@@ -233,6 +232,12 @@ p.n-margin {
     border-radius: 5px;
     box-shadow: 0 0 30px hsl(0deg 0% 0% / 25%);
     z-index: 110;
+
+    @container app (width < $cq_md_min) {
+        width: calc(90% - 30px);
+        left: 5%;
+        top: 5%;
+    }
 
     &.show-feedback-container {
         display: block;
@@ -337,8 +342,8 @@ body.has-overlay-scrollbar {
 
 /* This applies to column-left both in navbar and app. */
 .column-right {
-    width: var(--right-sidebar-width);
-    max-width: var(--right-sidebar-width);
+    width: var(--right-column-width);
+    max-width: var(--right-column-max-width);
     position: absolute;
     right: 0;
     top: 0;
@@ -362,6 +367,8 @@ body.has-overlay-scrollbar {
            the same height and their boxes sit on the
            same invisible line. */
         margin-top: -1px;
+        /* Prevent collisions with the search box. */
+        margin-left: 15px;
 
         & a {
             font-size: calc(16em / 14);
@@ -489,6 +496,15 @@ body.has-overlay-scrollbar {
     height: 100%;
     min-height: 100%;
 
+    &::after {
+        /* We use `content` values to determine
+           viewport state from JavaScript; this
+           hides the values without disrupting
+           the document flow. */
+        position: absolute;
+        display: none;
+    }
+
     .column-left .left-sidebar,
     .column-right .right-sidebar {
         position: fixed;
@@ -501,8 +517,8 @@ body.has-overlay-scrollbar {
     }
 
     .column-right .right-sidebar {
-        padding-left: 5px;
-        width: 240px;
+        padding-left: var(--right-sidebar-left-spacing);
+        width: var(--right-sidebar-width);
     }
 
     .column-middle {
@@ -511,9 +527,52 @@ body.has-overlay-scrollbar {
     }
 }
 
+/* We test for spec-aligned container query support
+   using these styles. */
+.container-query-test {
+    /* Keep the test div from rendering. */
+    visibility: hidden;
+    /* Establish a container. */
+    container: test-container / inline-size;
+    /* Establish a positioning context that
+       conforming browsers will ignore. */
+    position: relative;
+    top: 100px;
+
+    .container-query-test-child {
+        /* Non-spec aligned browsers will keep
+           this element to the top of the containing
+           <div>; spec-aligned browsers move it to the
+           top of the viewport. We check for this in
+           information_density.ts */
+        position: fixed;
+        top: 0;
+    }
+}
+
+.with-container-query-support {
+    /* With spec-aligned container support, we
+       can establish em-aware containers to
+       query as needed.
+       Note that container queries can only
+       act on children of the container, so
+       at least for now, we include separate
+       queries for #header-container in the
+       navbar as well as .app-main in capable
+       browsers.
+    */
+    #header-container {
+        container: header-container / inline-size;
+    }
+
+    .app {
+        container: app / inline-size;
+    }
+}
+
 .column-middle,
 #compose-content {
-    margin-right: var(--right-sidebar-width);
+    margin-right: var(--right-column-width);
     margin-left: calc(
         var(--left-sidebar-width) + var(--left-sidebar-padding-left)
     );
@@ -847,8 +906,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
 
 .topic_edit {
     display: none;
-    line-height: 22px;
-    visibility: visible;
+    flex-grow: 1;
 
     .alert {
         display: inline-block;
@@ -858,36 +916,43 @@ div.focused-message-list.is-conversation-view .recipient_row {
     }
 }
 
+.topic_edit_form {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    padding-right: 5px;
+}
+
 .inline_topic_edit {
-    margin-bottom: 5px;
-    width: 206px;
+    flex: 1;
+    /* Set the max width of the inline topic edit input to the realm's
+       max_topic_length (60 chars) + 5 chars extra for some cushion. */
+    max-width: 65ch;
+    line-height: 1.2142em;
+    padding: 0 5px;
+    color: hsl(0deg 0% 33%);
+    border-radius: 4px;
+    border: 1px solid hsl(0deg 0% 80%);
 
-    &.header-v {
-        height: 18px;
-        display: inline-block;
-        padding: 0 3px;
-        vertical-align: baseline;
-        line-height: 0px;
-        box-shadow: none;
-        color: hsl(0deg 0% 33%);
-        border-radius: 4px;
-        border: 1px solid hsl(0deg 0% 80%);
-        transition:
-            border-color linear 0.2s,
-            box-shadow linear 0.2s;
+    transition:
+        border-color linear 0.2s,
+        box-shadow linear 0.2s;
 
-        &:focus {
-            border-color: hsl(206deg 80% 62% / 80%);
-            outline: 0;
-            box-shadow:
-                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
-                0 0 8px hsl(206deg 80% 62% / 60%);
-        }
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206deg 80% 62% / 60%);
     }
 }
 
-.inline_topic_edit:focus {
-    outline: none;
+.topic_edit_save {
+    border-color: light-dark(hsla(0deg 0% 0% / 10%), hsla(0deg 0% 0% / 60%));
+    border-width: 1px;
+    border-style: solid;
+    background-clip: padding-box;
 }
 
 .information-settings .user-profile-picture,
@@ -1142,29 +1207,6 @@ nav {
     text-align: center;
 }
 
-.small_square_button {
-    padding: 0;
-    border: none;
-    font-size: 12px;
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    margin-bottom: 3px;
-
-    &:focus {
-        outline: none;
-    }
-
-    &.small_square_x {
-        background-color: hsl(0deg 0% 100%);
-        color: hsl(0deg 0% 47%);
-
-        &:hover {
-            color: hsl(0deg 0% 18%);
-        }
-    }
-}
-
 div.topic_edit_spinner {
     display: inline-block;
     width: 18px;
@@ -1365,16 +1407,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     margin-right: -50%;
 }
 
-#topic_edit_form {
-    display: inline-block;
-    margin: 0;
-    height: 22px;
-    padding-left: 20px;
-    padding-right: 3px;
-    line-height: 22px;
-    margin-left: -15px;
-}
-
 .screen {
     position: absolute;
     left: 0;
@@ -1525,22 +1557,18 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     }
 }
 
-#realm-navbar-icon-logo {
-    display: none;
-    width: 20px;
-    height: 20px;
-}
-
 .hide-right-sidebar {
     .app-main {
         @extend %hide-right-sidebar;
     }
 
-    &.fluid_layout_width {
-        #compose-content,
-        .app-main .column-middle {
-            margin-right: 7px;
-        }
+    #navbar-middle {
+        margin-right: var(--right-column-collapsed-sidebar-width);
+    }
+
+    #compose-content,
+    .app-main .column-middle {
+        margin-right: 7px;
     }
 }
 
@@ -1608,6 +1636,19 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
             margin-left: 7px;
         }
     }
+
+    @container header-container (width < $cq_xl_min) {
+        #top_navbar .column-left {
+            width: auto;
+        }
+    }
+
+    @container app (width < $cq_xl_min) {
+        #compose-content,
+        .app-main .column-middle {
+            margin-left: 7px;
+        }
+    }
 }
 
 body:not(.hide-left-sidebar) {
@@ -1618,18 +1659,31 @@ body:not(.hide-left-sidebar) {
     }
 }
 
-@media (width < $xl_min) {
-    .app-main {
-        @extend %hide-right-sidebar;
-    }
+/* We have some regrettable but temporarily necessary code duplication
+   in the queries that follow.
 
-    .app-main .column-middle {
-        margin-right: 7px;
-    }
+   In browsers that support spec-aligned, em-aware container queries,
+   we query on the app-main container. That enables breakpoints that
+   look best at a chose base font size.
 
+   However, in browsers that lag the spec, we fall back to the original
+   media queries. The layout will not look as good as it could, but
+   essential scrolling behavior will be maintained. */
+
+@container header-container (width < $cq_xl_min) {
     #navbar-middle {
         /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
-        margin-right: calc(var(--header-height) * 4 + 3px);
+        margin-right: var(--right-column-collapsed-sidebar-width);
+    }
+}
+
+@container app (width < $cq_xl_min) {
+    .app-main {
+        @extend %hide-right-sidebar;
+
+        .column-middle {
+            margin-right: 7px;
+        }
     }
 
     #typing_notifications,
@@ -1637,52 +1691,15 @@ body:not(.hide-left-sidebar) {
     #compose-content {
         margin-right: 7px;
     }
-
-    .hide-left-sidebar {
-        #compose-content,
-        .app-main .column-middle {
-            margin-left: 7px;
-        }
-
-        #realm-navbar-icon-logo {
-            display: inline-block;
-        }
-
-        #realm-navbar-wide-logo {
-            display: none;
-        }
-
-        #top_navbar .column-left {
-            width: auto;
-        }
-
-        #navbar-middle {
-            margin-left: var(--left-sidebar-width-with-realm-icon-logo);
-        }
-    }
 }
 
-@media (width < $md_min) {
-    .app-main {
-        @extend %hide-left-sidebar;
-    }
-
+@container header-container (width < $cq_md_min) {
     .header-main .column-left {
         display: none;
     }
 
-    .app-main .column-middle {
-        margin-left: 7px;
-        margin-right: 7px;
-    }
-
     #navbar-middle {
         margin-left: 0;
-    }
-
-    .app-main .column-middle .column-middle-inner {
-        margin-left: 0;
-        margin-right: 0;
     }
 
     #streamlist-toggle {
@@ -1692,11 +1709,21 @@ body:not(.hide-left-sidebar) {
     .top-navbar-container {
         margin-left: 40px;
     }
+}
 
-    #feedback_container {
-        width: calc(90% - 30px);
-        left: 5%;
-        top: 5%;
+@container app (width < $cq_md_min) {
+    .app-main {
+        @extend %hide-left-sidebar;
+
+        .column-middle {
+            margin-left: 7px;
+            margin-right: 7px;
+        }
+
+        .column-middle .column-middle-inner {
+            margin-left: 0;
+            margin-right: 0;
+        }
     }
 
     #typing_notifications,
@@ -1705,6 +1732,138 @@ body:not(.hide-left-sidebar) {
         margin-left: 7px;
     }
 }
+
+/* Begin fallback media queries. */
+@media (width < $xl_min) {
+    .without-container-query-support {
+        .app-main {
+            @extend %hide-right-sidebar;
+
+            .column-middle {
+                margin-right: 7px;
+            }
+        }
+
+        #navbar-middle {
+            /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
+            margin-right: calc(var(--header-height) * 4 + 3px);
+        }
+
+        #typing_notifications,
+        #scheduled_message_indicator,
+        #compose-content {
+            margin-right: 7px;
+        }
+
+        .hide-left-sidebar {
+            #compose-content,
+            .app-main .column-middle {
+                margin-left: 7px;
+            }
+
+            #top_navbar .column-left {
+                width: auto;
+            }
+        }
+    }
+}
+
+@media (width < $md_min) {
+    .without-container-query-support {
+        .app-main {
+            @extend %hide-left-sidebar;
+
+            .column-middle {
+                margin-left: 7px;
+                margin-right: 7px;
+            }
+
+            .column-middle .column-middle-inner {
+                margin-left: 0;
+                margin-right: 0;
+            }
+        }
+
+        .header-main .column-left {
+            display: none;
+        }
+
+        #navbar-middle {
+            margin-left: 0;
+        }
+
+        #streamlist-toggle {
+            display: block;
+        }
+
+        .top-navbar-container {
+            margin-left: 40px;
+        }
+
+        #feedback_container {
+            width: calc(90% - 30px);
+            left: 5%;
+            top: 5%;
+        }
+
+        #typing_notifications,
+        #scheduled_message_indicator,
+        #compose-content {
+            margin-left: 7px;
+        }
+    }
+}
+
+/* End fallback media queries. */
+
+/* Begin viewport state queries. */
+
+/* We sometimes need the state of the viewport in JavaScript;
+   by setting values on `content:`, we can query instead for
+   those, independent of whether it's a container or media query
+   responsible for layout. See for example `sidebar_ui.ts`.
+
+   These queries for greater than or equal to should be ordered
+   smallest to largest. */
+
+/* Adjustments for smaller viewports are critical
+   regardless of info-density settings, so we
+   don't include a container-query check here. */
+@media (width < $md_min) {
+    .app-main::after {
+        content: "lt_md_min";
+    }
+}
+
+@container app (width >= $cq_md_min) {
+    .app-main::after {
+        content: "gte_md_min";
+    }
+}
+
+@media (width >= $md_min) {
+    .without-container-query-support {
+        .app-main::after {
+            content: "gte_md_min";
+        }
+    }
+}
+
+@container app (width >= $cq_xl_min) {
+    .app-main::after {
+        content: "gte_md_min gte_xl_min";
+    }
+}
+
+@media (width >= $xl_min) {
+    .without-container-query-support {
+        .app-main::after {
+            content: "gte_md_min gte_xl_min";
+        }
+    }
+}
+
+/* End viewport state queries. */
 
 @media (height < $short_navbar_cutoff_height) {
     .app-main .column-right.expanded .right-sidebar,
@@ -1767,6 +1926,9 @@ body:not(.hide-left-sidebar) {
     }
 }
 
+/* As these adjustments are properly the province of
+   the viewport, we do not present these mm_min queries
+   in a corresponding container query block. */
 @media (width < $mm_min) {
     html {
         overflow-x: hidden;

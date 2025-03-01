@@ -5,7 +5,11 @@ import orjson
 from typing_extensions import override
 
 from zerver.actions.reactions import notify_reaction_update
-from zerver.actions.streams import do_change_stream_group_based_setting, do_change_stream_permission
+from zerver.actions.streams import (
+    do_change_stream_group_based_setting,
+    do_change_stream_permission,
+    do_deactivate_stream,
+)
 from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.emoji import get_emoji_data
@@ -404,6 +408,55 @@ class ReactionTest(ZulipTestCase):
         emoji.save(update_fields=["deactivated"])
         result = self.api_delete(sender, "/api/v1/messages/1/reactions", reaction_info)
         self.assert_json_success(result)
+
+    def test_adding_reaction_to_archived_channel(self) -> None:
+        """
+        Should not be able to remove reaction from a message in an
+        archived channel.
+        """
+        sender = self.example_user("hamlet")
+
+        emoji = RealmEmoji.objects.get(name="green_tick")
+
+        reaction_info = {
+            "emoji_name": "green_tick",
+            "emoji_code": str(emoji.id),
+            "reaction_type": "realm_emoji",
+        }
+
+        stream_name = "Saxony"
+        stream = self.subscribe(self.example_user("cordelia"), stream_name)
+        message_id = self.send_stream_message(self.example_user("cordelia"), stream_name)
+        do_deactivate_stream(stream, acting_user=sender)
+
+        result = self.api_post(sender, f"/api/v1/messages/{message_id}/reactions", reaction_info)
+        self.assert_json_error(result, "Invalid message(s)")
+
+    def test_remove_existing_reaction_from_archived_channel(self) -> None:
+        """
+        Should not be able to remove reaction from a message in an
+        archived channel.
+        """
+        sender = self.example_user("hamlet")
+
+        emoji = RealmEmoji.objects.get(name="green_tick")
+
+        reaction_info = {
+            "emoji_name": "green_tick",
+            "emoji_code": str(emoji.id),
+            "reaction_type": "realm_emoji",
+        }
+
+        stream_name = "Saxony"
+        stream = self.subscribe(self.example_user("cordelia"), stream_name)
+        message_id = self.send_stream_message(self.example_user("cordelia"), stream_name)
+
+        result = self.api_post(sender, f"/api/v1/messages/{message_id}/reactions", reaction_info)
+        self.assert_json_success(result)
+
+        do_deactivate_stream(stream, acting_user=sender)
+        result = self.api_delete(sender, f"/api/v1/messages/{message_id}/reactions", reaction_info)
+        self.assert_json_error(result, "Invalid message(s)")
 
 
 class ReactionEventTest(ZulipTestCase):

@@ -888,15 +888,8 @@ ul.popover-group-menu-member-list {
     }
 
     #move_messages_count {
-        margin-top: -20px;
-        font-style: italic;
-        opacity: 0.7;
-
-        /* For cases where the count isn't displayed, which may primarily
-           occur due to bugs, avoid applying the above negative margin. */
-        &:empty {
-            margin-top: unset;
-        }
+        /* Disabled pending fixes to the logic. */
+        display: none;
     }
 
     .topic_stream_edit_header {

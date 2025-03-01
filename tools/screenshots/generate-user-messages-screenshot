@@ -186,7 +186,9 @@ def send_stream_messages(
 
 
 def add_message_reactions(message_id: int, emoji: str, users: list[UserProfile]) -> None:
-    preview_message = access_message(user_profile=DEFAULT_USER, message_id=message_id)
+    preview_message = access_message(
+        user_profile=DEFAULT_USER, message_id=message_id, is_modifying_message=False
+    )
     emoji_data = get_emoji_data(realm.id, emoji)
     for user in users:
         do_add_reaction(

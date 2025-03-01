@@ -2,26 +2,14 @@
 
 {!channels-intro.md!}
 
-There are three types of channels in Zulip:
-
-* [Private channels](#private-channels) (indicated by <i class="zulip-icon
-  zulip-icon-lock"></i>), where joining and viewing messages requires being
-  invited. You can choose whether new subscribers can see messages sent before
-  they were subscribed.
-
-* [Public channels](#public-channels) (indicated by <i class="zulip-icon
-  zulip-icon-hashtag"></i>), which are open to everyone in your organization
-  other than guests.
-
-* [Web-public channels](#web-public-channels) (indicated by <i class="zulip-icon
-  zulip-icon-globe"></i>), where anyone on the Internet can see messages without
-  creating an account.
+{!channel-privacy-types.md!}
 
 In addition, you can configure the following permissions for each channel,
 regardless of its type:
 
 * [Who can send messages](/help/channel-posting-policy)
 * [Who can administer the channel](/help/configure-who-can-administer-a-channel)
+* [Who can subscribe themselves](/help/configure-who-can-subscribe)
 * [Who can subscribe anyone](/help/configure-who-can-invite-to-channels#configure-who-can-subscribe-anyone-to-a-specific-channel)
 * [Who can unsubscribe anyone](/help/configure-who-can-unsubscribe-others)
 
@@ -102,5 +90,6 @@ zulip-icon-globe"></i>) icon.
 * [Channel posting policy](/help/channel-posting-policy)
 * [Restrict channel creation](/help/configure-who-can-create-channels)
 * [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)
-* [Restrict who can subscribe anyone](/help/configure-who-can-invite-to-channels)
+* [Configure who can subscribe to a channel](/help/configure-who-can-subscribe)
+* [Configure who can subscribe other users to channels](/help/configure-who-can-invite-to-channels)
 * [Configure who can unsubscribe anyone](/help/configure-who-can-unsubscribe-others)

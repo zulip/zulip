@@ -155,21 +155,22 @@
 
     #typeahead-header-text {
         color: var(--color-dropdown-item);
-        font-size: 12px;
+        font-size: 0.8571em; /* 12px at 14px/em */
     }
 
     a strong.typeahead-strong-section {
+        /* Can't use flex to display this item if
+           we want `text-overflow: ellipsis` to work
+           which only works on block elements. */
+        overflow: hidden;
+        text-overflow: ellipsis;
         white-space: pre;
-        /* Present as flexbox to better control
-           icon alignment and spacing, when icons
-           are shown. */
-        display: flex;
         align-items: baseline;
-        /* Approximate space as preserved in
-           typeahead lines, e.g., between the channel
-           name and its description. */
-        gap: 0.25ch;
         font-weight: 500;
+
+        .stream-privacy-type-icon {
+            margin-right: 3px;
+        }
     }
 }
 

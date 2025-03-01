@@ -1,11 +1,10 @@
 {{! Client-side Handlebars template for rendering the topic edit form. }}
 
-<form id="topic_edit_form">
+<form class="topic_edit_form">
     <input type="text" value="" autocomplete="off" maxlength="{{ max_topic_length }}"
       class="inline_topic_edit header-v {{#unless realm_mandatory_topics}}empty-topic-placeholder-display{{/unless}}"
       {{#unless realm_mandatory_topics}}placeholder="{{empty_string_topic_display_name}}"{{/unless}} />
-    <button type="button" class="topic_edit_save small_square_button animated-purple-button"><i class="fa fa-check" aria-hidden="true"></i></button>
-    <button type="button" class="topic_edit_cancel small_square_button small_square_x"><i class="fa fa-remove" aria-hidden="true"></i></button>
-    <div class="alert alert-error edit_error" style="display: none"></div>
+    {{> components/action_button custom_classes="topic_edit_save tippy-zulip-delayed-tooltip" icon="check" type="primary" intent="brand" data-tooltip-template-id="save-button-tooltip-template" }}
+    {{> components/action_button custom_classes="topic_edit_cancel tippy-zulip-delayed-tooltip" icon="circle-x" type="borderless" intent="neutral" data-tooltip-template-id="cancel-button-tooltip-template" }}
     <div class="topic_edit_spinner"></div>
 </form>

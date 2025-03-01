@@ -23,7 +23,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import AnonymousSettingGroupDict, APIStreamDict
+from zerver.lib.types import APIStreamDict, UserGroupMembersDict
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
     get_recursive_membership_groups,
@@ -145,7 +145,7 @@ def send_stream_creation_event(
     stream: Stream,
     user_ids: list[int],
     recent_traffic: dict[int, int] | None = None,
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
 ) -> None:
     event = dict(
         type="stream",
@@ -262,7 +262,7 @@ def create_stream_if_needed(
     can_remove_subscribers_group: UserGroup | None = None,
     can_subscribe_group: UserGroup | None = None,
     acting_user: UserProfile | None = None,
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
@@ -355,7 +355,7 @@ def create_streams_if_needed(
     realm: Realm,
     stream_dicts: list[StreamDict],
     acting_user: UserProfile | None = None,
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
@@ -1279,7 +1279,7 @@ def list_to_streams(
     autocreate: bool = False,
     unsubscribing_others: bool = False,
     is_default_stream: bool = False,
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
@@ -1422,24 +1422,6 @@ def ensure_stream(
     )[0]
 
 
-def get_occupied_streams(realm: Realm) -> QuerySet[Stream]:
-    """Get streams with subscribers"""
-    exists_expression = Exists(
-        Subscription.objects.filter(
-            active=True,
-            is_user_active=True,
-            user_profile__realm=realm,
-            recipient_id=OuterRef("recipient_id"),
-        ),
-    )
-    occupied_streams = (
-        Stream.objects.filter(realm=realm, deactivated=False)
-        .alias(occupied=exists_expression)
-        .filter(occupied=True)
-    )
-    return occupied_streams
-
-
 def get_stream_post_policy_value_based_on_group_setting(setting_group: UserGroup) -> int:
     if (
         hasattr(setting_group, "named_user_group")
@@ -1455,7 +1437,7 @@ def get_stream_post_policy_value_based_on_group_setting(setting_group: UserGroup
 def stream_to_dict(
     stream: Stream,
     recent_traffic: dict[int, int] | None = None,
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
 ) -> APIStreamDict:
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
@@ -1634,7 +1616,7 @@ def get_streams_for_user(
 
 def get_group_setting_value_dict_for_streams(
     streams: list[Stream],
-) -> dict[int, int | AnonymousSettingGroupDict]:
+) -> dict[int, int | UserGroupMembersDict]:
     setting_group_ids = set()
     for stream in streams:
         for setting_name in Stream.stream_permission_group_settings:
@@ -1645,10 +1627,10 @@ def get_group_setting_value_dict_for_streams(
 
 def get_setting_values_for_group_settings(
     group_ids: list[int],
-) -> dict[int, int | AnonymousSettingGroupDict]:
+) -> dict[int, int | UserGroupMembersDict]:
     user_groups = UserGroup.objects.filter(id__in=group_ids).select_related("named_user_group")
 
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] = dict()
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] = dict()
     anonymous_group_ids = []
     for group in user_groups:
         if hasattr(group, "named_user_group"):
@@ -1678,13 +1660,13 @@ def get_setting_values_for_group_settings(
     all_members = user_members.union(group_subgroups)
     for member_type, group_id, member_id in all_members:
         if group_id not in setting_groups_dict:
-            setting_groups_dict[group_id] = AnonymousSettingGroupDict(
+            setting_groups_dict[group_id] = UserGroupMembersDict(
                 direct_members=[],
                 direct_subgroups=[],
             )
 
         anonymous_group_dict = setting_groups_dict[group_id]
-        assert isinstance(anonymous_group_dict, AnonymousSettingGroupDict)
+        assert isinstance(anonymous_group_dict, UserGroupMembersDict)
         if member_type == "user":
             anonymous_group_dict.direct_members.append(member_id)
         else:

@@ -44,6 +44,7 @@ type MessageRecipient =
     | {
           message_type: "channel";
           channel_name: string;
+          topic_name: string;
           topic_display_name: string;
           is_empty_string_topic: boolean;
       }
@@ -91,6 +92,8 @@ export function notify_automatic_new_visibility_policy(
             classname: compose_banner.CLASSNAMES.automatic_new_visibility_policy,
             link_msg_id: data.id,
             channel_name: message_recipient.channel_name,
+            // The base compose_banner.hbs expects a data-topic-name.
+            topic_name: message_recipient.topic_name,
             topic_display_name: message_recipient.topic_display_name,
             is_empty_string_topic: message_recipient.is_empty_string_topic,
             narrow_url,
@@ -110,6 +113,7 @@ function get_message_recipient(message: Message): MessageRecipient {
         const channel_message_recipient: MessageRecipient = {
             message_type: "channel",
             channel_name: stream_data.get_stream_name_from_id(message.stream_id),
+            topic_name: message.topic,
             topic_display_name: util.get_final_topic_display_name(message.topic),
             is_empty_string_topic: message.topic === "",
         };

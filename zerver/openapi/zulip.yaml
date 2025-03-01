@@ -2975,7 +2975,12 @@ paths:
                                 sender_id:
                                   type: integer
                                   description: |
-                                    The ID of the user who sent the message.
+                                    The ID of the user who is typing the edit of the
+                                    message.
+
+                                    Clients should be careful to display this user as the person who
+                                    is typing, not that of the sender of the message, in case a
+                                    collaborative editing feature be might be added in the future.
                                 message_id:
                                   type: integer
                                   description: |
@@ -21320,7 +21325,7 @@ paths:
                     description: |
                       An example JSON error response when the user composes a channel message
                       and `stream_id` is not specified:
-  /message_edit_typing:
+  /messages/{message_id}/typing:
     post:
       operationId: set-typing-status-for-message-edit
       summary: Set "typing" status for message editing
@@ -21329,10 +21334,25 @@ paths:
         Notify other users whether the current user is editing a message.
 
         Typing notifications for editing messages follow the same protocol as
-        [set-typing-status](/api/set-typing-status), see that endpoint for details.
+        [set-typing-status](/api/set-typing-status), see that endpoint for
+        details.
 
-        **Changes**: New in Zulip 10.0 (feature level 351). Previously,
-        typing notifications were not available when editing messages.
+        **Changes**: Before Zulip 10.0 (feature level 361), the endpoint was
+        named `/message_edit_typing` with `message_id` a required parameter in
+        the request body. Clients are recommended to start using sending these
+        typing notifications starting from this feature level.
+
+        New in Zulip 10.0 (feature level 351). Previously, typing notifications were
+        not available when editing messages.
+      parameters:
+        - name: message_id
+          in: path
+          description: |
+            The target message's ID.
+          schema:
+            type: integer
+          example: 47
+          required: true
       requestBody:
         required: true
         content:
@@ -21348,14 +21368,8 @@ paths:
                     - start
                     - stop
                   example: start
-                message_id:
-                  description: |
-                    Describes the message id of the message being edited.
-                  type: integer
-                  example: 47
               required:
                 - op
-                - message_id
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"

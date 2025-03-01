@@ -1,8 +1,9 @@
 # Require topics in channel messages
 
-If a user sends a message without a topic, the message's topic is displayed as
-**(no topic)**. Administrators can configure whether channel messages must have a
-specified topic.
+{!general-chat-intro.md!}
+
+Administrators can require topics in channel messages to disable the “*general
+chat*” topic.
 
 ## Require topics in channel messages
 
@@ -21,3 +22,4 @@ specified topic.
 ## Related articles
 
 * [Introduction to topics](/help/introduction-to-topics)
+* [“*General chat*” topic](/help/general-chat-topic)

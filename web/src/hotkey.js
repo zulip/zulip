@@ -1229,7 +1229,8 @@ export function process_hotkey(e, hotkey) {
                 return true;
             }
 
-            reactions.toggle_emoji_reaction(msg, first_reaction.emoji_name);
+            const canonical_name = emoji.get_emoji_name(first_reaction.emoji_code);
+            reactions.toggle_emoji_reaction(msg, canonical_name);
             return true;
         }
         case "toggle_topic_visibility_policy":

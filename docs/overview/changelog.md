@@ -5,13 +5,17 @@ This page contains the release history for the Zulip server. See also the
 
 ## Zulip Server 10.x series (development)
 
-This section is an incomplete draft of the release notes for the next
-major release, and is only updated occasionally. See the [commit
-log][commit-log] for an up-to-date list of all changes.
+### Planned for 10.0
 
-### Zulip Server 10.0
+This section documents important features that we expect to be in the
+final 10.0 release, but are not available in 10.0-beta1.
 
-_Unreleased_
+- Replaced the compact mode setting with flexible options for font
+  size and line spacing in the Zulip web app.
+
+### Zulip Server 10.0-beta1
+
+_Released 2025-02-28_
 
 #### Highlights
 
@@ -25,8 +29,6 @@ _Unreleased_
   CONVERSATION" section showing just the users who've participated
   recently in the currently viewed conversation, and improving its
   filtering component.
-- Replaced the compact mode setting with flexible options for font
-  size and line spacing in the Zulip web app.
 - User groups are now much more powerful, supporting subgroups and
   with new permissions settings for who can administer the group, join
   it, or edit its membership. Permission for creating new groups is
@@ -69,7 +71,8 @@ _Unreleased_
   it to usually point to the correct location when a topic is split
   via moving some of the messages to another topic.
 - Reworked compose typeahead to make linking both channels and topics
-  in channels easier.
+  in channels easier. Linking to topic within the current channel can
+  now be initiated conveniently by typing `#>`.
 - Added a new syntax for entering a direct link to a message in the
   compose box; message links pasted in the compose box are
   automatically converted into this syntax. (The original URL is
@@ -86,8 +89,8 @@ _Unreleased_
   convenient to set up with current Zoom marketplace policies. The
   BigBlueButton call provider integration now supports voice-only
   calls.
-- Added an automated flow for transferring the mobile push
-  notifications service registration for a given domain to a new
+- Added an automated flow for transferring the Mobile Push
+  Notification Service registration for a given domain to a new
   server, even if the secrets have been lost.
 - Added new typing indicators for when someone is editing a message
   that you're viewing in the message feed.
@@ -114,6 +117,8 @@ _Unreleased_
 - Added UI support for data exports with member consent, including a
   privacy setting for users to specify whether their private data can
   be included in data exports.
+- Added new settings option to allow viewing message moves but not
+  message edits in message edit history.
 - Added new prompt when editing a message to remove the last reference
   to a previously uploaded file.
 - Added new prompt when your timezone doesn't match your profile
@@ -126,7 +131,8 @@ _Unreleased_
 - Added a new channel details menu when clicking channel pills.
 - Added live-update support to several message views: Reactions,
   Starred messages, `is:followed`, and other views that previously did
-  not support it.
+  not support it. Improved the labels for the resolved and unresolved
+  topics search filters.
 - Added support for incoming email integration addresses that use a
   bot user or yourself as the sender, rather than the Email Gateway
   system bot.
@@ -163,19 +169,27 @@ _Unreleased_
 - The `ignore_pull_requests` flag for the Travis CI integration was
   removed in favor of Zulip's generic event-filtering support.
 - System bot avatars are now shipped with the server, instead of
-  relying on Gravatar.
+  relying on Gravatar, and have been redesigned.
+- Removing the last subscriber from a channel no longer automatically
+  archives it.
+- Changing a bot's owner no longer removes the bot from channels that
+  the new bot owner is not subscribed to.
 - Deactivated users and bot users are now displayed more consistently
   across the UI.
 - Search results now show the full date on every result.
 - Drafts are no longer removed after 30 days.
+- Unicode emoji now render properly in desktop notifications.
 - The year is now always displayed on the first recipient/date bar
   entering the current year (Previously, one might see "June 12, 2022"
   followed by "July 15" and incorrectly think the latter was July 15, 2022).
 - Recipient divider rows in interleaved views now only show UI options
   when hovered, for a cleaner look.
+- Redesigned the inline topic edit UI in message recipient headers.
+- Redesigned the idle presence indicators.
 - Redesigned how the compose and message-edit UIs present formatting
   options in narrow windows and handle too-long messages.
-- Redesigned icons for bots, copying, and various other actions.
+- Redesigned icons for bots, deactivated users, copying, and many
+  other actions.
 - Redesigned the UI for changing your name or email address.
 - Redesigned the top-of-screen banners.
 - Redesigned the modal for moving topics.
@@ -193,6 +207,8 @@ _Unreleased_
 - Improved hotkey documentation for macOS users with non-Mac keyboards.
 - Improved search keyboard UI in several subtle ways.
 - Improved how invitations for guest users work in the invitation UI.
+- Improved how the compose box explains states that prevent sending a
+  message via a disabled send button with a tooltip.
 - Improved bottom-of-feed bookends for unsubscribed channels.
 - Improved top-right navbar area keyboard navigation.
 - Improved Slack data import of integration messages.
@@ -256,20 +272,31 @@ _Unreleased_
 - Migrated the remainder of the server's API parsing code to the
   `typed_endpoint` abstraction backed by Pydantic v2, improving
   performance and readability of the server project.
-- Migrate almost all of the remaining JavaScript code to TypeScript,
-  fixing many minor bugs and latent issues.
+- Migrated almost all remaining JavaScript to TypeScript, fixing many
+  minor bugs and latent issues.
+- Migrated Python dependency management from `pip` to `uv`.
 - Upgraded dependencies, including Django 5.1.
 
 #### Upgrade notes for 10.0
 
+- There's a known bug in 10.0-beta1 that will permanently break
+  `/near/` URL links to existing topics named "general
+  chat". Installations that make use of topics with that name should
+  not upgrade to `10.0-beta1`. (The bug will be fixed in 10.0.)
+- This release contains many new features and usability improvements
+  that you'll want to highlight for your users, especially if you've
+  disabled [Zulip
+  updates](https://zulip.com/help/configure-automated-notices#zulip-update-announcements)
+  or pointed it at a private channel.
 - This release adds support for uploading arbitrarily large
   files. Because prior releases wrote the old default value of 25 (MB)
   for the `MAX_FILE_UPLOAD_SIZE` setting into `/etc/zulip/settings.py`
   during installation, you'll want to consider increasing that. The
-  new default value is 100. Since there is no technical limit, we
-  recommend considering how much storage you allocated to your Zulip
-  instance and the policy policy question of how you want to encourage
-  your users to share videos or other very large files.
+  default value for new installations is 100. Since there is no
+  technical limit, we recommend considering how much storage you
+  allocated to your Zulip instance and the policy question of how you
+  want to encourage your users to share videos or other very large
+  files.
 - The `SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT` setting is deprecated in favor of the
   more general `SOCIAL_AUTH_SYNC_ATTRS_DICT` setting structure, but still works in
   this release for a smooth upgrade experience. The new setting supports
@@ -280,6 +307,10 @@ _Unreleased_
   you will need to [upgrade
   PostgreSQL](../production/upgrade.md#upgrading-postgresql) before
   upgrading Zulip.
+- This release contains about 120 database migrations, largely related
+  to the transition of all of Zulip's permissions to the new
+  groups-based system. We expect all of them to go smoothly, but
+  expect a relatively long upgrade.
 
 ## Zulip Server 9.x series
 

@@ -98,8 +98,8 @@ class CountStat:
         result = self.data_collector.output_table.objects.filter(  # type: ignore[attr-defined] # see above
             user=user,
             property=self.property,
-            end_time__gte=start_of_month,
-            end_time__lt=start_of_next_month,
+            end_time__gt=start_of_month,
+            end_time__lte=start_of_next_month,
         ).aggregate(models.Sum("value"))
 
         total_value = result["value__sum"] or 0

@@ -22,7 +22,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
-from zerver.lib.types import AnonymousSettingGroupDict
+from zerver.lib.types import UserGroupMembersDict
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
     access_user_group_for_deactivation,
@@ -60,12 +60,12 @@ def add_user_group(
     members: Json[list[int]],
     description: str,
     subgroups: Json[list[int]] | None = None,
-    can_add_members_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_join_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_leave_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_manage_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_mention_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_remove_members_group: Json[int | AnonymousSettingGroupDict] | None = None,
+    can_add_members_group: Json[int | UserGroupMembersDict] | None = None,
+    can_join_group: Json[int | UserGroupMembersDict] | None = None,
+    can_leave_group: Json[int | UserGroupMembersDict] | None = None,
+    can_manage_group: Json[int | UserGroupMembersDict] | None = None,
+    can_mention_group: Json[int | UserGroupMembersDict] | None = None,
+    can_remove_members_group: Json[int | UserGroupMembersDict] | None = None,
 ) -> HttpResponse:
     user_profile.realm.ensure_not_on_limited_plan()
     user_profiles = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
@@ -119,7 +119,7 @@ def get_user_groups(
 ) -> HttpResponse:
     user_groups = user_groups_in_realm_serialized(
         user_profile.realm, include_deactivated_groups=include_deactivated_groups
-    )
+    ).api_groups
     return json_success(request, data={"user_groups": user_groups})
 
 

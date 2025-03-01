@@ -461,7 +461,11 @@ function get_filtered_user_id_list(
 
 export function get_conversation_participants_callback(): () => Set<number> {
     return () => {
-        if (!narrow_state.stream_id() || !narrow_state.topic() || !message_lists.current) {
+        if (
+            !narrow_state.stream_id() ||
+            narrow_state.topic() === undefined ||
+            !message_lists.current
+        ) {
             return new Set<number>();
         }
         return message_lists.current.data.participants.visible();

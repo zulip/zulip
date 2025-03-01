@@ -224,7 +224,7 @@ export let update_views_filtered_on_message_property = (
                     // can be used to update other message lists and
                     // cached message data structures as well.
                 },
-                // eslint-disable-next-line no-loop-func
+                // eslint-disable-next-line @typescript-eslint/no-loop-func
                 success(data) {
                     const parsed_data = z
                         .object({

@@ -12,7 +12,6 @@ import render_presence_rows from "../templates/presence_rows.hbs";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import type {BuddyUserInfo} from "./buddy_data.ts";
-import {media_breakpoints_num} from "./css_variables.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -26,6 +25,7 @@ import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import {INTERACTIVE_HOVER_DELAY} from "./tippyjs.ts";
+import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
@@ -78,6 +78,7 @@ type BuddyListRenderData = {
     total_human_subscribers_count: number;
     other_users_count: number;
     hide_headers: boolean;
+    // Might include unsubscribed participants
     get_all_participant_ids: () => Set<number>;
 };
 
@@ -174,7 +175,7 @@ export class BuddyList extends BuddyListConf {
                 e.stopPropagation();
                 const $elem = $(this);
                 let placement: "left" | "auto" = "left";
-                if (window.innerWidth < media_breakpoints_num.md) {
+                if (ui_util.matches_viewport_state("lt_md_min")) {
                     // On small devices display tooltips based on available space.
                     // This will default to "bottom" placement for this tooltip.
                     placement = "auto";
@@ -265,6 +266,17 @@ export class BuddyList extends BuddyListConf {
         );
     }
 
+    subscribed_participant_ids(): number[] {
+        const {current_sub, pm_ids_set, get_all_participant_ids} = this.render_data;
+        const participant_ids_list = [...get_all_participant_ids()];
+        return participant_ids_list.filter((user_id) => {
+            if (current_sub) {
+                return peer_data.is_user_subscribed(current_sub.stream_id, user_id);
+            }
+            return pm_ids_set.has(user_id);
+        });
+    }
+
     populate(opts: {all_user_ids: number[]}): void {
         this.render_count = 0;
         this.$participants_list.empty();
@@ -308,7 +320,6 @@ export class BuddyList extends BuddyListConf {
             this.render_data.hide_headers ? false : this.other_users_is_collapsed,
         );
 
-        this.update_empty_list_placeholders();
         this.fill_screen_with_content();
 
         // This must happen after `fill_screen_with_content`
@@ -318,6 +329,7 @@ export class BuddyList extends BuddyListConf {
             this.render_view_user_list_links();
         }
         this.display_or_hide_sections();
+        this.update_empty_list_placeholders();
 
         // `populate` always rerenders all user rows, so we need new load handlers.
         // This logic only does something is a user has enabled the setting to
@@ -332,62 +344,53 @@ export class BuddyList extends BuddyListConf {
             });
     }
 
+    // We show "No matching users" if a section is empty during search.
+    // Otherwise we hide sections with no users in them, except the "this
+    // channel" section, since it could confuse users to show other sections
+    // without that one.
     update_empty_list_placeholders(): void {
-        const {total_human_subscribers_count, other_users_count} = this.render_data;
-        const has_inactive_users_matching_view =
-            total_human_subscribers_count >
-            this.users_matching_view_ids.length + this.participant_user_ids.length;
-        const has_inactive_other_users = other_users_count > this.other_user_ids.length;
-
-        let matching_view_empty_list_message;
-        let other_users_empty_list_message;
-        // Only visible when searching, since we usually hide an empty participants section
-        let participants_empty_list_message;
-
-        if (buddy_data.get_is_searching_users()) {
-            matching_view_empty_list_message = $t({defaultMessage: "No matching users."});
-            other_users_empty_list_message = $t({defaultMessage: "No matching users."});
-            participants_empty_list_message = $t({defaultMessage: "No matching users."});
-        } else {
-            if (has_inactive_users_matching_view) {
-                matching_view_empty_list_message = $t({defaultMessage: "No active users."});
-            } else {
-                matching_view_empty_list_message = $t({defaultMessage: "None."});
+        function add_or_update_empty_list_placeholder(
+            list_selector: string,
+            message: string,
+        ): void {
+            // It's already set, so don't do extra work
+            if ($(`${list_selector} .empty-list-message`).text() === message) {
+                return;
             }
-
-            if (has_inactive_other_users) {
-                other_users_empty_list_message = $t({defaultMessage: "No active users."});
-            } else {
-                other_users_empty_list_message = $t({defaultMessage: "None."});
-            }
-        }
-
-        function add_or_update_empty_list_placeholder(selector: string, message: string): void {
-            if (
-                $(selector).children().length === 0 ||
-                $(`${selector} .empty-list-message`).length > 0
-            ) {
+            // Remove any existing message first, since it's actually one of the
+            // children of `$(list_selector)`
+            $(`${list_selector} .empty-list-message`).remove();
+            if ($(list_selector).children().length === 0) {
                 const empty_list_widget_html = render_empty_list_widget_for_list({
                     empty_list_message: message,
                 });
-                $(selector).html(empty_list_widget_html);
+                $(list_selector).html(empty_list_widget_html);
             }
         }
 
-        add_or_update_empty_list_placeholder(
-            "#buddy-list-users-matching-view",
-            matching_view_empty_list_message,
-        );
+        if (buddy_data.get_is_searching_users()) {
+            const message = $t({defaultMessage: "No matching users."});
+            add_or_update_empty_list_placeholder("#buddy-list-users-matching-view", message);
+            add_or_update_empty_list_placeholder("#buddy-list-other-users", message);
+            add_or_update_empty_list_placeholder("#buddy-list-participants", message);
+            return;
+        }
 
-        add_or_update_empty_list_placeholder(
-            "#buddy-list-other-users",
-            other_users_empty_list_message,
-        );
-
-        if (participants_empty_list_message) {
+        const {get_all_participant_ids, total_human_subscribers_count} = this.render_data;
+        if (total_human_subscribers_count - this.subscribed_participant_ids().length > 0) {
+            // There are more subscribers, so we don't need an empty list message.
+            $("#buddy-list-users-matching-view .empty-list-message").remove();
+        } else if (get_all_participant_ids().size > 0) {
             add_or_update_empty_list_placeholder(
-                "#buddy-list-participants",
-                participants_empty_list_message,
+                "#buddy-list-users-matching-view",
+                $t({defaultMessage: "No other subscribers."}),
+            );
+        } else {
+            // There's no "this conversation" section, so it would be confusing
+            // to say there are "other" subscribers.
+            add_or_update_empty_list_placeholder(
+                "#buddy-list-users-matching-view",
+                $t({defaultMessage: "No subscribers."}),
             );
         }
     }
@@ -614,23 +617,24 @@ export class BuddyList extends BuddyListConf {
     }
 
     display_or_hide_sections(): void {
-        const {get_all_participant_ids, hide_headers, total_human_subscribers_count} =
-            this.render_data;
+        // `hide_headers === true` means that we're only showing one section, like
+        // for Inbox view. We hide all headers and show only users from the "others"
+        // section and should hide the other two sections.
+        const {hide_headers, other_users_count, get_all_participant_ids} = this.render_data;
 
-        // If we're in the mode of hiding headers, that means we're only showing the "others"
-        // section, so hide the other two sections.
-        $("#buddy-list-users-matching-view-container").toggleClass("no-display", hide_headers);
-        const hide_participants_list = hide_headers || get_all_participant_ids().size === 0;
-        $("#buddy-list-participants-container").toggleClass("no-display", hide_participants_list);
+        const hide_participants = hide_headers || get_all_participant_ids().size === 0;
+        // We always show the users matching view section, even if there's nobody in it,
+        // since it can be confusing to see "others" out of context of the main population
+        // of that narrow.
+        const hide_users_matching_view = hide_headers;
+        const hide_other_users = other_users_count === 0;
 
-        // This is the case where every subscriber is in the participants list. In this case, we
-        // hide the "in this channel" section.
-        if (
-            !hide_participants_list &&
-            total_human_subscribers_count === this.participant_user_ids.length
-        ) {
-            $("#buddy-list-users-matching-view-container").toggleClass("no-display", true);
-        }
+        $("#buddy-list-users-matching-view-container").toggleClass(
+            "no-display",
+            hide_users_matching_view,
+        );
+        $("#buddy-list-participants-container").toggleClass("no-display", hide_participants);
+        $("#buddy-list-other-users-container").toggleClass("no-display", hide_other_users);
     }
 
     render_view_user_list_links(): void {
@@ -985,6 +989,7 @@ export class BuddyList extends BuddyListConf {
         }
 
         this.display_or_hide_sections();
+        this.update_empty_list_placeholders();
         this.render_section_headers();
     }
 

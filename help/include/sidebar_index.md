@@ -136,6 +136,7 @@
 
 ## Channels
 * [Introduction to channels](/help/introduction-to-channels)
+* [Subscribe to a channel](/help/introduction-to-channels#browse-and-subscribe-to-channels)
 * [Create a channel](/help/create-a-channel)
 * [Pin a channel](/help/pin-a-channel)
 * [Change the color of a channel](/help/change-the-color-of-a-channel)
@@ -150,6 +151,7 @@
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
+* [“*General chat*” topic](/help/general-chat-topic)
 * [Delete a topic](/help/delete-a-topic)
 
 ## Notifications
@@ -213,6 +215,7 @@
 * [Channel posting policy](/help/channel-posting-policy)
 * [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)
 * [Restrict channel creation](/help/configure-who-can-create-channels)
+* [Configure who can subscribe](/help/configure-who-can-subscribe)
 * [Configure who can subscribe others](/help/configure-who-can-invite-to-channels)
 * [Configure who can unsubscribe anyone](/help/configure-who-can-unsubscribe-others)
 * [Subscribe users to a channel](/help/subscribe-users-to-a-channel)

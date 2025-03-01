@@ -7,6 +7,10 @@
         border-radius: 5px;
         position: absolute;
         overflow: hidden;
+        /* We bump the z-index to keep the search box
+           clickable despite position-based layout
+           adjustments. */
+        z-index: 1;
     }
 
     .search_icon {

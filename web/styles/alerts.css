@@ -150,7 +150,6 @@
     .alert {
         @extend .alert-animations;
 
-        font-size: 1rem;
         border-radius: 4px;
         background-color: hsl(0deg 0% 100%);
 

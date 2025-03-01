@@ -76,22 +76,22 @@ fork](modify.md#making-changes). The process is simple:
 
 ```bash
 # Upgrade to an official release
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 1.8.1
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 9.4
 # Upgrade to a branch (or other Git ref)
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 2.1.x
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 9.x
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git main
 ```
 
 Zulip will automatically fetch the relevant Git commit and upgrade to
 that version of Zulip.
 
-Branches with names like `2.1.x` are stable release branches,
+Branches with names like `9.x` are stable release branches,
 containing the changes planned for the next minor release
-(e.g., 2.1.5); we support these stable release branches as though they
+(e.g., 9.4); we support these stable release branches as though they
 were a published release.
 
 The `main` branch contains changes planned for the next major
-release (e.g., 3.0); see our documentation on [running
+release (e.g., 10.0); see our documentation on [running
 `main`](modify.md#upgrading-to-main) before upgrading to it.
 
 By default, this uses the main upstream Zulip server repository, but
@@ -229,8 +229,8 @@ code, the upgrade will abort.
 The hook is run with the following environment variables set:
 
 - `ZULIP_OLD_VERSION`: The version being upgraded from, which may either be a
-  release name (e.g., `7.0` or `7.0-beta3`) or the output from `git describe`
-  (e.g., `7.0-beta3-2-gdc158b18f2`).
+  release name (e.g., `10.0` or `10.0-beta1`) or the output from `git describe`
+  (e.g., `10.0-beta1-2-abcd158b18f2`).
 - `ZULIP_NEW_VERSION`: The version being upgraded to, in the same format as
   `ZULIP_OLD_VERSION`.
 
@@ -292,9 +292,8 @@ and the latter for `server` contexts.
 ## Upgrading the operating system
 
 When you upgrade the operating system on which Zulip is installed
-(e.g., Ubuntu 20.04 Focal to Ubuntu 22.04 Jammy), you need to take
-some additional steps to update your Zulip installation, documented
-below.
+(e.g., Ubuntu 22.04 to Ubuntu 24.04), you need to take some additional
+steps to update your Zulip installation, documented below.
 
 The steps are largely the same for the various OS upgrades aside from
 the versions of PostgreSQL, so you should be able to adapt these
@@ -572,49 +571,6 @@ confirm everything is working correctly.
    20.04](#upgrading-from-ubuntu-1804-bionic-to-2004-focal), the next
    in chain of upgrades leading to a supported operating system.
 
-### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
-
-1. Upgrade your server to the latest Zulip `2.0.x` release. You can
-   only upgrade to Zulip `2.1.x` and newer after completing this
-   process, since newer releases don't support Ubuntu 14.04 Trusty.
-
-2. Same as for Ubuntu 18.04 to 20.04.
-
-3. Same as for Ubuntu 18.04 to 20.04.
-
-4. As root, upgrade the database installation and OS configuration to
-   match the new OS version:
-
-   ```bash
-   apt remove upstart -y
-   /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
-   pg_dropcluster 9.5 main --stop
-   systemctl stop postgresql
-   pg_upgradecluster -m upgrade 9.3 main
-   pg_dropcluster 9.3 main
-   apt remove postgresql-9.3
-   systemctl start postgresql
-   service memcached restart
-   ```
-
-5. Finally, we need to reinstall the current version of Zulip, which
-   among other things will recompile Zulip's Python module
-   dependencies for your new version of Python:
-
-   ```bash
-   rm -rf /srv/zulip-venv-cache/*
-   /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
-       /home/zulip/deployments/current/ --ignore-static-assets
-   ```
-
-   This will finish by restarting your Zulip server; you should now be
-   able to navigate to its URL and confirm everything is working
-   correctly.
-
-6. [Upgrade from Ubuntu 16.04 to
-   18.04](#upgrading-from-ubuntu-1604-xenial-to-1804-bionic), the next
-   in chain of upgrades leading to a supported operating system.
-
 ### Upgrading from Debian 11 to 12
 
 1. Upgrade your server to the latest `7.x` release.
@@ -798,13 +754,14 @@ confirm everything is working correctly.
 
 ## Upgrading PostgreSQL
 
-Starting with Zulip 3.0, we use the latest available version of
-PostgreSQL at installation time (currently version 16). Upgrades to
-the version of PostgreSQL are no longer linked to upgrades of the
-distribution; that is, you may opt to upgrade to PostgreSQL 16 while
-running Ubuntu 22.04.
+The major version of PostgreSQL is upgraded separately from the Zulip
+server version. Further, the version of PostgreSQL included with a
+Zulip server is not linked to that of the host OS; the Zulip installer
+uses the latest available version of PostgreSQL at installation time
+(currently, version 16).
 
-Not all versions of Zulip Server support all versions of PostgreSQL, however:
+The following table details which versions each major Zulip Server
+version supports:
 
 ```{include} postgresql-support-table.md
 
@@ -812,12 +769,14 @@ Not all versions of Zulip Server support all versions of PostgreSQL, however:
 
 To upgrade the version of PostgreSQL on the Zulip server:
 
-1. Upgrade your server to the latest Zulip release (at least 3.0).
+1. Upgrade your Zulip server, at least to the latest Zulip maintenance
+   release for your major Zulip version (E.g., upgrade 9.1 to
+   9.4). This ensures you're using the most robust version of the
+   PostgreSQL upgrade tool.
 
 1. Stop the server, as the `zulip` user:
 
    ```bash
-   # On Zulip before 4.0, use `supervisor stop all` instead
    /home/zulip/deployments/current/scripts/stop-server
    ```
 
@@ -836,7 +795,6 @@ To upgrade the version of PostgreSQL on the Zulip server:
 1. As the `zulip` user, start the server again:
 
    ```bash
-   # On Zulip before 4.0, use `restart-server` instead of `start-server` instead
    /home/zulip/deployments/current/scripts/start-server
    ```
 

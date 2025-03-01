@@ -86,7 +86,7 @@ from zerver.lib.topic import (
 )
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_color
-from zerver.lib.types import AnonymousSettingGroupDict
+from zerver.lib.types import UserGroupMembersDict
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
     UserGroupMembershipDetails,
@@ -599,11 +599,11 @@ def add_subscriptions_backend(
     is_default_stream: Json[bool] = False,
     history_public_to_subscribers: Json[bool] | None = None,
     message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
-    can_add_subscribers_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_administer_channel_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_send_message_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_remove_subscribers_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_subscribe_group: Json[int | AnonymousSettingGroupDict] | None = None,
+    can_add_subscribers_group: Json[int | UserGroupMembersDict] | None = None,
+    can_administer_channel_group: Json[int | UserGroupMembersDict] | None = None,
+    can_send_message_group: Json[int | UserGroupMembersDict] | None = None,
+    can_remove_subscribers_group: Json[int | UserGroupMembersDict] | None = None,
+    can_subscribe_group: Json[int | UserGroupMembersDict] | None = None,
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
@@ -646,8 +646,8 @@ def add_subscriptions_backend(
             if permission_configuration.default_group_name == "stream_creator_or_nobody":
                 # Default for some settings like "can_administer_channel_group"
                 # is anonymous group with stream creator.
-                setting_groups_dict[group_settings_map[setting_name].id] = (
-                    AnonymousSettingGroupDict(direct_subgroups=[], direct_members=[user_profile.id])
+                setting_groups_dict[group_settings_map[setting_name].id] = UserGroupMembersDict(
+                    direct_subgroups=[], direct_members=[user_profile.id]
                 )
             else:
                 setting_groups_dict[group_settings_map[setting_name].id] = group_settings_map[

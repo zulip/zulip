@@ -1,0 +1,8 @@
+<button type="button" class="{{#if custom_classes}}{{custom_classes}} {{/if}}action-button action-button-{{type}}-{{intent}}" {{#if data-tooltip-template-id}}data-tooltip-template-id="{{data-tooltip-template-id}}"{{/if}} tabindex="0">
+    {{#if icon}}
+    <i class="zulip-icon zulip-icon-{{icon}}"></i>
+    {{/if}}
+    {{#if label}}
+    <span class="action-button-label">{{label}}</span>
+    {{/if}}
+</button>

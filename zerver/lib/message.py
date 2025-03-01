@@ -313,6 +313,8 @@ def access_message(
     user_profile: UserProfile,
     message_id: int,
     lock_message: bool = False,
+    *,
+    is_modifying_message: bool,
 ) -> Message:
     """You can access a message by ID in our APIs that either:
     (1) You received or have previously accessed via starring
@@ -349,6 +351,7 @@ def access_message(
         message,
         has_user_message=has_user_message,
         user_group_membership_details=user_group_membership_details,
+        is_modifying_message=is_modifying_message,
     ):
         return message
     raise JsonableError(_("Invalid message(s)"))
@@ -358,6 +361,8 @@ def access_message_and_usermessage(
     user_profile: UserProfile,
     message_id: int,
     lock_message: bool = False,
+    *,
+    is_modifying_message: bool,
 ) -> tuple[Message, UserMessage | None]:
     """As access_message, but also returns the usermessage, if any."""
     try:
@@ -379,6 +384,7 @@ def access_message_and_usermessage(
         message,
         has_user_message=has_user_message,
         user_group_membership_details=user_group_membership_details,
+        is_modifying_message=is_modifying_message,
     ):
         return (message, user_message)
     raise JsonableError(_("Invalid message(s)"))
@@ -478,6 +484,7 @@ def has_message_access(
     stream: Stream | None = None,
     is_subscribed: bool | None = None,
     user_group_membership_details: UserGroupMembershipDetails,
+    is_modifying_message: bool,
 ) -> bool:
     """
     Returns whether a user has access to a given message.
@@ -500,7 +507,7 @@ def has_message_access(
         # You can't access public stream messages in other realms
         return False
 
-    if stream.deactivated:
+    if is_modifying_message and stream.deactivated:
         # You can't access messages in deactivated streams
         return False
 
@@ -607,6 +614,7 @@ def bulk_access_messages(
     messages: Collection[Message] | QuerySet[Message],
     *,
     stream: Stream | None = None,
+    is_modifying_message: bool,
 ) -> list[Message]:
     """This function does the full has_message_access check for each
     message.  If stream is provided, it is used to avoid unnecessary
@@ -648,6 +656,7 @@ def bulk_access_messages(
             stream=streams.get(message.recipient_id) if stream is None else stream,
             is_subscribed=is_subscribed,
             user_group_membership_details=user_group_membership_details,
+            is_modifying_message=False,
         ):
             filtered_messages.append(message)
     return filtered_messages

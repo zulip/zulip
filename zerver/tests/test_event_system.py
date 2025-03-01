@@ -30,7 +30,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.users import get_users_for_api
 from zerver.models import CustomProfileField, UserMessage, UserPresence, UserProfile
 from zerver.models.clients import get_client
-from zerver.models.realms import get_realm, get_realm_with_settings
+from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
 from zerver.tornado.event_queue import (
@@ -171,7 +171,7 @@ class EventsEndpointTest(ZulipTestCase):
                 status_code=401,
             )
 
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(16):
             result = self.client_post("/json/register")
             result_dict = self.assert_json_success(result)
             self.assertEqual(result_dict["queue_id"], None)
@@ -1212,16 +1212,11 @@ class FetchQueriesTest(ZulipTestCase):
 
         self.login_user(user)
 
-        # Fetch realm like it is done when calling fetch_initial_state_data
-        # in production to match the query counts with the actual query
-        # count in production.
-        realm = get_realm_with_settings(realm_id=user.realm_id)
-
         with (
-            self.assert_database_query_count(47),
+            self.assert_database_query_count(46),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
-            fetch_initial_state_data(user, realm=realm)
+            fetch_initial_state_data(user, realm=user.realm)
 
         expected_counts = dict(
             alert_words=1,
@@ -1234,7 +1229,8 @@ class FetchQueriesTest(ZulipTestCase):
             muted_users=1,
             onboarding_steps=1,
             presence=1,
-            realm=1,
+            # 2 of the 3 queries here are for fetching 'realm_user_groups' data.
+            realm=3,
             realm_bot=1,
             realm_domains=1,
             realm_embedded_bots=0,
@@ -1244,7 +1240,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_linkifiers=0,
             realm_playgrounds=1,
             realm_user=4,
-            realm_user_groups=3,
+            realm_user_groups=2,
             realm_user_settings_defaults=1,
             recent_private_conversations=1,
             saved_snippets=1,
@@ -1267,11 +1263,6 @@ class FetchQueriesTest(ZulipTestCase):
 
         self.assertEqual(wanted_event_types, set(expected_counts))
 
-        # Fetch realm again here so that the cached foreign key fields
-        # while testing the above case does not reduce the query count
-        # and we test the actual query count for each event type.
-        realm = get_realm_with_settings(realm_id=user.realm_id)
-
         for event_type in sorted(wanted_event_types):
             count = expected_counts[event_type]
             with self.assert_database_query_count(count):
@@ -1280,7 +1271,7 @@ class FetchQueriesTest(ZulipTestCase):
                 else:
                     event_types = [event_type]
 
-                fetch_initial_state_data(user, realm=realm, event_types=event_types)
+                fetch_initial_state_data(user, realm=user.realm, event_types=event_types)
 
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):

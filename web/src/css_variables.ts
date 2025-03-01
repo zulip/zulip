@@ -13,13 +13,8 @@ const ms = 320; // Mobile small
 // Breakpoints for middle column
 const mc = 849; // Middle column as wide as it appears after the `sm` breakpoint
 
-// Breakpoints for showing and hiding compose buttons which do not always fit in
-// a single row below the compose box
-const cb1 = 1314;
-const cb2 = 1072;
-const cb3 = 860;
-const cb4 = 750;
-const cb5 = 504;
+// Base em unit for container_breakpoints conversion
+const base_em_px = 16;
 
 export const media_breakpoints = {
     xs_min: xs + "px",
@@ -31,17 +26,18 @@ export const media_breakpoints = {
     ml_min: ml + "px",
     mm_min: mm + "px",
     ms_min: ms + "px",
-    cb1_min: cb1 + "px",
-    cb2_min: cb2 + "px",
-    cb3_min: cb3 + "px",
-    cb4_min: cb4 + "px",
-    cb5_min: cb5 + "px",
     short_navbar_cutoff_height: "600px",
     // Used for main settings overlay and stream/subscription settings overlay
     // measured as the width of the overlay itself, not the width of the full
     // screen. 800px is the breakpoint at the 14px legacy font size, scaled with
     // em to user-chosen font-size.
     settings_overlay_sidebar_collapse_breakpoint: 800 / 14 + "em",
+};
+
+export const container_breakpoints = {
+    cq_xl_min: xl / base_em_px + "em",
+    cq_md_min: md / base_em_px + "em",
+    cq_mm_min: mm / base_em_px + "em",
 };
 
 export const media_breakpoints_num = {

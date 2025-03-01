@@ -385,6 +385,10 @@
     opacity: 0.7;
 }
 
+#sender_channel_email_address_widget {
+    width: 12.875em; /* 206px at 16px/em */
+}
+
 #copy_email_address_modal {
     width: 800px;
 
@@ -397,7 +401,7 @@
     }
 
     .stream-email-header {
-        font-size: 18px;
+        font-size: 1.125em; /* 18px at 16px/em */
     }
 }
 

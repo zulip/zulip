@@ -1,4 +1,5 @@
 import $ from "jquery";
+import type * as tippy from "tippy.js";
 
 import * as blueslip from "./blueslip.ts";
 import * as hash_parser from "./hash_parser.ts";
@@ -257,4 +258,45 @@ export function show_left_sidebar_menu_icon(element: Element): void {
 // Remove the class from element when popover is closed
 export function hide_left_sidebar_menu_icon(): void {
     $(".left_sidebar_menu_icon_visible").removeClass("left_sidebar_menu_icon_visible");
+}
+
+export function matches_viewport_state(state_string: string): boolean {
+    const app_main = document.querySelector(".app-main");
+    if (app_main instanceof HTMLElement) {
+        const app_main_after_content = getComputedStyle(app_main, ":after").content ?? "";
+        /* The .content property includes the quotation marks, so we
+           strip them before splitting on the empty space. */
+        const app_main_after_content_array = app_main_after_content.replaceAll('"', "").split(" ");
+
+        return app_main_after_content_array.includes(state_string);
+    }
+    return false;
+}
+
+export function disable_element_and_add_tooltip($element: JQuery, tooltip_text: string): void {
+    // Since disabled elements do not fire events, it is not possible to trigger
+    // tippy tooltips on disabled elements. So, as a workaround, we wrap the
+    // disabled element in a span and show the tooltip on this wrapper instead.
+    // https://atomiks.github.io/tippyjs/v6/constructor/#disabled-elements
+    if ($element.prop("disabled")) {
+        // If already disabled, there's nothing to do.
+        return;
+    }
+    $element.prop("disabled", true);
+    const $tooltip_target_wrapper = $("<span>");
+    $tooltip_target_wrapper.addClass("disabled-tooltip");
+    $tooltip_target_wrapper.attr("data-tippy-content", tooltip_text).attr("tabindex", "0");
+    $element.wrap($tooltip_target_wrapper);
+}
+
+export function enable_element_and_remove_tooltip($element: JQuery): void {
+    // This method reverses the effects of disable_element_and_add_tooltip,
+    // and explicitly removes any attached tooltips on the wrapper to prevent
+    // ghost tooltips.
+    $element.prop("disabled", false);
+    const tooltip_wrapper: tippy.ReferenceElement = $element.parent(".disabled-tooltip")[0]!;
+    if (tooltip_wrapper?._tippy) {
+        tooltip_wrapper._tippy.destroy();
+    }
+    $element.unwrap(".disabled-tooltip");
 }

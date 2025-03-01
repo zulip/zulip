@@ -53,7 +53,7 @@ server as follows:
 
    [update-settings-docs]: ../production/upgrade.md#updating-settingspy-inline-documentation
 
-1. [Restart your Zulip server](settings.md#making-changes) so that
+1. [Restart your Zulip server](settings.md#changing-server-settings) so that
    your configuration changes take effect.
 
 1. Run the registration command. If you installed Zulip directly on the server
@@ -411,7 +411,7 @@ registration.
    `ZULIP_SERVICE_PUSH_NOTIFICATIONS = True` line
    in your `/etc/zulip/settings.py` file (i.e., add `# ` at the
    start of the line), and [restart your Zulip
-   server](settings.md#making-changes).
+   server](settings.md#changing-server-settings).
 
 If you ever need to reactivate your server's registration, [contact Zulip
 support](https://zulip.com/help/contact-support).
@@ -421,7 +421,7 @@ support](https://zulip.com/help/contact-support).
 You can temporarily stop using the Mobile Push Notification Service. Comment out
 the `PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'` line in your
 `/etc/zulip/settings.py` file (i.e., add `# ` at the start of the line), and
-[restart your Zulip server](settings.md#making-changes). This approach makes it
+[restart your Zulip server](settings.md#changing-server-settings). This approach makes it
 easy to start using the service again by uncommenting the same line.
 
 ## Sending push notifications directly from your server
