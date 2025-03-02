@@ -132,9 +132,6 @@ Here are a few common macros used to document Zulip's integrations:
   webhooks. For an example rendering, see the last paragraph of **Step 2**
   in [the docs for Zulip's GitHub integration][github-integration].
 
-- `{!webhook-url.md!}` - Used internally by `{!generate-integration-url.md!}`
-  to generate the webhook URL.
-
 - `{!webhook-url-with-bot-email.md!}` - Used in certain non-webhook integrations
   to generate URLs of the form:
 
