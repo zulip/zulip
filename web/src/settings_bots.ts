@@ -304,6 +304,7 @@ export function add_a_new_bot(): void {
         });
     }
 
+    // default bot type Incoming Webhook
     function set_up_form_fields(): void {
         $("#payload_url_inputbox").hide();
         $("#create_payload_url").val("");
@@ -343,6 +344,8 @@ export function add_a_new_bot(): void {
             ).val()!;
             $(`[name*='${CSS.escape(selected_bot)}']`).show();
         });
+
+        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE);
     }
 
     function validate_input(): boolean {
