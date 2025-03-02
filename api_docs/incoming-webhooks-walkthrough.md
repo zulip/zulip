@@ -444,7 +444,7 @@ Learn how Zulip integrations work with this simple Hello World example!
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1.  To trigger a notification using this example webhook, you can use
     `send_webhook_fixture_message` from a [Zulip development
