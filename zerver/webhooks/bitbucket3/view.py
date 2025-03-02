@@ -22,6 +22,7 @@ from zerver.lib.webhooks.git import (
     get_pull_request_event_message,
     get_push_tag_event_message,
     get_remove_branch_event_message,
+    is_branch_name_notifiable,
 )
 from zerver.models import UserProfile
 from zerver.webhooks.bitbucket2.view import BITBUCKET_REPO_UPDATED_CHANGED, BITBUCKET_TOPIC_TEMPLATE
@@ -203,7 +204,7 @@ def repo_push_handler(
         event_target_type = change["ref"]["type"].tame(check_string)
         if event_target_type == "BRANCH":
             branch = change["ref"]["displayId"].tame(check_string)
-            if branches and branch not in branches:
+            if not is_branch_name_notifiable(branch, branches):
                 continue
             data.append(repo_push_branch_data(payload, change))
         elif event_target_type == "TAG":
