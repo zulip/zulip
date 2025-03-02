@@ -453,7 +453,8 @@
         box-shadow linear 0.2s;
     margin-bottom: 10px;
     /* subtract padding (6px each side) and border (1px each side) */
-    width: calc(var(--modal-input-width) - 14px);
+    min-width: calc(var(--modal-input-width) - 14px);
+    max-width: calc(100% - 14px);
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -462,6 +463,14 @@
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
+}
+
+.hidden-mirror {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    visibility: hidden;
+    white-space: pre;
 }
 
 #create_bot_short_name {
