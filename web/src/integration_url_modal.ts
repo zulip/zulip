@@ -5,6 +5,7 @@ import {z} from "zod";
 
 import render_generate_integration_url_config_checkbox_modal from "../templates/settings/generate_integration_url_config_checkbox_modal.hbs";
 import render_generate_integration_url_config_text_modal from "../templates/settings/generate_integration_url_config_text_modal.hbs";
+import render_generate_integration_url_filter_branches_modal from "../templates/settings/generate_integration_url_filter_branches_modal.hbs";
 import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.hbs";
 import render_integration_events from "../templates/settings/integration_events.hbs";
 
@@ -15,6 +16,7 @@ import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import {$t_html} from "./i18n.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import {place_caret_at_end} from "./ui_util.ts";
 import * as util from "./util.ts";
 
 type ConfigOption = {
@@ -82,7 +84,23 @@ export function show_generate_integration_url_modal(api_key: string): void {
             for (const option of validated_config) {
                 let $config_element: JQuery;
 
-                if (option.validator === "check_bool") {
+                if (option.key === "branches") {
+                    const filter_branches_html =
+                        render_generate_integration_url_filter_branches_modal();
+                    $config_element = $(filter_branches_html);
+                    $config_element.find("#integration-url-all-branches").on("change", () => {
+                        $("#integration-url-filter-branches").toggleClass(
+                            "hide",
+                            $("#integration-url-all-branches").prop("checked"),
+                        );
+                        $("#integration-url-branches-text").trigger("focus");
+                        place_caret_at_end(util.the($("#integration-url-branches-text")));
+                        update_url();
+                    });
+                    $config_element.find("#integration-url-branches-text").on("change", () => {
+                        update_url();
+                    });
+                } else if (option.validator === "check_bool") {
                     const config_html = render_generate_integration_url_config_checkbox_modal({
                         key: option.key,
                         label: option.label,
@@ -203,7 +221,14 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     } else if (option.validator === "check_string") {
                         $input_element = $(`#integration-url-${option.key}-text`);
                         const value = $input_element.val();
-                        if (value) {
+                        // If the config option is "branches", ensure the checkbox is unchecked.
+                        if (
+                            value &&
+                            (option.key !== "branches" ||
+                                $<HTMLInputElement>("#integration-url-all-branches").prop(
+                                    "checked",
+                                ) === false)
+                        ) {
                             params.set(option.key, value.toString());
                         }
                     }
