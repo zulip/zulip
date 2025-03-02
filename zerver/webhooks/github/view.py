@@ -31,6 +31,7 @@ from zerver.lib.webhooks.git import (
     get_push_tag_event_message,
     get_release_event_message,
     get_short_sha,
+    is_branch_name_notifiable,
 )
 from zerver.models import UserProfile
 
@@ -1030,7 +1031,7 @@ def get_zulip_event_name(
         if is_commit_push_event(payload):
             if branches is not None:
                 branch = get_branch_name_from_ref(payload["ref"].tame(check_string))
-                if branches.find(branch) == -1:
+                if not is_branch_name_notifiable(branch, branches):
                     return None
             return "push_commits"
         else:

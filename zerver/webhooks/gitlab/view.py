@@ -27,6 +27,7 @@ from zerver.lib.webhooks.git import (
     get_push_commits_event_message,
     get_push_tag_event_message,
     get_remove_branch_event_message,
+    is_branch_name_notifiable,
 )
 from zerver.models import UserProfile
 
@@ -553,7 +554,7 @@ def get_event(request: HttpRequest, payload: WildValue, branches: str | None) ->
         event = f"{event} {action}"
     elif event == "Push Hook" and branches is not None:
         branch = get_branch_name(payload)
-        if branches.find(branch) == -1:
+        if not is_branch_name_notifiable(branch, branches):
             return None
 
     if event in EVENT_FUNCTION_MAPPER:

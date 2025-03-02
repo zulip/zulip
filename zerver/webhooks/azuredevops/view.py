@@ -13,6 +13,7 @@ from zerver.lib.webhooks.git import (
     TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE,
     get_pull_request_event_message,
     get_push_commits_event_message,
+    is_branch_name_notifiable,
 )
 from zerver.models import UserProfile
 
@@ -143,7 +144,7 @@ def get_event_name(payload: WildValue, branches: str | None) -> str | None:
     event_name = payload["eventType"].tame(check_string)
     if event_name == "git.push" and branches is not None:
         branch = get_code_push_branch_name(payload)
-        if branches.find(branch) == -1:
+        if not is_branch_name_notifiable(branch, branches):
             return None
     if event_name == "git.pullrequest.merged":
         status = payload["resource"]["status"].tame(check_string)
