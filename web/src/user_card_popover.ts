@@ -665,6 +665,12 @@ function register_click_handlers(): void {
         "click",
         ".sender_name, .inline_profile_picture",
         function (this: HTMLElement, e) {
+            // Prevent clicks if it's a muted avatar
+            if ($(this).closest(".message-hidden-avatar").length > 0) {
+                e.stopPropagation();
+                return;
+            }
+
             const $row = $(this).closest(".message_row");
             e.stopPropagation();
             assert(message_lists.current !== undefined);

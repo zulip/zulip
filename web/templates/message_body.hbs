@@ -1,3 +1,6 @@
+{{#if is_hidden}}
+    {{> message_hidden_avatar . ~}}
+{{/if}}
 {{#if include_sender}}
     {{> message_avatar . ~}}
 {{/if}}

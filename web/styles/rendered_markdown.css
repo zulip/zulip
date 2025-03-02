@@ -987,3 +987,74 @@
         padding-left: 0.3em;
     }
 }
+
+.muted_sender {
+    font-style: normal;
+    font-weight: normal;
+    width: auto;
+    opacity: 0.5;
+    padding-bottom: 0;
+}
+
+.muted_sender_text {
+    font-style: normal;
+    font-weight: normal;
+    font-size: small;
+    width: auto;
+    opacity: 0.5;
+    padding-bottom: 0;
+}
+
+@media (width <= 600px) {
+    .muted_sender_text {
+        visibility: hidden;
+        overflow: hidden;
+    }
+}
+
+.reveal_button {
+    font-style: normal;
+    font-weight: 500;
+    color: var(--color-text-neutral-borderless-action-button);
+    text-decoration: none;
+}
+
+.reveal_button a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.reveal_button a:hover,
+.reveal_button a:focus {
+    color: inherit;
+    text-decoration: none;
+}
+
+.reveal_hidden_message {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.reveal_button svg {
+    color: inherit;
+}
+
+@media (prefers-color-scheme: dark) {
+    .reveal_button {
+        color: var(--color-text-neutral-borderless-action-button);
+    }
+}
+
+.first-line {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.muted_sender_warning {
+    max-height: 46px;
+    overflow: hidden;
+    cursor: default;
+}
