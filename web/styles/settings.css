@@ -1774,6 +1774,9 @@ label.preferences-radio-choice-label {
     vertical-align: middle;
     border: 1px solid hsl(0deg 0% 80%);
     padding: 4px 6px;
+    resize: vertical;
+    min-height: 3em;
+    max-height: 15em;
 
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
