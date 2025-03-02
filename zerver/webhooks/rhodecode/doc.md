@@ -6,7 +6,7 @@ Get RhodeCode notifications in Zulip!
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-webhook-url-basic.md!}
+1. {!generate-webhook-url-with-branch-filtering.md!}
 
 1. From your repository on RhodeCode, open the **Repository Settings** tab.
     Select **Integrations**, click on **Create new integration**, and
@@ -23,10 +23,6 @@ Get RhodeCode notifications in Zulip!
 ![](/static/images/integrations/rhodecode/001.png)
 
 {!event-filtering-additional-feature.md!}
-
-### Configuration options
-
-{!git-branches-additional-feature.md!}
 
 ### Related documentation
 
