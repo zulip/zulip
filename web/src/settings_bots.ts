@@ -239,8 +239,8 @@ export function get_allowed_bot_types(): BotType[] {
 export function add_a_new_bot(): void {
     const html_body = render_add_new_bot_form({
         bot_types: get_allowed_bot_types(),
-        realm_embedded_bots: realm.realm_embedded_bots,
-        realm_bot_domain: realm.realm_bot_domain,
+        realm_embedded_bots: page_params.realm_embedded_bots,
+        realm_bot_domain: page_params.realm_bot_domain,
     });
 
     let create_avatar_widget: UploadWidget;
@@ -343,6 +343,9 @@ export function add_a_new_bot(): void {
             ).val()!;
             $(`[name*='${CSS.escape(selected_bot)}']`).show();
         });
+
+        // default bot type Incoming Webhook
+        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE);
     }
 
     function validate_input(): boolean {
