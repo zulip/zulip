@@ -14,8 +14,6 @@ hook from the list presented and click **Add hook**.
 
 {!webhook-url-with-bot-email.md!}
 
-{!git-append-branches.md!}
-
 By default, notifications are sent to the `commits` channel. To
 send notifications to a different channel, append
 `?stream=channel_name` to the URL.
