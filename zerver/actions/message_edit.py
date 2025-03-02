@@ -856,20 +856,28 @@ def do_update_message(
         subscriptions = get_active_subscriptions_for_stream_id(
             message_edit_request.target_stream.id, include_deactivated_users=False
         )
-        # We exclude long-term idle users, since they by
-        # definition have no active clients.
-        subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
-        # Remove duplicates by excluding the id of users already
-        # in users_to_be_notified list.  This is the case where a
-        # user both has a UserMessage row and is a current
-        # Subscriber
-        subscriptions = subscriptions.exclude(
-            user_profile_id__in=[um.user_profile_id for um in unmodified_user_messages]
-        )
 
+        def exclude_duplicates_from_subscription(
+            subs: QuerySet[Subscription],
+        ) -> QuerySet[Subscription]:
+            # We exclude long-term idle users, since they by
+            # definition have no active clients.
+            subs = subs.exclude(user_profile__long_term_idle=True)
+            # Remove duplicates by excluding the id of users already
+            # in users_to_be_notified list.  This is the case where a
+            # user both has a UserMessage row and is a current
+            # Subscriber
+            subs = subs.exclude(
+                user_profile_id__in=[um.user_profile_id for um in unmodified_user_messages]
+            )
+
+            if message_edit_request.is_stream_edited:
+                subs = subs.exclude(user_profile__in=users_losing_access)
+
+            return subs
+
+        subscriptions = exclude_duplicates_from_subscription(subscriptions)
         if message_edit_request.is_stream_edited:
-            subscriptions = subscriptions.exclude(user_profile__in=users_losing_access)
-
             # TODO: Guest users don't see the new moved topic
             # unless breadcrumb message for new stream is
             # enabled. Excluding these users from receiving this
