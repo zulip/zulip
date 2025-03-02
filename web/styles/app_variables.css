@@ -575,6 +575,7 @@
     /* Informational overlay */
     --informational-overlay-max-width: 43.75em;
     --modal-input-width: 23.2142em;
+    --modal-input-offset: 14px; /*  padding (6px each side) and border (1px each side) */
 
     /*
     Maximum height of the compose box when it is not in maximised state. This
