@@ -389,7 +389,14 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("ansibletower", ["deployment"], display_name="Ansible Tower"),
     WebhookIntegration("appfollow", ["customer-support"], display_name="AppFollow"),
     WebhookIntegration("appveyor", ["continuous-integration"], display_name="AppVeyor"),
-    WebhookIntegration("azuredevops", ["version-control"], display_name="AzureDevOps"),
+    WebhookIntegration(
+        "azuredevops",
+        ["version-control"],
+        display_name="AzureDevOps",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
+    ),
     WebhookIntegration("beanstalk", ["version-control"], stream_name="commits"),
     WebhookIntegration("basecamp", ["project-management"]),
     WebhookIntegration("beeminder", ["misc"], display_name="Beeminder"),
@@ -399,6 +406,9 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         logo="images/integrations/logos/bitbucket.svg",
         display_name="Bitbucket Server",
         stream_name="bitbucket",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
     ),
     WebhookIntegration(
         "bitbucket2",
@@ -406,6 +416,9 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         logo="images/integrations/logos/bitbucket.svg",
         display_name="Bitbucket",
         stream_name="bitbucket",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
     ),
     WebhookIntegration(
         "bitbucket",
@@ -430,7 +443,14 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("freshping", ["monitoring"]),
     WebhookIntegration("freshstatus", ["monitoring", "customer-support"]),
     WebhookIntegration("front", ["customer-support"]),
-    WebhookIntegration("gitea", ["version-control"], stream_name="commits"),
+    WebhookIntegration(
+        "gitea",
+        ["version-control"],
+        stream_name="commits",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
+    ),
     WebhookIntegration(
         "github",
         ["version-control"],
@@ -438,11 +458,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         function="zerver.webhooks.github.view.api_github_webhook",
         stream_name="github",
         config_options=[
-            WebhookConfigOption(
-                name="branches",
-                description="Filter by branches (comma-separated list)",
-                validator=check_string,
-            ),
+            WebhookConfigOption(name="branches", description="", validator=check_string),
             WebhookConfigOption(
                 name="ignore_private_repositories",
                 description="Exclude notifications from private repositories",
@@ -460,9 +476,23 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         doc="github/githubsponsors.md",
         stream_name="github",
     ),
-    WebhookIntegration("gitlab", ["version-control"], display_name="GitLab"),
+    WebhookIntegration(
+        "gitlab",
+        ["version-control"],
+        display_name="GitLab",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
+    ),
     WebhookIntegration("gocd", ["continuous-integration"], display_name="GoCD"),
-    WebhookIntegration("gogs", ["version-control"], stream_name="commits"),
+    WebhookIntegration(
+        "gogs",
+        ["version-control"],
+        stream_name="commits",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
+    ),
     WebhookIntegration("gosquared", ["marketing"], display_name="GoSquared"),
     WebhookIntegration("grafana", ["monitoring"]),
     WebhookIntegration("greenhouse", ["hr"]),
@@ -499,7 +529,14 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     WebhookIntegration("radarr", ["entertainment"]),
     WebhookIntegration("raygun", ["monitoring"]),
     WebhookIntegration("reviewboard", ["version-control"], display_name="Review Board"),
-    WebhookIntegration("rhodecode", ["version-control"], display_name="RhodeCode"),
+    WebhookIntegration(
+        "rhodecode",
+        ["version-control"],
+        display_name="RhodeCode",
+        config_options=[
+            WebhookConfigOption(name="branches", description="", validator=check_string)
+        ],
+    ),
     WebhookIntegration("rundeck", ["deployment"]),
     WebhookIntegration("semaphore", ["continuous-integration", "deployment"]),
     WebhookIntegration("sentry", ["monitoring"]),
