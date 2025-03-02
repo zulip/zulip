@@ -97,7 +97,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                         place_caret_at_end(util.the($("#integration-url-branches-text")));
                         update_url();
                     });
-                    $config_element.find("#integration-url-branches-text").on("change", () => {
+                    $config_element.find("#integration-url-branches-text").on("input", () => {
                         update_url();
                     });
                 } else if (option.validator === "check_bool") {
@@ -117,7 +117,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                         label: option.label,
                     });
                     $config_element = $(config_html);
-                    $config_element.find(`#integration-url-${option.key}-text`).on("change", () => {
+                    $config_element.find(`#integration-url-${option.key}-text`).on("input", () => {
                         update_url();
                     });
                 } else {
