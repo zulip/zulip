@@ -6,7 +6,7 @@ Get Azure DevOps notifications in Zulip!
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-webhook-url-basic.md!}
+1. {!generate-webhook-url-with-branch-filtering.md!}
 
 1. Go to your project on Azure DevOps, click on the **Project
    settings** in the bottom left corner and select **Service
@@ -27,10 +27,6 @@ Get Azure DevOps notifications in Zulip!
 ![](/static/images/integrations/azuredevops/001.png)
 
 {!event-filtering-additional-feature.md!}
-
-### Configuration options
-
-{!git-branches-additional-feature.md!}
 
 ### Related documentation
 
