@@ -305,6 +305,7 @@ export function add_a_new_bot(): void {
     }
 
     function set_up_form_fields(): void {
+        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE);
         $("#payload_url_inputbox").hide();
         $("#create_payload_url").val("");
         $("#service_name_list").hide();
