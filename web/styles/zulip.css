@@ -702,42 +702,6 @@ strong {
     white-space: nowrap;
 }
 
-.tooltip {
-    &.in {
-        font-size: 12px;
-        line-height: 1.3;
-
-        opacity: 1;
-
-        &.left {
-            margin-left: -12px;
-            margin-top: 3px;
-        }
-    }
-
-    .tooltip-inner {
-        background-color: hsl(0deg 0% 7% / 80%);
-        padding: 3px 5px;
-    }
-
-    /*
-    Since hover and click are activated together on touchscreen
-    devices, the hover state persists until the next click, creating
-    awkward UI where the tooltip sticks around forever :(.
-
-    To resolve this, we just hide the tooltip for touch-events on
-    touch-enabled devices resolving the above problem.  This means
-    that tooltips will never appear on touchscreen devices, but that's
-    probably a reasonable tradeoff here.
-
-    Source: https://drafts.csswg.org/mediaqueries-4/#mf-interaction
-    */
-
-    @media (hover: none) {
-        visibility: hidden !important;
-    }
-}
-
 .buddy_list_tooltip_content {
     text-align: left;
     word-wrap: break-word;
@@ -1993,12 +1957,6 @@ body:not(.hide-left-sidebar) {
             }
         }
     }
-}
-
-.tooltip_right_arrow {
-    position: relative;
-    top: -1px;
-    font-weight: 600;
 }
 
 .spectator_login_for_image_button {

@@ -121,16 +121,6 @@ p {
     text-decoration: none;
 }
 
-.tooltip-inner {
-    padding: 10px;
-    max-width: 350px;
-
-    font-size: 0.75rem;
-    font-weight: 400;
-    text-align: left;
-    line-height: 1.4;
-}
-
 .last-update {
     margin: 0 0 30px;
 
