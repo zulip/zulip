@@ -1,6 +1,7 @@
 import {z} from "zod";
 
 import * as people from "./people.ts";
+import type {User} from "./people.ts";
 import type {StateData, presence_schema} from "./state_data.ts";
 import {realm} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
@@ -75,7 +76,7 @@ export function get_active_or_idle_user_ids(): number[] {
         .map((entry) => entry[0]);
 }
 
-export function status_from_raw(raw: RawPresence, user_id: number): PresenceStatus {
+export function status_from_raw(raw: RawPresence, user: User | undefined): PresenceStatus {
     /*
         Example of `raw`:
 
@@ -133,7 +134,6 @@ export function status_from_raw(raw: RawPresence, user_id: number): PresenceStat
         who've never logged in, we fall back to when they joined.
     */
 
-    const user = people.get_by_user_id(user_id);
     let date_joined_timestamp = 0;
     if (user?.date_joined) {
         date_joined_timestamp = new Date(user.date_joined).getTime() / 1000;
@@ -189,7 +189,9 @@ export function update_info_from_event(
 
     raw_info.set(user_id, raw);
 
-    const status = status_from_raw(raw, user_id);
+    const ignore_missing = true;
+    const user = people.maybe_get_user_by_id(user_id, ignore_missing);
+    const status = status_from_raw(raw, user);
     presence_info.set(user_id, status);
 }
 
@@ -256,7 +258,7 @@ export function set_info(
 
         raw_info.set(user_id, raw);
 
-        const status = status_from_raw(raw, user_id);
+        const status = status_from_raw(raw, person);
         presence_info.set(user_id, status);
     }
     for (const user_id of all_active_or_idle_user_ids) {
