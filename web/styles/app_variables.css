@@ -380,6 +380,16 @@
         --message-box-markdown-aligned-vertical-space: 5px;
     }
 
+    /* Message area */
+    /* In the legacy layout at 16px/1em density, 918.6px is
+       the widest the message area gets, so we preserve this
+       value to better present a readable message area across
+       different info densities and the manual hiding of the
+       left and right sidebars.
+       918.6px at 16px/1em
+    */
+    --message-area-max-width: 57.4125em;
+
     /* Shared sidebar typography and effects values. */
     --font-weight-sidebar-heading: 600;
     --font-weight-sidebar-action-heading: 370;

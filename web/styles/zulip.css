@@ -39,9 +39,10 @@ body {
     .header-main,
     .app .app-main,
     #compose-container {
-        /* 1417px at 14px/1em; (14px * 20.5em) - 12px + 880 + 250px = 1417px */
-        max-width: 100.3571em;
-        max-width: calc(var(--left-sidebar-max-width) + 62.8571em + 250px);
+        max-width: calc(
+            var(--left-sidebar-max-width) + var(--message-area-max-width) +
+                var(--right-column-max-width)
+        );
     }
 
     &.fluid_layout_width {
