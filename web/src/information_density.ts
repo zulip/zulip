@@ -250,6 +250,7 @@ export function update_information_density_settings(
     $elem: JQuery,
     changed_property: "web_font_size_px" | "web_line_height_percent",
     new_value: number,
+    for_settings_ui = false,
 ): {
     web_font_size_px?: number;
     web_line_height_percent?: number;
@@ -264,7 +265,13 @@ export function update_information_density_settings(
 
     user_settings[changed_property] = new_value;
     $elem.closest(".button-group").find(".current-value").val(new_value);
-
+    if (for_settings_ui) {
+        let display_value = new_value.toString();
+        if (changed_property === "web_line_height_percent") {
+            display_value = get_string_display_value_for_line_height(new_value);
+        }
+        $elem.closest(".button-group").find(".display-value").text(display_value);
+    }
     set_base_typography_css_variables();
     calculate_timestamp_widths();
 
