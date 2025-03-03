@@ -1983,13 +1983,13 @@ body:not(.hide-left-sidebar) {
             height: 40px;
             background: hsl(240deg 96% 68% / 50%);
             border-radius: 50%;
+            display: flex;
+            align-items: center;
 
             & .scroll-to-bottom-icon {
                 color: hsl(0deg 0% 100%);
                 margin: 0 auto;
                 font-size: 21px;
-                position: relative;
-                top: 8px;
             }
         }
     }
