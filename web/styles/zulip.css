@@ -45,6 +45,61 @@ body {
         );
     }
 
+    /* When sidebars are manually hidden, we set the max-width
+       for the layout to a different maximum width. This keeps
+       the message area predictably readable. */
+    &.hide-left-sidebar:not(.fluid_layout_width) {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: calc(
+                var(--message-area-max-width) + var(--right-column-max-width)
+            );
+
+            /* When we're less than the xl_min breakpoint, we instead
+               constrain to just the message area's max-width, since
+               the right column will be hidden below that point. */
+            @container header-container (width < $cq_xl_min) {
+                max-width: var(--message-area-max-width);
+            }
+
+            @container app (width < $cq_xl_min) {
+                max-width: var(--message-area-max-width);
+            }
+        }
+    }
+
+    /* Fallback media query. */
+    @media (width < $xl_min) {
+        &.without-container-query-support.hide-left-sidebar:not(
+                .fluid_layout_width
+            ) {
+            .header-main,
+            .app .app-main,
+            #compose-container {
+                max-width: var(--message-area-max-width);
+            }
+        }
+    }
+
+    &.hide-right-sidebar:not(.fluid_layout_width) {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: calc(
+                var(--left-sidebar-max-width) + var(--message-area-max-width)
+            );
+        }
+    }
+
+    &.hide-left-sidebar.hide-right-sidebar:not(.fluid_layout_width) {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: var(--message-area-max-width);
+        }
+    }
+
     &.fluid_layout_width {
         .header-main,
         .app .app-main,
