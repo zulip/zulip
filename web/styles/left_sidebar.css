@@ -50,10 +50,6 @@
     margin-right: 10px;
 }
 
-.tooltip {
-    max-width: 18em;
-}
-
 .masked_unread_count {
     /* 8px at 16px/14em */
     font-size: 0.5em;
