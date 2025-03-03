@@ -613,10 +613,6 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
             inbox_ui.hide();
         }
 
-        // Open tooltips are only interesting for current narrow,
-        // so hide them when activating a new one.
-        $(".tooltip").hide();
-
         blueslip.debug("Narrowed", {
             operators: terms.map((e) => e.operator),
             trigger: opts ? opts.trigger : undefined,

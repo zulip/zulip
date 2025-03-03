@@ -259,7 +259,6 @@ export function initialize(): void {
         const local_id = $(this).attr("data-reaction-id")!;
         const message_id = rows.get_message_id(this);
         reactions.process_reaction_click(message_id, local_id);
-        $(".tooltip").remove();
     });
 
     $("body").on("click", ".reveal_hidden_message", (e) => {
@@ -465,7 +464,6 @@ export function initialize(): void {
         e.preventDefault();
         e.stopPropagation();
         sidebar_ui.hide_userlist_sidebar();
-        $(".tooltip").remove();
     });
 
     // Doesn't show tooltip on touch devices.
