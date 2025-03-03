@@ -1633,6 +1633,10 @@ def do_change_stream_group_based_setting(
         # compute it here if not provided by the caller.
         old_setting_api_value = get_group_setting_value_for_api(old_user_group)
 
+    old_user_ids_with_metadata_access: set[int] = set()
+    if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
+        old_user_ids_with_metadata_access = can_access_stream_metadata_user_ids(stream)
+
     if isinstance(new_setting_value, NamedUserGroup):
         user_group: UserGroup = new_setting_value
     else:
@@ -1673,6 +1677,26 @@ def do_change_stream_group_based_setting(
         name=stream.name,
     )
     send_event_on_commit(stream.realm, event, current_user_ids_with_metadata_access)
+    if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
+        user_ids_gaining_metadata_access = (
+            current_user_ids_with_metadata_access - old_user_ids_with_metadata_access
+        )
+        user_ids_losing_metadata_access = (
+            old_user_ids_with_metadata_access - current_user_ids_with_metadata_access
+        )
+
+        if len(user_ids_gaining_metadata_access) > 0:
+            recent_traffic = get_streams_traffic({stream.id}, stream.realm)
+            setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
+            send_stream_creation_event(
+                stream.realm,
+                stream,
+                list(user_ids_gaining_metadata_access),
+                recent_traffic,
+                setting_groups_dict,
+            )
+        if len(user_ids_losing_metadata_access) > 0:
+            send_stream_deletion_event(stream.realm, user_ids_losing_metadata_access, [stream])
 
     if setting_name == "can_send_message_group":
         old_stream_post_policy = get_stream_post_policy_value_based_on_group_setting(old_user_group)
