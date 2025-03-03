@@ -8,9 +8,12 @@ from django.conf import settings
 
 from zerver.lib.narrow import BadNarrowOperatorError, InvalidOperatorCombinationError
 from zerver.lib.narrow_helpers import NarrowTerm, NarrowTermOperandT
+from zerver.lib.streams import get_stream_by_narrow_operand_access_unchecked
 from zerver.lib.topic import DB_TOPIC_NAME
+from zerver.lib.url_encoding import encode_stream
 from zerver.models.messages import Message
 from zerver.models.realms import Realm
+from zerver.models.streams import Stream
 
 
 def is_same_server_message_link(url: str) -> bool:
@@ -367,3 +370,17 @@ class Filter:
         new_terms = self.terms()
         new_terms[term_index] = new_term
         self._setup_filter(new_terms)
+
+    def generate_channel_url(self) -> str:
+        self._check_not_both_channel_and_dm_narrow()
+        recipients = self.operands("channel")
+        if not len(recipients) == 1:
+            raise InvalidOperatorCombinationError("Requires exactly one 'channel' operand")
+        channel_id_or_name = recipients[0]
+        assert isinstance(channel_id_or_name, str | int)
+        try:
+            channel = get_stream_by_narrow_operand_access_unchecked(channel_id_or_name, self._realm)
+        except Stream.DoesNotExist:
+            raise BadNarrowOperatorError("unknown channel " + str(channel_id_or_name))
+
+        return f"/#narrow/channel/{encode_stream(channel.id, channel.name)}"
