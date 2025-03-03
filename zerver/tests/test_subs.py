@@ -119,7 +119,6 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserMessage,
     UserProfile,
 )
@@ -997,7 +996,7 @@ class StreamAdminTest(ZulipTestCase):
             stream,
             "can_administer_channel_group",
             user_profile_group,
-            acting_user=None,
+            acting_user=user_profile,
         )
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assertTrue(stream.invite_only)
@@ -1081,7 +1080,7 @@ class StreamAdminTest(ZulipTestCase):
             stream,
             "can_administer_channel_group",
             user_profile_group,
-            acting_user=None,
+            acting_user=user_profile,
         )
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assertFalse(stream.invite_only)
@@ -1379,7 +1378,7 @@ class StreamAdminTest(ZulipTestCase):
             stream,
             "can_administer_channel_group",
             user_profile_group,
-            acting_user=None,
+            acting_user=user_profile,
         )
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_success(result)
@@ -1475,7 +1474,7 @@ class StreamAdminTest(ZulipTestCase):
             stream,
             "can_administer_channel_group",
             user_profile_group,
-            acting_user=None,
+            acting_user=user_profile,
         )
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "You do not have permission to change default channels.")
@@ -1803,7 +1802,7 @@ class StreamAdminTest(ZulipTestCase):
             stream,
             "can_administer_channel_group",
             user_profile_group,
-            acting_user=None,
+            acting_user=user_profile,
         )
         result = self.client_delete(f"/json/streams/{stream.id}")
         self.assert_json_success(result)
@@ -1906,7 +1905,7 @@ class StreamAdminTest(ZulipTestCase):
             stream,
             "can_administer_channel_group",
             aaron_group,
-            acting_user=None,
+            acting_user=aaron,
         )
         prospero_group = check_add_user_group(
             realm, "prospero_group", [prospero], acting_user=prospero
@@ -1915,14 +1914,14 @@ class StreamAdminTest(ZulipTestCase):
             stream,
             "can_add_subscribers_group",
             prospero_group,
-            acting_user=None,
+            acting_user=prospero,
         )
         zoe_group = check_add_user_group(realm, "zoe_group", [zoe], acting_user=hamlet)
         do_change_stream_group_based_setting(
             stream,
             "can_subscribe_group",
             zoe_group,
-            acting_user=None,
+            acting_user=zoe,
         )
         self.subscribe(self.example_user("cordelia"), "stream_private_name1")
         with self.capture_send_event_calls(expected_num_events=2) as events:
@@ -2074,7 +2073,7 @@ class StreamAdminTest(ZulipTestCase):
             stream,
             "can_administer_channel_group",
             user_profile_group,
-            acting_user=None,
+            acting_user=user_profile,
         )
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "stream_name1"})
         self.assert_json_success(result)
@@ -2138,7 +2137,7 @@ class StreamAdminTest(ZulipTestCase):
             stream_name_1,
             "can_add_subscribers_group",
             guest_group,
-            acting_user=None,
+            acting_user=self.example_user("polonius"),
         )
         notified_user_ids = get_notified_user_ids()
         self.assertEqual(notified_user_ids, set(public_stream_user_ids(stream_name_1)))
@@ -2152,7 +2151,7 @@ class StreamAdminTest(ZulipTestCase):
             stream_name_1,
             "can_add_subscribers_group",
             nobody_group,
-            acting_user=None,
+            acting_user=user_profile,
         )
 
         # Subscribed guest user should be notified.
@@ -2209,15 +2208,15 @@ class StreamAdminTest(ZulipTestCase):
         stream_private = self.make_stream(
             "stream_private_name1", realm=user_profile.realm, invite_only=True
         )
-        aaron_group = check_add_user_group(
-            realm, "aaron_group", [self.example_user("aaron")], acting_user=user_profile
-        )
+        aaron = self.example_user("aaron")
+        aaron_group = check_add_user_group(realm, "aaron_group", [aaron], acting_user=user_profile)
         do_change_stream_group_based_setting(
             stream_private,
             "can_administer_channel_group",
             aaron_group,
-            acting_user=None,
+            acting_user=aaron,
         )
+        prospero = self.example_user("prospero")
         prospero_group = check_add_user_group(
             realm, "prospero_group", [self.example_user("prospero")], acting_user=user_profile
         )
@@ -2225,16 +2224,15 @@ class StreamAdminTest(ZulipTestCase):
             stream_private,
             "can_add_subscribers_group",
             prospero_group,
-            acting_user=None,
+            acting_user=prospero,
         )
-        zoe_group = check_add_user_group(
-            realm, "zoe_group", [self.example_user("ZOE")], acting_user=user_profile
-        )
+        zoe = self.example_user("ZOE")
+        zoe_group = check_add_user_group(realm, "zoe_group", [zoe], acting_user=user_profile)
         do_change_stream_group_based_setting(
             stream_private,
             "can_subscribe_group",
             zoe_group,
-            acting_user=None,
+            acting_user=zoe,
         )
         self.subscribe(self.example_user("cordelia"), "stream_private_name1")
         with self.capture_send_event_calls(expected_num_events=2) as events:
@@ -2760,7 +2758,7 @@ class StreamAdminTest(ZulipTestCase):
             stream,
             "can_administer_channel_group",
             nobody_group,
-            acting_user=None,
+            acting_user=user_profile,
         )
 
         moderators_system_group = NamedUserGroup.objects.get(
@@ -2779,7 +2777,7 @@ class StreamAdminTest(ZulipTestCase):
             stream,
             "can_administer_channel_group",
             moderators_system_group,
-            acting_user=None,
+            acting_user=user_profile,
         )
         members_system_group = NamedUserGroup.objects.get(
             name="role:members", realm=realm, is_system_group=True
@@ -2921,12 +2919,14 @@ class StreamAdminTest(ZulipTestCase):
         # For private streams, channel admins need not be subscribed to
         # the stream to change the setting as they can administer the
         # channel by default.
-        shiva_group = self.create_or_update_anonymous_group_for_setting([shiva], [])
+        shiva_group_member_dict = UserGroupMembersDict(
+            direct_members=[shiva.id], direct_subgroups=[]
+        )
         do_change_stream_group_based_setting(
             stream,
             "can_administer_channel_group",
-            shiva_group,
-            acting_user=None,
+            shiva_group_member_dict,
+            acting_user=shiva,
         )
         self.assertTrue(is_user_in_group(stream.can_administer_channel_group, shiva))
         params[setting_name] = orjson.dumps({"new": owners_group.id}).decode()
@@ -2937,12 +2937,11 @@ class StreamAdminTest(ZulipTestCase):
         )
         if setting_name in Stream.stream_permission_group_settings_requiring_content_access:
             self.assert_json_error(result, "Invalid channel ID")
-            shiva_group = self.create_or_update_anonymous_group_for_setting([shiva], [])
             do_change_stream_group_based_setting(
                 stream,
                 "can_add_subscribers_group",
-                shiva_group,
-                acting_user=None,
+                shiva_group_member_dict,
+                acting_user=shiva,
             )
             result = self.client_patch(
                 f"/json/streams/{stream.id}",
@@ -2962,12 +2961,14 @@ class StreamAdminTest(ZulipTestCase):
         # group has `allow_everyone_group` set to false.
         stream = get_stream("stream_name1", realm)
         polonius = self.example_user("polonius")
-        polonius_group = self.create_or_update_anonymous_group_for_setting([polonius], [])
+        polonius_group_member_dict = UserGroupMembersDict(
+            direct_members=[polonius.id], direct_subgroups=[]
+        )
         do_change_stream_group_based_setting(
             stream,
             "can_administer_channel_group",
-            polonius_group,
-            acting_user=None,
+            polonius_group_member_dict,
+            acting_user=polonius,
         )
         subbed_users = self.users_subscribed_to_stream(stream.name, polonius.realm)
         self.assertNotIn(polonius, subbed_users)
@@ -3573,7 +3574,7 @@ class StreamAdminTest(ZulipTestCase):
 
         def check_unsubscribing_user(
             user: UserProfile,
-            can_remove_subscribers_group: UserGroup,
+            can_remove_subscribers_group: NamedUserGroup | UserGroupMembersDict,
             expect_fail: bool = False,
             stream_list: list[Stream] | None = None,
             skip_changing_group_setting: bool = False,
@@ -3588,7 +3589,7 @@ class StreamAdminTest(ZulipTestCase):
                         stream,
                         "can_remove_subscribers_group",
                         can_remove_subscribers_group,
-                        acting_user=None,
+                        acting_user=user,
                     )
             stream_name_list = [stream.name for stream in stream_list]
             result = self.client_delete(
@@ -3653,31 +3654,31 @@ class StreamAdminTest(ZulipTestCase):
         check_unsubscribing_user(shiva, leadership_group, stream_list=[private_stream])
 
         # Test changing setting to anonymous group.
-        setting_group = self.create_or_update_anonymous_group_for_setting(
-            [hamlet],
-            [leadership_group],
+        setting_group_member_dict = UserGroupMembersDict(
+            direct_members=[hamlet.id],
+            direct_subgroups=[leadership_group.id],
         )
         check_unsubscribing_user(
             othello,
-            setting_group,
+            setting_group_member_dict,
             expect_fail=True,
             stream_list=[private_stream],
         )
-        check_unsubscribing_user(hamlet, setting_group, stream_list=[private_stream])
-        check_unsubscribing_user(iago, setting_group, stream_list=[private_stream])
-        check_unsubscribing_user(shiva, setting_group, stream_list=[private_stream])
+        check_unsubscribing_user(hamlet, setting_group_member_dict, stream_list=[private_stream])
+        check_unsubscribing_user(iago, setting_group_member_dict, stream_list=[private_stream])
+        check_unsubscribing_user(shiva, setting_group_member_dict, stream_list=[private_stream])
 
         # Owners can unsubscribe others when they are not a member of
         # the allowed group since admins have the permission to
         # administer all channels.
-        setting_group = self.create_or_update_anonymous_group_for_setting(
-            [hamlet],
-            [],
+        setting_group_member_dict = UserGroupMembersDict(
+            direct_members=[hamlet.id],
+            direct_subgroups=[],
         )
         check_unsubscribing_user(
-            self.example_user("desdemona"), setting_group, stream_list=[private_stream]
+            self.example_user("desdemona"), setting_group_member_dict, stream_list=[private_stream]
         )
-        check_unsubscribing_user(iago, setting_group, stream_list=[private_stream])
+        check_unsubscribing_user(iago, setting_group_member_dict, stream_list=[private_stream])
 
         # A user who is part of can_administer_channel_group should be
         # able to unsubscribe other users even if that user is not part
@@ -3685,23 +3686,22 @@ class StreamAdminTest(ZulipTestCase):
         # subscribed to the channel in question.
         with self.assertRaises(Subscription.DoesNotExist):
             get_subscription(private_stream.name, othello)
-        check_unsubscribing_user(othello, setting_group, expect_fail=True)
-        othello_group = self.create_or_update_anonymous_group_for_setting(
-            [othello],
-            [],
+        check_unsubscribing_user(othello, setting_group_member_dict, expect_fail=True)
+        othello_group_member_dict = UserGroupMembersDict(
+            direct_members=[othello.id], direct_subgroups=[]
         )
         private_stream_2 = self.make_stream("private_stream_2")
         do_change_stream_group_based_setting(
             private_stream,
             "can_administer_channel_group",
-            othello_group,
-            acting_user=None,
+            othello_group_member_dict,
+            acting_user=othello,
         )
         # If the user can only administer one of the channels, the test
         # should fail.
         check_unsubscribing_user(
             othello,
-            setting_group,
+            setting_group_member_dict,
             expect_fail=True,
             stream_list=[private_stream, private_stream_2],
         )
@@ -3709,22 +3709,21 @@ class StreamAdminTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             private_stream_2,
             "can_administer_channel_group",
-            othello_group,
-            acting_user=None,
+            othello_group_member_dict,
+            acting_user=othello,
         )
         check_unsubscribing_user(
-            othello, setting_group, stream_list=[private_stream, private_stream_2]
+            othello, setting_group_member_dict, stream_list=[private_stream, private_stream_2]
         )
 
-        shiva_group = self.create_or_update_anonymous_group_for_setting(
-            [shiva],
-            [],
+        shiva_group_member_dict = UserGroupMembersDict(
+            direct_members=[shiva.id], direct_subgroups=[]
         )
         do_change_stream_group_based_setting(
             private_stream,
             "can_remove_subscribers_group",
-            shiva_group,
-            acting_user=None,
+            shiva_group_member_dict,
+            acting_user=shiva,
         )
         self.subscribe(shiva, private_stream.name)
         self.subscribe(shiva, private_stream_2.name)
@@ -3732,7 +3731,7 @@ class StreamAdminTest(ZulipTestCase):
         # only one of the channels, the test should fail.
         check_unsubscribing_user(
             shiva,
-            setting_group,
+            setting_group_member_dict,
             expect_fail=True,
             stream_list=[private_stream, private_stream_2],
             skip_changing_group_setting=True,
@@ -3740,12 +3739,12 @@ class StreamAdminTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             private_stream_2,
             "can_remove_subscribers_group",
-            shiva_group,
-            acting_user=None,
+            shiva_group_member_dict,
+            acting_user=shiva,
         )
         check_unsubscribing_user(
             shiva,
-            setting_group,
+            setting_group_member_dict,
             stream_list=[private_stream, private_stream_2],
             skip_changing_group_setting=True,
         )
@@ -5495,7 +5494,7 @@ class SubscriptionAPITest(ZulipTestCase):
             get_stream("stream1", realm),
             "can_add_subscribers_group",
             nobody_group,
-            acting_user=None,
+            acting_user=user_profile,
         )
         # Admins have a special permission to administer every channel
         # they have access to. This also grants them access to add
@@ -5631,7 +5630,10 @@ class SubscriptionAPITest(ZulipTestCase):
         # stream programmatically so that we can test for errors for an
         # existing stream.
         do_change_stream_group_based_setting(
-            self.make_stream("stream1"), "can_add_subscribers_group", nobody_group, acting_user=None
+            self.make_stream("stream1"),
+            "can_add_subscribers_group",
+            nobody_group,
+            acting_user=user_profile,
         )
         result = self.subscribe_via_post(
             self.test_user,
@@ -5664,7 +5666,7 @@ class SubscriptionAPITest(ZulipTestCase):
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
-            stream2, "can_add_subscribers_group", moderators_group, acting_user=None
+            stream2, "can_add_subscribers_group", moderators_group, acting_user=user_profile
         )
         result = self.subscribe_via_post(
             self.test_user,
@@ -5684,7 +5686,7 @@ class SubscriptionAPITest(ZulipTestCase):
             name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
-            stream2, "can_add_subscribers_group", members_group, acting_user=None
+            stream2, "can_add_subscribers_group", members_group, acting_user=user_profile
         )
         do_change_user_role(self.test_user, UserProfile.ROLE_GUEST, acting_user=None)
         result = self.subscribe_via_post(
@@ -5706,10 +5708,10 @@ class SubscriptionAPITest(ZulipTestCase):
         # User should be able to subscribe other users if they have
         # permissions to administer the channel.
         do_change_stream_group_based_setting(
-            stream2, "can_add_subscribers_group", nobody_group, acting_user=None
+            stream2, "can_add_subscribers_group", nobody_group, acting_user=user_profile
         )
         do_change_stream_group_based_setting(
-            stream2, "can_administer_channel_group", members_group, acting_user=None
+            stream2, "can_administer_channel_group", members_group, acting_user=user_profile
         )
         self.subscribe_via_post(
             self.test_user,
@@ -5718,14 +5720,14 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.unsubscribe(user_profile, "stream2")
         do_change_stream_group_based_setting(
-            stream2, "can_administer_channel_group", nobody_group, acting_user=None
+            stream2, "can_administer_channel_group", nobody_group, acting_user=user_profile
         )
 
         full_members_group = NamedUserGroup.objects.get(
             name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
-            stream2, "can_add_subscribers_group", full_members_group, acting_user=None
+            stream2, "can_add_subscribers_group", full_members_group, acting_user=user_profile
         )
         do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)
         result = self.subscribe_via_post(
@@ -5749,7 +5751,7 @@ class SubscriptionAPITest(ZulipTestCase):
             stream2,
             "can_add_subscribers_group",
             named_user_group,
-            acting_user=None,
+            acting_user=user_profile,
         )
         self.subscribe_via_post(
             self.test_user,
@@ -5757,13 +5759,15 @@ class SubscriptionAPITest(ZulipTestCase):
             {"principals": orjson.dumps([invitee_user_id]).decode()},
         )
         self.unsubscribe(user_profile, "stream2")
-        anonymous_group = self.create_or_update_anonymous_group_for_setting([self.test_user], [])
+        anonymous_group_member_dict = UserGroupMembersDict(
+            direct_members=[self.test_user.id], direct_subgroups=[]
+        )
 
         do_change_stream_group_based_setting(
             stream2,
             "can_add_subscribers_group",
-            anonymous_group,
-            acting_user=None,
+            anonymous_group_member_dict,
+            acting_user=user_profile,
         )
         self.subscribe_via_post(
             self.test_user,
@@ -5774,7 +5778,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         private_stream = self.make_stream("private_stream", invite_only=True)
         do_change_stream_group_based_setting(
-            private_stream, "can_add_subscribers_group", members_group, acting_user=None
+            private_stream, "can_add_subscribers_group", members_group, acting_user=user_profile
         )
         result = self.subscribe_via_post(
             self.test_user,
@@ -5783,12 +5787,15 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assert_json_success(result)
         do_change_stream_group_based_setting(
-            private_stream, "can_add_subscribers_group", nobody_group, acting_user=None
+            private_stream, "can_add_subscribers_group", nobody_group, acting_user=user_profile
         )
         self.unsubscribe(user_profile, "private_stream")
 
         do_change_stream_group_based_setting(
-            private_stream, "can_administer_channel_group", members_group, acting_user=None
+            private_stream,
+            "can_administer_channel_group",
+            members_group,
+            acting_user=user_profile,
         )
         result = self.subscribe_via_post(
             self.test_user,
@@ -5827,50 +5834,51 @@ class SubscriptionAPITest(ZulipTestCase):
             # Unsubscribe user again for testing next case.
             self.unsubscribe(user, stream.name)
 
-        do_change_realm_permission_group_setting(
-            realm, "can_add_subscribers_group", nobody_group, acting_user=None
-        )
-        do_change_stream_group_based_setting(
-            stream, "can_add_subscribers_group", nobody_group, acting_user=None
-        )
-        do_change_stream_group_based_setting(
-            stream, "can_subscribe_group", nobody_group, acting_user=None
-        )
-
         desdemona = self.example_user("desdemona")
         shiva = self.example_user("shiva")
         hamlet = self.example_user("hamlet")
         polonius = self.example_user("polonius")
         othello = self.example_user("othello")
+
+        do_change_realm_permission_group_setting(
+            realm, "can_add_subscribers_group", nobody_group, acting_user=othello
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_add_subscribers_group", nobody_group, acting_user=othello
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_subscribe_group", nobody_group, acting_user=othello
+        )
+
         check_user_can_subscribe(desdemona)
         check_user_can_subscribe(shiva)
         check_user_can_subscribe(hamlet)
         check_user_can_subscribe(othello)
         check_user_can_subscribe(polonius, "Not allowed for guest users")
 
-        setting_group = self.create_or_update_anonymous_group_for_setting([polonius], [])
+        setting_group_member_dict = UserGroupMembersDict(
+            direct_members=[polonius.id], direct_subgroups=[]
+        )
         do_change_stream_group_based_setting(
-            stream, "can_subscribe_group", setting_group, acting_user=None
+            stream, "can_subscribe_group", setting_group_member_dict, acting_user=othello
         )
 
         check_user_can_subscribe(polonius, "Not allowed for guest users")
 
         do_change_stream_group_based_setting(
-            stream, "can_subscribe_group", nobody_group, acting_user=None
+            stream, "can_subscribe_group", nobody_group, acting_user=othello
         )
-        setting_group = self.create_or_update_anonymous_group_for_setting([polonius], [])
         do_change_stream_group_based_setting(
-            stream, "can_add_subscribers_group", setting_group, acting_user=None
+            stream, "can_add_subscribers_group", setting_group_member_dict, acting_user=othello
         )
 
         check_user_can_subscribe(polonius, "Not allowed for guest users")
 
         do_change_stream_group_based_setting(
-            stream, "can_add_subscribers_group", nobody_group, acting_user=None
+            stream, "can_add_subscribers_group", nobody_group, acting_user=othello
         )
-        setting_group = self.create_or_update_anonymous_group_for_setting([polonius], [])
         do_change_stream_group_based_setting(
-            stream, "can_administer_channel_group", setting_group, acting_user=None
+            stream, "can_administer_channel_group", setting_group_member_dict, acting_user=othello
         )
 
         check_user_can_subscribe(polonius, "Not allowed for guest users")
@@ -5886,7 +5894,7 @@ class SubscriptionAPITest(ZulipTestCase):
             name=SystemGroups.OWNERS, realm=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
-            stream, "can_subscribe_group", owners_group, acting_user=None
+            stream, "can_subscribe_group", owners_group, acting_user=othello
         )
 
         check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
@@ -5896,16 +5904,18 @@ class SubscriptionAPITest(ZulipTestCase):
 
         hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
         do_change_stream_group_based_setting(
-            stream, "can_subscribe_group", hamletcharacters_group, acting_user=None
+            stream, "can_subscribe_group", hamletcharacters_group, acting_user=othello
         )
         check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
         check_user_can_subscribe(desdemona, f"Unable to access channel ({stream.name}).")
         check_user_can_subscribe(othello, f"Unable to access channel ({stream.name}).")
         check_user_can_subscribe(hamlet)
 
-        setting_group = self.create_or_update_anonymous_group_for_setting([othello], [owners_group])
+        setting_group_member_dict = UserGroupMembersDict(
+            direct_members=[othello.id], direct_subgroups=[owners_group.id]
+        )
         do_change_stream_group_based_setting(
-            stream, "can_subscribe_group", setting_group, acting_user=None
+            stream, "can_subscribe_group", setting_group_member_dict, acting_user=othello
         )
         check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
         check_user_can_subscribe(hamlet, f"Unable to access channel ({stream.name}).")
@@ -5914,11 +5924,10 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Users can also subscribe if they are allowed to subscribe other users.
         do_change_stream_group_based_setting(
-            stream, "can_subscribe_group", nobody_group, acting_user=None
+            stream, "can_subscribe_group", nobody_group, acting_user=othello
         )
-        setting_group = self.create_or_update_anonymous_group_for_setting([othello], [owners_group])
         do_change_stream_group_based_setting(
-            stream, "can_add_subscribers_group", setting_group, acting_user=None
+            stream, "can_add_subscribers_group", setting_group_member_dict, acting_user=othello
         )
         check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
         check_user_can_subscribe(hamlet, f"Unable to access channel ({stream.name}).")
@@ -5928,11 +5937,10 @@ class SubscriptionAPITest(ZulipTestCase):
         # Users cannot subscribe if they belong to can_administer_channel_group but
         # do not belong to any of can_subscribe_group and can_add_subscribers_group.
         do_change_stream_group_based_setting(
-            stream, "can_add_subscribers_group", nobody_group, acting_user=None
+            stream, "can_add_subscribers_group", nobody_group, acting_user=othello
         )
-        setting_group = self.create_or_update_anonymous_group_for_setting([othello], [owners_group])
         do_change_stream_group_based_setting(
-            stream, "can_administer_channel_group", setting_group, acting_user=None
+            stream, "can_administer_channel_group", setting_group_member_dict, acting_user=othello
         )
         check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
         check_user_can_subscribe(hamlet, f"Unable to access channel ({stream.name}).")
@@ -6168,11 +6176,12 @@ class SubscriptionAPITest(ZulipTestCase):
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
         )
-        setting_group = self.create_or_update_anonymous_group_for_setting(
-            [self.example_user("cordelia")], [moderators_group]
+        setting_group_member_dict = UserGroupMembersDict(
+            direct_members=[self.example_user("cordelia").id],
+            direct_subgroups=[moderators_group.id],
         )
         do_change_stream_group_based_setting(
-            stream, "can_send_message_group", setting_group, acting_user=iago
+            stream, "can_send_message_group", setting_group_member_dict, acting_user=iago
         )
 
         member = self.example_user("othello")
@@ -6337,21 +6346,28 @@ class SubscriptionAPITest(ZulipTestCase):
         self.subscribe(user2, "private_stream")
         self.subscribe(user3, "private_stream")
 
-        user6_group = self.create_or_update_anonymous_group_for_setting([user6], [])
+        user6_group_member_dict = UserGroupMembersDict(
+            direct_members=[user6.id], direct_subgroups=[]
+        )
         do_change_stream_group_based_setting(
-            private, "can_administer_channel_group", user6_group, acting_user=user6
+            private, "can_administer_channel_group", user6_group_member_dict, acting_user=user6
         )
 
-        user7_and_guests_group = self.create_or_update_anonymous_group_for_setting(
-            [user7, guest], []
+        user7_and_guests_group_member_dict = UserGroupMembersDict(
+            direct_members=[user7.id, guest.id], direct_subgroups=[]
         )
         do_change_stream_group_based_setting(
-            private, "can_add_subscribers_group", user7_and_guests_group, acting_user=user7
+            private,
+            "can_add_subscribers_group",
+            user7_and_guests_group_member_dict,
+            acting_user=user7,
         )
 
-        user8_group = self.create_or_update_anonymous_group_for_setting([user8], [])
+        user8_group_member_dict = UserGroupMembersDict(
+            direct_members=[user8.id], direct_subgroups=[]
+        )
         do_change_stream_group_based_setting(
-            private, "can_subscribe_group", user8_group, acting_user=user8
+            private, "can_subscribe_group", user8_group_member_dict, acting_user=user8
         )
 
         # Sends 3 peer-remove events, 2 unsubscribe events
@@ -7047,12 +7063,20 @@ class GetStreamsTest(ZulipTestCase):
         private_stream_2 = self.make_stream("private_stream_2", realm=realm, invite_only=True)
         private_stream_3 = self.make_stream("private_stream_3", realm=realm, invite_only=True)
         self.make_stream("private_stream_4", realm=realm, invite_only=True)
-        test_bot_group = self.create_or_update_anonymous_group_for_setting([test_bot], [])
-        do_change_stream_group_based_setting(
-            private_stream_2, "can_add_subscribers_group", test_bot_group, acting_user=None
+        test_bot_group_member_dict = UserGroupMembersDict(
+            direct_members=[test_bot.id], direct_subgroups=[]
         )
         do_change_stream_group_based_setting(
-            private_stream_3, "can_administer_channel_group", test_bot_group, acting_user=None
+            private_stream_2,
+            "can_add_subscribers_group",
+            test_bot_group_member_dict,
+            acting_user=hamlet,
+        )
+        do_change_stream_group_based_setting(
+            private_stream_3,
+            "can_administer_channel_group",
+            test_bot_group_member_dict,
+            acting_user=hamlet,
         )
         # Check it correctly lists the bot owner's subs + the channels
         # bot has content access to.
@@ -7086,7 +7110,9 @@ class GetStreamsTest(ZulipTestCase):
         # the streams they have metadata access to.
         normal_user = self.example_user("cordelia")
         realm = normal_user.realm
-        normal_user_group = self.create_or_update_anonymous_group_for_setting([normal_user], [])
+        normal_user_group_members_dict = UserGroupMembersDict(
+            direct_members=[normal_user.id], direct_subgroups=[]
+        )
 
         private_stream_1 = self.make_stream("private_stream_1", realm=realm, invite_only=True)
         private_stream_2 = self.make_stream("private_stream_2", realm=realm, invite_only=True)
@@ -7101,13 +7127,13 @@ class GetStreamsTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             private_stream_2,
             "can_add_subscribers_group",
-            normal_user_group,
+            normal_user_group_members_dict,
             acting_user=normal_user,
         )
         do_change_stream_group_based_setting(
             private_stream_3,
             "can_administer_channel_group",
-            normal_user_group,
+            normal_user_group_members_dict,
             acting_user=normal_user,
         )
 
@@ -7126,32 +7152,34 @@ class GetStreamsTest(ZulipTestCase):
         # Normal user should be able to make this request and get all
         # the streams they have metadata access to.
         guest_user = self.example_user("polonius")
-        guest_user_group = self.create_or_update_anonymous_group_for_setting([guest_user], [])
+        guest_user_group_member_dict = UserGroupMembersDict(
+            direct_members=[guest_user.id], direct_subgroups=[]
+        )
 
         self.subscribe(guest_user, private_stream_1.name)
         self.subscribe(guest_user, "design")
         do_change_stream_group_based_setting(
             private_stream_2,
             "can_add_subscribers_group",
-            guest_user_group,
+            guest_user_group_member_dict,
             acting_user=normal_user,
         )
         do_change_stream_group_based_setting(
             get_stream("Rome", realm),
             "can_add_subscribers_group",
-            guest_user_group,
+            guest_user_group_member_dict,
             acting_user=normal_user,
         )
         do_change_stream_group_based_setting(
             private_stream_3,
             "can_administer_channel_group",
-            guest_user_group,
+            guest_user_group_member_dict,
             acting_user=normal_user,
         )
         do_change_stream_group_based_setting(
             get_stream("Denmark", realm),
             "can_administer_channel_group",
-            guest_user_group,
+            guest_user_group_member_dict,
             acting_user=normal_user,
         )
 
@@ -7263,7 +7291,9 @@ class GetStreamsTest(ZulipTestCase):
         user = self.example_user("cordelia")
         realm = get_realm("zulip")
         self.login_user(user)
-        user_group = self.create_or_update_anonymous_group_for_setting([user], [])
+        user_group_members_dict = UserGroupMembersDict(
+            direct_members=[user.id], direct_subgroups=[]
+        )
 
         private_stream_1 = self.make_stream("private_stream_1", realm=realm, invite_only=True)
         private_stream_2 = self.make_stream("private_stream_2", realm=realm, invite_only=True)
@@ -7272,10 +7302,13 @@ class GetStreamsTest(ZulipTestCase):
 
         self.subscribe(user, private_stream_1.name)
         do_change_stream_group_based_setting(
-            private_stream_2, "can_add_subscribers_group", user_group, acting_user=user
+            private_stream_2, "can_add_subscribers_group", user_group_members_dict, acting_user=user
         )
         do_change_stream_group_based_setting(
-            private_stream_3, "can_administer_channel_group", user_group, acting_user=user
+            private_stream_3,
+            "can_administer_channel_group",
+            user_group_members_dict,
+            acting_user=user,
         )
 
         # Check it correctly lists all content access streams with
@@ -7472,12 +7505,14 @@ class InviteOnlyStreamTest(ZulipTestCase):
         # Subscribing oneself to an invite-only stream is allowed
         # if user belongs to can_subscribe_group.
         stream = get_stream(stream_name, hamlet.realm)
-        setting_group = self.create_or_update_anonymous_group_for_setting([othello], [])
+        setting_group_members_dict = UserGroupMembersDict(
+            direct_members=[othello.id], direct_subgroups=[]
+        )
         do_change_stream_group_based_setting(
             stream,
             "can_subscribe_group",
-            setting_group,
-            acting_user=None,
+            setting_group_members_dict,
+            acting_user=hamlet,
         )
         result = self.subscribe_via_post(othello, [stream_name])
         json = self.assert_json_success(result)
@@ -7686,23 +7721,24 @@ class GetSubscribersTest(ZulipTestCase):
         admins_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
-        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [admins_group])
+        setting_group_members_dict = UserGroupMembersDict(
+            direct_members=[hamlet.id], direct_subgroups=[admins_group.id]
+        )
         do_change_stream_group_based_setting(
             stream,
             "can_remove_subscribers_group",
-            setting_group,
-            acting_user=None,
+            setting_group_members_dict,
+            acting_user=hamlet,
         )
         stream = get_stream("stream_2", realm)
-        setting_group = self.create_or_update_anonymous_group_for_setting(
-            [cordelia],
-            [admins_group],
+        setting_group_members_dict = UserGroupMembersDict(
+            direct_members=[cordelia.id], direct_subgroups=[admins_group.id]
         )
         do_change_stream_group_based_setting(
             stream,
             "can_remove_subscribers_group",
-            setting_group,
-            acting_user=None,
+            setting_group_members_dict,
+            acting_user=hamlet,
         )
 
         with self.assert_database_query_count(9):
@@ -7780,12 +7816,12 @@ class GetSubscribersTest(ZulipTestCase):
             stream, "can_send_message_group", hamletcharacters_group, acting_user=desdemona
         )
 
-        setting_group = self.create_or_update_anonymous_group_for_setting(
-            [cordelia], [admins_group]
+        setting_group_members_dict = UserGroupMembersDict(
+            direct_members=[cordelia.id], direct_subgroups=[admins_group.id]
         )
         stream = get_stream("stream_5", realm)
         do_change_stream_group_based_setting(
-            stream, "can_send_message_group", setting_group, acting_user=desdemona
+            stream, "can_send_message_group", setting_group_members_dict, acting_user=desdemona
         )
 
         with self.assert_database_query_count(9):
@@ -7933,11 +7969,13 @@ class GetSubscribersTest(ZulipTestCase):
         # Send private stream subscribers to all realm admins.
         def test_channel_admin_case() -> None:
             self.user_profile.role = UserProfile.ROLE_MEMBER
-            user_group = self.create_or_update_anonymous_group_for_setting([self.user_profile], [])
+            user_group_members_dict = UserGroupMembersDict(
+                direct_members=[self.user_profile.id], direct_subgroups=[]
+            )
             do_change_stream_group_based_setting(
                 get_stream("test_stream_invite_only_1", realm),
                 "can_administer_channel_group",
-                user_group,
+                user_group_members_dict,
                 acting_user=self.user_profile,
             )
             # Test channel admins can get never subscribed private stream's subscribers.
@@ -7954,11 +7992,13 @@ class GetSubscribersTest(ZulipTestCase):
 
         def test_can_add_subscribers_case() -> None:
             self.user_profile.role = UserProfile.ROLE_MEMBER
-            user_group = self.create_or_update_anonymous_group_for_setting([self.user_profile], [])
+            user_group_members_dict = UserGroupMembersDict(
+                direct_members=[self.user_profile.id], direct_subgroups=[]
+            )
             do_change_stream_group_based_setting(
                 get_stream("test_stream_invite_only_1", realm),
                 "can_add_subscribers_group",
-                user_group,
+                user_group_members_dict,
                 acting_user=self.user_profile,
             )
             # Test channel admins can get never subscribed private stream's subscribers.
@@ -8078,13 +8118,13 @@ class GetSubscribersTest(ZulipTestCase):
         self.assert_length(unsubscribed_streams, 0)
 
         # Test channel admin gets previously subscribed private stream's subscribers.
-        non_admin_user_group = self.create_or_update_anonymous_group_for_setting(
-            [non_admin_user], []
+        non_admin_user_group_members_dict = UserGroupMembersDict(
+            direct_members=[non_admin_user.id], direct_subgroups=[]
         )
         do_change_stream_group_based_setting(
             stream,
             "can_administer_channel_group",
-            non_admin_user_group,
+            non_admin_user_group_members_dict,
             acting_user=admin_user,
         )
         sub_data = gather_subscriptions_helper(non_admin_user)
@@ -8400,7 +8440,7 @@ class AccessStreamTest(ZulipTestCase):
             stream,
             "can_administer_channel_group",
             polonius_and_othello_group,
-            acting_user=None,
+            acting_user=othello,
         )
         # Channel admins can access private stream if
         # require_content_access is set to False
@@ -8416,14 +8456,14 @@ class AccessStreamTest(ZulipTestCase):
             stream,
             "can_administer_channel_group",
             nobody_group,
-            acting_user=None,
+            acting_user=othello,
         )
 
         do_change_stream_group_based_setting(
             stream,
             "can_add_subscribers_group",
             polonius_and_othello_group,
-            acting_user=None,
+            acting_user=othello,
         )
         access_stream_by_id(othello, stream.id, require_content_access=False)
         access_stream_by_name(othello, stream.name, require_content_access=False)
@@ -8446,14 +8486,14 @@ class AccessStreamTest(ZulipTestCase):
             stream,
             "can_add_subscribers_group",
             nobody_group,
-            acting_user=None,
+            acting_user=othello,
         )
 
         do_change_stream_group_based_setting(
             stream,
             "can_subscribe_group",
             polonius_and_othello_group,
-            acting_user=None,
+            acting_user=othello,
         )
         access_stream_by_id(othello, stream.id, require_content_access=False)
         access_stream_by_name(othello, stream.name, require_content_access=False)
@@ -8609,12 +8649,14 @@ class AccessStreamTest(ZulipTestCase):
         # User should be able to access private channel if they are
         # part of `can_add_subscribers_group` but not subscribed to the
         # channel.
-        aaron_group = self.create_or_update_anonymous_group_for_setting([aaron], [])
+        aaron_group_member_dict = UserGroupMembersDict(
+            direct_members=[aaron.id], direct_subgroups=[]
+        )
         do_change_stream_group_based_setting(
             private_stream,
             "can_add_subscribers_group",
-            aaron_group,
-            acting_user=None,
+            aaron_group_member_dict,
+            acting_user=aaron,
         )
         self.assertEqual(
             user_has_content_access(
@@ -8634,18 +8676,17 @@ class AccessStreamTest(ZulipTestCase):
             private_stream,
             "can_add_subscribers_group",
             nobody_group,
-            acting_user=None,
+            acting_user=aaron,
         )
 
         # User should be able to access private channel if they are
         # part of `can_subscribe_group` but not subscribed to the
         # channel.
-        aaron_group = self.create_or_update_anonymous_group_for_setting([aaron], [])
         do_change_stream_group_based_setting(
             private_stream,
             "can_subscribe_group",
-            aaron_group,
-            acting_user=None,
+            aaron_group_member_dict,
+            acting_user=aaron,
         )
         self.assertEqual(
             user_has_content_access(
@@ -8665,18 +8706,17 @@ class AccessStreamTest(ZulipTestCase):
             private_stream,
             "can_subscribe_group",
             nobody_group,
-            acting_user=None,
+            acting_user=aaron,
         )
 
         # User should not be able to access private channel if they are
         # part of `can_administer_channel_group` but not subscribed to
         # the channel.
-        aaron_group = self.create_or_update_anonymous_group_for_setting([aaron], [])
         do_change_stream_group_based_setting(
             private_stream,
             "can_administer_channel_group",
-            aaron_group,
-            acting_user=None,
+            aaron_group_member_dict,
+            acting_user=aaron,
         )
         self.assertEqual(
             user_has_content_access(

@@ -455,6 +455,31 @@ def update_or_create_user_group_for_setting(
     return user_group
 
 
+def access_user_group_api_value_for_setting(
+    setting_user_group: int | UserGroupMembersDict,
+    user_profile: UserProfile,
+    *,
+    setting_name: str,
+    permission_configuration: GroupPermissionSetting,
+) -> NamedUserGroup | UserGroupMembersDict:
+    if isinstance(setting_user_group, int):
+        named_user_group = get_user_group_by_id_in_realm(
+            setting_user_group, user_profile.realm, for_read=False, for_setting=True
+        )
+        check_setting_configuration_for_system_groups(
+            named_user_group, setting_name, permission_configuration
+        )
+        return named_user_group
+
+    if permission_configuration.require_system_group:
+        raise SystemGroupRequiredError(setting_name)
+
+    return UserGroupMembersDict(
+        direct_members=setting_user_group.direct_members,
+        direct_subgroups=setting_user_group.direct_subgroups,
+    )
+
+
 def access_user_group_for_setting(
     setting_user_group: int | UserGroupMembersDict,
     user_profile: UserProfile,
@@ -467,22 +492,19 @@ def access_user_group_for_setting(
     should have (setting_user_group), returns either a Named or
     anonymous `UserGroup` with the requested membership.
     """
-    if isinstance(setting_user_group, int):
-        named_user_group = get_user_group_by_id_in_realm(
-            setting_user_group, user_profile.realm, for_read=False, for_setting=True
-        )
-        check_setting_configuration_for_system_groups(
-            named_user_group, setting_name, permission_configuration
-        )
-        return named_user_group.usergroup_ptr
-
-    if permission_configuration.require_system_group:
-        raise SystemGroupRequiredError(setting_name)
+    user_group_api_value_for_setting = access_user_group_api_value_for_setting(
+        setting_user_group,
+        user_profile,
+        setting_name=setting_name,
+        permission_configuration=permission_configuration,
+    )
+    if isinstance(user_group_api_value_for_setting, NamedUserGroup):
+        return user_group_api_value_for_setting.usergroup_ptr
 
     user_group = update_or_create_user_group_for_setting(
         user_profile,
-        setting_user_group.direct_members,
-        setting_user_group.direct_subgroups,
+        user_group_api_value_for_setting.direct_members,
+        user_group_api_value_for_setting.direct_subgroups,
         current_setting_value,
     )
 

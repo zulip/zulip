@@ -18,6 +18,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
+from zerver.lib.types import UserGroupMembersDict
 from zerver.lib.url_encoding import near_stream_message_url
 from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, Stream, UserMessage, UserProfile
@@ -1122,9 +1123,11 @@ class MessageMoveStreamTest(ZulipTestCase):
             "othello", "old_stream", "new_stream", "test"
         )
 
-        setting_group = self.create_or_update_anonymous_group_for_setting([othello], [owners_group])
+        setting_group_member_dict = UserGroupMembersDict(
+            direct_members=[othello.id], direct_subgroups=[owners_group.id]
+        )
         do_change_stream_group_based_setting(
-            new_stream, "can_send_message_group", setting_group, acting_user=desdemona
+            new_stream, "can_send_message_group", setting_group_member_dict, acting_user=desdemona
         )
 
         check_move_message_to_stream(iago, expect_fail=True)

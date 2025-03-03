@@ -59,6 +59,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.types import UserGroupMembersDict
 from zerver.models import (
     Message,
     NamedUserGroup,
@@ -384,9 +385,11 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
-        setting_group = self.create_or_update_anonymous_group_for_setting([othello], [owners_group])
+        setting_group_member_dict = UserGroupMembersDict(
+            direct_members=[othello.id], direct_subgroups=[owners_group.id]
+        )
         do_change_stream_group_based_setting(
-            stream, "can_send_message_group", setting_group, acting_user=iago
+            stream, "can_send_message_group", setting_group_member_dict, acting_user=iago
         )
 
         self._send_and_verify_message(
@@ -450,9 +453,11 @@ class MessagePOSTTest(ZulipTestCase):
             othello, stream_name, "Not authorized to send to channel 'private_stream"
         )
 
-        othello_group = self.create_or_update_anonymous_group_for_setting([othello], [])
+        othello_group_member_dict = UserGroupMembersDict(
+            direct_members=[othello.id], direct_subgroups=[]
+        )
         do_change_stream_group_based_setting(
-            stream, "can_send_message_group", othello_group, acting_user=othello
+            stream, "can_send_message_group", othello_group_member_dict, acting_user=othello
         )
 
         self.subscribe(othello, stream_name)
@@ -460,7 +465,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.unsubscribe(othello, stream_name)
 
         do_change_stream_group_based_setting(
-            stream, "can_add_subscribers_group", othello_group, acting_user=othello
+            stream, "can_add_subscribers_group", othello_group_member_dict, acting_user=othello
         )
         self._send_and_verify_message(othello, stream_name, allow_unsubscribed_sender=True)
 
@@ -485,9 +490,11 @@ class MessagePOSTTest(ZulipTestCase):
         # `history_public_to_subscribers` might be a relevant property
         # for public channels
         guest_user = self.example_user("polonius")
-        guest_user_group = self.create_or_update_anonymous_group_for_setting([guest_user], [])
+        guest_user_group_member_dict = UserGroupMembersDict(
+            direct_members=[guest_user.id], direct_subgroups=[]
+        )
         do_change_stream_group_based_setting(
-            stream, "can_send_message_group", guest_user_group, acting_user=othello
+            stream, "can_send_message_group", guest_user_group_member_dict, acting_user=othello
         )
         do_change_stream_permission(
             stream,
@@ -524,7 +531,7 @@ class MessagePOSTTest(ZulipTestCase):
         #
         # But can_add_subscribers_group has !allow_everyone_group.
         do_change_stream_group_based_setting(
-            stream, "can_add_subscribers_group", guest_user_group, acting_user=othello
+            stream, "can_add_subscribers_group", guest_user_group_member_dict, acting_user=othello
         )
         self._send_and_verify_message(
             guest_user,
@@ -1732,7 +1739,10 @@ class StreamMessagesTest(ZulipTestCase):
             name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
-            stream, "can_send_message_group", members_group, acting_user=self.example_user("iago")
+            stream,
+            "can_send_message_group",
+            members_group,
+            acting_user=self.example_user("iago"),
         )
         flush_per_request_caches()
 

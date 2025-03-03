@@ -68,6 +68,7 @@ from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.streams import user_has_content_access, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
+from zerver.lib.types import UserGroupMembersDict
 from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, RealmEmoji, RealmFilter, UserMessage, UserProfile
 from zerver.models.clients import get_client
@@ -3304,12 +3305,14 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
 
         # Permalink would not be generated if a user has metadata
         # access to a stream but not content access.
-        cordelia_group = self.create_or_update_anonymous_group_for_setting([cordelia], [])
+        cordelia_group_member_dict = UserGroupMembersDict(
+            direct_members=[cordelia.id], direct_subgroups=[]
+        )
         do_change_stream_group_based_setting(
             private_stream,
             "can_administer_channel_group",
-            cordelia_group,
-            acting_user=None,
+            cordelia_group_member_dict,
+            acting_user=cordelia,
         )
         user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
         self.assertTrue(
@@ -3337,8 +3340,8 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
         do_change_stream_group_based_setting(
             private_stream,
             "can_add_subscribers_group",
-            cordelia_group,
-            acting_user=None,
+            cordelia_group_member_dict,
+            acting_user=cordelia,
         )
         user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
         self.assertTrue(

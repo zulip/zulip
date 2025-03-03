@@ -1888,7 +1888,7 @@ class MessageAccessTests(ZulipTestCase):
             stream,
             "can_add_subscribers_group",
             unsubscribed_user_group,
-            acting_user=None,
+            acting_user=unsubscribed_user,
         )
         filtered_messages = self.assert_bulk_access(
             unsubscribed_user,
@@ -1913,7 +1913,7 @@ class MessageAccessTests(ZulipTestCase):
             stream,
             "can_add_subscribers_group",
             nobody_group,
-            acting_user=None,
+            acting_user=user,
         )
 
         # Adding more message ids to the list increases the query size
