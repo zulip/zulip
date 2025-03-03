@@ -135,15 +135,12 @@ def invite_users_backend(
 
     # Moved permissions checks to a helper function to not violate SOLID principles
     validate_invite_permissions(user_profile, invite_as)
-    
     # Moved email stuff to help with readability and maintainability (and SOLID)
     invitee_emails = parse_invitee_emails(invitee_emails_raw)
-    
     streams = access_streams_for_invite(stream_ids, user_profile)
     user_groups = access_user_groups_for_invite(group_ids, user_profile)
 
     # Moved invite processing into a function to fix SOLID violations
-    
     skipped = process_invite(
         user_profile,
         invitee_emails,
