@@ -1966,8 +1966,8 @@ body:not(.hide-left-sidebar) {
     }
 
     #scroll-to-bottom-button-clickable-area {
-        width: 60px;
-        height: 60px;
+        width: 3.75em; /* 60px at 16px em */
+        height: 3.75em; /* 60px at 16px em */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1979,8 +1979,8 @@ body:not(.hide-left-sidebar) {
 
         #scroll-to-bottom-button {
             text-align: center;
-            width: 40px;
-            height: 40px;
+            width: 2.5em; /* 40px at 16px em */
+            height: 2.5em; /* 40px at 16px em */
             background: hsl(240deg 96% 68% / 50%);
             border-radius: 50%;
             display: flex;
@@ -1989,7 +1989,7 @@ body:not(.hide-left-sidebar) {
             & .scroll-to-bottom-icon {
                 color: hsl(0deg 0% 100%);
                 margin: 0 auto;
-                font-size: 21px;
+                font-size: 1.3125em; /* 21px at 16px em */
             }
         }
     }
