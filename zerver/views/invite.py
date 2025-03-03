@@ -115,8 +115,6 @@ def access_user_groups_for_invite(
                 user_groups.append(user_group)
 
     return user_groups
-
-
 @require_member_or_admin
 @typed_endpoint
 def invite_users_backend(
@@ -134,6 +132,35 @@ def invite_users_backend(
     group_ids: Json[list[int]] | None = None,
     include_realm_default_subscriptions: Json[bool] = False,
 ) -> HttpResponse:
+
+    # Moved permissions checks to a helper function to not violate SOLID principles
+    validate_invite_permissions(user_profile, invite_as)
+    
+    # Moved email stuff to help with readability and maintainability (and SOLID)
+    invitee_emails = parse_invitee_emails(invitee_emails_raw)
+    
+    streams = access_streams_for_invite(stream_ids, user_profile)
+    user_groups = access_user_groups_for_invite(group_ids, user_profile)
+
+    # Moved invite processing into a function to fix SOLID violations
+    
+    skipped = process_invite(
+        user_profile,
+        invitee_emails,
+        streams,
+        notify_referrer_on_join,
+        user_groups,
+        invite_expires_in_minutes,
+        include_realm_default_subscriptions,
+        invite_as,
+    )
+
+    # Invite response handling moved to function
+    return handle_invite_response(request, skipped)
+
+
+def validate_invite_permissions(user_profile: UserProfile, invite_as: int) -> None:
+
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
         # be handled by the decorator above.
@@ -148,15 +175,26 @@ def invite_users_backend(
     ]
     check_role_based_permissions(invite_as, user_profile, require_admin=require_admin)
 
+
+def parse_invitee_emails(invitee_emails_raw: str) -> set[str]:
+
     if not invitee_emails_raw:
         raise JsonableError(_("You must specify at least one email address."))
+    return get_invitee_emails_set(invitee_emails_raw)
 
-    invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 
-    streams = access_streams_for_invite(stream_ids, user_profile)
-    user_groups = access_user_groups_for_invite(group_ids, user_profile)
+def process_invite(
+    user_profile: UserProfile,
+    invitee_emails: set[str],
+    streams: list[Stream],
+    notify_referrer_on_join: bool,
+    user_groups: list[NamedUserGroup],
+    invite_expires_in_minutes: int | None,
+    include_realm_default_subscriptions: bool,
+    invite_as: int,
+) -> set[str]:
 
-    skipped = do_invite_users(
+    return do_invite_users(
         user_profile,
         invitee_emails,
         streams,
@@ -166,6 +204,9 @@ def invite_users_backend(
         include_realm_default_subscriptions=include_realm_default_subscriptions,
         invite_as=invite_as,
     )
+
+
+def handle_invite_response(request: HttpRequest, skipped: set[str]) -> HttpResponse:
 
     if skipped:
         raise InvitationError(
@@ -177,8 +218,8 @@ def invite_users_backend(
             skipped,
             sent_invitations=True,
         )
-
     return json_success(request)
+
 
 
 def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
