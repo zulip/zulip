@@ -13,7 +13,7 @@ def set_default_value_for_can_mention_many_users_group(
     wildcard_mention_policy_to_group_name = {
         1: "role:everyone",
         2: "role:members",
-        3: "role:full_members",
+        3: "role:fullmembers",
         5: "role:administrators",
         6: "role:nobody",
         7: "role:moderators",
