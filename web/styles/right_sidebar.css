@@ -142,9 +142,23 @@
         padding: 0;
 
         &:hover,
+        &.narrow-filter:has(a.user-presence-link:focus-visible),
         &.highlighted_user {
             background-color: var(--color-buddy-list-highlighted-user);
             box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+        }
+
+        &.narrow-filter:has(a.user-presence-link:focus-visible),
+        &.highlighted_user {
+            outline: 2px solid var(--color-outline-focus);
+            outline-offset: -2px;
+        }
+    }
+
+    & .narrow-filter {
+        a.user-presence-link:focus {
+            outline: none;
+            text-decoration: none;
         }
     }
 
