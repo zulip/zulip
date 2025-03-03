@@ -505,6 +505,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         post_render: generate_email_modal_post_render,
         on_click: generate_email_address,
         close_on_submit: false,
+        always_visible_scrollbar: true,
     });
     $("#show-sender").prop("checked", true);
 
