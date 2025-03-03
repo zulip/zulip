@@ -267,18 +267,15 @@
        This is very useful for areas in the CSS codebase
        that rely on this value, but not necessarily as
        applied to `width:` or `max-width:`. */
-    --left-sidebar-width: min(33.3333%, var(--left-sidebar-max-width));
+    --left-sidebar-width: min(33.3333vw, var(--left-sidebar-max-width));
     --right-sidebar-left-spacing: 5px;
     /* 50px per icon * 4 icons + 3px space (legacy) = 203px at 20px/1em */
     --right-column-collapsed-sidebar-width: 10.15em;
     /* 288px at 14px/1em */
-    --right-column-max-width: 20.57em;
+    --right-sidebar-max-width: 20.57em;
     /* We open the right sidebar at xl_min at a size of 240px,
        here expressed as precisely 20% of the viewport. */
-    --right-column-width: min(20%, var(--right-column-max-width));
-    --right-sidebar-width: calc(
-        var(--right-column-width) - var(--right-sidebar-left-spacing)
-    );
+    --right-sidebar-width: min(20vw, var(--right-sidebar-max-width));
     /* 25px at 16px/1em */
     --right-sidebar-vdots-width: 1.5625em;
     /* The width of the icon is reduced by 2px, to account for 2px

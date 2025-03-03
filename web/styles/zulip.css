@@ -41,7 +41,7 @@ body {
     #compose-container {
         max-width: calc(
             var(--left-sidebar-max-width) + var(--message-area-max-width) +
-                var(--right-column-max-width)
+                var(--right-sidebar-max-width)
         );
     }
 
@@ -53,7 +53,7 @@ body {
         .app .app-main,
         #compose-container {
             max-width: calc(
-                var(--message-area-max-width) + var(--right-column-max-width)
+                var(--message-area-max-width) + var(--right-sidebar-max-width)
             );
 
             /* When we're less than the xl_min breakpoint, we instead
@@ -398,8 +398,8 @@ body.has-overlay-scrollbar {
 
 /* This applies to column-left both in navbar and app. */
 .column-right {
-    width: var(--right-column-width);
-    max-width: var(--right-column-max-width);
+    width: var(--right-sidebar-width);
+    max-width: var(--right-sidebar-max-width);
     position: absolute;
     right: 0;
     top: 0;
@@ -628,7 +628,7 @@ body.has-overlay-scrollbar {
 
 .column-middle,
 #compose-content {
-    margin-right: var(--right-column-width);
+    margin-right: var(--right-sidebar-width);
     margin-left: calc(
         var(--left-sidebar-width) + var(--left-sidebar-padding-left)
     );
@@ -1557,11 +1557,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
             /* In the extended state, we open the sidebar
                to its maximum possible size (otherwise, it
                would be unnecessarily too narrow). */
-            --right-column-width: var(--right-column-max-width);
-            --right-sidebar-width: calc(
-                var(--right-column-max-width) -
-                    var(--right-sidebar-left-spacing)
-            );
+            --right-sidebar-width: var(--right-sidebar-max-width);
             display: block;
             position: absolute;
             float: none;
