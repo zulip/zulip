@@ -953,7 +953,7 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     topics_widget.filter_and_sort();
     // Iterate in the order of which the rows should be present so that
     // we are not inserting rows without any rows being present around them.
-    for (const topic_data of topics_widget.get_current_list()) {
+    for (const topic_data of topics_widget.get_rendered_list()) {
         const msg = message_store.get(topic_data.last_msg_id);
         assert(msg !== undefined);
         const topic_key = recent_view_util.get_key_from_message(msg);
