@@ -4764,9 +4764,9 @@ class SubscribeActionTest(BaseAction):
 
             check_message("events[3]", events[3])
 
-        setting_group = self.create_or_update_anonymous_group_for_setting(
-            [self.user_profile],
-            [moderators_group],
+        setting_group_member_dict = UserGroupMembersDict(
+            direct_members=[self.user_profile.id],
+            direct_subgroups=[moderators_group.id],
         )
         with self.verify_action(
             include_subscribers=include_subscribers, num_events=num_events
@@ -4774,7 +4774,7 @@ class SubscribeActionTest(BaseAction):
             do_change_stream_group_based_setting(
                 stream,
                 setting_name,
-                setting_group,
+                setting_group_member_dict,
                 acting_user=acting_user,
             )
         check_stream_update("events[0]", events[0])

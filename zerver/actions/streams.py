@@ -53,6 +53,7 @@ from zerver.lib.types import APISubscriptionDict, UserGroupMembersDict
 from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
     get_group_setting_value_for_audit_log_data,
+    update_or_create_user_group_for_setting,
 )
 from zerver.lib.users import (
     get_subscribers_of_target_user_subscriptions,
@@ -70,10 +71,9 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserProfile,
 )
-from zerver.models.groups import NamedUserGroup, SystemGroups
+from zerver.models.groups import NamedUserGroup, SystemGroups, UserGroup
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm_by_id
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
@@ -1619,15 +1619,12 @@ def do_change_stream_message_retention_days(
 def do_change_stream_group_based_setting(
     stream: Stream,
     setting_name: str,
-    user_group: UserGroup,
+    new_setting_value: NamedUserGroup | UserGroupMembersDict,
     *,
     old_setting_api_value: int | UserGroupMembersDict | None = None,
-    acting_user: UserProfile | None = None,
+    acting_user: UserProfile,
 ) -> None:
     old_user_group = getattr(stream, setting_name)
-
-    setattr(stream, setting_name, user_group)
-    stream.save()
 
     if old_setting_api_value is None:
         # Most production callers will have computed this as part of
@@ -1635,8 +1632,21 @@ def do_change_stream_group_based_setting(
         # feels quite clumsy to have to pass it from unit tests, so we
         # compute it here if not provided by the caller.
         old_setting_api_value = get_group_setting_value_for_api(old_user_group)
-    new_setting_api_value = get_group_setting_value_for_api(user_group)
 
+    if isinstance(new_setting_value, NamedUserGroup):
+        user_group: UserGroup = new_setting_value
+    else:
+        user_group = update_or_create_user_group_for_setting(
+            acting_user,
+            new_setting_value.direct_members,
+            new_setting_value.direct_subgroups,
+            old_user_group,
+        )
+
+    setattr(stream, setting_name, user_group)
+    stream.save()
+
+    new_setting_api_value = get_group_setting_value_for_api(user_group)
     RealmAuditLog.objects.create(
         realm=stream.realm,
         acting_user=acting_user,
@@ -1653,6 +1663,7 @@ def do_change_stream_group_based_setting(
             "property": setting_name,
         },
     )
+    current_user_ids_with_metadata_access = can_access_stream_metadata_user_ids(stream)
     event = dict(
         op="update",
         type="stream",
@@ -1661,7 +1672,7 @@ def do_change_stream_group_based_setting(
         stream_id=stream.id,
         name=stream.name,
     )
-    send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
+    send_event_on_commit(stream.realm, event, current_user_ids_with_metadata_access)
 
     if setting_name == "can_send_message_group":
         old_stream_post_policy = get_stream_post_policy_value_based_on_group_setting(old_user_group)
@@ -1676,7 +1687,7 @@ def do_change_stream_group_based_setting(
                 stream_id=stream.id,
                 name=stream.name,
             )
-            send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
+            send_event_on_commit(stream.realm, event, current_user_ids_with_metadata_access)
 
             # Backwards-compatibility code: We removed the
             # is_announcement_only property in early 2020, but we send a
@@ -1690,7 +1701,7 @@ def do_change_stream_group_based_setting(
                 stream_id=stream.id,
                 name=stream.name,
             )
-            send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
+            send_event_on_commit(stream.realm, event, current_user_ids_with_metadata_access)
 
         assert acting_user is not None
         send_stream_posting_permission_update_notification(

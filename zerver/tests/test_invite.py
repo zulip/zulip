@@ -1019,7 +1019,7 @@ class InviteUserTest(InviteUserBase):
         )
 
         do_change_stream_group_based_setting(
-            denmark, "can_add_subscribers_group", admins_group, acting_user=None
+            denmark, "can_add_subscribers_group", admins_group, acting_user=current_user
         )
         do_change_realm_permission_group_setting(
             realm, "can_add_subscribers_group", nobody_group, acting_user=None
@@ -1027,7 +1027,7 @@ class InviteUserTest(InviteUserBase):
         # This is not a default stream, so we are making sure that the
         # user has the permission to add subscribers to this channel.
         do_change_stream_group_based_setting(
-            verona, "can_add_subscribers_group", members_group, acting_user=None
+            verona, "can_add_subscribers_group", members_group, acting_user=current_user
         )
         invitee = self.nonreg_email("newguy")
         self.assertEqual(is_user_in_group(admins_group, current_user), False)
@@ -1714,6 +1714,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         stream_names = ["Denmark", "Scotland"]
 
         self.login("hamlet")
+        hamlet = self.example_user("hamlet")
         result = self.invite(invitee, stream_names)
         self.assert_json_error(
             result, "You do not have permission to subscribe other users to channels."
@@ -1725,7 +1726,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             get_stream("Denmark", realm),
             "can_add_subscribers_group",
             members_group,
-            acting_user=None,
+            acting_user=hamlet,
         )
         result = self.invite(invitee, stream_names)
         self.assert_json_error(
@@ -1738,7 +1739,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             get_stream("Scotland", realm),
             "can_add_subscribers_group",
             members_group,
-            acting_user=None,
+            acting_user=hamlet,
         )
         result = self.invite(invitee, stream_names)
         self.assert_json_success(result)

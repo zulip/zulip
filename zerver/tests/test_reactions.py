@@ -997,7 +997,7 @@ class DefaultEmojiReactionTests(EmojiReactionBase):
             stream,
             "can_add_subscribers_group",
             user_profile_group,
-            acting_user=None,
+            acting_user=user_profile,
         )
         result = self.api_post(
             user_profile, f"/api/v1/messages/{message_id}/reactions", reaction_info
