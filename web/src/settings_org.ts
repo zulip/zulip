@@ -15,6 +15,7 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import type {UserGroupForDropdownListWidget} from "./group_permission_settings.ts";
 import {$t, $t_html, get_language_name} from "./i18n.ts";
+import * as information_density from "./information_density.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as pygments_data from "./pygments_data.ts";
@@ -35,7 +36,6 @@ import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_notifications from "./settings_notifications.ts";
-import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_realm_domains from "./settings_realm_domains.ts";
 import * as settings_ui from "./settings_ui.ts";
 import {current_user, realm, realm_schema} from "./state_data.ts";
@@ -700,6 +700,25 @@ export function discard_realm_default_property_element_changes(elem: HTMLElement
                 .find(`input[value='${CSS.escape(property_value.toString())}']`)
                 .prop("checked", true);
             break;
+        case "web_font_size_px":
+        case "web_line_height_percent": {
+            const setting_value = z.number().parse(property_value);
+            $elem.val(setting_value);
+            if (property_name === "web_font_size_px") {
+                $elem.closest(".button-group").find(".display-value").text(setting_value);
+            } else {
+                $elem
+                    .closest(".button-group")
+                    .find(".display-value")
+                    .text(
+                        information_density.get_string_display_value_for_line_height(setting_value),
+                    );
+            }
+            information_density.enable_or_disable_control_buttons(
+                $elem.closest(".settings-subsection-parent"),
+            );
+            break;
+        }
         case "email_notifications_batching_period_seconds":
         case "email_notification_batching_period_edit_minutes":
             settings_notifications.set_notification_batching_ui(
@@ -1252,20 +1271,6 @@ export function register_save_discard_widget_handlers(
                     settings_components.populate_data_for_default_realm_settings_request(
                         $subsection_elem,
                     );
-
-                if (
-                    data.dense_mode !== undefined ||
-                    data.web_font_size_px !== undefined ||
-                    data.web_line_height_percent !== undefined
-                ) {
-                    success_continuation = () => {
-                        settings_preferences.update_information_density_settings_visibility(
-                            $("#realm-user-default-settings"),
-                            realm_user_settings_defaults,
-                            data,
-                        );
-                    };
-                }
             }
             save_organization_settings(data, $save_button, patch_url, success_continuation);
         },

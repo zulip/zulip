@@ -13,12 +13,6 @@ import * as group_permission_settings from "./group_permission_settings.ts";
 import type {AssignedGroupPermission, GroupGroupSettingName} from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t} from "./i18n.ts";
-import {
-    LEGACY_FONT_SIZE_PX,
-    LEGACY_LINE_HEIGHT_PERCENT,
-    NON_COMPACT_MODE_FONT_SIZE_PX,
-    NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
-} from "./information_density.ts";
 import * as people from "./people.ts";
 import {
     realm_default_settings_schema,
@@ -692,6 +686,9 @@ export let get_input_element_value = (
             assert(pill_widget !== null);
             return get_group_setting_widget_value(pill_widget);
         }
+        case "info-density-setting":
+            assert(input_elem instanceof HTMLInputElement);
+            return Number.parseInt($(input_elem).val()!, 10);
         default:
             return undefined;
     }
@@ -977,6 +974,11 @@ export function check_realm_default_settings_property_changed(elem: HTMLElement)
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_time_limit_setting_value($(elem), false);
             break;
+        case "web_font_size_px":
+        case "web_line_height_percent":
+            assert(elem instanceof HTMLInputElement);
+            proposed_val = Number.parseInt($(elem).val()!, 10);
+            break;
         default:
             if (current_val !== undefined) {
                 proposed_val = get_input_element_value(elem, typeof current_val);
@@ -1192,15 +1194,6 @@ export function populate_data_for_default_realm_settings_request(
                 const property_name: string = extract_property_name($input_elem, true);
                 assert(typeof input_value !== "object");
                 data[property_name] = input_value;
-
-                if (property_name === "dense_mode") {
-                    data.web_font_size_px = input_value
-                        ? LEGACY_FONT_SIZE_PX
-                        : NON_COMPACT_MODE_FONT_SIZE_PX;
-                    data.web_line_height_percent = input_value
-                        ? LEGACY_LINE_HEIGHT_PERCENT
-                        : NON_COMPACT_MODE_LINE_HEIGHT_PERCENT;
-                }
             }
         }
     }

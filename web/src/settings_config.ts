@@ -196,7 +196,6 @@ export const get_information_density_preferences = (): DisplaySettings => ({
 });
 
 type SettingsRenderOnly = {
-    dense_mode: boolean;
     hide_ai_features: boolean;
     high_contrast_mode: boolean;
     web_font_size_px: boolean;
@@ -205,7 +204,6 @@ type SettingsRenderOnly = {
 
 /* istanbul ignore next */
 export const get_settings_render_only = (): SettingsRenderOnly => ({
-    dense_mode: page_params.development_environment,
     // Offer the UI for hiding AI features exactly when the server
     // supports doing so.
     hide_ai_features: realm.server_can_summarize_topics,
@@ -543,7 +541,6 @@ export const user_role_map = new Map(user_role_array.map((role) => [role.code, r
 
 export const preferences_settings_labels = {
     default_language_settings_label: $t({defaultMessage: "Language"}),
-    dense_mode: $t({defaultMessage: "Compact mode"}),
     display_emoji_reaction_users: new Handlebars.SafeString(
         $t_html({
             defaultMessage:

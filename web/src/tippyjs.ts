@@ -706,7 +706,11 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#personal-menu-dropdown .info-density-button-container",
+        target: [
+            "#personal-menu-dropdown .info-density-button-container",
+            "#user-preferences .info-density-button-container",
+            "#realm-user-default-settings .information-density-settings:not(.disabled-setting) .info-density-button-container",
+        ].join(","),
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         placement: "bottom",
