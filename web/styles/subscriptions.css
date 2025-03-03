@@ -1511,22 +1511,3 @@ div.settings-radio-input-parent {
         }
     }
 }
-
-@media (width <= 500px) {
-    #groups_overlay,
-    #subscription_overlay {
-        .groups_settings_header,
-        .stream_settings_header {
-            display: block;
-            text-align: center;
-            margin-left: 0;
-
-            .tab-container {
-                .ind-tab {
-                    min-width: 85px;
-                    width: auto;
-                }
-            }
-        }
-    }
-}
