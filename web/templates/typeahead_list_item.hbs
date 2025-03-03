@@ -17,16 +17,15 @@
     <i class="typeahead-image zulip-icon zulip-icon-triple-users no-presence-circle" aria-hidden="true"></i>
 {{/if}}
 {{#if is_stream_topic}}
-<div class="typeahead-text-container compose-stream-name">
-    <strong class="typeahead-strong-section">
-        {{~> inline_decorated_stream_name stream=stream_data ~}}
-    </strong>
-    <span role="button" class="conversation-arrow zulip-icon zulip-icon-chevron-right stream-to-topic-arrow"></span>
-</div>
 <div class="typeahead-text-container">
+    <span role="button" class="conversation-arrow zulip-icon zulip-icon-chevron-right stream-to-topic-arrow"></span>
     <strong class="typeahead-strong-section{{#if is_empty_string_topic}} empty-topic-display{{/if}}">
         {{~ topic_display_name ~}}
     </strong>
+</div>
+{{else if is_channel_link}}
+<div class="typeahead-text-container">
+    <em>{{t 'Link to channel' }}</em>
 </div>
 {{else}}
 {{!-- Separate container to ensure overflowing text remains in this container. --}}

@@ -4,10 +4,11 @@ import assert from "minimalistic-assert";
 
 import * as typeahead from "../shared/src/typeahead.ts";
 import type {Emoji, EmojiSuggestion} from "../shared/src/typeahead.ts";
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
 import {MAX_ITEMS, Typeahead} from "./bootstrap_typeahead.ts";
-import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import type {TypeaheadHeaderContext, TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
@@ -797,6 +798,8 @@ export function get_candidates(
     query: string,
     input_element: TypeaheadInputElement,
 ): TypeaheadSuggestion[] {
+    // Reset header context.
+    compose_ui.compose_textarea_typeahead?.setHeaderContext({});
     const split = split_at_cursor(query, input_element.$element);
     let current_token: string | boolean = tokenize_compose_str(split[0]);
     if (current_token === "") {
@@ -971,6 +974,11 @@ export function get_candidates(
             }
             // If we aren't composing to a channel, `sub` would be undefined.
             if (sub !== undefined) {
+                compose_ui.compose_textarea_typeahead?.setHeaderContext({
+                    channel_name: sub.name,
+                    top_placement: true,
+                });
+
                 // We always show topic suggestions after the user types a stream, and let them
                 // pick between just showing the stream (the first option, when nothing follows ">")
                 // or adding a topic.
@@ -1087,7 +1095,9 @@ export function content_highlighter_html(item: TypeaheadSuggestion): string | un
             return typeahead_helper.render_typeahead_item({primary: item.message});
         case "topic_list": {
             if (item.is_channel_link) {
-                return typeahead_helper.render_stream(item.stream_data);
+                return typeahead_helper.render_typeahead_item({
+                    is_channel_link: true,
+                });
             }
             return typeahead_helper.render_stream_topic(item);
         }
@@ -1362,7 +1372,7 @@ export function initialize_topic_edit_typeahead(
     });
 }
 
-function get_header_html(): string | false {
+function get_header_html(channel_name = ""): string | false {
     let tip_text = "";
     switch (completing) {
         case "silent_mention":
@@ -1376,6 +1386,14 @@ function get_header_html(): string | false {
                 );
                 break;
             }
+            return false;
+        case "topic_list":
+            if (channel_name && stream_data.get_sub(channel_name)) {
+                return render_inline_decorated_stream_name({
+                    stream: stream_data.get_sub(channel_name),
+                });
+            }
+
             return false;
         default:
             return false;
@@ -1409,14 +1427,13 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
             stopAdvance: true, // Do not advance to the next field on a Tab or Enter
             select_on_escape_condition: () => completing === "topic_list",
             automated: compose_automated_selection,
-            option_label(_matching_items, item): string | false {
-                if (item.type === "topic_list" && item.is_channel_link) {
-                    return `<em>${$t({defaultMessage: "(link to channel)"})}</em>`;
-                }
-                return false;
-            },
             trigger_selection: compose_trigger_selection,
-            header_html: get_header_html,
+            header_html(context: TypeaheadHeaderContext | undefined): string | false {
+                if (completing === "topic_list" && context?.channel_name) {
+                    return get_header_html(context.channel_name);
+                }
+                return get_header_html();
+            },
             hideAfterSelect() {
                 // After selecting a stream, we immediately show topic options,
                 // so we don't want to hide the typeahead.

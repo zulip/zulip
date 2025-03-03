@@ -202,6 +202,11 @@ const MENU_HTML = '<ul class="typeahead-menu" data-simplebar></ul>';
 const ITEM_HTML = '<li class="typeahead-item"><a class="typeahead-item-link"></a></li>';
 const MIN_LENGTH = 1;
 
+export type TypeaheadHeaderContext = {
+    channel_name?: string;
+    top_placement?: boolean;
+}
+
 export type TypeaheadInputElement =
     | {
           $element: JQuery;
@@ -230,14 +235,14 @@ export class Typeahead<ItemType extends string | object> {
     ) => string | undefined;
     $container: JQuery;
     $menu: JQuery;
-    $header: JQuery;
+    $header?: JQuery;
     source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
     dropup: boolean;
     automated: () => boolean;
     trigger_selection: (event: JQuery.KeyDownEvent) => boolean;
     on_escape: (() => void) | undefined;
     // returns a string to show in typeahead header or false.
-    header_html: () => string | false;
+    header_html: (context?: TypeaheadHeaderContext) => string | false;
     // returns a string to show in typeahead items or false.
     option_label: (matching_items: ItemType[], item: ItemType) => string | false;
     suppressKeyPressRepeat = false;
@@ -267,6 +272,8 @@ export class Typeahead<ItemType extends string | object> {
     hideOnEmptyAfterBackspace: boolean;
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
+    // Additional content to be provided to header.
+    header_context?: TypeaheadHeaderContext;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -285,7 +292,6 @@ export class Typeahead<ItemType extends string | object> {
             $(options.non_tippy_parent_element).append(this.$container);
         }
         this.$menu = $(MENU_HTML).appendTo(this.$container);
-        this.$header = $(HEADER_ELEMENT_HTML).appendTo(this.$container);
         this.source = options.source;
         this.dropup = options.dropup ?? false;
         this.automated = options.automated ?? (() => false);
@@ -366,6 +372,29 @@ export class Typeahead<ItemType extends string | object> {
         return item;
     }
 
+    render_header(): void {
+        // Cleanup any previous appended headers.
+        this.$header?.remove();
+        const header_text_html = this.header_html(this.header_context);
+        if (!header_text_html) {
+            return;
+        }
+
+        if (this.header_context?.top_placement) {
+            this.$header = $(HEADER_ELEMENT_HTML).prependTo(this.$container);
+        } else {
+            this.$header = $(HEADER_ELEMENT_HTML).appendTo(this.$container);
+        }
+
+        const $header_text = this.$header.find("span#typeahead-header-text");
+        if (this.header_context?.channel_name) {
+            $header_text.addClass("typeahead-header-topic-link");
+        }
+
+        $header_text.html(header_text_html);
+        this.$header.show();
+    }
+
     show(): this {
         if (this.shown) {
             return this;
@@ -373,6 +402,7 @@ export class Typeahead<ItemType extends string | object> {
 
         // Call this early to avoid duplicate calls.
         this.shown = true;
+        this.render_header();
         this.mouse_moved_since_typeahead = false;
 
         const input_element = this.input_element;
@@ -560,14 +590,7 @@ export class Typeahead<ItemType extends string | object> {
         // in user's string since once typeahead is shown after `@`,
         // header might change depending on whether next character is
         // `_` (silent mention) or not.
-        const header_text_html = this.header_html();
-
-        if (header_text_html) {
-            this.$header.find("span#typeahead-header-text").html(header_text_html);
-            this.$header.show();
-        } else {
-            this.$header.hide();
-        }
+        this.render_header();
 
         if (this.requireHighlight || this.shouldHighlightFirstResult()) {
             $items[0]!.addClass("active");
@@ -867,6 +890,14 @@ export class Typeahead<ItemType extends string | object> {
         // input position by asking popper to recompute your tooltip's position.
         void this.instance?.popperInstance?.update();
     }
+
+    setHeaderContext(context: TypeaheadHeaderContext): void {
+        this.header_context = context;
+        if (this.shown) {
+            // Re-render the header with the new context.
+            this.render_header()
+        }
+    }
 }
 
 /* TYPEAHEAD PLUGIN DEFINITION
@@ -881,7 +912,7 @@ type TypeaheadOptions<ItemType> = {
     automated?: () => boolean;
     closeInputFieldOnHide?: () => void;
     dropup?: boolean;
-    header_html?: () => string | false;
+    header_html?: (context?: TypeaheadHeaderContext) => string | false;
     helpOnEmptyStrings?: boolean;
     hideOnEmptyAfterBackspace?: boolean;
     matcher?: (item: ItemType, query: string) => boolean;
@@ -905,4 +936,5 @@ type TypeaheadOptions<ItemType> = {
     updateElementContent?: boolean;
     hideAfterSelect?: () => boolean;
     getCustomItemClassname?: (item: ItemType) => string;
+    header_context?: TypeaheadHeaderContext;
 };
