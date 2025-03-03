@@ -10,7 +10,7 @@ from zerver.lib.narrow import BadNarrowOperatorError, InvalidOperatorCombination
 from zerver.lib.narrow_helpers import NarrowTerm, NarrowTermOperandT
 from zerver.lib.streams import get_stream_by_narrow_operand_access_unchecked
 from zerver.lib.topic import DB_TOPIC_NAME
-from zerver.lib.url_encoding import encode_stream
+from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.models.messages import Message
 from zerver.models.realms import Realm
 from zerver.models.streams import Stream
@@ -393,3 +393,12 @@ class Filter:
             raise BadNarrowOperatorError("unknown channel " + str(channel_id_or_name))
 
         return NARROW_FRAGMENT_BASE + f"channel/{encode_stream(channel.id, channel.name)}"
+
+    def generate_topic_url(self) -> str:
+        channel_link = self.generate_channel_url()
+        topics = self.operands("topic")
+        if not len(topics) == 1:
+            raise InvalidOperatorCombinationError("Requires exactly one 'topic' operand")
+        topic_name = topics[0]
+        assert isinstance(topic_name, str)
+        return f"{channel_link}/topic/{hash_util_encode(topic_name)}"
