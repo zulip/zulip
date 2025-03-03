@@ -7,6 +7,7 @@ import render_settings_organization_settings_tip from "../templates/settings/org
 import * as bot_data from "./bot_data.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
 import {$t, get_language_name, language_list} from "./i18n.ts";
+import * as information_density from "./information_density.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
@@ -261,6 +262,10 @@ export function build_page(): void {
         is_plan_self_hosted:
             realm.realm_plan_type === settings_config.realm_plan_types.self_hosted.code,
         has_billing_access: settings_data.user_has_billing_access(),
+        web_line_height_percent_display_value:
+            information_density.get_string_display_value_for_line_height(
+                realm_user_settings_defaults.web_line_height_percent,
+            ),
     };
 
     const rendered_admin_tab = render_admin_tab(options);

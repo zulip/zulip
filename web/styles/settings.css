@@ -468,23 +468,26 @@ input[type="checkbox"] {
 }
 
 .information-density-settings {
-    max-width: 325px;
+    display: flex;
+    gap: 2em;
 
-    .input-group {
+    &.disabled-setting .display-value {
+        opacity: 0.4;
+    }
+
+    .display-value {
+        background-color: var(--color-background-popover);
+        font-size: 1.15em;
+        line-height: 1;
         display: flex;
-        gap: 5px;
-        align-items: baseline;
+        align-items: center;
+        padding: 0.25em 0.375em;
+    }
 
-        label {
-            flex: 1 0 max-content;
-        }
-
-        .settings_text_input {
-            width: 0;
-            flex: 0 0 8ch;
-            margin-left: auto;
-            text-align: right;
-        }
+    .zulip-icon {
+        font-size: 1.15em;
+        width: 1.15em;
+        height: 1.15em;
     }
 }
 
