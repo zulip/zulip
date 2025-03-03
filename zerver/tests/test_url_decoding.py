@@ -226,3 +226,38 @@ class NarrowTermFilterTest(ZulipTestCase):
             InvalidOperatorCombinationError, "Requires exactly one 'channel' operand"
         ):
             channel_url = filter.generate_channel_url()
+
+    def test_generate_topic_url(self) -> None:
+        channel_terms = [
+            NarrowTerm(negated=False, operator="channel", operand=13),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+        ]
+        terms = Filter(channel_terms, self.realm)
+        channel_url = terms.generate_topic_url()
+        self.assertEqual(channel_url, "#narrow/channel/13-Venice/topic/testing")
+
+        channel_terms = [
+            NarrowTerm(negated=False, operator="channel", operand=13),
+            NarrowTerm(
+                negated=False,
+                operator="topic",
+                operand="Broken Inline giphy preview / Messed up with camo :)",
+            ),
+            NarrowTerm(negated=False, operator="near", operand=1),
+        ]
+        terms = Filter(channel_terms, self.realm)
+        channel_url = terms.generate_topic_url()
+        self.assertEqual(
+            channel_url,
+            "#narrow/channel/13-Venice/topic/Broken.20Inline.20giphy.20preview.20.2F.20Messed.20up.20with.20camo.20.3A.29",
+        )
+
+        # No topic operand
+        dm_terms = [
+            NarrowTerm(negated=False, operator="channel", operand=13),
+        ]
+        terms = Filter(dm_terms, self.realm)
+        with self.assertRaisesRegex(
+            InvalidOperatorCombinationError, "Requires exactly one 'topic' operand"
+        ):
+            channel_url = terms.generate_topic_url()
