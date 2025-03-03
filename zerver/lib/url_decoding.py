@@ -5,7 +5,10 @@ from typing import Any
 from urllib.parse import unquote, urlsplit
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
+from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.narrow import BadNarrowOperatorError, InvalidOperatorCombinationError
 from zerver.lib.narrow_helpers import NarrowTerm, NarrowTermOperandT
 from zerver.lib.streams import get_stream_by_narrow_operand_access_unchecked
@@ -402,3 +405,56 @@ class Filter:
         topic_name = topics[0]
         assert isinstance(topic_name, str)
         return f"{channel_link}/topic/{hash_util_encode(topic_name)}"
+
+    def generate_dm_with_url(self) -> str:
+        """
+        Generates a gdm-with link(`#narrow/dm/1,2-group`) if the operand for the
+        `dm` operator contains multiple values or a dm-with(`#narrow/dm/1-foo`)
+        link if only one user.
+        """
+        self._check_either_channel_or_dm_narrow()
+        recipients = self.operands("dm")
+        if not len(recipients) == 1:
+            raise InvalidOperatorCombinationError("Requires exactly one 'dm' operand")
+        users_ids_or_emails = recipients[0]
+
+        # It's impossible for this to be an int at this point, see `reformat_dm_operand`
+        assert not isinstance(users_ids_or_emails, int)
+
+        # GDM with user IDs
+        if isinstance(users_ids_or_emails, list) and len(users_ids_or_emails) > 1:
+            user_ids: list[int] = users_ids_or_emails
+            pm_slug = ",".join([str(user_id) for user_id in sorted(user_ids)]) + "-group"
+            return NARROW_FRAGMENT_BASE + f"dm/{pm_slug}"
+
+        try:
+            # GDM with comma-separated user emails
+            if isinstance(users_ids_or_emails, str):
+                email_list = users_ids_or_emails.split(",")
+                user_profiles = get_user_profiles(
+                    emails=email_list,
+                    realm=self._realm,
+                )
+                user_ids = [user_profile.id for user_profile in user_profiles]
+                pm_slug = ",".join([str(user_id) for user_id in sorted(user_ids)]) + "-group"
+                return NARROW_FRAGMENT_BASE + f"dm/{pm_slug}"
+
+            # DM with a user ID
+            if len(users_ids_or_emails) == 1:
+                user_profiles = get_user_profiles_by_ids(
+                    user_ids=users_ids_or_emails,
+                    realm=self._realm,
+                )
+                full_name = user_profiles[0].full_name
+                pm_slug = str(users_ids_or_emails[0]) + "-" + hash_util_encode(full_name)
+                return NARROW_FRAGMENT_BASE + f"dm/{pm_slug}"
+
+        except (JsonableError, ValidationError):
+            raise BadNarrowOperatorError("unknown user in " + str(users_ids_or_emails))
+
+        # In practice this shouldn't happen, no-op here means its either an empty
+        # string("") or empty list([]) operand which we've filtered out in
+        # `reformat_dm_operand`.
+        raise BadNarrowOperatorError(  # nocoverage
+            "must be a comma-separated emails string or a list of user IDs"
+        )

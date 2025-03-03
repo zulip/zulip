@@ -7,6 +7,7 @@ from zerver.lib.narrow import BadNarrowOperatorError, InvalidOperatorCombination
 from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_decoding import Filter, is_same_server_message_link, parse_narrow_url
+from zerver.lib.url_encoding import hash_util_encode
 from zerver.models.realms import get_realm
 
 NarrowTermFixtureT: TypeAlias = dict[str, dict[str, list[dict[str, Any]]]]
@@ -261,3 +262,51 @@ class NarrowTermFilterTest(ZulipTestCase):
             InvalidOperatorCombinationError, "Requires exactly one 'topic' operand"
         ):
             channel_url = terms.generate_topic_url()
+
+    def test_generate_dm_with_url(self) -> None:
+        hamlet = self.example_user("hamlet")
+        dm_terms = [
+            NarrowTerm(negated=False, operator="dm", operand=[hamlet.id]),
+        ]
+        terms = Filter(dm_terms, self.realm)
+        channel_url = terms.generate_dm_with_url()
+        self.assertEqual(
+            channel_url, f"#narrow/dm/{hamlet.id}-{hash_util_encode(hamlet.full_name)}"
+        )
+
+        iago = self.example_user("iago")
+        user_ids = [hamlet.id, iago.id]
+        dm_terms = [
+            NarrowTerm(negated=False, operator="dm", operand=user_ids),
+        ]
+        terms = Filter(dm_terms, self.realm)
+        channel_url = terms.generate_dm_with_url()
+        self.assertEqual(channel_url, "#narrow/dm/10,11-group")
+
+        emails_string = f"{hamlet.email},{iago.email}"
+        dm_terms = [
+            NarrowTerm(negated=False, operator="dm", operand=emails_string),
+        ]
+        terms = Filter(dm_terms, self.realm)
+        channel_url = terms.generate_dm_with_url()
+        self.assertEqual(channel_url, "#narrow/dm/10,11-group")
+
+        dm_terms = [
+            NarrowTerm(negated=False, operator="dm", operand=emails_string + ",no-face@zulip.com"),
+        ]
+        terms = Filter(dm_terms, self.realm)
+        with self.assertRaisesRegex(
+            BadNarrowOperatorError,
+            "unknown user in user10@zulip.testserver,user11@zulip.testserver,no-face@zulip.com",
+        ):
+            terms.generate_dm_with_url()
+
+        channel_terms = [
+            NarrowTerm(negated=False, operator="channel", operand=13),
+        ]
+        terms = Filter(channel_terms, self.realm)
+        with self.assertRaisesRegex(
+            InvalidOperatorCombinationError,
+            "Requires exactly one 'dm' operand",
+        ):
+            terms.generate_dm_with_url()
