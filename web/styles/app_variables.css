@@ -273,7 +273,9 @@
     --right-column-collapsed-sidebar-width: 10.15em;
     /* 288px at 14px/1em */
     --right-column-max-width: 20.57em;
-    --right-column-width: clamp(10em, 50%, var(--right-column-max-width));
+    /* We open the right sidebar at xl_min at a size of 240px,
+       here expressed as precisely 20% of the viewport. */
+    --right-column-width: min(20%, var(--right-column-max-width));
     --right-sidebar-width: calc(
         var(--right-column-width) - var(--right-sidebar-left-spacing)
     );

@@ -1554,6 +1554,14 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
         display: none;
 
         &.expanded {
+            /* In the extended state, we open the sidebar
+               to its maximum possible size (otherwise, it
+               would be unnecessarily too narrow). */
+            --right-column-width: var(--right-column-max-width);
+            --right-sidebar-width: calc(
+                var(--right-column-max-width) -
+                    var(--right-sidebar-left-spacing)
+            );
             display: block;
             position: absolute;
             float: none;
@@ -1567,9 +1575,8 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
             .right-sidebar {
                 box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
                 border-left: 1px solid var(--color-border-sidebar);
-                padding-right: 15px;
-                padding-left: 15px;
                 height: 100%;
+                width: var(--right-sidebar-width);
                 right: 0;
                 background-color: var(--color-background);
             }
