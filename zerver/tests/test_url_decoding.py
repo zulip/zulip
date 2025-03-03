@@ -189,3 +189,40 @@ class NarrowTermFilterTest(ZulipTestCase):
             "Not a channel message nor a direct message",
         ):
             Filter(invalid_terms, self.realm)._check_either_channel_or_dm_narrow()
+
+    def test_generate_channel_url(self) -> None:
+        channel_terms = [
+            NarrowTerm(negated=False, operator="channel", operand=13),
+        ]
+        filter = Filter(channel_terms, self.realm)
+        channel_url = filter.generate_channel_url()
+        self.assertEqual(channel_url, "#narrow/channel/13-Venice")
+
+        channel_terms = [
+            NarrowTerm(negated=False, operator="channel", operand="Venice"),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="near", operand=1),
+        ]
+        filter = Filter(channel_terms, self.realm)
+        channel_url = filter.generate_channel_url()
+        self.assertEqual(channel_url, "#narrow/channel/13-Venice")
+
+        # Unknown channel
+        channel_terms = [
+            NarrowTerm(negated=False, operator="channel", operand="Venus"),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="near", operand=1),
+        ]
+        filter = Filter(channel_terms, self.realm)
+        with self.assertRaisesRegex(BadNarrowOperatorError, "unknown channel Venus"):
+            filter.generate_channel_url()
+
+        # No channel operand
+        dm_terms = [
+            NarrowTerm(negated=False, operator="dm", operand=13),
+        ]
+        filter = Filter(dm_terms, self.realm)
+        with self.assertRaisesRegex(
+            InvalidOperatorCombinationError, "Requires exactly one 'channel' operand"
+        ):
+            channel_url = filter.generate_channel_url()
