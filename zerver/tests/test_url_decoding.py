@@ -255,3 +255,49 @@ class NarrowTermFilterTest(ZulipTestCase):
             InvalidOperatorCombinationError, "Requires exactly one 'topic' operand"
         ):
             channel_url = terms.generate_topic_url()
+
+    def test_generate_dm_with_url(self) -> None:
+        hamlet = self.example_user("hamlet")
+        dm_terms = [
+            NarrowTerm(negated=False, operator="dm", operand=[hamlet.id]),
+        ]
+        terms = Filter(dm_terms, self.realm)
+        channel_url = terms.generate_dm_with_url()
+        self.assertEqual(channel_url, "/#narrow/dm/10-user10.40zulip.2Etestserver")
+
+        iago = self.example_user("iago")
+        user_ids = [hamlet.id, iago.id]
+        dm_terms = [
+            NarrowTerm(negated=False, operator="dm", operand=user_ids),
+        ]
+        terms = Filter(dm_terms, self.realm)
+        channel_url = terms.generate_dm_with_url()
+        self.assertEqual(channel_url, "/#narrow/dm/10,11-group")
+
+        emails_string = f"{hamlet.email},{iago.email}"
+        dm_terms = [
+            NarrowTerm(negated=False, operator="dm", operand=emails_string),
+        ]
+        terms = Filter(dm_terms, self.realm)
+        channel_url = terms.generate_dm_with_url()
+        self.assertEqual(channel_url, "/#narrow/dm/10,11-group")
+
+        dm_terms = [
+            NarrowTerm(negated=False, operator="dm", operand=emails_string + ",no-face@zulip.com"),
+        ]
+        terms = Filter(dm_terms, self.realm)
+        with self.assertRaisesRegex(
+            BadNarrowOperatorError,
+            "unknown user in user10@zulip.testserver,user11@zulip.testserver,no-face@zulip.com",
+        ):
+            terms.generate_dm_with_url()
+
+        channel_terms = [
+            NarrowTerm(negated=False, operator="channel", operand=13),
+        ]
+        terms = Filter(channel_terms, self.realm)
+        with self.assertRaisesRegex(
+            InvalidOperatorCombinationError,
+            "Must be exactly one 'dm' operand",
+        ):
+            terms.generate_dm_with_url()
