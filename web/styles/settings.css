@@ -507,6 +507,7 @@ input[type="checkbox"] {
         display: flex;
         align-items: center;
         cursor: pointer;
+        flex-wrap: wrap;
 
         .stream_setting_subsection_title {
             margin: 4px 8px;
