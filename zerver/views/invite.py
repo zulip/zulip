@@ -115,6 +115,8 @@ def access_user_groups_for_invite(
                 user_groups.append(user_group)
 
     return user_groups
+
+
 @require_member_or_admin
 @typed_endpoint
 def invite_users_backend(
@@ -132,7 +134,6 @@ def invite_users_backend(
     group_ids: Json[list[int]] | None = None,
     include_realm_default_subscriptions: Json[bool] = False,
 ) -> HttpResponse:
-
     # Moved permissions checks to a helper function to not violate SOLID principles
     validate_invite_permissions(user_profile, invite_as)
     # Moved email stuff to help with readability and maintainability (and SOLID)
@@ -157,7 +158,6 @@ def invite_users_backend(
 
 
 def validate_invite_permissions(user_profile: UserProfile, invite_as: int) -> None:
-
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
         # be handled by the decorator above.
@@ -174,7 +174,6 @@ def validate_invite_permissions(user_profile: UserProfile, invite_as: int) -> No
 
 
 def parse_invitee_emails(invitee_emails_raw: str) -> set[str]:
-
     if not invitee_emails_raw:
         raise JsonableError(_("You must specify at least one email address."))
     return get_invitee_emails_set(invitee_emails_raw)
@@ -189,8 +188,7 @@ def process_invite(
     invite_expires_in_minutes: int | None,
     include_realm_default_subscriptions: bool,
     invite_as: int,
-) -> set[str]:
-
+) -> list[tuple[str, str, bool]]:
     return do_invite_users(
         user_profile,
         invitee_emails,
@@ -203,8 +201,9 @@ def process_invite(
     )
 
 
-def handle_invite_response(request: HttpRequest, skipped: set[str]) -> HttpResponse:
-
+def handle_invite_response(
+    request: HttpRequest, skipped: list[tuple[str, str, bool]]
+) -> HttpResponse:
     if skipped:
         raise InvitationError(
             _(
@@ -216,7 +215,6 @@ def handle_invite_response(request: HttpRequest, skipped: set[str]) -> HttpRespo
             sent_invitations=True,
         )
     return json_success(request)
-
 
 
 def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
