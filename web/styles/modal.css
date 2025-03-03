@@ -130,9 +130,15 @@
     flex-direction: column;
     /* 16px at 14px/1em */
     font-size: 1.1429em;
-    overflow-y: auto;
     padding: 2px 24px;
     line-height: 1.5;
+    /* Prevent the appearance of a horizontal
+       native scrollbar at certain
+       info-density/zoom levels. */
+    overflow: hidden auto;
+    /* Set a max-width, less the 24px of left and right
+       padding specified above. */
+    max-width: calc(100% - 48px);
 
     &.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid hsl(0deg 0% 87%);
