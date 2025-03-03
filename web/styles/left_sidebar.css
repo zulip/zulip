@@ -369,6 +369,16 @@
         background-color: var(--color-background-sidebar-action-heading-hover);
     }
 
+    &:has(a.left-sidebar-navigation-label-container:focus-visible) {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
+
+    .left-sidebar-navigation-label-container:focus {
+        outline: none;
+    }
+
     &.active-filter,
     &.top-left-active-filter,
     &.active-sub-filter {
@@ -378,9 +388,15 @@
     }
 }
 
+#stream_filters .narrow-filter:has(a.stream-name:focus-visible),
 #stream_filters .narrow-filter.highlighted_stream {
     &.active-filter > .bottom_left_row {
         background-color: var(--color-background-hover-narrow-filter);
+    }
+
+    & > .bottom_left_row {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
     }
 
     &.active-filter .topic-list .bottom_left_row {
@@ -389,6 +405,28 @@
 
     .bottom_left_row:not(.active-sub-filter) {
         background-color: var(--color-background-hover-narrow-filter);
+    }
+}
+
+#stream_filters
+    .narrow-filter
+    .topic-list
+    .bottom_left_row:has(a.sidebar-topic-name:focus-visible),
+#direct-messages-list
+    .dm-list
+    .bottom_left_row:has(a.conversation-partners:focus-visible) {
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: -2px;
+    background-color: var(--color-background-hover-narrow-filter);
+}
+
+#stream_filters .narrow-filter,
+#direct-messages-list .bottom_left_row {
+    a.stream-name:focus,
+    a.sidebar-topic-name:focus,
+    a.conversation-partners:focus {
+        outline: none;
+        text-decoration: none;
     }
 }
 
