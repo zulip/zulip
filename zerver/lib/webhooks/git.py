@@ -432,3 +432,14 @@ def get_all_committers(commits_data: list[dict[str, Any]]) -> list[tuple[str, in
         committers_items.append(("others", others_number_of_commits))
 
     return committers_items
+
+
+def is_branch_name_notifiable(branch: str, branches: str | None) -> bool:
+    """
+    Check if the branch name is in the list of branches to notify.
+    This helper function is used in all Git-related integrations that
+    support branch filtering.
+    """
+    return branches is None or branch in {
+        branch_name.strip() for branch_name in branches.split(",")
+    }

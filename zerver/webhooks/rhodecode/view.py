@@ -9,7 +9,11 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, get_push_commits_event_message
+from zerver.lib.webhooks.git import (
+    TOPIC_WITH_BRANCH_TEMPLATE,
+    get_push_commits_event_message,
+    is_branch_name_notifiable,
+)
 from zerver.models import UserProfile
 
 
@@ -49,7 +53,7 @@ def get_event_name(payload: WildValue, branches: str | None) -> str | None:
     event_name = payload["event"]["name"].tame(check_string)
     if event_name == "repo-push" and branches is not None:
         branch = get_push_branch_name(payload)
-        if branches.find(branch) == -1:
+        if not is_branch_name_notifiable(branch, branches):
             return None
     if event_name in EVENT_FUNCTION_MAPPER:
         return event_name

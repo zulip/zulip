@@ -18,10 +18,6 @@ Get Wekan notifications in Zulip!
 
 ![](/static/images/integrations/wekan/001.png)
 
-### Configuration options
-
-{!git-branches-additional-feature.md!}
-
 ### Related documentation
 
 {!webhooks-url-specification.md!}

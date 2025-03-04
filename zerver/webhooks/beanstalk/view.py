@@ -9,7 +9,11 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, get_push_commits_event_message
+from zerver.lib.webhooks.git import (
+    TOPIC_WITH_BRANCH_TEMPLATE,
+    get_push_commits_event_message,
+    is_branch_name_notifiable,
+)
 from zerver.models import UserProfile
 
 
@@ -66,7 +70,8 @@ def api_beanstalk_webhook(
     # 'uri' key that is only present for Git repos
     git_repo = "uri" in payload
     if git_repo:
-        if branches is not None and branches.find(payload["branch"].tame(check_string)) == -1:
+        branch = payload["branch"].tame(check_string)
+        if not is_branch_name_notifiable(branch, branches):
             return json_success(request)
 
         topic_name, content = build_message_from_gitlog(

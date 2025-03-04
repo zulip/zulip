@@ -5,7 +5,11 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, get_push_commits_event_message
+from zerver.lib.webhooks.git import (
+    TOPIC_WITH_BRANCH_TEMPLATE,
+    get_push_commits_event_message,
+    is_branch_name_notifiable,
+)
 from zerver.models import UserProfile
 
 
@@ -48,7 +52,7 @@ def api_bitbucket_webhook(
         )
     else:
         branch = payload["commits"][-1]["branch"].tame(check_string)
-        if branches is not None and branches.find(branch) == -1:
+        if not is_branch_name_notifiable(branch, branches):
             return json_success(request)
 
         committer = payload.get("user", "Someone").tame(check_string)
