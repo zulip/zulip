@@ -544,6 +544,19 @@ body.has-overlay-scrollbar {
     top: 0;
 }
 
+.app-main .column-right.expanded,
+.app-main .column-left.expanded {
+    /* We share a baseline z-index to make
+       sure overlays respect the .topmost-overlay
+       below. */
+    z-index: 10;
+}
+
+.app-main .column-right.expanded.topmost-overlay,
+.app-main .column-left.expanded.topmost-overlay {
+    z-index: 15;
+}
+
 #message_feed_container,
 .app-main .column-left .left-sidebar,
 .app-main .column-right .right-sidebar {
@@ -1784,6 +1797,20 @@ body:not(.hide-left-sidebar) {
     }
 }
 
+@container app (width <= $cq_ml_min) {
+    .column-right.expanded,
+    .column-left.expanded {
+        width: 100vw;
+        max-width: 100%;
+    }
+
+    .app-main .column-right.expanded .right-sidebar,
+    .app-main .column-left.expanded .left-sidebar {
+        width: 100vw;
+        max-width: 100%;
+    }
+}
+
 @container header-container (width <= $cq_sm_min) {
     .narrow_description {
         display: none;
@@ -1867,6 +1894,22 @@ body:not(.hide-left-sidebar) {
         #scheduled_message_indicator,
         #compose-content {
             margin-left: 7px;
+        }
+    }
+}
+
+@media (width <= $ml_min) {
+    .without-container-query-support {
+        .column-right.expanded,
+        .column-left.expanded {
+            width: 100vw;
+            max-width: 100%;
+        }
+
+        .app-main .column-right.expanded .right-sidebar,
+        .app-main .column-left.expanded .left-sidebar {
+            width: 100vw;
+            max-width: 100%;
         }
     }
 }

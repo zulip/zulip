@@ -44,11 +44,13 @@ export let left_sidebar_expanded_as_overlay = false;
 export let right_sidebar_expanded_as_overlay = false;
 
 export function hide_userlist_sidebar(): void {
-    $(".app-main .column-right").removeClass("expanded");
+    const $userlist_sidebar = $(".app-main .column-right");
+    $userlist_sidebar.removeClass("expanded topmost-overlay");
     right_sidebar_expanded_as_overlay = false;
 }
 
 export function show_userlist_sidebar(): void {
+    const $streamlist_sidebar = $(".app-main .column-left");
     const $userlist_sidebar = $(".app-main .column-right");
     if ($userlist_sidebar.css("display") !== "none") {
         // Return early if the right sidebar is already visible.
@@ -62,14 +64,24 @@ export function show_userlist_sidebar(): void {
     }
 
     $userlist_sidebar.addClass("expanded");
+    if (left_sidebar_expanded_as_overlay) {
+        $userlist_sidebar.addClass("topmost-overlay");
+        $streamlist_sidebar.removeClass("topmost-overlay");
+    }
     fix_invite_user_button_flicker();
     resize.resize_page_components();
     right_sidebar_expanded_as_overlay = true;
 }
 
 export function show_streamlist_sidebar(): void {
+    const $userlist_sidebar = $(".app-main .column-right");
+    const $streamlist_sidebar = $(".app-main .column-left");
     // Left sidebar toggle icon is attached to middle column.
     $(".app-main .column-left, #navbar-middle").addClass("expanded");
+    if (right_sidebar_expanded_as_overlay) {
+        $streamlist_sidebar.addClass("topmost-overlay");
+        $userlist_sidebar.removeClass("topmost-overlay");
+    }
     resize.resize_stream_filters_container();
     left_sidebar_expanded_as_overlay = true;
 }
@@ -90,7 +102,9 @@ export function show_left_sidebar(): void {
 }
 
 export function hide_streamlist_sidebar(): void {
+    const $streamlist_sidebar = $(".app-main .column-left");
     $(".app-main .column-left, #navbar-middle").removeClass("expanded");
+    $streamlist_sidebar.removeClass("topmost-overlay");
     left_sidebar_expanded_as_overlay = false;
 }
 
