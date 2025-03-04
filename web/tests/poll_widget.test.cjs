@@ -252,8 +252,6 @@ run_test("activate another person poll", ({mock_template}) => {
     const $poll_option_container = set_widget_find_result(".poll-option-bar");
 
     const $poll_vote_button = set_widget_find_result("button.poll-vote");
-    const $poll_please_wait = set_widget_find_result(".poll-please-wait");
-    const $poll_author_help = set_widget_find_result(".poll-author-help");
 
     set_widget_find_result("button.poll-question-remove");
     set_widget_find_result("input.poll-question");
@@ -266,8 +264,6 @@ run_test("activate another person poll", ({mock_template}) => {
     assert.ok(!$poll_question_container.visible());
     assert.ok(!$poll_question_submit.visible());
     assert.ok(!$poll_edit_question.visible());
-    assert.ok(!$poll_please_wait.visible());
-    assert.ok(!$poll_author_help.visible());
 
     assert.equal($widget_elem.html(), "widgets/poll_widget");
     assert.equal($widget_option_container.html(), "widgets/poll_widget_results");
@@ -366,8 +362,6 @@ run_test("activate own poll", ({mock_template}) => {
     const $poll_option_container = set_widget_find_result(".poll-option-bar");
 
     set_widget_find_result("button.poll-vote");
-    const $poll_please_wait = set_widget_find_result(".poll-please-wait");
-    const $poll_author_help = set_widget_find_result(".poll-author-help");
 
     set_widget_find_result("button.poll-question-remove");
 
@@ -376,8 +370,6 @@ run_test("activate own poll", ({mock_template}) => {
         assert.ok($poll_question_header.visible());
         assert.ok(!$poll_question_container.visible());
         assert.ok($poll_edit_question.visible());
-        assert.ok(!$poll_please_wait.visible());
-        assert.ok(!$poll_author_help.visible());
     }
 
     poll_widget.activate(opts);

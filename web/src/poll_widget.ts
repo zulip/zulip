@@ -60,10 +60,6 @@ export function activate({
         const question = poll_data.get_question();
         const input_mode = poll_data.get_input_mode();
         const can_edit = is_my_poll && !input_mode;
-        const has_question = question.trim() !== "";
-        const can_vote = has_question;
-        const waiting = !is_my_poll && !has_question;
-        const author_help = is_my_poll && !has_question;
 
         $elem.find(".poll-question-header").toggle(!input_mode);
         $elem.find(".poll-question-header").text(question);
@@ -71,11 +67,7 @@ export function activate({
         update_edit_controls();
 
         $elem.find(".poll-question-bar").toggle(input_mode);
-        $elem.find(".poll-option-bar").toggle(can_vote);
-
-        $elem.find(".poll-please-wait").toggle(waiting);
-
-        $elem.find(".poll-author-help").toggle(author_help);
+        $elem.find(".poll-option-bar").show();
     }
 
     function start_editing(): void {
