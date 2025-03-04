@@ -865,7 +865,7 @@ export class Filter {
             if (term.operand === undefined) {
                 return false;
             }
-            if (!hash_parser.allowed_web_public_narrows.includes(term.operator)) {
+            if (!hash_parser.allowed_web_public_narrow_operators.includes(term.operator)) {
                 return false;
             }
         }

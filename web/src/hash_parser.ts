@@ -116,7 +116,7 @@ export function is_in_specified_hash_category(hash_categories: string[]): boolea
     return hash_categories.includes(main_hash);
 }
 
-export const allowed_web_public_narrows = [
+export const allowed_web_public_narrow_operators = [
     "channels",
     "channel",
     "streams",
@@ -157,7 +157,7 @@ export function is_spectator_compatible(hash: string): boolean {
 
     if (main_hash === "narrow") {
         const hash_section = get_hash_section(hash);
-        if (!allowed_web_public_narrows.includes(hash_section)) {
+        if (!allowed_web_public_narrow_operators.includes(hash_section)) {
             return false;
         }
         return true;
