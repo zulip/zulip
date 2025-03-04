@@ -1,57 +1,16 @@
-{{~#each parts ~}}
-
-    {{#if (eq this.type "plain_text")~}}
-        {{~this.content~}}
-    {{else if (eq this.type "channel_topic")}}
-        {{~!-- squash whitespace --~}}
-        channel {{this.channel}} > {{this.topic}}
-        {{~!-- squash whitespace --~}}
-    {{else if (eq this.type "invalid_has")}}
-        {{~!-- squash whitespace --~}}
-        invalid {{this.operand}} operand for has operator
-        {{~!-- squash whitespace --~}}
-    {{else if (eq this.type "prefix_for_operator")}}
-        {{~!-- squash whitespace --~}}
-        {{this.prefix_for_operator}} {{this.operand}}{{#if (or (eq this.operand "link") (eq this.operand "image") (eq this.operand "attachment") (eq this.operand "reaction"))}}s{{/if}}
-        {{~!-- squash whitespace --~}}
-    {{else if (eq this.type "user_pill")}}
-        {{~!-- squash whitespace --~}}
-        {{this.operator}}
-        {{~#each this.users}}
-            {{#if this.valid_user}}
-                {{> user_pill .}}
-            {{else}}
-                {{this.operand}}
-            {{/if}}
-        {{~/each~}}
-        {{~!-- squash whitespace --~}}
-    {{else if (eq this.type "is_operator")}}
-        {{#if (eq this.operand "mentioned")}}
-            {{~!-- squash whitespace --~}}
-            {{this.verb}}@-mentions
-            {{~!-- squash whitespace --~}}
-        {{else if (or (eq this.operand "starred") (eq this.operand "alerted") (eq this.operand "unread"))}}
-            {{~!-- squash whitespace --~}}
-            {{this.verb}}{{this.operand}} messages
-            {{~!-- squash whitespace --~}}
-        {{else if (or (eq this.operand "dm") (eq this.operand "private"))}}
-            {{~!-- squash whitespace --~}}
-            {{this.verb}}direct messages
-            {{~!-- squash whitespace --~}}
-        {{else if (eq this.operand "resolved")}}
-            {{~!-- squash whitespace --~}}
-            {{this.verb}}topics marked as resolved
-            {{~!-- squash whitespace --~}}
-        {{else if (eq this.operand "followed")}}
-            {{~!-- squash whitespace --~}}
-            {{this.verb}}followed topics
-            {{~!-- squash whitespace --~}}
+{{#if (eq type "channel_topic")}}
+    {{~!-- squash whitespace --~}}
+    {{t 'channel' }} {{channel}} > {{topic}}
+    {{~!-- squash whitespace --~}}
+{{else if (eq type "user_pill")}}
+    {{~!-- squash whitespace --~}}
+    {{operator}}
+    {{~#each users}}
+        {{#if this.valid_user}}
+            {{> user_pill user_pill_context=this.user_pill_context}}
         {{else}}
-            {{~!-- squash whitespace --~}}
-            invalid {{this.operand}} operand for is operator
-            {{~!-- squash whitespace --~}}
-        {{~/if~}}
-    {{~/if~}}
-    {{~#if (not @last)~}}, {{/if~}}
-
-{{~/each~}}
+            {{this.operand}}
+        {{/if}}
+    {{~/each~}}
+    {{~!-- squash whitespace --~}}
+{{~/if~}}

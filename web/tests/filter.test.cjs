@@ -1478,137 +1478,131 @@ test("unparse", () => {
     assert_same_terms(Filter.parse(string), terms);
 });
 
-test("describe", ({mock_template}) => {
+test("describe", () => {
     let narrow;
     let string;
-    mock_template("search_description.hbs", true, (_data, html) => html);
 
     narrow = [{operator: "channels", operand: "public"}];
-    string = "channels public";
+    string = "translated: channels public";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "channels", operand: "public", negated: true}];
-    string = "exclude channels public";
+    string = "translated: exclude channels public";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
-    const devel_id = new_stream_id();
-    make_sub("devel", devel_id);
-
     narrow = [
-        {operator: "channel", operand: devel_id.toString()},
+        {operator: "channel", operand: "devel"},
         {operator: "is", operand: "starred"},
     ];
-    string = "channel devel, starred messages";
+    string = "translated: channel devel, translated: starred messages";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
-    const river_id = new_stream_id();
-    make_sub("river", river_id);
     narrow = [
-        {operator: "channel", operand: river_id.toString()},
+        {operator: "channel", operand: "river"},
         {operator: "is", operand: "unread"},
     ];
-    string = "channel river, unread messages";
+    string = "translated: channel river, translated: unread messages";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
-        {operator: "channel", operand: devel_id.toString()},
+        {operator: "channel", operand: "devel"},
         {operator: "topic", operand: "JS"},
     ];
-    string = "channel devel > JS";
+    string = "translated: channel devel, translated: topic JS";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "is", operand: "dm"},
         {operator: "search", operand: "lunch"},
     ];
-    string = "direct messages, search for lunch";
+    string = "translated: direct messages, translated: search for lunch";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "id", operand: 99}];
-    string = "message ID 99";
+    string = "translated: message ID 99";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "in", operand: "home"}];
-    string = "messages in home";
+    string = "translated: messages in home";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "is", operand: "mentioned"}];
-    string = "@-mentions";
+    string = "translated: @-mentions";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "is", operand: "alerted"}];
-    string = "alerted messages";
+    string = "translated: alerted messages";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "is", operand: "resolved"}];
-    string = "topics marked as resolved";
+    string = "translated: topics marked as resolved";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "is", operand: "followed"}];
-    string = "followed topics";
+    string = "translated: followed topics";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "is", operand: "something_we_do_not_support"}];
-    string = "invalid something_we_do_not_support operand for is operator";
+    string = "translated: invalid something_we_do_not_support operand for is operator";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     // this should be unreachable, but just in case
     narrow = [{operator: "bogus", operand: "foo"}];
-    string = "unknown operator";
+    string = "translated: unknown operator";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
-        {operator: "channel", operand: devel_id.toString()},
+        {operator: "channel", operand: "devel"},
         {operator: "topic", operand: "JS", negated: true},
     ];
-    string = "channel devel, exclude topic JS";
+    string = "translated: channel devel, translated: exclude topic JS";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "is", operand: "dm"},
         {operator: "search", operand: "lunch", negated: true},
     ];
-    string = "direct messages, exclude lunch";
+    string = "translated: direct messages, translated: exclude lunch";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
-        {operator: "channel", operand: devel_id.toString()},
+        {operator: "channel", operand: "devel"},
         {operator: "is", operand: "starred", negated: true},
     ];
-    string = "channel devel, exclude starred messages";
+    string = "translated: channel devel, translated: exclude starred messages";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
-        {operator: "channel", operand: devel_id.toString()},
+        {operator: "channel", operand: "devel"},
         {operator: "has", operand: "image", negated: true},
     ];
-    string = "channel devel, exclude messages with images";
+    string = "translated: channel devel, translated: exclude messages with images";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "has", operand: "abc", negated: true},
-        {operator: "channel", operand: devel_id.toString()},
+        {operator: "channel", operand: "devel"},
     ];
-    string = "invalid abc operand for has operator, channel devel";
+    string = "translated: invalid abc operand for has operator, translated: channel devel";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "has", operand: "image", negated: true},
-        {operator: "channel", operand: devel_id.toString()},
+        {operator: "channel", operand: "devel"},
     ];
-    string = "exclude messages with images, channel devel";
+    string = "translated: exclude messages with images, translated: channel devel";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [];
-    string = "combined feed";
+    string = "translated: combined feed";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     // canonical version of the operator is used in description
     narrow = [
-        {operator: "stream", operand: devel_id.toString()},
+        {operator: "stream", operand: "devel"},
         {operator: "subject", operand: "JS", negated: true},
     ];
-    string = "channel devel, exclude topic JS";
+    string = "translated: channel devel, translated: exclude topic JS";
     assert.equal(Filter.search_description_as_html(narrow), string);
 });
 

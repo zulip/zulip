@@ -391,22 +391,20 @@ test("empty_query_suggestions", () => {
     function describe(q) {
         return suggestions.lookup_table.get(q).description_html;
     }
-    assert.equal(describe("is:dm"), "Direct messages");
-    assert.equal(describe("is:starred"), "Starred messages");
-    assert.equal(describe("is:mentioned"), "@-mentions");
-    assert.equal(describe("is:alerted"), "Alerted messages");
-    assert.equal(describe("is:unread"), "Unread messages");
-    assert.equal(describe("is:resolved"), "Topics marked as resolved");
-    assert.equal(describe("is:followed"), "Followed topics");
-    assert.equal(describe("sender:myself@zulip.com"), "Sent by me");
-    assert.equal(describe("has:link"), "Messages with links");
-    assert.equal(describe("has:image"), "Messages with images");
-    assert.equal(describe("has:attachment"), "Messages with attachments");
+    assert.equal(describe("is:dm"), "Translated: direct messages");
+    assert.equal(describe("is:starred"), "Translated: starred messages");
+    assert.equal(describe("is:mentioned"), "Translated: @-mentions");
+    assert.equal(describe("is:alerted"), "Translated: alerted messages");
+    assert.equal(describe("is:unread"), "Translated: unread messages");
+    assert.equal(describe("is:resolved"), "Translated: topics marked as resolved");
+    assert.equal(describe("is:followed"), "Translated: followed topics");
+    assert.equal(describe("sender:myself@zulip.com"), "Translated: sent by me");
+    assert.equal(describe("has:link"), "Translated: messages with links");
+    assert.equal(describe("has:image"), "Translated: messages with images");
+    assert.equal(describe("has:attachment"), "Translated: messages with attachments");
 });
 
-test("has_suggestions", ({override, mock_template}) => {
-    mock_template("search_description.hbs", true, (_data, html) => html);
-
+test("has_suggestions", ({override}) => {
     // Checks that category wise suggestions are displayed instead of a single
     // default suggestion when suggesting `has` operator.
     let query = "h";
@@ -422,17 +420,17 @@ test("has_suggestions", ({override, mock_template}) => {
         return suggestions.lookup_table.get(q).description_html;
     }
 
-    assert.equal(describe("has:link"), "Messages with links");
-    assert.equal(describe("has:image"), "Messages with images");
-    assert.equal(describe("has:attachment"), "Messages with attachments");
+    assert.equal(describe("has:link"), "Translated: messages with links");
+    assert.equal(describe("has:image"), "Translated: messages with images");
+    assert.equal(describe("has:attachment"), "Translated: messages with attachments");
 
     query = "-h";
     suggestions = get_suggestions(query);
     expected = ["-h", "-has:link", "-has:image", "-has:attachment", "-has:reaction"];
     assert.deepEqual(suggestions.strings, expected);
-    assert.equal(describe("-has:link"), "Exclude messages with links");
-    assert.equal(describe("-has:image"), "Exclude messages with images");
-    assert.equal(describe("-has:attachment"), "Exclude messages with attachments");
+    assert.equal(describe("-has:link"), "Translated: exclude messages with links");
+    assert.equal(describe("-has:image"), "Translated: exclude messages with images");
+    assert.equal(describe("-has:attachment"), "Translated: exclude messages with attachments");
 
     // operand suggestions follow.
 
@@ -464,7 +462,6 @@ test("has_suggestions", ({override, mock_template}) => {
 });
 
 test("check_is_suggestions", ({override, mock_template}) => {
-    mock_template("search_description.hbs", true, (_data, html) => html);
     mock_template("user_pill.hbs", true, (_data, html) => html);
 
     override(narrow_state, "stream_id", noop);
@@ -491,14 +488,13 @@ test("check_is_suggestions", ({override, mock_template}) => {
         return suggestions.lookup_table.get(q).description_html;
     }
 
-    assert.equal(describe("is:dm"), "Direct messages");
-    assert.equal(describe("is:starred"), "Starred messages");
-    assert.equal(describe("is:mentioned"), "@-mentions");
-    assert.equal(describe("is:alerted"), "Alerted messages");
-    assert.equal(describe("is:unread"), "Unread messages");
-    assert.equal(describe("is:resolved"), "Topics marked as resolved");
-    assert.equal(describe("is:followed"), "Followed topics");
-
+    assert.equal(describe("is:dm"), "Translated: direct messages");
+    assert.equal(describe("is:starred"), "Translated: starred messages");
+    assert.equal(describe("is:mentioned"), "Translated: @-mentions");
+    assert.equal(describe("is:alerted"), "Translated: alerted messages");
+    assert.equal(describe("is:unread"), "Translated: unread messages");
+    assert.equal(describe("is:resolved"), "Translated: topics marked as resolved");
+    assert.equal(describe("is:followed"), "Translated: followed topics");
     query = "-i";
     suggestions = get_suggestions(query);
     expected = [
@@ -513,13 +509,13 @@ test("check_is_suggestions", ({override, mock_template}) => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    assert.equal(describe("-is:dm"), "Exclude direct messages");
-    assert.equal(describe("-is:starred"), "Exclude starred messages");
-    assert.equal(describe("-is:mentioned"), "Exclude @-mentions");
-    assert.equal(describe("-is:alerted"), "Exclude alerted messages");
-    assert.equal(describe("-is:unread"), "Exclude unread messages");
-    assert.equal(describe("-is:resolved"), "Exclude topics marked as resolved");
-    assert.equal(describe("-is:followed"), "Exclude followed topics");
+    assert.equal(describe("-is:dm"), "Translated: exclude direct messages");
+    assert.equal(describe("-is:starred"), "Translated: exclude starred messages");
+    assert.equal(describe("-is:mentioned"), "Translated: exclude @-mentions");
+    assert.equal(describe("-is:alerted"), "Translated: exclude alerted messages");
+    assert.equal(describe("-is:unread"), "Translated: exclude unread messages");
+    assert.equal(describe("-is:resolved"), "Translated: exclude topics marked as resolved");
+    assert.equal(describe("-is:followed"), "Translated: exclude followed topics");
 
     // operand suggestions follow.
 
@@ -569,7 +565,7 @@ test("sent_by_me_suggestions", ({override, mock_template}) => {
     assert.ok(suggestions.strings.includes("sender:myself@zulip.com"));
     assert.equal(
         suggestions.lookup_table.get("sender:myself@zulip.com").description_html,
-        "Sent by me",
+        "Translated: sent by me",
     );
 
     query = "sender";
@@ -676,7 +672,7 @@ test("topic_suggestions", ({override, mock_template}) => {
     function describe(q) {
         return suggestions.lookup_table.get(q).description_html;
     }
-    assert.equal(describe("te"), "Search for <strong>te</strong>");
+    assert.equal(describe("te"), "Translated: search for <strong>te</strong>");
     assert.equal(describe(`channel:${office_id} topic:team`), "Channel office > team");
 
     suggestions = get_suggestions(`topic:staplers channel:${office_id}`);
@@ -773,8 +769,7 @@ test("topic_suggestions (limits)", () => {
     assert_result("z", []);
 });
 
-test("whitespace_glitch", ({override, mock_template}) => {
-    mock_template("search_description.hbs", true, (_data, html) => html);
+test("whitespace_glitch", ({override}) => {
     const office_stream_id = new_stream_id();
 
     const query = "channel:office "; // note trailing space
@@ -911,9 +906,9 @@ test("people_suggestions", ({override, mock_template}) => {
             suggestions.lookup_table.get(q).description_html.startsWith(description_html_start),
         );
     }
-    test_describe("dm:ted@zulip.com", "Direct messages with");
-    test_describe("sender:ted@zulip.com", "Sent by");
-    test_describe("dm-including:ted@zulip.com", "Direct messages including");
+    test_describe("dm:ted@zulip.com", "Translated: direct messages with");
+    test_describe("sender:ted@zulip.com", "Translated: sent by");
+    test_describe("dm-including:ted@zulip.com", "Translated: direct messages including");
 
     let expectedString = "<strong>Te</strong>d Smith";
 
