@@ -22,6 +22,8 @@ const message_lists = zrequire("message_lists");
 const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
+const {all_visibility_policies} = zrequire("user_topics");
+const user_topics = zrequire("user_topics");
 
 set_current_user({});
 const realm = {};
@@ -55,6 +57,7 @@ function set_filter(terms) {
         operator: op[0],
         operand: op[1],
     }));
+    const should_show_muted_placeholder = terms.some((term) => term.operator === "muted stream");
     message_lists.set_current({
         data: {
             filter: new Filter(terms),
@@ -62,6 +65,7 @@ function set_filter(terms) {
                 has_found_newest: () => true,
             },
         },
+        show_muted_placeholder: () => should_show_muted_placeholder,
     });
 }
 
@@ -594,6 +598,31 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         empty_narrow_html(
             "translated: There are no messages here.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+        ),
+    );
+
+    const muted_stream_id = 101;
+    const muted_stream = {
+        name: "muted stream",
+        stream_id: muted_stream_id,
+    };
+    const muted_topics = ["topic 1", "topic 2"];
+    const current_timestamp = Date.now();
+    for (const topic of muted_topics) {
+        user_topics.update_user_topics(
+            muted_stream.stream_id,
+            muted_stream.name,
+            topic,
+            all_visibility_policies.MUTED,
+            current_timestamp,
+        );
+    }
+    set_filter([["muted stream", muted_stream.toString()]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: This feed is empty, because you have muted all the topics in this channel.",
         ),
     );
 
