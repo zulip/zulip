@@ -3,10 +3,10 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as compose_validate from "./compose_validate.ts";
+import type {Filter} from "./filter.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type {NarrowBannerData, SearchData} from "./narrow_error.ts";
 import {narrow_error} from "./narrow_error.ts";
-import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as spectators from "./spectators.ts";
@@ -62,10 +62,8 @@ const STARRED_MESSAGES_VIEW_EMPTY_BANNER = {
     ),
 };
 
-function retrieve_search_query_data(): SearchData {
+function retrieve_search_query_data(current_filter: Filter): SearchData {
     // when search bar contains multiple filters, only retrieve search queries
-    const current_filter = narrow_state.filter();
-    assert(current_filter !== undefined);
     const search_query = current_filter.operands("search")[0];
     const query_words = search_query!.split(" ");
 
@@ -107,7 +105,7 @@ function retrieve_search_query_data(): SearchData {
     return search_string_result;
 }
 
-export function pick_empty_narrow_banner(): NarrowBannerData {
+export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerData {
     const default_banner = {
         title: $t({defaultMessage: "There are no messages here."}),
         // Spectators cannot start a conversation.
@@ -127,11 +125,6 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
     };
     const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
 
-    const current_filter = narrow_state.filter();
-    if (current_filter === undefined) {
-        // We're in either the inbox or recent conversations view.
-        return default_banner;
-    }
     if (current_filter.is_in_home()) {
         // We're in the combined feed view.
         return {
@@ -197,7 +190,7 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
         if (current_filter.operands("search").length > 0) {
             return {
                 title: default_banner_for_multiple_filters,
-                search_data: retrieve_search_query_data(),
+                search_data: retrieve_search_query_data(current_filter),
             };
         }
 
@@ -323,7 +316,7 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
             // You are narrowed to empty search results.
             return {
                 title: $t({defaultMessage: "No search results."}),
-                search_data: retrieve_search_query_data(),
+                search_data: retrieve_search_query_data(current_filter),
             };
         }
         case "dm": {
@@ -483,9 +476,9 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
     return default_banner;
 }
 
-export function show_empty_narrow_message(): void {
+export function show_empty_narrow_message(current_filter: Filter): void {
     $(".empty_feed_notice_main").empty();
-    const rendered_narrow_banner = narrow_error(pick_empty_narrow_banner());
+    const rendered_narrow_banner = narrow_error(pick_empty_narrow_banner(current_filter));
     $(".empty_feed_notice_main").html(rendered_narrow_banner);
 }
 
