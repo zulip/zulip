@@ -60,6 +60,19 @@ export function is_white_space_pre(paste_html: string): boolean {
     );
 }
 
+function is_from_mac_terminal(html_fragment: HTMLBodyElement): boolean {
+    const html_tag = html_fragment.parentElement;
+    if (!html_tag || html_tag.nodeName !== "HTML") {
+        return false;
+    }
+
+    const has_mac_terminal_metadata = [...html_tag.querySelectorAll("meta")].some(
+        (meta) => meta.name === "Generator" && meta.content?.includes("Cocoa HTML Writer"),
+    );
+
+    return has_mac_terminal_metadata;
+}
+
 function is_from_excel(html_fragment: HTMLBodyElement): boolean {
     const html_tag = html_fragment.parentElement;
     if (!html_tag || html_tag.nodeName !== "HTML") {
@@ -118,6 +131,11 @@ export function paste_handler_converter(
         .parseFromString(paste_html, "text/html")
         .querySelector("body");
     assert(copied_html_fragment !== null);
+
+    // If the copied content is from Mac Terminal, we use its text content directly
+    if (is_from_mac_terminal(copied_html_fragment)) {
+        paste_html = copied_html_fragment.textContent ?? "";
+    }
 
     const copied_within_single_element = within_single_element(copied_html_fragment);
     const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE"];
