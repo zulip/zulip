@@ -2140,10 +2140,10 @@ body:not(.hide-left-sidebar) {
 }
 
 .dropdown-list-container .dropdown-list .dropdown-list-item-common-styles {
+    position: relative;
     display: flex;
     color: var(--color-dropdown-item);
     padding: 3px 10px 3px 8px;
-    gap: 4px;
     font-weight: 400;
     line-height: var(--base-line-height-unitless);
     white-space: normal;
@@ -2160,16 +2160,10 @@ body:not(.hide-left-sidebar) {
     }
 
     .dropdown-list-delete {
+        position: absolute;
+        top: 0;
+        right: 5px;
         visibility: hidden;
-        float: right;
-        margin-right: 5px;
-        cursor: pointer;
-        /* hsl(359deg 93% 39%) corresponds to var(--red-550) */
-        color: color-mix(in oklch, hsl(359deg 93% 39%) 70%, transparent);
-
-        &:hover {
-            color: hsl(359deg 93% 39%);
-        }
     }
 
     &:focus,
