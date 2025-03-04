@@ -29,7 +29,7 @@ import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
-function get_formatted_sub_count(sub_count: number): string {
+function get_formatted_user_count(sub_count: number): string {
     if (sub_count < 1000) {
         return sub_count.toString();
     }
@@ -396,9 +396,9 @@ export class BuddyList extends BuddyListConf {
         const subscriber_section_user_count =
             total_human_subscribers_count - all_participant_ids.size;
 
-        const formatted_participants_count = get_formatted_sub_count(all_participant_ids.size);
-        const formatted_matching_users_count = get_formatted_sub_count(subscriber_section_user_count);
-        const formatted_other_users_count = get_formatted_sub_count(other_users_count);
+        const formatted_participants_count = get_formatted_user_count(all_participant_ids.size);
+        const formatted_matching_users_count = get_formatted_user_count(subscriber_section_user_count);
+        const formatted_other_users_count = get_formatted_user_count(other_users_count);
 
         $("#buddy-list-participants-container .buddy-list-heading-user-count").text(
             formatted_participants_count,
@@ -449,7 +449,7 @@ export class BuddyList extends BuddyListConf {
                 render_section_header({
                     id: "buddy-list-participants-section-heading",
                     header_text: $t({defaultMessage: "THIS CONVERSATION"}),
-                    user_count: get_formatted_sub_count(all_participant_ids.size),
+                    user_count: get_formatted_user_count(all_participant_ids.size),
                     is_collapsed: this.participants_is_collapsed,
                 }),
             ),
@@ -462,7 +462,7 @@ export class BuddyList extends BuddyListConf {
                     header_text: current_sub
                         ? $t({defaultMessage: "THIS CHANNEL"})
                         : $t({defaultMessage: "THIS CONVERSATION"}),
-                    user_count: get_formatted_sub_count(
+                    user_count: get_formatted_user_count(
                         total_human_subscribers_count - all_participant_ids.size,
                     ),
                     is_collapsed: this.users_matching_view_is_collapsed,
@@ -475,7 +475,7 @@ export class BuddyList extends BuddyListConf {
                 render_section_header({
                     id: "buddy-list-other-users-section-heading",
                     header_text: $t({defaultMessage: "OTHERS"}),
-                    user_count: get_formatted_sub_count(other_users_count),
+                    user_count: get_formatted_user_count(other_users_count),
                     is_collapsed: this.other_users_is_collapsed,
                 }),
             ),
