@@ -1335,6 +1335,10 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 
 .empty-feed-notice-description {
     font-size: 1.1em;
+
+    span {
+        word-wrap: break-word;
+    }
 }
 
 .message-fade,
