@@ -63,12 +63,12 @@
                 padding: 2px;
                 margin: 0;
 
-                height: 12px;
-                width: 12px;
+                font-size: 1.3em; /* 18.2px / 14px em */
+                height: 0.6593em; /* 12px at 18.2px / em */
+                width: 0.6593em; /* 12px at 18.2px / em */
 
                 font-weight: 300;
                 line-height: 0.8;
-                font-size: 1.3rem;
                 text-align: center;
                 border: 2px solid hsl(156deg 28% 70%);
 
