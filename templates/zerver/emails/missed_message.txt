@@ -9,7 +9,7 @@
 {% else %}
 {% if message_content_disabled_by_realm %}
 {% trans hide_content_url=realm_url + "/help/hide-message-content-in-emails" %}
-This email does not include message content because your organization has disabled message content appearing in email notifications.
+This email does not include message content because your organization hides message content in email notifications.
 See {{ hide_content_url }} for more details.
 {% endtrans %}
 {% elif message_content_disabled_by_user %}
@@ -41,6 +41,7 @@ See {{ alert_notif_url }} for more details.
 
 {% if reply_to_zulip  %}
 {% trans %}Reply to this email directly, or view it in {{ realm_name }} Zulip:{% endtrans %}
+
 
 {{ narrow_url }}
 {% elif not show_message_content %}
