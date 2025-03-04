@@ -1,6 +1,8 @@
 <form class="preferences-settings-form">
     {{>preferences_general .}}
 
+    {{#if for_realm_settings}}{{> preferences_realm_privacy .}}{{/if}}
+
     {{>preferences_emoji .}}
 
     {{>preferences_navigation .}}
