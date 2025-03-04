@@ -24,12 +24,12 @@ async function user_row(page: Page, name: string): Promise<string> {
     return `.user_row[data-user-id="${CSS.escape(user_id.toString())}"]`;
 }
 
-async function test_reactivation_confirmation_modal(page: Page, fullname: string): Promise<void> {
+async function test_reactivation_confirmation_modal(page: Page): Promise<void> {
     await common.wait_for_micromodal_to_open(page);
 
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
-        "Reactivate " + fullname,
+        "Reactivate Deleted user",
         "Unexpected title for reactivate user modal",
     );
     assert.strictEqual(
@@ -41,8 +41,11 @@ async function test_reactivation_confirmation_modal(page: Page, fullname: string
     await common.wait_for_micromodal_to_close(page);
 }
 
-async function test_deactivate_user(page: Page): Promise<void> {
-    const cordelia_user_row = await user_row(page, common.fullname.cordelia);
+async function test_deactivate_user(
+    page: Page,
+    fullname: string = common.fullname.cordelia,
+): Promise<void> {
+    const cordelia_user_row = await user_row(page, fullname);
     await page.waitForSelector(cordelia_user_row, {visible: true});
     await page.waitForSelector(cordelia_user_row + " .fa-user-times");
     await page.click(cordelia_user_row + " .deactivate");
@@ -50,7 +53,7 @@ async function test_deactivate_user(page: Page): Promise<void> {
 
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
-        "Deactivate " + common.fullname.cordelia + "?",
+        "Deactivate " + fullname + "?",
         "Unexpected title for deactivate user modal",
     );
     assert.strictEqual(
@@ -68,16 +71,16 @@ async function test_reactivate_user(page: Page): Promise<void> {
     await page.waitForSelector(cordelia_user_row + " .fa-user-plus");
     await page.click(cordelia_user_row + " .reactivate");
 
-    await test_reactivation_confirmation_modal(page, common.fullname.cordelia);
+    await test_reactivation_confirmation_modal(page);
 
     await page.waitForSelector(cordelia_user_row + ":not(.deactivated_user)", {visible: true});
-    cordelia_user_row = await user_row(page, common.fullname.cordelia);
+    cordelia_user_row = await user_row(page, "Deleted user");
     await page.waitForSelector(cordelia_user_row + " .fa-user-times");
 }
 
 async function test_deactivated_users_section(page: Page): Promise<void> {
-    const cordelia_user_row = await user_row(page, common.fullname.cordelia);
-    await test_deactivate_user(page);
+    const cordelia_user_row = await user_row(page, "Deleted user");
+    await test_deactivate_user(page, "Deleted user");
 
     // "Deactivated users" section doesn't render just deactivated users until reloaded.
     await page.reload();
@@ -96,7 +99,7 @@ async function test_deactivated_users_section(page: Page): Promise<void> {
     );
     await page.click("#admin_deactivated_users_table " + cordelia_user_row + " .reactivate");
 
-    await test_reactivation_confirmation_modal(page, common.fullname.cordelia);
+    await test_reactivation_confirmation_modal(page);
 
     await page.waitForSelector(
         "#admin_deactivated_users_table " + cordelia_user_row + " button:not(.reactivate)",
@@ -129,7 +132,7 @@ async function test_bot_deactivation_and_reactivation(page: Page): Promise<void>
     await page.waitForSelector(default_bot_user_row + " .fa-user-plus");
 
     await page.click(default_bot_user_row + " .reactivate");
-    await test_reactivation_confirmation_modal(page, "Zulip Default Bot");
+    await test_reactivation_confirmation_modal(page);
     await page.waitForSelector(default_bot_user_row + ":not(.deactivated_user)", {visible: true});
     await page.waitForSelector(default_bot_user_row + " .fa-user-times");
 }
