@@ -67,6 +67,7 @@ const message_render_response_schema = z.object({
     msg: z.string(),
     result: z.string(),
     rendered: z.string(),
+    rerender: z.boolean(),
 });
 
 export let compose_spinner_visible = false;
@@ -1329,6 +1330,29 @@ export function render_and_show_preview(
         rendered_markdown.update_elements($preview_content_box);
     }
 
+    function render_message(content: string, render_link: boolean): void {
+        void channel.post({
+            url: "/json/messages/render",
+            data: {content, render_link},
+            success(response_data) {
+                const data = message_render_response_schema.parse(response_data);
+                if (markdown.contains_backend_only_syntax(content)) {
+                    loading.destroy_indicator($preview_spinner);
+                }
+                show_preview(data.rendered, content);
+                if (data.rerender) {
+                    render_message(content, true);
+                }
+            },
+            error() {
+                if (markdown.contains_backend_only_syntax(content)) {
+                    loading.destroy_indicator($preview_spinner);
+                }
+                show_preview($t_html({defaultMessage: "Failed to generate preview"}));
+            },
+        });
+    }
+
     if (content.length === 0) {
         show_preview($t_html({defaultMessage: "Nothing to preview"}));
     } else {
@@ -1346,22 +1370,6 @@ export function render_and_show_preview(
             // authoritative backend rendering from the server).
             markdown.render(content);
         }
-        void channel.post({
-            url: "/json/messages/render",
-            data: {content},
-            success(response_data) {
-                const data = message_render_response_schema.parse(response_data);
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
-                show_preview(data.rendered, content);
-            },
-            error() {
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
-                show_preview($t_html({defaultMessage: "Failed to generate preview"}));
-            },
-        });
+        render_message(content, false);
     }
 }
