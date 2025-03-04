@@ -639,7 +639,10 @@
 
     .popover-menu-link:not(.display-style-selector-header) {
         display: grid;
-        grid-template: "left-icon row-content" auto / 18px 1fr;
+        grid-template: "left-icon row-content" auto / 18px minmax(
+                max-content,
+                1fr
+            );
         align-items: center;
 
         .popover-menu-icon,
