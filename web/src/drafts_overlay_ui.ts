@@ -150,6 +150,9 @@ export function launch(): void {
     function get_header_for_narrow_drafts(): string {
         const {stream_name, topic, private_recipients} = drafts.current_recipient_data();
         if (private_recipients) {
+            if (!private_recipients.includes(",") && people.is_current_user(private_recipients)) {
+                return $t({defaultMessage: "Drafts from conversation with yourself"});
+            }
             return $t(
                 {defaultMessage: "Drafts from conversation with {recipient}"},
                 {
