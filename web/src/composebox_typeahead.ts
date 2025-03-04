@@ -43,6 +43,7 @@ import * as user_pill from "./user_pill.ts";
 import type {UserPillData} from "./user_pill.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
+import { toggle_user_group_info_popover } from "./user_group_popover.ts";
 
 /* Maximum channel name length + link syntax (#**>**) + some topic characters */
 const MAX_LOOKBACK_FOR_TYPEAHEAD_COMPLETION = 60 + 6 + 20;
@@ -1159,6 +1160,11 @@ export function content_typeahead_selected(
                 let user_group_mention_text = is_silent ? "@_*" : "@*";
                 user_group_mention_text += item.name + "* ";
                 beginning += user_group_mention_text;
+                compose_validate.warn_if_mentioning_unsubscribed_group(
+                    item,
+                    $textbox,
+                    is_silent ?? false,
+                );
                 // We could theoretically warn folks if they are
                 // mentioning a user group that literally has zero
                 // members where we are posting to, but we don't have
@@ -1446,7 +1452,11 @@ export function initialize({
         handle_keydown(e, on_enter_send);
     });
     $("form#send_message_form").on("keyup", handle_keyup);
-
+    // Already in your codebase:
+    $("body").on("click", ".view_user_group_mention", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        toggle_user_group_info_popover(this, undefined);
+    });
     const stream_message_typeahead_input: TypeaheadInputElement = {
         $element: $("input#stream_message_recipient_topic"),
         type: "input",
