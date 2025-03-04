@@ -138,23 +138,6 @@ as needed.
 
 {end_tabs}
 
-## Deactivate a user group
-
-{start_tabs}
-
-{tab|desktop-web}
-
-{relative|group|all}
-
-1. Select a user group.
-
-1. Click the **Deactivate group** (<i class="zulip-icon zulip-icon-user-group-x"></i>) button in the
-   upper right corner of the user group settings panel.
-
-1. Click **Confirm**.
-
-{end_tabs}
-
 ## Configure who can create user groups
 
 {!admin-only.md!}
@@ -205,5 +188,6 @@ group.
 * [View group members](/help/view-group-members)
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Create user groups](/help/create-user-groups)
+* [Deactivate a user group](/help/deactivate-a-user-group)
 * [Moving to Zulip](/help/moving-to-zulip)
 * [User roles](/help/user-roles)
