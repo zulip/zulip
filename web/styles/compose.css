@@ -322,7 +322,8 @@
         );
     grid-template-areas: "message-content composebox-buttons";
     border-radius: 4px;
-    border: 1px solid var(--color-message-content-container-border);
+    /* 1px at 20px/1em */
+    border: max(1px, 0.05em) solid var(--color-message-content-container-border);
     transition: border-color 0.2s ease;
 
     &:has(.new_message_textarea:focus) {
@@ -485,8 +486,9 @@
     border-radius: 0 0 3px 3px;
     background-color: var(--color-message-formatting-controls-container);
     /* margin on either side to let the border of
-       .message-content-container show through. */
-    margin: 0 1px;
+       .message-content-container show through.
+       1px at 20px/1em */
+    margin: 0 max(1px, 0.05em);
 }
 
 .compose-scrolling-buttons-container {
