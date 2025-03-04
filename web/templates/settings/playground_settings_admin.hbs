@@ -54,9 +54,13 @@
                         <label for="playground_url_template"> {{t "URL template" }}</label>
                         <input type="text" id="playground_url_template" class="settings_text_input" name="url_template" placeholder="https://play.rust-lang.org/?code={code}" />
                     </div>
-                    <button type="submit" id="submit_playground_button" class="button rounded sea-green">
-                        {{t 'Add code playground' }}
-                    </button>
+                    {{> ../components/action_button
+                      id="submit_playground_button"
+                      label=(t "Add code playground")
+                      attention="quiet"
+                      intent="brand"
+                      type="submit"
+                      }}
                 </div>
             </div>
         </form>

@@ -49,11 +49,14 @@
               is_editable_by_current_user = is_admin
               image = realm_icon_url }}
         </div>
-        <a href="/login/?preview=true" target="_blank" rel="noopener noreferrer" class="button rounded sea-green block" id="id_org_profile_preview">
-            {{t 'Preview organization profile' }}
-            <i class="fa fa-external-link" aria-hidden="true"></i>
-        </a>
-
+        {{> ../components/action_button
+          label=(t "Preview organization profile")
+          custom_classes="block"
+          id="id_org_profile_preview"
+          icon="external-link"
+          attention="quiet"
+          intent="brand"
+          }}
         <div class="subsection-header">
             <h3>{{t "Organization logo" }}
                 {{> ../help_link_widget link="/help/create-your-organization-profile#add-a-wide-logo" }}

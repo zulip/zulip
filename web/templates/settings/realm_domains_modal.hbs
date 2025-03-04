@@ -15,7 +15,14 @@
                     <span class="rendered-checkbox"></span>
                 </label>
             </td>
-            <td><button type="button" class="button sea-green small rounded" id="submit-add-realm-domain">{{t "Add" }}</button></td>
+            <td>
+                {{> ../components/action_button
+                  label=(t "Add")
+                  id="submit-add-realm-domain"
+                  attention="quiet"
+                  intent="brand"
+                  }}
+            </td>
         </tr>
     </tfoot>
 </table>
