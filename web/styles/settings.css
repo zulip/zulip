@@ -1721,6 +1721,11 @@ label.preferences-radio-choice-label {
     }
 }
 
+.profile-field-choices-wrapper > .alphabetize-choices-button {
+    display: block;
+    margin: 12px 0 0;
+}
+
 .custom_user_field,
 .bot_owner_user_field {
     .pill-container {
