@@ -75,6 +75,7 @@ const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
 const drafts_overlay_ui = zrequire("drafts_overlay_ui");
 const timerender = zrequire("timerender");
+const components = zrequire("components");
 
 const mock_current_timestamp = 1234;
 const stream_id = 30;
@@ -272,7 +273,10 @@ test("initialize", ({override_rewire}) => {
 
     drafts.initialize();
     drafts.initialize_ui();
-    drafts_overlay_ui.initialize();
+    drafts_overlay_ui.initialize({
+        on_send_message_success: (request, data) => {}, 
+        send_message: (request, on_success, error) => {}, 
+    });
 });
 
 test("update_draft", ({override, override_rewire}) => {
@@ -618,7 +622,20 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     $.create("#drafts_table .overlay-message-row", {children: []});
-    $(".draft-selection-checkbox").filter = () => [];
+    $(".outbox-selection-checkbox").filter = () => [];
+    $(".draft-selection-checkbox").filter = () => [];  
+    
+    const $drafts_table = $("#drafts_table");
+    const $rendered_drafts = $("<div>").addClass("message_content rendered_markdown restore-overlay-message");
+    $drafts_table.set_find_results(".message_content.rendered_markdown.restore-overlay-message", $rendered_drafts);
+
+    $rendered_drafts.each = (callback) => {
+        callback.call($rendered_drafts[0]);
+        return $rendered_drafts;
+    };
+
+    override(rendered_markdown, "update_elements", noop);
+    
     drafts_overlay_ui.launch();
 
     $.clear_all_elements();
@@ -637,6 +654,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
 
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
+    $(".outbox-selection-checkbox").filter = () => [];
     $(".draft-selection-checkbox").filter = () => [];
     drafts_overlay_ui.launch();
 });
