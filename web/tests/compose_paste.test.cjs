@@ -114,7 +114,11 @@ run_test("paste_handler_converter", () => {
     /*
         Pasting from another Zulip message
     */
-
+    global.document = window.document;
+    global.window = window;
+    global.Node = window.Node;
+    global.HTMLElement = window.HTMLElement;
+    global.HTMLAnchorElement = window.HTMLAnchorElement;
     // Bold text
     let input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><span style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;"><span> </span>love the<span> </span><b>Zulip</b><b> </b></span><b style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;">Organization</b><span style="color: hsl(0, 0%, 13%); font-family: arial, sans-serif; font-size: 12.8px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%); text-decoration-style: initial; text-decoration-color: initial;">.</span>';
@@ -129,9 +133,6 @@ run_test("paste_handler_converter", () => {
     assert.equal(compose_paste.paste_handler_converter(input), "The `JSDOM` constructor");
 
     // A python code block
-    global.document = window.document;
-    global.window = window;
-    global.Node = window.Node;
     input = `<meta http-equiv="content-type" content="text/html; charset=utf-8"><p>zulip code block in python</p><div class="codehilite zulip-code-block" data-code-language="Python"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s2">"hello"</span><span class="p">)</span>\n<span class="nb">print</span><span class="p">(</span><span class="s2">"world"</span><span class="p">)</span></code></pre></div></meta>`;
     assert.equal(
         compose_paste.paste_handler_converter(input),
@@ -222,6 +223,19 @@ run_test("paste_handler_converter", () => {
         compose_paste.paste_handler_converter(input),
         "* bulleted\n* nested\n  * nested level 1\n  * nested level 1 continue\n    * nested level 2\n    * nested level 2 continue",
     );
+
+    // Heading from https://arxiv.org/abs/1301.3191
+    input =
+        '<html><body><!--StartFragment--><h1 class="title mathjax" style="font-size: 1.8em !important; font-weight: 700; line-height: 27.9936px; display: block; margin-block: 12px; margin: 0.25em 0px 12px 20px; margin-inline: 20px 0px; color: rgb(0, 0, 0); font-family: &quot;Lucida Grande&quot;, Helvetica, Arial, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Enriched categories as a free cocompletion</h1><br class="Apple-interchange-newline"><!--EndFragment--></body></html>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "Enriched categories as a free cocompletion",
+    );
+
+    // Heading from https://www.sciencedirect.com/science/article/pii/S0001870815004715
+    input =
+        '<html><body><!--StartFragment--><h2 class="section-title u-h4 u-margin-l-top u-margin-xs-bottom" style="box-sizing: border-box; margin-top: 32px !important; margin-right: 0px; margin-bottom: 8px !important; margin-left: 0px; padding: 0px; font-weight: normal !important; font-size: 20px !important; line-height: var(--sd-ui-line-height) !important; color: rgb(31, 31, 31); font-family: ElsevierGulliver, Georgia, "Times New Roman", Times, STIXGeneral, "Cambria Math", "Lucida Sans Unicode", "Microsoft Sans Serif", "Segoe UI Symbol", "Arial Unicode MS", serif, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Abstract</h2><div id="as0010" style="box-sizing: border-box; margin: 0px; padding: 0px; color: rgb(31, 31, 31); font-family: ElsevierGulliver, Georgia, "Times New Roman", Times, STIXGeneral, "Cambria Math", "Lucida Sans Unicode", "Microsoft Sans Serif", "Segoe UI Symbol", "Arial Unicode MS", serif, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><br class="Apple-interchange-newline"><!--EndFragment--></body></html>';
+    assert.equal(compose_paste.paste_handler_converter(input), "Abstract");
 
     // 2 paragraphs with line break/s in between
     input =
