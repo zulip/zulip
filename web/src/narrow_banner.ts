@@ -297,31 +297,18 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
             }
             // fallthrough to default case if no match is found
             break;
-        case "channel":
-            if (!stream_data.is_subscribed(Number.parseInt(first_operand, 10))) {
-                // You are narrowed to a stream which does not exist or is a private stream
-                // in which you were never subscribed.
-
+        case "channel": {
+            const stream_sub = stream_data.get_sub_by_id_string(first_operand);
+            if (!stream_sub?.subscribed) {
+                // You are narrowed to a channel that either does not exist,
+                // is private, or a channel you're not currently subscribed to.
                 if (page_params.is_spectator) {
                     spectators.login_to_access(true);
                     return SPECTATOR_STREAM_NARROW_BANNER;
                 }
-
-                function can_toggle_narrowed_stream(): boolean | undefined {
-                    const stream_name = narrow_state.stream_name();
-
-                    if (!stream_name) {
-                        return false;
-                    }
-
-                    const stream_sub = stream_data.get_sub_by_id_string(first_operand);
-                    return stream_sub && stream_data.can_toggle_subscription(stream_sub);
-                }
-
-                if (can_toggle_narrowed_stream()) {
+                if (stream_sub && stream_data.can_toggle_subscription(stream_sub)) {
                     return default_banner;
                 }
-
                 return {
                     title: $t({
                         defaultMessage:
@@ -331,6 +318,7 @@ export function pick_empty_narrow_banner(): NarrowBannerData {
             }
             // else fallthrough to default case
             break;
+        }
         case "search": {
             // You are narrowed to empty search results.
             return {
