@@ -1,3 +1,9 @@
+.with-container-query-support {
+    #message-lists-container {
+        container: message-lists / inline-size;
+    }
+}
+
 .message_row {
     display: grid;
     /* Prevent the messagebox column from overflowing the 1fr
