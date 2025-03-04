@@ -1663,7 +1663,6 @@ textarea.new_message_textarea {
         }
 
         .dropdown-list-item-description {
-            white-space: nowrap;
             font-weight: 400;
             font-size: 0.9283em; /* 13px at 14px/em */
             opacity: 0.8;

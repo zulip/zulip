@@ -1420,3 +1420,22 @@ input.invalid-input {
         box-shadow: var(--color-invalid-input-box-shadow);
     }
 }
+
+/* This is a utility class for line clamping. */
+.line-clamp {
+    /* Despite the below prefixed properties being deprecated,
+       the co-dependency of these three properties is a fully
+       specified behavior and will continue to be supported.
+       Reference: https://developer.mozilla.org/en-US/docs/Web/CSS/line-clamp */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    /* The value of --line-clamp-value is not defined globally and instead
+       inherits the value from another class or the parent element. If it
+       is not defined, it defaults to 2. */
+    -webkit-line-clamp: var(--line-clamp-value, 2);
+    /* Also define the standard property 'line-clamp' for compatibility,
+       for when the vendor prefix "-webkit-" is no longer required. */
+    line-clamp: var(--line-clamp-value, 2);
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
