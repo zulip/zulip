@@ -160,7 +160,10 @@ export function is_spectator_compatible(hash: string): boolean {
     const main_hash = get_hash_category(hash);
 
     if (main_hash === "narrow") {
-        const hash_section = get_hash_section(hash);
+        let hash_section = get_hash_section(hash);
+        if (hash_section.startsWith("-")) {
+            hash_section = hash_section.slice(1);
+        }
         if (!is_an_allowed_web_public_narrow(hash_section)) {
             return false;
         }
