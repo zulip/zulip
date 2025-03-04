@@ -88,7 +88,7 @@ class OpenAPIToolsTest(ZulipTestCase):
             description="The target message's ID.\n",
             json_encoded=False,
             value_schema={"type": "integer"},
-            example=43,
+            example=44,
             required=True,
             deprecated=False,
         )
