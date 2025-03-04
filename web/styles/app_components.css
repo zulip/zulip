@@ -362,7 +362,7 @@ div.overlay {
     opacity: 0;
     visibility: hidden;
 
-    transition: none 0.2s ease-in;
+    transition: 0.2s ease-in;
     transition-property: opacity, visibility;
     overflow: hidden;
 
@@ -686,7 +686,7 @@ input.settings_text_input {
 
 .animated-purple-button {
     color: hsl(0deg 0% 100%);
-    transition: none 80ms linear;
+    transition: 80ms linear;
     transition-property: background-color, box-shadow;
     box-shadow: none;
     /* This color just passes WCAG AA */
@@ -737,7 +737,7 @@ input.settings_text_input {
             transition: color 0.2s ease;
         }
 
-        transition: none 0.2s ease;
+        transition: 0.2s ease;
         transition-property: background-color, color;
     }
 

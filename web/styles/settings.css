@@ -1844,7 +1844,7 @@ label.preferences-radio-choice-label {
                 color: hsl(0deg 0% 67%);
                 padding: 2px 10px;
                 cursor: pointer;
-                transition: none 0.3s ease;
+                transition: 0.3s ease;
                 transition-property: opacity, transform;
             }
 
