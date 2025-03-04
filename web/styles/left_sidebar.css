@@ -623,8 +623,12 @@ li.active-sub-filter {
     justify-content: center;
 
     .left-sidebar-navigation-condensed-item {
-        /* 24px minimum width from Vlad's design. */
-        flex: 1 0 24px;
+        /* 24px minimum width from Vlad's design.
+           however, we want to permit growing and
+           shrinking to keep icons reasonably spaced
+           across different information-density
+           settings. */
+        flex: 1 1 24px;
         /* Unset padding from individual top_left items */
         padding: 0;
         border-radius: 4px;
