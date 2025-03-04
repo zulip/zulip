@@ -166,6 +166,9 @@ export class BuddyList extends BuddyListConf {
     current_filter: Filter | undefined | "unset" = "unset";
 
     initialize_tooltips(): void {
+        const total_human_subscribers_count = (): number =>
+            this.render_data.total_human_subscribers_count;
+
         $("#right-sidebar").on(
             "mouseenter",
             ".buddy-list-heading",
@@ -197,12 +200,6 @@ export class BuddyList extends BuddyListConf {
                     showOnCreate: true,
                     onShow(instance) {
                         let tooltip_text;
-                        const current_sub = narrow_state.stream_sub();
-                        const pm_ids_set = narrow_state.pm_ids_set();
-                        const total_human_subscribers_count = get_total_human_subscriber_count(
-                            current_sub,
-                            pm_ids_set,
-                        );
                         const participant_count = Number.parseInt(
                             $("#buddy-list-participants-section-heading").attr("data-user-count")!,
                             10,
@@ -223,15 +220,15 @@ export class BuddyList extends BuddyListConf {
                                         defaultMessage:
                                             "{N, plural, one {# other subscriber} other {# other subscribers}}",
                                     },
-                                    {N: total_human_subscribers_count - participant_count},
+                                    {N: total_human_subscribers_count() - participant_count},
                                 );
-                            } else if (current_sub) {
+                            } else if (narrow_state.stream_sub()) {
                                 tooltip_text = $t(
                                     {
                                         defaultMessage:
                                             "{N, plural, one {# subscriber} other {# subscribers}}",
                                     },
-                                    {N: total_human_subscribers_count},
+                                    {N: total_human_subscribers_count()},
                                 );
                             } else {
                                 tooltip_text = $t(
@@ -239,12 +236,12 @@ export class BuddyList extends BuddyListConf {
                                         defaultMessage:
                                             "{N, plural, one {# participant} other {# participants}}",
                                     },
-                                    {N: total_human_subscribers_count},
+                                    {N: total_human_subscribers_count()},
                                 );
                             }
                         } else {
                             const other_users_count =
-                                people.get_active_human_count() - total_human_subscribers_count;
+                                people.get_active_human_count() - total_human_subscribers_count();
                             tooltip_text = $t(
                                 {
                                     defaultMessage:
