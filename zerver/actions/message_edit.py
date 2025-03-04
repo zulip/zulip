@@ -856,20 +856,46 @@ def do_update_message(
         subscriptions = get_active_subscriptions_for_stream_id(
             message_edit_request.target_stream.id, include_deactivated_users=False
         )
-        # We exclude long-term idle users, since they by
-        # definition have no active clients.
-        subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
-        # Remove duplicates by excluding the id of users already
-        # in users_to_be_notified list.  This is the case where a
-        # user both has a UserMessage row and is a current
-        # Subscriber
-        subscriptions = subscriptions.exclude(
-            user_profile_id__in=[um.user_profile_id for um in unmodified_user_messages]
-        )
 
+        def exclude_duplicates_from_subscription(
+            subs: QuerySet[Subscription],
+        ) -> QuerySet[Subscription]:
+            # We exclude long-term idle users, since they by
+            # definition have no active clients.
+            subs = subs.exclude(user_profile__long_term_idle=True)
+            # Remove duplicates by excluding the id of users already
+            # in users_to_be_notified list.  This is the case where a
+            # user both has a UserMessage row and is a current
+            # Subscriber
+            subs = subs.exclude(
+                user_profile_id__in=[um.user_profile_id for um in unmodified_user_messages]
+            )
+
+            if message_edit_request.is_stream_edited:
+                subs = subs.exclude(user_profile__in=users_losing_access)
+
+            return subs
+
+        old_stream_subs_not_in_new_stream = set()
         if message_edit_request.is_stream_edited:
-            subscriptions = subscriptions.exclude(user_profile__in=users_losing_access)
+            # We also need to include users who are not subscribed to new stream
+            # but are subscribed to the old stream.
+            old_stream_subscriptions = get_active_subscriptions_for_stream_id(
+                stream_being_edited.id, include_deactivated_users=False
+            )
+            old_stream_subscriptions = exclude_duplicates_from_subscription(
+                old_stream_subscriptions
+            )
+            old_stream_subscriber_ids = set(
+                old_stream_subscriptions.values_list("user_profile_id", flat=True)
+            )
+            new_stream_subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
+            old_stream_subs_not_in_new_stream = old_stream_subscriber_ids.difference(
+                new_stream_subscriber_ids
+            )
 
+        subscriptions = exclude_duplicates_from_subscription(subscriptions)
+        if message_edit_request.is_stream_edited:
             # TODO: Guest users don't see the new moved topic
             # unless breadcrumb message for new stream is
             # enabled. Excluding these users from receiving this
@@ -893,7 +919,8 @@ def do_update_message(
             )
 
         subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
-        users_to_be_notified += map(subscriber_info, sorted(subscriber_ids))
+        notifiable_ids = subscriber_ids.union(old_stream_subs_not_in_new_stream)
+        users_to_be_notified += map(subscriber_info, sorted(notifiable_ids))
 
     # UserTopic updates and the content of notifications depend on
     # whether we've moved the entire topic, or just part of it. We
