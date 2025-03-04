@@ -145,7 +145,7 @@
         overflow-y: auto;
     }
 
-    .typeahead-header {
+    .typeahead-footer {
         margin: 0;
         padding: 4px 10px;
         border-top: 1px solid hsl(0deg 0% 0% / 20%);
@@ -153,7 +153,7 @@
         align-items: center;
     }
 
-    #typeahead-header-text {
+    #typeahead-footer-text {
         color: var(--color-dropdown-item);
         font-size: 0.8571em; /* 12px at 14px/em */
     }
