@@ -42,8 +42,6 @@ function get_total_human_subscriber_count(
     current_sub: StreamSubscription | undefined,
     pm_ids_set: Set<number>,
 ): number {
-    // Excludes human users, but may include long-inactive users who
-    // might not show up in the buddy list.
     if (current_sub) {
         return peer_data.get_subscriber_count(current_sub.stream_id, false);
     } else if (pm_ids_set.size > 0) {
