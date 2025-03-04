@@ -404,6 +404,20 @@ export function activate({
         const html = render_widgets_todo_widget();
         $elem.html(html);
 
+        // Determines if the "Add Task" button should be disabled
+        // if no task name is present or task is a duplicate.
+        // A wrapper is utilized to determine if the button should
+        // be re-enabled on hover.
+        $elem.find(".add-task-wrapper").on("hover", (e) => {
+            e.stopPropagation();
+            check_valid_task();
+        });
+
+        $elem.find("input.add-task").on("keyup", (e) => {
+            e.stopPropagation();
+            check_valid_task();
+        });
+
         $elem.find("input.todo-task-list-title").on("keyup", (e) => {
             e.stopPropagation();
             update_edit_controls();
@@ -444,22 +458,38 @@ export function activate({
             const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
             const desc = $elem.find<HTMLInputElement>("input.add-desc").val()?.trim() ?? "";
 
-            if (task === "") {
+            if (!check_valid_task()) {
                 return;
             }
 
             $elem.find("input.add-task").val("").trigger("focus");
             $elem.find("input.add-desc").val("");
 
-            const task_exists = task_data.name_in_use(task);
-            if (task_exists) {
-                $elem.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
-                return;
-            }
-
             const data = task_data.handle.new_task.outbound(task, desc);
             callback(data);
         });
+    }
+
+    function check_valid_task(): boolean {
+        const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
+        const task_exists = task_data.name_in_use(task);
+
+        if (task === "") {
+            $elem
+                .find(".add-task-wrapper")
+                .attr("data-tippy-content", $t({defaultMessage: "Name the task before adding."}));
+            $elem.find("button.add-task").prop("disabled", true);
+            return false;
+        } else if (task_exists) {
+            $elem
+                .find(".add-task-wrapper")
+                .attr("data-tippy-content", $t({defaultMessage: "Cannot add duplicate task."}));
+            $elem.find("button.add-task").prop("disabled", true);
+            return false;
+        }
+        $elem.find(".add-task-wrapper").removeAttr("data-tippy-content");
+        $elem.find("button.add-task").prop("disabled", false);
+        return true;
     }
 
     function render_results(): void {
@@ -487,6 +517,8 @@ export function activate({
             const data = task_data.handle.strike.outbound(key);
             callback(data);
         });
+
+        check_valid_task();
     }
 
     const handle_events = function (events: Event[]): void {
