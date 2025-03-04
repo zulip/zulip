@@ -79,3 +79,32 @@ class NarrowTermFilterTest(ZulipTestCase):
         self.assertEqual(filter.operands("topic"), ["testing", "testing2"])
         self.assertEqual(filter.operands("near"), [1, 2])
         self.assertEqual(filter.operands("stream"), [])
+
+    def test_get_terms(self) -> None:
+        fixture_terms = [
+            NarrowTerm(negated=False, operator="channel", operand="13"),
+            NarrowTerm(negated=False, operator="channel", operand="2"),
+            NarrowTerm(negated=True, operator="channel", operand="88"),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="topic", operand="testing2"),
+            NarrowTerm(negated=False, operator="near", operand="1"),
+            NarrowTerm(negated=False, operator="near", operand="2"),
+        ]
+        filter = Filter(fixture_terms, self.realm)
+
+        self.assertEqual(
+            filter.get_terms("channel"),
+            [
+                NarrowTerm(negated=False, operator="channel", operand=13),
+                NarrowTerm(negated=False, operator="channel", operand=2),
+                NarrowTerm(negated=True, operator="channel", operand=88),
+            ],
+        )
+        self.assertEqual(
+            filter.get_terms("topic"),
+            [
+                NarrowTerm(negated=False, operator="topic", operand="testing"),
+                NarrowTerm(negated=False, operator="topic", operand="testing2"),
+            ],
+        )
+        self.assertEqual(filter.get_terms("stream"), [])
