@@ -107,6 +107,8 @@ test("basic_get_suggestions_for_spectator", () => {
     const query = "";
     const suggestions = get_suggestions(query);
     assert.deepEqual(suggestions.strings, [
+        "is:resolved",
+        "-is:resolved",
         "has:link",
         "has:image",
         "has:attachment",
@@ -120,8 +122,8 @@ test("get_is_suggestions_for_spectator", () => {
 
     const query = "is:";
     const suggestions = get_suggestions(query);
-    // The list of suggestions should be empty for a spectator
-    assert.deepEqual(suggestions.strings, []);
+    // The list of suggestions should only contain "is:resolved" for a spectator
+    assert.deepEqual(suggestions.strings, ["is:resolved"]);
     page_params.is_spectator = false;
 });
 

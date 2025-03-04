@@ -1029,6 +1029,14 @@ class NarrowLibraryTest(ZulipTestCase):
     def test_is_spectator_compatible(self) -> None:
         self.assertTrue(is_spectator_compatible([]))
         self.assertTrue(
+            is_spectator_compatible([NarrowParameter(operator="is", operand="resolved")])
+        )
+        self.assertTrue(
+            is_spectator_compatible(
+                [NarrowParameter(operator="is", operand="resolved", negated=True)]
+            )
+        )
+        self.assertTrue(
             is_spectator_compatible([NarrowParameter(operator="has", operand="attachment")])
         )
         self.assertTrue(is_spectator_compatible([NarrowParameter(operator="has", operand="image")]))
@@ -3602,13 +3610,29 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_get_messages_for_resolved_topics(self) -> None:
         self.login("cordelia")
         cordelia = self.example_user("cordelia")
+        self.subscribe(cordelia, "Rome")
 
-        self.send_stream_message(cordelia, "Verona", "whatever1")
+        self.send_stream_message(cordelia, "Rome", "whatever1")
         resolved_topic_name = RESOLVED_TOPIC_PREFIX + "foo"
-        anchor = self.send_stream_message(cordelia, "Verona", "whatever2", resolved_topic_name)
-        self.send_stream_message(cordelia, "Verona", "whatever3")
+        anchor = self.send_stream_message(cordelia, "Rome", "whatever2", resolved_topic_name)
+        self.send_stream_message(cordelia, "Rome", "whatever3")
 
-        narrow = [dict(operator="is", operand="resolved")]
+        narrow = [
+            dict(operator="is", operand="resolved"),
+            dict(operator="channels", operand="public"),
+        ]
+        result = self.get_and_check_messages(
+            dict(narrow=orjson.dumps(narrow).decode(), anchor=anchor, num_before=0, num_after=0)
+        )
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], anchor)
+
+        # "is:resolved" filter can be used by spectators as well.
+        self.logout()
+        narrow = [
+            dict(operator="is", operand="resolved"),
+            dict(operator="channels", operand="web-public"),
+        ]
         result = self.get_and_check_messages(
             dict(narrow=orjson.dumps(narrow).decode(), anchor=anchor, num_before=0, num_after=0)
         )

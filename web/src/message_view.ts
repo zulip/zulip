@@ -444,7 +444,8 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         // policy?
         !is_combined_feed_global_view &&
         raw_terms.some(
-            (raw_term) => !hash_parser.is_an_allowed_web_public_narrow(raw_term.operator),
+            (raw_term) =>
+                !hash_parser.is_an_allowed_web_public_narrow(raw_term.operator, raw_term.operand),
         )
     ) {
         spectators.login_to_access();

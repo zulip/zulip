@@ -116,7 +116,10 @@ export function is_in_specified_hash_category(hash_categories: string[]): boolea
     return hash_categories.includes(main_hash);
 }
 
-export function is_an_allowed_web_public_narrow(operator: string): boolean {
+export function is_an_allowed_web_public_narrow(operator: string, operand: string): boolean {
+    if (operator === "is" && operand === "resolved") {
+        return true;
+    }
     return allowed_web_public_narrow_operators.includes(operator);
 }
 
@@ -161,10 +164,11 @@ export function is_spectator_compatible(hash: string): boolean {
 
     if (main_hash === "narrow") {
         let hash_section = get_hash_section(hash);
+        const second_hash_section = get_nth_hash_section(hash, 2);
         if (hash_section.startsWith("-")) {
             hash_section = hash_section.slice(1);
         }
-        if (!is_an_allowed_web_public_narrow(hash_section)) {
+        if (!is_an_allowed_web_public_narrow(hash_section, second_hash_section)) {
             return false;
         }
         return true;

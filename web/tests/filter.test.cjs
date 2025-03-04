@@ -2519,6 +2519,10 @@ test("error_cases", () => {
 run_test("is_spectator_compatible", () => {
     // tests same as test_is_spectator_compatible from test_message_fetch.py
     assert.ok(Filter.is_spectator_compatible([]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "is", operand: "resolved"}]));
+    assert.ok(
+        Filter.is_spectator_compatible([{operator: "is", operand: "resolved", negated: true}]),
+    );
     assert.ok(Filter.is_spectator_compatible([{operator: "has", operand: "attachment"}]));
     assert.ok(Filter.is_spectator_compatible([{operator: "has", operand: "image"}]));
     assert.ok(Filter.is_spectator_compatible([{operator: "search", operand: "magic"}]));
