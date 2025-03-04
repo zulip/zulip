@@ -169,9 +169,9 @@
         border-style: solid;
         font-weight: 600;
         border-radius: 3px;
-        min-width: 25px;
-        height: 25px;
-        font-size: 13px;
+        min-width: 1.7857em; /* 25px at 14px / em */
+        height: 1.7857em; /* 25px at 14px / em */
+        font-size: 0.9285em; /* 13px at 14px / em */
         background-color: var(--color-background-widget-button);
 
         &:hover {
