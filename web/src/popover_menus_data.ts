@@ -331,7 +331,7 @@ export function get_personal_menu_content_context(): PersonalMenuContext {
 }
 
 export function get_gear_menu_content_context(): GearMenuContext {
-    const user_has_billing_access = current_user.is_billing_admin || current_user.is_owner;
+    const user_has_billing_access = settings_data.user_has_billing_access();
     const is_plan_standard = realm.realm_plan_type === 3;
     const is_plan_plus = realm.realm_plan_type === 10;
     const is_org_on_paid_plan = is_plan_standard || is_plan_plus;
@@ -359,11 +359,11 @@ export function get_gear_menu_content_context(): GearMenuContext {
         is_guest: current_user.is_guest,
         login_link: page_params.development_environment ? "/devlogin/" : "/login/",
         promote_sponsoring_zulip: page_params.promote_sponsoring_zulip,
-        show_billing: page_params.show_billing,
-        show_remote_billing: page_params.show_remote_billing,
-        show_plans: page_params.show_plans,
+        show_billing: current_user.show_billing,
+        show_remote_billing: current_user.show_remote_billing,
+        show_plans: current_user.show_plans,
         show_webathena: page_params.show_webathena,
-        sponsorship_pending: page_params.sponsorship_pending,
+        sponsorship_pending: current_user.sponsorship_pending,
         user_has_billing_access,
         // user color scheme
         user_color_scheme: user_settings.color_scheme,

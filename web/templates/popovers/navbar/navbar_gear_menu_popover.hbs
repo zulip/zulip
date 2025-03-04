@@ -128,7 +128,7 @@
                 <span class="popover-menu-label">{{t 'API documentation' }}</span>
             </a>
         </li>
-        {{#if show_billing}}
+        {{#if (and user_has_billing_access show_billing)}}
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" href="/billing/" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
                 <i class="popover-menu-icon zulip-icon zulip-icon-credit-card" aria-hidden="true"></i>
@@ -144,6 +144,7 @@
             </a>
         </li>
         {{/if}}
+        {{#if user_has_billing_access}}
         {{#if show_remote_billing }}
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" href="/self-hosted-billing/" id="open-self-hosted-billing" target="_blank" rel="noopener noreferrer" class="navigate-link-on-enter popover-menu-link">
@@ -160,6 +161,7 @@
                 <span class="popover-menu-label">{{t 'Plans and pricing' }}</span>
             </a>
         </li>
+        {{/if}}
         {{/if}}
         {{!-- Group 3 --}}
         {{#if (or can_invite_users_by_email can_create_multiuse_invite is_spectator show_webathena)}}

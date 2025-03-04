@@ -4,6 +4,7 @@ import copy
 import logging
 import time
 from collections.abc import Callable, Collection, Iterable, Sequence
+from dataclasses import dataclass
 from typing import Any
 
 from django.conf import settings
@@ -105,6 +106,56 @@ from zerver.models.realms import (
 from zerver.models.streams import get_default_stream_groups
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
+
+
+@dataclass
+class BillingInfo:
+    show_billing: bool
+    show_plans: bool
+    sponsorship_pending: bool
+    show_remote_billing: bool
+
+
+def get_billing_info(
+    user_profile: UserProfile | None, user_has_billing_access: bool | None = None
+) -> BillingInfo:
+    # See https://zulip.com/help/user-roles for clarity.
+    show_billing = False
+    show_plans = False
+    sponsorship_pending = False
+
+    if user_has_billing_access is None:
+        user_has_billing_access = user_profile is not None and user_profile.has_billing_access
+
+    # We want to always show the remote billing option as long as the user is authorized,
+    # except on zulipchat.com where it's not applicable.
+    show_remote_billing = (
+        (not settings.CORPORATE_ENABLED) and user_profile is not None and user_has_billing_access
+    )
+
+    # This query runs on home page load, so we want to avoid
+    # hitting the database if possible. So, we only run it for the user
+    # types that can actually see the billing info.
+    if settings.CORPORATE_ENABLED and user_profile is not None and user_has_billing_access:
+        from corporate.models import CustomerPlan, get_customer_by_realm
+
+        customer = get_customer_by_realm(user_profile.realm)
+        if customer is not None:
+            if customer.sponsorship_pending:
+                sponsorship_pending = True
+
+            if CustomerPlan.objects.filter(customer=customer).exists():
+                show_billing = True
+
+        if user_profile.realm.plan_type == Realm.PLAN_TYPE_LIMITED:
+            show_plans = True
+
+    return BillingInfo(
+        show_billing=show_billing,
+        show_plans=show_plans,
+        sponsorship_pending=sponsorship_pending,
+        show_remote_billing=show_remote_billing,
+    )
 
 
 def add_realm_logo_fields(state: dict[str, Any], realm: Realm) -> None:
@@ -578,7 +629,6 @@ def fetch_initial_state_data(
             # restrictions apply to these users as well, and it lets
             # us avoid unnecessary conditionals.
             role=UserProfile.ROLE_GUEST,
-            is_billing_admin=False,
             avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
             # ID=0 is not used in real Zulip databases, ensuring this is unique.
             id=0,
@@ -628,6 +678,17 @@ def fetch_initial_state_data(
         state["can_create_web_public_streams"] = (
             realm.can_create_web_public_channel_group_id in settings_user_recursive_group_ids
         )
+
+        user_has_billing_access = (
+            realm.can_manage_billing_group_id in settings_user_recursive_group_ids
+        )
+        billing_info = get_billing_info(settings_user, user_has_billing_access)
+
+        state["show_billing"] = billing_info.show_billing
+        state["show_plans"] = billing_info.show_plans
+        state["show_remote_billing"] = billing_info.show_remote_billing
+        state["sponsorship_pending"] = billing_info.sponsorship_pending
+
         # TODO/compatibility: Deprecated in Zulip 5.0 (feature level
         # 102); we can remove this once we no longer need to support
         # legacy mobile app versions that read the old property.
@@ -643,7 +704,6 @@ def fetch_initial_state_data(
         state["is_owner"] = settings_user.is_realm_owner
         state["is_moderator"] = settings_user.is_moderator
         state["is_guest"] = settings_user.is_guest
-        state["is_billing_admin"] = settings_user.is_billing_admin
         state["user_id"] = settings_user.id
         state["email"] = settings_user.email
         state["delivery_email"] = settings_user.delivery_email
@@ -1070,7 +1130,7 @@ def apply_event(
                             get_default_stream_ids_for_realm(user_profile.realm_id)
                         )
 
-                for field in ["delivery_email", "email", "full_name", "is_billing_admin"]:
+                for field in ["delivery_email", "email", "full_name"]:
                     if field in person and field in state:
                         state[field] = person[field]
 
@@ -1122,9 +1182,6 @@ def apply_event(
                     p["is_admin"] = is_administrator_role(person["role"])
                     p["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
                     p["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
-
-                if "is_billing_admin" in person:
-                    p["is_billing_admin"] = person["is_billing_admin"]
 
                 if "custom_profile_field" in person:
                     custom_field_id = str(person["custom_profile_field"]["id"])

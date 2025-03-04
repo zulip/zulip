@@ -25,7 +25,7 @@ def sponsorship_page(request: HttpRequest) -> HttpResponse:
 
     billing_session = RealmBillingSession(user)
     context = billing_session.get_sponsorship_request_context()
-    if context is None:
+    if context is None or not user.has_billing_access:
         return HttpResponseRedirect(reverse("billing_page"))
 
     return render(request, "corporate/billing/sponsorship.html", context=context)

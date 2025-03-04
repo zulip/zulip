@@ -514,12 +514,6 @@ paths:
                                           type: integer
                                           description: |
                                             The ID of the user affected by this change.
-                                        is_billing_admin:
-                                          type: boolean
-                                          description: |
-                                            A boolean specifying whether the user is now a billing administrator.
-
-                                            **Changes**: New in Zulip 5.0 (feature level 73).
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -1117,7 +1111,6 @@ paths:
                                       "is_admin": false,
                                       "is_owner": false,
                                       "is_guest": false,
-                                      "is_billing_admin": false,
                                       "role": 400,
                                       "is_bot": false,
                                       "full_name": "full name",
@@ -4818,6 +4811,16 @@ paths:
                                               create and edit user groups.
 
                                             [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                                    can_manage_billing_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to manage plans and billing in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level ZF-51430d). Previously, only owners
+                                            and users with `is_billing_admin` property set to `true` were allowed to
+                                            manage plans and billing.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_summarize_topics_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -9281,7 +9284,6 @@ paths:
                               "delivery_email": null,
                               "is_admin": false,
                               "is_owner": false,
-                              "is_billing_admin": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
                               "bot_type": null,
@@ -9326,7 +9328,6 @@ paths:
                               "timezone": "",
                               "is_admin": false,
                               "is_owner": false,
-                              "is_billing_admin": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "is_active": true,
@@ -9344,7 +9345,6 @@ paths:
                               "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
                               "is_admin": false,
                               "is_owner": false,
-                              "is_billing_admin": false,
                               "role": 400,
                               "user_id": 23,
                               "bot_type": 1,
@@ -9662,14 +9662,6 @@ paths:
 
                           **Changes**: New in Zulip 3.0 (feature level 8).
                         example: false
-                      is_billing_admin:
-                        type: boolean
-                        description: |
-                          A boolean indicating if the requesting user is
-                          a billing administrator.
-
-                          **Changes**: New in Zulip 5.0 (feature level 73).
-                        example: false
                       role:
                         type: integer
                         enum:
@@ -9762,7 +9754,6 @@ paths:
                         "is_owner": false,
                         "role": 200,
                         "is_guest": false,
-                        "is_billing_admin": false,
                         "is_bot": false,
                         "is_active": true,
                         "timezone": "",
@@ -13126,7 +13117,6 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
-                            "is_billing_admin": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
@@ -13261,7 +13251,6 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
-                            "is_billing_admin": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
@@ -17113,6 +17102,16 @@ paths:
                                 create and edit user groups.
 
                               [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                      realm_can_manage_billing_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to manage plans and billing in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level ZF-51430d). Previously, only owners
+                              and users with `is_billing_admin` property set to `true` were allowed to
+                              manage plans and billing.
                       realm_can_create_public_channel_group:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
@@ -18962,14 +18961,6 @@ paths:
                           Whether the current user is an [organization owner](/api/roles-and-permissions).
 
                           **Changes**: New in Zulip 3.0 (feature level 11).
-                      is_billing_admin:
-                        type: boolean
-                        description: |
-                          Present if `realm_user` is present in `fetch_event_types`.
-
-                          Whether the current user is a billing administrator.
-
-                          **Changes**: New in Zulip 5.0 (feature level 73).
                       is_moderator:
                         type: boolean
                         description: |
@@ -18984,6 +18975,39 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is a [guest user](/api/roles-and-permissions).
+                      show_billing:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the user should be shown the "Billing" option.
+
+                          **Changes**: New in Zulip 10.0 (feature level ZF-51430d).
+                      show_plans:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the user should be shown the "Plans and pricing" option.
+
+                          **Changes**: New in Zulip 10.0 (feature level ZF-51430d).
+                      show_remote_billing:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the user should be shown the remote billing option.
+
+                          **Changes**: New in Zulip 10.0 (feature level ZF-51430d).
+                      sponsorship_pending:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the sponsorship is pending in the organization. Note that
+                          this field will always be `false` if the user is not in `can_manage_billing_group`.
+
+                          **Changes**: New in Zulip 10.0 (feature level ZF-51430d).
                       user_id:
                         type: integer
                         description: |
@@ -19036,7 +19060,6 @@ paths:
                                 is_owner: {}
                                 is_admin: {}
                                 is_guest: {}
-                                is_billing_admin: {}
                                 is_bot: {}
                                 # Referenced schema properties are rendered before any
                                 # non-referenced properties in the API documentation, so
@@ -24798,7 +24821,6 @@ components:
             is_owner: {}
             is_admin: {}
             is_guest: {}
-            is_billing_admin: {}
             is_bot: {}
             bot_type:
               nullable: true
@@ -24867,12 +24889,6 @@ components:
           type: boolean
           description: |
             A boolean specifying whether the user is a guest user.
-        is_billing_admin:
-          type: boolean
-          description: |
-            A boolean specifying whether the user is a billing administrator.
-
-            **Changes**: New in Zulip 5.0 (feature level 73).
         is_bot:
           type: boolean
           description: |

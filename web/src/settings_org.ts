@@ -145,6 +145,7 @@ export function enable_or_disable_group_permission_settings(): void {
             "realm_create_multiuse_invite_group",
             "realm_can_create_groups",
             "realm_can_manage_all_groups",
+            "realm_can_manage_billing_group",
         ];
         for (const setting_name of owner_editable_settings) {
             const $permission_pill_container = $(`#id_${CSS.escape(setting_name)}`);
@@ -527,6 +528,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_can_delete_own_message_group":
         case "realm_can_invite_users_group":
         case "realm_can_manage_all_groups":
+        case "realm_can_manage_billing_group":
         case "realm_can_mention_many_users_group":
         case "realm_can_move_messages_between_channels_group":
         case "realm_can_move_messages_between_topics_group":

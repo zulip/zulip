@@ -131,7 +131,6 @@ class TestFullStack(ZulipTestCase):
                 full_name=cordelia.full_name,
                 is_active=True,
                 is_admin=False,
-                is_billing_admin=False,
                 is_bot=False,
                 is_guest=False,
                 is_owner=False,
