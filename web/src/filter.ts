@@ -11,6 +11,7 @@ import {$t} from "./i18n.ts";
 import * as message_parser from "./message_parser.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
+import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
@@ -1389,7 +1390,13 @@ export class Filter {
                 if (!person) {
                     return email;
                 }
+                if (muted_users.is_user_muted(person.user_id)) {
+                    if (people.should_add_guest_user_indicator(person.user_id)) {
+                        return $t({defaultMessage: "Muted user (guest)"});
+                    }
 
+                    return $t({defaultMessage: "Muted user"});
+                }
                 if (people.should_add_guest_user_indicator(person.user_id)) {
                     return $t({defaultMessage: "{name} (guest)"}, {name: person.full_name});
                 }
