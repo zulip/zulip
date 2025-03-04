@@ -10,7 +10,7 @@ async function test_add_linkifier(page: Page): Promise<void> {
         pattern: "#(?P<id>[0-9]+)",
         url_template: "https://trac.example.com/ticket/{id}",
     });
-    await page.click("form.admin-linkifier-form button.button");
+    await page.click('form.admin-linkifier-form button[type="submit"]');
 
     const admin_linkifier_status_selector = "div#admin-linkifier-status";
     await page.waitForSelector(admin_linkifier_status_selector, {visible: true});
@@ -52,7 +52,7 @@ async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
         pattern: "(foo",
         url_template: "https://trac.example.com/ticket/{id}",
     });
-    await page.click("form.admin-linkifier-form button.button");
+    await page.click('form.admin-linkifier-form button[type="submit"]');
 
     await page.waitForSelector("div#admin-linkifier-status", {visible: true});
     assert.strictEqual(
