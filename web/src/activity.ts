@@ -43,7 +43,7 @@ export enum ActivityState {
 */
 
 /* Broadcast "idle" to server after 5 minutes of local inactivity */
-const DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+export const DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 
 // When you open Zulip in a new browser window, client_is_active
 // should be true.  When a server-initiated reload happens, however,
@@ -186,24 +186,10 @@ export function rewire_send_presence_to_server(value: typeof send_presence_to_se
     send_presence_to_server = value;
 }
 
-export function mark_client_active(): void {
+export function mark_client_active(redraw: () => void): void {
     // exported for testing
     if (!client_is_active) {
         client_is_active = true;
-        send_presence_to_server();
+        send_presence_to_server(redraw);
     }
-}
-
-export function initialize(): void {
-    $("html").on("mousemove", () => {
-        set_new_user_input(true);
-    });
-
-    $(window).on("focus", mark_client_active);
-    $(window).idle({
-        idle: DEFAULT_IDLE_TIMEOUT_MS,
-        onIdle: mark_client_idle,
-        onActive: mark_client_active,
-        keepTracking: true,
-    });
 }

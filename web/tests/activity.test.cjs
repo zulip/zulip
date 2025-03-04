@@ -813,7 +813,7 @@ test("initialize", ({override, override_rewire}) => {
         func();
     });
 
-    activity.initialize();
+    activity_ui.initialize_activity();
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
         zephyr_mirror_active: true,
@@ -838,7 +838,7 @@ test("initialize", ({override, override_rewire}) => {
     set_timeout_function_called = false;
 
     $(window).off("focus");
-    activity.initialize();
+    activity_ui.initialize_activity();
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
         zephyr_mirror_active: false,
