@@ -84,3 +84,46 @@ class NarrowTermFilterTest(ZulipTestCase):
         self.assertEqual(narrow_filter.operands("topic"), ["testing", "testing2"])
         self.assertEqual(narrow_filter.operands("near"), [1, 2])
         self.assertEqual(narrow_filter.operands("stream"), [])
+
+    def test_get_terms(self) -> None:
+        fixture_terms = [
+            NarrowTerm(negated=False, operator="channel", operand="13"),
+            NarrowTerm(negated=False, operator="channel", operand="2"),
+            NarrowTerm(negated=True, operator="channel", operand="88"),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="topic", operand="testing2"),
+            NarrowTerm(negated=True, operator="dm", operand="90"),
+            NarrowTerm(negated=False, operator="near", operand="1"),
+            NarrowTerm(negated=False, operator="near", operand="2"),
+            NarrowTerm(negated=False, operator="with", operand="3"),
+        ]
+        narrow_filter = Filter(fixture_terms)
+
+        self.assertEqual(
+            narrow_filter.get_terms("channel"),
+            [
+                NarrowTerm(negated=False, operator="channel", operand=13),
+                NarrowTerm(negated=False, operator="channel", operand=2),
+                NarrowTerm(negated=True, operator="channel", operand=88),
+            ],
+        )
+        self.assertEqual(
+            narrow_filter.get_terms("topic"),
+            [
+                NarrowTerm(negated=False, operator="topic", operand="testing"),
+                NarrowTerm(negated=False, operator="topic", operand="testing2"),
+            ],
+        )
+        self.assertEqual(
+            narrow_filter.get_terms("with"),
+            [
+                NarrowTerm(negated=False, operator="with", operand=3),
+            ],
+        )
+        self.assertEqual(
+            narrow_filter.get_terms("dm"),
+            [
+                NarrowTerm(negated=True, operator="dm", operand=[90]),
+            ],
+        )
+        self.assertEqual(narrow_filter.get_terms("stream"), [])
