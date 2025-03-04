@@ -511,7 +511,7 @@ input[type="checkbox"] {
         }
 
         .toggle-advanced-configurations-icon {
-            font-size: 20px;
+            font-size: 1.4286em; /* 20px at 14px / em */
         }
     }
 
