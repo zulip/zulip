@@ -19,6 +19,7 @@ import type {Message} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
@@ -202,6 +203,14 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     // the function call in compose_setup.js not displaying banner.
     if (!narrow_state.narrowed_by_reply()) {
         compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
+        if (
+            onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has(
+                "intro_go_to_conversation_button_tooltip",
+            ) &&
+            compose_banner.is_any_banner_visible()
+        ) {
+            compose_recipient.check_hide_go_to_conversation_button_intro_tooltip();
+        }
     }
     compose_ui.maybe_show_scrolling_formatting_buttons("#message-formatting-controls-container");
 };
@@ -467,6 +476,11 @@ export let cancel = (): void => {
     compose_state.set_message_type(undefined);
     compose_pm_pill.clear();
     $(document).trigger("compose_canceled.zulip");
+    if (
+        onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_go_to_conversation_button_tooltip")
+    ) {
+        compose_recipient.check_hide_go_to_conversation_button_intro_tooltip();
+    }
 };
 
 export function rewire_cancel(value: typeof cancel): void {

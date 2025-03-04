@@ -576,6 +576,16 @@ export function initialize() {
     $("#compose").on("click", ".narrow_to_compose_recipients", (e) => {
         e.preventDefault();
         message_view.to_compose_target();
+        if (
+            onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has(
+                "intro_go_to_conversation_button_tooltip",
+            ) &&
+            compose_recipient.check_hide_go_to_conversation_button_intro_tooltip()
+        ) {
+            onboarding_steps.post_onboarding_step_as_read(
+                "intro_go_to_conversation_button_tooltip",
+            );
+        }
     });
 
     $("#compose").on("click", ".collapse-composebox-button", (e) => {
@@ -592,6 +602,14 @@ export function initialize() {
             compose_notifications.maybe_show_one_time_non_interleaved_view_messages_fading_banner();
         } else {
             compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
+        }
+        if (
+            onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has(
+                "intro_go_to_conversation_button_tooltip",
+            ) &&
+            compose_banner.is_any_banner_visible()
+        ) {
+            compose_recipient.check_hide_go_to_conversation_button_intro_tooltip();
         }
     });
 
