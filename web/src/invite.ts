@@ -20,7 +20,6 @@ import {csrf_token} from "./csrf.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as email_pill from "./email_pill.ts";
 import {$t, $t_html} from "./i18n.ts";
-import * as input_pill from "./input_pill.ts";
 import * as invite_stream_picker_pill from "./invite_stream_picker_pill.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
@@ -51,6 +50,11 @@ function reset_error_messages(): void {
         $("#dev_env_msg").hide().text("").removeClass(common.status_classes);
     }
 }
+
+export type Invitees = {
+    email: string;
+    full_name: string;
+};
 
 function get_common_invitation_data(): {
     csrfmiddlewaretoken: string;
@@ -100,18 +104,16 @@ function get_common_invitation_data(): {
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: JSON.stringify(expires_in),
         group_ids: JSON.stringify(group_ids),
-        invitee_emails: pills
-            .items()
-            .map((pill) => email_pill.get_email_from_item(pill))
-            .join(","),
+        invitee_emails: JSON.stringify(
+            pills.items().map((pill) => email_pill.get_email_from_item(pill)),
+        ),
         include_realm_default_subscriptions: JSON.stringify(include_realm_default_subscriptions),
     };
     const current_email = email_pill.get_current_email(pills);
     if (current_email) {
-        if (pills.items().length === 0) {
-            data.invitee_emails = current_email;
-        } else {
-            data.invitee_emails += "," + current_email;
+        const current_email_item = email_pill.create_item_from_email(current_email, pills.items());
+        if (current_email_item) {
+            data.invitee_emails = JSON.stringify([...pills.items(), current_email_item]);
         }
     }
     return data;
@@ -391,12 +393,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     function invite_user_modal_post_render(): void {
         const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
         const $pill_container = $("#invitee_emails_container .pill-container");
-        pills = input_pill.create({
-            $container: $pill_container,
-            create_item_from_text: email_pill.create_item_from_email,
-            get_text_from_item: email_pill.get_email_from_item,
-            get_display_value_from_item: email_pill.get_email_from_item,
-        });
+        pills = email_pill.create_pills($pill_container);
 
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 
