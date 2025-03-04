@@ -1575,6 +1575,8 @@ export function setup_page(callback: () => void): void {
                 realm.realm_org_type === settings_config.all_org_type_values.business.code,
             max_user_group_name_length: user_groups.max_user_group_name_length,
             all_group_setting_labels: settings_config.all_group_setting_labels,
+            show_create_user_group_button:
+                realm.zulip_plan_is_not_limited && settings_data.user_can_create_user_groups(),
         };
 
         const groups_overlay_html = render_user_group_settings_overlay(template_data);

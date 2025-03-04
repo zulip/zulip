@@ -53,7 +53,11 @@
                     <div class="group-info-banner"></div>
                     <div class="create-group-button-container">
                         {{> ../settings/upgrade_tip_widget . }}
-                        <button type="button" class="create_user_group_button animated-purple-button" {{#unless (and can_create_user_groups zulip_plan_is_not_limited)}}disabled{{/unless}}>{{t 'Create user group' }}</button>
+                        {{#if show_create_user_group_button}}
+                            <button type="button" class="create_user_group_button animated-purple-button">
+                                {{t 'Create user group' }}
+                            </button>
+                        {{/if}}
                         {{#unless can_create_user_groups}}
                         <span class="settings-empty-option-text">
                             {{t 'You do not have permission to create user groups.' }}
