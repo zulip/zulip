@@ -1393,14 +1393,17 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     opacity: 0.6;
 
     & i {
-        font-size: 10px;
+        font-size: 0.7143em; /* 10px at 14px / em */
+        /* TODO: Don't use relative positioning here. */
         position: relative;
-        top: 1px;
-        margin-left: 2px;
+        top: 0.1em; /* 1px at 10px / em */
+        margin-left: 0.2em; /* 2px at 10px / em */
     }
 
     .zulip-icon.zulip-icon-lock {
-        font-size: 12px;
+        font-size: 0.8571em; /* 12px at 14px / em */
+        top: 0.0833em; /* 1px at 12px / em */
+        margin-left: 0.1667em; /* 2px at 12px / em */
     }
 }
 
