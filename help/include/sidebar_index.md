@@ -229,6 +229,7 @@
 ## Permissions management
 * [Manage permissions](/help/manage-permissions)
 * [Manage user groups](/help/manage-user-groups)
+* [Deactivate a user group](/help/deactivate-a-user-group)
 * [User roles](/help/user-roles)
 * [Guest users](/help/guest-users)
 * [Restrict direct messages](/help/restrict-direct-messages)
