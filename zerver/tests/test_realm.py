@@ -2335,7 +2335,10 @@ class RealmAPITest(ZulipTestCase):
             "/json/realm",
             {"message_edit_history_visibility_policy": "invalid"},
         )
-        self.assert_json_error(result, "Invalid message_edit_history_visibility_policy")
+        self.assert_json_error(
+            result,
+            "invalid is not an allowed message edit history visibility policy",
+        )
 
     def update_with_realm_default_api(self, name: str, val: Any) -> None:
         if not isinstance(val, str):
