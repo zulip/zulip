@@ -19,9 +19,13 @@
         <span class="export_status_text"></span>
     </div>
     <form>
-        <button type="submit" class="button rounded sea-green" id="start-export-button">
-            {{t 'Start export' }}
-        </button>
+        {{> ../components/action_button
+          label=(t "Start export")
+          id="start-export-button"
+          attention="quiet"
+          intent="brand"
+          type="submit"
+          }}
     </form>
     {{/if}}
 
