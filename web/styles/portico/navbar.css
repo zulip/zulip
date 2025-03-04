@@ -194,7 +194,7 @@ details summary::-webkit-details-marker {
     opacity: 0;
     height: 0;
     width: 100%;
-    transition: none 0.05s;
+    transition: 0.05s;
     transition-property:
         height, opacity; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
 }
@@ -240,7 +240,7 @@ details summary::-webkit-details-marker {
     gap: 16px;
     opacity: 0;
     visibility: hidden;
-    transition: none 0.2s;
+    transition: 0.2s;
     transition-property: opacity, visibility;
 }
 
@@ -506,7 +506,7 @@ details summary::-webkit-details-marker {
     position: sticky;
     top: 0;
     z-index: 1;
-    transition: none 0.3s;
+    transition: 0.3s;
     transition-property: background, backdrop-filter;
     height: 60px;
     overflow: hidden;

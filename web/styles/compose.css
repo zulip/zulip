@@ -242,7 +242,7 @@
                 color: var(--color-compose-chevron-arrow);
                 text-decoration: none;
                 cursor: default;
-                transition: none 0.2s ease-in-out;
+                transition: 0.2s ease-in-out;
                 transition-property: background, color;
 
                 &.narrow_to_compose_recipients {

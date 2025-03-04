@@ -831,7 +831,7 @@ input.new-organization-button {
         padding: 2px 7px 1px 8px;
         font-weight: 600;
         font-size: 16px;
-        transition: none 0.2s ease-in;
+        transition: 0.2s ease-in;
         transition-property: background-color, color;
         border-radius: 4px;
 
@@ -1098,7 +1098,7 @@ input.new-organization-button {
             right: calc(100% - 40px);
             fill: hsl(0deg 0% 100%);
             z-index: 2;
-            transition: none 0.3s ease;
+            transition: 0.3s ease;
             transition-property:
                 right, top; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
             cursor: pointer;

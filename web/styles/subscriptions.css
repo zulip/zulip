@@ -294,7 +294,7 @@ h4.user_group_setting_subsection_title {
 
     cursor: pointer;
 
-    transition: none 0.3s ease;
+    transition: 0.3s ease;
     transition-property: opacity, transform;
 }
 
