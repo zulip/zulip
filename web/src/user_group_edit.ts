@@ -1058,7 +1058,7 @@ export function show_settings_for(group: UserGroup): void {
         .find(".realm-group-permissions")
         .on(
             "click",
-            ".subsection-header .subsection-changes-save button",
+            ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
             function (this: HTMLElement, e: JQuery.ClickEvent) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1073,7 +1073,7 @@ export function show_settings_for(group: UserGroup): void {
         .find(".channel-group-permissions")
         .on(
             "click",
-            ".subsection-header .subsection-changes-save button",
+            ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
             function (this: HTMLElement, e: JQuery.ClickEvent) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1095,7 +1095,7 @@ export function show_settings_for(group: UserGroup): void {
         .find(".user-group-permissions")
         .on(
             "click",
-            ".subsection-header .subsection-changes-save button",
+            ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
             function (this: HTMLElement, e: JQuery.ClickEvent) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -2034,7 +2034,7 @@ export function initialize(): void {
 
     $("#groups_overlay_container").on(
         "click",
-        ".subsection-header .subsection-changes-save button",
+        ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
         function (this: HTMLElement, e) {
             e.preventDefault();
             e.stopPropagation();
