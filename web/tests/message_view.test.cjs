@@ -28,6 +28,9 @@ const realm = {};
 set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
+const message_util = mock_esm("../src/message_util");
+const compose_closed_ui = mock_esm("../src/compose_closed_ui");
+
 mock_esm("../src/compose_banner", {
     clear_errors() {},
     clear_search_view_banner() {},
@@ -58,9 +61,6 @@ function set_filter(terms) {
     message_lists.set_current({
         data: {
             filter: new Filter(terms),
-            fetch_status: {
-                has_found_newest: () => true,
-            },
         },
     });
 }
@@ -238,6 +238,27 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     override(realm, "stop_words", []);
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
+
+    override(message_util, "get_direct_message_permission_hints", () => (false, true));
+    override(
+        compose_closed_ui,
+        "should_disable_compose_reply_button_for_selected_message",
+        () => true,
+    );
+    message_lists.set_current(undefined);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: This conversation does not include any users who can authorize it.",
+        ),
+    );
+
+    override(
+        compose_closed_ui,
+        "should_disable_compose_reply_button_for_selected_message",
+        () => false,
+    );
 
     message_lists.set_current(undefined);
     narrow_banner.show_empty_narrow_message();
@@ -513,10 +534,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html(
-            "translated: Direct messages are disabled in this organization.",
-            'translated HTML: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
-        ),
+        empty_narrow_html("translated: No search results."),
     );
 
     // direct messages with a bot are possible even though
@@ -525,7 +543,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: You have no direct messages including Example Bot yet."),
+        empty_narrow_html("translated: No search results."),
     );
 
     // sending direct messages enabled
@@ -535,7 +553,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: You have no direct messages including Alice Smith yet."),
+        empty_narrow_html("translated: No search results."),
     );
 
     set_filter([["dm-including", me.email]]);
@@ -622,6 +640,11 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
 run_test("show_empty_narrow_message_with_search", ({mock_template, override}) => {
     override(realm, "stop_words", []);
+    override(
+        compose_closed_ui,
+        "should_disable_compose_reply_button_for_selected_message",
+        () => false,
+    );
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
@@ -638,6 +661,11 @@ run_test("hide_empty_narrow_message", () => {
 
 run_test("show_search_stopwords", ({mock_template, override}) => {
     override(realm, "stop_words", ["what", "about"]);
+    override(
+        compose_closed_ui,
+        "should_disable_compose_reply_button_for_selected_message",
+        () => false,
+    );
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
@@ -704,7 +732,12 @@ run_test("show_search_stopwords", ({mock_template, override}) => {
     );
 });
 
-run_test("show_invalid_narrow_message", ({mock_template}) => {
+run_test("show_invalid_narrow_message", ({override, mock_template}) => {
+    override(
+        compose_closed_ui,
+        "should_disable_compose_reply_button_for_selected_message",
+        () => false,
+    );
     message_lists.set_current(undefined);
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
