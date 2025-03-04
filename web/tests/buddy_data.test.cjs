@@ -189,7 +189,7 @@ test("title_data", ({override}) => {
     let is_group = true;
     const user_ids_string = "9999,1000";
     let expected_group_data = {
-        first_line: "Human Selma, Old User",
+        first_line: "Human Selma and Old User",
         second_line: "",
         third_line: "",
     };

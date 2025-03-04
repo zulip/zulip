@@ -441,6 +441,19 @@ export function format_array_as_list(
     return list_formatter.format(array);
 }
 
+export function format_array_as_list_with_conjuction(
+    array: string[],
+    use_and_based_join: boolean,
+): string {
+    let formatted_text;
+    if (use_and_based_join) {
+        formatted_text = format_array_as_list(array, "long", "conjunction");
+    } else {
+        formatted_text = format_array_as_list(array, "narrow", "conjunction");
+    }
+    return formatted_text;
+}
+
 export function format_array_as_list_with_highlighted_elements(
     array: string[],
     style: Intl.ListFormatStyle,
