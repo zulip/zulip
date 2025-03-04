@@ -419,7 +419,7 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
             )
 
             # info_log.output is a list of all the log messages captured.
-            self.assertEqual(info_log.output, [expected_log_line] * 18)
+            self.assertEqual(info_log.output, [expected_log_line] * 20)
 
             # Now, lets actually go the URL the above call redirects to, i.e., /emails/
             result = self.client_get(result["Location"])
