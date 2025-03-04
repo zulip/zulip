@@ -514,6 +514,7 @@ class Config:
         use_all: bool = False,
         is_seeded: bool = False,
         exclude: list[Field] | None = None,
+        limit_to_consenting_users: bool | None = None,
     ) -> None:
         assert table or custom_tables
         self.table = table
@@ -531,6 +532,7 @@ class Config:
         self.concat_and_destroy = concat_and_destroy
         self.id_source = id_source
         self.source_filter = source_filter
+        self.limit_to_consenting_users = limit_to_consenting_users
         self.children: list[Config] = []
 
         if self.include_rows:
@@ -572,6 +574,18 @@ class Config:
                 """
             )
 
+        if (
+            (parent := normal_parent or virtual_parent) is not None
+            and parent.table == "zerver_userprofile"
+            and limit_to_consenting_users is None
+        ):
+            raise AssertionError(
+                """
+                Config having UserProfile as a parent must pass limit_to_consenting_users
+                explicitly.
+                """
+            )
+
         if self.id_source is not None:
             if self.virtual_parent is None:
                 raise AssertionError(
@@ -590,6 +604,17 @@ class Config:
                     need to assign a virtual_parent, or there
                     may be deeper issues going on."""
                 )
+
+        if self.limit_to_consenting_users:
+            # Combining these makes no sense. limit_to_consenting_users is used to restrict queries
+            # for Configs which use include_rows="user_profile_id__in" to only pass user ids of users
+            # who have consented to private data export.
+            # If a Config defines its own custom_fetch, then it is fully responsible for doing its own
+            # queries - so it doesn't integrate with limit_to_consenting_users.
+            assert not self.custom_fetch
+
+            assert include_rows in ["user_profile_id__in", "user_id__in", "bot_profile_id__in"]
+            assert normal_parent is not None and normal_parent.table == "zerver_userprofile"
 
     def return_ids(self, response: TableData) -> set[int]:
         if self.custom_return_ids is not None:
@@ -664,9 +689,56 @@ def export_from_config(
         assert parent.table is not None
         assert config.include_rows is not None
         parent_ids = parent.return_ids(response)
-        filter_params: dict[str, Any] = {config.include_rows: parent_ids}
+        filter_params: dict[str, object] = {config.include_rows: parent_ids}
+
         if config.filter_args is not None:
             filter_params.update(config.filter_args)
+        if config.limit_to_consenting_users:
+            if "realm" in context:
+                realm = context["realm"]
+                export_type = context["export_type"]
+                assert isinstance(realm, Realm)
+                if export_type == RealmExport.EXPORT_PUBLIC:
+                    # In a public export, no private data is exported, so
+                    # no users are considered consenting.
+                    consenting_user_ids: set[int] | None = set()
+                elif export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
+                    consenting_user_ids = get_consented_user_ids(realm)
+                else:
+                    assert export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT
+                    # In a full export without consent, the concept is meaningless,
+                    # so set this to None. All private data will be exported without consulting
+                    # consenting_user_ids so we set this to None so that any code in this flow
+                    # which (incorrectly) tries to access them fails explicitly.
+                    consenting_user_ids = None
+            else:
+                # Single user export. This should not be really relevant, because
+                # limit_to_consenting_users is unlikely to be used in Configs in that codepath,
+                # as we should be exporting only a single user's data anyway; but it's still
+                # useful to have this case written correctly for robustness.
+                assert "user" in context
+                assert isinstance(context["user"], UserProfile)
+                export_type = None
+                consenting_user_ids = {context["user"].id}
+
+            user_profile_id_in_key = config.include_rows
+
+            # Sanity check.
+            assert user_profile_id_in_key in [
+                "user_profile_id__in",
+                "user_id__in",
+                "bot_profile_id__in",
+            ]
+
+            user_profile_id_in = filter_params[user_profile_id_in_key]
+            assert isinstance(user_profile_id_in, set)
+
+            if export_type != RealmExport.EXPORT_FULL_WITHOUT_CONSENT:
+                assert consenting_user_ids is not None
+                filter_params[user_profile_id_in_key] = consenting_user_ids.intersection(
+                    user_profile_id_in
+                )
+
         assert model is not None
         try:
             query = model.objects.filter(**filter_params)
@@ -881,6 +953,9 @@ def get_realm_config() -> Config:
         ],
         virtual_parent=user_profile_config,
         custom_fetch=custom_fetch_user_profile_cross_realm,
+        # This is just a Config for exporting cross-realm bots;
+        # the concept of limit_to_consenting_users is not applicable here.
+        limit_to_consenting_users=False,
     )
 
     Config(
@@ -888,6 +963,7 @@ def get_realm_config() -> Config:
         model=Service,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        limit_to_consenting_users=True,
     )
 
     Config(
@@ -895,6 +971,7 @@ def get_realm_config() -> Config:
         model=BotStorageData,
         normal_parent=user_profile_config,
         include_rows="bot_profile_id__in",
+        limit_to_consenting_users=True,
     )
 
     Config(
@@ -902,6 +979,7 @@ def get_realm_config() -> Config:
         model=BotConfigData,
         normal_parent=user_profile_config,
         include_rows="bot_profile_id__in",
+        limit_to_consenting_users=True,
     )
 
     # Some of these tables are intermediate "tables" that we
@@ -913,6 +991,10 @@ def get_realm_config() -> Config:
         normal_parent=user_profile_config,
         filter_args={"recipient__type": Recipient.PERSONAL},
         include_rows="user_profile_id__in",
+        # This is merely for fetching Subscriptions to users' own PERSONAL Recipient.
+        # It is just "glue" data for internal data model consistency purposes
+        # with no user-specific information.
+        limit_to_consenting_users=False,
     )
 
     Config(
@@ -952,6 +1034,9 @@ def get_realm_config() -> Config:
         ],
         virtual_parent=user_profile_config,
         custom_fetch=custom_fetch_direct_message_groups,
+        # It is the custom_fetch function that must handle consent logic if applicable.
+        # limit_to_consenting_users can't be used here.
+        limit_to_consenting_users=False,
     )
 
     # Now build permanent tables from our temp tables.
@@ -1000,6 +1085,7 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=AlertWord,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        limit_to_consenting_users=True,
     )
 
     Config(
@@ -1007,6 +1093,8 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=CustomProfileFieldValue,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        # Values of a user's custom profile fields are public.
+        limit_to_consenting_users=False,
     )
 
     Config(
@@ -1014,6 +1102,7 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=MutedUser,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        limit_to_consenting_users=True,
     )
 
     Config(
@@ -1021,6 +1110,7 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=OnboardingStep,
         normal_parent=user_profile_config,
         include_rows="user_id__in",
+        limit_to_consenting_users=True,
     )
 
     Config(
@@ -1028,6 +1118,7 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=SavedSnippet,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        limit_to_consenting_users=True,
     )
 
     Config(
@@ -1035,6 +1126,7 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=UserActivity,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        limit_to_consenting_users=True,
     )
 
     Config(
@@ -1042,6 +1134,11 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=UserActivityInterval,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        # Note that only exporting UserActivityInterval data for consenting
+        # users means it will be impossible to re-compute certain analytics
+        # CountStat statistics from the raw data. This is an acceptable downside
+        # of this class of data export.
+        limit_to_consenting_users=True,
     )
 
     Config(
@@ -1049,6 +1146,8 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=UserPresence,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        # Presence data is public.
+        limit_to_consenting_users=False,
     )
 
     Config(
@@ -1056,6 +1155,7 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=UserStatus,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        limit_to_consenting_users=True,
     )
 
     Config(
@@ -1063,6 +1163,7 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=UserTopic,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        limit_to_consenting_users=True,
     )
 
 
@@ -2071,6 +2172,7 @@ def do_export_realm(
         seed_object=realm,
         context=dict(
             realm=realm,
+            export_type=export_type,
             exportable_user_ids=exportable_user_ids,
             exportable_scheduled_message_ids=exportable_scheduled_message_ids,
         ),
@@ -2254,6 +2356,9 @@ def get_single_user_config() -> Config:
         model=Subscription,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        # Exports with consent are not relevant in the context of exporting
+        # a single user.
+        limit_to_consenting_users=False,
     )
 
     # zerver_recipient
@@ -2288,6 +2393,7 @@ def get_single_user_config() -> Config:
         model=UserCount,
         normal_parent=user_profile_config,
         include_rows="user_id__in",
+        limit_to_consenting_users=False,
     )
 
     Config(
@@ -2296,6 +2402,7 @@ def get_single_user_config() -> Config:
         virtual_parent=user_profile_config,
         # See the docstring for why we use a custom fetch here.
         custom_fetch=custom_fetch_realm_audit_logs_for_user,
+        limit_to_consenting_users=False,
     )
 
     Config(
@@ -2303,6 +2410,7 @@ def get_single_user_config() -> Config:
         model=Reaction,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
+        limit_to_consenting_users=False,
     )
 
     add_user_profile_child_configs(user_profile_config)
