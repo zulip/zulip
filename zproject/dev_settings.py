@@ -99,7 +99,8 @@ TERMS_OF_SERVICE_MESSAGE: str | None = "Description of changes to the ToS!"
 EMBEDDED_BOTS_ENABLED = True
 
 SYSTEM_ONLY_REALMS: set[str] = set()
-USING_PGROONGA = True
+USING_PGROONGA = False
+USING_PARADEDB = True
 # Flush cache after migration.
 POST_MIGRATION_CACHE_FLUSHING = True
 
