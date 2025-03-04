@@ -397,14 +397,14 @@ export class BuddyList extends BuddyListConf {
             total_human_subscribers_count - all_participant_ids.size;
 
         const formatted_participants_count = get_formatted_sub_count(all_participant_ids.size);
-        const formatted_sub_users_count = get_formatted_sub_count(subscriber_section_user_count);
+        const formatted_matching_users_count = get_formatted_sub_count(subscriber_section_user_count);
         const formatted_other_users_count = get_formatted_sub_count(other_users_count);
 
         $("#buddy-list-participants-container .buddy-list-heading-user-count").text(
             formatted_participants_count,
         );
         $("#buddy-list-users-matching-view-container .buddy-list-heading-user-count").text(
-            formatted_sub_users_count,
+            formatted_matching_users_count,
         );
         $("#buddy-list-other-users-container .buddy-list-heading-user-count").text(
             formatted_other_users_count,
