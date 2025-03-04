@@ -228,9 +228,6 @@ button {
         }
 
         &:active {
-            border-color: hsl(156deg 30% 40%);
-            color: hsl(156deg 44% 43%);
-            background-color: hsl(154deg 33% 96%);
             transition: 0.2s ease;
             transition-property: background-color, border-color, color;
         }
