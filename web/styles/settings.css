@@ -1314,9 +1314,41 @@ label.preferences-radio-choice-label {
     font-size: 1.2em;
 }
 
-.invite-user-link .fa-user-plus {
+.manage-user-button,
+.deactivate-user-button,
+.reactivate-user-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 35px;
+}
+
+.manage-bot-button,
+.deactivate-bot-button,
+.download_bot_zuliprc,
+.copy_zuliprc,
+.open_bots_subscribed_streams {
+    display: inline-flex;
+    align-items: center;
+}
+
+.invite-user-link {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    width: fit-content;
+    align-items: center;
     text-decoration: none;
-    margin-right: 5px;
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    .zulip-icon-user-plus {
+        margin-right: 5px;
+    }
+
+    &:hover .invite-label {
+        text-decoration: underline;
+    }
 }
 
 /* -- new settings overlay -- */
