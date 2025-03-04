@@ -1588,6 +1588,7 @@ label.preferences-radio-choice-label {
             display: none;
             cursor: pointer;
             grid-area: close-button;
+            z-index: 5;
 
             &:hover {
                 opacity: 1;
