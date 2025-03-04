@@ -756,3 +756,13 @@ class CannotManageDefaultChannelError(JsonableError):
     @override
     def msg_format() -> str:
         return _("You do not have permission to change default channels.")
+
+
+class EmailAlreadyInUseError(JsonableError):
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Email is already in use.")
