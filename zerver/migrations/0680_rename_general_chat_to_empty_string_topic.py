@@ -1,9 +1,50 @@
 from typing import Any
 
-from django.db import connection, migrations, models, transaction
+import orjson
+from django.conf import settings
+from django.db import connection, migrations, transaction
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
-from psycopg2.sql import SQL, Identifier, Literal
+from django.db.models import F, Func, JSONField, TextField, Value
+from django.db.models.functions import Cast
+from django.utils.timezone import now as timezone_now
+from psycopg2.sql import SQL, Literal
+
+LAST_EDIT_TIME = timezone_now()
+LAST_EDIT_TIMESTAMP = int(LAST_EDIT_TIME.timestamp())
+
+
+def update_messages_for_topic_edit(message_queryset: Any, notification_bot: Any) -> None:
+    edit_history_entry = {
+        "user_id": notification_bot.id,
+        "timestamp": LAST_EDIT_TIMESTAMP,
+        "prev_topic": "general chat",
+        "topic": "",
+    }
+    update_fields: dict[str, object] = {
+        "subject": "",
+        "last_edit_time": LAST_EDIT_TIME,
+        "edit_history": Cast(
+            Func(
+                Cast(
+                    Value(orjson.dumps([edit_history_entry]).decode()),
+                    JSONField(),
+                ),
+                Cast(
+                    Func(
+                        F("edit_history"),
+                        Value("[]"),
+                        function="COALESCE",
+                    ),
+                    JSONField(),
+                ),
+                function="",
+                arg_joiner=" || ",
+            ),
+            TextField(),
+        ),
+    }
+    message_queryset.update(**update_fields)
 
 
 def update_user_topic(channel_ids: list[int], user_topic_model: type[Any]) -> None:
@@ -32,59 +73,7 @@ def update_user_topic(channel_ids: list[int], user_topic_model: type[Any]) -> No
     ).delete()
 
 
-def update_edit_history(message_model: type[Any]) -> None:
-    BATCH_SIZE = 10000
-    lower_id_bound = 0
-
-    max_id = message_model.objects.aggregate(models.Max("id"))["id__max"]
-    if max_id is None:
-        return
-
-    while lower_id_bound < max_id:
-        upper_id_bound = min(lower_id_bound + BATCH_SIZE, max_id)
-        with connection.cursor() as cursor:
-            query = SQL(
-                """
-                UPDATE {table_name}
-                SET edit_history = (
-                    SELECT JSONB_AGG(
-                        elem
-                        ||
-                        (CASE
-                            WHEN elem ? 'prev_topic' AND elem->>'prev_topic' = 'general chat'
-                            THEN '{{"prev_topic": ""}}'::jsonb
-                            ELSE '{{}}'::jsonb
-                        END)
-                        ||
-                        (CASE
-                            WHEN elem ? 'topic' AND elem->>'topic' = 'general chat'
-                            THEN '{{"topic": ""}}'::jsonb
-                            ELSE '{{}}'::jsonb
-                        END)
-                    )::text
-                    FROM JSONB_ARRAY_ELEMENTS(edit_history::jsonb) AS elem
-                )
-                WHERE edit_history IS NOT NULL
-                AND id > %(lower_id_bound)s AND id <= %(upper_id_bound)s
-                AND (
-                    edit_history::jsonb @> '[{{"prev_topic": "general chat"}}]' OR
-                    edit_history::jsonb @> '[{{"topic": "general chat"}}]'
-                );
-            """
-            ).format(table_name=Identifier(message_model._meta.db_table))
-            cursor.execute(
-                query,
-                {
-                    "lower_id_bound": lower_id_bound,
-                    "upper_id_bound": upper_id_bound,
-                },
-            )
-
-        print(f"Processed {upper_id_bound} / {max_id}")
-        lower_id_bound += BATCH_SIZE
-
-
-def rename_general_chat_to_empty_string_topic(
+def move_messages_from_general_chat_to_empty_string_topic(
     apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     """Because legacy clients will be unable to distinguish the topic "general chat"
@@ -100,20 +89,25 @@ def rename_general_chat_to_empty_string_topic(
     So it makes sense to just consider those older "general chat"
     topics to be the same as the modern general chat topic.
 
-    The technical way to do that is to rewrite those topics in the
-    database to be represented as `""` rather than "general chat",
-    since we've endeavored to make the distinction between those two
-    storage approaches invisible to legacy clients at the API layer.
-
-    Thus, we don't generate edit history entries for this, since we're
-    thinking of it as redefining how "general chat" is stored in the
-    database.
+    The technical way to do that is to move messages in "general chat"
+    topics to `""`, since we've endeavored to make the distinction between
+    those two storage approaches invisible to legacy clients at the API layer.
     """
     Realm = apps.get_model("zerver", "Realm")
     Message = apps.get_model("zerver", "Message")
     UserTopic = apps.get_model("zerver", "UserTopic")
     ArchivedMessage = apps.get_model("zerver", "ArchivedMessage")
     ScheduledMessage = apps.get_model("zerver", "ScheduledMessage")
+    UserProfile = apps.get_model("zerver", "UserProfile")
+
+    try:
+        internal_realm = Realm.objects.get(string_id=settings.SYSTEM_BOT_REALM)
+    except Realm.DoesNotExist:
+        # Server not initialized.
+        return
+    notification_bot = UserProfile.objects.get(
+        email__iexact=settings.NOTIFICATION_BOT, realm=internal_realm
+    )
 
     for realm in Realm.objects.all():
         with transaction.atomic(durable=True):
@@ -125,7 +119,7 @@ def rename_general_chat_to_empty_string_topic(
                 )
             )
 
-            message_queryset.update(subject="")
+            update_messages_for_topic_edit(message_queryset, notification_bot)
 
             # Limiting the UserTopic query to only those channels that
             # contain an actual general chat topic does not guaranteed
@@ -134,15 +128,15 @@ def rename_general_chat_to_empty_string_topic(
             # we update all rows that have any current effect.
             update_user_topic(channel_ids, UserTopic)
 
-            ArchivedMessage.objects.filter(realm=realm, subject__iexact="general chat").update(
-                subject=""
+            # Uses index zerver_archivedmessage_realm_id_fab86889
+            archived_message_queryset = ArchivedMessage.objects.filter(
+                realm=realm, subject__iexact="general chat"
             )
+            update_messages_for_topic_edit(archived_message_queryset, notification_bot)
+
             ScheduledMessage.objects.filter(realm=realm, subject__iexact="general chat").update(
                 subject=""
             )
-
-    for message_model in [Message, ArchivedMessage]:
-        update_edit_history(message_model)
 
 
 class Migration(migrations.Migration):
@@ -151,7 +145,7 @@ class Migration(migrations.Migration):
     For clients predating this feature, such messages appear
     in "general chat" topic. Messages sent to "general chat" are
     stored in the database as having a "" topic. This migration
-    renames the existing "general chat" topic in the database to "".
+    moves the messages from "general chat" topic to `""`.
     """
 
     atomic = False
@@ -162,7 +156,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(
-            rename_general_chat_to_empty_string_topic,
+            move_messages_from_general_chat_to_empty_string_topic,
             reverse_code=migrations.RunPython.noop,
             elidable=True,
         ),
