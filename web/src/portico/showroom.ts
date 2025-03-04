@@ -7,7 +7,7 @@ import {$t, $t_html} from "../i18n.ts";
 type ComponentIntent = "neutral" | "brand" | "info" | "success" | "warning" | "danger";
 
 type ActionButton = {
-    type: "primary" | "quiet" | "borderless";
+    attention: "primary" | "quiet" | "borderless";
     intent: ComponentIntent;
     label: string;
     icon?: string | undefined;
@@ -41,7 +41,7 @@ const custom_normal_banner: Banner = {
     label: "This is a normal banner. Use the controls below to modify this banner.",
     buttons: [
         {
-            type: "quiet",
+            attention: "quiet",
             intent: "neutral",
             label: "Quiet Button",
         },
@@ -56,7 +56,7 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "This is a navbar alerts banner. Use the controls below to modify this banner.",
         buttons: [
             {
-                type: "quiet",
+                attention: "quiet",
                 intent: "neutral",
                 label: "Quiet Button",
             },
@@ -70,12 +70,12 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "Welcome back! You have 12 unread messages. Do you want to mark them all as read?",
         buttons: [
             {
-                type: "quiet",
+                attention: "quiet",
                 intent: "info",
                 label: "Yes, please!",
             },
             {
-                type: "borderless",
+                attention: "borderless",
                 intent: "info",
                 label: "No, I'll catch up.",
             },
@@ -89,7 +89,7 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "Zulip needs to send email to confirm users' addresses and send notifications.",
         buttons: [
             {
-                type: "quiet",
+                attention: "quiet",
                 intent: "warning",
                 label: "Configuration instructions",
             },
@@ -135,17 +135,17 @@ const alert_banners: Record<string, AlertBanner> = {
         ),
         buttons: [
             {
-                type: "primary",
+                attention: "primary",
                 intent: "brand",
                 label: "Enable notifications",
             },
             {
-                type: "quiet",
+                attention: "quiet",
                 intent: "brand",
                 label: "Ask me later",
             },
             {
-                type: "borderless",
+                attention: "borderless",
                 intent: "brand",
                 label: "Never ask on this computer",
             },
@@ -159,7 +159,7 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "Your profile is missing required fields.",
         buttons: [
             {
-                type: "quiet",
+                attention: "quiet",
                 intent: "warning",
                 label: "Edit your profile",
             },
@@ -173,7 +173,7 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "You are using an old version of the Zulip desktop app with known security bugs.",
         buttons: [
             {
-                type: "quiet",
+                attention: "quiet",
                 intent: "danger",
                 label: "Download the latest version",
             },
@@ -187,7 +187,7 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "Complete your organization profile, which is displayed on your organization's registration and login pages.",
         buttons: [
             {
-                type: "quiet",
+                attention: "quiet",
                 intent: "info",
                 label: "Edit profile",
             },
@@ -201,12 +201,12 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "This Zulip server is running an old version and should be upgraded.",
         buttons: [
             {
-                type: "quiet",
+                attention: "quiet",
                 intent: "danger",
                 label: "Learn more",
             },
             {
-                type: "borderless",
+                attention: "borderless",
                 intent: "danger",
                 label: "Dismiss for a week",
             },
@@ -217,17 +217,17 @@ const alert_banners: Record<string, AlertBanner> = {
 };
 
 const sortButtons = (buttons: ActionButton[]): void => {
-    const sortOrder: Record<ActionButton["type"], number> = {
+    const sortOrder: Record<ActionButton["attention"], number> = {
         primary: 1,
         quiet: 2,
         borderless: 3,
     };
 
-    buttons.sort((a, b) => sortOrder[a.type] - sortOrder[b.type]);
+    buttons.sort((a, b) => sortOrder[a.attention] - sortOrder[b.attention]);
 };
 
 const update_buttons = (buttons: ActionButton[]): void => {
-    const primary_button = buttons.find((button) => button.type === "primary");
+    const primary_button = buttons.find((button) => button.attention === "primary");
     if (primary_button) {
         $("#enable_primary_button").prop("checked", true);
         $("#primary_button_text").val(primary_button.label);
@@ -242,7 +242,7 @@ const update_buttons = (buttons: ActionButton[]): void => {
         $("#primary_button_text").val("");
         $("#disable_primary_button_icon").prop("checked", true);
     }
-    const quiet_button = buttons.find((button) => button.type === "quiet");
+    const quiet_button = buttons.find((button) => button.attention === "quiet");
     if (quiet_button) {
         $("#enable_quiet_button").prop("checked", true);
         $("#quiet_button_text").val(quiet_button.label);
@@ -257,7 +257,7 @@ const update_buttons = (buttons: ActionButton[]): void => {
         $("#quiet_button_text").val("");
         $("#disable_quiet_button_icon").prop("checked", true);
     }
-    const borderless_button = buttons.find((button) => button.type === "borderless");
+    const borderless_button = buttons.find((button) => button.attention === "borderless");
     if (borderless_button) {
         $("#enable_borderless_button").prop("checked", true);
         $("#borderless_button_text").val(borderless_button.label);
@@ -400,7 +400,7 @@ $(window).on("load", () => {
 
     $("input[name='primary-button-select']").on("change", (e) => {
         if ($(e.target).attr("id") === "enable_primary_button") {
-            if (current_banner.buttons.some((button) => button.type === "primary")) {
+            if (current_banner.buttons.some((button) => button.attention === "primary")) {
                 return;
             }
             let label = $("#primary_button_text").val()?.toString();
@@ -409,7 +409,7 @@ $(window).on("load", () => {
             }
             const is_icon_enabled = $("#enable_primary_button_icon").prop("checked") === true;
             current_banner.buttons.push({
-                type: "primary",
+                attention: "primary",
                 intent: current_banner.intent,
                 label,
                 icon: is_icon_enabled
@@ -419,7 +419,7 @@ $(window).on("load", () => {
             $("#primary_button_text").val(label);
         } else {
             current_banner.buttons = current_banner.buttons.filter(
-                (button) => button.type !== "primary",
+                (button) => button.attention !== "primary",
             );
         }
         sortButtons(current_banner.buttons);
@@ -431,7 +431,9 @@ $(window).on("load", () => {
     });
 
     $("input[name='primary-button-icon-select']").on("change", (e) => {
-        const primary_button = current_banner.buttons.find((button) => button.type === "primary");
+        const primary_button = current_banner.buttons.find(
+            (button) => button.attention === "primary",
+        );
         if (primary_button === undefined) {
             return;
         }
@@ -448,7 +450,9 @@ $(window).on("load", () => {
     });
 
     $("#primary_button_select_icon").on("change", function (this: HTMLElement) {
-        const primary_button = current_banner.buttons.find((button) => button.type === "primary");
+        const primary_button = current_banner.buttons.find(
+            (button) => button.attention === "primary",
+        );
         if (primary_button === undefined) {
             return;
         }
@@ -464,7 +468,9 @@ $(window).on("load", () => {
     });
 
     $("#primary_button_text").on("input", function (this: HTMLElement) {
-        const primary_button = current_banner.buttons.find((button) => button.type === "primary");
+        const primary_button = current_banner.buttons.find(
+            (button) => button.attention === "primary",
+        );
         if (primary_button === undefined) {
             return;
         }
@@ -478,7 +484,7 @@ $(window).on("load", () => {
 
     $("input[name='quiet-button-select']").on("change", (e) => {
         if ($(e.target).attr("id") === "enable_quiet_button") {
-            if (current_banner.buttons.some((button) => button.type === "quiet")) {
+            if (current_banner.buttons.some((button) => button.attention === "quiet")) {
                 return;
             }
             let label = $("#quiet_button_text").val()?.toString();
@@ -487,7 +493,7 @@ $(window).on("load", () => {
             }
             const is_icon_enabled = $("#enable_quiet_button_icon").prop("checked") === true;
             current_banner.buttons.push({
-                type: "quiet",
+                attention: "quiet",
                 intent: current_banner.intent,
                 label,
                 icon: is_icon_enabled
@@ -498,7 +504,7 @@ $(window).on("load", () => {
             sortButtons(current_banner.buttons);
         } else {
             current_banner.buttons = current_banner.buttons.filter(
-                (button) => button.type !== "quiet",
+                (button) => button.attention !== "quiet",
             );
         }
         $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
@@ -509,7 +515,7 @@ $(window).on("load", () => {
     });
 
     $("input[name='quiet-button-icon-select']").on("change", (e) => {
-        const quiet_button = current_banner.buttons.find((button) => button.type === "quiet");
+        const quiet_button = current_banner.buttons.find((button) => button.attention === "quiet");
         if (quiet_button === undefined) {
             return;
         }
@@ -526,7 +532,7 @@ $(window).on("load", () => {
     });
 
     $("#quiet_button_select_icon").on("change", function (this: HTMLElement) {
-        const quiet_button = current_banner.buttons.find((button) => button.type === "quiet");
+        const quiet_button = current_banner.buttons.find((button) => button.attention === "quiet");
         if (quiet_button === undefined) {
             return;
         }
@@ -542,7 +548,7 @@ $(window).on("load", () => {
     });
 
     $("#quiet_button_text").on("input", function (this: HTMLElement) {
-        const quiet_button = current_banner.buttons.find((button) => button.type === "quiet");
+        const quiet_button = current_banner.buttons.find((button) => button.attention === "quiet");
         if (quiet_button === undefined) {
             return;
         }
@@ -556,7 +562,7 @@ $(window).on("load", () => {
 
     $("input[name='borderless-button-select']").on("change", function (this: HTMLElement) {
         if ($(this).attr("id") === "enable_borderless_button") {
-            if (current_banner.buttons.some((button) => button.type === "borderless")) {
+            if (current_banner.buttons.some((button) => button.attention === "borderless")) {
                 return;
             }
             let label = $("#borderless_button_text").val()?.toString();
@@ -565,7 +571,7 @@ $(window).on("load", () => {
             }
             const is_icon_enabled = $("#enable_borderless_button_icon").prop("checked") === true;
             current_banner.buttons.push({
-                type: "borderless",
+                attention: "borderless",
                 intent: current_banner.intent,
                 label,
                 icon: is_icon_enabled
@@ -576,7 +582,7 @@ $(window).on("load", () => {
             sortButtons(current_banner.buttons);
         } else {
             current_banner.buttons = current_banner.buttons.filter(
-                (button) => button.type !== "borderless",
+                (button) => button.attention !== "borderless",
             );
         }
         $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
@@ -588,7 +594,7 @@ $(window).on("load", () => {
 
     $("input[name='borderless-button-icon-select']").on("change", function (this: HTMLElement) {
         const borderless_button = current_banner.buttons.find(
-            (button) => button.type === "borderless",
+            (button) => button.attention === "borderless",
         );
         if (borderless_button === undefined) {
             return;
@@ -607,7 +613,7 @@ $(window).on("load", () => {
 
     $("#borderless_button_select_icon").on("change", function (this: HTMLElement) {
         const borderless_button = current_banner.buttons.find(
-            (button) => button.type === "borderless",
+            (button) => button.attention === "borderless",
         );
         if (borderless_button === undefined) {
             return;
@@ -625,7 +631,7 @@ $(window).on("load", () => {
 
     $("#borderless_button_text").on("input", function (this: HTMLElement) {
         const borderless_button = current_banner.buttons.find(
-            (button) => button.type === "borderless",
+            (button) => button.attention === "borderless",
         );
         if (borderless_button === undefined) {
             return;

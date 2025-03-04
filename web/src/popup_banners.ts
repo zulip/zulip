@@ -12,7 +12,7 @@ const CONNECTION_ERROR_POPUP_BANNER: Banner = {
     }),
     buttons: [
         {
-            type: "quiet",
+            attention: "quiet",
             label: $t({defaultMessage: "Try now"}),
             custom_classes: "retry-connection",
         },

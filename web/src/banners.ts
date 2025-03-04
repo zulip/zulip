@@ -6,7 +6,7 @@ import render_banner from "../templates/components/banner.hbs";
 type ComponentIntent = "neutral" | "brand" | "info" | "success" | "warning" | "danger";
 
 type ActionButton = {
-    type: "primary" | "quiet" | "borderless";
+    attention: "primary" | "quiet" | "borderless";
     intent?: ComponentIntent;
     label: string;
     icon?: string;
