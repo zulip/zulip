@@ -248,7 +248,7 @@ export function set_up(settings_panel: SettingsPanel): void {
         .find(".setting_web_stream_unreads_count_display_policy")
         .val(settings_object.web_stream_unreads_count_display_policy);
 
-    update_information_density_settings_visibility($container, settings_object, {});
+    update_information_density_settings_visibility($container);
 
     if (for_realm_settings) {
         // For the realm-level defaults page, we use the common
@@ -291,11 +291,7 @@ export function set_up(settings_panel: SettingsPanel): void {
             let success_continuation;
             if (["dense_mode", "web_font_size_px", "web_line_height_percent"].includes(setting)) {
                 success_continuation = () => {
-                    update_information_density_settings_visibility(
-                        $container,
-                        settings_object,
-                        data,
-                    );
+                    update_information_density_settings_visibility($container);
                 };
             }
             const $status_element = $input_elem
@@ -465,34 +461,7 @@ export function update_page(property: UserSettingsProperty): void {
     settings_components.set_input_element_value($input_elem, value);
 }
 
-export function update_information_density_settings_visibility(
-    $container: JQuery,
-    settings_object: UserSettings | RealmDefaultSettings,
-    request_data: Record<string, boolean | number | string>,
-): void {
-    if (page_params.development_environment) {
-        $container.find(".information-density-settings").show();
-        return;
-    }
-
-    const dense_mode = request_data.dense_mode ?? settings_object.dense_mode;
-    const web_font_size_px = request_data.web_font_size_px ?? settings_object.web_font_size_px;
-    const web_line_height_percent =
-        request_data.web_line_height_percent ?? settings_object.web_line_height_percent;
-
-    if (dense_mode) {
-        $container.find(".information-density-settings").hide();
-        return;
-    }
-
-    if (
-        web_font_size_px === NON_COMPACT_MODE_FONT_SIZE_PX &&
-        web_line_height_percent === NON_COMPACT_MODE_LINE_HEIGHT_PERCENT
-    ) {
-        $container.find(".information-density-settings").hide();
-        return;
-    }
-
+export function update_information_density_settings_visibility($container: JQuery): void {
     $container.find(".information-density-settings").show();
 }
 
