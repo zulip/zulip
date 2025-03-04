@@ -936,6 +936,8 @@ input.settings_text_input {
             }
 
             &.saving {
+                pointer-events: none;
+
                 .save-discard-widget-button-icon {
                     display: none;
                 }
