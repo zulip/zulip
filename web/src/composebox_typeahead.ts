@@ -133,7 +133,7 @@ export let emoji_collection: Emoji[] = [];
 
 // This has mostly been replaced with `type` fields on
 // the typeahead items, but is still used for the stream>topic
-// flow and for `get_header_html`. It would be great if we could
+// flow and for `get_footer_html`. It would be great if we could
 // get rid of it altogether.
 let completing: string | null;
 let token: string;
@@ -1363,7 +1363,7 @@ export function initialize_topic_edit_typeahead(
     });
 }
 
-function get_header_html(): string | false {
+function get_footer_html(): string | false {
     let tip_text = "";
     switch (completing) {
         case "silent_mention":
@@ -1417,7 +1417,7 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
                 return false;
             },
             trigger_selection: compose_trigger_selection,
-            header_html: get_header_html,
+            footer_html: get_footer_html,
             hideAfterSelect() {
                 // After selecting a stream, we immediately show topic options,
                 // so we don't want to hide the typeahead.
@@ -1477,7 +1477,7 @@ export function initialize({
             }
             return false;
         },
-        header_html: render_topic_typeahead_hint,
+        footer_html: render_topic_typeahead_hint,
     });
 
     const private_message_typeahead_input: TypeaheadInputElement = {
