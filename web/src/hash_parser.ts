@@ -116,6 +116,10 @@ export function is_in_specified_hash_category(hash_categories: string[]): boolea
     return hash_categories.includes(main_hash);
 }
 
+export function is_an_allowed_web_public_narrow(operator: string): boolean {
+    return allowed_web_public_narrow_operators.includes(operator);
+}
+
 export const allowed_web_public_narrow_operators = [
     "channels",
     "channel",
@@ -157,7 +161,7 @@ export function is_spectator_compatible(hash: string): boolean {
 
     if (main_hash === "narrow") {
         const hash_section = get_hash_section(hash);
-        if (!allowed_web_public_narrow_operators.includes(hash_section)) {
+        if (!is_an_allowed_web_public_narrow(hash_section)) {
             return false;
         }
         return true;
