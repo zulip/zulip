@@ -38,6 +38,7 @@ const admins = {
     can_manage_group: 4,
     can_mention_group: 1,
     can_remove_members_group: 4,
+    deactivated: false,
 };
 const moderators = {
     description: "Moderators",
@@ -52,6 +53,7 @@ const moderators = {
     can_manage_group: 4,
     can_mention_group: 1,
     can_remove_members_group: 4,
+    deactivated: false,
 };
 const members = {
     description: "Members",
@@ -66,6 +68,7 @@ const members = {
     can_manage_group: 4,
     can_mention_group: 4,
     can_remove_members_group: 4,
+    deactivated: false,
 };
 const nobody = {
     description: "Nobody",
@@ -80,6 +83,7 @@ const nobody = {
     can_manage_group: 4,
     can_mention_group: 2,
     can_remove_members_group: 4,
+    deactivated: false,
 };
 const students = {
     description: "Students group",
@@ -98,6 +102,19 @@ const students = {
     can_mention_group: 3,
     can_remove_members_group: 1,
     creator_id: 4,
+    deactivated: false,
+};
+const deactivated_group = {
+    name: "Deactivated test group",
+    id: 3,
+    members: new Set([1, 2, 3]),
+    is_system_group: false,
+    direct_subgroup_ids: new Set([4, 5, 6]),
+    can_join_group: 1,
+    can_leave_group: 1,
+    can_manage_group: 1,
+    can_mention_group: 1,
+    deactivated: true,
 };
 
 const group_permission_settings = mock_esm("../src/group_permission_settings", {});
@@ -364,7 +381,7 @@ run_test("can_manage_user_group", ({override}) => {
 
 function test_user_group_permission_setting(override, setting_name, permission_func) {
     user_groups.initialize({
-        realm_user_groups: [admins, moderators, members, nobody, students],
+        realm_user_groups: [admins, moderators, members, nobody, students, deactivated_group],
     });
     override(realm, "realm_can_manage_all_groups", nobody.id);
 
@@ -414,6 +431,9 @@ function test_user_group_permission_setting(override, setting_name, permission_f
     override(realm, "realm_can_manage_all_groups", moderators.id);
     override(current_user, "user_id", 2);
     assert.ok(permission_func(students.id));
+
+    // Cannot perform any join, leave, add, remove if group is deactivated
+    assert.ok(!permission_func(deactivated_group.id));
 }
 
 run_test("can_join_user_group", ({override}) => {
