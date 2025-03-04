@@ -106,6 +106,7 @@ export class DropdownWidget {
     disable_for_spectators: boolean;
     dropdown_input_visible_selector: string;
     prefer_top_start_placement: boolean;
+    highlighted_index = 0;
 
     // TODO: This is only used in one widget, with no implementation
     // here, so should be generalized or reworked.
@@ -238,6 +239,31 @@ export class DropdownWidget {
         }
     }
 
+    update_highlight($popper: JQuery): void {
+        if (!this.list_widget || this.hide_search_box) {
+            return;
+        }
+        const list_items = this.list_widget.get_current_list();
+        $popper.find(".list-item").removeClass("active");
+        if (
+            list_items.length > 0 &&
+            this.highlighted_index >= 0 &&
+            this.highlighted_index < list_items.length
+        ) {
+            const highlighted_item = list_items[this.highlighted_index];
+            if (highlighted_item) {
+                const $item = $popper.find(
+                    `.list-item[data-unique-id="${highlighted_item.unique_id}"]`,
+                );
+                $item.addClass("active");
+                const element = $item[0];
+                if (element) {
+                    element.scrollIntoView({block: "nearest"});
+                }
+            }
+        }
+    }
+
     setup(): void {
         this.init();
         const delegate_container = util.the(this.$events_container);
@@ -295,8 +321,12 @@ export class DropdownWidget {
                     },
                 );
 
+                this.update_highlight($popper);
+
                 $search_input.on("input.list_widget_filter", () => {
                     this.show_empty_if_no_items($popper);
+                    this.highlighted_index = 0;
+                    this.update_highlight($popper);
                 });
 
                 // Keyboard handler
@@ -313,14 +343,6 @@ export class DropdownWidget {
                     const $sticky_bottom_option = $popper.find(".sticky-bottom-option");
                     assert(this.list_widget !== undefined);
                     const list_items = this.list_widget.get_current_list();
-                    if (
-                        list_items.length === 0 &&
-                        !(e.key === "Escape") &&
-                        !this.sticky_bottom_option
-                    ) {
-                        // Let the browser handle it.
-                        return;
-                    }
 
                     function first_item(): JQuery {
                         const first_item = list_items[0];
@@ -369,22 +391,6 @@ export class DropdownWidget {
                         }
                     };
 
-                    const handle_arrow_down_on_search_input = (): void => {
-                        if (list_items.length > 0) {
-                            trigger_element_focus(first_item());
-                        } else if (this.sticky_bottom_option) {
-                            trigger_element_focus($sticky_bottom_option);
-                        }
-                    };
-
-                    const handle_arrow_up_on_search_input = (): void => {
-                        if (this.sticky_bottom_option) {
-                            trigger_element_focus($sticky_bottom_option);
-                        } else {
-                            render_all_items_and_focus_last_item();
-                        }
-                    };
-
                     const handle_arrow_up_on_first_item = (): void => {
                         if (this.hide_search_box) {
                             render_all_items_and_focus_last_item();
@@ -393,62 +399,111 @@ export class DropdownWidget {
                         }
                     };
 
-                    switch (e.key) {
-                        case "Enter":
-                            if (
-                                list_items.length === 0 ||
-                                e.target === $sticky_bottom_option.get(0)
-                            ) {
-                                $sticky_bottom_option.trigger("click");
-                            } else if (e.target === $search_input.get(0)) {
-                                // Select first item if in search input.
-                                first_item().trigger("click");
-                            } else if (list_items.length > 0) {
-                                $(e.target).trigger("click");
-                            }
-                            e.stopPropagation();
-                            e.preventDefault();
-                            break;
+                    if (e.target === $search_input.get(0) && list_items.length > 0) {
+                        $search_input.trigger("focus");
+                        switch (e.key) {
+                            case "Tab":
+                            case "ArrowDown":
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (this.highlighted_index >= list_items.length - 1) {
+                                    this.highlighted_index = 0;
+                                } else {
+                                    this.highlighted_index += 1;
+                                }
+                                this.update_highlight($popper);
+                                break;
 
-                        case "Escape":
-                            popover_menus.hide_current_popover_if_visible(instance);
-                            this.on_exit_with_escape_callback();
-                            e.stopPropagation();
-                            e.preventDefault();
-                            break;
+                            case "ArrowUp":
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (this.highlighted_index <= 0) {
+                                    this.highlighted_index = list_items.length - 1;
+                                } else {
+                                    this.highlighted_index -= 1;
+                                }
+                                this.update_highlight($popper);
+                                break;
 
-                        case "Tab":
-                        case "ArrowDown":
-                            switch (e.target) {
-                                case $search_input.get(0):
-                                    handle_arrow_down_on_search_input();
-                                    break;
-                                case $sticky_bottom_option.get(0):
-                                    handle_arrow_down_on_sticky_bottom_option();
-                                    break;
-                                case last_item().get(0):
-                                    handle_arrow_down_on_last_item();
-                                    break;
-                                default:
-                                    trigger_element_focus($(e.target).next());
-                            }
-                            break;
+                            case "Enter":
+                                if (
+                                    this.highlighted_index >= 0 &&
+                                    this.highlighted_index < list_items.length
+                                ) {
+                                    const highlighted_item = list_items[this.highlighted_index];
+                                    if (highlighted_item) {
+                                        const $item = $popper.find(
+                                            `.list-item[data-unique-id="${highlighted_item.unique_id}"]`,
+                                        );
+                                        $item.trigger("click");
+                                    }
+                                } else if (this.sticky_bottom_option) {
+                                    $sticky_bottom_option.trigger("click");
+                                } else {
+                                    popover_menus.hide_current_popover_if_visible(instance);
+                                }
+                                this.highlighted_index = 0;
+                                e.stopPropagation();
+                                e.preventDefault();
+                                break;
 
-                        case "ArrowUp":
-                            switch (e.target) {
-                                case $search_input.get(0):
-                                    handle_arrow_up_on_search_input();
-                                    break;
-                                case $sticky_bottom_option.get(0):
-                                    handle_arrow_up_on_sticky_bottom_option();
-                                    break;
-                                case first_item().get(0):
-                                    handle_arrow_up_on_first_item();
-                                    break;
-                                default:
-                                    trigger_element_focus($(e.target).prev());
-                            }
-                            break;
+                            case "Escape":
+                                popover_menus.hide_current_popover_if_visible(instance);
+                                this.on_exit_with_escape_callback();
+                                this.highlighted_index = 0;
+                                e.stopPropagation();
+                                e.preventDefault();
+                                break;
+                        }
+                    } else {
+                        switch (e.key) {
+                            case "Enter":
+                                if (
+                                    list_items.length === 0 ||
+                                    e.target === $sticky_bottom_option.get(0)
+                                ) {
+                                    $sticky_bottom_option.trigger("click");
+                                } else if (list_items.length > 0) {
+                                    $(e.target).trigger("click");
+                                }
+                                e.stopPropagation();
+                                e.preventDefault();
+                                break;
+
+                            case "Escape":
+                                popover_menus.hide_current_popover_if_visible(instance);
+                                this.on_exit_with_escape_callback();
+                                e.stopPropagation();
+                                e.preventDefault();
+                                break;
+
+                            case "Tab":
+                            case "ArrowDown":
+                                switch (e.target) {
+                                    case $sticky_bottom_option.get(0):
+                                        handle_arrow_down_on_sticky_bottom_option();
+                                        break;
+                                    case last_item().get(0):
+                                        handle_arrow_down_on_last_item();
+                                        break;
+                                    default:
+                                        trigger_element_focus($(e.target).next());
+                                }
+                                break;
+
+                            case "ArrowUp":
+                                switch (e.target) {
+                                    case $sticky_bottom_option.get(0):
+                                        handle_arrow_up_on_sticky_bottom_option();
+                                        break;
+                                    case first_item().get(0):
+                                        handle_arrow_up_on_first_item();
+                                        break;
+                                    default:
+                                        trigger_element_focus($(e.target).prev());
+                                }
+                                break;
+                        }
                     }
                 });
 
@@ -461,11 +516,13 @@ export class DropdownWidget {
                         this.current_value = Number.parseInt(this.current_value, 10);
                     }
                     this.item_click_callback(event, instance, this, false);
+                    this.highlighted_index = 0;
                 });
 
                 // Click on $sticky_bottom_option.
                 $popper.on("click", ".sticky-bottom-option", (event) => {
                     this.item_click_callback(event, instance, this, true);
+                    this.highlighted_index = 0;
                 });
 
                 // Set focus on first element when dropdown opens.
@@ -485,6 +542,7 @@ export class DropdownWidget {
                 this.on_mount_callback(instance);
             },
             onHidden: (instance: tippy.Instance) => {
+                this.highlighted_index = 0;
                 if (this.focus_target_on_hidden) {
                     $(this.widget_selector).trigger("focus");
                 }
