@@ -106,6 +106,7 @@ export class DropdownWidget {
     disable_for_spectators: boolean;
     dropdown_input_visible_selector: string;
     prefer_top_start_placement: boolean;
+    highlighted_index = 0;
 
     // TODO: This is only used in one widget, with no implementation
     // here, so should be generalized or reworked.
@@ -238,6 +239,31 @@ export class DropdownWidget {
         }
     }
 
+    update_highlight($popper: JQuery): void {
+        if (!this.list_widget) {
+            return;
+        }
+        const list_items = this.list_widget.get_current_list();
+        $popper.find(".list-item").removeClass("active");
+        if (
+            list_items.length > 0 &&
+            this.highlighted_index >= 0 &&
+            this.highlighted_index < list_items.length
+        ) {
+            const highlighted_item = list_items[this.highlighted_index];
+            if (highlighted_item) {
+                const $item = $popper.find(
+                    `.list-item[data-unique-id="${highlighted_item.unique_id}"]`,
+                );
+                $item.addClass("active");
+                const element = $item[0];
+                if (element) {
+                    element.scrollIntoView({block: "nearest"});
+                }
+            }
+        }
+    }
+
     setup(): void {
         this.init();
         const delegate_container = util.the(this.$events_container);
@@ -295,160 +321,79 @@ export class DropdownWidget {
                     },
                 );
 
+                this.update_highlight($popper);
+
                 $search_input.on("input.list_widget_filter", () => {
                     this.show_empty_if_no_items($popper);
+                    this.highlighted_index = 0;
+                    this.update_highlight($popper);
                 });
 
                 // Keyboard handler
                 $popper.on("keydown", (e) => {
-                    function trigger_element_focus($element: JQuery): void {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        // When bringing a non-visible element into view, scroll as minimum as possible.
-                        $element[0]?.scrollIntoView({block: "nearest"});
-                        $element.trigger("focus");
-                    }
-
                     const $search_input = $popper.find(".dropdown-list-search-input");
                     const $sticky_bottom_option = $popper.find(".sticky-bottom-option");
                     assert(this.list_widget !== undefined);
                     const list_items = this.list_widget.get_current_list();
-                    if (
-                        list_items.length === 0 &&
-                        !(e.key === "Escape") &&
-                        !this.sticky_bottom_option
-                    ) {
-                        // Let the browser handle it.
-                        return;
+
+                    if (!this.hide_search_box) {
+                        $search_input.trigger("focus");
                     }
 
-                    function first_item(): JQuery {
-                        const first_item = list_items[0];
-                        assert(first_item !== undefined);
-                        return $popper.find(`.list-item[data-unique-id="${first_item.unique_id}"]`);
-                    }
+                    if (e.target === $search_input.get(0) && list_items.length > 0) {
+                        switch (e.key) {
+                            case "ArrowDown":
+                                e.preventDefault();
+                                e.stopPropagation();
+                                this.highlighted_index = Math.min(
+                                    this.highlighted_index + 1,
+                                    list_items.length - 1,
+                                );
+                                this.update_highlight($popper);
+                                break;
 
-                    function last_item(): JQuery {
-                        const last_item = list_items.at(-1);
-                        assert(last_item !== undefined);
-                        return $popper.find(`.list-item[data-unique-id="${last_item.unique_id}"]`);
-                    }
+                            case "ArrowUp":
+                                e.preventDefault();
+                                e.stopPropagation();
+                                this.highlighted_index = Math.max(this.highlighted_index - 1, 0);
+                                this.update_highlight($popper);
+                                break;
 
-                    const render_all_items_and_focus_last_item = (): void => {
-                        assert(this.list_widget !== undefined);
-                        // List widget doesn't render all items by default, so we need to render all
-                        // the items and focus on the last element.
-                        const list_items = this.list_widget.get_current_list();
-                        this.list_widget.render(list_items.length);
-                        trigger_element_focus(last_item());
-                    };
+                            case "Enter":
+                                if (
+                                    this.highlighted_index >= 0 &&
+                                    this.highlighted_index < list_items.length
+                                ) {
+                                    const highlighted_item = list_items[this.highlighted_index];
+                                    if (highlighted_item) {
+                                        const $item = $popper.find(
+                                            `.list-item[data-unique-id="${highlighted_item.unique_id}"]`,
+                                        );
+                                        $item.trigger("click");
+                                    }
+                                } else if (this.sticky_bottom_option) {
+                                    $sticky_bottom_option.trigger("click");
+                                } else {
+                                    popover_menus.hide_current_popover_if_visible(instance);
+                                }
+                                e.stopPropagation();
+                                e.preventDefault();
+                                break;
 
-                    const handle_arrow_down_on_last_item = (): void => {
-                        if (this.sticky_bottom_option) {
-                            trigger_element_focus($sticky_bottom_option);
-                        } else if (this.hide_search_box) {
-                            trigger_element_focus(first_item());
-                        } else {
-                            trigger_element_focus($search_input);
+                            case "Escape":
+                                popover_menus.hide_current_popover_if_visible(instance);
+                                this.on_exit_with_escape_callback();
+                                e.stopPropagation();
+                                e.preventDefault();
+                                break;
+
+                            case "Tab":
+                                e.preventDefault();
+                                e.stopPropagation();
+                                $("#stream_message_recipient_topic").trigger("focus");
+                                popover_menus.hide_current_popover_if_visible(instance);
+                                break;
                         }
-                    };
-
-                    const handle_arrow_down_on_sticky_bottom_option = (): void => {
-                        if (this.hide_search_box) {
-                            trigger_element_focus(first_item());
-                        } else {
-                            trigger_element_focus($search_input);
-                        }
-                    };
-
-                    const handle_arrow_up_on_sticky_bottom_option = (): void => {
-                        if (list_items.length > 0) {
-                            render_all_items_and_focus_last_item();
-                        } else if (!this.hide_search_box) {
-                            trigger_element_focus($search_input);
-                        }
-                    };
-
-                    const handle_arrow_down_on_search_input = (): void => {
-                        if (list_items.length > 0) {
-                            trigger_element_focus(first_item());
-                        } else if (this.sticky_bottom_option) {
-                            trigger_element_focus($sticky_bottom_option);
-                        }
-                    };
-
-                    const handle_arrow_up_on_search_input = (): void => {
-                        if (this.sticky_bottom_option) {
-                            trigger_element_focus($sticky_bottom_option);
-                        } else {
-                            render_all_items_and_focus_last_item();
-                        }
-                    };
-
-                    const handle_arrow_up_on_first_item = (): void => {
-                        if (this.hide_search_box) {
-                            render_all_items_and_focus_last_item();
-                        } else {
-                            trigger_element_focus($search_input);
-                        }
-                    };
-
-                    switch (e.key) {
-                        case "Enter":
-                            if (
-                                list_items.length === 0 ||
-                                e.target === $sticky_bottom_option.get(0)
-                            ) {
-                                $sticky_bottom_option.trigger("click");
-                            } else if (e.target === $search_input.get(0)) {
-                                // Select first item if in search input.
-                                first_item().trigger("click");
-                            } else if (list_items.length > 0) {
-                                $(e.target).trigger("click");
-                            }
-                            e.stopPropagation();
-                            e.preventDefault();
-                            break;
-
-                        case "Escape":
-                            popover_menus.hide_current_popover_if_visible(instance);
-                            this.on_exit_with_escape_callback();
-                            e.stopPropagation();
-                            e.preventDefault();
-                            break;
-
-                        case "Tab":
-                        case "ArrowDown":
-                            switch (e.target) {
-                                case $search_input.get(0):
-                                    handle_arrow_down_on_search_input();
-                                    break;
-                                case $sticky_bottom_option.get(0):
-                                    handle_arrow_down_on_sticky_bottom_option();
-                                    break;
-                                case last_item().get(0):
-                                    handle_arrow_down_on_last_item();
-                                    break;
-                                default:
-                                    trigger_element_focus($(e.target).next());
-                            }
-                            break;
-
-                        case "ArrowUp":
-                            switch (e.target) {
-                                case $search_input.get(0):
-                                    handle_arrow_up_on_search_input();
-                                    break;
-                                case $sticky_bottom_option.get(0):
-                                    handle_arrow_up_on_sticky_bottom_option();
-                                    break;
-                                case first_item().get(0):
-                                    handle_arrow_up_on_first_item();
-                                    break;
-                                default:
-                                    trigger_element_focus($(e.target).prev());
-                            }
-                            break;
                     }
                 });
 
