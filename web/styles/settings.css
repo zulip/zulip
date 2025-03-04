@@ -138,9 +138,9 @@ h3,
 
 .play_notification_sound {
     .notification-sound-icon {
-        font-size: 22px;
+        font-size: 1.5714em; /* 22px at 14px / em */
         /* Visually center with chevron in select */
-        line-height: 26px;
+        line-height: 1.8571em; /* 26px at 14px / em */
         cursor: pointer;
     }
 }
