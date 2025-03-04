@@ -647,6 +647,9 @@
         ". . banner-label banner-label banner-close-button banner-close-button"
         ". banner-action-buttons banner-action-buttons banner-action-buttons banner-action-buttons .";
 
+    /* Popup banner related variables */
+    --popup-banner-translate-y-distance: 100px;
+
     /* Colors used across the app */
     --color-date: light-dark(hsl(0deg 0% 15% / 75%), hsl(0deg 0% 100% / 75%));
     --color-background-private-message-header: light-dark(
