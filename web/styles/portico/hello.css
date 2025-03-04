@@ -198,7 +198,9 @@ ul {
     }
 
     .client-logos-div {
-        transition: opacity 0.7s ease-out;
+        transition:
+            opacity,
+            background 0.7s ease-out;
         background-position: center;
     }
 
