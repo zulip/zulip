@@ -1007,6 +1007,7 @@ export function show_settings_for(group: UserGroup): void {
     };
 
     if (group.deactivated) {
+        $(".ind-tab.last").addClass("disabled");
         $("#user_group_settings .group-banner .group-info-banner").html(
             render_group_deactivated_info_banner(context),
         );
