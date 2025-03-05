@@ -888,8 +888,9 @@ input.settings_text_input {
 #stream_settings .save-button-controls,
 #settings_page .save-button-controls,
 #user_group_settings .save-button-controls {
-    display: inline;
-    margin: 4px 8px;
+    display: flex;
+    margin: 0.2857em 0.5714em; /* 4px 8px at 14px/em */
+    align-items: center;
 
     &.hide {
         display: none;
