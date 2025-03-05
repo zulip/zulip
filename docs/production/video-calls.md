@@ -12,13 +12,14 @@ supported by Zulip are:
 
 By default, Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
 as its call provider. This page documents the configurations required to support
-other [video call integration options](https://zulip.com/help/start-a-call) on a
-self-hosted Zulip server.
+other [video call integration
+options](https://zulip.com/help/configure-call-provider) on a self-hosted Zulip
+server.
 
 :::{note}
 You can disable the video and voice call buttons for your organization by
 [setting the call
-provider](https://zulip.com/help/start-a-call#change-your-organizations-call-provider)
+provider](https://zulip.com/help/configure-call-provider)
 to "None".
 :::
 
@@ -27,7 +28,7 @@ to "None".
 You can configure Zulip to use a self-hosted
 instance of Jitsi Meet by providing the URL of your self-hosted Jitsi Meet
 server [in organization
-settings](https://zulip.com/help/start-a-call#use-a-self-hosted-instance-of-jitsi-meet).
+settings](https://zulip.com/help/configure-call-provider#use-a-self-hosted-instance-of-jitsi-meet).
 No server configuration changes are required.
 
 ## Zoom
@@ -127,7 +128,7 @@ type of Zoom application for your Zulip server.
 
 This enables Zoom support in your Zulip server. Finally, [configure Zoom as the
 video call
-provider](https://zulip.com/help/start-a-call#change-your-organizations-call-provider)
+provider](https://zulip.com/help/configure-call-provider)
 in the Zulip organizations where you want to use it.
 
 ## BigBlueButton
@@ -158,5 +159,5 @@ Server as follows:
 
 This enables BigBlueButton support in your Zulip server. Finally, [configure
 BigBlueButton as the video call
-provider](https://zulip.com/help/start-a-call#change-your-organizations-call-provider)
+provider](https://zulip.com/help/configure-call-provider)
 in the Zulip organizations where you want to use it.
