@@ -276,12 +276,6 @@ h4.user_group_setting_subsection_title {
     margin: 0;
 }
 
-#subscriptions h1 {
-    font-size: 25px;
-    font-weight: 300;
-    padding-top: 40px;
-}
-
 .subscriptions-container .subscriptions-header .fa-chevron-left,
 .user-groups-container .user-groups-header .fa-chevron-left {
     position: relative;
