@@ -6,6 +6,7 @@ import {z} from "zod";
 
 import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
 import render_confirm_join_group_direct_member from "../templates/confirm_dialog/confirm_join_group_direct_member.hbs";
+import render_modal_banner from "../templates/modal_banner/modal_banner.hbs";
 import render_group_info_banner from "../templates/modal_banner/user_group_info_banner.hbs";
 import render_settings_checkbox from "../templates/settings/settings_checkbox.hbs";
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
@@ -1008,6 +1009,20 @@ export function show_settings_for(group: UserGroup): void {
     $edit_container.show();
     show_membership_settings(group);
     show_general_settings(group);
+
+    const context = {
+        banner_type: compose_banner.WARNING,
+        classname: "group_deactivated",
+        hide_close_button: true,
+        banner_text: $t({
+            defaultMessage:
+                "This group is deactivated. It can't be mentioned or used for any permissions.",
+        }),
+    };
+
+    if (group.deactivated) {
+        $("#user_group_settings .group-banner").html(render_modal_banner(context));
+    }
 
     $edit_container
         .find(".group-assigned-permissions")

@@ -561,6 +561,10 @@ h4.user_group_setting_subsection_title {
             margin: 0 auto 10px;
         }
 
+        .main-view-banner.group_deactivated {
+            margin-bottom: 10px;
+        }
+
         .display-type {
             height: var(--settings-overlay-subheader-height);
             display: flex;
