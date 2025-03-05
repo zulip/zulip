@@ -1,5 +1,4 @@
 from collections.abc import Mapping
-from enum import Enum
 from typing import Annotated, Any, Literal
 
 from django.conf import settings
@@ -84,6 +83,17 @@ def check_jitsi_url(value: str) -> str:
         raise JsonableError(_("{var_name} is not an allowed_type").format(var_name=var_name))
 
 
+def parse_message_edit_history_visibility_policy(
+    policy_name: str,
+) -> MessageEditHistoryVisibilityPolicyEnum:
+    try:
+        return MessageEditHistoryVisibilityPolicyEnum[policy_name]
+    except KeyError:
+        raise JsonableError(
+            _("Invalid {var_name}").format(var_name="message_edit_history_visibility_policy")
+        )
+
+
 @require_realm_admin
 @typed_endpoint
 def update_realm(
@@ -117,10 +127,8 @@ def update_realm(
     message_content_edit_limit_seconds_raw: Annotated[
         Json[int | str] | None, ApiParamConfig("message_content_edit_limit_seconds")
     ] = None,
-    message_edit_history_visibility_policy_raw: Annotated[
-        # TODO: Use MessageEditHistoryVisibilityPolicyEnum here with Pydantic
-        Literal["all", "moves", "none"] | None,
-        ApiParamConfig("message_edit_history_visibility_policy"),
+    message_edit_history_visibility_policy: Annotated[
+        str | None, AfterValidator(lambda val: parse_message_edit_history_visibility_policy(val))
     ] = None,
     default_language: str | None = None,
     waiting_period_threshold: Json[NonNegativeInt] | None = None,
@@ -337,12 +345,6 @@ def update_realm(
             )
 
             data["jitsi_server_url"] = jitsi_server_url
-
-    message_edit_history_visibility_policy: Enum | None = None
-    if message_edit_history_visibility_policy_raw is not None:
-        message_edit_history_visibility_policy = MessageEditHistoryVisibilityPolicyEnum[
-            message_edit_history_visibility_policy_raw
-        ]
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
