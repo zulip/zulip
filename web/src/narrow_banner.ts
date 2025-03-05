@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import {should_disable_compose_reply_button_for_selected_message} from "./compose_closed_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import type {Filter} from "./filter.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -124,7 +125,14 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
               ),
     };
     const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
-
+    const default_banner_for_disabled_compose_for_dms = $t({
+        defaultMessage: "This conversation does not include any users who can authorize it.",
+    });
+    if (should_disable_compose_reply_button_for_selected_message()) {
+        return {
+            title: default_banner_for_disabled_compose_for_dms,
+        };
+    }
     if (current_filter.is_in_home()) {
         // We're in the combined feed view.
         return {
@@ -439,23 +447,6 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     title: $t({defaultMessage: "This user does not exist!"}),
                 };
             }
-            const person_id_string = person_in_dms.user_id.toString();
-            const direct_message_error_string =
-                compose_validate.check_dm_permissions_and_get_error_string(person_id_string);
-            if (direct_message_error_string) {
-                return {
-                    title: direct_message_error_string,
-                    html: $t_html(
-                        {
-                            defaultMessage: "<z-link>Learn more.</z-link>",
-                        },
-                        {
-                            "z-link": (content_html) =>
-                                `<a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">${content_html.join("")}</a>`,
-                        },
-                    ),
-                };
-            }
             if (people.is_current_user(first_operand)) {
                 return {
                     title: $t({
@@ -464,12 +455,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 };
             }
             return {
-                title: $t(
-                    {
-                        defaultMessage: "You have no direct messages including {person} yet.",
-                    },
-                    {person: person_in_dms.full_name},
-                ),
+                title: default_banner_for_multiple_filters,
             };
         }
     }
