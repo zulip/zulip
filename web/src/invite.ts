@@ -20,7 +20,6 @@ import {csrf_token} from "./csrf.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as email_pill from "./email_pill.ts";
 import {$t, $t_html} from "./i18n.ts";
-import * as input_pill from "./input_pill.ts";
 import * as invite_stream_picker_pill from "./invite_stream_picker_pill.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
@@ -39,7 +38,7 @@ import * as util from "./util.ts";
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
-let pills: email_pill.EmailPillWidget;
+let email_pill_widget: email_pill.EmailPillWidget;
 let stream_pill_widget: stream_pill.StreamPillWidget;
 let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
 let guest_invite_stream_ids: number[] = [];
@@ -100,15 +99,15 @@ function get_common_invitation_data(): {
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: JSON.stringify(expires_in),
         group_ids: JSON.stringify(group_ids),
-        invitee_emails: pills
+        invitee_emails: email_pill_widget
             .items()
-            .map((pill) => email_pill.get_email_from_item(pill))
+            .map((item) => item.email)
             .join(","),
         include_realm_default_subscriptions: JSON.stringify(include_realm_default_subscriptions),
     };
-    const current_email = email_pill.get_current_email(pills);
+    const current_email = email_pill.get_current_email(email_pill_widget);
     if (current_email) {
-        if (pills.items().length === 0) {
+        if (email_pill_widget.items().length === 0) {
             data.invitee_emails = current_email;
         } else {
             data.invitee_emails += "," + current_email;
@@ -140,7 +139,7 @@ function submit_invitation_form(): void {
         data,
         beforeSend,
         success() {
-            const number_of_invites_sent = pills.items().length;
+            const number_of_invites_sent = email_pill_widget.items().length;
             ui_report.success(
                 $t_html(
                     {
@@ -151,7 +150,7 @@ function submit_invitation_form(): void {
                 ),
                 $invite_status,
             );
-            pills.clear();
+            email_pill_widget.clear();
 
             if (page_params.development_environment) {
                 const rendered_email_msg = render_settings_dev_env_email_access();
@@ -215,7 +214,7 @@ function submit_invitation_form(): void {
 
                 if (parsed.data.sent_invitations) {
                     for (const email of invitee_emails_errored) {
-                        pills.appendValue(email);
+                        email_pill_widget.appendValue(email);
                     }
                 }
             }
@@ -391,12 +390,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     function invite_user_modal_post_render(): void {
         const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
         const $pill_container = $("#invitee_emails_container .pill-container");
-        pills = input_pill.create({
-            $container: $pill_container,
-            create_item_from_text: email_pill.create_item_from_email,
-            get_text_from_item: email_pill.get_email_from_item,
-            get_display_value_from_item: email_pill.get_email_from_item,
-        });
+        email_pill_widget = email_pill.create_pills($pill_container);
 
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 
@@ -452,8 +446,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $button.prop(
                 "disabled",
                 (selected_tab === "invite-email-tab" &&
-                    pills.items().length === 0 &&
-                    email_pill.get_current_email(pills) === null) ||
+                    email_pill_widget.items().length === 0 &&
+                    email_pill.get_current_email(email_pill_widget) === null) ||
                     ($expires_in.val() === "custom" && !valid_custom_time),
             );
             if (selected_tab === "invite-email-tab") {
@@ -465,11 +459,11 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             }
         }
 
-        pills.onPillCreate(toggle_invite_submit_button);
-        pills.onPillRemove(() => {
+        email_pill_widget.onPillCreate(toggle_invite_submit_button);
+        email_pill_widget.onPillRemove(() => {
             toggle_invite_submit_button();
         });
-        pills.onTextInputHook(toggle_invite_submit_button);
+        email_pill_widget.onTextInputHook(toggle_invite_submit_button);
 
         $expires_in.on("change", () => {
             if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
