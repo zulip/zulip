@@ -294,7 +294,7 @@ export function handle_keyboard_events(event_key: string): void {
 }
 
 export function initialize(): void {
-    $("body").on("mouseenter", ".message_edit_notice", (e) => {
+    $("body").on("mouseenter", ".message_edit_notice, .edit-notifications", (e) => {
         if (
             realm.realm_message_edit_history_visibility_policy !==
             message_edit_history_visibility_policy_values.never.code
@@ -303,7 +303,7 @@ export function initialize(): void {
         }
     });
 
-    $("body").on("mouseleave", ".message_edit_notice", (e) => {
+    $("body").on("mouseleave", ".message_edit_notice, .edit-notifications", (e) => {
         if (
             realm.realm_message_edit_history_visibility_policy !==
             message_edit_history_visibility_policy_values.never.code
@@ -312,30 +312,34 @@ export function initialize(): void {
         }
     });
 
-    $("body").on("click", ".message_edit_notice", function (this: HTMLElement, e) {
-        e.stopPropagation();
-        e.preventDefault();
+    $("body").on(
+        "click",
+        ".message_edit_notice, .edit-notifications",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            e.preventDefault();
 
-        const message_id = rows.id($(this).closest(".message_row"));
-        assert(message_lists.current !== undefined);
-        const $row = message_lists.current.get_row(message_id);
-        const row_id = rows.id($row);
-        const message = message_lists.current.get(row_id);
-        assert(message !== undefined);
+            const message_id = rows.id($(this).closest(".message_row"));
+            assert(message_lists.current !== undefined);
+            const $row = message_lists.current.get_row(message_id);
+            const row_id = rows.id($row);
+            const message = message_lists.current.get(row_id);
+            assert(message !== undefined);
 
-        if (page_params.is_spectator) {
-            spectators.login_to_access();
-            return;
-        }
+            if (page_params.is_spectator) {
+                spectators.login_to_access();
+                return;
+            }
 
-        if (
-            realm.realm_message_edit_history_visibility_policy !==
-            message_edit_history_visibility_policy_values.never.code
-        ) {
-            fetch_and_render_message_history(message);
-            $("#message-history-overlay .exit-sign").trigger("focus");
-        }
-    });
+            if (
+                realm.realm_message_edit_history_visibility_policy !==
+                message_edit_history_visibility_policy_values.never.code
+            ) {
+                fetch_and_render_message_history(message);
+                $("#message-history-overlay .exit-sign").trigger("focus");
+            }
+        },
+    );
 
     $("body").on(
         "focus",

@@ -126,7 +126,11 @@ export function initialize(): void {
         }
 
         // UI elements for triggering message editing or viewing edit history.
-        if ($target.is("i.edit_message_button") || $target.is(".message_edit_notice")) {
+        if (
+            $target.is("i.edit_message_button") ||
+            $target.is(".message_edit_notice") ||
+            $target.is(".edit-notifications")
+        ) {
             return true;
         }
 
