@@ -1716,6 +1716,7 @@ export function show_preview_area($element: JQuery): void {
     $row.find(".undo_markdown_preview").show();
     const $preview_message_area = $row.find(".preview_message_area");
     compose_ui.render_and_show_preview(
+        $row,
         $row.find(".markdown_preview_spinner"),
         $row.find(".preview_content"),
         content,
