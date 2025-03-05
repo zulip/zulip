@@ -879,7 +879,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         yt_id = self.youtube_id(url)
 
         if yt_id is not None:
-            return f"https://i.ytimg.com/vi/{yt_id}/default.jpg"
+            return f"https://i.ytimg.com/vi/{yt_id}/mqdefault.jpg"
         return None
 
     def vimeo_id(self, url: str) -> str | None:

@@ -1,3 +1,5 @@
+import assert from "minimalistic-assert";
+
 import {$t} from "./i18n.ts";
 import * as thumbnail from "./thumbnail.ts";
 import {user_settings} from "./user_settings.ts";
@@ -50,6 +52,18 @@ export function postprocess_content(html: string): string {
             elt.setAttribute("rel", "noopener noreferrer");
         } else {
             elt.removeAttribute("target");
+        }
+
+        // Update older, smaller default.jpg YouTube preview images
+        // with higher-quality preview images (320px wide)
+        if (elt.parentElement?.classList.contains("youtube-video")) {
+            const img = elt.querySelector("img");
+            assert(img instanceof HTMLImageElement);
+            const img_src = img.src;
+            if (img_src.endsWith("/default.jpg")) {
+                const mq_src = img_src.replace(/\/default.jpg$/, "/mqdefault.jpg");
+                img.src = mq_src;
+            }
         }
 
         if (elt.parentElement?.classList.contains("message_inline_image")) {
