@@ -617,14 +617,15 @@
         &::after {
             content: "";
             background-image: url("../images/play_button.svg");
-            display: block;
-            width: 32px;
-            height: 32px;
+            background-position: center center;
+            background-repeat: no-repeat;
+            /* 32px at 14px/1em */
+            background-size: 2.2857em;
             position: absolute;
-            /* video width (100px) / 2 - icon width (32px) / 2 */
-            top: 34px;
-            /* video height (150px) / 2 - icon height (32px) / 2 */
-            left: 59px;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
             border-radius: 100%;
             transform: scale(0.8);
         }
