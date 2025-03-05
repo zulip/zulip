@@ -323,7 +323,7 @@
 }
 
 .display_only_group_pill .zulip-icon-triple-users {
-    font-size: 19px;
+    font-size: 1.3571em; /* 19px at 14px / em */
 }
 
 @keyframes shake {
