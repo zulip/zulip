@@ -130,7 +130,10 @@ export let stream_id = (current_filter: Filter | undefined = filter()): number |
     }
     const stream_operands = current_filter.operands("channel");
     if (stream_operands.length === 1 && stream_operands[0] !== undefined) {
-        return Number.parseInt(stream_operands[0], 10);
+        const id = Number.parseInt(stream_operands[0], 10);
+        if (!Number.isNaN(id)) {
+            return id;
+        }
     }
     return undefined;
 };

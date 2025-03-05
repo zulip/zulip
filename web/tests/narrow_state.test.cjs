@@ -40,6 +40,15 @@ test("stream", () => {
     assert.ok(!narrow_state.filter());
     assert.equal(narrow_state.stream_id(), undefined);
 
+    // hash_util.decode_operand returns an empty string when
+    // stream_data.slug_to_stream_id returns undefined, e.g., the
+    // stream name in the URL no longer exists or is inaccessible.
+    set_filter([["channel", ""]]);
+    assert.ok(narrow_state.filter());
+    assert.equal(narrow_state.stream_name(), undefined);
+    assert.equal(narrow_state.stream_id(), undefined);
+    assert.equal(narrow_state.stream_sub(), undefined);
+
     const test_stream_id = 15;
     const test_stream = {name: "Test", stream_id: test_stream_id};
     stream_data.add_sub(test_stream);
