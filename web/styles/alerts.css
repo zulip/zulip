@@ -12,6 +12,9 @@
 }
 
 .alert-animations {
+    /* TODO: Remove these animations in favour of those
+       in web/styles/banners.css, once all the alert popups
+       have been converted to use the new banner component. */
     &.show {
         animation-name: fadeIn;
         animation-duration: 0.3s;

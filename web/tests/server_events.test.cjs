@@ -23,10 +23,8 @@ page_params.test_suite = false;
 // we also directly write to pointer
 set_global("pointer", {});
 
-mock_esm("../src/ui_report", {
-    hide_error() {
-        return false;
-    },
+mock_esm("../src/popup_banners", {
+    close_connection_error_popup_banner() {},
 });
 
 mock_esm("../src/stream_events", {

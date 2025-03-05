@@ -90,6 +90,7 @@ import * as pm_conversations from "./pm_conversations.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
+import * as popup_banners from "./popup_banners.ts";
 import * as presence from "./presence.ts";
 import * as pygments_data from "./pygments_data.ts";
 import * as realm_logo from "./realm_logo.ts";
@@ -525,6 +526,7 @@ export function initialize_everything(state_data) {
     message_viewport.initialize();
     banners.initialize();
     navbar_alerts.initialize();
+    popup_banners.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
     local_message.initialize(state_data.local_message);
