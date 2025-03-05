@@ -343,8 +343,12 @@ h4.user_group_setting_subsection_title {
    breakpoint that collapses the left pane, but still narrow
    enough that the sort buttons need a second row to be visible
    without overlapping other UI. Note that for 16px and larger
-   font sizes, we always show two rows of buttons. */
-@container settings-overlay (width >= $settings_overlay_sidebar_collapse_breakpoint) {
+   font sizes, we always show two rows of buttons.
+
+   We also show two rows of buttons on particularly narrow
+   screens where the full overlay doesn't have enough space
+   for all the buttons. */
+@container settings-overlay (width >= $settings_overlay_sidebar_collapse_breakpoint) or (width <= 36em) {
     @container subscriptions (width < calc(80em + 80px)) {
         #subscription_overlay .subscriptions-container {
             .left {
