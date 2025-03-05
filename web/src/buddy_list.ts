@@ -836,7 +836,7 @@ export class BuddyList extends BuddyListConf {
         const user_id = opts.user_id;
         const user_id_list = opts.user_id_list;
 
-        const current_sub = narrow_state.stream_sub();
+        const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
         const pm_ids_set = narrow_state.pm_ids_set();
 
         const i = user_id_list.findIndex(
@@ -844,7 +844,7 @@ export class BuddyList extends BuddyListConf {
                 this.compare_function(
                     user_id,
                     list_user_id,
-                    current_sub,
+                    stream_id,
                     pm_ids_set,
                     this.render_data.get_all_participant_ids(),
                 ) < 0,
@@ -955,12 +955,12 @@ export class BuddyList extends BuddyListConf {
                 user_id_list: this.all_user_ids,
             });
 
-            const current_sub = narrow_state.stream_sub();
+            const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
             const pm_ids_set = narrow_state.pm_ids_set();
             const is_subscribed_user = buddy_data.user_matches_narrow(
                 user_id,
                 pm_ids_set,
-                current_sub?.stream_id,
+                stream_id,
             );
             let user_id_list;
             if (all_participant_ids.has(user_id)) {

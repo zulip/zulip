@@ -496,18 +496,18 @@ test("compare_function", () => {
     peer_data.set_subscribers(stream_id, []);
     assert.equal(
         second_user_shown_higher,
-        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set(), new Set()),
+        buddy_data.compare_function(fred.user_id, alice.user_id, stream_id, new Set(), new Set()),
     );
 
     // Fred is higher because they're in the narrow and Alice isn't.
     peer_data.set_subscribers(stream_id, [fred.user_id]);
     assert.equal(
         first_user_shown_higher,
-        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set(), new Set()),
+        buddy_data.compare_function(fred.user_id, alice.user_id, stream_id, new Set(), new Set()),
     );
     assert.equal(
         second_user_shown_higher,
-        buddy_data.compare_function(alice.user_id, fred.user_id, sub, new Set(), new Set()),
+        buddy_data.compare_function(alice.user_id, fred.user_id, stream_id, new Set(), new Set()),
     );
 
     // Fred is higher because they're in the DM conversation and Alice isn't.

@@ -11,7 +11,6 @@ import * as people from "./people.ts";
 import * as presence from "./presence.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import type {StreamSubscription} from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as unread from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
@@ -89,7 +88,7 @@ export function level(user_id: number): number {
 export let user_matches_narrow = (
     user_id: number,
     pm_ids: Set<number>,
-    stream_id?: number | null,
+    stream_id: number | undefined,
 ): boolean => {
     if (stream_id) {
         return stream_data.is_user_subscribed(stream_id, user_id);
@@ -107,7 +106,7 @@ export function rewire_user_matches_narrow(value: typeof user_matches_narrow): v
 export function compare_function(
     a: number,
     b: number,
-    current_sub: StreamSubscription | undefined,
+    stream_id: number | undefined,
     pm_ids: Set<number>,
     conversation_participants: Set<number>,
 ): number {
@@ -120,8 +119,8 @@ export function compare_function(
         return 1;
     }
 
-    const a_would_receive_message = user_matches_narrow(a, pm_ids, current_sub?.stream_id);
-    const b_would_receive_message = user_matches_narrow(b, pm_ids, current_sub?.stream_id);
+    const a_would_receive_message = user_matches_narrow(a, pm_ids, stream_id);
+    const b_would_receive_message = user_matches_narrow(b, pm_ids, stream_id);
     if (a_would_receive_message && !b_would_receive_message) {
         return -1;
     }
@@ -148,10 +147,10 @@ export function compare_function(
 
 export function sort_users(user_ids: number[], conversation_participants: Set<number>): number[] {
     // TODO sort by unread count first, once we support that
-    const current_sub = narrow_state.stream_sub();
+    const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
     const pm_ids_set = narrow_state.pm_ids_set();
     user_ids.sort((a, b) =>
-        compare_function(a, b, current_sub, pm_ids_set, conversation_participants),
+        compare_function(a, b, stream_id, pm_ids_set, conversation_participants),
     );
     return user_ids;
 }
