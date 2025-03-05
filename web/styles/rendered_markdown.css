@@ -611,7 +611,6 @@
         &:hover {
             &::after {
                 transform: scale(1);
-                transition: transform 0.2s;
             }
         }
 
@@ -629,6 +628,7 @@
             left: 0;
             border-radius: 100%;
             transform: scale(0.8);
+            transition: transform 0.2s;
         }
 
         & video {
