@@ -9,6 +9,7 @@ import time
 import traceback
 from collections.abc import Callable, Iterable, Sequence
 from functools import _lru_cache_wrapper, lru_cache, wraps
+from itertools import islice, product
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from django.conf import settings
@@ -307,13 +308,15 @@ def cache_delete(key: str, cache_name: str | None = None) -> None:
 
 
 def cache_delete_many(items: Iterable[str], cache_name: str | None = None) -> None:
-    keys = []
-    for key_prefix in get_all_cache_key_prefixes():
-        keys += [key_prefix + item for item in items]
-    for key in keys:
-        validate_cache_key(key, auto_prepend_prefix=False)
     remote_cache_stats_start()
-    get_cache_backend(cache_name).delete_many(keys)
+    keys = iter(e[0] + e[1] for e in product(get_all_cache_key_prefixes(), items))
+    while True:
+        batch = tuple(islice(keys, 10000))
+        if not batch:
+            break
+        for key in batch:
+            validate_cache_key(key, auto_prepend_prefix=False)
+        get_cache_backend(cache_name).delete_many(batch)
     remote_cache_stats_finish()
 
 
