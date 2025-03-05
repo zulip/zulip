@@ -61,7 +61,7 @@ async function navigate_to_private_messages(page: Page): Promise<void> {
     await page.waitForSelector(all_private_messages_icon, {visible: true});
     await page.click(all_private_messages_icon);
 
-    await page.waitForSelector("#message_view_header .zulip-icon-user", {visible: true});
+    await page.waitForSelector("#message_view_header .zulip-icon-send-dm", {visible: true});
 }
 
 async function test_reload_hash(page: Page): Promise<void> {
