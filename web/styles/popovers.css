@@ -994,13 +994,13 @@ ul.popover-group-menu-member-list {
     .popover-menu-user-avatar-container {
         position: relative;
         flex-shrink: 0;
-        width: 64px;
-        height: 64px;
+        width: var(--length-user-popover-menu-avatar);
+        height: var(--length-user-popover-menu-avatar);
     }
 
     .popover-menu-user-avatar {
-        width: 64px;
-        height: 64px;
+        width: var(--length-user-popover-menu-avatar);
+        height: var(--length-user-popover-menu-avatar);
         border-radius: 4px;
         background-size: cover;
         background-position: center;
@@ -1010,7 +1010,7 @@ ul.popover-group-menu-member-list {
         position: absolute;
         /* Presence dot does not scale, because
            the avatar itself does not scale. */
-        font-size: 8px;
+        font-size: var(--length-user-status-circle-popover-menu);
         line-height: 1;
         right: -1px;
         bottom: -1px;

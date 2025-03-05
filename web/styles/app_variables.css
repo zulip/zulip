@@ -565,6 +565,8 @@
     /* Shrink the user activity circle for the Recent Conversations context. */
     /* 7px at 14px/1em */
     --length-user-status-circle-recent-conversations: 0.5em;
+    --length-user-status-circle-popover-menu: 8px;
+    --length-user-popover-menu-avatar: 64px;
 
     /* Overlay heights for streams modal */
     --overlay-container-height: 95vh;
