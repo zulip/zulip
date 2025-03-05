@@ -76,7 +76,7 @@
                 <div class="input-group">
                     <label for="id_realm_video_chat_provider" class="settings-field-label">
                         {{t 'Call provider' }}
-                        {{> ../help_link_widget link="/help/start-a-call" }}
+                        {{> ../help_link_widget link="/help/configure-call-provider" }}
                     </label>
                     <select name="realm_video_chat_provider" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_video_chat_provider" data-setting-widget-type="number">
                         {{#each realm_available_video_chat_providers}}
@@ -88,7 +88,7 @@
                         <div>
                             <label for="id_realm_jitsi_server_url" class="settings-field-label">
                                 {{t "Jitsi server URL" }}
-                                {{> ../help_link_widget link="/help/start-a-call#configure-a-self-hosted-instance-of-jitsi-meet" }}
+                                {{> ../help_link_widget link="/help/configure-call-provider#use-a-self-hosted-instance-of-jitsi-meet" }}
                             </label>
                             <select name="realm_jitsi_server_url" id="id_realm_jitsi_server_url" class="setting-widget prop-element settings_select bootstrap-focus-style" data-setting-widget-type="jitsi-server-url-setting">
                                 {{#if server_jitsi_server_url}}

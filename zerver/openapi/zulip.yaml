@@ -1020,9 +1020,10 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to a user's clients when the user completes the
-                                OAuth flow for the [Zoom integration](/help/start-a-call). Clients need
-                                to know whether initiating Zoom OAuth is required before creating a Zoom call.
+                                Event sent to a user's clients when the user completes the OAuth flow
+                                for the [Zoom integration](/help/configure-call-provider). Clients need
+                                to know whether initiating Zoom OAuth is required before creating a Zoom
+                                call.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -5269,7 +5270,7 @@ paths:
                                     video_chat_provider:
                                       type: integer
                                       description: |
-                                        The configured [video call provider](/help/start-a-call) for the
+                                        The configured [video call provider](/help/configure-call-provider) for the
                                         organization.
 
                                         - 0 = None
@@ -16190,9 +16191,10 @@ paths:
                         description: |
                           Present if `video_calls` is present in `fetch_event_types`.
 
-                          A boolean which signifies whether the user has a zoom token and has thus completed
-                          OAuth flow for the [Zoom integration](/help/start-a-call). Clients need
-                          to know whether initiating Zoom OAuth is required before creating a Zoom call.
+                          A boolean which signifies whether the user has a Zoom token and has thus
+                          completed OAuth flow for the [Zoom integration](/help/configure-call-provider).
+                          Clients need to know whether initiating Zoom OAuth is required before
+                          creating a Zoom call.
                       giphy_api_key:
                         type: string
                         description: |
@@ -17455,7 +17457,7 @@ paths:
                       realm_video_chat_provider:
                         type: integer
                         description: |
-                          The configured [video call provider](/help/start-a-call) for the
+                          The configured [video call provider](/help/configure-call-provider) for the
                           organization.
 
                           - 0 = None
@@ -17779,13 +17781,12 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Dictionary where each entry describes a supported
-                          [video call provider](/help/start-a-call)
-                          that is configured on this server and could be selected by an
-                          organization administrator.
+                          Dictionary where each entry describes a supported [video call
+                          provider](/help/configure-call-provider) that is configured on this
+                          server and could be selected by an organization administrator.
 
-                          Useful for administrative settings UI that allows changing the
-                          realm setting `video_chat_provider`.
+                          Useful for administrative settings UI that allows changing the realm
+                          setting `video_chat_provider`.
                         additionalProperties:
                           description: |
                             `{provider_name}`: Dictionary containing the details of the
