@@ -193,7 +193,7 @@
         background: transparent;
         text-overflow: ellipsis;
         overflow: hidden;
-        white-space: pre-wrap;
+        white-space: pre;
         flex-grow: 1;
 
         color: var(--color-text-search);
