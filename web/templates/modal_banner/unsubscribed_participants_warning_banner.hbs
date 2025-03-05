@@ -1,0 +1,22 @@
+{{#> modal_banner . }}
+    <p class="banner_message">
+        {{#if few_unsubscribed_participants}}
+            {{#tr}}Some topic participants are not subscribed to{{/tr}}<br/>
+            <span class="stream-privacy-modified-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
+                {{> ../stream_privacy . }}
+                {{stream_name}}:&nbsp;
+            </span>
+            {{#each unsubscribed_participants}}
+                <strong>{{full_name}}</strong>{{#unless (eq @index ../last_index)}},&nbsp;{{else}}.{{/unless}}
+            {{/each}}
+        {{else}}
+            {{#tr}}{n_unsubscribed_participants} topic participants are not subscribed to {{/tr}}<br/>
+            <span class="stream-privacy-modified-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
+                {{> ../stream_privacy . }}
+                {{stream_name}}
+            </span>
+        {{/if}}
+
+    </p>
+
+{{/modal_banner}}
