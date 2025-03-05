@@ -570,11 +570,6 @@
                 color: var(--color-message-star-action);
             }
         }
-
-        .zulip-icon-more-vertical {
-            /* Increase visual prominence of the vdots. */
-            font-size: 21px;
-        }
     }
 
     /* Tooltips should not follow the width restrictions of their parent element. */
