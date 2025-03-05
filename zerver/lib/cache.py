@@ -199,8 +199,8 @@ def log_invalid_cache_keys(stack_trace: str, key: list[str]) -> None:
     )
 
 
-def validate_cache_key(key: str) -> None:
-    if not key.startswith(KEY_PREFIX):
+def validate_cache_key(key: str, auto_prepend_prefix: bool = True) -> None:
+    if auto_prepend_prefix and not key.startswith(KEY_PREFIX):
         key = KEY_PREFIX + key
 
     # Theoretically memcached can handle non-ascii characters
@@ -311,7 +311,7 @@ def cache_delete_many(items: Iterable[str], cache_name: str | None = None) -> No
     for key_prefix in get_all_cache_key_prefixes():
         keys += [key_prefix + item for item in items]
     for key in keys:
-        validate_cache_key(key)
+        validate_cache_key(key, auto_prepend_prefix=False)
     remote_cache_stats_start()
     get_cache_backend(cache_name).delete_many(keys)
     remote_cache_stats_finish()
