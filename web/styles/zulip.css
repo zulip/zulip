@@ -814,7 +814,7 @@ strong {
 
 .messagebox-content .slow-send-spinner {
     display: block;
-    font-size: 12px;
+    font-size: 0.8571em; /* 12px at 14px/em */
     text-align: right;
     opacity: 0.8;
     color: var(--color-text-default);
