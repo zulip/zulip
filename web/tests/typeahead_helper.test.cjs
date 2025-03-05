@@ -504,6 +504,17 @@ test("sort_recipients", () => {
         "zman@test.net",
     ]);
 
+    // Test match by email (To get coverage for ok_users and ok_bots)
+    assert.deepEqual(get_typeahead_result("b_user_1@zulip.net", ""), [
+        "b_user_1@zulip.net",
+        "a_user@zulip.org",
+        "b_user_2@zulip.net",
+        "b_user_3@zulip.net",
+        "zman@test.net",
+        "a_bot@zulip.com",
+        "b_bot@example.com",
+    ]);
+
     // Typeahead for direct message [query, "", ""]
     assert.deepEqual(get_typeahead_result("a", "", ""), [
         "a_user@zulip.org",
@@ -550,10 +561,10 @@ test("sort_recipients", () => {
 
     // Typeahead for stream message [query, stream-id, topic-name]
     assert.deepEqual(get_typeahead_result("b", dev_sub.stream_id, "Dev topic"), [
-        subscriber_email_3,
         subscriber_email_2,
         subscriber_email_1,
         "b_user_1@zulip.net",
+        subscriber_email_3,
         "a_bot@zulip.com",
         "zman@test.net",
         "a_user@zulip.org",
@@ -577,9 +588,9 @@ test("sort_recipients", () => {
         "zman@test.net",
         "b_user_3@zulip.net",
         "a_user@zulip.org",
-        "b_bot@example.com",
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
+        "b_bot@example.com",
         "a_bot@zulip.com",
     ]);
 });
@@ -626,8 +637,8 @@ test("sort_recipients pm counts", () => {
     assert.deepEqual(get_typeahead_result("b"), [
         "b_user_2@zulip.net",
         "b_user_1@zulip.net",
-        "b_bot@example.com",
         "b_user_3@zulip.net",
+        "b_bot@example.com",
         "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",

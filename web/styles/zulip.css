@@ -39,9 +39,65 @@ body {
     .header-main,
     .app .app-main,
     #compose-container {
-        /* 1417px at 14px/1em; (14px * 20.5em) - 12px + 880 + 250px = 1417px */
-        max-width: 100.3571em;
-        max-width: calc(var(--left-sidebar-max-width) + 62.8571em + 250px);
+        max-width: calc(
+            var(--left-sidebar-max-width) + var(--message-area-max-width) +
+                var(--right-sidebar-max-width)
+        );
+    }
+
+    /* When sidebars are manually hidden, we set the max-width
+       for the layout to a different maximum width. This keeps
+       the message area predictably readable. */
+    &.hide-left-sidebar:not(.fluid_layout_width) {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: calc(
+                var(--message-area-max-width) + var(--right-sidebar-max-width)
+            );
+
+            /* When we're less than the xl_min breakpoint, we instead
+               constrain to just the message area's max-width, since
+               the right column will be hidden below that point. */
+            @container header-container (width < $cq_xl_min) {
+                max-width: var(--message-area-max-width);
+            }
+
+            @container app (width < $cq_xl_min) {
+                max-width: var(--message-area-max-width);
+            }
+        }
+    }
+
+    /* Fallback media query. */
+    @media (width < $xl_min) {
+        &.without-container-query-support.hide-left-sidebar:not(
+                .fluid_layout_width
+            ) {
+            .header-main,
+            .app .app-main,
+            #compose-container {
+                max-width: var(--message-area-max-width);
+            }
+        }
+    }
+
+    &.hide-right-sidebar:not(.fluid_layout_width) {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: calc(
+                var(--left-sidebar-max-width) + var(--message-area-max-width)
+            );
+        }
+    }
+
+    &.hide-left-sidebar.hide-right-sidebar:not(.fluid_layout_width) {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: var(--message-area-max-width);
+        }
     }
 
     &.fluid_layout_width {
@@ -333,6 +389,10 @@ body.has-overlay-scrollbar {
     white-space: pre;
 }
 
+.white-space-nowrap {
+    white-space: nowrap;
+}
+
 /* Set flex display on login buttons only in the
    spectator view. We want them to display none
    otherwise. */
@@ -342,8 +402,8 @@ body.has-overlay-scrollbar {
 
 /* This applies to column-left both in navbar and app. */
 .column-right {
-    width: var(--right-column-width);
-    max-width: var(--right-column-max-width);
+    width: var(--right-sidebar-width);
+    max-width: var(--right-sidebar-max-width);
     position: absolute;
     right: 0;
     top: 0;
@@ -438,12 +498,6 @@ body.has-overlay-scrollbar {
                 );
             }
         }
-
-        .divider {
-            color: hsl(0deg 0% 88%);
-            font-size: 20px;
-            line-height: 1;
-        }
     }
 
     .spectator_narrow_login_button {
@@ -482,6 +536,19 @@ body.has-overlay-scrollbar {
     position: absolute;
     left: 0;
     top: 0;
+}
+
+.app-main .column-right.expanded,
+.app-main .column-left.expanded {
+    /* We share a baseline z-index to make
+       sure overlays respect the .topmost-overlay
+       below. */
+    z-index: 10;
+}
+
+.app-main .column-right.expanded.topmost-overlay,
+.app-main .column-left.expanded.topmost-overlay {
+    z-index: 15;
 }
 
 #message_feed_container,
@@ -572,7 +639,7 @@ body.has-overlay-scrollbar {
 
 .column-middle,
 #compose-content {
-    margin-right: var(--right-column-width);
+    margin-right: var(--right-sidebar-width);
     margin-left: calc(
         var(--left-sidebar-width) + var(--left-sidebar-padding-left)
     );
@@ -700,42 +767,6 @@ strong {
 
 .logout {
     white-space: nowrap;
-}
-
-.tooltip {
-    &.in {
-        font-size: 12px;
-        line-height: 1.3;
-
-        opacity: 1;
-
-        &.left {
-            margin-left: -12px;
-            margin-top: 3px;
-        }
-    }
-
-    .tooltip-inner {
-        background-color: hsl(0deg 0% 7% / 80%);
-        padding: 3px 5px;
-    }
-
-    /*
-    Since hover and click are activated together on touchscreen
-    devices, the hover state persists until the next click, creating
-    awkward UI where the tooltip sticks around forever :(.
-
-    To resolve this, we just hide the tooltip for touch-events on
-    touch-enabled devices resolving the above problem.  This means
-    that tooltips will never appear on touchscreen devices, but that's
-    probably a reasonable tradeoff here.
-
-    Source: https://drafts.csswg.org/mediaqueries-4/#mf-interaction
-    */
-
-    @media (hover: none) {
-        visibility: hidden !important;
-    }
 }
 
 .buddy_list_tooltip_content {
@@ -963,7 +994,6 @@ div.focused-message-list.is-conversation-view .recipient_row {
        this preserves the dimensions and rounded corners
        on the image itself. */
     line-height: 1;
-    margin-right: 11px;
     vertical-align: top;
     border-radius: 4px;
     overflow: hidden;
@@ -982,6 +1012,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
 .user_sidebar_entry.with_avatar .user-profile-picture {
     width: var(--right-sidebar-avatar-width);
     height: var(--right-sidebar-avatar-height);
+    margin-right: var(--right-sidebar-avatar-right-margin);
 }
 
 .home-error-bar {
@@ -1104,7 +1135,7 @@ nav {
         .nav-logo {
             display: inline-block;
             height: 1.25em; /* 20px at 16px em */
-            max-width: 12.5em; /* 200px at 16px em */
+            max-width: var(--realm-logo-max-width);
 
             @media (height < $short_navbar_cutoff_height) {
                 height: 0.9375em; /* 15px at 16px em */
@@ -1356,14 +1387,17 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     opacity: 0.6;
 
     & i {
-        font-size: 10px;
+        font-size: 0.7143em; /* 10px at 14px / em */
+        /* TODO: Don't use relative positioning here. */
         position: relative;
-        top: 1px;
-        margin-left: 2px;
+        top: 0.1em; /* 1px at 10px / em */
+        margin-left: 0.2em; /* 2px at 10px / em */
     }
 
     .zulip-icon.zulip-icon-lock {
-        font-size: 12px;
+        font-size: 0.8571em; /* 12px at 14px / em */
+        top: 0.0833em; /* 1px at 12px / em */
+        margin-left: 0.1667em; /* 2px at 12px / em */
     }
 }
 
@@ -1534,6 +1568,10 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
         display: none;
 
         &.expanded {
+            /* In the extended state, we open the sidebar
+               to its maximum possible size (otherwise, it
+               would be unnecessarily too narrow). */
+            --right-sidebar-width: var(--right-sidebar-max-width);
             display: block;
             position: absolute;
             float: none;
@@ -1547,9 +1585,8 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
             .right-sidebar {
                 box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
                 border-left: 1px solid var(--color-border-sidebar);
-                padding-right: 15px;
-                padding-left: 15px;
                 height: 100%;
+                width: var(--right-sidebar-width);
                 right: 0;
                 background-color: var(--color-background);
             }
@@ -1630,10 +1667,14 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
         @extend %hide-left-sidebar;
     }
 
-    &.fluid_layout_width {
-        #compose-content,
-        .app-main .column-middle {
-            margin-left: 7px;
+    #compose-content,
+    .app-main .column-middle {
+        margin-left: 7px;
+    }
+
+    @container header-container (width > $cq_md_min) {
+        #navbar-middle {
+            margin-left: var(--middle-column-left-margin-fluid-layout);
         }
     }
 
@@ -1643,10 +1684,27 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
         }
     }
 
+    @container header-container (width < $cq_md_min) {
+        #navbar-middle {
+            margin-left: 0;
+        }
+    }
+
     @container app (width < $cq_xl_min) {
         #compose-content,
         .app-main .column-middle {
             margin-left: 7px;
+        }
+    }
+}
+
+/* Media-query fallback for the cinched-up logo presentation. */
+@media (width > $md_min) {
+    .without-container-query-support {
+        &.hide-left-sidebar {
+            #navbar-middle {
+                margin-left: var(--middle-column-left-margin-fluid-layout);
+            }
         }
     }
 }
@@ -1707,7 +1765,10 @@ body:not(.hide-left-sidebar) {
     }
 
     .top-navbar-container {
-        margin-left: 40px;
+        /* The --header-height variable is used to make
+        the squared toggle area, so we offset it
+        accordingly. */
+        margin-left: var(--header-height);
     }
 }
 
@@ -1730,6 +1791,26 @@ body:not(.hide-left-sidebar) {
     #scheduled_message_indicator,
     #compose-content {
         margin-left: 7px;
+    }
+}
+
+@container app (width <= $cq_ml_min) {
+    .column-right.expanded,
+    .column-left.expanded {
+        width: 100vw;
+        max-width: 100%;
+    }
+
+    .app-main .column-right.expanded .right-sidebar,
+    .app-main .column-left.expanded .left-sidebar {
+        width: 100vw;
+        max-width: 100%;
+    }
+}
+
+@container header-container (width <= $cq_sm_min) {
+    .narrow_description {
+        display: none;
     }
 }
 
@@ -1810,6 +1891,30 @@ body:not(.hide-left-sidebar) {
         #scheduled_message_indicator,
         #compose-content {
             margin-left: 7px;
+        }
+    }
+}
+
+@media (width <= $ml_min) {
+    .without-container-query-support {
+        .column-right.expanded,
+        .column-left.expanded {
+            width: 100vw;
+            max-width: 100%;
+        }
+
+        .app-main .column-right.expanded .right-sidebar,
+        .app-main .column-left.expanded .left-sidebar {
+            width: 100vw;
+            max-width: 100%;
+        }
+    }
+}
+
+@media (width <= $sm_min) {
+    .without-container-query-support {
+        .narrow_description {
+            display: none;
         }
     }
 }
@@ -1966,8 +2071,8 @@ body:not(.hide-left-sidebar) {
     }
 
     #scroll-to-bottom-button-clickable-area {
-        width: 60px;
-        height: 60px;
+        width: 3.75em; /* 60px at 16px em */
+        height: 3.75em; /* 60px at 16px em */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1979,26 +2084,20 @@ body:not(.hide-left-sidebar) {
 
         #scroll-to-bottom-button {
             text-align: center;
-            width: 40px;
-            height: 40px;
+            width: 2.5em; /* 40px at 16px em */
+            height: 2.5em; /* 40px at 16px em */
             background: hsl(240deg 96% 68% / 50%);
             border-radius: 50%;
+            display: flex;
+            align-items: center;
 
             & .scroll-to-bottom-icon {
                 color: hsl(0deg 0% 100%);
                 margin: 0 auto;
-                font-size: 21px;
-                position: relative;
-                top: 8px;
+                font-size: 1.3125em; /* 21px at 16px em */
             }
         }
     }
-}
-
-.tooltip_right_arrow {
-    position: relative;
-    top: -1px;
-    font-weight: 600;
 }
 
 .spectator_login_for_image_button {
@@ -2081,10 +2180,10 @@ body:not(.hide-left-sidebar) {
 }
 
 .dropdown-list-container .dropdown-list .dropdown-list-item-common-styles {
+    position: relative;
     display: flex;
     color: var(--color-dropdown-item);
     padding: 3px 10px 3px 8px;
-    gap: 4px;
     font-weight: 400;
     line-height: var(--base-line-height-unitless);
     white-space: normal;
@@ -2101,16 +2200,10 @@ body:not(.hide-left-sidebar) {
     }
 
     .dropdown-list-delete {
+        position: absolute;
+        top: 0;
+        right: 5px;
         visibility: hidden;
-        float: right;
-        margin-right: 5px;
-        cursor: pointer;
-        /* hsl(359deg 93% 39%) corresponds to var(--red-550) */
-        color: color-mix(in oklch, hsl(359deg 93% 39%) 70%, transparent);
-
-        &:hover {
-            color: hsl(359deg 93% 39%);
-        }
     }
 
     &:focus,

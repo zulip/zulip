@@ -108,7 +108,7 @@ def check_bot_name_available(realm_id: int, full_name: str, *, is_activation: bo
                 f'There is already an active bot named "{full_name}" in this organization. To reactivate this bot, you must rename or deactivate the other one first.'
             )
         else:
-            raise JsonableError(_("Name is already in use!"))
+            raise JsonableError(_("Name is already in use."))
 
 
 def check_short_name(short_name_raw: str) -> str:

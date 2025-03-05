@@ -161,6 +161,10 @@ def is_spectator_compatible(narrow: Iterable[NarrowParameter]) -> bool:
     ]
     for element in narrow:
         operator = element.operator
+        operand = element.operand
+
+        if operator == "is" and operand == "resolved":
+            continue
         if operator not in supported_operators:
             return False
     return True
@@ -389,7 +393,11 @@ class NarrowBuilder:
         raise BadNarrowOperatorError("unknown 'in' operand " + operand)
 
     def by_is(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        # This operator class does not support is_web_public_query.
+        # Only `resolved` operand of this class supports is_web_public_query.
+        if operand == "resolved":
+            cond = get_resolved_topic_condition_sa()
+            return query.where(maybe_negate(cond))
+
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
@@ -420,9 +428,6 @@ class NarrowBuilder:
             return query.where(maybe_negate(cond))
         elif operand == "alerted":
             cond = column("flags", Integer).op("&")(UserMessage.flags.has_alert_word.mask) != 0
-            return query.where(maybe_negate(cond))
-        elif operand == "resolved":
-            cond = get_resolved_topic_condition_sa()
             return query.where(maybe_negate(cond))
         elif operand == "followed":
             cond = get_followed_topic_condition_sa(self.user_profile.id)

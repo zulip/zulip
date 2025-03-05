@@ -111,7 +111,7 @@
 
         @media (height < $short_navbar_cutoff_height) {
             #searchbox-input-container .search_icon {
-                font-size: 18px;
+                font-size: 1.125em; /* 18px at 16px/em */
             }
         }
     }

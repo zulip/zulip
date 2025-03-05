@@ -56,7 +56,7 @@ def resolve_version_string(version: str) -> str:
     ).strip()
 
 
-if NEW_ZULIP_MERGE_BASE:
+if args.from_git:
     # If we have a git repo, we also resolve those `git describe`
     # values to full commit hashes, as well as provide the
     # merge-base of the old/new commits with mainline.

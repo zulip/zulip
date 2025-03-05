@@ -90,6 +90,7 @@ from zerver.lib.types import UserGroupMembersDict
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
     UserGroupMembershipDetails,
+    access_user_group_api_value_for_setting,
     access_user_group_for_setting,
     get_group_setting_value_for_api,
     get_role_based_system_groups_dict,
@@ -432,17 +433,16 @@ def update_stream_backend(
             ):
                 raise JsonableError(_("Invalid channel ID"))
             with transaction.atomic(durable=True):
-                user_group = access_user_group_for_setting(
+                user_group_api_value_for_setting = access_user_group_api_value_for_setting(
                     new_setting_value,
                     user_profile,
                     setting_name=setting_name,
                     permission_configuration=permission_configuration,
-                    current_setting_value=current_value,
                 )
                 do_change_stream_group_based_setting(
                     stream,
                     setting_name,
-                    user_group,
+                    new_setting_value=user_group_api_value_for_setting,
                     old_setting_api_value=current_setting_api_value,
                     acting_user=user_profile,
                 )

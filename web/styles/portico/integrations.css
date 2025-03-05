@@ -192,7 +192,7 @@
                 padding: 6px 10px 3px;
                 margin: 3px 0;
                 border-radius: 5px;
-                transition: none 0.3s ease;
+                transition: 0.3s ease;
                 transition-property: background-color, color;
                 color: var(--color-integrations-category-text);
 
@@ -266,7 +266,7 @@
                     var(--color-integrations-light-blue-border);
                 border-bottom: 1px solid
                     var(--color-integrations-light-blue-border);
-                transition: none 0.3s ease;
+                transition: 0.3s ease;
                 transition-property: background-color, color;
                 font-size: 0.9em;
 
@@ -323,7 +323,7 @@
         border: 1px solid var(--color-integrations-light-blue-border);
         color: var(--color-integrations-category-text);
         text-align: center;
-        transition: none 0.3s ease;
+        transition: 0.3s ease;
         transition-property: border-color;
 
         &:hover {
@@ -514,7 +514,7 @@
                     width: 165px;
                     text-align: center;
                     border-radius: 5px;
-                    transition: none 0.3s ease;
+                    transition: 0.3s ease;
                     transition-property: background-color, color;
                     background-color: var(
                         --color-integrations-light-blue-border

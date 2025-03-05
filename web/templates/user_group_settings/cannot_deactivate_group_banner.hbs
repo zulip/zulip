@@ -1,18 +1,3 @@
 <p>
-    {{t "This group cannot be deactivated because it is used in following places:"}}
-    <ul>
-        {{#each streams_using_group_for_setting}}
-            {{#if this.setting_url}}
-            <li><a href="{{this.setting_url}}">#{{this.stream_name}}</a></li>
-            {{else}}
-            <li>{{this.stream_name}}</li>
-            {{/if}}
-        {{/each}}
-        {{#each groups_using_group_for_setting}}
-            <li><a href="{{this.setting_url}}">@{{this.group_name}}</a></li>
-        {{/each}}
-        {{#if realm_using_group_for_setting}}
-            <li><a href="#organization">{{t "Organization settings"}}</a></li>
-        {{/if}}
-    </ul>
+    {{t "To deactivate this group, you must first remove all permissions assigned to it."}}
 </p>

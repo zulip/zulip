@@ -1,7 +1,5 @@
 import assert from "minimalistic-assert";
 
-import render_input_pill from "../templates/input_pill.hbs";
-
 import * as group_permission_settings from "./group_permission_settings.ts";
 import * as input_pill from "./input_pill.ts";
 import type {InputPillConfig} from "./input_pill.ts";
@@ -107,7 +105,8 @@ export function get_text_from_item(item: GroupSettingPill): string {
 
 export function get_display_value_from_item(item: GroupSettingPill): string {
     if (item.type === "user_group") {
-        return user_group_pill.display_pill(user_groups.get_user_group_from_id(item.group_id));
+        const group = user_groups.get_user_group_from_id(item.group_id);
+        return user_groups.get_display_group_name(group.name);
     }
     assert(item.type === "user");
     return user_pill.get_display_value_from_item(item);
@@ -115,10 +114,7 @@ export function get_display_value_from_item(item: GroupSettingPill): string {
 
 export function generate_pill_html(item: GroupSettingPill): string {
     if (item.type === "user_group") {
-        return render_input_pill({
-            display_value: get_display_value_from_item(item),
-            group_id: item.group_id,
-        });
+        return user_group_pill.generate_pill_html(item);
     }
     assert(item.type === "user");
     return user_pill.generate_pill_html(item);

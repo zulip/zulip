@@ -81,7 +81,7 @@ export const user_list_style_values: {
         code: number;
         description: string;
     };
-    with_avatar?: {
+    with_avatar: {
         code: number;
         description: string;
     };

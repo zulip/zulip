@@ -468,7 +468,7 @@ class EditMessageTest(ZulipTestCase):
             stream,
             "can_add_subscribers_group",
             hamlet_group,
-            acting_user=None,
+            acting_user=hamlet,
         )
         result = self.client_patch(
             f"/json/messages/{msg_id}",

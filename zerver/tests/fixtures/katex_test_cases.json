@@ -54,6 +54,9 @@
             "description":"Another katex inline expression containing nested tags",
             "expected_output":"world ~~it works **out $$a+b=c$$** so `well` if you try *this*** not $$p+q=r$$ that~~ good good",
             "original_markup":"world ~~it works **out $$a+b=c$$** so `well` if you try *this*** not $$p+q=r$$ that~~ good good"
+        },{
+            "original_markup":"$$a^{b^{c}}$$",
+            "expected_output":"$$a^{b^{c}}$$"
         }
     ],
     "text_node_to_span_conversion_tests":[

@@ -32,7 +32,7 @@ from zerver.models.streams import get_stream
 from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import base as base_worker
 from zerver.worker.email_mirror import MirrorWorker
-from zerver.worker.email_senders import EmailSendingWorker
+from zerver.worker.email_senders import ImmediateEmailSenderWorker
 from zerver.worker.embed_links import FetchLinksEmbedData
 from zerver.worker.missedmessage_emails import MissedMessageWorker
 from zerver.worker.missedmessage_mobile_notifications import PushNotificationsWorker
@@ -695,7 +695,7 @@ class WorkerTest(ZulipTestCase):
             fake_client.enqueue(queue_name, event)
 
         with simulated_queue_client(fake_client):
-            worker = EmailSendingWorker()
+            worker = ImmediateEmailSenderWorker()
             worker.setup()
             with (
                 patch("zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredError),

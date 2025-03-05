@@ -583,7 +583,7 @@ export class MessageList {
             // Show the empty narrow message only if we're certain
             // that the view doesn't have messages that we're
             // waiting for the server to send us.
-            narrow_banner.show_empty_narrow_message();
+            narrow_banner.show_empty_narrow_message(this.data.filter);
         } else {
             narrow_banner.hide_empty_narrow_message();
         }

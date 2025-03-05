@@ -40,6 +40,42 @@ There are many ways to use this feature, including:
 
 {end_tabs}
 
+## Mark all messages in a topic or channel as unread
+
+{start_tabs}
+
+{tab|via-left-sidebar}
+
+1. Hover over a topic or channel in the left sidebar.
+
+1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
+
+1. Click **Mark all messages as unread**. This option will appear only if all
+   messages in the topic or channel are currently marked as read.
+
+!!! tip ""
+
+    You can also mark all messages in your current view as unread by
+    jumping to the top with the <kbd>Home</kbd> key, and marking as unread
+    [from the first message](#mark-as-unread-from-selected-message).
+
+{tab|via-recent-conversations}
+
+{!go-to-recent-conversations.md!}
+
+1. Hover over a topic.
+
+1. Click on the **ellipsis** (<i class="zulip-icon
+   zulip-icon-more-vertical"></i>) next to the unread messages counter. You may
+   need to hover over the indicator icon for a followed (<i class="zulip-icon
+   zulip-icon-follow"></i>) or muted (<i class="zulip-icon
+   zulip-icon-mute-new"></i>) topic in order to see it.
+
+1. Click **Mark all messages as unread**. This option will appear only if all
+   messages in the topic are currently marked as read.
+
+{end_tabs}
+
 ## Related articles
 
 * [Reading strategies](/help/reading-strategies)

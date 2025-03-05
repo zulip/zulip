@@ -444,7 +444,8 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         // policy?
         !is_combined_feed_global_view &&
         raw_terms.some(
-            (raw_term) => !hash_parser.allowed_web_public_narrows.includes(raw_term.operator),
+            (raw_term) =>
+                !hash_parser.is_an_allowed_web_public_narrow(raw_term.operator, raw_term.operand),
         )
     ) {
         spectators.login_to_access();
@@ -612,10 +613,6 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         } else if (coming_from_inbox) {
             inbox_ui.hide();
         }
-
-        // Open tooltips are only interesting for current narrow,
-        // so hide them when activating a new one.
-        $(".tooltip").hide();
 
         blueslip.debug("Narrowed", {
             operators: terms.map((e) => e.operator),

@@ -64,7 +64,7 @@
                 font-size: 1.1428em; /* 16px at 14px em */
                 color: var(--color-icons-inbox);
                 opacity: 0.4;
-                transition: none 140ms;
+                transition: 140ms;
                 transition-property: background-color, opacity, transform;
                 /* 5px at 16px font-size at 14px em */
                 padding: 0.3125em;

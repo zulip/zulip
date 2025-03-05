@@ -421,7 +421,7 @@
            subtle).
 
            We prevent this by setting a fixed height for inline
-           previews. 100px is chosen because we don't want images to
+           previews. 8em is chosen because we don't want images to
            overwhelm conversation in message feeds, as it does in chat
            tools that show images at half-screen height or larger.
 
@@ -430,8 +430,8 @@
            that either use a scrollable region or set a fixed width
            for images so that the browser statically knows whether
            it'll need to overflow. We choose fixed width here. */
-        height: 100px;
-        width: 150px;
+        height: 8em;
+        width: 12em;
 
         /* Inline image containers also need an inline-block display in order
            to implement the desired grid layout. */

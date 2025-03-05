@@ -404,7 +404,7 @@ def bulk_handle_digest_email(user_ids: list[int], cutoff: float) -> None:
             continue
 
         digest_users.append(user)
-        logger.info("Sending digest email for user %s", user.id)
+        logger.info("Enqueuing digest email for user %s", user.id)
 
         # Send now, as a ScheduledEmail
         send_future_email(

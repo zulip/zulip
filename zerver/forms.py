@@ -82,7 +82,7 @@ def check_subdomain_available(subdomain: str, allow_reserved_subdomain: bool = F
         "too short": _("Subdomain needs to have length 3 or greater."),
         "extremal dash": _("Subdomain cannot start or end with a '-'."),
         "bad character": _("Subdomain can only have lowercase letters, numbers, and '-'s."),
-        "unavailable": _("Subdomain already in use. Please choose a different one."),
+        "unavailable": _("Subdomain is already in use. Please choose a different one."),
         "reserved": _("Subdomain reserved. Please choose a different one."),
     }
 

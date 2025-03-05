@@ -362,7 +362,7 @@ div.overlay {
     opacity: 0;
     visibility: hidden;
 
-    transition: none 0.2s ease-in;
+    transition: 0.2s ease-in;
     transition-property: opacity, visibility;
     overflow: hidden;
 
@@ -686,7 +686,7 @@ input.settings_text_input {
 
 .animated-purple-button {
     color: hsl(0deg 0% 100%);
-    transition: none 80ms linear;
+    transition: 80ms linear;
     transition-property: background-color, box-shadow;
     box-shadow: none;
     /* This color just passes WCAG AA */
@@ -737,7 +737,7 @@ input.settings_text_input {
             transition: color 0.2s ease;
         }
 
-        transition: none 0.2s ease;
+        transition: 0.2s ease;
         transition-property: background-color, color;
     }
 
@@ -1419,4 +1419,23 @@ input.invalid-input {
     &:focus {
         box-shadow: var(--color-invalid-input-box-shadow);
     }
+}
+
+/* This is a utility class for line clamping. */
+.line-clamp {
+    /* Despite the below prefixed properties being deprecated,
+       the co-dependency of these three properties is a fully
+       specified behavior and will continue to be supported.
+       Reference: https://developer.mozilla.org/en-US/docs/Web/CSS/line-clamp */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    /* The value of --line-clamp-value is not defined globally and instead
+       inherits the value from another class or the parent element. If it
+       is not defined, it defaults to 2. */
+    -webkit-line-clamp: var(--line-clamp-value, 2);
+    /* Also define the standard property 'line-clamp' for compatibility,
+       for when the vendor prefix "-webkit-" is no longer required. */
+    line-clamp: var(--line-clamp-value, 2);
+    text-overflow: ellipsis;
+    overflow: hidden;
 }

@@ -29,6 +29,9 @@
         {{~#if is_bot~}}
             <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
         {{~/if~}}
+        {{~#if show_group_members_count~}}
+        &nbsp;<span class="group-members-count">({{group_members_count}})</span>
+        {{~/if~}}
     </span>
     {{#unless disabled}}
     <div class="exit">

@@ -280,9 +280,11 @@ export function paste_handler_converter(
 
     turndownService.addRule("katex-inline-math", {
         filter(node) {
-            if (node.classList.contains("katex")) {
-                const parent = node.parentElement;
-                if (parent?.classList.contains("katex-display")) {
+            if (node.classList.contains("katex-mathml") || node.classList.contains("katex-html")) {
+                // Check if this lies within a `.katex-display` which
+                // is processed as a math block.
+                const grand_parent = node.parentElement?.parentElement;
+                if (grand_parent?.classList.contains("katex-display")) {
                     // This is already processed by the math block rule.
                     return false;
                 }
@@ -292,8 +294,11 @@ export function paste_handler_converter(
         },
         replacement(content, node: Node) {
             assert(node instanceof HTMLElement);
+            if (node.classList.contains("katex-html")) {
+                return "";
+            }
             const annotation_element = node.querySelector(
-                `.katex-mathml annotation[encoding="application/x-tex"]`,
+                `annotation[encoding="application/x-tex"]`,
             );
             const katex_source = annotation_element?.textContent?.trim() ?? content;
             return `$$${katex_source}$$`;

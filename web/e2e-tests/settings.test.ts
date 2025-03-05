@@ -249,7 +249,7 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     await page.waitForSelector("#dialog_error", {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, "#dialog_error"),
-        "Failed: Name is already in use!",
+        "Failed: Name is already in use.",
     );
 
     const cancel_button_selector = "#user-profile-modal .dialog_exit_button";

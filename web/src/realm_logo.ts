@@ -6,6 +6,7 @@ import {current_user, realm} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as upload_widget from "./upload_widget.ts";
 import type {UploadFunction} from "./upload_widget.ts";
+import {user_settings} from "./user_settings.ts";
 
 export function build_realm_logo_widget(upload_function: UploadFunction, is_night: boolean): void {
     let logo_section_id = "#realm-day-logo-upload-widget";
@@ -87,11 +88,22 @@ export function render(): void {
         $("#realm-night-logo-upload-widget .image-block").attr("src", realm.realm_night_logo_url);
     }
 
+    const $realm_logo = $<HTMLImageElement>("#realm-navbar-wide-logo");
     if (settings_data.using_dark_theme() && realm.realm_night_logo_source !== "D") {
-        $("#realm-navbar-wide-logo").attr("src", realm.realm_night_logo_url);
+        $realm_logo.attr("src", realm.realm_night_logo_url);
     } else {
-        $("#realm-navbar-wide-logo").attr("src", realm.realm_logo_url);
+        $realm_logo.attr("src", realm.realm_logo_url);
     }
+
+    $realm_logo.on("load", () => {
+        const logo_width = $realm_logo.width();
+        if (logo_width) {
+            $("html").css(
+                "--realm-logo-current-width",
+                logo_width / user_settings.web_font_size_px + "em",
+            );
+        }
+    });
 
     change_logo_delete_button(
         realm.realm_logo_source,

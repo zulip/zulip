@@ -255,21 +255,27 @@
     --left-sidebar-max-width: calc(
         20.6429em - var(--left-sidebar-right-margin)
     );
+    --realm-logo-max-width: 12.5em; /* 200px at 16px em */
+    /* Value updated on realm_logo.render() */
+    --realm-logo-current-width: var(--realm-logo-max-width);
+    /* 10px is just extra margin for content separation */
+    --middle-column-left-margin-fluid-layout: calc(
+        var(--header-height) + var(--realm-logo-current-width) + 10px
+    );
     /* Sidebar width is 1/3 of the screen at smaller
        sizes, but gets held to the left sidebar's max width.
        This is very useful for areas in the CSS codebase
        that rely on this value, but not necessarily as
        applied to `width:` or `max-width:`. */
-    --left-sidebar-width: min(33.3333%, var(--left-sidebar-max-width));
+    --left-sidebar-width: min(33.3333vw, var(--left-sidebar-max-width));
     --right-sidebar-left-spacing: 5px;
     /* 50px per icon * 4 icons + 3px space (legacy) = 203px at 20px/1em */
     --right-column-collapsed-sidebar-width: 10.15em;
     /* 288px at 14px/1em */
-    --right-column-max-width: 20.57em;
-    --right-column-width: clamp(10em, 50%, var(--right-column-max-width));
-    --right-sidebar-width: calc(
-        var(--right-column-width) - var(--right-sidebar-left-spacing)
-    );
+    --right-sidebar-max-width: 20.57em;
+    /* We open the right sidebar at xl_min at a size of 240px,
+       here expressed as precisely 20% of the viewport. */
+    --right-sidebar-width: min(20vw, var(--right-sidebar-max-width));
     /* 25px at 16px/1em */
     --right-sidebar-vdots-width: 1.5625em;
     /* The width of the icon is reduced by 2px, to account for 2px
@@ -317,6 +323,18 @@
     --right-sidebar-heading-left-spacing: 5px;
     --right-sidebar-avatar-width: 2em;
     --right-sidebar-avatar-height: var(--right-sidebar-avatar-width);
+    --right-sidebar-avatar-right-margin: 0.85ch;
+    --right-sidebar-presence-circle-width: 1.4285em; /* 20px at 14px em */
+    /* toggle + avatar + avatar margin + 2px border */
+    --right-sidebar-text-indent-with-avatar: calc(
+        var(--right-sidebar-header-icon-toggle-width) / 2 +
+            var(--right-sidebar-avatar-width) +
+            var(--right-sidebar-avatar-right-margin) + 2px
+    );
+    --right-sidebar-text-indent-without-avatar: calc(
+        var(--right-sidebar-toggle-width-offset) +
+            var(--right-sidebar-presence-circle-width)
+    );
 
     /* Tippy popover related values */
     --navbar-popover-menu-min-width: 230px;
@@ -372,6 +390,16 @@
         --markdown-interelement-doubled-space-px: 10px;
         --message-box-markdown-aligned-vertical-space: 5px;
     }
+
+    /* Message area */
+    /* In the legacy layout at 16px/1em density, 918.6px is
+       the widest the message area gets, so we preserve this
+       value to better present a readable message area across
+       different info densities and the manual hiding of the
+       left and right sidebars.
+       918.6px at 16px/1em
+    */
+    --message-area-max-width: 57.4125em;
 
     /* Shared sidebar typography and effects values. */
     --font-weight-sidebar-heading: 600;

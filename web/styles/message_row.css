@@ -1,3 +1,9 @@
+.with-container-query-support {
+    #message-lists-container {
+        container: message-lists / inline-size;
+    }
+}
+
 .message_row {
     display: grid;
     /* Prevent the messagebox column from overflowing the 1fr
@@ -472,11 +478,25 @@
     /* Ensure square icons for better centering. */
     line-height: 1;
 
-    @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
+    @container message-lists (width < $cq_sm_min) {
         /* This is intended to target the first message_controls child
            when there are 3 displayed. */
         .message_control_button:nth-last-child(3) {
             display: none;
+        }
+    }
+
+    /* Media-query fallback. Note that because we're treating
+       #message-lists-container as its own container, we can
+       express a much simpler query there. The more complex
+       conditions are necessary only for media queries. */
+    @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
+        .without-container-query-support {
+            /* This is intended to target the first message_controls child
+            when there are 3 displayed. */
+            .message_control_button:nth-last-child(3) {
+                display: none;
+            }
         }
     }
 
@@ -488,7 +508,7 @@
     .message_control_button {
         opacity: 0;
         visibility: hidden;
-        transition: none 0.2s ease;
+        transition: 0.2s ease;
         transition-property: opacity, visibility;
         /* Allow buttons to grow to fill the available space,
            in concord with the column calculated for the
@@ -549,11 +569,6 @@
             &.star:focus-visible {
                 color: var(--color-message-star-action);
             }
-        }
-
-        .zulip-icon-more-vertical {
-            /* Increase visual prominence of the vdots. */
-            font-size: 21px;
         }
     }
 

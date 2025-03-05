@@ -49,7 +49,9 @@ export function initialize(): void {
             const button_type = $elem.attr("data-reply-button-type");
             switch (button_type) {
                 case "direct_disabled": {
-                    instance.setContent(pick_empty_narrow_banner().title);
+                    const narrow_filter = narrow_state.filter();
+                    assert(narrow_filter !== undefined);
+                    instance.setContent(pick_empty_narrow_banner(narrow_filter).title);
                     return;
                 }
                 case "stream_disabled": {

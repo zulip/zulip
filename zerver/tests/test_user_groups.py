@@ -1555,11 +1555,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
             do_unarchive_stream(stream, "support", acting_user=None)
 
-            anonymous_setting_group = self.create_or_update_anonymous_group_for_setting(
-                [hamlet], [moderators_group, support_group]
+            anonymous_setting_group_member_dict = UserGroupMembersDict(
+                direct_members=[hamlet.id], direct_subgroups=[moderators_group.id, support_group.id]
             )
             do_change_stream_group_based_setting(
-                stream, setting_name, anonymous_setting_group, acting_user=desdemona
+                stream, setting_name, anonymous_setting_group_member_dict, acting_user=desdemona
             )
 
             result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
