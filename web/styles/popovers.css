@@ -80,9 +80,7 @@
     border: 1px solid var(--color-border-popover-menu);
     border-radius: 6px;
     box-shadow: var(--box-shadow-popover-menu);
-    /* Popover menus should scale no smaller than 15px,
-       but scale up with the base font-size. */
-    font-size: max(15px, var(--base-font-size-px));
+    font-size: 1.0714em; /* 15px at 14px em */
 
     > .tippy-content {
         padding: 0;
@@ -177,7 +175,6 @@
         color: var(--color-text-item);
 
         &:hover {
-            color: var(--color-text-link);
             text-decoration: none;
         }
 
@@ -270,7 +267,7 @@
     /* 20px at 18px/1em */
     line-height: 1.1111em;
     color: var(--color-text-full-name);
-    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .popover-group-menu-description {
@@ -474,8 +471,8 @@ ul.popover-group-menu-member-list {
     }
 
     .deactivated-user-icon {
-        margin: -1px;
         vertical-align: middle;
+        font-size: 0.7em;
     }
 
     #default-section {
@@ -526,6 +523,7 @@ ul.popover-group-menu-member-list {
         margin-bottom: 20px;
     }
 
+    .group-tab-element-header,
     .stream-tab-element-header {
         margin: 0;
         display: inline-block;
@@ -565,12 +563,14 @@ ul.popover-group-menu-member-list {
         }
     }
 
+    .group-list-top-section,
     .stream-list-top-section {
         display: flex;
         margin-top: 12px;
         align-items: center;
         margin-bottom: 5px;
 
+        .group-search-container,
         .stream-search-container {
             margin-left: auto;
             display: grid;
@@ -579,6 +579,7 @@ ul.popover-group-menu-member-list {
                 30px;
         }
 
+        .group-search,
         .stream-search {
             grid-column: search-input-start / clear-search-end;
             grid-row: search-input;
@@ -587,8 +588,12 @@ ul.popover-group-menu-member-list {
             text-overflow: ellipsis;
             overflow: hidden;
             margin-bottom: 0;
+            /* Override default modal input width, since that overflows.
+               This is 185px (the default "width: unset" width) at 14px/em */
+            width: 13.2142em;
         }
 
+        .group-search:placeholder-shown + #clear_groups_search,
         .stream-search:placeholder-shown + #clear_stream_search {
             visibility: hidden;
         }
@@ -713,6 +718,7 @@ ul.popover-group-menu-member-list {
     }
 
     #user-profile-modal {
+        .group-list-top-section,
         .stream-list-top-section {
             display: block;
 
@@ -720,10 +726,12 @@ ul.popover-group-menu-member-list {
                 width: 100%;
             }
 
+            .group-search,
             .stream-search {
                 margin-bottom: 8px;
             }
 
+            #clear_groups_search,
             #clear_stream_search {
                 padding-top: 1px;
             }
@@ -880,9 +888,8 @@ ul.popover-group-menu-member-list {
     }
 
     #move_messages_count {
-        margin-top: -20px;
-        font-style: italic;
-        opacity: 0.7;
+        /* Disabled pending fixes to the logic. */
+        display: none;
     }
 
     .topic_stream_edit_header {
@@ -1005,6 +1012,12 @@ ul.popover-group-menu-member-list {
         background-color: var(--color-background-popover-menu);
         border: solid 1px var(--color-background-popover-menu);
         border-radius: 50%;
+
+        &.deactivated-user-icon {
+            font-size: 0.8em;
+            background-color: var(--color-background-popover-menu);
+            padding: 1px;
+        }
     }
 
     .popover-menu-user-info {
@@ -1020,7 +1033,7 @@ ul.popover-group-menu-member-list {
         /* 20px at 18px/1em */
         line-height: 1.1111em;
         color: var(--color-text-full-name);
-        word-break: break-word;
+        overflow-wrap: anywhere;
 
         .zulip-icon.zulip-icon-bot {
             vertical-align: middle;
@@ -1114,7 +1127,7 @@ ul.popover-group-menu-member-list {
         line-height: 1.1111em;
         color: var(--color-text-full-name) !important;
         max-width: 150px;
-        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 
     .user-type {
@@ -1496,4 +1509,20 @@ ul.popover-menu-list {
             align-self: baseline;
         }
     }
+}
+
+#groups-to-add {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#user-group-to-add {
+    flex: 1;
+    min-width: 0;
+}
+
+.add-groups-button-wrapper {
+    flex: 0 0 auto;
 }

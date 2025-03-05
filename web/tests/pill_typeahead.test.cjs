@@ -11,7 +11,6 @@ const {page_params} = require("./lib/zpage_params.cjs");
 const noop = function () {};
 
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
-const group_permission_setting = mock_esm("../src/group_permission_settings");
 
 const input_pill = zrequire("input_pill");
 const pill_typeahead = zrequire("pill_typeahead");
@@ -669,20 +668,17 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
         get_display_value_from_item: noop,
     });
 
-    group_permission_setting.get_group_permission_setting_config = (setting_name, setting_type) => {
-        assert.equal(setting_name, "can_manage_group");
-        assert.equal(setting_type, "group");
-        // This is not same as the original config for can_manage_group
-        // setting, but is set in such a way that we need to create minimum
-        // system groups.
-        return {
-            require_system_group: false,
-            allow_internet_group: false,
-            allow_nobody_group: true,
-            allow_everyone_group: false,
-            allowed_system_groups: ["role:moderators", "role:nobody", "role:fullmembers"],
-        };
-    };
+    override(realm, "server_supported_permission_settings", {
+        group: {
+            can_manage_group: {
+                require_system_group: false,
+                allow_internet_group: false,
+                allow_nobody_group: true,
+                allow_everyone_group: false,
+                allowed_system_groups: ["role:moderators", "role:nobody", "role:fullmembers"],
+            },
+        },
+    });
 
     const moderators_system_group = {
         name: "role:moderators",

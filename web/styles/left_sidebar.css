@@ -1,14 +1,3 @@
-.hashtag {
-    &:empty {
-        &::after {
-            content: "#";
-            line-height: 0;
-            font-size: 18px;
-            font-weight: 700;
-        }
-    }
-}
-
 .left-sidebar-title {
     color: var(--color-text-sidebar-heading);
     opacity: var(--opacity-sidebar-heading);
@@ -61,12 +50,9 @@
     margin-right: 10px;
 }
 
-.tooltip {
-    max-width: 18em;
-}
-
 .masked_unread_count {
-    font-size: 8px;
+    /* 8px at 16px/14em */
+    font-size: 0.5em;
     display: none;
     /* Masked unreads display as flex when revealed. */
     align-items: center;
@@ -383,7 +369,18 @@
         background-color: var(--color-background-sidebar-action-heading-hover);
     }
 
+    &:has(a.left-sidebar-navigation-label-container:focus-visible) {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
+
+    .left-sidebar-navigation-label-container:focus {
+        outline: none;
+    }
+
     &.active-filter,
+    &.top-left-active-filter,
     &.active-sub-filter {
         &:has(.left_sidebar_menu_icon_visible) {
             background-color: var(--color-background-active-narrow-filter);
@@ -391,9 +388,15 @@
     }
 }
 
+#stream_filters .narrow-filter:has(a.stream-name:focus-visible),
 #stream_filters .narrow-filter.highlighted_stream {
     &.active-filter > .bottom_left_row {
         background-color: var(--color-background-hover-narrow-filter);
+    }
+
+    & > .bottom_left_row {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
     }
 
     &.active-filter .topic-list .bottom_left_row {
@@ -405,7 +408,30 @@
     }
 }
 
-#subscribe-to-more-streams {
+#stream_filters
+    .narrow-filter
+    .topic-list
+    .bottom_left_row:has(a.sidebar-topic-name:focus-visible),
+#direct-messages-list
+    .dm-list
+    .bottom_left_row:has(a.conversation-partners:focus-visible) {
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: -2px;
+    background-color: var(--color-background-hover-narrow-filter);
+}
+
+#stream_filters .narrow-filter,
+#direct-messages-list .bottom_left_row {
+    a.stream-name:focus,
+    a.sidebar-topic-name:focus,
+    a.conversation-partners:focus {
+        outline: none;
+        text-decoration: none;
+    }
+}
+
+#subscribe-to-more-streams,
+#login-to-more-streams {
     /* --left-sidebar-bottom-scrolling-buffer is to prevent the row from
        being cut off, and --sidebar-bottom-spacing is extra padding. */
     margin: 5px var(--left-sidebar-right-margin)
@@ -426,13 +452,16 @@
     .subscribe-more-link {
         display: grid;
         grid-template:
-            "plus-icon . row-text" var(--line-height-sidebar-row-prominent)
+            "plus-icon . row-text" minmax(
+                var(--line-height-sidebar-row-prominent),
+                auto
+            )
             / var(--left-sidebar-icon-column-width) var(
                 --left-sidebar-icon-content-gap
             )
             minmax(0, 1fr);
         align-items: center;
-        line-height: var(--line-height-sidebar-row-prominent);
+        line-height: 1;
         color: var(--color-text-sidebar-action-heading);
         text-decoration: none;
     }
@@ -451,6 +480,7 @@
            because mathematical centering and the perception of center don't
            always match. */
         margin-top: -0.12em;
+        padding: 3px 0;
         font-size: var(--font-size-sidebar-action-heading);
         font-weight: var(--font-weight-sidebar-action-heading);
         font-variant: var(--font-variant-sidebar-action-heading);
@@ -459,29 +489,17 @@
         );
         text-transform: var(--text-transform-sidebar-action-heading);
     }
-}
 
-#login-link-container,
-#subscribe-to-more-streams {
-    text-decoration: none;
-}
-
-#login-link-container {
-    color: var(--color-text-url);
-    display: flex;
-    align-items: center;
-    margin: 5px auto var(--left-sidebar-bottom-scrolling-buffer)
-        var(--left-sidebar-toggle-width-offset);
-
-    &:hover {
-        cursor: pointer;
-        color: var(--color-text-url-hover);
-
-        &.login_button .login-text {
-            color: var(--color-text-url-hover);
-            text-decoration: underline;
-        }
+    .subscribe-more-icon {
+        /* Scale the icon with the action-heading font-size
+           for better vertical centering. */
+        font-size: var(--font-size-sidebar-action-heading);
     }
+}
+
+#subscribe-to-more-streams,
+#login-to-mmore-streams {
+    text-decoration: none;
 }
 
 ul.filters {
@@ -598,6 +616,7 @@ ul.filters {
 }
 
 li.active-filter,
+li.top-left-active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
     position: relative;
@@ -642,8 +661,12 @@ li.active-sub-filter {
     justify-content: center;
 
     .left-sidebar-navigation-condensed-item {
-        /* 24px minimum width from Vlad's design. */
-        flex: 1 0 24px;
+        /* 24px minimum width from Vlad's design.
+           however, we want to permit growing and
+           shrinking to keep icons reasonably spaced
+           across different information-density
+           settings. */
+        flex: 1 1 24px;
         /* Unset padding from individual top_left items */
         padding: 0;
         border-radius: 4px;
@@ -670,12 +693,14 @@ li.active-sub-filter {
         }
 
         &:not(:hover) .unread_count {
-            top: 2px;
-            right: 2px;
-            width: 6px;
-            height: 6px;
-            font-size: 0;
+            /* .unread_count has its based font-size set to 12px at 14px/em. */
+            /* 2px, 6px at 12px/1em */
+            top: 0.1667em;
+            right: 0.1667em;
+            width: 0.5em;
+            height: 0.5em;
             padding: 0;
+            color: transparent;
             background-color: var(--color-background-unread-counter-dot);
         }
 
@@ -696,7 +721,7 @@ li.active-sub-filter {
         }
     }
 
-    .active-filter {
+    .top-left-active-filter {
         /* Don't display a background on condensed icons. */
         background: unset;
     }
@@ -705,11 +730,11 @@ li.active-sub-filter {
         display: flex;
         align-items: center;
         justify-content: center;
-        /* TODO: Set this 24px height value as a variable.
-           Keep filter-icon height the full height of the box. */
-        height: 24px;
         /* Enlarge icons slightly in condensed views. */
-        font-size: 15px;
+        /* 15px at 16px/1em */
+        font-size: 0.9375em;
+        /* 24px at 15px/1em */
+        height: 1.6em;
         color: var(--color-left-sidebar-navigation-icon);
     }
 }
@@ -865,7 +890,7 @@ li.top_left_scheduled_messages {
     }
 }
 
-.top_left_starred_messages.active-filter {
+.top_left_starred_messages.top-left-active-filter {
     &.hide_starred_message_count {
         .masked_unread_count {
             display: none;
@@ -971,7 +996,8 @@ li.top_left_scheduled_messages {
         0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 0.5fr)
         0 minmax(0, 1fr)
         var(--left-sidebar-vdots-width) 0;
-    grid-template-rows: 28px;
+    /* 28px at 16px/1em */
+    grid-template-rows: 1.75em;
     cursor: pointer;
     border-radius: 4px;
 
@@ -1015,7 +1041,7 @@ li.top_left_scheduled_messages {
             }
             /* ...except when there is an active filter in place:
                that row should still be shown. */
-            & .top_left_row.active-filter {
+            & .top_left_row.top-left-active-filter {
                 display: grid;
                 /* In the absence of auto rows in the condensed state,
                    we set an explicit height on the active filter. */
@@ -1049,10 +1075,12 @@ li.top_left_scheduled_messages {
         /* Horizontally center vdots. */
         justify-self: stretch;
         /* Properly size vdots. */
-        font-size: 17px;
+        /* 17px at 16px/1em */
+        font-size: 1.0625em;
         /* Occupy same clickable height as
            other condensed-view icons */
-        height: 24px;
+        /* 24px at 17px/1em */
+        height: 1.4118em;
         /* Vertically center dots with
            flexbox. */
         display: flex;
@@ -1267,6 +1295,7 @@ li.top_left_scheduled_messages {
     margin-right: 1px;
 }
 
+.dm-markers-and-unreads,
 .stream-markers-and-unreads,
 .topic-markers-and-unreads {
     grid-area: markers-and-unreads;
@@ -1359,7 +1388,8 @@ li.top_left_scheduled_messages {
     padding-left: 1px;
     /* Set the icon size, which will be inherited
        by .zulip-icon */
-    font-size: 17px;
+    /* 17px at 16px/1em */
+    font-size: 1.0625em;
 
     /*
         If you hover directly over the ellipsis itself,
@@ -1409,20 +1439,6 @@ li.top_left_scheduled_messages {
         color: var(--color-vdots-hover);
         background-color: var(--color-background-sidebar-action-hover);
     }
-}
-
-/*
-    For topic ellipsis-v(vertical 3 dots) we use a slightly smaller
-    font to show they're "lower" in the hierarchy,
-    which also affects it positioning.
-*/
-.topic-sidebar-menu-icon {
-    /* 0.9em, but with a pixel value because the
-       ordinary 17px vdots size is not inherited
-       here, so we can't express an em-value
-       directly. Pixels are easier to reason
-       about with icons, anyway. */
-    font-size: 15.3px;
 }
 
 ul.topic-list {
@@ -1501,30 +1517,17 @@ li.topic-list-item {
     .user-circle {
         /* Tighten the line-height to match the icon's size... */
         line-height: 1;
-        /* ...which is approximately 11px at 16px/1em. */
-        font-size: 0.6875em;
+        /* ...which is approximately 8px at 15px/1em. */
+        font-size: 0.5333em;
     }
 
     .unread_count {
         grid-area: markers-and-unreads;
-        /* TODO: This is an alternative method
-           for presenting a 16px-tall unread
-           counter, regardless of context. This
-           method could be used app-wide once
-           all of the layout methods for presenting
-           unreads have been modernized.
-
-           Set the line-height to match the
-           font-size, so that the numerals sit in
-           a 12px box. */
-        line-height: 12px;
         /* Use flexbox to vertically center
            the 12px-high text node within the
            16px-high unread box. */
         display: flex;
         align-items: center;
-        /* Extra margin for unreads. */
-        margin-right: var(--left-sidebar-unread-offset);
 
         &:empty {
             margin-right: 0;
@@ -1853,6 +1856,7 @@ li.topic-list-item {
 
     #streams_header,
     #subscribe-to-more-streams,
+    #login-to-more-streams,
     .show-more-topics {
         display: none;
     }

@@ -5,7 +5,9 @@
 # by a test in test_events.py with a schema checker here.
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
+import inspect
 from collections.abc import Callable
+from enum import Enum
 from pprint import PrettyPrinter
 from typing import cast
 
@@ -14,6 +16,7 @@ from pydantic import BaseModel
 from zerver.lib.event_types import (
     AllowMessageEditingData,
     AuthenticationData,
+    BaseEvent,
     BotServicesEmbedded,
     BotServicesOutgoing,
     EventAlertWords,
@@ -71,6 +74,10 @@ from zerver.lib.event_types import (
     EventSubscriptionPeerRemove,
     EventSubscriptionRemove,
     EventSubscriptionUpdate,
+    EventTypingEditChannelMessageStart,
+    EventTypingEditChannelMessageStop,
+    EventTypingEditDirectMessageStart,
+    EventTypingEditDirectMessageStop,
     EventTypingStart,
     EventTypingStop,
     EventUpdateDisplaySettings,
@@ -107,24 +114,22 @@ from zerver.lib.event_types import (
     PlanTypeData,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
-from zerver.lib.types import AnonymousSettingGroupDict
+from zerver.lib.types import UserGroupMembersDict
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 
-EventModel = type[BaseModel]
 
-
-def validate_event_with_model_type(event: dict[str, object], model: EventModel) -> None:
+def validate_with_model(data: dict[str, object], model: type[BaseModel]) -> None:
     allowed_fields = set(model.model_fields.keys())
-    if not set(event.keys()).issubset(allowed_fields):  # nocoverage
-        raise ValueError(f"Extra fields not allowed: {set(event.keys()) - allowed_fields}")
+    if not set(data.keys()).issubset(allowed_fields):  # nocoverage
+        raise ValueError(f"Extra fields not allowed: {set(data.keys()) - allowed_fields}")
 
-    model.model_validate(event, strict=True)
+    model.model_validate(data, strict=True)
 
 
-def make_checker(base_model: EventModel) -> Callable[[str, dict[str, object]], None]:
+def make_checker(base_model: type[BaseEvent]) -> Callable[[str, dict[str, object]], None]:
     def f(label: str, event: dict[str, object]) -> None:
         try:
-            validate_event_with_model_type(event, base_model)
+            validate_with_model(event, base_model)
         except Exception as e:  # nocoverage
             print(f"""
 FAILURE:
@@ -195,6 +200,10 @@ check_subscription_peer_remove = make_checker(EventSubscriptionPeerRemove)
 check_subscription_remove = make_checker(EventSubscriptionRemove)
 check_typing_start = make_checker(EventTypingStart)
 check_typing_stop = make_checker(EventTypingStop)
+check_typing_edit_channel_message_start = make_checker(EventTypingEditChannelMessageStart)
+check_typing_edit_direct_message_start = make_checker(EventTypingEditDirectMessageStart)
+check_typing_edit_channel_message_stop = make_checker(EventTypingEditChannelMessageStop)
+check_typing_edit_direct_message_stop = make_checker(EventTypingEditDirectMessageStop)
 check_update_message_flags_add = make_checker(EventUpdateMessageFlagsAdd)
 check_update_message_flags_remove = make_checker(EventUpdateMessageFlagsRemove)
 check_user_group_add = make_checker(EventUserGroupAdd)
@@ -240,7 +249,7 @@ _check_user_settings_update = make_checker(EventUserSettingsUpdate)
 _check_user_status = make_checker(EventUserStatus)
 
 
-PERSON_TYPES: dict[str, EventModel] = dict(
+PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     avatar_fields=PersonAvatarFields,
     bot_owner_id=PersonBotOwnerId,
     custom_profile_field=PersonCustomProfileField,
@@ -328,10 +337,10 @@ def check_realm_bot_add(
         assert services == []
     elif bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
         assert len(services) == 1
-        validate_event_with_model_type(services[0], BotServicesOutgoing)
+        validate_with_model(services[0], BotServicesOutgoing)
     elif bot_type == UserProfile.EMBEDDED_BOT:
         assert len(services) == 1
-        validate_event_with_model_type(services[0], BotServicesEmbedded)
+        validate_with_model(services[0], BotServicesEmbedded)
     else:
         raise AssertionError(f"Unknown bot_type: {bot_type}")
 
@@ -419,15 +428,10 @@ def check_realm_update(
         return
 
     property_type = Realm.property_types[prop]
-
-    if property_type in (bool, int, str):
-        assert isinstance(value, property_type)
-    elif property_type == (int, type(None)):
-        assert isinstance(value, int)
-    elif property_type == (str, type(None)):
+    if inspect.isclass(property_type) and issubclass(property_type, Enum):
         assert isinstance(value, str)
     else:
-        raise AssertionError(f"Unexpected property type {property_type}")
+        assert isinstance(value, property_type)
 
 
 def check_realm_default_update(
@@ -456,7 +460,7 @@ def check_realm_update_dict(
         assert isinstance(event["data"], dict)
 
         if "allow_message_editing" in event["data"]:
-            sub_type: EventModel = AllowMessageEditingData
+            sub_type: type[BaseModel] = AllowMessageEditingData
         elif "message_content_edit_limit_seconds" in event["data"]:
             sub_type = MessageContentEditLimitSecondsData
         elif "authentication_methods" in event["data"]:
@@ -479,7 +483,7 @@ def check_realm_update_dict(
     else:
         raise AssertionError("unhandled property: {event['property']}")
 
-    validate_event_with_model_type(cast(dict[str, object], event["data"]), sub_type)
+    validate_with_model(cast(dict[str, object], event["data"]), sub_type)
 
 
 def check_realm_user_update(
@@ -491,7 +495,7 @@ def check_realm_user_update(
     _check_realm_user_update(var_name, event)
 
     sub_type = PERSON_TYPES[person_flavor]
-    validate_event_with_model_type(cast(dict[str, object], event["person"]), sub_type)
+    validate_with_model(cast(dict[str, object], event["person"]), sub_type)
 
 
 def check_stream_update(
@@ -531,7 +535,7 @@ def check_stream_update(
         assert value in Stream.STREAM_POST_POLICY_TYPES
     elif prop in Stream.stream_permission_group_settings:
         assert extra_keys == set()
-        assert isinstance(value, int | AnonymousSettingGroupDict)
+        assert isinstance(value, int | UserGroupMembersDict)
     elif prop == "first_message_id":
         assert extra_keys == set()
         assert isinstance(value, int)
@@ -686,12 +690,12 @@ def check_update_message(
     assert expected_keys == actual_keys
 
 
-def check_user_group_update(var_name: str, event: dict[str, object], field: str) -> None:
+def check_user_group_update(var_name: str, event: dict[str, object], fields: set[str]) -> None:
     _check_user_group_update(var_name, event)
 
     assert isinstance(event["data"], dict)
 
-    assert set(event["data"].keys()) == {field}
+    assert set(event["data"].keys()) == fields
 
 
 def check_user_status(var_name: str, event: dict[str, object], fields: set[str]) -> None:

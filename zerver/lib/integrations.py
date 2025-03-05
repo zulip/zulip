@@ -65,6 +65,7 @@ class Integration:
     DEFAULT_LOGO_STATIC_PATH_PNG = "images/integrations/logos/{name}.png"
     DEFAULT_LOGO_STATIC_PATH_SVG = "images/integrations/logos/{name}.svg"
     DEFAULT_BOT_AVATAR_PATH = "images/integrations/bot_avatars/{name}.png"
+    DEFAULT_DOC_PATH = "zerver/integrations/{name}.md"
 
     def __init__(
         self,
@@ -108,6 +109,10 @@ class Integration:
         if display_name is None:
             display_name = name.title()
         self.display_name = display_name
+
+        if doc is None:
+            doc = self.DEFAULT_DOC_PATH.format(name=self.name)
+        self.doc = doc
 
         if stream_name is None:
             stream_name = self.name
@@ -184,11 +189,42 @@ class BotIntegration(Integration):
         self.doc = doc
 
 
+class PythonAPIIntegration(Integration):
+    def __init__(
+        self,
+        name: str,
+        categories: list[str],
+        client_name: str | None = None,
+        logo: str | None = None,
+        secondary_line_text: str | None = None,
+        display_name: str | None = None,
+        directory_name: str | None = None,
+        doc: str | None = None,
+        stream_name: str | None = None,
+        legacy: bool = False,
+    ) -> None:
+        super().__init__(
+            name,
+            categories,
+            client_name=client_name,
+            logo=logo,
+            secondary_line_text=secondary_line_text,
+            display_name=display_name,
+            doc=doc,
+            stream_name=stream_name,
+            legacy=legacy,
+        )
+
+        if directory_name is None:
+            directory_name = name
+        self.directory_name = directory_name
+
+
 class WebhookIntegration(Integration):
     DEFAULT_FUNCTION_PATH = "zerver.webhooks.{name}.view.api_{name}_webhook"
     DEFAULT_URL = "api/v1/external/{name}"
     DEFAULT_CLIENT_NAME = "Zulip{name}Webhook"
-    DEFAULT_DOC_PATH = "{name}/doc.{ext}"
+    DEFAULT_DOC_PATH = "{name}/doc.md"
 
     def __init__(
         self,
@@ -229,7 +265,7 @@ class WebhookIntegration(Integration):
         self.url = url
 
         if doc is None:
-            doc = self.DEFAULT_DOC_PATH.format(name=name, ext="md")
+            doc = self.DEFAULT_DOC_PATH.format(name=name)
         self.doc = doc
 
         if dir_name is None:
@@ -399,7 +435,6 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         "github",
         ["version-control"],
         display_name="GitHub",
-        logo="images/integrations/logos/github.svg",
         function="zerver.webhooks.github.view.api_github_webhook",
         stream_name="github",
         config_options=[
@@ -496,128 +531,71 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
 ]
 
 INTEGRATIONS: dict[str, Integration] = {
-    "asana": Integration("asana", ["project-management"], doc="zerver/integrations/asana.md"),
+    "asana": Integration("asana", ["project-management"]),
     "big-blue-button": Integration(
-        "big-blue-button",
-        ["communication"],
-        logo="images/integrations/logos/bigbluebutton.svg",
-        display_name="BigBlueButton",
-        doc="zerver/integrations/big-blue-button.md",
+        "big-blue-button", ["communication"], display_name="BigBlueButton"
     ),
-    "capistrano": Integration(
-        "capistrano",
-        ["deployment"],
-        display_name="Capistrano",
-        doc="zerver/integrations/capistrano.md",
-    ),
-    "codebase": Integration("codebase", ["version-control"], doc="zerver/integrations/codebase.md"),
-    "discourse": Integration(
-        "discourse", ["communication"], doc="zerver/integrations/discourse.md"
-    ),
-    "email": Integration("email", ["communication"], doc="zerver/integrations/email.md"),
-    "errbot": Integration(
-        "errbot", ["meta-integration", "bots"], doc="zerver/integrations/errbot.md"
-    ),
-    "giphy": Integration(
-        "giphy",
-        display_name="GIPHY",
-        categories=["misc"],
-        doc="zerver/integrations/giphy.md",
-        logo="images/integrations/giphy/GIPHY_big_logo.png",
-    ),
-    "git": Integration(
-        "git", ["version-control"], stream_name="commits", doc="zerver/integrations/git.md"
-    ),
+    "capistrano": Integration("capistrano", ["deployment"], display_name="Capistrano"),
+    "discourse": Integration("discourse", ["communication"]),
+    "email": Integration("email", ["communication"]),
+    "errbot": Integration("errbot", ["meta-integration", "bots"]),
+    "giphy": Integration("giphy", ["misc"], display_name="GIPHY"),
     "github-actions": Integration(
-        "github-actions",
-        ["continuous-integration"],
-        display_name="GitHub Actions",
-        doc="zerver/integrations/github-actions.md",
+        "github-actions", ["continuous-integration"], display_name="GitHub Actions"
     ),
-    "google-calendar": Integration(
-        "google-calendar",
-        ["productivity"],
-        display_name="Google Calendar",
-        doc="zerver/integrations/google-calendar.md",
+    "hubot": Integration("hubot", ["meta-integration", "bots"]),
+    "jitsi": Integration("jitsi", ["communication"], display_name="Jitsi Meet"),
+    "mastodon": Integration("mastodon", ["communication"]),
+    "notion": Integration("notion", ["productivity"]),
+    "onyx": Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
+    "phabricator": Integration("phabricator", ["version-control"]),
+    "puppet": Integration("puppet", ["deployment"]),
+    "redmine": Integration("redmine", ["project-management"]),
+    "zoom": Integration("zoom", ["communication"]),
+}
+
+PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
+    PythonAPIIntegration("codebase", ["version-control"]),
+    PythonAPIIntegration("git", ["version-control"], stream_name="commits"),
+    PythonAPIIntegration(
+        "google-calendar", ["productivity"], display_name="Google Calendar", directory_name="google"
     ),
-    "hubot": Integration("hubot", ["meta-integration", "bots"], doc="zerver/integrations/hubot.md"),
-    "irc": Integration(
-        "irc", ["communication"], display_name="IRC", doc="zerver/integrations/irc.md"
+    PythonAPIIntegration(
+        "irc", ["communication"], display_name="IRC", directory_name="bridge_with_irc"
     ),
-    "jenkins": Integration(
-        "jenkins",
-        ["continuous-integration"],
-        doc="zerver/integrations/jenkins.md",
-    ),
-    "jira-plugin": Integration(
+    PythonAPIIntegration("jenkins", ["continuous-integration"]),
+    PythonAPIIntegration(
         "jira-plugin",
         ["project-management"],
         logo="images/integrations/logos/jira.svg",
         secondary_line_text="(locally installed)",
         display_name="Jira",
-        doc="zerver/integrations/jira-plugin.md",
         stream_name="jira",
         legacy=True,
     ),
-    "jitsi": Integration(
-        "jitsi",
-        ["communication"],
-        logo="images/integrations/logos/jitsi.svg",
-        display_name="Jitsi Meet",
-        doc="zerver/integrations/jitsi.md",
-    ),
-    "mastodon": Integration(
-        "mastodon",
-        ["communication"],
-        doc="zerver/integrations/mastodon.md",
-    ),
-    "matrix": Integration("matrix", ["communication"], doc="zerver/integrations/matrix.md"),
-    "mercurial": Integration(
+    PythonAPIIntegration("matrix", ["communication"], directory_name="bridge_with_matrix"),
+    PythonAPIIntegration(
         "mercurial",
         ["version-control"],
         display_name="Mercurial (hg)",
-        doc="zerver/integrations/mercurial.md",
         stream_name="commits",
+        directory_name="hg",
     ),
-    "nagios": Integration("nagios", ["monitoring"], doc="zerver/integrations/nagios.md"),
-    "notion": Integration("notion", ["productivity"], doc="zerver/integrations/notion.md"),
-    "openshift": Integration(
-        "openshift",
-        ["deployment"],
-        display_name="OpenShift",
-        doc="zerver/integrations/openshift.md",
-        stream_name="deployments",
+    PythonAPIIntegration("nagios", ["monitoring"]),
+    PythonAPIIntegration(
+        "openshift", ["deployment"], display_name="OpenShift", stream_name="deployments"
     ),
-    "perforce": Integration("perforce", ["version-control"], doc="zerver/integrations/perforce.md"),
-    "phabricator": Integration(
-        "phabricator", ["version-control"], doc="zerver/integrations/phabricator.md"
-    ),
-    "puppet": Integration("puppet", ["deployment"], doc="zerver/integrations/puppet.md"),
-    "redmine": Integration("redmine", ["project-management"], doc="zerver/integrations/redmine.md"),
-    "rss": Integration(
-        "rss", ["communication"], display_name="RSS", doc="zerver/integrations/rss.md"
-    ),
-    "svn": Integration(
-        "svn",
-        ["version-control"],
-        display_name="Subversion",
-        doc="zerver/integrations/svn.md",
-    ),
-    "trac": Integration("trac", ["project-management"], doc="zerver/integrations/trac.md"),
-    "twitter": Integration(
+    PythonAPIIntegration("perforce", ["version-control"]),
+    PythonAPIIntegration("rss", ["communication"], display_name="RSS"),
+    PythonAPIIntegration("svn", ["version-control"], display_name="Subversion"),
+    PythonAPIIntegration("trac", ["project-management"]),
+    PythonAPIIntegration(
         "twitter",
         ["customer-support", "marketing"],
         # _ needed to get around adblock plus
         logo="images/integrations/logos/twitte_r.svg",
-        doc="zerver/integrations/twitter.md",
     ),
-    "zoom": Integration(
-        "zoom",
-        ["communication"],
-        logo="images/integrations/logos/zoom.svg",
-        doc="zerver/integrations/zoom.md",
-    ),
-}
+]
 
 BOT_INTEGRATIONS: list[BotIntegration] = [
     BotIntegration("github_detail", ["version-control", "bots"], display_name="GitHub Detail"),
@@ -647,6 +625,9 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
         logo="images/integrations/logos/youtub_e.svg",
     ),
 ]
+
+for python_api_integration in PYTHON_API_INTEGRATIONS:
+    INTEGRATIONS[python_api_integration.name] = python_api_integration
 
 for hubot_integration in HUBOT_INTEGRATIONS:
     INTEGRATIONS[hubot_integration.name] = hubot_integration
@@ -718,9 +699,9 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "gitlab": [ScreenshotConfig("push_hook__push_local_branch_without_commits.json")],
     "gocd": [ScreenshotConfig("pipeline_with_mixed_job_result.json")],
     "gogs": [ScreenshotConfig("pull_request__opened.json")],
-    "gosquared": [ScreenshotConfig("traffic_spike.json", image_name="000.png")],
+    "gosquared": [ScreenshotConfig("traffic_spike.json")],
     "grafana": [ScreenshotConfig("alert_values_v11.json")],
-    "greenhouse": [ScreenshotConfig("candidate_stage_change.json", image_name="000.png")],
+    "greenhouse": [ScreenshotConfig("candidate_stage_change.json")],
     "groove": [ScreenshotConfig("ticket_started.json")],
     "harbor": [ScreenshotConfig("scanning_completed.json")],
     "hellosign": [
@@ -732,7 +713,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     ],
     "helloworld": [ScreenshotConfig("hello.json")],
     "heroku": [ScreenshotConfig("deploy.txt")],
-    "homeassistant": [ScreenshotConfig("reqwithtitle.json", image_name="003.png")],
+    "homeassistant": [ScreenshotConfig("reqwithtitle.json")],
     "insping": [ScreenshotConfig("website_state_available.json")],
     "intercom": [ScreenshotConfig("conversation_admin_replied.json")],
     "jira": [ScreenshotConfig("created_v1.json")],
@@ -744,13 +725,13 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "mention": [ScreenshotConfig("webfeeds.json")],
     "nagios": [BaseScreenshotConfig("service_notify.json")],
     "netlify": [ScreenshotConfig("deploy_building.json")],
-    "newrelic": [ScreenshotConfig("incident_activated_new_default_payload.json", "001.png")],
+    "newrelic": [ScreenshotConfig("incident_activated_new_default_payload.json")],
     "opencollective": [ScreenshotConfig("one_time_donation.json")],
-    "opsgenie": [ScreenshotConfig("addrecipient.json", image_name="000.png")],
+    "opsgenie": [ScreenshotConfig("addrecipient.json")],
     "pagerduty": [ScreenshotConfig("trigger_v2.json")],
     "papertrail": [ScreenshotConfig("short_post.json", payload_as_query_param=True)],
     "patreon": [ScreenshotConfig("members_pledge_create.json")],
-    "pingdom": [ScreenshotConfig("http_up_to_down.json", image_name="001.png")],
+    "pingdom": [ScreenshotConfig("http_up_to_down.json")],
     "pivotal": [ScreenshotConfig("v5_type_changed.json")],
     "radarr": [ScreenshotConfig("radarr_movie_grabbed.json")],
     "raygun": [ScreenshotConfig("new_error.json")],
@@ -758,10 +739,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "rhodecode": [ScreenshotConfig("push.json")],
     "rundeck": [ScreenshotConfig("start.json")],
     "semaphore": [ScreenshotConfig("pull_request.json")],
-    "sentry": [
-        ScreenshotConfig("event_for_exception_python.json"),
-        ScreenshotConfig("issue_assigned_to_team.json", "002.png"),
-    ],
+    "sentry": [ScreenshotConfig("event_for_exception_python.json")],
     "slack": [ScreenshotConfig("message_with_normal_text.json")],
     "sonarqube": [ScreenshotConfig("error.json")],
     "sonarr": [ScreenshotConfig("sonarr_episode_grabbed.json")],
@@ -769,7 +747,7 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "statuspage": [ScreenshotConfig("incident_created.json")],
     "stripe": [ScreenshotConfig("charge_succeeded__card.json")],
     "taiga": [ScreenshotConfig("userstory_changed_status.json")],
-    "teamcity": [ScreenshotConfig("success.json"), ScreenshotConfig("personal.json", "002.png")],
+    "teamcity": [ScreenshotConfig("success.json")],
     "thinkst": [ScreenshotConfig("canary_consolidated_port_scan.json")],
     "transifex": [
         ScreenshotConfig(
@@ -792,7 +770,6 @@ DOC_SCREENSHOT_CONFIG: dict[str, list[BaseScreenshotConfig]] = {
     "zendesk": [
         ScreenshotConfig(
             "",
-            "007.png",
             use_basic_auth=True,
             extra_params={
                 "ticket_title": "Hardware Ecosystem Compatibility Inquiry",

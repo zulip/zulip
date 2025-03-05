@@ -1,6 +1,7 @@
 import {z} from "zod";
 
 import * as people from "./people.ts";
+import type {User} from "./people.ts";
 import type {StateData, presence_schema} from "./state_data.ts";
 import {realm} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
@@ -23,6 +24,21 @@ export const presence_info_from_event_schema = z.object({
     }),
 });
 export type PresenceInfoFromEvent = z.output<typeof presence_info_from_event_schema>;
+
+export const user_last_seen_response_schema = z.object({
+    result: z.string(),
+    msg: z.string().optional(),
+    presence: z
+        .object({
+            /* We ignore the keys other than aggregated, since they just contain
+               duplicate data. */
+            aggregated: z.object({
+                status: z.enum(["active", "idle", "offline"]),
+                timestamp: z.number(),
+            }),
+        })
+        .optional(),
+});
 
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
@@ -75,7 +91,7 @@ export function get_active_or_idle_user_ids(): number[] {
         .map((entry) => entry[0]);
 }
 
-export function status_from_raw(raw: RawPresence): PresenceStatus {
+export function status_from_raw(raw: RawPresence, user: User | undefined): PresenceStatus {
     /*
         Example of `raw`:
 
@@ -116,7 +132,9 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
     }
 
     if (age(idle_timestamp) < offline_threshold_secs) {
-        last_active = idle_timestamp;
+        // idle_timestamp >= active_timestamp usually, but it's
+        // harmless to just take the maximum for readability.
+        last_active = Math.max(active_timestamp ?? 0, idle_timestamp ?? 0);
         return {
             status: "idle",
             last_active,
@@ -124,14 +142,18 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
     }
 
     /*
-        We always want to prioritize the last time the user
-        was active 'active_timestamp' to be displayed in the
-        popover. This since it is the most relevant information
-        for other users and matches the formatting of the string
-        in the popover.
+        We always want to prioritize the last time the user was active
+        'active_timestamp' to be displayed in the popover. This since
+        it is the most relevant information for other users and
+        matches the formatting of the string in the popover. For users
+        who've never logged in, we fall back to when they joined.
     */
 
-    last_active = active_timestamp ?? idle_timestamp;
+    let date_joined_timestamp = 0;
+    if (user?.date_joined) {
+        date_joined_timestamp = new Date(user.date_joined).getTime() / 1000;
+    }
+    last_active = Math.max(active_timestamp ?? 0, date_joined_timestamp);
 
     return {
         status: "offline",
@@ -182,7 +204,9 @@ export function update_info_from_event(
 
     raw_info.set(user_id, raw);
 
-    const status = status_from_raw(raw);
+    const ignore_missing = true;
+    const user = people.maybe_get_user_by_id(user_id, ignore_missing);
+    const status = status_from_raw(raw, user);
     presence_info.set(user_id, status);
 }
 
@@ -249,7 +273,7 @@ export function set_info(
 
         raw_info.set(user_id, raw);
 
-        const status = status_from_raw(raw);
+        const status = status_from_raw(raw, person);
         presence_info.set(user_id, status);
     }
     for (const user_id of all_active_or_idle_user_ids) {

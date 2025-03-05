@@ -18,21 +18,51 @@ const realm = {};
 set_current_user(current_user);
 set_realm(realm);
 
+const me = {
+    email: "me@example.com",
+    user_id: 5,
+    full_name: "Me Myself",
+};
+
+const me_group = {
+    name: "me_group",
+    id: 1,
+    members: new Set([me.user_id]),
+    is_system_group: false,
+    direct_subgroup_ids: new Set([]),
+};
+const nobody_group = {
+    name: "nobody_group",
+    id: 2,
+    members: new Set([]),
+    is_system_group: false,
+    direct_subgroup_ids: new Set([]),
+};
+
 const denmark = {
     stream_id: 101,
     name: "Denmark",
     subscribed: true,
+    can_administer_channel_group: nobody_group.id,
+    can_add_subscribers_group: nobody_group.id,
+    can_subscribe_group: nobody_group.id,
 };
 const sweden = {
     stream_id: 102,
     name: "Sweden",
     subscribed: false,
+    can_administer_channel_group: nobody_group.id,
+    can_add_subscribers_group: nobody_group.id,
+    can_subscribe_group: nobody_group.id,
 };
 const germany = {
     stream_id: 103,
     name: "Germany",
     subscribed: false,
     invite_only: true,
+    can_administer_channel_group: nobody_group.id,
+    can_add_subscribers_group: nobody_group.id,
+    can_subscribe_group: nobody_group.id,
 };
 
 peer_data.set_subscribers(denmark.stream_id, [1, 2, 77]);
@@ -54,23 +84,10 @@ for (const sub of subs) {
     stream_data.add_sub(sub);
 }
 
-const me = {
-    email: "me@example.com",
-    user_id: 5,
-    full_name: "Me Myself",
-};
-
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-const me_group = {
-    name: "me_group",
-    id: 1,
-    members: new Set([me.user_id]),
-    is_system_group: false,
-    direct_subgroup_ids: new Set([]),
-};
-user_groups.initialize({realm_user_groups: [me_group]});
+user_groups.initialize({realm_user_groups: [me_group, nobody_group]});
 
 run_test("create_item", ({override}) => {
     override(current_user, "user_id", me.user_id);

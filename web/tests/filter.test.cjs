@@ -19,6 +19,7 @@ const people = zrequire("people");
 const {Filter} = zrequire("../src/filter");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
+const muted_users = zrequire("muted_users");
 
 const realm = {};
 set_realm(realm);
@@ -54,11 +55,28 @@ const alice = {
     is_guest: true,
 };
 
+const jeff = {
+    email: "jeff@foo.com",
+    user_id: 34,
+    full_name: "jeff",
+};
+
+const annie = {
+    email: "annie@foo.com",
+    user_id: 35,
+    full_name: "annie",
+    is_guest: true,
+};
+
 people.add_active_user(me);
 people.add_active_user(joe);
 people.add_active_user(steve);
 people.add_active_user(alice);
+people.add_active_user(jeff);
+people.add_active_user(annie);
 people.initialize_current_user(me.user_id);
+muted_users.add_muted_user(jeff.user_id);
+muted_users.add_muted_user(annie.user_id);
 
 function assert_same_terms(result, terms) {
     // If negated flag is undefined, we explicitly
@@ -487,6 +505,19 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_conversation_view_with_near());
+
+    terms = [
+        {operator: "channel", operand: "foo", negated: false},
+        {operator: "topic", operand: "bar", negated: false},
+    ];
+    filter = new Filter(terms);
+
+    assert.equal(filter.has_exactly_channel_topic_operators(), true);
+
+    filter.adjust_with_operand_to_message(12);
+
+    assert.deepEqual(filter.terms(), [...terms, {operator: "with", operand: "12"}]);
+    assert.equal(filter.has_exactly_channel_topic_operators(), false);
 });
 
 function assert_not_mark_read_with_has_operands(additional_terms_to_test) {
@@ -1550,11 +1581,16 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "resolved"}];
-    string = "topics marked as resolved";
+    string = "resolved topics";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "followed"}];
     string = "followed topics";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    // operands with their own negative words, like resolved.
+    narrow = [{operator: "is", operand: "resolved", negated: true}];
+    string = "unresolved topics";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "something_we_do_not_support"}];
@@ -2156,8 +2192,16 @@ test("navbar_helpers", ({override}) => {
     ];
     const dm_group = [{operator: "dm", operand: "joe@example.com,STEVE@foo.com"}];
     const dm_with_guest = [{operator: "dm", operand: "alice@example.com"}];
+    const dm_with_muted_user = [{operator: "dm", operand: "jeff@foo.com"}];
+    const dm_with_muted_guest_user = [{operator: "dm", operand: "annie@foo.com"}];
     const dm_group_including_guest = [
         {operator: "dm", operand: "alice@example.com,joe@example.com"},
+    ];
+    const dm_group_including_muted_user = [
+        {operator: "dm", operand: "jeff@foo.com,joe@example.com"},
+    ];
+    const dm_group_including_muted_guest_user = [
+        {operator: "dm", operand: "annie@foo.com,joe@example.com"},
     ];
     const dm_group_including_missing_person = [
         {operator: "dm", operand: "joe@example.com,STEVE@foo.com,sally@doesnotexist.com"},
@@ -2238,7 +2282,7 @@ test("navbar_helpers", ({override}) => {
             terms: is_resolved,
             is_common_narrow: true,
             icon: "check",
-            title: "translated: Topics marked as resolved",
+            title: "translated: Resolved topics",
             redirect_url_with_search: "/#narrow/topics/is/resolved",
         },
         {
@@ -2315,6 +2359,20 @@ test("navbar_helpers", ({override}) => {
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + steve.user_id + "-group",
         },
         {
+            terms: dm_with_muted_user,
+            is_common_narrow: true,
+            zulip_icon: "user",
+            title: "translated: Muted user",
+            redirect_url_with_search: "/#narrow/dm/" + jeff.user_id + "-" + jeff.full_name,
+        },
+        {
+            terms: dm_with_muted_guest_user,
+            is_common_narrow: true,
+            zulip_icon: "user",
+            title: "translated: Muted user (guest)",
+            redirect_url_with_search: "/#narrow/dm/" + annie.user_id + "-" + annie.full_name,
+        },
+        {
             terms: dm_with_guest,
             is_common_narrow: true,
             zulip_icon: "user",
@@ -2328,6 +2386,20 @@ test("navbar_helpers", ({override}) => {
             zulip_icon: "user",
             title: "joe and translated: alice (guest)",
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + alice.user_id + "-group",
+        },
+        {
+            terms: dm_group_including_muted_user,
+            is_common_narrow: true,
+            zulip_icon: "user",
+            title: "joe and translated: Muted user",
+            redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + jeff.user_id + "-group",
+        },
+        {
+            terms: dm_group_including_muted_guest_user,
+            is_common_narrow: true,
+            zulip_icon: "user",
+            title: "joe and translated: Muted user (guest)",
+            redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + annie.user_id + "-group",
         },
         {
             terms: dm_group_including_missing_person,
@@ -2501,6 +2573,10 @@ test("error_cases", () => {
 run_test("is_spectator_compatible", () => {
     // tests same as test_is_spectator_compatible from test_message_fetch.py
     assert.ok(Filter.is_spectator_compatible([]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "is", operand: "resolved"}]));
+    assert.ok(
+        Filter.is_spectator_compatible([{operator: "is", operand: "resolved", negated: true}]),
+    );
     assert.ok(Filter.is_spectator_compatible([{operator: "has", operand: "attachment"}]));
     assert.ok(Filter.is_spectator_compatible([{operator: "has", operand: "image"}]));
     assert.ok(Filter.is_spectator_compatible([{operator: "search", operand: "magic"}]));

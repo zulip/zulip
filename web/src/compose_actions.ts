@@ -24,7 +24,9 @@ import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as reload_state from "./reload_state.ts";
 import * as resize from "./resize.ts";
+import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as spectators from "./spectators.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 
 // Opts sent to `compose_actions.start`.
@@ -127,6 +129,7 @@ function clear_box(): void {
     // TODO: Better encapsulate at-mention warnings.
     compose_validate.clear_topic_resolved_warning();
     compose_validate.clear_stream_wildcard_warnings($("#compose_banners"));
+    compose_validate.clear_guest_in_dm_recipient_warning();
     compose_validate.set_user_acknowledged_stream_wildcard_flag(false);
 
     compose_state.set_recipient_edited_manually(false);
@@ -139,7 +142,9 @@ function clear_box(): void {
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_banner.clear_uploads();
-    $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
+    $(".compose_control_button_container:has(.needs-empty-compose)").removeClass(
+        "disabled-on-hover",
+    );
 }
 
 let autosize_callback_opts: ComposeActionsStartOpts;
@@ -189,7 +194,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     maybe_scroll_up_selected_message(opts);
     compose_fade.start_compose(opts.message_type);
     $(document).trigger(new $.Event("compose_started.zulip", opts));
-    compose_recipient.update_placeholder_text();
+    compose_recipient.update_compose_area_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
     // We explicitly call this function here apart from compose_setup.js
     // as this helps to show banner when responding in an interleaved view.
@@ -348,7 +353,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         compose_state.set_stream_id("");
         compose_recipient.toggle_compose_recipient_dropdown();
     }
-    compose_state.topic(opts.topic);
+    compose_recipient.update_topic_displayed_text(opts.topic);
 
     // Set the recipients with a space after each comma, so it looks nice.
     compose_state.private_message_recipient(
@@ -386,7 +391,9 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
             false,
             replace_all_without_undo_support,
         );
-        $(".compose_control_button_container:has(.add-poll)").addClass("disabled-on-hover");
+        $(".compose_control_button_container:has(.needs-empty-compose)").addClass(
+            "disabled-on-hover",
+        );
         // If we were provided with message content, we might need to
         // display that it's too long.
         compose_validate.check_overflow_text($("#send_message_form"));
@@ -408,6 +415,8 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
 
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);
+    // Show a warning if dm recipient contains guest
+    compose_validate.warn_if_guest_in_dm_recipient();
     // Show a warning if the user is in a search narrow when replying to a message
     if (opts.is_reply) {
         compose_validate.warn_if_in_search_view();
@@ -422,6 +431,8 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     resize.reset_compose_message_max_height();
 
     complete_starting_tasks(opts);
+
+    saved_snippets_ui.setup_saved_snippets_dropdown_widget_if_needed();
 };
 
 export function rewire_start(value: typeof start): void {
@@ -506,7 +517,8 @@ export let on_topic_narrow = (): void => {
     }
 
     if (
-        (compose_state.topic() && compose_state.has_novel_message_content()) ||
+        ((compose_state.topic() || !realm.realm_mandatory_topics) &&
+            compose_state.has_message_content()) ||
         compose_state.is_recipient_edited_manually()
     ) {
         // If the user has written something to a different topic or edited it,
@@ -525,7 +537,7 @@ export let on_topic_narrow = (): void => {
     // we should update the compose topic to match the new narrow.
     // See #3300 for context--a couple users specifically asked for
     // this convenience.
-    compose_state.topic(narrow_state.topic());
+    compose_recipient.update_topic_displayed_text(narrow_state.topic());
     compose_validate.warn_if_topic_resolved(true);
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();

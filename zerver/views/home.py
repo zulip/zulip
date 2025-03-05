@@ -2,7 +2,7 @@ import logging
 import secrets
 
 from django.conf import settings
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.cache import patch_cache_control
@@ -13,7 +13,7 @@ from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
 from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
-from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
 from zerver.lib.request import RequestNotes
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
@@ -113,13 +113,13 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
 
 def detect_narrowed_window(
     request: HttpRequest, user_profile: UserProfile | None
-) -> tuple[list[NarrowTerm], Stream | None, str | None]:
+) -> tuple[list[NeverNegatedNarrowTerm], Stream | None, str | None]:
     """This function implements Zulip's support for a mini Zulip window
     that just handles messages from a single narrow"""
     if user_profile is None:
         return [], None, None
 
-    narrow: list[NarrowTerm] = []
+    narrow: list[NeverNegatedNarrowTerm] = []
     narrow_stream = None
     narrow_topic_name = request.GET.get("topic")
 
@@ -129,11 +129,11 @@ def detect_narrowed_window(
             narrow_stream_name = request.GET.get("stream")
             assert narrow_stream_name is not None
             (narrow_stream, ignored_sub) = access_stream_by_name(user_profile, narrow_stream_name)
-            narrow = [NarrowTerm(operator="stream", operand=narrow_stream.name)]
+            narrow = [NeverNegatedNarrowTerm(operator="stream", operand=narrow_stream.name)]
         except Exception:
             logging.warning("Invalid narrow requested, ignoring", extra=dict(request=request))
         if narrow_stream is not None and narrow_topic_name is not None:
-            narrow.append(NarrowTerm(operator="topic", operand=narrow_topic_name))
+            narrow.append(NeverNegatedNarrowTerm(operator="topic", operand=narrow_topic_name))
     return narrow, narrow_stream, narrow_topic_name
 
 
@@ -266,3 +266,18 @@ def home_real(request: HttpRequest) -> HttpResponse:
 @zulip_login_required
 def desktop_home(request: HttpRequest) -> HttpResponse:
     return redirect(home)
+
+
+def doc_permalinks_view(request: HttpRequest, doc_id: str) -> HttpResponse:
+    DOC_PERMALINK_MAP: dict[str, str] = {
+        "usage-statistics": "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#uploading-usage-statistics",
+        "basic-metadata": "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#uploading-basic-metadata",
+        "why-service": "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#why-a-push-notification-service-is-necessary",
+        "registration-transfer": "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#moving-your-registration-to-a-new-server",
+    }
+
+    redirect_url = DOC_PERMALINK_MAP.get(doc_id)
+    if redirect_url is None:
+        return render(request, "404.html", status=404)
+
+    return HttpResponseRedirect(redirect_url)

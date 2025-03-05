@@ -60,7 +60,7 @@ from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_d
 from zerver.views.email_mirror import email_mirror_message
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
-from zerver.views.home import accounts_accept_terms, desktop_home, home
+from zerver.views.home import accounts_accept_terms, desktop_home, doc_permalinks_view, home
 from zerver.views.invite import (
     generate_multiuse_invite_backend,
     get_user_invites,
@@ -102,6 +102,7 @@ from zerver.views.push_notifications import (
     self_hosting_auth_json_endpoint,
     self_hosting_auth_not_configured,
     self_hosting_auth_redirect_endpoint,
+    self_hosting_registration_transfer_challenge_verify,
     send_test_push_notification_api,
 )
 from zerver.views.reactions import add_reaction, remove_reaction
@@ -188,7 +189,7 @@ from zerver.views.streams import (
 from zerver.views.submessage import process_submessage
 from zerver.views.thumbnail import backend_serve_thumbnail
 from zerver.views.tusd import handle_tusd_hook
-from zerver.views.typing import send_notification_backend
+from zerver.views.typing import send_message_edit_notification_backend, send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
 from zerver.views.upload import (
     serve_file_backend,
@@ -397,6 +398,8 @@ v1_api_and_json_patterns = [
     # typing -> zerver.views.typing
     # POST sends a typing notification event to recipients
     rest_path("typing", POST=send_notification_backend),
+    # POST sends a message edit typing notification
+    rest_path("messages/<int:message_id>/typing", POST=send_message_edit_notification_backend),
     # user_uploads -> zerver.views.upload
     rest_path("user_uploads", POST=upload_file_backend),
     rest_path(
@@ -413,7 +416,9 @@ v1_api_and_json_patterns = [
     rest_path("users/me/android_gcm_reg_id", POST=add_android_reg_id, DELETE=remove_android_reg_id),
     rest_path("mobile_push/test_notification", POST=send_test_push_notification_api),
     # users/*/presence => zerver.views.presence.
-    rest_path("users/me/presence", POST=update_active_status_backend),
+    rest_path(
+        "users/me/presence", POST=(update_active_status_backend, {"narrow_user_session_cache"})
+    ),
     # It's important that this sit after users/me/presence so that
     # Django's URL resolution order doesn't break the
     # /users/me/presence endpoint.
@@ -520,7 +525,11 @@ v1_api_and_json_patterns = [
     # used to register for an event queue in tornado
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
     # events -> zerver.tornado.views
-    rest_path("events", GET=get_events, DELETE=cleanup_event_queue),
+    rest_path(
+        "events",
+        GET=(get_events, {"narrow_user_session_cache"}),
+        DELETE=(cleanup_event_queue, {"narrow_user_session_cache"}),
+    ),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
     # Used to generate a BigBlueButton video call URL
@@ -850,6 +859,7 @@ urls += [
     path("api/<slug:article>", api_documentation_view),
     path("policies/", policy_documentation_view),
     path("policies/<slug:article>", policy_documentation_view),
+    path("doc-permalinks/<str:doc_id>", doc_permalinks_view),
 ]
 
 urls += [
@@ -865,6 +875,13 @@ urls += [
     rest_path(
         "json/self-hosted-billing",
         GET=self_hosting_auth_json_endpoint,
+    ),
+]
+
+urls += [
+    path(
+        "api/v1/zulip-services/verify/<str:access_token>/",
+        self_hosting_registration_transfer_challenge_verify,
     ),
 ]
 

@@ -52,7 +52,6 @@ Get Zulip notifications for the issues in your Sentry projects!
 {!congrats.md!}
 
 ![](/static/images/integrations/sentry/001.png)
-![](/static/images/integrations/sentry/002.png)
 
 ### Related documentation
 

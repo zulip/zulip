@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
+import render_stream_can_subscribe_group_label from "../templates/stream_settings/stream_can_subscribe_group_label.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
@@ -71,7 +72,7 @@ export function update_web_public_stream_privacy_option_state($container: JQuery
         );
         const sub = sub_store.get(stream_id);
         assert(sub !== undefined);
-        if (!stream_data.can_change_permissions(sub)) {
+        if (!stream_data.can_change_permissions_requiring_content_access(sub)) {
             // We do not want to enable the already disabled web-public option
             // in stream-edit panel if user is not allowed to change stream
             // privacy at all.
@@ -257,6 +258,15 @@ export function update_default_stream_and_stream_privacy_state($container: JQuer
     update_private_stream_privacy_option_state($container, is_default_stream);
 }
 
+export function update_can_subscribe_group_label($container: JQuery): void {
+    const privacy_type = $container.find("input[type=radio][name=privacy]:checked").val();
+    const is_invite_only =
+        privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
+
+    const $can_subscribe_group_label = $container.find(".can_subscribe_group_label");
+    $can_subscribe_group_label.html(render_stream_can_subscribe_group_label({is_invite_only}));
+}
+
 export function enable_or_disable_permission_settings_in_edit_panel(
     sub: SettingsSubscription,
 ): void {
@@ -269,22 +279,22 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     const $general_settings_container = $stream_settings.find($("#stream_permission_settings"));
     $general_settings_container
         .find("input, button")
-        .prop("disabled", !sub.can_change_stream_permissions);
+        .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
     const $advanced_configurations_container = $stream_settings.find(
         $("#stream-advanced-configurations"),
     );
     $advanced_configurations_container
         .find("input, select, button")
-        .prop("disabled", !sub.can_change_stream_permissions);
+        .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
     const $permission_pill_container_elements =
         $advanced_configurations_container.find(".pill-container");
     $permission_pill_container_elements
         .find(".input")
-        .prop("contenteditable", sub.can_change_stream_permissions);
+        .prop("contenteditable", sub.can_change_stream_permissions_requiring_metadata_access);
 
-    if (!sub.can_change_stream_permissions) {
+    if (!sub.can_change_stream_permissions_requiring_metadata_access) {
         $general_settings_container.find(".default-stream").addClass("control-label-disabled");
         $permission_pill_container_elements
             .closest(".input-group")
@@ -314,6 +324,20 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .prop("disabled", disable_message_retention_setting);
 
     update_web_public_stream_privacy_option_state($("#stream_permission_settings"));
+
+    if (!sub.can_change_stream_permissions_requiring_content_access) {
+        const $stream_privacy_values = $stream_settings
+            .find($(".stream-privacy-values"))
+            .find("input, button");
+        $stream_privacy_values.prop("disabled", true);
+
+        for (const setting_name of settings_config.stream_group_permission_settings_requiring_content_access) {
+            const $setting_element = $advanced_configurations_container.find("#id_" + setting_name);
+            $setting_element.find(".input").prop("contenteditable", false);
+            $setting_element.closest(".input-group").addClass("group_setting_disabled");
+            settings_components.disable_opening_typeahead_on_clicking_label($setting_element);
+        }
+    }
 }
 
 export function update_announce_stream_option(): void {
@@ -422,7 +446,7 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
 
     if (!allow_user_to_add_subs) {
         let tooltip_message;
-        if (!settings_data.can_subscribe_others_to_all_streams()) {
+        if (!settings_data.can_subscribe_others_to_all_accessible_streams()) {
             tooltip_message = $t({
                 defaultMessage:
                     "You do not have permission to add other users to channels in this organization.",

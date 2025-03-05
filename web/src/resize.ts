@@ -17,14 +17,15 @@ function get_new_heights(): {
     buddy_list_wrapper_max_height: number;
 } {
     const viewport_height = message_viewport.height();
+    // Add some gap for bottom element to be properly visible.
+    const GAP = 15;
 
     let stream_filters_max_height =
         viewport_height -
         Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
-        Number.parseInt($("#left-sidebar-navigation-area").css("marginTop"), 10) -
-        Number.parseInt($("#left-sidebar-navigation-area").css("marginBottom"), 10) -
-        ($("#left-sidebar-navigation-list").outerHeight(true) ?? 0) -
-        ($("#direct-messages-section-header").outerHeight(true) ?? 0);
+        ($("#left-sidebar-navigation-area").outerHeight(true) ?? 0) -
+        ($("#direct-messages-section-header").outerHeight(true) ?? 0) -
+        GAP;
 
     // Don't let us crush the stream sidebar completely out of view
     stream_filters_max_height = Math.max(80, stream_filters_max_height);

@@ -10,7 +10,6 @@ from django.test import override_settings
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule
-from zerver.lib.users import get_all_api_keys
 from zerver.models import Draft, ScheduledMessageNotificationEmail, UserProfile
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user_profile_by_api_key
@@ -683,11 +682,9 @@ class UserChangesTest(ZulipTestCase):
         email = user.email
 
         self.login_user(user)
-        old_api_keys = get_all_api_keys(user)
-        # Ensure the old API keys are in the authentication cache, so
+        # Ensure the old API key is in the authentication cache, so
         # that the below logic can test whether we have a cache-flushing bug.
-        for api_key in old_api_keys:
-            self.assertEqual(get_user_profile_by_api_key(api_key).email, email)
+        self.assertEqual(get_user_profile_by_api_key(user.api_key).email, email)
 
         # First verify this endpoint is not registered in the /json/... path
         # to prevent access with only a session.
@@ -699,19 +696,17 @@ class UserChangesTest(ZulipTestCase):
         result = self.client_post("/api/v1/users/me/api_key/regenerate")
         self.assertEqual(result.status_code, 401)
 
+        old_api_key = user.api_key
         result = self.api_post(user, "/api/v1/users/me/api_key/regenerate")
         new_api_key = self.assert_json_success(result)["api_key"]
-        self.assertNotIn(new_api_key, old_api_keys)
+        self.assertNotEqual(new_api_key, old_api_key)
         user = self.example_user("hamlet")
-        current_api_keys = get_all_api_keys(user)
-        self.assertIn(new_api_key, current_api_keys)
+        self.assertEqual(new_api_key, user.api_key)
 
-        for api_key in old_api_keys:
-            with self.assertRaises(UserProfile.DoesNotExist):
-                get_user_profile_by_api_key(api_key)
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user_profile_by_api_key(old_api_key)
 
-        for api_key in current_api_keys:
-            self.assertEqual(get_user_profile_by_api_key(api_key).email, email)
+        self.assertEqual(get_user_profile_by_api_key(user.api_key).email, email)
 
 
 class UserDraftSettingsTests(ZulipTestCase):

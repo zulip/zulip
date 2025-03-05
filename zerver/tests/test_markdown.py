@@ -19,7 +19,12 @@ from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.realm_emoji import do_remove_realm_emoji
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.user_groups import check_add_user_group, do_deactivate_user_group
+from zerver.actions.streams import do_change_stream_group_based_setting
+from zerver.actions.user_groups import (
+    add_subgroups_to_user_group,
+    check_add_user_group,
+    do_deactivate_user_group,
+)
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active
 from zerver.lib.alert_words import get_alert_word_automaton
@@ -60,14 +65,18 @@ from zerver.lib.mention import (
     topic_wildcards,
 )
 from zerver.lib.per_request_cache import flush_per_request_caches
+from zerver.lib.streams import user_has_content_access, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
+from zerver.lib.types import UserGroupMembersDict
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, RealmEmoji, RealmFilter, UserMessage, UserProfile
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
+from zerver.models.users import get_system_bot
 
 
 class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
@@ -310,15 +319,45 @@ class MarkdownMiscTest(ZulipTestCase):
         mention_backend = MentionBackend(realm.id)
 
         content = ""
-        for i in range(40):
+        for i in range(5):
             group_name = f"group{i}"
             check_add_user_group(realm, group_name, [hamlet, cordelia], acting_user=othello)
             content += f" @*{group_name}*"
 
-        # We should be able to do O(1) queries here.
-        UNFORTUNATE_QUERY_COUNT = 41
-        with self.assert_database_query_count(UNFORTUNATE_QUERY_COUNT):
+        CONSTANT_QUERY_COUNT = 2  # even if it increases in future, make sure it's constant.
+        with self.assert_database_query_count(CONSTANT_QUERY_COUNT):
             MentionData(mention_backend, content, message_sender=None)
+
+    def test_mention_user_groups_with_common_subgroup(self) -> None:
+        # Mention multiple groups (class-A and class-B) with a common sub-group (good-students)
+        # and make sure each mentioned group has the expected members
+        # (i.e. direct and via sub-groups) in mention_data.
+
+        realm = get_realm("zulip")
+        aaron = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+
+        good_students = check_add_user_group(
+            realm, "good-students", [aaron, hamlet], acting_user=othello
+        )
+        class_A = check_add_user_group(realm, "class-A", [iago], acting_user=othello)
+        class_B = check_add_user_group(realm, "class-B", [cordelia], acting_user=othello)
+
+        add_subgroups_to_user_group(class_A, [good_students], acting_user=othello)
+        add_subgroups_to_user_group(class_B, [good_students], acting_user=othello)
+
+        content = "@*class-A*  @*class-B*"
+        mention_backend = MentionBackend(realm.id)
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+
+        # both groups should have their direct members and the sub-group's members.
+        self.assertEqual(mention_data.get_group_members(class_A.id), {iago.id, aaron.id, hamlet.id})
+        self.assertEqual(
+            mention_data.get_group_members(class_B.id), {cordelia.id, aaron.id, hamlet.id}
+        )
 
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
@@ -2973,7 +3012,7 @@ class MarkdownMentionTest(ZulipTestCase):
         assert_silent_mention("```quote\n@_*backend*\n```")
 
 
-class MarkdownStreamMentionTests(ZulipTestCase):
+class MarkdownStreamTopicMentionTests(ZulipTestCase):
     def test_stream_single(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
@@ -3050,7 +3089,7 @@ class MarkdownStreamMentionTests(ZulipTestCase):
             "<p>#<strong>casesens</strong></p>",
         )
 
-    def test_topic_single(self) -> None:
+    def test_topic_single_containing_no_message(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
         msg = Message(
@@ -3062,6 +3101,29 @@ class MarkdownStreamMentionTests(ZulipTestCase):
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
             f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic">#{denmark.name} &gt; some topic</a></p>',
+        )
+        # Empty string as topic name.
+        content = "#**Denmark>**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/">#{denmark.name} &gt; <em>{Message.EMPTY_TOPIC_FALLBACK_NAME}</em></a></p>',
+        )
+
+    def test_topic_single_containing_message(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        first_message_id = self.send_stream_message(
+            sender_user_profile, "Denmark", topic_name="some topic", content="test"
+        )
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        content = "#**Denmark>some topic**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic/with/{first_message_id}">#{denmark.name} &gt; some topic</a></p>',
         )
 
     def test_topic_atomic_string(self) -> None:
@@ -3079,17 +3141,23 @@ class MarkdownStreamMentionTests(ZulipTestCase):
         )
         # Create a topic link that potentially interferes with the pattern.
         denmark = get_stream("Denmark", realm)
+        first_message_id = self.send_stream_message(
+            sender_user_profile, "Denmark", topic_name="#1234", content="test"
+        )
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"), realm=realm)
         content = "#**Denmark>#1234**"
         self.assertEqual(
             render_message_markdown(msg, content).rendered_content,
-            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/.231234">#{denmark.name} &gt; #1234</a></p>',
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/.231234/with/{first_message_id}">#{denmark.name} &gt; #1234</a></p>',
         )
 
     def test_topic_multiple(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         scotland = get_stream("Scotland", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
+        first_message_id = self.send_stream_message(
+            sender_user_profile, "Denmark", topic_name="some topic", content="test"
+        )
         msg = Message(
             sender=sender_user_profile,
             sending_client=get_client("test"),
@@ -3100,13 +3168,201 @@ class MarkdownStreamMentionTests(ZulipTestCase):
             render_message_markdown(msg, content).rendered_content,
             "<p>This has two links: "
             f'<a class="stream-topic" data-stream-id="{denmark.id}" '
-            f'href="/#narrow/channel/{denmark.id}-{denmark.name}/topic/some.20topic">'
+            f'href="/#narrow/channel/{denmark.id}-{denmark.name}/topic/some.20topic/with/{first_message_id}">'
             f"#{denmark.name} &gt; some topic</a>"
             " and "
             f'<a class="stream-topic" data-stream-id="{scotland.id}" '
             f'href="/#narrow/channel/{scotland.id}-{scotland.name}/topic/other.20topic">'
             f"#{scotland.name} &gt; other topic</a>"
             ".</p>",
+        )
+
+    def test_topic_permalink(self) -> None:
+        realm = get_realm("zulip")
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        first_message_id = self.send_stream_message(
+            sender_user_profile, "Denmark", topic_name="some topic", content="test"
+        )
+
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+
+        # test caching of topic data for user.
+        content = "#**Denmark>some topic**"
+        mention_backend = MentionBackend(realm.id)
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+        render_message_markdown(msg, content, mention_data=mention_data)
+
+        with (
+            self.assert_database_query_count(1, keep_cache_warm=True),
+            self.assert_memcached_count(0),
+        ):
+            self.assertEqual(
+                render_message_markdown(msg, content, mention_data=mention_data).rendered_content,
+                f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic/with/{first_message_id}">#{denmark.name} &gt; some topic</a></p>',
+            )
+
+        # test topic linked doesn't have any message in it in case
+        # the topic mentioned doesn't have any messages.
+        content = "#**Denmark>random topic**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/random.20topic">#{denmark.name} &gt; random topic</a></p>',
+        )
+
+        # Test when trying to render a topic link of a channel with shared
+        # history, if message_sender is None, topic link is permalink.
+        content = "#**Denmark>some topic**"
+        self.assertEqual(
+            markdown_convert_wrapper(content),
+            f'<p><a class="stream-topic" data-stream-id="{denmark.id}" href="/#narrow/channel/{denmark.id}-Denmark/topic/some.20topic/with/{first_message_id}">#{denmark.name} &gt; some topic</a></p>',
+        )
+
+        # test topic links for channel with protected history
+        core_stream = self.make_stream("core", realm, True, history_public_to_subscribers=False)
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
+        self.subscribe(iago, "core")
+        msg_id = self.send_stream_message(iago, "core", topic_name="testing")
+
+        msg = Message(
+            sender=iago,
+            sending_client=get_client("test"),
+            realm=realm,
+        )
+        content = "#**core>testing**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/channel/{core_stream.id}-core/topic/testing/with/{msg_id}">#{core_stream.name} &gt; testing</a></p>',
+        )
+
+        # Test permalinks generated when a user with no access to the channel
+        # sends a topic link on behalf of a user who has access to the channel.
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, iago.realm_id)
+
+        msg = Message(
+            sender=notification_bot,
+            sending_client=get_client("test"),
+            realm=realm,
+        )
+        content = "#**core>testing**"
+        self.assertEqual(
+            render_message_markdown(msg, content, acting_user=iago).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/channel/{core_stream.id}-core/topic/testing/with/{msg_id}">#{core_stream.name} &gt; testing</a></p>',
+        )
+
+        # Test newly subscribed user to a channel with protected history
+        # won't have accessed to this message, and hence, the topic
+        # link would not be a permalink.
+        self.subscribe(hamlet, "core")
+
+        msg = Message(
+            sender=hamlet,
+            sending_client=get_client("test"),
+            realm=realm,
+        )
+        content = "#**core>testing**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/channel/{core_stream.id}-core/topic/testing">#{core_stream.name} &gt; testing</a></p>',
+        )
+
+        # Test permalinks would not be generated when a user with no access to the
+        # channel sends a topic link on behalf of another user who has no access to
+        # the channel.
+        cordelia = self.example_user("cordelia")
+
+        msg = Message(
+            sender=notification_bot,
+            sending_client=get_client("test"),
+            realm=realm,
+        )
+        content = "#**core>testing**"
+        self.assertEqual(
+            render_message_markdown(msg, content, acting_user=cordelia).rendered_content,
+            "<p>#<strong>core&gt;testing</strong></p>",
+        )
+
+        # Test when trying to render a topic link of a channel with protected
+        # history, if message_sender is None, topic link is not permalink.
+        content = "#**core>testing**"
+        self.assertEqual(
+            markdown_convert_wrapper(content),
+            f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/channel/{core_stream.id}-core/topic/testing">#{core_stream.name} &gt; testing</a></p>',
+        )
+
+        private_stream = self.make_stream("private", realm, invite_only=True)
+        content = "#**private>testing**"
+        self.assertEqual(
+            markdown_convert_wrapper(content),
+            f'<p><a class="stream-topic" data-stream-id="{private_stream.id}" href="/#narrow/channel/{private_stream.id}-private/topic/testing">#{private_stream.name} &gt; testing</a></p>',
+        )
+
+        # Permalink would not be generated if a user has metadata
+        # access to a stream but not content access.
+        cordelia_group_member_dict = UserGroupMembersDict(
+            direct_members=[cordelia.id], direct_subgroups=[]
+        )
+        do_change_stream_group_based_setting(
+            private_stream,
+            "can_administer_channel_group",
+            cordelia_group_member_dict,
+            acting_user=cordelia,
+        )
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+        self.assertTrue(
+            user_has_metadata_access(
+                cordelia, private_stream, user_group_membership_details, is_subscribed=False
+            )
+        )
+        self.assertFalse(
+            user_has_content_access(
+                cordelia, private_stream, user_group_membership_details, is_subscribed=False
+            )
+        )
+        msg = Message(
+            sender=cordelia,
+            sending_client=get_client("test"),
+            realm=realm,
+        )
+        content = "#**private>testing**"
+        self.assertEqual(
+            render_message_markdown(msg, content, acting_user=cordelia).rendered_content,
+            "<p>#<strong>private&gt;testing</strong></p>",
+        )
+
+        # User has content access now, so permalink would be generated.
+        do_change_stream_group_based_setting(
+            private_stream,
+            "can_add_subscribers_group",
+            cordelia_group_member_dict,
+            acting_user=cordelia,
+        )
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+        self.assertTrue(
+            user_has_metadata_access(
+                cordelia, private_stream, user_group_membership_details, is_subscribed=False
+            )
+        )
+        self.assertTrue(
+            user_has_content_access(
+                cordelia, private_stream, user_group_membership_details, is_subscribed=False
+            )
+        )
+        msg = Message(
+            sender=cordelia,
+            sending_client=get_client("test"),
+            realm=realm,
+        )
+        content = "#**private>testing**"
+        self.assertEqual(
+            render_message_markdown(msg, content, acting_user=cordelia).rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{private_stream.id}" href="/#narrow/channel/{private_stream.id}-private/topic/testing">#{private_stream.name} &gt; testing</a></p>',
         )
 
     def test_message_id_multiple(self) -> None:
@@ -3129,6 +3385,20 @@ class MarkdownStreamMentionTests(ZulipTestCase):
             f'href="/#narrow/channel/{denmark.id}-{denmark.name}/topic/danish/near/456">'
             f"#Denmark &gt; danish @ 💬</a>"
             ".</p>",
+        )
+
+    def test_empty_string_topic_message_link(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender = self.example_user("othello")
+        msg = Message(
+            sender=sender,
+            sending_client=get_client("test"),
+            realm=sender.realm,
+        )
+        content = "#**Denmark>@123**"
+        self.assertEqual(
+            render_message_markdown(msg, content).rendered_content,
+            f'<p><a class="message-link" href="/#narrow/channel/{denmark.id}-{denmark.name}/topic//near/123">#{denmark.name} &gt; <em>{Message.EMPTY_TOPIC_FALLBACK_NAME}</em> @ 💬</a></p>',
         )
 
     def test_possible_stream_names(self) -> None:

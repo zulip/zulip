@@ -486,6 +486,14 @@ test_ui("finish", ({override, override_rewire}) => {
     });
 
     (function test_when_compose_validation_fails() {
+        // To trigger the empty banner error instead of other errors
+        // set as per the priority.
+        override(current_user, "user_id", new_user.user_id);
+        compose_state.set_stream_id(social.stream_id);
+        fake_compose_box.set_topic_val("lunch");
+        fake_compose_box.set_textarea_val("burrito");
+        compose_state.set_message_type("stream");
+
         fake_compose_box.set_textarea_toggle_class_function((classname, value) => {
             assert.equal(classname, "invalid");
             assert.equal(value, true);
@@ -630,6 +638,7 @@ test_ui("update_fade", ({override, override_rewire}) => {
         update_narrow_to_recipient_visibility_called = true;
     });
     override_rewire(drafts, "update_compose_draft_count", noop);
+    override(compose_pm_pill, "get_user_ids", () => []);
 
     compose_state.set_message_type(undefined);
     compose_recipient.update_on_recipient_change();
@@ -813,7 +822,8 @@ test_ui("on_events", ({override, override_rewire}) => {
     (function test_undo_markdown_preview_clicked() {
         fake_compose_box.show_message_preview();
 
-        override_rewire(compose_recipient, "update_placeholder_text", noop);
+        override_rewire(compose_recipient, "update_compose_area_placeholder_text", noop);
+        override(compose_fade, "do_update_all", noop);
         override(narrow_state, "narrowed_by_reply", () => true);
         override(
             compose_notifications,

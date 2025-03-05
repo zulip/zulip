@@ -18,7 +18,8 @@ export type SettingsSubscription = StreamSubscription & {
     can_change_name_description: boolean;
     should_display_subscription_button: boolean;
     should_display_preview_button: boolean;
-    can_change_stream_permissions: boolean;
+    can_change_stream_permissions_requiring_content_access: boolean;
+    can_change_stream_permissions_requiring_metadata_access: boolean;
     can_access_subscribers: boolean;
     can_add_subscribers: boolean;
     can_remove_subscribers: boolean;
@@ -40,13 +41,15 @@ export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscript
 
         is_creator: sub.creator_id === current_user.user_id,
         is_realm_admin: current_user.is_admin,
-        // Admin can change any stream's name & description either stream is public or
-        // private, subscribed or unsubscribed.
-        can_change_name_description: stream_data.can_edit_description(sub),
+        can_change_name_description:
+            stream_data.can_change_permissions_requiring_metadata_access(sub),
 
         should_display_subscription_button: stream_data.can_toggle_subscription(sub),
         should_display_preview_button: stream_data.can_preview(sub),
-        can_change_stream_permissions: stream_data.can_change_permissions(sub),
+        can_change_stream_permissions_requiring_content_access:
+            stream_data.can_change_permissions_requiring_content_access(sub),
+        can_change_stream_permissions_requiring_metadata_access:
+            stream_data.can_change_permissions_requiring_metadata_access(sub),
         can_access_subscribers: stream_data.can_view_subscribers(sub),
         can_add_subscribers: stream_data.can_subscribe_others(sub),
         can_remove_subscribers: stream_data.can_unsubscribe_others(sub),

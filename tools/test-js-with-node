@@ -57,6 +57,7 @@ EXEMPT_FILES = make_set(
         "web/src/attachments_ui.ts",
         "web/src/audible_notifications.ts",
         "web/src/avatar.ts",
+        "web/src/banners.ts",
         "web/src/base_page_params.ts",
         "web/src/blueslip.ts",
         "web/src/blueslip_stacktrace.ts",
@@ -72,6 +73,7 @@ EXEMPT_FILES = make_set(
         "web/src/compose_closed_ui.ts",
         "web/src/compose_fade.ts",
         "web/src/compose_notifications.ts",
+        "web/src/compose_paste.ts",
         "web/src/compose_recipient.ts",
         "web/src/compose_reply.ts",
         "web/src/compose_send_menu_popover.js",
@@ -85,7 +87,7 @@ EXEMPT_FILES = make_set(
         "web/src/condense.ts",
         "web/src/confirm_dialog.ts",
         "web/src/copied_tooltip.ts",
-        "web/src/copy_and_paste.ts",
+        "web/src/copy_messages.ts",
         "web/src/csrf.ts",
         "web/src/css_variables.ts",
         "web/src/custom_profile_fields_ui.ts",
@@ -125,9 +127,9 @@ EXEMPT_FILES = make_set(
         "web/src/integration_url_modal.ts",
         "web/src/invite.ts",
         "web/src/invite_stream_picker_pill.ts",
-        "web/src/invite_user_group_picker_pill.ts",
         "web/src/left_sidebar_navigation_area.ts",
         "web/src/left_sidebar_navigation_area_popovers.ts",
+        "web/src/left_sidebar_tooltips.ts",
         "web/src/lightbox.ts",
         "web/src/list_util.ts",
         "web/src/list_widget.ts",
@@ -153,6 +155,7 @@ EXEMPT_FILES = make_set(
         "web/src/message_notifications.ts",
         "web/src/message_scroll.ts",
         "web/src/message_scroll_state.ts",
+        "web/src/message_summary.ts",
         "web/src/message_util.ts",
         "web/src/message_view.ts",
         "web/src/message_view_header.ts",
@@ -175,7 +178,6 @@ EXEMPT_FILES = make_set(
         "web/src/playground_links_popover.ts",
         "web/src/pm_list.ts",
         "web/src/pm_list_dom.ts",
-        "web/src/poll_modal.ts",
         "web/src/poll_widget.ts",
         "web/src/popover_menus.ts",
         "web/src/popover_menus_data.ts",
@@ -277,6 +279,7 @@ EXEMPT_FILES = make_set(
         "web/src/user_group_create_members_data.ts",
         "web/src/user_group_edit.ts",
         "web/src/user_group_edit_members.ts",
+        "web/src/user_group_picker_pill.ts",
         "web/src/user_group_popover.ts",
         "web/src/user_groups.ts",
         "web/src/user_pill.ts",
@@ -288,6 +291,7 @@ EXEMPT_FILES = make_set(
         "web/src/user_topics.ts",
         "web/src/user_topics_ui.ts",
         "web/src/views_util.ts",
+        "web/src/widget_modal.ts",
         "web/src/zcommand.ts",
         "web/src/zform.js",
         "web/src/zulip_test.ts",
@@ -386,13 +390,7 @@ def run_tests_via_node_js() -> int:
     # reports.  Running under nyc is slower and creates funny
     # tracebacks, so you generally want to get coverage reports only
     # after making sure tests will pass.
-    node_tests_cmd = [
-        "node",
-        "--stack-trace-limit=100",
-        "--experimental-require-module",
-        "--no-warnings=ExperimentalWarning",
-        INDEX_JS,
-    ]
+    node_tests_cmd = ["node", "--stack-trace-limit=100", INDEX_JS]
     if individual_files:
         # If we passed a specific set of tests, run in serial mode.
         global parallel

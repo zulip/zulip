@@ -38,6 +38,7 @@ from zerver.lib.message import (
     access_message,
     bulk_access_stream_messages_query,
     check_user_group_mention_allowed,
+    event_recipient_ids_for_action_on_messages,
     normalize_body,
     stream_wildcard_mention_allowed,
     topic_wildcard_mention_allowed,
@@ -52,6 +53,7 @@ from zerver.lib.streams import (
     access_stream_by_id_for_message,
     can_access_stream_history,
     check_stream_access_based_on_can_send_message_group,
+    notify_stream_is_recently_active_update,
 )
 from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -85,7 +87,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.streams import get_stream_by_id_in_realm
-from zerver.models.users import active_user_ids, get_system_bot
+from zerver.models.users import get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -120,6 +122,9 @@ def validate_message_edit_payload(
 
     if propagate_mode != "change_one" and topic_name is None and stream_id is None:
         raise JsonableError(_("Invalid propagate_mode without topic edit"))
+
+    if message.realm.mandatory_topics and topic_name in ("(no topic)", ""):
+        raise JsonableError(_("Topics are required in this organization."))
 
     if topic_name in {
         RESOLVED_TOPIC_PREFIX.strip(),
@@ -222,6 +227,7 @@ def maybe_send_resolve_topic_notifications(
             ),
             message_type=Message.MessageType.RESOLVE_TOPIC_NOTIFICATION,
             limit_unread_user_ids=affected_participant_ids,
+            acting_user=user_profile,
         )
 
     return resolved_topic_message_id, False
@@ -289,6 +295,7 @@ def send_message_moved_breadcrumbs(
                     user=user_mention,
                     changed_messages_count=changed_messages_count,
                 ),
+                acting_user=user_profile,
             )
 
     if old_thread_notification_string is not None:
@@ -303,10 +310,11 @@ def send_message_moved_breadcrumbs(
                     new_location=new_topic_link,
                     changed_messages_count=changed_messages_count,
                 ),
+                acting_user=user_profile,
             )
 
 
-def get_mentions_for_message_updates(message_id: int) -> set[int]:
+def get_mentions_for_message_updates(message: Message) -> set[int]:
     # We exclude UserMessage.flags.historical rows since those
     # users did not receive the message originally, and thus
     # probably are not relevant for reprocessed alert_words,
@@ -314,7 +322,7 @@ def get_mentions_for_message_updates(message_id: int) -> set[int]:
     # decision we change in the future.
     mentioned_user_ids = (
         UserMessage.objects.filter(
-            message=message_id,
+            message=message.id,
             flags=~UserMessage.flags.historical,
         )
         .filter(
@@ -327,7 +335,10 @@ def get_mentions_for_message_updates(message_id: int) -> set[int]:
         )
         .values_list("user_profile_id", flat=True)
     )
-    return set(mentioned_user_ids)
+
+    user_ids_having_message_access = event_recipient_ids_for_action_on_messages([message])
+
+    return set(mentioned_user_ids) & user_ids_having_message_access
 
 
 def update_user_message_flags(
@@ -394,13 +405,16 @@ def do_update_embedded_data(
         "rendering_only": True,
     }
 
+    users_to_notify = event_recipient_ids_for_action_on_messages([message])
+    filtered_ums = [um for um in ums if um.user_profile_id in users_to_notify]
+
     def user_info(um: UserMessage) -> dict[str, Any]:
         return {
             "id": um.user_profile_id,
             "flags": um.flags_list(),
         }
 
-    send_event_on_commit(user_profile.realm, event, list(map(user_info, ums)))
+    send_event_on_commit(user_profile.realm, event, list(map(user_info, filtered_ums)))
 
 
 def get_visibility_policy_after_merge(
@@ -444,7 +458,7 @@ def update_message_content(
         members = mention_data.get_group_members(group_id)
         rendering_result.mentions_user_ids.update(members)
 
-    # One could imagine checking realm.allow_edit_history here and
+    # One could imagine checking realm.message_edit_history_visibility_policy here and
     # modifying the events based on that setting, but doing so
     # doesn't really make sense.  We need to send the edit event
     # to clients regardless, and a client already had access to
@@ -842,20 +856,46 @@ def do_update_message(
         subscriptions = get_active_subscriptions_for_stream_id(
             message_edit_request.target_stream.id, include_deactivated_users=False
         )
-        # We exclude long-term idle users, since they by
-        # definition have no active clients.
-        subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
-        # Remove duplicates by excluding the id of users already
-        # in users_to_be_notified list.  This is the case where a
-        # user both has a UserMessage row and is a current
-        # Subscriber
-        subscriptions = subscriptions.exclude(
-            user_profile_id__in=[um.user_profile_id for um in unmodified_user_messages]
-        )
 
+        def exclude_duplicates_from_subscription(
+            subs: QuerySet[Subscription],
+        ) -> QuerySet[Subscription]:
+            # We exclude long-term idle users, since they by
+            # definition have no active clients.
+            subs = subs.exclude(user_profile__long_term_idle=True)
+            # Remove duplicates by excluding the id of users already
+            # in users_to_be_notified list.  This is the case where a
+            # user both has a UserMessage row and is a current
+            # Subscriber
+            subs = subs.exclude(
+                user_profile_id__in=[um.user_profile_id for um in unmodified_user_messages]
+            )
+
+            if message_edit_request.is_stream_edited:
+                subs = subs.exclude(user_profile__in=users_losing_access)
+
+            return subs
+
+        old_stream_subs_not_in_new_stream = set()
         if message_edit_request.is_stream_edited:
-            subscriptions = subscriptions.exclude(user_profile__in=users_losing_access)
+            # We also need to include users who are not subscribed to new stream
+            # but are subscribed to the old stream.
+            old_stream_subscriptions = get_active_subscriptions_for_stream_id(
+                stream_being_edited.id, include_deactivated_users=False
+            )
+            old_stream_subscriptions = exclude_duplicates_from_subscription(
+                old_stream_subscriptions
+            )
+            old_stream_subscriber_ids = set(
+                old_stream_subscriptions.values_list("user_profile_id", flat=True)
+            )
+            new_stream_subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
+            old_stream_subs_not_in_new_stream = old_stream_subscriber_ids.difference(
+                new_stream_subscriber_ids
+            )
 
+        subscriptions = exclude_duplicates_from_subscription(subscriptions)
+        if message_edit_request.is_stream_edited:
             # TODO: Guest users don't see the new moved topic
             # unless breadcrumb message for new stream is
             # enabled. Excluding these users from receiving this
@@ -879,7 +919,8 @@ def do_update_message(
             )
 
         subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
-        users_to_be_notified += map(subscriber_info, sorted(subscriber_ids))
+        notifiable_ids = subscriber_ids.union(old_stream_subs_not_in_new_stream)
+        users_to_be_notified += map(subscriber_info, sorted(notifiable_ids))
 
     # UserTopic updates and the content of notifications depend on
     # whether we've moved the entire topic, or just part of it. We
@@ -1252,16 +1293,6 @@ def build_message_edit_request(
     topic_name: str | None = None,
     content: str | None = None,
 ) -> StreamMessageEditRequest | DirectMessageEditRequest:
-    if not message.is_stream_message():
-        # We have already validated the code to have content
-        # as not None.
-        assert content is not None
-        return DirectMessageEditRequest(
-            content=content,
-            orig_content=message.content,
-            is_content_edited=True,
-        )
-
     is_content_edited = False
     new_content = message.content
     if content is not None:
@@ -1269,6 +1300,15 @@ def build_message_edit_request(
         if content.rstrip() == "":
             content = "(deleted)"
         new_content = normalize_body(content)
+
+    if not message.is_stream_message():
+        # We have already validated that at least one of content, topic, or stream
+        # must be modified, and for DMs, only the content can be edited.
+        return DirectMessageEditRequest(
+            content=new_content,
+            orig_content=message.content,
+            is_content_edited=True,
+        )
 
     is_topic_edited = False
     topic_resolved = False
@@ -1337,7 +1377,7 @@ def check_update_message(
     and raises a JsonableError if otherwise.
     It returns the number changed.
     """
-    message = access_message(user_profile, message_id, lock_message=True)
+    message = access_message(user_profile, message_id, lock_message=True, is_modifying_message=True)
 
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds
@@ -1403,7 +1443,7 @@ def check_update_message(
             content=message_edit_request.content,
             message_sender=message.sender,
         )
-        prior_mention_user_ids = get_mentions_for_message_updates(message.id)
+        prior_mention_user_ids = get_mentions_for_message_updates(message)
 
         # We render the message using the current user's realm; since
         # the cross-realm bots never edit messages, this should be
@@ -1514,14 +1554,6 @@ def check_update_message(
         if is_stream_active != new_stream.is_recently_active:
             new_stream.is_recently_active = is_stream_active
             new_stream.save(update_fields=["is_recently_active"])
-            event = dict(
-                type="stream",
-                op="update",
-                property="is_recently_active",
-                value=is_stream_active,
-                stream_id=stream_id,
-                name=new_stream.name,
-            )
-            send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+            notify_stream_is_recently_active_update(new_stream, is_stream_active)
 
     return updated_message_result

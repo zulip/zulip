@@ -95,15 +95,3 @@ test("generate_botserverrc_content", () => {
 
     assert.equal(content, expected);
 });
-
-test("can_create_new_bots", ({override}) => {
-    override(current_user, "is_admin", true);
-    assert.ok(settings_bots.can_create_new_bots());
-
-    override(current_user, "is_admin", false);
-    override(realm, "realm_bot_creation_policy", 1);
-    assert.ok(settings_bots.can_create_new_bots());
-
-    override(realm, "realm_bot_creation_policy", 3);
-    assert.ok(!settings_bots.can_create_new_bots());
-});

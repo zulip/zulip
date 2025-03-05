@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
 from zerver.actions.message_send import (
@@ -13,6 +14,7 @@ from zerver.actions.message_send import (
     internal_prep_group_direct_message,
     internal_prep_stream_message,
 )
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.lib.topic import messages_for_topic
 from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
@@ -272,6 +274,72 @@ DIRECT MESSAGES to [start a DM]({starting_a_new_direct_message_help_url}).
             quote_or_forward_help_url="/help/quote-or-forward-a-message",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=12,
+        message="""
+- When you [link to a topic]({link_from_anywhere_help_url}) in Zulip, that link
+  will now continue to work even when the topic is
+  [renamed]({rename_a_topic_help_url}), [moved to another
+  channel]({move_content_to_another_channel_help_url}), or
+  [resolved]({resolve_a_topic_help_url}).
+
+**Web and desktop updates**
+- You can now [save snippets]({saved_snippets_help_url}) of message content, and
+quickly insert them into the message you're composing.
+- [Drafts]({drafts_help_url}) are no longer removed after 30 days.
+""".format(
+            link_from_anywhere_help_url="/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere",
+            rename_a_topic_help_url="/help/rename-a-topic",
+            move_content_to_another_channel_help_url="/help/move-content-to-another-channel",
+            resolve_a_topic_help_url="/help/resolve-a-topic",
+            saved_snippets_help_url="/help/saved-snippets",
+            drafts_help_url="/help/view-and-edit-your-message-drafts",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=13,
+        message="""
+- Zulip channels have a new space for **chatting without a topic** (e.g., social
+  chatter or one-off requests). Channel messages sent without a topic (if
+  [allowed]({require_topics_url}) in your organization) now go to a special
+  *[“general chat”]({general_chat_url})* topic. Its name appears in italics, and
+  will be translated into [your language]({change_your_language_url}).
+- New channel permission settings let administrators **delegate channel
+  management** responsibilities. There are settings for [who can
+  administer]({who_can_administer_url}) each channel, and who can
+  [subscribe]({who_can_subscribe_url}) and
+  [unsubscribe]({who_can_unsubscribe_url}) other users. You can also
+  [give]({configure_who_can_subscribe_url}) users and
+  [groups]({user_groups_url}) permission to read and subscribe to a
+  [private channel]({private_channels_url}), just like everyone other
+  than guests can do with public channels.
+
+**Web and desktop updates**
+- When you copy a Zulip link and paste it anywhere that accepts HTML formatting
+  (e.g., your email, GitHub, docs, etc.), the link will be formatted as it would
+  be in Zulip (e.g., [#channel > topic]({link_to_a_message_or_conversation_url}).
+- To [link]({link_to_a_message_or_conversation_url}) to a topic in the channel
+  you're composing to, you can now just type `#>` followed by a few letters from
+  the topic name, and pick the desired topic from the autocomplete.
+- There's a new compose box button for creating a [collaborative to-do
+  list]({to_do_list_url}).
+- You’ll now see a [typing notification]({typing_notifications_url}) when
+  someone is editing a message, not just for composing new messages.
+""".format(
+            require_topics_url="/help/require-topics",
+            general_chat_url="/help/general-chat-topic",
+            typing_notifications_url="/help/typing-notifications",
+            to_do_list_url="/help/collaborative-to-do-lists",
+            link_to_a_message_or_conversation_url="/help/link-to-a-message-or-conversation",
+            change_your_language_url="/help/change-your-language",
+            configure_who_can_subscribe_url="/help/configure-who-can-subscribe",
+            who_can_administer_url="/help/configure-who-can-administer-a-channel",
+            who_can_subscribe_url="/help/configure-who-can-invite-to-channels",
+            who_can_unsubscribe_url="/help/configure-who-can-unsubscribe-others",
+            user_groups_url="/help/user-groups",
+            private_channels_url="/help/channel-permissions#private-channels",
+        ),
+    ),
 ]
 
 
@@ -304,10 +372,10 @@ def internal_prep_group_direct_message_for_old_realm(
         topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
     if realm.zulip_update_announcements_stream is None:
         content = """
-Zulip now supports [configuring]({organization_settings_url}) a stream where Zulip will
+Zulip now supports [configuring]({organization_settings_url}) a channel where Zulip will
 send [updates]({zulip_update_announcements_help_url}) about new Zulip features.
 These notifications are currently turned off in your organization. If you configure
-a stream within one week, your organization will not miss any update messages.
+a channel within one week, your organization will not miss any update messages.
 """.format(
             zulip_update_announcements_help_url="/help/configure-automated-notices#zulip-update-announcements",
             organization_settings_url="/#organization/organization-settings",
@@ -317,7 +385,7 @@ a stream within one week, your organization will not miss any update messages.
 Starting tomorrow, users in your organization will receive [updates]({zulip_update_announcements_help_url})
 about new Zulip features in #**{zulip_update_announcements_stream}>{topic_name}**.
 
-If you like, you can [configure]({organization_settings_url}) a different stream for
+If you like, you can [configure]({organization_settings_url}) a different channel for
 these updates (and [move]({move_content_another_stream_help_url}) any updates sent before the
 configuration change), or [turn this feature off]({organization_settings_url}) altogether.
 """.format(
@@ -456,6 +524,10 @@ def send_zulip_update_announcements_to_realm(
             timezone_now() - level_none_to_initial_auditlog.event_time < timedelta(days=7)
         ):
             new_zulip_update_announcements_level = latest_zulip_update_announcements_level
+    elif realm.zulip_update_announcements_stream.deactivated:  # nocoverage
+        # `zulip_update_announcements_stream` should be set to None when its channel is
+        # deactivated. If this condition occurs, there's a bug that needs investigation.
+        raise JsonableError(_("`zulip_update_announcements_stream` is unexpectedly deactivated."))
     else:
         # Wait for 24 hours after sending group DM to allow admins to change the
         # stream for zulip update announcements from it's default value if desired.

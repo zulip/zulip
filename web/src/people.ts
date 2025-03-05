@@ -51,6 +51,7 @@ let my_user_id: number;
 
 export let INACCESSIBLE_USER_NAME: string;
 export let WELCOME_BOT: User;
+export let EMAIL_GATEWAY_BOT: User;
 
 // We have an init() function so that our automated tests
 // can easily clear data.
@@ -454,20 +455,31 @@ function _calc_user_and_other_ids(user_ids_string: string): {
     return {user_ids, other_ids};
 }
 
-export function get_recipients(user_ids_string: string): string {
+export function get_recipients(user_ids_string: string): string[] {
     // See message_store.get_pm_full_names() for a similar function.
 
     const {other_ids} = _calc_user_and_other_ids(user_ids_string);
 
     if (other_ids.length === 0) {
         // direct message with oneself
-        return my_full_name();
+        return [my_full_name()];
     }
 
     const names = get_display_full_names(other_ids);
     const sorted_names = names.sort(util.make_strcmp());
 
-    return sorted_names.join(", ");
+    return sorted_names;
+}
+
+export function format_recipients(
+    users_ids_string: string,
+    join_strategy: "long" | "narrow",
+): string {
+    const formatted_recipients_string = util.format_array_as_list_with_conjuction(
+        get_recipients(users_ids_string),
+        join_strategy,
+    );
+    return formatted_recipients_string;
 }
 
 export function pm_reply_user_string(message: Message | MessageWithBooleans): string | undefined {
@@ -687,6 +699,17 @@ export function pm_with_operand_ids(operand: string): number[] | undefined {
     return user_ids;
 }
 
+export function filter_other_guest_ids(user_ids: number[]): number[] {
+    return sort_numerically(
+        user_ids.filter((id) => id !== current_user.user_id && get_by_user_id(id)?.is_guest),
+    );
+}
+
+export function user_ids_to_full_names_array(user_ids: number[]): string[] {
+    const names = user_ids.map((user_id) => get_by_user_id(user_id).full_name).sort(util.strcmp);
+    return names;
+}
+
 export function emails_to_slug(emails_string: string): string | undefined {
     let slug = reply_to_to_user_ids_string(emails_string);
 
@@ -762,6 +785,14 @@ export function sender_is_guest(message: Message): boolean {
     if (message.sender_id) {
         const person = get_by_user_id(message.sender_id);
         return person.is_guest;
+    }
+    return false;
+}
+
+export function sender_is_deactivated(message: Message): boolean {
+    const sender_id = message.sender_id;
+    if (sender_id) {
+        return !is_active_user_for_popover(message.sender_id);
     }
     return false;
 }
@@ -1440,6 +1471,8 @@ export function add_cross_realm_user(person: User): void {
     cross_realm_dict.set(person.user_id, person);
     if (person.full_name === "Welcome Bot") {
         WELCOME_BOT = person;
+    } else if (person.full_name === "Email Gateway") {
+        EMAIL_GATEWAY_BOT = person;
     }
 }
 

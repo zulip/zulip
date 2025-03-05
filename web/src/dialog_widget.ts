@@ -59,7 +59,8 @@ function current_dialog_widget_selector(): string {
  */
 
 export type DialogWidgetConfig = {
-    html_heading: string;
+    html_heading?: string;
+    text_heading?: string;
     html_body: string;
     on_click: (e: JQuery.ClickEvent) => void;
     html_submit_button?: string;
@@ -79,6 +80,7 @@ export type DialogWidgetConfig = {
     loading_spinner?: boolean;
     update_submit_disabled_state_on_change?: boolean;
     always_visible_scrollbar?: boolean;
+    footer_minor_text?: string;
 };
 
 type RequestOpts = {
@@ -135,7 +137,7 @@ export function get_current_values($inputs: JQuery): Record<string, unknown> {
 
 export function launch(conf: DialogWidgetConfig): string {
     // Mandatory fields:
-    // * html_heading
+    // * html_heading | text_heading
     // * html_body
     // * on_click
     // The html_ fields should be safe HTML. If callers
@@ -171,7 +173,8 @@ export function launch(conf: DialogWidgetConfig): string {
     const html_exit_button = conf.html_exit_button ?? $t_html({defaultMessage: "Cancel"});
     const html = render_dialog_widget({
         modal_unique_id,
-        heading_text: conf.html_heading,
+        html_heading: conf.html_heading,
+        text_heading: conf.text_heading,
         link: conf.help_link,
         html_submit_button,
         html_exit_button,
@@ -179,6 +182,7 @@ export function launch(conf: DialogWidgetConfig): string {
         id: conf.id,
         single_footer_button: conf.single_footer_button,
         always_visible_scrollbar: conf.always_visible_scrollbar,
+        footer_minor_text: conf.footer_minor_text,
     });
     const $dialog = $(html);
     $("body").append($dialog);

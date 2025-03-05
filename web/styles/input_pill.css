@@ -16,6 +16,7 @@
         align-items: center;
         max-width: 100%;
         min-width: 0;
+        position: relative;
 
         height: var(--height-input-pill);
         /* Make sure the `height` property
@@ -69,7 +70,7 @@
         }
 
         .pill-close-button {
-            font-size: 10px;
+            font-size: 0.7142em; /* 10px at 14px em */
             text-decoration: none;
             /* Let the close button's box stretch,
                but no larger than the height of the
@@ -107,8 +108,13 @@
             }
         }
 
+        .group-members-count {
+            opacity: 0.65;
+        }
+
         &.deactivated-pill {
             background-color: var(--color-background-deactivated-user-pill);
+            opacity: 0.7;
 
             &:focus {
                 border-color: var(--color-focus-outline-deactivated-user-pill);
@@ -124,7 +130,22 @@
                     --color-background-exit-hover-deactivated-user-pill
                 );
             }
+
+            > img {
+                opacity: 0.5;
+            }
         }
+    }
+
+    .slashed-circle-icon {
+        position: absolute;
+        background-color: var(--color-background-deactivated-user-pill);
+        padding: 0.2em;
+        font-size: 0.7em;
+        border-radius: 0.625em;
+        bottom: -0.0625em;
+        left: 1.1em;
+        opacity: 1;
     }
 
     &.not-editable {
@@ -302,7 +323,7 @@
 }
 
 .display_only_group_pill .zulip-icon-triple-users {
-    font-size: 19px;
+    font-size: 1.3571em; /* 19px at 14px / em */
 }
 
 @keyframes shake {

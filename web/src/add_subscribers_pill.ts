@@ -1,7 +1,5 @@
 import assert from "minimalistic-assert";
 
-import render_input_pill from "../templates/input_pill.hbs";
-
 import * as blueslip from "./blueslip.ts";
 import * as input_pill from "./input_pill.ts";
 import * as keydown_util from "./keydown_util.ts";
@@ -79,7 +77,8 @@ export function set_up_pill_typeahead({
 
 export function get_display_value_from_item(item: CombinedPill): string {
     if (item.type === "user_group") {
-        return user_group_pill.display_pill(user_groups.get_user_group_from_id(item.group_id));
+        const group = user_groups.get_user_group_from_id(item.group_id);
+        return user_groups.get_display_group_name(group.name);
     } else if (item.type === "stream") {
         return stream_pill.get_display_value_from_item(item);
     }
@@ -89,10 +88,7 @@ export function get_display_value_from_item(item: CombinedPill): string {
 
 export function generate_pill_html(item: CombinedPill): string {
     if (item.type === "user_group") {
-        return render_input_pill({
-            display_value: get_display_value_from_item(item),
-            group_id: item.group_id,
-        });
+        return user_group_pill.generate_pill_html(item);
     } else if (item.type === "user") {
         return user_pill.generate_pill_html(item);
     }
@@ -101,12 +97,11 @@ export function generate_pill_html(item: CombinedPill): string {
 }
 
 export function set_up_handlers_for_add_button_state(
-    pill_widget: CombinedPillContainer,
+    pill_widget: CombinedPillContainer | user_group_pill.UserGroupPillWidget,
     $pill_container: JQuery,
 ): void {
     const $pill_widget_input = $pill_container.find(".input");
-    const $pill_widget_button = $pill_container.parent().find(".add-users-button");
-
+    const $pill_widget_button = $pill_container.closest(".add-button-container").find(".button");
     // Disable the add button first time the pill container is created.
     $pill_widget_button.prop("disabled", true);
 
@@ -114,6 +109,8 @@ export function set_up_handlers_for_add_button_state(
     pill_widget.onPillRemove(() =>
         $pill_widget_button.prop("disabled", pill_widget.items().length === 0),
     );
+    // If a pill is added, enable the add button.
+    pill_widget.onPillCreate(() => $pill_widget_button.prop("disabled", false));
     // Disable the add button when there is no pending text that can be converted
     // into a pill and the number of existing pills is zero.
     $pill_widget_input.on("input", () =>
@@ -127,9 +124,11 @@ export function set_up_handlers_for_add_button_state(
 export function create({
     $pill_container,
     get_potential_subscribers,
+    get_user_groups,
 }: {
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
+    get_user_groups: () => UserGroup[];
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
@@ -144,7 +143,12 @@ export function create({
         return user_pill.filter_taken_users(potential_subscribers, pill_widget);
     }
 
-    set_up_pill_typeahead({pill_widget, $pill_container, get_users});
+    function get_groups(): UserGroup[] {
+        const groups = get_user_groups();
+        return user_group_pill.filter_taken_groups(groups, pill_widget);
+    }
+
+    set_up_pill_typeahead({pill_widget, $pill_container, get_users, get_user_groups: get_groups});
 
     set_up_handlers_for_add_button_state(pill_widget, $pill_container);
 
@@ -154,11 +158,13 @@ export function create({
 export function create_without_add_button({
     $pill_container,
     get_potential_subscribers,
+    get_user_groups,
     onPillCreateAction,
     onPillRemoveAction,
 }: {
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
+    get_user_groups: () => UserGroup[];
     onPillCreateAction: (pill_user_ids: number[]) => void;
     onPillRemoveAction: (pill_user_ids: number[]) => void;
 }): CombinedPillContainer {
@@ -175,6 +181,11 @@ export function create_without_add_button({
         return user_pill.filter_taken_users(potential_subscribers, pill_widget);
     }
 
+    function get_groups(): UserGroup[] {
+        const user_groups = get_user_groups();
+        return user_group_pill.filter_taken_groups(user_groups, pill_widget);
+    }
+
     pill_widget.onPillCreate(() => {
         onPillCreateAction(get_pill_user_ids(pill_widget));
     });
@@ -182,7 +193,7 @@ export function create_without_add_button({
         onPillRemoveAction(get_pill_user_ids(pill_widget));
     });
 
-    set_up_pill_typeahead({pill_widget, $pill_container, get_users});
+    set_up_pill_typeahead({pill_widget, $pill_container, get_users, get_user_groups: get_groups});
 
     return pill_widget;
 }

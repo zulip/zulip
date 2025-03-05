@@ -1,5 +1,6 @@
 import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
+import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
@@ -440,6 +441,14 @@ export function format_array_as_list(
     return list_formatter.format(array);
 }
 
+export function format_array_as_list_with_conjuction(
+    array: string[],
+    // long uses "and", narrow uses commas.
+    join_strategy: "long" | "narrow",
+): string {
+    return format_array_as_list(array, join_strategy, "conjunction");
+}
+
 export function format_array_as_list_with_highlighted_elements(
     array: string[],
     style: Intl.ListFormatStyle,
@@ -536,12 +545,59 @@ export function compare_a_b<T>(a: T, b: T): number {
     return -1;
 }
 
-export function get_final_topic_display_name(topic_display_name: string): string {
-    if (topic_display_name === "") {
+export function get_final_topic_display_name(topic_name: string): string {
+    if (topic_name === "") {
         if (realm.realm_empty_topic_display_name === "general chat") {
             return $t({defaultMessage: "general chat"});
         }
         return realm.realm_empty_topic_display_name;
     }
-    return topic_display_name;
+    return topic_name;
+}
+
+export function is_topic_name_considered_empty(topic: string): boolean {
+    // NOTE: Use this check only when realm.realm_mandatory_topics is set to true.
+    topic = topic.trim();
+    // When the topic is mandatory in a realm via realm_mandatory_topics, the topic
+    // can't be an empty string, "(no topic)", or realm_empty_topic_display_name.
+    if (topic === "" || topic === "(no topic)" || topic === realm.realm_empty_topic_display_name) {
+        return true;
+    }
+    return false;
+}
+
+export function get_retry_backoff_seconds(
+    xhr: JQuery.jqXHR<unknown>,
+    attempts: number,
+    tighter_backoff = false,
+): number {
+    // We need to respect the server's rate-limiting headers, but beyond
+    // that, we also want to avoid contributing to a thundering herd if
+    // the server is giving us 500/502 responses.
+    //
+    // We do the maximum of the retry-after header and an exponential
+    // backoff.
+    let backoff_scale: number;
+    if (tighter_backoff) {
+        // Starts at 1-2s and ends at 16-32s after enough failures.
+        backoff_scale = Math.min(2 ** attempts, 32);
+    } else {
+        // Starts at 1-2s and ends at 45-90s after enough failures.
+        backoff_scale = Math.min(2 ** ((attempts + 1) / 2), 90);
+    }
+    // Add a bit jitter to backoff scale.
+    const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
+    let rate_limit_delay_secs = 0;
+    const rate_limited_error_schema = z.object({
+        "retry-after": z.number(),
+        code: z.literal("RATE_LIMIT_HIT"),
+    });
+    const parsed = rate_limited_error_schema.safeParse(xhr.responseJSON);
+    if (xhr.status === 429 && parsed?.success && parsed?.data) {
+        // Add a bit of jitter to the required delay suggested by the
+        // server, because we may be racing with other copies of the web
+        // app.
+        rate_limit_delay_secs = parsed.data["retry-after"] + Math.random() * 0.5;
+    }
+    return Math.max(backoff_delay_secs, rate_limit_delay_secs);
 }

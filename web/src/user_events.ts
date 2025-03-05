@@ -170,7 +170,7 @@ export const update_person = function update(person: UserUpdate): void {
         people.set_custom_profile_field_data(person.user_id, person.custom_profile_field);
         user_profile.update_user_custom_profile_fields(person_obj);
         if (person.user_id === people.my_current_user_id()) {
-            navbar_alerts.maybe_show_empty_required_profile_fields_alert();
+            navbar_alerts.maybe_toggle_empty_required_profile_fields_banner();
 
             const field_id = person.custom_profile_field.id;
             const field_value = people.get_custom_profile_data(person.user_id, field_id)?.value;
@@ -217,8 +217,8 @@ export const update_person = function update(person: UserUpdate): void {
             stream_events.remove_deactivated_user_from_all_streams(person.user_id);
             user_group_edit.remove_deactivated_user_from_all_groups(person.user_id);
             settings_users.update_view_on_deactivate(person.user_id);
-            buddy_list.maybe_remove_user_id({user_id: person.user_id});
         }
+        buddy_list.insert_or_move([person.user_id]);
         settings_account.maybe_update_deactivate_account_button();
         if (people.is_valid_bot_user(person.user_id)) {
             settings_users.update_bot_data(person.user_id);

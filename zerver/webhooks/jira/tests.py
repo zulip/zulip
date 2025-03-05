@@ -2,7 +2,6 @@ from unittest.mock import patch
 from urllib.parse import quote, unquote
 
 from zerver.lib.test_classes import WebhookTestCase
-from zerver.lib.users import get_api_key
 
 
 class JiraHookTests(WebhookTestCase):
@@ -11,7 +10,7 @@ class JiraHookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "jira"
 
     def test_custom_channel(self) -> None:
-        api_key = get_api_key(self.test_user)
+        api_key = self.test_user.api_key
         self.subscribe(self.test_user, "jira_custom")
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
         msg = self.send_webhook_payload(

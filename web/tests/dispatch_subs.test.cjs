@@ -199,11 +199,22 @@ test("stream create", ({override}) => {
 test("stream delete (normal)", ({override}) => {
     const event = event_fixtures.stream__delete;
 
-    for (const stream of event.streams) {
-        stream_data.add_sub(stream);
-    }
+    const devel_sub = {
+        stream_id: event.stream_ids[0],
+        name: "devel",
+        is_archived: false,
+    };
 
-    stream_data.subscribe_myself(event.streams[0]);
+    const test_sub = {
+        stream_id: event.stream_ids[1],
+        name: "test",
+        is_archived: false,
+    };
+
+    stream_data.add_sub(test_sub);
+    stream_data.add_sub(devel_sub);
+
+    stream_data.subscribe_myself(devel_sub);
 
     override(settings_streams, "update_default_streams_table", noop);
 
@@ -230,7 +241,7 @@ test("stream delete (normal)", ({override}) => {
 
     dispatch(event);
 
-    assert.deepEqual(removed_stream_ids, [event.streams[0].stream_id, event.streams[1].stream_id]);
+    assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
     // We should possibly be able to make a single call to
     // update_trailing_bookend, but we currently do it for each stream.
@@ -242,18 +253,28 @@ test("stream delete (normal)", ({override}) => {
 test("stream delete (special streams)", ({override}) => {
     const event = event_fixtures.stream__delete;
 
-    for (const stream of event.streams) {
-        stream.is_archived = false;
-        stream_data.add_sub(stream);
-    }
+    const devel_sub = {
+        stream_id: event.stream_ids[0],
+        name: "devel",
+        is_archived: false,
+    };
 
-    stream_data.subscribe_myself(event.streams[0]);
+    const test_sub = {
+        stream_id: event.stream_ids[1],
+        name: "test",
+        is_archived: false,
+    };
+
+    stream_data.add_sub(devel_sub);
+    stream_data.add_sub(test_sub);
+
+    stream_data.subscribe_myself(devel_sub);
 
     // sanity check data
-    assert.equal(event.streams.length, 2);
-    override(realm, "realm_new_stream_announcements_stream_id", event.streams[0].stream_id);
-    override(realm, "realm_signup_announcements_stream_id", event.streams[1].stream_id);
-    override(realm, "realm_zulip_update_announcements_stream_id", event.streams[0].stream_id);
+    assert.equal(event.stream_ids.length, 2);
+    override(realm, "realm_new_stream_announcements_stream_id", event.stream_ids[0]);
+    override(realm, "realm_signup_announcements_stream_id", event.stream_ids[1]);
+    override(realm, "realm_zulip_update_announcements_stream_id", event.stream_ids[0]);
 
     override(stream_settings_ui, "remove_stream", noop);
     override(settings_org, "sync_realm_settings", noop);
@@ -276,13 +297,23 @@ test("stream delete (stream is selected in compose)", ({override}) => {
 
     const event = event_fixtures.stream__delete;
 
-    for (const stream of event.streams) {
-        stream.is_archived = false;
-        stream_data.add_sub(stream);
-    }
+    const devel_sub = {
+        stream_id: event.stream_ids[0],
+        name: "devel",
+        is_archived: false,
+    };
 
-    stream_data.subscribe_myself(event.streams[0]);
-    compose_state.set_stream_id(event.streams[0].stream_id);
+    const test_sub = {
+        stream_id: event.stream_ids[1],
+        name: "test",
+        is_archived: false,
+    };
+
+    stream_data.add_sub(devel_sub);
+    stream_data.add_sub(test_sub);
+
+    stream_data.subscribe_myself(devel_sub);
+    compose_state.set_stream_id(event.stream_ids[0]);
 
     override(settings_streams, "update_default_streams_table", noop);
 
@@ -310,7 +341,7 @@ test("stream delete (stream is selected in compose)", ({override}) => {
     dispatch(event);
 
     assert.equal(compose_state.stream_name(), "");
-    assert.deepEqual(removed_stream_ids, [event.streams[0].stream_id, event.streams[1].stream_id]);
+    assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
     // We should possibly be able to make a single call to
     // update_trailing_bookend, but we currently do it for each stream.

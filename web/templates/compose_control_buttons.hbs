@@ -24,14 +24,18 @@
     <div class="compose_control_button_container preview_mode_disabled" data-tooltip-template-id="add-global-time-tooltip" data-tippy-maxWidth="none">
         <a role="button" class="compose_control_button zulip-icon zulip-icon-time time_pick" aria-label="{{t 'Add global time' }}" tabindex=0></a>
     </div>
-    {{#unless message_id}}
-    <div class="compose_control_button_container preview_mode_disabled" data-tooltip-template-id="add-poll-tooltip" data-tippy-maxWidth="none">
-        <a role="button" class="compose_control_button zulip-icon zulip-icon-poll add-poll" aria-label="{{t 'Add poll' }}" tabindex=0></a>
-    </div>
-    {{/unless}}
     <div class="compose_control_button_container {{#unless giphy_enabled }}hide{{/unless}} preview_mode_disabled" data-tippy-content="{{t 'Add GIF' }}">
         <a role="button" class="compose_control_button compose_gif_icon zulip-icon zulip-icon-gif" aria-label="{{t 'Add GIF' }}" tabindex=0></a>
     </div>
+    {{#if message_id}}
+    <div class="compose_control_button_container preview_mode_disabled" data-tooltip-template-id="add-saved-snippet-tooltip">
+        <a role="button" class="saved_snippets_widget saved-snippets-message-edit-widget compose_control_button zulip-icon zulip-icon-message-square-text" aria-label="{{t 'Add saved snippet' }}" data-message-id="{{message_id}}" tabindex=0></a>
+    </div>
+    {{else}}
+    <div class="compose_control_button_container preview_mode_disabled" data-tooltip-template-id="add-saved-snippet-tooltip">
+        <a role="button" class="saved_snippets_widget saved-snippets-composebox-widget compose_control_button zulip-icon zulip-icon-message-square-text" aria-label="{{t 'Add saved snippet' }}" tabindex=0></a>
+    </div>
+    {{/if}}
     <div class="divider"></div>
     <div class="compose-control-buttons-container preview_mode_disabled">
         <a role="button" data-format-type="link" class="compose_control_button zulip-icon zulip-icon-link formatting_button" aria-label="{{t 'Link' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tooltip-template-id="link-tooltip" data-tippy-maxWidth="none"></a>
@@ -50,5 +54,13 @@
         <a role="button" data-format-type="latex" class="compose_control_button zulip-icon zulip-icon-math formatting_button" aria-label="{{t 'Math (LaTeX)' }}" {{#unless preview_mode_on}} tabindex=0 {{/unless}} data-tippy-content="{{t 'Math (LaTeX)' }}"></a>
     </div>
     <div class="divider"></div>
+    {{#unless message_id}}
+    <div class="compose_control_button_container preview_mode_disabled" data-tooltip-template-id="add-poll-tooltip" data-tippy-maxWidth="none">
+        <a role="button" class="compose_control_button zulip-icon zulip-icon-poll add-poll needs-empty-compose" aria-label="{{t 'Add poll' }}" tabindex=0></a>
+    </div>
+    <div class="compose_control_button_container preview_mode_disabled" data-tooltip-template-id="add-todo-tooltip" data-tippy-maxWidth="none">
+        <a role="button" class="compose_control_button zulip-icon zulip-icon-todo-list add-todo-list needs-empty-compose" aria-label="{{t 'Add to-do list' }}" tabindex=0></a>
+    </div>
+    {{/unless}}
     <a role="button" class="compose_control_button compose_help_button zulip-icon zulip-icon-question" tabindex=0 data-tippy-content="{{t 'Message formatting' }}" data-overlay-trigger="message-formatting"></a>
 </div>

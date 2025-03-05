@@ -1,5 +1,7 @@
-/* Width of emoji used by user to display status. */
-$user_status_emoji_width: 24px;
+:root {
+    /* Width of emoji used by user to display status. */
+    --user-status-emoji-width: 24px;
+}
 
 .right-sidebar {
     & a:hover {
@@ -78,7 +80,8 @@ $user_status_emoji_width: 24px;
         border-radius: 3px;
 
         & i {
-            font-size: 17px;
+            /* 17px at 16px em */
+            font-size: 1.0625em;
             /* Ensure the icon takes the same baseline
                as the rest of the row, for perfect
                vertical alignment with the username and
@@ -139,9 +142,23 @@ $user_status_emoji_width: 24px;
         padding: 0;
 
         &:hover,
+        &.narrow-filter:has(a.user-presence-link:focus-visible),
         &.highlighted_user {
             background-color: var(--color-buddy-list-highlighted-user);
             box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+        }
+
+        &.narrow-filter:has(a.user-presence-link:focus-visible),
+        &.highlighted_user {
+            outline: 2px solid var(--color-outline-focus);
+            outline-offset: -2px;
+        }
+    }
+
+    & .narrow-filter {
+        a.user-presence-link:focus {
+            outline: none;
+            text-decoration: none;
         }
     }
 
@@ -150,22 +167,39 @@ $user_status_emoji_width: 24px;
         place-self: center center;
         /* Tighten the line-height to match the icon's size... */
         line-height: 1;
-        /* ...which is approximately 11px at 16px/1em. */
-        font-size: 0.6875em;
+        /* ...which is approximately 8px at 15px/1em in Vlad's design. */
+        font-size: 0.5333em;
     }
 
     .user_sidebar_entry.with_avatar {
-        .user-profile-picture {
+        .user-profile-picture-container {
             /* Establish positioning context for user circle. */
             position: relative;
+            /* TODO: Express this as part of the grid on
+               .selectable_sidebar_block. */
+            margin-right: var(--right-sidebar-avatar-right-margin);
+
+            &:not(:has(.user-circle-offline)) .user-profile-picture {
+                /* The over-avatar user circle width is 15.5px at 20px/1em;
+                   we adjust the border radius here to avoid any pixels
+                   from the avatar bleeding through. */
+                border-bottom-right-radius: 0.3875em; /* 7.75px at 20px/1em */
+            }
+        }
+
+        .user-profile-picture {
+            /* Push back on the margin-right usually allotted here;
+               we put it on .user-profile-picture-container instead,
+               so that user circles occupy the corner of the image. */
+            margin-right: 0;
         }
 
         .user-circle {
             position: absolute;
             /* 10px at 16px/1em */
             font-size: 0.625em;
-            bottom: -1px;
-            right: -1px;
+            bottom: -0.5px;
+            right: -0.5px;
             background-color: var(--color-background);
             /* A 1.5px border provides better results than
                a 1px border, especially at smaller font sizes. */
@@ -186,10 +220,6 @@ $user_status_emoji_width: 24px;
         font-size: 0.875em;
         /* Override .empty-list-message !important styling */
         padding: 0 !important;
-        margin-left: calc(
-            var(--right-sidebar-toggle-width-offset) +
-                var(--right-sidebar-left-spacing)
-        );
         text-align: left;
 
         &:hover {
@@ -291,7 +321,10 @@ $user_status_emoji_width: 24px;
         "starting-anchor-element row-content markers-and-controls" var(
             --line-height-sidebar-row
         )
-        ".                       row-content ." auto / 20px minmax(0, 1fr)
+        ".                       row-content ." auto / var(
+            --right-sidebar-presence-circle-width
+        )
+        minmax(0, 1fr)
         minmax(0, auto);
     align-items: baseline;
 }
@@ -303,6 +336,7 @@ $user_status_emoji_width: 24px;
 
     .selectable_sidebar_block {
         margin: 4px;
+        margin-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
     }
 
     .avatar-preload-background {
@@ -362,7 +396,7 @@ $user_status_emoji_width: 24px;
 
         .user-name {
             display: inline-block;
-            max-width: calc(100% - $user_status_emoji_width);
+            max-width: calc(100% - var(--user-status-emoji-width));
             overflow-x: hidden;
             text-overflow: ellipsis;
         }
@@ -385,22 +419,26 @@ $user_status_emoji_width: 24px;
        that controls remain aligned with the username,
        even when there is a status line shown below.
 
-       The 26px column for the vdots is less than the
+       The 25px column for the vdots is less than the
        30px allotted in the left sidebar, but it holds
        the username area constant, so that no ellipsis
-       appears on the username on hover. */
+       appears on the username on hover. The 25px value
+       is necessary for correct vdots alignment with the
+       filter row's vdots. */
     grid-template:
         "row-content ending-anchor-element" var(--line-height-sidebar-row)
-        "row-content ." auto / minmax(0, 1fr) 26px;
+        "row-content ." auto / minmax(0, 1fr) var(--right-sidebar-vdots-width);
     align-content: baseline;
     margin-right: var(--width-simplebar-scroll-hover);
-    margin-left: var(--right-sidebar-toggle-width-offset);
     /* When both the left circle and three dot menu are present, we want
        the space to the left of the circle to be more similar to the space
        to the right of the three dot menu. */
     &:not(.with_avatar) {
-        padding-left: 2px;
-        margin-left: calc(var(--right-sidebar-toggle-width-offset) - 2px);
+        padding-left: calc(var(--right-sidebar-toggle-width-offset) - 2px);
+    }
+
+    &:hover {
+        cursor: pointer;
     }
 
     .user-name-and-status-emoji {
@@ -465,11 +503,12 @@ $user_status_emoji_width: 24px;
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    margin-bottom: 10px;
-    margin-left: var(--right-sidebar-heading-left-spacing);
+    padding-bottom: 10px;
+    padding-left: var(--right-sidebar-heading-left-spacing);
     /* The scrollbar doesn't extend this high, but we want the three-dot
        menus to line up. */
-    margin-right: var(--width-simplebar-scroll-hover);
+    padding-right: var(--width-simplebar-scroll-hover);
+    background-color: var(--color-background);
 
     #userlist-header-search {
         display: grid;
@@ -497,8 +536,12 @@ $user_status_emoji_width: 24px;
         color: var(--color-vdots-visible);
         justify-content: center;
         display: grid;
-        width: 25px;
+        width: var(--right-sidebar-vdots-width);
         margin-left: 5px;
+        /* Push back against default right-sidebar
+           spacing for better vdots alignment. */
+        margin-right: 0;
+        padding-left: 0;
 
         &:hover {
             color: var(--color-vdots-hover);
@@ -509,7 +552,6 @@ $user_status_emoji_width: 24px;
 .buddy-list-user-link,
 .invite-user-shortcut {
     margin-right: var(--width-simplebar-scroll-hover);
-    padding-left: var(--right-sidebar-left-spacing);
     border-radius: 4px;
 
     &:hover {
@@ -542,8 +584,16 @@ $user_status_emoji_width: 24px;
     }
 }
 
-.buddy-list-user-link {
-    margin-left: var(--right-sidebar-toggle-width-offset);
+#user-list.with_avatars
+    .buddy-list-user-link
+    .right-sidebar-wrappable-text-container,
+#user-list.with_avatars .buddy-list-section .empty-list-message {
+    margin-left: var(--right-sidebar-text-indent-with-avatar);
+}
+
+.buddy-list-user-link .right-sidebar-wrappable-text-container,
+.buddy-list-section .empty-list-message {
+    margin-left: var(--right-sidebar-text-indent-without-avatar);
 }
 
 .invite-user-shortcut {
@@ -553,18 +603,40 @@ $user_status_emoji_width: 24px;
        from the legacy value. */
     margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
     margin-bottom: var(--sidebar-bottom-spacing);
-    padding-left: 0;
 
     .invite-user-link {
-        grid-template-columns:
-            var(--right-sidebar-header-icon-toggle-width)
+        grid-template:
+            "left-spacing icon text" /
+            calc(var(--right-sidebar-toggle-width-offset) - 2px)
+            var(--right-sidebar-presence-circle-width)
             minmax(0, 1fr);
 
         .zulip-icon-user-plus {
+            grid-area: icon;
             justify-self: center;
             /* Smaller icon size to align the link text with the other buddy list links */
             font-size: 13px;
         }
+
+        .right-sidebar-wrappable-text-inner {
+            grid-area: text;
+        }
+    }
+}
+
+#user-list.with_avatars .invite-user-link {
+    /* Subtract 2px to account for the border on this element */
+    grid-template:
+        "icon middle-spacing text" /
+        var(--right-sidebar-header-icon-toggle-width)
+        calc(
+            var(--right-sidebar-text-indent-with-avatar) - 2px -
+                var(--right-sidebar-header-icon-toggle-width)
+        )
+        minmax(0, 1fr);
+
+    .zulip-icon-user-plus {
+        margin-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
     }
 }
 
@@ -581,7 +653,10 @@ $user_status_emoji_width: 24px;
 
     .popover-menu-link:not(.display-style-selector-header) {
         display: grid;
-        grid-template: "left-icon row-content" auto / 18px 1fr;
+        grid-template: "left-icon row-content" auto / 18px minmax(
+                max-content,
+                1fr
+            );
         align-items: center;
 
         .popover-menu-icon,

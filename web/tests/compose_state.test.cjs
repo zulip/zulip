@@ -10,6 +10,10 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 
 const compose_state = zrequire("compose_state");
 const stream_data = zrequire("stream_data");
+const {set_realm} = zrequire("state_data");
+
+const realm = {};
+set_realm(realm);
 
 run_test("private_message_recipient", ({override}) => {
     let emails;

@@ -38,6 +38,7 @@ const admins = {
     can_manage_group: 4,
     can_mention_group: 1,
     can_remove_members_group: 4,
+    deactivated: false,
 };
 const moderators = {
     description: "Moderators",
@@ -52,6 +53,7 @@ const moderators = {
     can_manage_group: 4,
     can_mention_group: 1,
     can_remove_members_group: 4,
+    deactivated: false,
 };
 const members = {
     description: "Members",
@@ -66,6 +68,7 @@ const members = {
     can_manage_group: 4,
     can_mention_group: 4,
     can_remove_members_group: 4,
+    deactivated: false,
 };
 const nobody = {
     description: "Nobody",
@@ -80,6 +83,7 @@ const nobody = {
     can_manage_group: 4,
     can_mention_group: 2,
     can_remove_members_group: 4,
+    deactivated: false,
 };
 const students = {
     description: "Students group",
@@ -98,6 +102,19 @@ const students = {
     can_mention_group: 3,
     can_remove_members_group: 1,
     creator_id: 4,
+    deactivated: false,
+};
+const deactivated_group = {
+    name: "Deactivated test group",
+    id: 3,
+    members: new Set([1, 2, 3]),
+    is_system_group: false,
+    direct_subgroup_ids: new Set([4, 5, 6]),
+    can_join_group: 1,
+    can_leave_group: 1,
+    can_manage_group: 1,
+    can_mention_group: 1,
+    deactivated: true,
 };
 
 const group_permission_settings = mock_esm("../src/group_permission_settings", {});
@@ -183,7 +200,7 @@ test_realm_group_settings(
 
 test_realm_group_settings(
     "realm_can_add_subscribers_group",
-    settings_data.can_subscribe_others_to_all_streams,
+    settings_data.can_subscribe_others_to_all_accessible_streams,
 );
 
 test_realm_group_settings(
@@ -354,7 +371,8 @@ run_test("can_manage_user_group", ({override}) => {
             can_manage_group: members.id,
         },
     };
-    user_groups.update(event);
+    const students_group = user_groups.get_user_group_from_id(students.id);
+    user_groups.update(event, students_group);
     assert.ok(settings_data.can_manage_user_group(students.id));
 
     override(current_user, "user_id", 3);
@@ -363,7 +381,7 @@ run_test("can_manage_user_group", ({override}) => {
 
 function test_user_group_permission_setting(override, setting_name, permission_func) {
     user_groups.initialize({
-        realm_user_groups: [admins, moderators, members, nobody, students],
+        realm_user_groups: [admins, moderators, members, nobody, students, deactivated_group],
     });
     override(realm, "realm_can_manage_all_groups", nobody.id);
 
@@ -383,8 +401,9 @@ function test_user_group_permission_setting(override, setting_name, permission_f
         group_id: students.id,
         data: {},
     };
+    const students_group = user_groups.get_user_group_from_id(students.id);
     event.data[setting_name] = moderators.id;
-    user_groups.update(event);
+    user_groups.update(event, students_group);
     assert.ok(permission_func(students.id));
 
     override(current_user, "user_id", 1);
@@ -398,7 +417,7 @@ function test_user_group_permission_setting(override, setting_name, permission_f
         direct_members: [5],
         direct_subgroups: [admins.id],
     };
-    user_groups.update(event);
+    user_groups.update(event, students_group);
     assert.ok(permission_func(students.id));
 
     override(current_user, "user_id", 2);
@@ -412,6 +431,9 @@ function test_user_group_permission_setting(override, setting_name, permission_f
     override(realm, "realm_can_manage_all_groups", moderators.id);
     override(current_user, "user_id", 2);
     assert.ok(permission_func(students.id));
+
+    // Cannot perform any join, leave, add, remove if group is deactivated
+    assert.ok(!permission_func(deactivated_group.id));
 }
 
 run_test("can_join_user_group", ({override}) => {
@@ -435,7 +457,8 @@ run_test("can_join_user_group", ({override}) => {
             },
         },
     };
-    user_groups.update(event);
+    const students_group = user_groups.get_user_group_from_id(students.id);
+    user_groups.update(event, students_group);
 
     override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_join_user_group(students.id));
@@ -468,7 +491,8 @@ run_test("can_leave_user_group", ({override}) => {
             },
         },
     };
-    user_groups.update(event);
+    const students_group = user_groups.get_user_group_from_id(students.id);
+    user_groups.update(event, students_group);
 
     override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_leave_user_group(students.id));
@@ -497,21 +521,8 @@ run_test("can_remove_members_user_group", ({override}) => {
 });
 
 run_test("type_id_to_string", () => {
-    page_params.bot_types = [
-        {
-            type_id: 1,
-            name: "Generic bot",
-            allowed: true,
-        },
-        {
-            type_id: 2,
-            name: "Incoming webhook",
-            allowed: true,
-        },
-    ];
-
-    assert.equal(settings_data.bot_type_id_to_string(1), "Generic bot");
-    assert.equal(settings_data.bot_type_id_to_string(2), "Incoming webhook");
+    assert.equal(settings_data.bot_type_id_to_string(1), "translated: Generic bot");
+    assert.equal(settings_data.bot_type_id_to_string(2), "translated: Incoming webhook");
     assert.equal(settings_data.bot_type_id_to_string(5), undefined);
 });
 
@@ -640,4 +651,15 @@ run_test("guests_can_access_all_other_users", () => {
     user_groups.initialize({realm_user_groups: [members, everyone]});
     realm.realm_can_access_all_users_group = everyone.id;
     assert.ok(settings_data.guests_can_access_all_other_users());
+});
+
+run_test("user_can_summarize_topics", ({override}) => {
+    override(realm, "server_can_summarize_topics", true);
+    test_realm_group_settings(
+        "realm_can_summarize_topics_group",
+        settings_data.user_can_summarize_topics,
+    );
+
+    override(realm, "server_can_summarize_topics", false);
+    assert.ok(!settings_data.user_can_summarize_topics());
 });

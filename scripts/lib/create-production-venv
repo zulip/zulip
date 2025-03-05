@@ -7,8 +7,8 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 
-from scripts.lib.setup_venv import get_venv_dependencies, setup_virtualenv
-from scripts.lib.zulip_tools import os_families, overwrite_symlink, parse_os_release, run
+from scripts.lib.setup_venv import get_venv_dependencies
+from scripts.lib.zulip_tools import os_families, parse_os_release, run
 
 parser = argparse.ArgumentParser(description="Create a production virtualenv with caching")
 parser.add_argument("deploy_path")
@@ -27,14 +27,6 @@ else:
     print("Unsupported platform: {}".format(distro_info["ID"]))
     sys.exit(1)
 
-# Set the current working directory to the Zulip checkout, so the api/
-# relative path in requirements/common.in works.
 os.chdir(ZULIP_PATH)
-
-venv_name = "zulip-py3-venv"
-cached_venv_path = setup_virtualenv(
-    os.path.join(args.deploy_path, venv_name), os.path.join(ZULIP_PATH, "requirements", "prod.txt")
-)
-
-current_venv_path = os.path.join(args.deploy_path, "zulip-current-venv")
-overwrite_symlink(venv_name, current_venv_path)
+run(["scripts/lib/install-uv"])
+run(["uv", "sync", "--frozen", "--only-group=prod"])

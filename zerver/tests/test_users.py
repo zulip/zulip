@@ -37,11 +37,7 @@ from zerver.lib.bulk_create import create_users
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.send_email import (
-    clear_scheduled_emails,
-    deliver_scheduled_emails,
-    send_future_email,
-)
+from zerver.lib.send_email import clear_scheduled_emails, queue_scheduled_emails, send_future_email
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -386,7 +382,9 @@ class PermissionTest(ZulipTestCase):
         members = self.assert_json_success(result)["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
-        self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
+        self.assertEqual(
+            hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1, get_realm("zulip").id)
+        )
 
         # client_gravatar is still turned off for admins.  In theory,
         # it doesn't need to be, but client-side changes would be
@@ -399,7 +397,9 @@ class PermissionTest(ZulipTestCase):
         members = self.assert_json_success(result)["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
-        self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
+        self.assertEqual(
+            hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1, get_realm("zulip").id)
+        )
         self.assertEqual(hamlet["delivery_email"], self.example_email("hamlet"))
 
     def test_user_cannot_promote_to_admin(self) -> None:
@@ -1017,8 +1017,8 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(85),
-            self.assert_memcached_count(19),
+            self.assert_database_query_count(86),
+            self.assert_memcached_count(20),
             self.capture_send_event_calls(expected_num_events=10) as events,
         ):
             fred = do_create_user(
@@ -1336,7 +1336,7 @@ class AdminCreateUserTest(ZulipTestCase):
 
         # we can't create the same user twice.
         result = self.client_post("/json/users", valid_params)
-        self.assert_json_error(result, "Email 'romeo@zulip.net' already in use")
+        self.assert_json_error(result, "Email is already in use.")
 
         # Don't allow user to sign up with disposable email.
         realm.emails_restricted_to_domains = False
@@ -2151,7 +2151,8 @@ class ActivateTest(ZulipTestCase):
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         email = ScheduledEmail.objects.all().first()
-        deliver_scheduled_emails(assert_is_not_none(email))
+        with self.captureOnCommitCallbacks(execute=True):
+            queue_scheduled_emails(assert_is_not_none(email))
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
@@ -2182,8 +2183,11 @@ class ActivateTest(ZulipTestCase):
 
         email_id = email.id
         scheduled_at = email.scheduled_timestamp
-        with self.assertLogs("zulip.send_email", level="INFO") as info_log:
-            deliver_scheduled_emails(email)
+        with (
+            self.assertLogs("zulip.send_email", level="INFO") as info_log,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            queue_scheduled_emails(email)
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)

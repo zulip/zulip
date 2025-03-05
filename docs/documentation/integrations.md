@@ -100,16 +100,6 @@ Here are a few common macros used to document Zulip's integrations:
   that your integration documentation will provide the correct URL for whatever
   server it is deployed on.
 
-- `{!append-channel-name.md!}` macro - Recommends appending `&stream=channel_name`
-  to a URL in cases where supplying a channel name in the URL is optional.
-  Supplying a channel name is optional for most Zulip integrations. If you use
-  `{!generate-integration-url.md!}`, this macro need not be used.
-
-- `{!append-topic.md!}` macro - Recommends appending `&topic=my_topic` to a URL
-  to supply a custom topic for webhook notification messages. Supplying a custom
-  topic is optional for most Zulip integrations. If you use
-  `{!generate-integration-url.md!}`, this macro need not be used.
-
 - `{!congrats.md!}` macro - Inserts congratulatory lines signifying the
   successful setup of a given integration. This macro is usually used at
   the end of the documentation, right before the sample message screenshot.
@@ -137,11 +127,10 @@ Here are a few common macros used to document Zulip's integrations:
   rendering, see **Step 4** of
   [the docs for Zulip's Codebase integration][codebase].
 
-- `{!git-append-branches.md!}` and `{!git-webhook-url-with-branches.md!}` -
-  These two macros explain how to specify a list of branches in the webhook URL
-  to filter notifications in our Git-related webhooks. For an example rendering,
-  see the last paragraph of **Step 2** in
-  [the docs for Zulip's GitHub integration][github-integration].
+- `{!git-append-branches.md!}` - This macro explains how to specify a list
+  of branches in the webhook URL to filter notifications in our Git-related
+  webhooks. For an example rendering, see the last paragraph of **Step 2**
+  in [the docs for Zulip's GitHub integration][github-integration].
 
 - `{!webhook-url.md!}` - Used internally by `{!generate-integration-url.md!}`
   to generate the webhook URL.

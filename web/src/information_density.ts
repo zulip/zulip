@@ -143,9 +143,31 @@ export function calculate_timestamp_widths(): void {
     $temp_time_div.remove();
 }
 
+function determine_container_query_support(): void {
+    const body = document.querySelector("body");
+    const test_container = document.createElement("div");
+    const test_child = document.createElement("div");
+    test_container.classList.add("container-query-test");
+    test_child.classList.add("container-query-test-child");
+    test_container.append(test_child);
+
+    body?.append(test_container);
+
+    if (test_child?.getClientRects()[0]?.y === 0) {
+        /* Conforming browsers will place the child element
+           at the very top of the viewport. */
+        body?.classList.add("with-container-query-support");
+    } else {
+        body?.classList.add("without-container-query-support");
+    }
+
+    test_container?.remove();
+}
+
 export function initialize(): void {
     set_base_typography_css_variables();
     // We calculate the widths of a candidate set of timestamps,
     // and use the largest to set `--message-box-timestamp-column-width`
     calculate_timestamp_widths();
+    determine_container_query_support();
 }

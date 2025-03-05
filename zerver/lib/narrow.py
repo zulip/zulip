@@ -161,6 +161,10 @@ def is_spectator_compatible(narrow: Iterable[NarrowParameter]) -> bool:
     ]
     for element in narrow:
         operator = element.operator
+        operand = element.operand
+
+        if operator == "is" and operand == "resolved":
+            continue
         if operator not in supported_operators:
             return False
     return True
@@ -302,8 +306,13 @@ class NarrowBuilder:
         self.is_dm_narrow = False
 
     def check_not_both_channel_and_dm_narrow(
-        self, is_dm_narrow: bool = False, is_channel_narrow: bool = False
+        self,
+        maybe_negate: ConditionTransform,
+        is_dm_narrow: bool = False,
+        is_channel_narrow: bool = False,
     ) -> None:
+        if maybe_negate is not_:
+            return
         if is_dm_narrow:
             self.is_dm_narrow = True
         if is_channel_narrow:
@@ -384,13 +393,22 @@ class NarrowBuilder:
         raise BadNarrowOperatorError("unknown 'in' operand " + operand)
 
     def by_is(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        # This operator class does not support is_web_public_query.
+        # Only `resolved` operand of this class supports is_web_public_query.
+        if operand == "resolved":
+            cond = get_resolved_topic_condition_sa()
+            return query.where(maybe_negate(cond))
+
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
         if operand in ["dm", "private"]:
             # "is:private" is a legacy alias for "is:dm"
-            self.check_not_both_channel_and_dm_narrow(is_dm_narrow=True)
+            if maybe_negate is not_:
+                self.check_not_both_channel_and_dm_narrow(
+                    maybe_negate=lambda cond: cond, is_channel_narrow=True
+                )
+            else:
+                self.check_not_both_channel_and_dm_narrow(maybe_negate, is_dm_narrow=True)
             cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == "starred":
@@ -410,9 +428,6 @@ class NarrowBuilder:
             return query.where(maybe_negate(cond))
         elif operand == "alerted":
             cond = column("flags", Integer).op("&")(UserMessage.flags.has_alert_word.mask) != 0
-            return query.where(maybe_negate(cond))
-        elif operand == "resolved":
-            cond = get_resolved_topic_condition_sa()
             return query.where(maybe_negate(cond))
         elif operand == "followed":
             cond = get_followed_topic_condition_sa(self.user_profile.id)
@@ -443,7 +458,7 @@ class NarrowBuilder:
     def by_channel(
         self, query: Select, operand: str | int, maybe_negate: ConditionTransform
     ) -> Select:
-        self.check_not_both_channel_and_dm_narrow(is_channel_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
 
         try:
             # Because you can see your own message history for
@@ -488,7 +503,7 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_channels(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        self.check_not_both_channel_and_dm_narrow(is_channel_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
 
         if operand == "public":
             # Get all both subscribed and non-subscribed public channels
@@ -504,7 +519,7 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_topic(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        self.check_not_both_channel_and_dm_narrow(is_channel_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
 
         if self.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
@@ -580,7 +595,7 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        self.check_not_both_channel_and_dm_narrow(is_dm_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_dm_narrow=True)
 
         try:
             if isinstance(operand, str):
@@ -688,7 +703,7 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        self.check_not_both_channel_and_dm_narrow(is_dm_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_dm_narrow=True)
 
         try:
             if isinstance(operand, str):
@@ -741,7 +756,7 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        self.check_not_both_channel_and_dm_narrow(is_dm_narrow=True)
+        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_dm_narrow=True)
 
         try:
             if isinstance(operand, str):
@@ -955,7 +970,7 @@ def update_narrow_terms_containing_with_operator(
 
     if maybe_user_profile.is_authenticated:
         try:
-            message = access_message(maybe_user_profile, message_id)
+            message = access_message(maybe_user_profile, message_id, is_modifying_message=False)
         except JsonableError:
             can_user_access_target_message = False
     else:

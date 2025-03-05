@@ -100,7 +100,7 @@ blocks, which will be used whenever the code block has no tag.
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings**, edit **Default language for code blocks**.
+1. Under **Message feed settings**, edit **Default language for code blocks**.
 
 {end_tabs}
 

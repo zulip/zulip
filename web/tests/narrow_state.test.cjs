@@ -151,6 +151,17 @@ test("terms", () => {
     assert.equal(result.length, 1);
     assert.equal(result[0].operator, "channel");
     assert.equal(result[0].operand, foo_stream_id.toString());
+
+    // `with` terms are excluded from search terms.
+    page_params.narrow = [
+        {operator: "stream", operand: foo_stream_id.toString()},
+        {operator: "topic", operand: "Bar"},
+        {operator: "with", operand: "12"},
+    ];
+    result = narrow_state.search_terms();
+    assert.equal(result.length, 2);
+    assert.equal(result[0].operator, "channel");
+    assert.equal(result[1].operator, "topic");
 });
 
 test("excludes_muted_topics", () => {

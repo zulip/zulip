@@ -13,7 +13,7 @@
                     <div id="add_new_user_group">
                         {{#if can_create_user_groups}}
                         <button class="create_user_group_button create_user_group_plus_button" {{#if (not zulip_plan_is_not_limited)}}disabled{{/if}}>
-                            <span class="create_button_plus_sign">+</span>
+                            <i class="create_button_plus_sign zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
                         </button>
                         {{/if}}
                         <div class="float-clear"></div>
@@ -21,26 +21,17 @@
                 </div>
                 <div class="input-append group_name_search_section" id="group_filter">
                     <input type="text" name="group_name" id="search_group_name" class="filter_text_input" autocomplete="off"
-                      placeholder="{{t 'Filter groups' }}" value=""/>
+                      placeholder="{{t 'Filter' }}" value=""/>
                     <button type="button" class="clear_search_button" id="clear_search_group_name">
                         <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
                     </button>
+                    <span>
+                        <label class="checkbox" id="user-group-edit-filter-options">
+                            {{> ../dropdown_widget widget_name="user_group_visibility_settings"}}
+                        </label>
+                    </span>
                 </div>
                 <div class="no-groups-to-show">
-                    <div class="your_groups_tab_empty_text">
-                        <span class="settings-empty-option-text">
-                            {{t 'You are not a member of any user groups.'}}
-                            <a href="#groups/all">{{t 'View all user groups'}}</a>
-                        </span>
-                    </div>
-                    <div class="all_groups_tab_empty_text">
-                        <span class="settings-empty-option-text">
-                            {{t 'There are no user groups you can view in this organization.'}}
-                            {{#if can_create_user_groups}}
-                                <a href="#groups/new">{{t 'Create a user group'}}</a>
-                            {{/if}}
-                        </span>
-                    </div>
                 </div>
                 <div class="user-groups-list" data-simplebar data-simplebar-tab-index="-1">
                 </div>

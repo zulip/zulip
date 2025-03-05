@@ -93,7 +93,6 @@ const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");
 const unread_ui = mock_esm("../src/unread_ui");
 const user_events = mock_esm("../src/user_events");
-const user_groups = mock_esm("../src/user_groups");
 const user_group_edit = mock_esm("../src/user_group_edit");
 const overlays = mock_esm("../src/overlays");
 mock_esm("../src/giphy");
@@ -142,6 +141,7 @@ const people = zrequire("people");
 const presence = zrequire("presence");
 const user_status = zrequire("user_status");
 const onboarding_steps = zrequire("onboarding_steps");
+const user_groups = zrequire("user_groups");
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 
@@ -224,106 +224,105 @@ run_test("attachments", ({override}) => {
 
 run_test("user groups", ({override}) => {
     let event = event_fixtures.user_group__add;
+    user_groups.add({
+        id: 1,
+        name: "Backend",
+        creator_id: null,
+        date_created: 1596713966,
+        description: "Backend folks",
+        members: [1, 2, 4],
+        is_system_group: false,
+        direct_subgroup_ids: [3, 5],
+        can_add_members_group: 16,
+        can_join_group: 16,
+        can_leave_group: 15,
+        can_manage_group: 16,
+        can_mention_group: 11,
+        can_remove_members_group: 16,
+        deactivated: false,
+    });
+
     {
         const user_group_settings_ui_stub = make_stub();
 
-        let add_called = false;
-        override(user_groups, "add", (arg) => {
-            assert_same(arg, event.group);
-            add_called = true;
-            return event.group;
-        });
         override(overlays, "groups_open", () => true);
         override(user_group_edit, "add_group_to_table", user_group_settings_ui_stub.f);
 
         dispatch(event);
 
-        assert.equal(add_called, true);
         assert.equal(user_group_settings_ui_stub.num_calls, 1);
 
+        const group = user_groups.get_user_group_from_id(event.group.id);
         const args = user_group_settings_ui_stub.get_args("group");
-        assert_same(args.group, event.group);
+        assert_same(args.group, group);
     }
 
     event = event_fixtures.user_group__add_members;
     {
-        const stub = make_stub();
-        override(user_groups, "add_members", stub.f);
         const user_group_edit_stub = make_stub();
         override(user_group_edit, "handle_member_edit_event", user_group_edit_stub.f);
         dispatch(event);
-        assert.equal(stub.num_calls, 1);
         assert.equal(user_group_edit_stub.num_calls, 1);
-        let args = stub.get_args("group_id", "user_ids");
+        const args = user_group_edit_stub.get_args("group_id");
         assert_same(args.group_id, event.group_id);
-        assert_same(args.user_ids, event.user_ids);
-        args = user_group_edit_stub.get_args("group_id");
-        assert_same(args.group_id, event.group_id);
+
+        const group = user_groups.get_user_group_from_id(event.group_id);
+        assert.ok(group.members.has(event.user_ids[0]));
     }
 
     event = event_fixtures.user_group__add_subgroups;
     {
-        const stub = make_stub();
-        override(user_groups, "add_subgroups", stub.f);
         const user_group_edit_stub = make_stub();
         override(user_group_edit, "handle_subgroup_edit_event", user_group_edit_stub.f);
         dispatch(event);
-        assert.equal(stub.num_calls, 1);
         assert.equal(user_group_edit_stub.num_calls, 1);
-        const args = stub.get_args("group_id", "direct_subgroup_ids");
-        assert_same(args.group_id, event.group_id);
-        assert_same(args.direct_subgroup_ids, event.direct_subgroup_ids);
+
+        const group = user_groups.get_user_group_from_id(event.group_id);
+        assert.ok(group.direct_subgroup_ids.has(event.direct_subgroup_ids[0]));
     }
 
     event = event_fixtures.user_group__remove_members;
     {
-        const stub = make_stub();
-        override(user_groups, "remove_members", stub.f);
         const user_group_edit_stub = make_stub();
         override(user_group_edit, "handle_member_edit_event", user_group_edit_stub.f);
         dispatch(event);
-        assert.equal(stub.num_calls, 1);
         assert.equal(user_group_edit_stub.num_calls, 1);
-        let args = stub.get_args("group_id", "user_ids");
+        const args = user_group_edit_stub.get_args("group_id");
         assert_same(args.group_id, event.group_id);
-        assert_same(args.user_ids, event.user_ids);
-        args = user_group_edit_stub.get_args("group_id");
-        assert_same(args.group_id, event.group_id);
+
+        const group = user_groups.get_user_group_from_id(event.group_id);
+        assert.ok(!group.members.has(event.user_ids[0]));
+        assert.ok(!group.members.has(event.user_ids[1]));
     }
 
     event = event_fixtures.user_group__remove_subgroups;
     {
-        const stub = make_stub();
-        override(user_groups, "remove_subgroups", stub.f);
         const user_group_edit_stub = make_stub();
         override(user_group_edit, "handle_subgroup_edit_event", user_group_edit_stub.f);
         dispatch(event);
-        assert.equal(stub.num_calls, 1);
         assert.equal(user_group_edit_stub.num_calls, 1);
-        const args = stub.get_args("group_id", "direct_subgroup_ids");
-        assert_same(args.group_id, event.group_id);
-        assert_same(args.direct_subgroup_ids, event.direct_subgroup_ids);
+
+        const group = user_groups.get_user_group_from_id(event.group_id);
+        assert.ok(!group.direct_subgroup_ids.has(event.direct_subgroup_ids[0]));
     }
 
     event = event_fixtures.user_group__update;
     {
-        const stub = make_stub();
         const user_group_settings_ui_stub = make_stub();
 
-        override(user_groups, "update", stub.f);
         override(user_group_edit, "update_group", user_group_settings_ui_stub.f);
 
         dispatch(event);
-        assert.equal(stub.num_calls, 1);
         assert.equal(user_group_settings_ui_stub.num_calls, 1);
 
-        let args = stub.get_args("event");
-        assert_same(args.event.group_id, event.group_id);
-        assert_same(args.event.data.name, event.data.name);
-        assert_same(args.event.data.description, event.data.description);
-
-        args = user_group_settings_ui_stub.get_args("event");
+        const args = user_group_settings_ui_stub.get_args("event", "group");
         assert_same(args.event, event);
+
+        const group = user_groups.get_user_group_from_id(event.group_id);
+        assert_same(args.group, group);
+
+        assert_same(group.name, event.data.name);
+        assert_same(group.description, event.data.description);
     }
 });
 
@@ -331,7 +330,7 @@ run_test("custom profile fields", ({override}) => {
     const event = event_fixtures.custom_profile_fields;
     override(settings_profile_fields, "populate_profile_fields", noop);
     override(settings_account, "add_custom_profile_fields_to_settings", noop);
-    override(navbar_alerts, "maybe_show_empty_required_profile_fields_alert", noop);
+    override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
     dispatch(event);
     assert_same(realm.custom_profile_fields, event.fields);
 });
@@ -488,8 +487,7 @@ run_test("realm settings", ({override}) => {
     override(sidebar_ui, "update_invite_user_option", noop);
     override(gear_menu, "rerender", noop);
     override(narrow_title, "redraw_title", noop);
-    override(navbar_alerts, "check_profile_incomplete", noop);
-    override(navbar_alerts, "show_profile_incomplete", noop);
+    override(navbar_alerts, "toggle_organization_profile_incomplete_banner", noop);
     override(compose_banner, "clear_errors", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
@@ -512,28 +510,7 @@ run_test("realm settings", ({override}) => {
         assert.equal(realm[parameter_name], true);
     }
 
-    function test_realm_integer(event, parameter_name) {
-        override(realm, parameter_name, 1);
-        event = {...event};
-        event.value = 2;
-        dispatch(event);
-        assert.equal(realm[parameter_name], 2);
-
-        event = {...event};
-        event.value = 3;
-        dispatch(event);
-        assert.equal(realm[parameter_name], 3);
-
-        event = {...event};
-        event.value = 1;
-        dispatch(event);
-        assert.equal(realm[parameter_name], 1);
-    }
-
-    let event = event_fixtures.realm__update__bot_creation_policy;
-    test_realm_integer(event, "realm_bot_creation_policy");
-
-    event = event_fixtures.realm__update__invite_required;
+    let event = event_fixtures.realm__update__invite_required;
     test_realm_boolean(event, "realm_invite_required");
 
     event = event_fixtures.realm__update__want_advertise_in_communities_directory;
@@ -546,6 +523,9 @@ run_test("realm settings", ({override}) => {
         assert_same(val, "new_realm_name");
     });
     assert_same(realm.realm_name, "new_realm_name");
+
+    event = event_fixtures.realm__update__mandatory_topics;
+    test_realm_boolean(event, "realm_mandatory_topics");
 
     event = event_fixtures.realm__update__org_type;
     dispatch(event);
@@ -599,6 +579,7 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_authentication_methods", {Google: {enabled: false, available: true}});
     override(realm, "realm_can_add_custom_emoji_group", 1);
     override(realm, "realm_can_add_subscribers_group", 1);
+    override(realm, "realm_can_create_bots_group", 1);
     override(realm, "realm_can_create_public_channel_group", 1);
     override(realm, "realm_can_invite_users_group", 1);
     override(realm, "realm_can_move_messages_between_topics_group", 1);
@@ -606,7 +587,13 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
     override(realm, "max_file_upload_size_mib", 10);
+    override(realm, "server_supported_permission_settings", {
+        realm: {
+            create_multiuse_invite_group: {},
+        },
+    });
     override(settings_org, "populate_auth_methods", noop);
+    override(user_group_edit, "update_realm_setting_in_permissions_panel", noop);
     dispatch(event);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
     assert_same(realm.realm_allow_message_editing, true);
@@ -616,6 +603,7 @@ run_test("realm settings", ({override}) => {
     });
     assert_same(realm.realm_can_add_custom_emoji_group, 3);
     assert_same(realm.realm_can_add_subscribers_group, 3);
+    assert_same(realm.realm_can_create_bots_group, 3);
     assert_same(realm.realm_can_create_public_channel_group, 3);
     assert_same(realm.realm_can_invite_users_group, 3);
     assert_same(realm.realm_can_move_messages_between_topics_group, 3);
@@ -923,6 +911,66 @@ run_test("stream_typing", ({override}) => {
         assert_same(args.event.message_type, "stream");
         assert_same(args.event.stream_id, stream_typing_in_id);
         assert_same(args.event.topic, topic_typing_in);
+    }
+});
+
+run_test("message_edit_typing", ({override}) => {
+    override(current_user, "user_id", typing_person1.user_id + 1);
+
+    let event = event_fixtures.message_edit_typing__start;
+    {
+        const stub = make_stub();
+        override(typing_events, "display_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender_id, typing_person1.user_id);
+        assert_same(args.event.message_id, event.message_id);
+    }
+
+    event = event_fixtures.message_edit_typing__stop;
+    {
+        const stub = make_stub();
+        override(typing_events, "hide_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender_id, typing_person1.user_id);
+        assert_same(args.event.message_id, event.message_id);
+    }
+
+    // Get line coverage--we ignore our own typing events.
+    override(current_user, "user_id", typing_person1.user_id);
+    event = event_fixtures.message_edit_typing__start;
+    dispatch(event);
+    override(current_user, "user_id", undefined);
+});
+
+run_test("stream_typing_message_edit", ({override}) => {
+    const stream_typing_in_id = events.stream_typing_in_id;
+
+    let event = event_fixtures.channel_typing_edit_message__start;
+    {
+        const stub = make_stub();
+        override(typing_events, "display_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender_id, typing_person1.user_id);
+        assert_same(args.event.recipient.type, "channel");
+        assert_same(args.event.recipient.channel_id, stream_typing_in_id);
+    }
+
+    event = event_fixtures.channel_typing_edit_message__stop;
+    {
+        const stub = make_stub();
+        override(typing_events, "hide_message_edit_notification", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("event");
+        assert_same(args.event.sender_id, typing_person1.user_id);
+        assert_same(args.event.recipient.type, "channel");
+        assert_same(args.event.recipient.channel_id, stream_typing_in_id);
     }
 });
 
@@ -1375,6 +1423,12 @@ run_test("server_event_dispatch_op_errors", () => {
     server_events_dispatch.dispatch_normal_event({
         type: "typing",
         sender: {user_id: 5},
+        op: "other",
+    });
+    blueslip.expect("error", "Unexpected event type typing_edit_message/other");
+    server_events_dispatch.dispatch_normal_event({
+        type: "typing_edit_message",
+        sender_id: 5,
         op: "other",
     });
     blueslip.expect("error", "Unexpected event type user_group/other");

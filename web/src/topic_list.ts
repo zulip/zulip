@@ -8,7 +8,9 @@ import render_topic_list_item from "../templates/topic_list_item.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as popover_menus from "./popover_menus.ts";
+import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as topic_list_data from "./topic_list_data.ts";
@@ -42,6 +44,13 @@ export function clear(): void {
     }
 
     active_widgets.clear();
+}
+
+export function focus_topic_search_filter(): void {
+    popovers.hide_all();
+    sidebar_ui.show_left_sidebar();
+    const $filter = $("#filter-topic-input").expectOne();
+    $filter.trigger("focus");
 }
 
 export function close(): void {
@@ -282,7 +291,7 @@ export function rebuild($stream_li: JQuery, stream_id: number): void {
     active_widgets.set(stream_id, widget);
 }
 
-function scroll_zoomed_in_topic_into_view(): void {
+export function scroll_zoomed_in_topic_into_view(): void {
     const $selected_topic = $(".topic-list .topic-list-item.active-sub-filter");
     if ($selected_topic.length === 0) {
         // If we don't have a selected topic, scroll to top.
@@ -290,7 +299,11 @@ function scroll_zoomed_in_topic_into_view(): void {
         return;
     }
     const $container = $("#left_sidebar_scroll_container");
-    scroll_util.scroll_element_into_container($selected_topic, $container);
+    const stream_header_height =
+        $(".narrow-filter.stream-expanded .bottom_left_row").outerHeight(true) ?? 0;
+    const topic_header_height = $("#topics_header").outerHeight(true) ?? 0;
+    const sticky_header_height = stream_header_height + topic_header_height;
+    scroll_util.scroll_element_into_container($selected_topic, $container, sticky_header_height);
 }
 
 // For zooming, we only do topic-list stuff here...let stream_list

@@ -17,11 +17,15 @@ const compose_validate = zrequire("compose_validate");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const resolved_topic = zrequire("../shared/src/resolved_topic");
-const settings_config = zrequire("settings_config");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("/compose_recipient");
 const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
+
+mock_esm("../src/ui_util", {
+    place_caret_at_end: noop,
+});
 
 mock_esm("../src/group_permission_settings", {
     get_group_permission_setting_config: () => ({
@@ -33,6 +37,8 @@ const realm = {};
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
+const user_settings = {default_language: "en"};
+initialize_user_settings({user_settings});
 
 const me = {
     email: "me@example.com",
@@ -54,6 +60,20 @@ const bob = {
     is_admin: true,
 };
 
+const guest = {
+    email: "guest@example.com",
+    user_id: 33,
+    full_name: "Guest",
+    is_guest: true,
+};
+
+const moderator = {
+    email: "moderator@example.com",
+    user_id: 34,
+    full_name: "Charlie",
+    is_moderator: true,
+};
+
 const social_sub = {
     stream_id: 101,
     name: "social",
@@ -66,6 +86,7 @@ people.initialize_current_user(me.user_id);
 
 people.add_active_user(alice);
 people.add_active_user(bob);
+people.add_active_user(guest);
 
 const welcome_bot = {
     email: "welcome-bot@example.com",
@@ -87,9 +108,9 @@ const nobody = {
 const everyone = {
     name: "role:everyone",
     id: 2,
-    members: new Set([30]),
+    members: new Set([30, 33]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([3]),
+    direct_subgroup_ids: new Set([5]),
 };
 const admin = {
     name: "role:administrators",
@@ -98,8 +119,22 @@ const admin = {
     is_system_group: true,
     direct_subgroup_ids: new Set([]),
 };
+const moderators = {
+    name: "role:moderators",
+    id: 4,
+    members: new Set([34]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([3]),
+};
+const members = {
+    name: "role:members",
+    id: 5,
+    members: new Set([31]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set([4]),
+};
 
-user_groups.initialize({realm_user_groups: [nobody, everyone, admin]});
+user_groups.initialize({realm_user_groups: [nobody, everyone, admin, moderators, members]});
 function test_ui(label, f) {
     run_test(label, (helpers) => {
         $("textarea#compose-textarea").val("some message");
@@ -116,6 +151,30 @@ function stub_message_row($textarea) {
     };
 }
 
+function initialize_pm_pill(mock_template) {
+    $.clear_all_elements();
+
+    $("#compose-send-button").prop("disabled", false);
+    $("#compose-send-button").trigger("focus");
+    $("#compose-send-button .loader").hide();
+
+    const $pm_pill_container = $.create("fake-pm-pill-container");
+    $("#private_message_recipient")[0] = {};
+    $("#private_message_recipient").set_parent($pm_pill_container);
+    $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
+    $("#private_message_recipient").before = noop;
+
+    compose_pm_pill.initialize({
+        on_pill_create_or_remove: compose_recipient.update_compose_area_placeholder_text,
+    });
+
+    $("#zephyr-mirror-error").is = noop;
+
+    mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
+
+    mock_banners();
+}
+
 test_ui("validate_stream_message_address_info", ({mock_template}) => {
     // For this test we basically only use FakeComposeBox
     // to set up the DOM environment. We don't assert about
@@ -127,6 +186,8 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
         stream_id: 101,
         name: "party",
         subscribed: true,
+        can_add_subscribers_group: nobody.id,
+        can_subscribe_group: nobody.id,
     };
     stream_data.add_sub(party_sub);
     assert.ok(compose_validate.validate_stream_message_address_info(party_sub));
@@ -153,30 +214,6 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
 });
 
 test_ui("validate", ({mock_template, override}) => {
-    function initialize_pm_pill() {
-        $.clear_all_elements();
-
-        $("#compose-send-button").prop("disabled", false);
-        $("#compose-send-button").trigger("focus");
-        $("#compose-send-button .loader").hide();
-
-        const $pm_pill_container = $.create("fake-pm-pill-container");
-        $("#private_message_recipient")[0] = {};
-        $("#private_message_recipient").set_parent($pm_pill_container);
-        $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
-        $("#private_message_recipient").before = noop;
-
-        compose_pm_pill.initialize({
-            on_pill_create_or_remove: compose_recipient.update_placeholder_text,
-        });
-
-        $("#zephyr-mirror-error").is = noop;
-
-        mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
-
-        mock_banners();
-    }
-
     function add_content_to_compose_box() {
         $("textarea#compose-textarea").val("foobarfoobar");
     }
@@ -184,7 +221,7 @@ test_ui("validate", ({mock_template, override}) => {
     // test validating direct messages
     compose_state.set_message_type("private");
 
-    initialize_pm_pill();
+    initialize_pm_pill(mock_template);
     add_content_to_compose_box();
     compose_state.private_message_recipient("");
     let pm_recipient_error_rendered = false;
@@ -192,10 +229,7 @@ test_ui("validate", ({mock_template, override}) => {
     override(realm, "realm_direct_message_initiator_group", everyone.id);
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_private_message_recipient);
-        assert.equal(
-            data.banner_text,
-            $t({defaultMessage: "Please specify at least one valid recipient."}),
-        );
+        assert.equal(data.banner_text, compose_validate.NO_PRIVATE_RECIPIENT_ERROR_MESSAGE);
         pm_recipient_error_rendered = true;
         return "<banner-stub>";
     });
@@ -238,7 +272,7 @@ test_ui("validate", ({mock_template, override}) => {
     assert.ok(compose_validate.validate());
     override(realm, "realm_is_zephyr_mirror_realm", false);
 
-    initialize_pm_pill();
+    initialize_pm_pill(mock_template);
     add_content_to_compose_box();
     compose_state.private_message_recipient("welcome-bot@example.com");
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
@@ -258,7 +292,7 @@ test_ui("validate", ({mock_template, override}) => {
         }
         return "<banner-stub>";
     });
-    initialize_pm_pill();
+    initialize_pm_pill(mock_template);
     compose_state.private_message_recipient("welcome-bot@example.com");
     $("textarea#compose-textarea").toggleClass = (classname, value) => {
         assert.equal(classname, "invalid");
@@ -281,7 +315,7 @@ test_ui("validate", ({mock_template, override}) => {
     assert.ok(zephyr_checked);
     assert.ok(zephyr_error_rendered);
 
-    initialize_pm_pill();
+    initialize_pm_pill(mock_template);
     add_content_to_compose_box();
 
     // test validating stream messages
@@ -290,7 +324,7 @@ test_ui("validate", ({mock_template, override}) => {
     let empty_stream_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_stream);
-        assert.equal(data.banner_text, $t({defaultMessage: "Please specify a channel."}));
+        assert.equal(data.banner_text, compose_validate.NO_CHANNEL_SELECTED_ERROR_MESSAGE);
         empty_stream_error_rendered = true;
         return "<banner-stub>";
     });
@@ -309,10 +343,7 @@ test_ui("validate", ({mock_template, override}) => {
     let missing_topic_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.topic_missing);
-        assert.equal(
-            data.banner_text,
-            $t({defaultMessage: "Topics are required in this organization."}),
-        );
+        assert.equal(data.banner_text, compose_validate.TOPICS_REQUIRED_ERROR_MESSAGE);
         missing_topic_error_rendered = true;
         return "<banner-stub>";
     });
@@ -347,82 +378,34 @@ test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) =>
     // policy matters.
     override_rewire(peer_data, "get_subscriber_count", () => 16);
 
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.by_everyone.code,
-    );
-    override(current_user, "is_guest", true);
-    override(current_user, "is_admin", false);
+    override(realm, "realm_can_mention_many_users_group", everyone.id);
+    override(current_user, "user_id", guest.user_id);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.nobody.code,
-    );
-    override(current_user, "is_admin", true);
+    override(realm, "realm_can_mention_many_users_group", nobody.id);
+    override(current_user, "user_id", bob.user_id);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.by_members.code,
-    );
-    override(current_user, "is_guest", true);
-    override(current_user, "is_admin", false);
+    override(realm, "realm_can_mention_many_users_group", members.id);
+    override(current_user, "user_id", guest.user_id);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
-    override(current_user, "is_guest", false);
+    override(current_user, "user_id", alice.user_id);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.by_moderators_only.code,
-    );
-    override(current_user, "is_moderator", false);
+    override(realm, "realm_can_mention_many_users_group", moderators.id);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
-    override(current_user, "is_moderator", true);
+    override(current_user, "user_id", moderator.user_id);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.by_admins_only.code,
-    );
-    override(current_user, "is_admin", false);
+    override(realm, "realm_can_mention_many_users_group", admin.id);
+    override(current_user, "user_id", moderator.user_id);
     assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 
     // TODO: Add a by_admins_only case when we implement stream-level administrators.
 
-    override(current_user, "is_admin", true);
-    assert.ok(compose_validate.stream_wildcard_mention_allowed());
-
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.by_full_members.code,
-    );
-    const person = people.get_by_user_id(current_user.user_id);
-    person.date_joined = new Date(Date.now());
-    override(realm, "realm_waiting_period_threshold", 10);
-
-    assert.ok(compose_validate.stream_wildcard_mention_allowed());
-    override(current_user, "is_admin", false);
-    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
-
-    // Now, check for small streams (<=15 subscribers) where the wildcard mention
-    // policy doesn't matter; everyone is allowed to use wildcard mentions.
-    override_rewire(peer_data, "get_subscriber_count", () => 14);
-    override(
-        realm,
-        "realm_wildcard_mention_policy",
-        settings_config.wildcard_mention_policy_values.by_admins_only.code,
-    );
-    override(current_user, "is_admin", false);
-    override(current_user, "is_guest", true);
+    override(current_user, "user_id", bob.user_id);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 });
 
@@ -460,7 +443,7 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
         return "<banner-stub>";
     });
 
-    override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => true);
+    override(realm, "realm_can_mention_many_users_group", everyone.id);
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
@@ -473,7 +456,7 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
         wildcards_not_allowed_rendered = true;
         return "<banner-stub>";
     });
-    override_rewire(compose_validate, "wildcard_mention_policy_authorizes_user", () => false);
+    override(realm, "realm_can_mention_many_users_group", admin.id);
     assert.ok(!compose_validate.validate());
     assert.ok(wildcards_not_allowed_rendered);
 });
@@ -733,6 +716,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
         name: "random",
         can_add_subscribers_group: admin.id,
         can_administer_channel_group: admin.id,
+        can_subscribe_group: admin.id,
     };
     stream_data.add_sub(sub);
     compose_state.set_stream_id(sub.stream_id);
@@ -841,4 +825,69 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     error_shown = false;
     compose_validate.warn_if_topic_resolved(false);
     assert.ok(!error_shown);
+});
+
+test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template}) => {
+    let is_active = false;
+
+    mock_template("compose_banner/guest_in_dm_recipient_warning.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.guest_in_dm_recipient_warning);
+        assert.equal(
+            data.banner_text,
+            $t({defaultMessage: "Guest is a guest in this organization."}),
+        );
+        is_active = true;
+        return "<banner-stub>";
+    });
+
+    compose_state.set_message_type("private");
+    initialize_pm_pill(mock_template);
+    compose_state.private_message_recipient("guest@example.com");
+    const classname = compose_banner.CLASSNAMES.guest_in_dm_recipient_warning;
+    let $banner = $(`#compose_banners .${CSS.escape(classname)}`);
+
+    // if setting is disabled, remove warning if exists
+    realm.realm_enable_guest_user_dm_warning = false;
+    compose_validate.warn_if_guest_in_dm_recipient();
+    assert.ok(!is_active);
+
+    // to show warning for guest emails, banner should be created
+    realm.realm_enable_guest_user_dm_warning = true;
+    $banner.length = 0;
+    compose_validate.warn_if_guest_in_dm_recipient();
+    assert.ok(is_active);
+    assert.deepEqual(compose_state.get_recipient_guest_ids_for_dm_warning(), [33]);
+
+    // don't show warning for same guests if user closed the banner.
+    is_active = false;
+    compose_validate.warn_if_guest_in_dm_recipient();
+    assert.ok(!is_active);
+
+    // on modifying the guest recipient, update banner if already shown.
+    is_active = true;
+    const new_guest = {
+        email: "new_guest@example.com",
+        user_id: 34,
+        full_name: "New Guest",
+        is_guest: true,
+    };
+    people.add_active_user(new_guest);
+
+    initialize_pm_pill(mock_template);
+    compose_state.private_message_recipient("guest@example.com, new_guest@example.com");
+    $banner = $(`#compose_banners .${CSS.escape(classname)}`);
+    $banner.length = 1;
+    let is_updated = false;
+    $banner.set_find_results(".banner_content", {
+        text(content) {
+            assert.equal(
+                content,
+                $t({defaultMessage: "Guest and New Guest are guests in this organization."}),
+            );
+            is_updated = true;
+        },
+    });
+    compose_validate.warn_if_guest_in_dm_recipient();
+    assert.ok(is_updated);
+    assert.deepEqual(compose_state.get_recipient_guest_ids_for_dm_warning(), [33, 34]);
 });

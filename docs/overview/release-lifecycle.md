@@ -28,27 +28,25 @@ server repository][zulip-server].
 
 ### Stable releases
 
-- Zulip Server **stable releases**, such as Zulip 7.4.
+- Zulip Server **stable releases**, such as Zulip 9.4.
   Organizations self-hosting Zulip primarily use stable releases.
 - The numbering scheme is simple: the first digit indicates the major
-  release series (which we'll refer to as "7.x"). (Before Zulip 3.0,
-  Zulip versions had another digit, e.g., 1.9.2 was a bug fix release
-  in the Zulip 1.9.x major release series).
-- [New major releases][blog-major-releases], like Zulip 7.0, are
-  published every 3-6 months, and contain hundreds of features, bug
-  fixes, and improvements to Zulip's internals.
-- New maintenance releases, like 7.4, are published roughly once a
+  release series (which we'll refer to as "9.x").
+- [New major releases][blog-major-releases], like Zulip 9.0, are
+  published twice a year, and contain hundreds of features, bug fixes,
+  and improvements to Zulip's internals.
+- New maintenance releases, like 9.4, are published roughly once a
   month. Maintenance releases are designed to have no risky changes
   and be easy to reverse, to minimize stress for administrators. When
-  upgrading to a new major release series, We recommend always
+  upgrading to a new major release series, we recommend always
   upgrading to the latest maintenance release in that series, so that
   you use the latest version of the upgrade code.
 - For the dates of past stable releases,
   [see the Zulip blog][blog-releases].
 
-Starting with Zulip 4.0, the Zulip web app displays the current server version
-[in the gear menu](https://zulip.com/help/view-zulip-version). With older
-releases, the server version is available [via the
+The Zulip web app displays the current server version [in the gear
+menu](https://zulip.com/help/view-zulip-version). With older releases,
+the server version is available [via the
 API](https://zulip.com/api/get-server-settings).
 
 This ReadTheDocs documentation has a widget in the lower-left corner
@@ -121,7 +119,7 @@ bug fix release, transparently documenting the issue(s) using the
 industry-standard [CVE advisory process](https://cve.mitre.org/).
 
 When new security releases are published, we simultaneously publish
-the fixes to the `main` and stable release branches (e.g., `4.x`), so
+the fixes to the `main` and stable release branches (e.g., `9.x`), so
 that anyone using those branches can immediately upgrade as well.
 
 See also our [security model][security-model] documentation.
@@ -130,9 +128,9 @@ See also our [security model][security-model] documentation.
 
 ### Upgrade nag
 
-Starting with Zulip 4.0, the Zulip web app will display a banner
-warning users of a server running a Zulip release that is more than 18
-months old. We do this for a few reasons:
+The Zulip web app will display a banner warning users of a server
+running a Zulip release that is more than 18 months old. We do this
+for a few reasons:
 
 - It is unlikely that a server of that age is not vulnerable to
   a security bug in Zulip or one of its dependencies.
@@ -193,8 +191,8 @@ love to hear from you, either in
 GitHub issue. Please an include an explanation of your use case: such details
 can be extremely helpful in designing appropriately general solutions, and also
 helps us identify cases where an existing solution can solve your problem. See
-our guides for [reporting bugs](../contributing/reporting-bugs.md) and [giving
-feedback](../contributing/contributing.md#user-feedback) for more details.
+our guide on [suggesting features and
+improvements](../contributing/suggesting-features.md) for more details.
 
 ## Client apps
 

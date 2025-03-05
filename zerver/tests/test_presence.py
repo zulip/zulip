@@ -8,6 +8,7 @@ from django.db import connection
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.presence import format_legacy_presence_dict, get_presence_dict_by_realm
 from zerver.lib.test_classes import ZulipTestCase
@@ -679,6 +680,31 @@ class UserPresenceTests(ZulipTestCase):
         result_dict = self.assert_json_success(result)
         self.assertEqual(set(result_dict["presences"].keys()), {othello.email})
 
+    def test_query_counts(self) -> None:
+        self.login("hamlet")
+        with self.assert_database_query_count(6):
+            # 1. session
+            # 2. narrow user cache
+            # 3. client
+            # 4. lock the userpresence row
+            # 5. update the userpresence row
+            # 6. select other userpresence data
+            self.assert_json_success(
+                self.client_post("/json/users/me/presence", {"status": "active"})
+            )
+
+        with self.assert_database_query_count(3, keep_cache_warm=True):
+            # With a warm cache, we skip the first three queries
+            self.assert_json_success(
+                self.client_post("/json/users/me/presence", {"status": "active"})
+            )
+
+        with self.assert_database_query_count(3, keep_cache_warm=True):
+            # It's the same story if we're becoming idle, as well
+            self.assert_json_success(
+                self.client_post("/json/users/me/presence", {"status": "idle"})
+            )
+
 
 class SingleUserPresenceTests(ZulipTestCase):
     def test_email_access(self) -> None:
@@ -986,6 +1012,88 @@ class GetRealmStatusesTest(ZulipTestCase):
             set(json["presences"].keys()), {hamlet.email, polonius.email, othello.email}
         )
 
+    def test_do_change_user_setting_presence_enabled(self) -> None:
+        """
+        Tests the logic for backdating user's presence
+        """
+        hamlet = self.example_user("hamlet")
+        UserPresence.objects.filter(user_profile=hamlet).delete()
+        now = timezone_now()
+
+        # If the user has no presence at all, disabling presence_enabled should not change that state.
+        with time_machine.travel(now, tick=False), self.captureOnCommitCallbacks(execute=True):
+            do_change_user_setting(hamlet, "presence_enabled", False, acting_user=hamlet)
+        self.assertFalse(UserPresence.objects.filter(user_profile=hamlet).exists())
+
+        # Enabling presence_enabled creates a new, current presence record.
+        with time_machine.travel(now, tick=False), self.captureOnCommitCallbacks(execute=True):
+            do_change_user_setting(hamlet, "presence_enabled", True, acting_user=hamlet)
+
+        presence = UserPresence.objects.get(user_profile=hamlet)
+        self.assertEqual(presence.last_connected_time, now)
+        self.assertEqual(presence.last_active_time, now)
+
+        # Disabling presence_enabled with a very recent presence record will cause it to get backdated
+        # by some minutes to make the user immediately appear offline.
+        with time_machine.travel(now, tick=False), self.captureOnCommitCallbacks(execute=True):
+            do_change_user_setting(hamlet, "presence_enabled", False, acting_user=hamlet)
+        presence = UserPresence.objects.get(user_profile=hamlet)
+        self.assertEqual(
+            presence.last_connected_time,
+            now
+            - timedelta(
+                seconds=settings.OFFLINE_THRESHOLD_SECS
+                + settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS
+                + 10
+            ),
+        )
+        self.assertEqual(
+            presence.last_active_time,
+            now
+            - timedelta(
+                seconds=settings.OFFLINE_THRESHOLD_SECS
+                + settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS
+                + 10
+            ),
+        )
+
+        # Now we set up a very old presence record.
+        hamlet.presence_enabled = True
+        hamlet.save()
+        presence.last_connected_time = now - timedelta(days=100)
+        presence.last_active_time = now - timedelta(days=100)
+        presence.save()
+
+        # With a very old presence record, disabling presence_enabled should not change that.
+        with time_machine.travel(now, tick=False), self.captureOnCommitCallbacks(execute=True):
+            do_change_user_setting(hamlet, "presence_enabled", False, acting_user=hamlet)
+        presence = UserPresence.objects.get(user_profile=hamlet)
+        self.assertEqual(presence.last_connected_time, now - timedelta(days=100))
+        self.assertEqual(presence.last_active_time, now - timedelta(days=100))
+
+        hamlet.presence_enabled = True
+        hamlet.save()
+        # Now set up the final edge case - a very old last_active_time and a recent last_connected_time.
+        # In this case, last_connected_time should get backdated (to ensure the user appears offline),
+        # without pushing last_active_time forward.
+        presence.last_active_time = now - timedelta(days=100)
+        presence.last_connected_time = now - timedelta(seconds=1)
+        presence.save()
+
+        with time_machine.travel(now, tick=False), self.captureOnCommitCallbacks(execute=True):
+            do_change_user_setting(hamlet, "presence_enabled", False, acting_user=hamlet)
+        presence = UserPresence.objects.get(user_profile=hamlet)
+        self.assertEqual(
+            presence.last_connected_time,
+            now
+            - timedelta(
+                seconds=settings.OFFLINE_THRESHOLD_SECS
+                + settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS
+                + 10
+            ),
+        )
+        self.assertEqual(presence.last_active_time, now - timedelta(days=100))
+
     def test_presence_disabled(self) -> None:
         # Disable presence status and test whether the presence
         # is reported or not.
@@ -1018,7 +1126,7 @@ class GetRealmStatusesTest(ZulipTestCase):
 
         # Othello's presence status is disabled so it won't be reported.
         self.assertEqual(set(json["presences"].keys()), {hamlet.email})
-        # However, UserActivit Interval still gets updated.
+        # However, the UserActivityInterval still gets updated.
         self.assertEqual(UserActivityInterval.objects.filter(user_profile=othello).count(), 1)
 
         result = self.api_post(

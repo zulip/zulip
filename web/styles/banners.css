@@ -15,8 +15,20 @@
     border-radius: 6px;
 }
 
-.banner__link {
-    color: var(--color-text-link-banner);
+.banner-link {
+    color: var(--color-text-link);
+    text-decoration: underline;
+    text-decoration-color: var(--color-text-link-decoration);
+
+    &:hover {
+        color: var(--color-text-link-hover);
+        text-decoration-color: var(--color-text-link-decoration-hover);
+    }
+
+    &:active {
+        color: var(--color-text-link-active);
+        text-decoration-color: currentcolor;
+    }
 }
 
 .banner-label {
@@ -29,7 +41,7 @@
     grid-area: banner-action-buttons;
     display: flex;
     gap: 8px;
-    margin-left: 6px;
+    margin-left: 10px;
 }
 
 .banner-close-button {
@@ -37,6 +49,10 @@
     grid-area: banner-close-button;
     padding: 0.6875em;
     margin-left: 5px;
+
+    &:focus-visible {
+        outline-offset: -2px;
+    }
 }
 
 .navbar-alert-banner {
@@ -55,8 +71,8 @@
     justify-content: center;
 }
 
-@container (width >= 44em) and (width < 63em) {
-    .navbar-alert-banner[data-process="notifications"] {
+@container banner (width >= 44em) and (width < 63em) {
+    .navbar-alert-banner[data-process="desktop-notifications"] {
         grid-template: var(--banner-grid-template-rows-md) / var(
                 --banner-grid-template-columns-md
             );
@@ -65,7 +81,7 @@
     }
 }
 
-@container (width < 44em) {
+@container banner (width < 44em) {
     .banner {
         grid-template: var(--banner-grid-template-rows-md) / var(
                 --banner-grid-template-columns-md
@@ -83,7 +99,7 @@
     }
 }
 
-@container (width < 25em) {
+@container banner (width < 25em) {
     .banner {
         grid-template-areas: var(--banner-grid-template-areas-sm);
     }

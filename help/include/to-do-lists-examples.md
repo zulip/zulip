@@ -9,9 +9,7 @@ Last task
 
 ### What it looks like
 
+Tasks are marked (and unmarked) as completed by clicking the checkboxes
+on the left.
+
 ![Markdown todo-lists](/static/images/help/markdown-todo.png)
-
-!!! tip ""
-
-    Tasks can be marked (and unmarked) as completed by clicking the
-    checkboxes on the left.

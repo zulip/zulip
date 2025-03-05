@@ -162,7 +162,7 @@ function partial_sums(array: number[]): number[] {
 
 // Assumes date is a round number of hours
 function floor_to_local_day(date: Date): Date {
-    const date_copy = new Date(date.getTime());
+    const date_copy = new Date(date);
     date_copy.setHours(0);
     return date_copy;
 }

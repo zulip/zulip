@@ -148,6 +148,77 @@ def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], byt
 
 class SlackImporter(ZulipTestCase):
     @responses.activate
+    def test_get_slack_api_data_with_pagination(self) -> None:
+        token = "xoxb-valid-token"
+        pagination_limit = 40
+
+        api_users_list = [f"user{i}" for i in range(100)]
+        count = 0
+
+        def paginated_request_callback(
+            request: PreparedRequest,
+        ) -> tuple[int, dict[str, str], bytes]:
+            """
+            A callback that in a very simple way simulates Slack's /users.list API
+            with support for Pagination and some rate-limiting behavior.
+            """
+            assert request.url is not None
+            assert request.url.startswith("https://slack.com/api/users.list")
+            # Otherwise mypy complains about PreparedRequest not having params attribute:
+            assert hasattr(request, "params")
+
+            nonlocal count
+            count += 1
+
+            self.assertEqual(request.params["limit"], str(pagination_limit))
+            cursor = int(request.params.get("cursor", 0))
+            next_cursor = cursor + pagination_limit
+
+            if count % 3 == 0:
+                # Simulate a rate limit hit on every third request.
+                return (
+                    429,
+                    {"retry-after": "30"},
+                    orjson.dumps({"ok": False, "error": "rate_limit_hit"}),
+                )
+
+            result_user_data = api_users_list[cursor:next_cursor]
+
+            if next_cursor >= len(api_users_list):
+                # The fetch is completed.
+                response_metadata = {}
+            else:
+                response_metadata = {"next_cursor": str(next_cursor)}
+            return (
+                200,
+                {},
+                orjson.dumps(
+                    {
+                        "ok": True,
+                        "members": result_user_data,
+                        "response_metadata": response_metadata,
+                    }
+                ),
+            )
+
+        responses.add_callback(
+            responses.GET, "https://slack.com/api/users.list", callback=paginated_request_callback
+        )
+        with (
+            mock.patch("zerver.data_import.slack.time.sleep", return_value=None) as mock_sleep,
+            self.assertLogs(level="INFO") as mock_log,
+        ):
+            result = get_slack_api_data(
+                "https://slack.com/api/users.list",
+                "members",
+                token=token,
+                pagination_limit=pagination_limit,
+            )
+        self.assertEqual(result, api_users_list)
+        self.assertEqual(mock_sleep.call_count, 1)
+        self.assertIn("INFO:root:Rate limit exceeded. Retrying in 30 seconds...", mock_log.output)
+
+    @responses.activate
     def test_get_slack_api_data(self) -> None:
         token = "xoxb-valid-token"
 
@@ -210,9 +281,10 @@ class SlackImporter(ZulipTestCase):
         token = "xoxb-status404"
         wrong_url = "https://slack.com/api/wrong"
         responses.add_callback(responses.GET, wrong_url, callback=request_callback)
-        with self.assertRaises(Exception) as invalid:
+        with self.assertRaises(Exception) as invalid, self.assertLogs(level="INFO") as mock_log:
             get_slack_api_data(wrong_url, "members", token=token)
         self.assertEqual(invalid.exception.args, ("HTTP error accessing the Slack API.",))
+        self.assertEqual(mock_log.output, ["INFO:root:HTTP error: 404, Response: "])
 
     def test_build_zerver_realm(self) -> None:
         realm_id = 2
@@ -1026,7 +1098,13 @@ class SlackImporter(ZulipTestCase):
         user_data = [
             {"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
             {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},
-            {"id": "U061A1R2R", "name": "jon", "deleted": False, "real_name": "Jon"},
+            {
+                "id": "U061A1R2R",
+                "name": "jon",
+                "deleted": False,
+                "real_name": "Jon",
+                "profile": {"email": "jon@example.com"},
+            },
         ]
 
         slack_user_id_to_zulip_user_id = {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
@@ -1121,6 +1199,24 @@ class SlackImporter(ZulipTestCase):
                 "ts": "1553607595.000700",
                 "pm_name": "DJ47BL849",
             },
+            {
+                "text": "Look!",
+                "user": "U061A1R2R",
+                "ts": "1553607596.000700",
+                "has_image": True,
+                "channel_name": "random",
+                "files": [
+                    {
+                        "url_private": "https://files.slack.com/apple.png",
+                        "title": "Apple",
+                        "name": "apple.png",
+                        "mimetype": "image/png",
+                        "timestamp": 9999,
+                        "created": 8888,
+                        "size": 3000000,
+                    }
+                ],
+            },
         ]
 
         slack_recipient_name_to_zulip_recipient_id = {
@@ -1164,10 +1260,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 9)
-
-        self.assertEqual(uploads, [])
-        self.assertEqual(attachment, [])
+        self.assert_length(zerver_message, 10)
 
         # Test reactions
         self.assertEqual(reaction[0]["user_profile"], 24)
@@ -1221,6 +1314,19 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[6]["sender"], 24)
         self.assertEqual(zerver_message[7]["sender"], 43)
         self.assertEqual(zerver_message[8]["sender"], 5)
+
+        # Test uploads
+        self.assert_length(uploads, 1)
+        self.assertEqual(uploads[0]["path"], "https://files.slack.com/apple.png")
+        self.assert_length(attachment, 1)
+        self.assertEqual(attachment[0]["file_name"], "apple.png")
+        self.assertEqual(attachment[0]["is_realm_public"], True)
+        self.assertEqual(attachment[0]["is_web_public"], False)
+        self.assertEqual(attachment[0]["content_type"], "image/png")
+
+        self.assertEqual(zerver_message[9]["has_image"], True)
+        self.assertEqual(zerver_message[9]["has_attachment"], True)
+        self.assertTrue(zerver_message[9]["content"].startswith("Look!\n[Apple](/user_uploads/"))
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_threads(

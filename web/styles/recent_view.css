@@ -54,14 +54,24 @@
             box-shadow: 0 3px 0 var(--color-outline-focus);
         }
 
-        &.change_visibility_policy.visibility-policy-popover-visible {
-            .zulip-icon-inherit {
+        &.change_visibility_policy.topic-popover-visible {
+            .visibility-status-icon {
                 opacity: 0.4;
             }
         }
 
-        &.change_visibility_policy .zulip-icon-inherit {
+        &.change_visibility_policy .visibility-status-icon:hover::before {
+            /* Show vertical ellipsis when user hovers over visibility indicator icon. */
+            content: "\f155";
+        }
+
+        &.change_visibility_policy .recent-view-row-topic-menu {
             opacity: 0;
+            cursor: pointer;
+
+            &:not(.visibility-status-icon) {
+                display: none;
+            }
 
             &:focus {
                 opacity: 0.2;
@@ -79,7 +89,7 @@
     }
 
     .white-space-preserve-wrap {
-        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 
     .empty-table-message {
@@ -348,7 +358,7 @@
         &:hover {
             background-color: var(--color-background-recent-view-row-hover);
 
-            .change_visibility_policy .zulip-icon-inherit {
+            .change_visibility_policy .recent-view-row-topic-menu {
                 opacity: 0.4;
             }
         }
@@ -458,7 +468,7 @@
         }
 
         & a {
-            word-break: break-word;
+            overflow-wrap: anywhere;
             hyphens: auto;
         }
     }
@@ -501,7 +511,7 @@
 
         .recent_topic_actions {
             margin-right: 5px;
-            font-size: 15px;
+            font-size: 1.0714em; /* 15px at 14px / em */
         }
     }
 
@@ -520,7 +530,7 @@
             width: 14px;
             height: 14px;
 
-            .zulip-icon.zulip-icon-triple-users,
+            .zulip-icon.conversation-partners-icon,
             .zulip-icon.zulip-icon-bot {
                 opacity: 0.6;
             }

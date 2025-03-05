@@ -40,6 +40,7 @@ export function open_user_status_modal(): void {
         html_body: rendered_set_status_overlay,
         html_submit_button: $t_html({defaultMessage: "Save"}),
         id: "set-user-status-modal",
+        loading_spinner: true,
         on_click: submit_new_status,
         post_render: user_status_post_render,
         on_shown() {

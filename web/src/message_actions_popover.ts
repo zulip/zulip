@@ -1,9 +1,9 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_message_actions_popover from "../templates/popovers/message_actions_popover.hbs";
 
+import * as clipboard_handler from "./clipboard_handler.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as condense from "./condense.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
@@ -228,14 +228,17 @@ export function initialize(): void {
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
-            new ClipboardJS(the($popper.find(".copy_link"))).on("success", () => {
-                show_copied_confirmation(the($(instance.reference).closest(".message_controls")));
-                setTimeout(() => {
-                    // The Clipboard library works by focusing to a hidden textarea.
-                    // We unfocus this so keyboard shortcuts, etc., will work again.
-                    $(":focus").trigger("blur");
-                }, 0);
-                popover_menus.hide_current_popover_if_visible(instance);
+            $popper.on("click", ".copy_link", (e) => {
+                assert(e.currentTarget instanceof HTMLElement);
+                clipboard_handler.popover_copy_link_to_clipboard(
+                    instance,
+                    $(e.currentTarget),
+                    () => {
+                        show_copied_confirmation(
+                            the($(instance.reference).closest(".message_controls")),
+                        );
+                    },
+                );
             });
         },
         onHidden(instance) {

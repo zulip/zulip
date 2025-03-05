@@ -173,7 +173,15 @@ export function current_scroll_offset(): number | undefined {
     return current_state?.narrow_offset;
 }
 
-export function update_current_history_state_data(new_data: StateData): void {
+export function update_current_history_state_data(
+    new_data: StateData,
+    url: string | undefined = undefined,
+): void {
+    // The optional url parameter is for those rare situations where
+    // we want to adjust the URL without adding a new history entry.
+    if (url === undefined) {
+        url = window.location.href;
+    }
     const current_state = state_data_schema.nullable().parse(window.history.state);
     const current_state_data = {
         narrow_pointer: current_state?.narrow_pointer,
@@ -181,7 +189,7 @@ export function update_current_history_state_data(new_data: StateData): void {
         show_more_topics: current_state?.show_more_topics,
     };
     const state_data = {...current_state_data, ...new_data};
-    window.history.replaceState(state_data, "", window.location.href);
+    window.history.replaceState(state_data, "", url);
 }
 
 export function get_current_state_show_more_topics(): boolean | undefined {

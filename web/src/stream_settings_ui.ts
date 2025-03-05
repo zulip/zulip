@@ -39,6 +39,7 @@ import * as stream_edit_toggler from "./stream_edit_toggler.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
+import * as stream_settings_containers from "./stream_settings_containers.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamPermissionGroupSetting} from "./stream_types.ts";
 import * as stream_ui_updates from "./stream_ui_updates.ts";
@@ -135,7 +136,7 @@ export function update_stream_name(sub: StreamSubscription, new_name: string): v
     }
 
     // Update navbar if needed
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 
     // Update the create stream error if needed
     if (overlays.streams_open()) {
@@ -160,7 +161,7 @@ export function update_stream_description(
     stream_edit.update_stream_description(sub);
 
     // Update navbar if needed
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 }
 
 export function update_stream_privacy(
@@ -192,10 +193,12 @@ export function update_stream_privacy(
     const active_data = stream_settings_components.get_active_data();
     if (active_data.id === sub.stream_id) {
         stream_settings_components.set_right_panel_title(sub);
+        const $edit_container = stream_settings_containers.get_edit_container(sub);
+        stream_ui_updates.update_can_subscribe_group_label($edit_container);
     }
 
     // Update navbar if needed
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 }
 
 export function update_message_retention_setting(
@@ -228,7 +231,16 @@ export function update_is_default_stream(): void {
 export function update_subscribers_ui(sub: StreamSubscription): void {
     update_left_panel_row(sub);
     stream_edit_subscribers.update_subscribers_list(sub);
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
+}
+
+export function update_subscription_elements(sub: StreamSubscription): void {
+    if (!overlays.streams_open()) {
+        return;
+    }
+
+    update_left_panel_row(sub);
+    stream_ui_updates.update_settings_button_for_sub(sub);
 }
 
 export function add_sub_to_table(sub: StreamSubscription): void {
@@ -280,6 +292,12 @@ export function add_sub_to_table(sub: StreamSubscription): void {
             $("#stream_settings .stream-creation-confirmation-banner").html(
                 render_stream_creation_confirmation_banner(context),
             );
+            // We don't want to reset the created stream in case the
+            // the current user is subscribed to the created stream
+            // We use the name in stream_create to do some actions on
+            // receiving a subscribe event, and we need the stream name
+            // in stream create for that.
+            stream_create.reset_created_stream();
         }
         stream_create.reset_current_user_subscribed_to_created_stream();
     }
@@ -728,6 +746,7 @@ function setup_page(callback: () => void): void {
                 realm.realm_org_type === settings_config.all_org_type_values.business.code,
             disable_message_retention_setting:
                 !realm.zulip_plan_is_not_limited || !current_user.is_owner,
+            group_setting_labels: settings_config.all_group_setting_labels.stream,
         };
 
         const rendered = render_stream_settings_overlay(template_data);

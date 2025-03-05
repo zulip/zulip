@@ -48,12 +48,8 @@ Does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
         if not settings.RATE_LIMIT_TOR_TOGETHER:
             return
 
-        certificates = os.environ.get("CUSTOM_CA_CERTIFICATES")
         session = TorDataSession(max_retries=options["max_retries"])
-        response = session.get(
-            "https://check.torproject.org/exit-addresses",
-            verify=certificates,
-        )
+        response = session.get("https://check.torproject.org/exit-addresses")
         response.raise_for_status()
 
         # Format:

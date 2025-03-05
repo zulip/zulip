@@ -96,6 +96,13 @@ if args.skip_restart:
 if not args.skip_puppet and args.less_graceful:
     logging.warning("Ignored --less-graceful; all upgrades without --skip-puppet are ungraceful.")
 
+if args.only_django:
+    logging.error(
+        "Only restarting Django into a new deployment leads to inconsistent caches "
+        "with Tornado; use --skip-client-reloads instead."
+    )
+    sys.exit(1)
+
 deploy_path = args.deploy_path
 os.chdir(deploy_path)
 
@@ -382,8 +389,11 @@ else:
     # shutting down the server; we should strive to minimize the number of
     # steps that happen between here and the "Restarting Zulip" line
     # below.
+    hooks_args = []
+    if args.from_git:
+        hooks_args = ["--from-git"]
 
-    subprocess.check_call(["./scripts/lib/run_hooks.py", "pre-deploy"])
+    subprocess.check_call(["./scripts/lib/run_hooks.py", "pre-deploy", *hooks_args])
 
     if rabbitmq_dist_listen:
         shutdown_server()
@@ -443,7 +453,7 @@ else:
 
     logging.info("Upgrade complete!")
 
-    subprocess.check_call(["./scripts/lib/run_hooks.py", "post-deploy"])
+    subprocess.check_call(["./scripts/lib/run_hooks.py", "post-deploy", *hooks_args])
 
     if not args.skip_client_reloads and not args.only_django:
         subprocess.check_call(["./scripts/reload-clients"], preexec_fn=su_to_zulip)

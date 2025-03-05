@@ -10,6 +10,7 @@ import argparse
 import glob
 import os
 import pwd
+import re
 import shutil
 import subprocess
 import sys
@@ -33,7 +34,7 @@ from scripts.lib.zulip_tools import (
 from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
 from version import PROVISION_VERSION
 
-VENV_PATH = "/srv/zulip-py3-venv"
+VENV_PATH = os.path.join(ZULIP_PATH, ".venv")
 UUID_VAR_PATH = get_dev_uuid_var_path()
 
 with get_tzdata_zi() as f:
@@ -117,24 +118,41 @@ def is_vagrant_or_digitalocean_instance() -> bool:
 
 def setup_shell_profile(shell_profile: str) -> None:
     shell_profile_path = os.path.expanduser(shell_profile)
+    if os.path.exists(shell_profile_path):
+        with open(shell_profile_path) as f:
+            code = f.read()
+    else:
+        code = ""
 
-    def write_command(command: str) -> None:
-        if os.path.exists(shell_profile_path):
-            with open(shell_profile_path) as shell_profile_file:
-                lines = [line.strip() for line in shell_profile_file]
-            if command not in lines:
-                with open(shell_profile_path, "a+") as shell_profile_file:
-                    shell_profile_file.writelines(command + "\n")
-        else:
-            with open(shell_profile_path, "w") as shell_profile_file:
-                shell_profile_file.writelines(command + "\n")
-
-    source_activate_command = "source " + os.path.join(VENV_PATH, "bin", "activate")
     # We want to activate the virtual environment for login shells only on virtualized systems.
+    zulip_code = ""
     if is_vagrant_or_digitalocean_instance() or is_wsl_instance():
-        write_command(source_activate_command)
+        zulip_code += (
+            "if [ -L /srv/zulip-py3-venv ]; then\n"  # For development environment downgrades
+            "source /srv/zulip-py3-venv/bin/activate\n"  # Not indented so old versions recognize and avoid re-adding this
+            "else\n"
+            f"source {os.path.join(VENV_PATH, 'bin', 'activate')}\n"
+            "fi\n"
+        )
     if os.path.exists("/srv/zulip"):
-        write_command("cd /srv/zulip")
+        zulip_code += "cd /srv/zulip\n"
+    if zulip_code:
+        zulip_code = f"\n# begin Zulip setup\n{zulip_code}# end Zulip setup\n"
+
+    def patch_code(code: str) -> str:
+        return re.sub(
+            r"\n# begin Zulip setup\n(?s:.*)# end Zulip setup\n|(?:source /srv/zulip-py3-venv/bin/activate\n|cd /srv/zulip\n)+|\Z",
+            lambda m: zulip_code,
+            code,
+            count=1,
+        )
+
+    new_code = patch_code(code)
+    if new_code != code:
+        assert patch_code(new_code) == new_code
+        with open(f"{shell_profile_path}.new", "w") as f:
+            f.write(new_code)
+        os.rename(f"{shell_profile_path}.new", shell_profile_path)
 
 
 def setup_bash_profile() -> None:

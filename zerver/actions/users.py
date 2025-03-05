@@ -23,17 +23,23 @@ from zerver.lib.cache import bot_dict_fields
 from zerver.lib.create_user import create_user
 from zerver.lib.invites import revoke_invites_generated_by_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
-from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
+from zerver.lib.send_email import (
+    FromAddress,
+    clear_scheduled_emails,
+    maybe_remove_from_suppression_list,
+    send_email,
+)
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.soft_deactivation import queue_soft_reactivation
-from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     get_group_setting_value_dict_for_streams,
     get_streams_for_user,
+    send_stream_deletion_event,
     stream_to_dict,
 )
-from zerver.lib.types import AnonymousSettingGroupDict
+from zerver.lib.subscription_info import bulk_get_subscriber_peer_info
+from zerver.lib.types import UserGroupMembersDict
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
@@ -281,7 +287,7 @@ def send_group_update_event_for_anonymous_group_setting(
     realm = setting_group.realm
     for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
         if getattr(named_group, setting_name + "_id") == setting_group.id:
-            new_setting_value = AnonymousSettingGroupDict(
+            new_setting_value = UserGroupMembersDict(
                 direct_members=group_members_dict[setting_group.id],
                 direct_subgroups=group_subgroups_dict[setting_group.id],
             )
@@ -304,7 +310,7 @@ def send_realm_update_event_for_anonymous_group_setting(
     realm = setting_group.realm
     for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
         if getattr(realm, setting_name + "_id") == setting_group.id:
-            new_setting_value = AnonymousSettingGroupDict(
+            new_setting_value = UserGroupMembersDict(
                 direct_members=group_members_dict[setting_group.id],
                 direct_subgroups=group_subgroups_dict[setting_group.id],
             )
@@ -543,7 +549,7 @@ def send_stream_events_for_role_update(
 ) -> None:
     current_accessible_streams = get_streams_for_user(
         user_profile,
-        include_all_active=user_profile.is_realm_admin,
+        include_all=user_profile.is_realm_admin,
         include_web_public=True,
     )
 
@@ -589,12 +595,7 @@ def send_stream_events_for_role_update(
         now_inaccessible_streams = [
             stream for stream in old_accessible_streams if stream.id in now_inaccessible_stream_ids
         ]
-        event = dict(
-            type="stream",
-            op="delete",
-            streams=[stream_to_dict(stream) for stream in now_inaccessible_streams],
-        )
-        send_event_on_commit(user_profile.realm, event, [user_profile.id])
+        send_stream_deletion_event(user_profile.realm, [user_profile.id], now_inaccessible_streams)
 
 
 @transaction.atomic(savepoint=False)
@@ -620,7 +621,7 @@ def do_change_user_role(
     previously_accessible_streams = get_streams_for_user(
         user_profile,
         include_web_public=True,
-        include_all_active=user_profile.is_realm_admin,
+        include_all=user_profile.is_realm_admin,
     )
 
     user_profile.role = value
@@ -961,6 +962,7 @@ def do_send_password_reset_email(
 
     if user_profile is not None:
         queue_soft_reactivation(user_profile.id)
+        maybe_remove_from_suppression_list(user_profile.delivery_email)
         context["active_account_in_realm"] = True
         context["reset_url"] = generate_password_reset_url(user_profile, token_generator)
         send_email(

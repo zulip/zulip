@@ -58,13 +58,16 @@ export function show_preview_area() {
     $("#compose").addClass("preview_mode");
     $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", -1);
 
-    const $compose_textarea = $("textarea#compose-textarea");
-    const content = $compose_textarea.val();
-
     $("#compose .markdown_preview").hide();
     $("#compose .undo_markdown_preview").show();
     $("#compose .undo_markdown_preview").trigger("focus");
 
+    render_preview_area();
+}
+
+export function render_preview_area() {
+    const $compose_textarea = $("textarea#compose-textarea");
+    const content = $compose_textarea.val();
     const $preview_message_area = $("#compose .preview_message_area");
     compose_ui.render_and_show_preview(
         $("#compose .markdown_preview_spinner"),
@@ -132,7 +135,9 @@ export function clear_compose_box() {
     compose_banner.clear_uploads();
     compose_ui.hide_compose_spinner();
     scheduled_messages.reset_selected_schedule_timestamp();
-    $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
+    $(".compose_control_button_container:has(.needs-empty-compose)").removeClass(
+        "disabled-on-hover",
+    );
 }
 
 export function send_message_success(request, data) {
@@ -266,10 +271,10 @@ export function rewire_send_message(value) {
     send_message = value;
 }
 
-export function handle_enter_key_with_preview_open(ctrl_pressed = false) {
+export function handle_enter_key_with_preview_open(cmd_or_ctrl_pressed = false) {
     if (
-        (user_settings.enter_sends && !ctrl_pressed) ||
-        (!user_settings.enter_sends && ctrl_pressed)
+        (user_settings.enter_sends && !cmd_or_ctrl_pressed) ||
+        (!user_settings.enter_sends && cmd_or_ctrl_pressed)
     ) {
         // If this enter should send, we attempt to send the message.
         finish();
@@ -368,7 +373,11 @@ function schedule_message_to_custom_date() {
         clear_compose_box();
         const new_row_html = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
+            minimum_scheduled_message_delay_minutes:
+                scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60,
             deliver_at,
+            minimum_scheduled_message_delay_minutes_note:
+                scheduled_messages.show_minimum_scheduled_message_delay_minutes_note,
         });
         compose_banner.clear_message_sent_banners();
         compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
@@ -394,4 +403,8 @@ function schedule_message_to_custom_date() {
         success,
         error,
     });
+}
+
+export function is_topic_input_focused() {
+    return $("#stream_message_recipient_topic").is(":focus");
 }

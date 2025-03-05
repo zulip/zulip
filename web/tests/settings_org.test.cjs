@@ -19,11 +19,12 @@ mock_esm("../src/loading", {
 mock_esm("../src/scroll_util", {scroll_element_into_container: noop});
 set_global("document", "document-stub");
 
-const settings_bots = zrequire("settings_bots");
 const settings_account = zrequire("settings_account");
 const settings_components = zrequire("settings_components");
+const settings_config = zrequire("settings_config");
 const settings_org = zrequire("settings_org");
 const {set_current_user, set_realm} = zrequire("state_data");
+const pygments_data = zrequire("pygments_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const current_user = {};
@@ -100,7 +101,6 @@ function createSaveButtons(subsection) {
 
 function test_submit_settings_form(override, submit_form) {
     Object.assign(realm, {
-        realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
     });
@@ -129,22 +129,7 @@ function test_submit_settings_form(override, submit_form) {
 
     $("#id_realm_waiting_period_threshold").val(10);
 
-    const $bot_creation_policy_elem = $("#id_realm_bot_creation_policy");
-    $bot_creation_policy_elem.val("1");
-    $bot_creation_policy_elem.attr("id", "id_realm_bot_creation_policy");
-    $bot_creation_policy_elem.data = () => "number";
-
     let $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-    $subsection_elem.set_find_results(".prop-element", [$bot_creation_policy_elem]);
-
-    patched = false;
-    submit_form.call({to_$: () => $(".save-discard-widget-button.save-button")}, ev);
-    assert.ok(patched);
-
-    let expected_value = {
-        bot_creation_policy: 1,
-    };
-    assert.deepEqual(data, expected_value);
 
     subsection = "user-defaults";
     stubs = createSaveButtons(subsection);
@@ -155,7 +140,6 @@ function test_submit_settings_form(override, submit_form) {
     const $realm_default_language_elem = $("#id_realm_default_language");
     $realm_default_language_elem.val("en");
     $realm_default_language_elem.attr("id", "id_realm_default_language");
-    $realm_default_language_elem.data = () => "string";
 
     $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
     $subsection_elem.set_find_results(".prop-element", [$realm_default_language_elem]);
@@ -163,7 +147,7 @@ function test_submit_settings_form(override, submit_form) {
     submit_form.call({to_$: () => $(".save-discard-widget-button.save-button")}, ev);
     assert.ok(patched);
 
-    expected_value = {
+    const expected_value = {
         default_language: "en",
     };
     assert.deepEqual(data, expected_value);
@@ -366,12 +350,18 @@ function test_discard_changes_button({override}, discard_changes) {
         stopPropagation: noop,
     };
 
-    override(realm, "realm_allow_edit_history", true);
+    override(
+        realm,
+        "realm_message_edit_history_visibility_policy",
+        settings_config.message_edit_history_visibility_policy_values.always.code,
+    );
     override(realm, "realm_allow_message_editing", true);
     override(realm, "realm_message_content_edit_limit_seconds", 3600);
     override(realm, "realm_message_content_delete_limit_seconds", 120);
 
-    const $allow_edit_history = $("#id_realm_allow_edit_history").prop("checked", false);
+    const $message_edit_history_visibility_policy = $(
+        "#id_realm_message_edit_history_visibility_policy",
+    ).val(settings_config.message_edit_history_visibility_policy_values.never.code);
     const $msg_edit_limit_setting = $("#id_realm_message_content_edit_limit_seconds").val(
         "custom_period",
     );
@@ -385,7 +375,10 @@ function test_discard_changes_button({override}, discard_changes) {
         "#id_realm_message_content_delete_limit_minutes",
     ).val(130);
 
-    $allow_edit_history.attr("id", "id_realm_allow_edit_history");
+    $message_edit_history_visibility_policy.attr(
+        "id",
+        "id_realm_message_edit_history_visibility_policy",
+    );
     $msg_edit_limit_setting.attr("id", "id_realm_message_content_edit_limit_seconds");
     $msg_delete_limit_setting.attr("id", "id_realm_message_content_delete_limit_seconds");
     $message_content_edit_limit_minutes.attr("id", "id_realm_message_content_edit_limit_minutes");
@@ -396,7 +389,7 @@ function test_discard_changes_button({override}, discard_changes) {
 
     const $discard_button_parent = $(".settings-subsection-parent");
     $discard_button_parent.set_find_results(".prop-element", [
-        $allow_edit_history,
+        $message_edit_history_visibility_policy,
         $msg_edit_limit_setting,
         $msg_delete_limit_setting,
     ]);
@@ -411,7 +404,10 @@ function test_discard_changes_button({override}, discard_changes) {
 
     discard_changes.call({to_$: () => $(".save-discard-widget-button.discard-button")}, ev);
 
-    assert.equal($allow_edit_history.prop("checked"), true);
+    assert.equal(
+        $message_edit_history_visibility_policy.val(),
+        settings_config.message_edit_history_visibility_policy_values.always.code,
+    );
     assert.equal($msg_edit_limit_setting.val(), "3600");
     assert.equal($message_content_edit_limit_minutes.val(), "60");
     assert.equal($msg_delete_limit_setting.val(), "120");
@@ -566,12 +562,7 @@ test("set_up", ({override, override_rewire}) => {
     // elements involved in disabling the can_create_groups input.
     override(realm, "zulip_plan_is_not_limited", true);
 
-    override_rewire(settings_components, "get_input_element_value", (elem) => {
-        if ($(elem).data() === "number") {
-            return Number.parseInt($(elem).val(), 10);
-        }
-        return $(elem).val();
-    });
+    override_rewire(settings_components, "get_input_element_value", (elem) => $(elem).val());
 
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
@@ -709,6 +700,36 @@ test("test get_sorted_options_list", () => {
         settings_components.get_sorted_options_list(option_values_2),
         expected_option_values,
     );
+});
+
+test("test combined_code_language_options", ({override}) => {
+    const default_options = Object.keys(pygments_data.langs).map((x) => ({
+        name: x,
+        unique_id: x,
+    }));
+
+    const expected_options_without_realm_playgrounds = [
+        {is_setting_disabled: true, unique_id: "", name: $t({defaultMessage: "No language set"})},
+        ...default_options,
+    ];
+
+    const options_without_realm_playgrounds = settings_org.combined_code_language_options();
+    assert.deepEqual(options_without_realm_playgrounds, expected_options_without_realm_playgrounds);
+
+    override(realm, "realm_playgrounds", [
+        {pygments_language: "custom_lang_1"},
+        {pygments_language: "custom_lang_2"},
+    ]);
+
+    const expected_options_with_realm_playgrounds = [
+        {is_setting_disabled: true, unique_id: "", name: $t({defaultMessage: "No language set"})},
+        {unique_id: "custom_lang_1", name: "custom_lang_1"},
+        {unique_id: "custom_lang_2", name: "custom_lang_2"},
+        ...default_options,
+    ];
+
+    const options_with_realm_playgrounds = settings_org.combined_code_language_options();
+    assert.deepEqual(options_with_realm_playgrounds, expected_options_with_realm_playgrounds);
 });
 
 test("misc", ({override}) => {

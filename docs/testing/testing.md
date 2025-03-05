@@ -70,11 +70,6 @@ Additionally, Zulip also has about a dozen smaller tests suites:
 - `tools/test-api`: Tests that the API documentation at `/api`
   actually works; the actual code for this is defined in
   `zerver/openapi/python_examples.py`.
-- `test-locked-requirements`: Verifies that developers didn't forget
-  to run `tools/update-locked-requirements` after modifying
-  `requirements/*.in`. See
-  [our dependency documentation](../subsystems/dependencies.md) for
-  details on the system this is verifying.
 - `tools/check-capitalization`: Checks whether translated strings (aka
   user-facing strings) correctly follow Zulip's capitalization
   conventions. This requires some maintenance of an exclude list

@@ -7,6 +7,7 @@ import * as people from "./people.ts";
 import * as settings_data from "./settings_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as user_groups from "./user_groups.ts";
@@ -84,6 +85,29 @@ export function by_stream_topic_url(stream_id: number, topic: string): string {
     return internal_url.by_stream_topic_url(stream_id, topic, sub_store.maybe_get_stream_name);
 }
 
+// We use the topic permalinks if we have access to the last message
+// id of the topic in the cache, by encoding it at the end of the
+// traditional channel-topic url using a `with` operator. If client
+// cache doesn't have a message, we use the traditional link format.
+export function by_channel_topic_permalink(stream_id: number, topic: string): string {
+    // From an API perspective, any message ID in the topic is a valid
+    // choice. In the client code, we choose the latest message ID in
+    // the topic, since display in recent conversations, the left
+    // sidebar, and most other elements are placed in a way reflecting
+    // the recency of the latest message in the topic.
+    const target_message_id = stream_topic_history.get_latest_known_message_id_in_topic(
+        stream_id,
+        topic,
+    );
+
+    return internal_url.by_stream_topic_url(
+        stream_id,
+        topic,
+        sub_store.maybe_get_stream_name,
+        target_message_id,
+    );
+}
+
 // Encodes a term list into the
 // corresponding hash: the # component
 // of the narrow URL
@@ -158,6 +182,9 @@ export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
 }
 
 export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
+    // There's a Python copy of this function in `zerver/lib/url_decoding.py`
+    // called `parse_narrow_url`, the two should be kept roughly in sync.
+
     // This will throw an exception when passed an invalid hash
     // at the decodeHashComponent call, handle appropriately.
     let i;
@@ -275,7 +302,7 @@ export function validate_group_settings_hash(hash: string): string {
 
         const group_name = hash_components[2];
         let right_side_tab = hash_components[3];
-        const valid_right_side_tab_values = new Set(["general", "members"]);
+        const valid_right_side_tab_values = new Set(["general", "members", "permissions"]);
         if (
             group.name === group_name &&
             right_side_tab !== undefined &&
@@ -330,6 +357,10 @@ export function decode_stream_topic_from_url(
             return null;
         }
         if (terms.length === 2) {
+            return {stream_id, topic_name: terms[1].operand};
+        }
+        if (terms[2]?.operator === "with") {
+            // For with operators, we currently discard the message ID.
             return {stream_id, topic_name: terms[1].operand};
         }
         if (terms[2]?.operator !== "near") {

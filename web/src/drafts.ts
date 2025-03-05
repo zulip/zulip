@@ -14,6 +14,7 @@ import {localstorage} from "./localstorage.ts";
 import * as markdown from "./markdown.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
+import {realm} from "./state_data.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
@@ -622,8 +623,14 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
             invite_only = sub.invite_only;
             is_web_public = sub.is_web_public;
         }
-        const draft_topic_display_name = util.get_final_topic_display_name(draft.topic);
         const draft_stream_color = stream_data.get_color(draft.stream_id);
+
+        let draft_topic_display_name = draft.topic;
+        let is_empty_string_topic = false;
+        if (draft.topic === "" && !realm.realm_mandatory_topics) {
+            draft_topic_display_name = util.get_final_topic_display_name("");
+            is_empty_string_topic = true;
+        }
 
         return {
             draft_id: draft.id,
@@ -633,7 +640,7 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
             stream_privacy_icon_color:
                 stream_color.get_stream_privacy_icon_color(draft_stream_color),
             topic_display_name: draft_topic_display_name,
-            is_empty_string_topic: draft.topic === "",
+            is_empty_string_topic,
             raw_content: draft.content,
             stream_id: draft.stream_id,
             time_stamp,

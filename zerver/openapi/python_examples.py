@@ -826,12 +826,6 @@ def get_user_groups(client: Client) -> int:
     return leadership_user_group["id"]
 
 
-def test_user_not_authorized_error(nonadmin_client: Client) -> None:
-    result = nonadmin_client.get_streams(include_all_active=True)
-    assert_error_response(result)
-    validate_against_openapi_schema(result, "/rest-error-handling", "post", "400")
-
-
 @openapi_test_function("/streams/{stream_id}/members:get")
 def get_subscribers(client: Client) -> None:
     user_ids = [11, 25]
@@ -1614,6 +1608,37 @@ def set_typing_status(client: Client) -> None:
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
 
+@openapi_test_function("/messages/{message_id}/typing:post")
+def set_message_edit_typing_status(client: Client, message_id: int) -> None:
+    # {code_example|start}
+    # The user has started typing while editing a message.
+    request = {
+        "op": "start",
+    }
+    result = client.call_endpoint(
+        f"/messages/{message_id}/typing",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, f"/messages/{message_id}/typing", "post", "200")
+
+    # {code_example|start}
+    # The user has stopped typing while editing a message.
+    request = {
+        "op": "stop",
+    }
+    result = client.call_endpoint(
+        f"/messages/{message_id}/typing",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/messages/{message_id}/typing", "post", "200")
+
+
 @openapi_test_function("/realm/emoji/{emoji_name}:post")
 def upload_custom_emoji(client: Client) -> None:
     emoji_path = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.jpg")
@@ -1761,6 +1786,7 @@ def test_invalid_stream_error(client: Client) -> None:
 def test_messages(client: Client, nonadmin_client: Client) -> None:
     render_message(client)
     message_id = send_message(client)
+    set_message_edit_typing_status(client, message_id)
     add_reaction(client, message_id)
     remove_reaction(client, message_id)
     update_message(client, message_id)
@@ -1841,7 +1867,6 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     add_default_stream(client)
     remove_default_stream(client)
 
-    test_user_not_authorized_error(nonadmin_client)
     test_authorization_errors_fatal(client, nonadmin_client)
 
 

@@ -35,14 +35,13 @@ from zerver.lib.invites import notify_invites_changed
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import clear_scheduled_invitation_emails
-from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.streams import can_access_stream_history
+from zerver.lib.subscription_info import bulk_get_subscriber_peer_info
 from zerver.lib.user_counts import realm_user_count, realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
     can_access_delivery_email,
     format_user_row,
-    get_api_key,
     get_data_for_inaccessible_user,
     get_user_ids_who_can_access_user,
     user_access_restricted_in_realm,
@@ -77,7 +76,7 @@ MAX_NUM_RECENT_UNREAD_MESSAGES = 20
 def send_message_to_signup_notification_stream(
     sender: UserProfile, realm: Realm, message: str
 ) -> None:
-    signup_announcements_stream = realm.get_signup_announcements_stream()
+    signup_announcements_stream = realm.signup_announcements_stream
     if signup_announcements_stream is None:
         return
 
@@ -478,7 +477,7 @@ def created_bot_event(user_profile: UserProfile) -> dict[str, Any]:
         full_name=user_profile.full_name,
         bot_type=user_profile.bot_type,
         is_active=user_profile.is_active,
-        api_key=get_api_key(user_profile),
+        api_key=user_profile.api_key,
         default_sending_stream=default_sending_stream_name,
         default_events_register_stream=default_events_register_stream_name,
         default_all_public_streams=user_profile.default_all_public_streams,
@@ -658,6 +657,8 @@ def do_activate_mirror_dummy_user(
     parallel code path to do_create_user; e.g. it likely does not
     handle preferences or default streams properly.
     """
+    assert user_profile.is_mirror_dummy
+
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
 
@@ -770,11 +771,6 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
 
             assert acting_user is not None
             send_bot_owner_update_events(user_profile, acting_user, previous_owner)
-
-    if bot_owner_changed:
-        from zerver.actions.bots import remove_bot_from_inaccessible_private_streams
-
-        remove_bot_from_inaccessible_private_streams(user_profile, acting_user=acting_user)
 
     subscribed_recipient_ids = Subscription.objects.filter(
         user_profile_id=user_profile.id, active=True, recipient__type=Recipient.STREAM

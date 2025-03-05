@@ -65,7 +65,12 @@ from zerver.lib.stream_subscription import (
     num_subscribers_for_stream_id,
 )
 from zerver.lib.stream_topic import StreamTopicTarget
-from zerver.lib.streams import access_stream_for_send_message, ensure_stream, subscribed_to_stream
+from zerver.lib.streams import (
+    access_stream_for_send_message,
+    ensure_stream,
+    notify_stream_is_recently_active_update,
+    subscribed_to_stream,
+)
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -102,12 +107,7 @@ from zerver.models.streams import (
     get_stream_by_id_for_sending_message,
     get_stream_by_name_for_sending_message,
 )
-from zerver.models.users import (
-    active_user_ids,
-    get_system_bot,
-    get_user_by_delivery_email,
-    is_cross_realm_bot_email,
-)
+from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -156,6 +156,7 @@ def render_incoming_message(
     mention_data: MentionData | None = None,
     url_embed_data: dict[str, UrlEmbedData | None] | None = None,
     email_gateway: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> MessageRenderingResult:
     realm_alert_words_automaton = get_alert_word_automaton(realm)
     try:
@@ -167,6 +168,7 @@ def render_incoming_message(
             mention_data=mention_data,
             url_embed_data=url_embed_data,
             email_gateway=email_gateway,
+            acting_user=acting_user,
         )
     except MarkdownRenderingError:
         raise JsonableError(_("Unable to render message"))
@@ -443,10 +445,7 @@ def get_recipient_info(
         lambda r: not r["enable_offline_push_notifications"]
     )
 
-    # Service bots don't get UserMessage rows.
-    um_eligible_user_ids = get_ids_for(
-        lambda r: not r["is_bot"] or r["bot_type"] not in UserProfile.SERVICE_BOT_TYPES,
-    )
+    um_eligible_user_ids = get_ids_for(lambda r: True)
 
     long_term_idle_user_ids = get_ids_for(
         lambda r: r["long_term_idle"],
@@ -579,6 +578,7 @@ def build_message_send_dict(
     limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None,
+    acting_user: UserProfile | None = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -623,6 +623,7 @@ def build_message_send_dict(
         realm,
         mention_data=mention_data,
         email_gateway=email_gateway,
+        acting_user=acting_user,
     )
     message.rendered_content = rendering_result.rendered_content
     message.rendered_content_version = markdown_version
@@ -1178,17 +1179,7 @@ def do_send_messages(
             if not send_request.stream.is_recently_active:
                 send_request.stream.is_recently_active = True
                 stream_update_fields.append("is_recently_active")
-                stream_update_event = dict(
-                    type="stream",
-                    op="update",
-                    property="is_recently_active",
-                    value=True,
-                    stream_id=send_request.stream.id,
-                    name=send_request.stream.name,
-                )
-                send_event_on_commit(
-                    send_request.realm, stream_update_event, active_user_ids(send_request.realm.id)
-                )
+                notify_stream_is_recently_active_update(send_request.stream, True)
 
             if len(stream_update_fields) > 0:
                 send_request.stream.save(update_fields=stream_update_fields)
@@ -1465,7 +1456,7 @@ def send_rate_limited_pm_notification_to_bot_owner(
         return
 
     # We warn the user once every 5 minutes to avoid a flood of
-    # direct messages on a misconfigured integration, re-using the
+    # direct messages on a misconfigured integration, reusing the
     # UserProfile.last_reminder field, which is not used for bots.
     last_reminder = sender.last_reminder
     waitperiod = timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
@@ -1710,6 +1701,7 @@ def check_message(
     limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
     archived_channel_notice: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1853,6 +1845,7 @@ def check_message(
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
+        acting_user=acting_user,
     )
 
     if (
@@ -1891,6 +1884,7 @@ def _internal_prep_message(
     forged: bool = False,
     forged_timestamp: float | None = None,
     archived_channel_notice: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> SendMessageRequest | None:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -1923,6 +1917,7 @@ def _internal_prep_message(
             forged=forged,
             forged_timestamp=forged_timestamp,
             archived_channel_notice=archived_channel_notice,
+            acting_user=acting_user,
         )
     except JsonableError as e:
         logging.exception(
@@ -1947,6 +1942,7 @@ def internal_prep_stream_message(
     forged: bool = False,
     forged_timestamp: float | None = None,
     archived_channel_notice: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> SendMessageRequest | None:
     """
     See _internal_prep_message for details of how this works.
@@ -1965,6 +1961,7 @@ def internal_prep_stream_message(
         forged=forged,
         forged_timestamp=forged_timestamp,
         archived_channel_notice=archived_channel_notice,
+        acting_user=acting_user,
     )
 
 
@@ -2044,6 +2041,7 @@ def internal_send_stream_message(
     message_type: int = Message.MessageType.NORMAL,
     limit_unread_user_ids: set[int] | None = None,
     archived_channel_notice: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> int | None:
     message = internal_prep_stream_message(
         sender,
@@ -2054,6 +2052,7 @@ def internal_send_stream_message(
         message_type=message_type,
         limit_unread_user_ids=limit_unread_user_ids,
         archived_channel_notice=archived_channel_notice,
+        acting_user=acting_user,
     )
 
     if message is None:

@@ -10,7 +10,9 @@
                 {{/if}}
             </button>
         </div>
+        {{#unless group.deactivated}}
         <button class="button small rounded button-danger deactivate deactivate-group-button tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Deactivate group'}}" type="button"> <i class="zulip-icon zulip-icon-user-group-x" aria-hidden="true"></i></button>
+        {{/unless}}
     </div>
 </div>
 <div class="user_group_settings_wrapper" data-group-id="{{group.id}}">
@@ -19,7 +21,11 @@
         <div class="group_general_settings group_setting_section" data-group-section="general">
             <div class="group-header">
                 <div class="group-name-wrapper">
-                    <span class="group-name" title="{{group_name}}">{{group_name}}</span>
+                    <span class="group-name" title="{{group.name}}">{{group.name}}
+                        {{#if group.deactivated}}
+                            <i class="fa fa-ban deactivated-user-icon"></i>
+                        {{/if}}
+                    </span>
                 </div>
                 <div class="group_change_property_info alert-notification"></div>
                 <div class="button-group">
@@ -43,7 +49,7 @@
                     {{> ../settings/settings_save_discard_widget section_name="group-permissions" }}
                 </div>
 
-                {{> group_permissions prefix="id_"}}
+                {{> group_permissions prefix="id_" group_setting_labels=all_group_setting_labels.group}}
             </div>
 
             <div class="group_detail_box">
@@ -65,6 +71,15 @@
         <div class="group_member_settings group_setting_section" data-group-section="members">
             <div class="edit_members_for_user_group">
                 {{> user_group_members .}}
+            </div>
+        </div>
+
+        <div class="group_setting_section" data-group-section="permissions">
+            <div class="group-assigned-permissions">
+                <span class="no-permissions-for-group-text {{#unless group_has_no_permissions}}hide{{/unless}}">
+                    {{t 'This group has no assigned permissions.'}}
+                </span>
+                {{> group_permission_settings .}}
             </div>
         </div>
     </div>

@@ -16,8 +16,8 @@ other [video call integration options](https://zulip.com/help/start-a-call) on a
 self-hosted Zulip server.
 
 :::{note}
-It is possible to disable the video and voice call buttons for your
-organization by [setting the call
+You can disable the video and voice call buttons for your organization by
+[setting the call
 provider](https://zulip.com/help/start-a-call#change-your-organizations-call-provider)
 to "None".
 :::
@@ -32,35 +32,95 @@ No server configuration changes are required.
 
 ## Zoom
 
-To use the [Zoom](https://zoom.us) integration on a self-hosted
-installation, you'll need to register a custom Zoom app as follows:
+To use a [Zoom](https://zoom.us) integration on a self-hosted
+installation, you'll need to register a custom Zoom application for
+your Zulip server. Zulip supports two types of custom Zoom apps:
+
+- [Server to Server OAuth app](#server-to-server-oauth-app): Easiest to set up,
+  but requires users to be part of the Zoom organization that created the
+  application in order to create calls.
+
+- [General OAuth app](#general-oauth-app): Recommended for settings where the
+  limitations of the Server to Server OAuth app are problematic (e.g., this is
+  used by Zulip Cloud).
+
+### Server to Server OAuth app
+
+This Zoom application type, introduced in Zulip 10.0, is easiest to
+set up, and is ideal for most installations that self-host Zulip. To
+[create Zoom meeting links in Zulip
+messages](https://zulip.com/help/start-a-call#start-a-call) using this
+integration, users will will need to be members of your Zoom
+organization and use the same email address in Zulip that they have
+registered with Zoom.
+
+You can set up this integration as follows:
 
 1. Select [**Build App**](https://marketplace.zoom.us/develop/create)
-   at the Zoom Marketplace.
+   at the Zoom Marketplace. Create a **Server to Server OAuth App**.
 
-1. Create an app with the **OAuth** type.
+1. Choose an app name such as "ExampleCorp Zulip".
+
+1. In the **Information** tab:
+
+   - Add a short description and company name.
+   - Add a name and email for the developer contact information.
+
+1. In the **Scopes** tab, add the `meeting:write:meeting:admin` and
+   `meeting:write:meeting:master` scopes.
+
+1. In the **Activation** tab, activate your app. You can now
+   [configure your Zulip server](#configure-your-zulip-server)
+   to use the app.
+
+### General OAuth app
+
+This Zoom application type is more flexible than the server-to-server
+integration. However, current Zoom policy requires all General OAuth
+apps to go through the full Zoom Marketplace review process, even for
+[unlisted
+apps](https://developers.zoom.us/docs/platform/key-concepts/#private-vs-beta-vs-published-vs-unlisted-apps)
+that will only be used by a single customer. As a result, you have to
+do quite a bit of publishing overhead work in order to create this
+type of Zoom application for your Zulip server.
+
+1. Select [**Build App**](https://marketplace.zoom.us/develop/create)
+   at the Zoom Marketplace. Create a **General App**.
+
+1. In the **Basic Information** tab:
 
    - Choose an app name such as "ExampleCorp Zulip".
    - Select **User-managed app**.
-   - Disable the option to publish the app on the Marketplace.
-   - Click **Create**.
-
-1. Inside the Zoom app management page:
-
-   - On the **App Credentials** tab, set both the **Redirect URL for
-     OAuth** and the **Whitelist URL** to
-     `https://zulip.example.com/calls/zoom/complete` (replacing
+   - In the **OAuth Information** section, set the **OAuth Redirect URL**
+     to `https://zulip.example.com/calls/zoom/complete` (replacing
      `zulip.example.com` by your main Zulip hostname).
-   - On the **Scopes** tab, add the `meeting:write` scope.
 
-You can then configure your Zulip server to use that Zoom app as
-follows:
+1. In the **Scopes** tab, add the `meeting:write:meeting` scope.
+
+1. Switch to the **Production** tab and complete the information needed
+   for the [Zoom App Marketplace Review
+   Process](https://developers.zoom.us/docs/distribute/app-review-process/)
+   in the **App Listing** and **Technical Design** tabs.
+
+1. [Submit your app for
+   review](https://developers.zoom.us/docs/build-flow/submitting-apps-for-review/).
+   Select the **Publish the app by myself** option on the **App Submission**
+   page so that the app will be
+   [unlisted](https://developers.zoom.us/docs/build-flow/publishing-your-apps/#unlisted-apps).
+
+1. Once your app has been approved by the Zoom app review team, then
+   you can proceed to [configure your Zulip server](#configure-your-zulip-server)
+   to use the app.
+
+### Configure your Zulip server
 
 1. In `/etc/zulip/zulip-secrets.conf`, set `video_zoom_client_secret`
    to be your app's "Client Secret".
 
 1. In `/etc/zulip/settings.py`, set `VIDEO_ZOOM_CLIENT_ID` to your
-   app's "Client ID".
+   app's "Client ID". If your using a Zoom
+   [Server to Server OAuth app](#server-to-server-oauth-app),
+   set `VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID` to be your app's "Account ID".
 
 1. Restart the Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.

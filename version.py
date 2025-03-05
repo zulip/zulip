@@ -1,6 +1,6 @@
 import os
 
-ZULIP_VERSION = "10.0-dev+git"
+ZULIP_VERSION = "10.0-beta1+git"
 
 # Add information on number of commits and commit hash to version, if available
 zulip_git_version_file = os.path.join(
@@ -34,7 +34,7 @@ DESKTOP_WARNING_VERSION = "5.9.3"
 # new level means in api_docs/changelog.md, as well as "**Changes**"
 # entries in the endpoint's documentation in `zulip.yaml`.
 
-API_FEATURE_LEVEL = 342  # Last bumped for adding stream.can_add_subscribers_group
+API_FEATURE_LEVEL = 361
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 342  # Last bumped for adding stream.can_add_subscribers_gro
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (310, 0)  # bumped 2024-01-13 to upgrade Python requirements
+PROVISION_VERSION = (319, 0)  # bumped 2025-02-26 to upgrade JavaScript dependencies

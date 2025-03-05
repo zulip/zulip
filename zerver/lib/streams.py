@@ -1,4 +1,6 @@
-from collections.abc import Collection
+from collections import defaultdict
+from collections.abc import Collection, Iterable
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import TypedDict
 
@@ -14,7 +16,6 @@ from zerver.lib.exceptions import (
     JsonableError,
     OrganizationOwnerRequiredError,
 )
-from zerver.lib.markdown import markdown_convert
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_subscribed_stream_ids_for_user,
@@ -22,11 +23,12 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import AnonymousSettingGroupDict, APIStreamDict
+from zerver.lib.types import APIStreamDict, UserGroupMembersDict
 from zerver.lib.user_groups import (
-    get_group_setting_value_for_api,
+    UserGroupMembershipDetails,
     get_recursive_membership_groups,
     get_role_based_system_groups_dict,
+    get_root_id_annotated_recursive_subgroups_for_groups,
     user_has_permission_for_group_setting,
 )
 from zerver.models import (
@@ -83,6 +85,7 @@ class StreamDict(TypedDict, total=False):
     can_administer_channel_group: UserGroup | None
     can_send_message_group: UserGroup | None
     can_remove_subscribers_group: UserGroup | None
+    can_subscribe_group: UserGroup | None
 
 
 def get_stream_permission_policy_name(
@@ -127,8 +130,14 @@ def get_default_value_for_history_public_to_subscribers(
     return history_public_to_subscribers
 
 
-def render_stream_description(text: str, realm: Realm) -> str:
-    return markdown_convert(text, message_realm=realm, no_previews=True).rendered_content
+def render_stream_description(
+    text: str, realm: Realm, *, acting_user: UserProfile | None = None
+) -> str:
+    from zerver.lib.markdown import markdown_convert
+
+    return markdown_convert(
+        text, message_realm=realm, no_previews=True, acting_user=acting_user
+    ).rendered_content
 
 
 def send_stream_creation_event(
@@ -136,7 +145,7 @@ def send_stream_creation_event(
     stream: Stream,
     user_ids: list[int],
     recent_traffic: dict[int, int] | None = None,
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
 ) -> None:
     event = dict(
         type="stream",
@@ -178,6 +187,65 @@ def get_default_values_for_stream_permission_group_settings(
     return group_setting_values
 
 
+def get_users_dict_with_metadata_access_to_streams_via_permission_groups(
+    streams: list[Stream],
+    realm_id: int,
+) -> dict[int, set[int]]:
+    can_administer_group_ids = {stream.can_administer_channel_group_id for stream in streams}
+    can_add_subscriber_group_ids = {stream.can_add_subscribers_group_id for stream in streams}
+    can_subscribe_group_ids = {stream.can_subscribe_group_id for stream in streams}
+
+    all_permission_group_ids = list(
+        can_administer_group_ids | can_add_subscriber_group_ids | can_subscribe_group_ids
+    )
+
+    recursive_subgroups = get_root_id_annotated_recursive_subgroups_for_groups(
+        all_permission_group_ids, realm_id
+    )
+    subgroup_root_id_dict = {}
+    all_subgroup_ids = set()
+    for group in recursive_subgroups:
+        subgroup_root_id_dict[group.id] = group.root_id  # type: ignore[attr-defined]  # root_id is an annotated field.
+        all_subgroup_ids.add(group.id)
+
+    group_members = (
+        UserGroupMembership.objects.filter(
+            user_group_id__in=list(all_subgroup_ids), user_profile__is_active=True
+        )
+        .exclude(
+            # allow_everyone_group=False is false for both
+            # can_add_subscribers_group and
+            # can_administer_channel_group, so guest users cannot
+            # exercise these permission to get metadata access.
+            user_profile__role=UserProfile.ROLE_GUEST
+        )
+        .values_list("user_group_id", "user_profile_id")
+    )
+    group_members_dict = defaultdict(set)
+    for user_group_id, user_profile_id in group_members:
+        root_id = subgroup_root_id_dict[user_group_id]
+        group_members_dict[root_id].add(user_profile_id)
+
+    users_with_metadata_access_dict = defaultdict(set)
+    for stream in streams:
+        users_with_metadata_access_dict[stream.id] = (
+            group_members_dict[stream.can_administer_channel_group_id]
+            | group_members_dict[stream.can_add_subscribers_group_id]
+            | group_members_dict[stream.can_subscribe_group_id]
+        )
+
+    return users_with_metadata_access_dict
+
+
+def get_user_ids_with_metadata_access_via_permission_groups(stream: Stream) -> set[int]:
+    users_with_metadata_access_dict = (
+        get_users_dict_with_metadata_access_to_streams_via_permission_groups(
+            [stream], stream.realm_id
+        )
+    )
+    return users_with_metadata_access_dict[stream.id]
+
+
 @transaction.atomic(savepoint=False)
 def create_stream_if_needed(
     realm: Realm,
@@ -192,8 +260,9 @@ def create_stream_if_needed(
     can_administer_channel_group: UserGroup | None = None,
     can_send_message_group: UserGroup | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
+    can_subscribe_group: UserGroup | None = None,
     acting_user: UserProfile | None = None,
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
@@ -239,7 +308,9 @@ def create_stream_if_needed(
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
 
         stream.recipient = recipient
-        stream.rendered_description = render_stream_description(stream_description, realm)
+        stream.rendered_description = render_stream_description(
+            stream_description, realm, acting_user=acting_user
+        )
         stream.save(update_fields=["recipient", "rendered_description"])
 
         event_time = timezone_now()
@@ -258,14 +329,23 @@ def create_stream_if_needed(
             if stream.is_web_public:
                 notify_user_ids = active_user_ids(stream.realm_id)
             else:
+                # TODO: This should include guests with metadata
+                # access to the channel, once that is possible via
+                # can_join_group.
                 notify_user_ids = active_non_guest_user_ids(stream.realm_id)
             send_stream_creation_event(
                 realm, stream, notify_user_ids, setting_groups_dict=setting_groups_dict
             )
         else:
-            realm_admin_ids = [user.id for user in stream.realm.get_admin_users_and_bots()]
+            realm_admin_ids = {user.id for user in stream.realm.get_admin_users_and_bots()}
             send_stream_creation_event(
-                realm, stream, realm_admin_ids, setting_groups_dict=setting_groups_dict
+                realm,
+                stream,
+                list(
+                    realm_admin_ids
+                    | get_user_ids_with_metadata_access_via_permission_groups(stream)
+                ),
+                setting_groups_dict=setting_groups_dict,
             )
 
     return stream, created
@@ -275,7 +355,7 @@ def create_streams_if_needed(
     realm: Realm,
     stream_dicts: list[StreamDict],
     acting_user: UserProfile | None = None,
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
@@ -295,6 +375,7 @@ def create_streams_if_needed(
             can_administer_channel_group=stream_dict.get("can_administer_channel_group", None),
             can_send_message_group=stream_dict.get("can_send_message_group", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
+            can_subscribe_group=stream_dict.get("can_subscribe_group", None),
             acting_user=acting_user,
             setting_groups_dict=setting_groups_dict,
         )
@@ -314,6 +395,58 @@ def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
         recipient__type=Recipient.STREAM,
         recipient__type_id=stream_id,
     ).exists()
+
+
+def is_user_in_can_administer_channel_group(
+    stream: Stream, user_recursive_group_ids: set[int]
+) -> bool:
+    # Important: The caller must have verified the acting user is not
+    # a guest, to enforce that can_administer_channel_group has
+    # allow_everyone_group=False.
+    group_allowed_to_administer_channel_id = stream.can_administer_channel_group_id
+    assert group_allowed_to_administer_channel_id is not None
+    return group_allowed_to_administer_channel_id in user_recursive_group_ids
+
+
+def is_user_in_can_add_subscribers_group(
+    stream: Stream, user_recursive_group_ids: set[int]
+) -> bool:
+    # Important: The caller must have verified the acting user is not
+    # a guest, to enforce that can_add_subscribers_group has
+    # allow_everyone_group=False.
+    group_allowed_to_add_subscribers_id = stream.can_add_subscribers_group_id
+    assert group_allowed_to_add_subscribers_id is not None
+    return group_allowed_to_add_subscribers_id in user_recursive_group_ids
+
+
+def is_user_in_can_subscribe_group(stream: Stream, user_recursive_group_ids: set[int]) -> bool:
+    # Important: The caller must have verified the acting user
+    # is not a guest, to enforce that can_subscribe_group has
+    # allow_everyone_group=False.
+    group_allowed_to_subscribe_id = stream.can_subscribe_group_id
+    return group_allowed_to_subscribe_id in user_recursive_group_ids
+
+
+def is_user_in_groups_granting_content_access(
+    stream: Stream, user_recursive_group_ids: set[int]
+) -> bool:
+    # Important: The caller must have verified the acting user is not
+    # a guest, to enforce that can_add_subscribers_group has
+    # allow_everyone_group=False.
+    return is_user_in_can_subscribe_group(
+        stream, user_recursive_group_ids
+    ) or is_user_in_can_add_subscribers_group(stream, user_recursive_group_ids)
+
+
+def is_user_in_can_remove_subscribers_group(
+    stream: Stream, user_recursive_group_ids: set[int]
+) -> bool:
+    # Important: The caller must have verified the acting user is not
+    # a guest, to enforce that can_remove_subscribers_group has
+    # allow_everyone_group=False.
+    group_allowed_to_remove_subscribers_id = stream.can_remove_subscribers_group_id
+    assert group_allowed_to_remove_subscribers_id is not None
+    return group_allowed_to_remove_subscribers_id in user_recursive_group_ids
 
 
 def check_stream_access_based_on_can_send_message_group(
@@ -405,6 +538,17 @@ def access_stream_for_send_message(
         # Bots can send to any stream their owner can.
         return
 
+    user_recursive_group_ids = set(
+        get_recursive_membership_groups(sender).values_list("id", flat=True)
+    )
+
+    if (
+        stream.history_public_to_subscribers
+        and is_user_in_groups_granting_content_access(stream, user_recursive_group_ids)
+        and not sender.is_guest
+    ):
+        return
+
     # All other cases are an error.
     raise JsonableError(
         _("Not authorized to send to channel '{channel_name}'").format(channel_name=stream.name)
@@ -422,7 +566,85 @@ def check_for_exactly_one_stream_arg(stream_id: int | None, stream: str | None) 
         raise IncompatibleParametersError(["stream_id", "stream"])
 
 
-def check_stream_access_for_delete_or_update(
+def user_has_metadata_access(
+    user_profile: UserProfile,
+    stream: Stream,
+    user_group_membership_details: UserGroupMembershipDetails,
+    *,
+    is_subscribed: bool,
+) -> bool:
+    if stream.is_web_public:
+        return True
+
+    if is_subscribed:
+        return True
+
+    if user_profile.is_guest:
+        return False
+
+    if stream.is_public():
+        return True
+
+    if user_profile.is_realm_admin:
+        return True
+
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
+
+    if has_metadata_access_to_channel_via_groups(
+        user_profile,
+        user_group_membership_details.user_recursive_group_ids,
+        stream.can_administer_channel_group_id,
+        stream.can_add_subscribers_group_id,
+        stream.can_subscribe_group_id,
+    ):
+        return True
+
+    return False
+
+
+def user_has_content_access(
+    user_profile: UserProfile,
+    stream: Stream,
+    user_group_membership_details: UserGroupMembershipDetails,
+    *,
+    is_subscribed: bool,
+    exclude_zephyr_realms_from_public_check: bool = False,
+) -> bool:
+    if stream.is_web_public:
+        return True
+
+    if is_subscribed:
+        return True
+
+    if user_profile.is_guest:
+        return False
+
+    if exclude_zephyr_realms_from_public_check and not stream.invite_only:
+        return True
+
+    if stream.is_public():
+        return True
+
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
+
+    # This check must be after the user_profile.is_guest check, since
+    # allow_everyone_group=False for can_add_subscribers_group and
+    # can_subscribe_group.
+    if is_user_in_groups_granting_content_access(
+        stream, user_group_membership_details.user_recursive_group_ids
+    ):
+        return True
+
+    return False
+
+
+def check_stream_access_for_delete_or_update_requiring_metadata_access(
     user_profile: UserProfile, stream: Stream, sub: Subscription | None = None
 ) -> None:
     error = _("Invalid channel ID")
@@ -436,16 +658,25 @@ def check_stream_access_for_delete_or_update(
     if user_profile.is_realm_admin:
         return
 
-    if sub is None and stream.invite_only:
-        raise JsonableError(error)
-
-    if can_administer_channel(stream, user_profile):
+    if can_administer_accessible_channel(stream, user_profile):
         return
 
-    raise CannotAdministerChannelError
+    # We only want to reveal that user is not an administrator
+    # if the user has access to the channel in the first place.
+    # Ideally, we would be checking if user has metadata access
+    # to the channel for this block, but since we have ruled out
+    # the possibility that the user is a channel admin, checking
+    # for content access will save us valuable DB queries.
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    if user_has_content_access(
+        user_profile, stream, user_group_membership_details, is_subscribed=sub is not None
+    ):
+        raise CannotAdministerChannelError
+
+    raise JsonableError(error)
 
 
-def access_stream_for_delete_or_update(
+def access_stream_for_delete_or_update_requiring_metadata_access(
     user_profile: UserProfile, stream_id: int
 ) -> tuple[Stream, Subscription | None]:
     try:
@@ -460,46 +691,82 @@ def access_stream_for_delete_or_update(
     except Subscription.DoesNotExist:
         sub = None
 
-    check_stream_access_for_delete_or_update(user_profile, stream, sub)
+    check_stream_access_for_delete_or_update_requiring_metadata_access(user_profile, stream, sub)
     return (stream, sub)
+
+
+def has_metadata_access_to_channel_via_groups(
+    user_profile: UserProfile,
+    user_recursive_group_ids: set[int],
+    can_administer_channel_group_id: int,
+    can_add_subscribers_group_id: int,
+    can_subscribe_group_id: int,
+) -> bool:
+    for setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
+        permission_configuration = Stream.stream_permission_group_settings[setting_name]
+        if not permission_configuration.allow_everyone_group and user_profile.is_guest:
+            return False
+
+    # It's best to just check the variables directly here since it
+    # becomes complicated to create an automated loop for both settings
+    # and values because of https://github.com/python/mypy/issues/5382.
+    return (
+        can_administer_channel_group_id in user_recursive_group_ids
+        or can_add_subscribers_group_id in user_recursive_group_ids
+        or can_subscribe_group_id in user_recursive_group_ids
+    )
 
 
 def check_basic_stream_access(
     user_profile: UserProfile,
     stream: Stream,
-    sub: Subscription | None,
-    allow_realm_admin: bool = False,
+    *,
+    is_subscribed: bool,
+    require_content_access: bool = True,
 ) -> bool:
-    # Any realm user, even guests, can access web_public streams.
-    if stream.is_web_public:
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    if user_has_content_access(
+        user_profile, stream, user_group_membership_details, is_subscribed=is_subscribed
+    ):
         return True
 
-    # If the stream is in your realm and public, you can access it.
-    if stream.is_public() and not user_profile.is_guest:
-        return True
+    if not require_content_access:
+        if user_profile.is_realm_admin:
+            return True
 
-    # Or if you are subscribed to the stream, you can access it.
-    if sub is not None:
-        return True
-
-    # For some specific callers (e.g. getting list of subscribers,
-    # removing other users from a stream, and updating stream name and
-    # description), we allow realm admins to access stream even if
-    # they are not subscribed to a private stream.
-    if user_profile.is_realm_admin and allow_realm_admin:
-        return True
+        # This will not get fired in practice since we will only arrive
+        # at this if block if `user_has_content_access` returns False.
+        # In every case that `user_has_content_access` returns False,
+        # we already would have calculated `user_recursive_group_ids`.
+        # It is still good to keep this around in case there are
+        # changes in that function.
+        if user_group_membership_details.user_recursive_group_ids is None:  # nocoverage
+            user_group_membership_details.user_recursive_group_ids = set(  # nocoverage
+                get_recursive_membership_groups(user_profile).values_list(
+                    "id", flat=True
+                )  # nocoverage
+            )  # nocoverage
+        if has_metadata_access_to_channel_via_groups(
+            user_profile,
+            user_group_membership_details.user_recursive_group_ids,
+            stream.can_administer_channel_group_id,
+            stream.can_add_subscribers_group_id,
+            stream.can_subscribe_group_id,
+        ):
+            return True
 
     return False
 
 
-# Only set allow_realm_admin flag to True when you want to allow realm admin to
-# access unsubscribed private stream content.
+# Only set require_content_access flag to False when you want
+# to allow users with metadata access to access unsubscribed private
+# stream content.
 def access_stream_common(
     user_profile: UserProfile,
     stream: Stream,
     error: str,
     require_active: bool = True,
-    allow_realm_admin: bool = False,
+    require_content_access: bool = True,
 ) -> Subscription | None:
     """Common function for backend code where the target use attempts to
     access the target stream, returning all the data fetched along the
@@ -521,7 +788,10 @@ def access_stream_common(
         sub = None
 
     if not stream.deactivated and check_basic_stream_access(
-        user_profile, stream, sub, allow_realm_admin=allow_realm_admin
+        user_profile,
+        stream,
+        is_subscribed=sub is not None,
+        require_content_access=require_content_access,
     ):
         return sub
 
@@ -534,7 +804,7 @@ def access_stream_by_id(
     user_profile: UserProfile,
     stream_id: int,
     require_active: bool = True,
-    allow_realm_admin: bool = False,
+    require_content_access: bool = True,
 ) -> tuple[Stream, Subscription | None]:
     error = _("Invalid channel ID")
     try:
@@ -547,7 +817,7 @@ def access_stream_by_id(
         stream,
         error,
         require_active=require_active,
-        allow_realm_admin=allow_realm_admin,
+        require_content_access=require_content_access,
     )
     return (stream, sub)
 
@@ -556,7 +826,7 @@ def access_stream_by_id_for_message(
     user_profile: UserProfile,
     stream_id: int,
     require_active: bool = True,
-    allow_realm_admin: bool = False,
+    require_content_access: bool = True,
 ) -> tuple[Stream, Subscription | None]:
     """
     Variant of access_stream_by_id that uses get_stream_by_id_for_sending_message
@@ -573,7 +843,7 @@ def access_stream_by_id_for_message(
         stream,
         error,
         require_active=require_active,
-        allow_realm_admin=allow_realm_admin,
+        require_content_access=require_content_access,
     )
     return (stream, sub)
 
@@ -604,13 +874,13 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
     check_stream_name(name)
     try:
         get_stream(name, realm)
-        raise JsonableError(_("Channel name already in use."))
+        raise JsonableError(_("Channel name is already in use."))
     except Stream.DoesNotExist:
         pass
 
 
 def access_stream_by_name(
-    user_profile: UserProfile, stream_name: str, allow_realm_admin: bool = False
+    user_profile: UserProfile, stream_name: str, require_content_access: bool = True
 ) -> tuple[Stream, Subscription | None]:
     error = _("Invalid channel name '{channel_name}'").format(channel_name=stream_name)
     try:
@@ -622,7 +892,7 @@ def access_stream_by_name(
         user_profile,
         stream,
         error,
-        allow_realm_admin=allow_realm_admin,
+        require_content_access=require_content_access,
     )
     return (stream, sub)
 
@@ -689,7 +959,7 @@ def public_stream_user_ids(stream: Stream) -> set[int]:
     return set(active_non_guest_user_ids(stream.realm_id)) | guest_subscriptions_ids
 
 
-def can_access_stream_user_ids(stream: Stream) -> set[int]:
+def can_access_stream_metadata_user_ids(stream: Stream) -> set[int]:
     # return user ids of users who can access the attributes of a
     # stream, such as its name/description.  Useful for sending events
     # to all users with access to a stream's attributes.
@@ -698,10 +968,14 @@ def can_access_stream_user_ids(stream: Stream) -> set[int]:
         # except unsubscribed guest users
         return public_stream_user_ids(stream)
     else:
-        # for a private stream, it's subscribers plus realm admins.
-        return private_stream_user_ids(stream.id) | {
-            user.id for user in stream.realm.get_admin_users_and_bots()
-        }
+        # for a private stream, it's subscribers plus channel admins
+        # and users belonging to `can_add_subscribers_group` or
+        # `can_subscribe_group`.
+        return (
+            private_stream_user_ids(stream.id)
+            | {user.id for user in stream.realm.get_admin_users_and_bots()}
+            | get_user_ids_with_metadata_access_via_permission_groups(stream)
+        )
 
 
 def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool:
@@ -757,26 +1031,55 @@ def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -
     return can_access_stream_history(user_profile, stream)
 
 
-def can_remove_subscribers_from_stream(
-    stream: Stream, user_profile: UserProfile, sub: Subscription | None
+def bulk_can_remove_subscribers_from_streams(
+    streams: list[Stream], user_profile: UserProfile
 ) -> bool:
-    if not check_basic_stream_access(user_profile, stream, sub, allow_realm_admin=True):
-        return False
-
     # Optimization for the organization administrator code path. We
     # don't explicitly grant realm admins this permission, but admins
     # implicitly have the can_administer_channel_group permission for
-    # all accessible channels.
+    # all accessible channels. For channels that the administrator
+    # cannot access, they can do limited administration including
+    # removing subscribers.
     if user_profile.is_realm_admin:
         return True
 
-    group_allowed_to_remove_subscribers = stream.can_remove_subscribers_group
-    assert group_allowed_to_remove_subscribers is not None
-    return user_has_permission_for_group_setting(
-        group_allowed_to_remove_subscribers,
-        user_profile,
-        Stream.stream_permission_group_settings["can_remove_subscribers_group"],
+    if user_profile.is_guest:
+        # All the permissions in this function have allow_everyone_group=False
+        return False  # nocoverage
+
+    user_recursive_group_ids = set(
+        get_recursive_membership_groups(user_profile).values_list("id", flat=True)
     )
+
+    # We check this before basic access since for the channels the user
+    # cannot access, they can unsubscribe other users if they have
+    # permission to administer that channel.
+    permission_failure_streams: set[int] = set()
+    for stream in streams:
+        if not is_user_in_can_administer_channel_group(stream, user_recursive_group_ids):
+            permission_failure_streams.add(stream.id)
+
+    if not bool(permission_failure_streams):
+        return True
+
+    existing_recipient_ids = [stream.recipient_id for stream in streams]
+    sub_recipient_ids = Subscription.objects.filter(
+        user_profile=user_profile, recipient_id__in=existing_recipient_ids, active=True
+    ).values_list("recipient_id", flat=True)
+
+    for stream in streams:
+        assert stream.recipient_id is not None
+        is_subscribed = stream.recipient_id in sub_recipient_ids
+        if not check_basic_stream_access(
+            user_profile, stream, is_subscribed=is_subscribed, require_content_access=False
+        ):
+            return False
+
+    for stream in streams:
+        if not is_user_in_can_remove_subscribers_group(stream, user_recursive_group_ids):
+            return False
+
+    return True
 
 
 def get_streams_to_which_user_cannot_add_subscribers(
@@ -784,13 +1087,14 @@ def get_streams_to_which_user_cannot_add_subscribers(
     user_profile: UserProfile,
     *,
     allow_default_streams: bool = False,
+    user_group_membership_details: UserGroupMembershipDetails,
 ) -> list[Stream]:
     # IMPORTANT: This function expects its callers to have already
     # checked that the user can access the provided channels, and thus
     # does not waste database queries re-checking that.
     result: list[Stream] = []
 
-    if user_profile.can_subscribe_others_to_all_streams():
+    if user_profile.can_subscribe_others_to_all_accessible_streams():
         return []
 
     # Optimization for the organization administrator code path. We
@@ -800,13 +1104,19 @@ def get_streams_to_which_user_cannot_add_subscribers(
     if user_profile.is_realm_admin:
         return []
 
-    user_recursive_group_ids = set(
-        get_recursive_membership_groups(user_profile).values_list("id", flat=True)
-    )
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
     if allow_default_streams:
         default_stream_ids = get_default_stream_ids_for_realm(user_profile.realm_id)
 
     for stream in streams:
+        # All the permissions in this function have allow_everyone_group=False
+        if user_profile.is_guest:  # nocoverage
+            result.append(stream)
+            continue
+
         # We only allow this exception for the invite code path and not
         # for other code paths, since a user should be able to add the
         # invited users to default channels regardless of their permission
@@ -814,21 +1124,22 @@ def get_streams_to_which_user_cannot_add_subscribers(
         if allow_default_streams and stream.id in default_stream_ids:
             continue
 
-        group_allowed_to_administer_channel_id = stream.can_administer_channel_group_id
-        assert group_allowed_to_administer_channel_id is not None
-        if group_allowed_to_administer_channel_id in user_recursive_group_ids:
+        if is_user_in_can_administer_channel_group(
+            stream, user_group_membership_details.user_recursive_group_ids
+        ):
             continue
 
-        group_allowed_to_add_subscribers_id = stream.can_add_subscribers_group_id
-        assert group_allowed_to_add_subscribers_id is not None
-
-        if group_allowed_to_add_subscribers_id not in user_recursive_group_ids:
+        if not is_user_in_can_add_subscribers_group(
+            stream, user_group_membership_details.user_recursive_group_ids
+        ):
             result.append(stream)
 
     return result
 
 
-def can_administer_channel(channel: Stream, user_profile: UserProfile) -> bool:
+def can_administer_accessible_channel(channel: Stream, user_profile: UserProfile) -> bool:
+    # IMPORTANT: This function expects its callers to have already
+    # checked that the user can access the provided channel.
     group_allowed_to_administer_channel = channel.can_administer_channel_group
     assert group_allowed_to_administer_channel is not None
     return user_has_permission_for_group_setting(
@@ -838,11 +1149,13 @@ def can_administer_channel(channel: Stream, user_profile: UserProfile) -> bool:
     )
 
 
-def filter_stream_authorization(
-    user_profile: UserProfile, streams: Collection[Stream], is_subscribing_other_users: bool = False
-) -> tuple[list[Stream], list[Stream], list[Stream]]:
+def get_metadata_access_streams(
+    user_profile: UserProfile,
+    streams: Collection[Stream],
+    user_group_membership_details: UserGroupMembershipDetails,
+) -> list[Stream]:
     if len(streams) == 0:
-        return [], [], []
+        return []
 
     recipient_ids = [stream.recipient_id for stream in streams]
     subscribed_recipient_ids = set(
@@ -851,43 +1164,112 @@ def filter_stream_authorization(
         ).values_list("recipient_id", flat=True)
     )
 
-    unauthorized_streams: list[Stream] = []
+    metadata_access_streams: list[Stream] = []
+
+    for stream in streams:
+        is_subscribed = stream.recipient_id in subscribed_recipient_ids
+        if user_has_metadata_access(
+            user_profile,
+            stream,
+            user_group_membership_details,
+            is_subscribed=is_subscribed,
+        ):
+            metadata_access_streams.append(stream)
+
+    return metadata_access_streams
+
+
+@dataclass
+class StreamsCategorizedByPermissionsForAddingSubscribers:
+    authorized_streams: list[Stream]
+    unauthorized_streams: list[Stream]
+    streams_to_which_user_cannot_add_subscribers: list[Stream]
+
+
+def get_content_access_streams(
+    user_profile: UserProfile,
+    streams: Collection[Stream],
+    user_group_membership_details: UserGroupMembershipDetails,
+    *,
+    exclude_zephyr_realms_from_public_check: bool = False,
+) -> list[Stream]:
+    if len(streams) == 0:
+        return []
+
+    recipient_ids = [stream.recipient_id for stream in streams]
+    subscribed_recipient_ids = set(
+        Subscription.objects.filter(
+            user_profile=user_profile, recipient_id__in=recipient_ids, active=True
+        ).values_list("recipient_id", flat=True)
+    )
+
+    content_access_streams: list[Stream] = []
+
+    for stream in streams:
+        is_subscribed = stream.recipient_id in subscribed_recipient_ids
+        if user_has_content_access(
+            user_profile,
+            stream,
+            user_group_membership_details,
+            is_subscribed=is_subscribed,
+            exclude_zephyr_realms_from_public_check=exclude_zephyr_realms_from_public_check,
+        ):
+            content_access_streams.append(stream)
+
+    return content_access_streams
+
+
+def filter_stream_authorization_for_adding_subscribers(
+    user_profile: UserProfile, streams: Collection[Stream], is_subscribing_other_users: bool = False
+) -> StreamsCategorizedByPermissionsForAddingSubscribers:
+    if len(streams) == 0:
+        return StreamsCategorizedByPermissionsForAddingSubscribers(
+            authorized_streams=[],
+            unauthorized_streams=[],
+            streams_to_which_user_cannot_add_subscribers=[],
+        )
+
+    # For adding subscribers, we consider streams in zephyr realm
+    # public.
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    content_access_streams = get_content_access_streams(
+        user_profile,
+        streams,
+        user_group_membership_details,
+        exclude_zephyr_realms_from_public_check=True,
+    )
+    content_access_stream_ids = {stream.id for stream in content_access_streams}
+
     streams_to_which_user_cannot_add_subscribers: list[Stream] = []
     if is_subscribing_other_users:
         streams_to_which_user_cannot_add_subscribers = (
-            get_streams_to_which_user_cannot_add_subscribers(list(streams), user_profile)
+            get_streams_to_which_user_cannot_add_subscribers(
+                content_access_streams,
+                user_profile,
+                user_group_membership_details=user_group_membership_details,
+            )
         )
 
-    for stream in streams:
-        # Deactivated streams are not accessible
-        if stream.deactivated:
-            unauthorized_streams.append(stream)
-            continue
-
-        # The user is authorized for their own streams
-        if stream.recipient_id in subscribed_recipient_ids:
-            continue
-
-        # Web-public streams are accessible even to guests
-        if stream.is_web_public:
-            continue
-
-        # Members and administrators are authorized for public streams
-        if not stream.invite_only and not user_profile.is_guest:
-            continue
-
-        unauthorized_streams.append(stream)
-
-    authorized_streams = [
+    unauthorized_streams = [
         stream
         for stream in streams
-        if stream.id not in {stream.id for stream in unauthorized_streams}
-        and stream.id not in {stream.id for stream in streams_to_which_user_cannot_add_subscribers}
+        if stream.deactivated or stream.id not in content_access_stream_ids
     ]
-    return (
-        authorized_streams,
-        unauthorized_streams,
-        streams_to_which_user_cannot_add_subscribers,
+    unauthorized_stream_ids = {stream.id for stream in unauthorized_streams}
+
+    stream_ids_to_which_user_cannot_add_subscribers = {
+        stream.id for stream in streams_to_which_user_cannot_add_subscribers
+    }
+    authorized_streams = [
+        stream
+        for stream in content_access_streams
+        if stream.id not in stream_ids_to_which_user_cannot_add_subscribers
+        and stream.id not in unauthorized_stream_ids
+    ]
+    return StreamsCategorizedByPermissionsForAddingSubscribers(
+        authorized_streams=authorized_streams,
+        unauthorized_streams=unauthorized_streams,
+        streams_to_which_user_cannot_add_subscribers=streams_to_which_user_cannot_add_subscribers,
     )
 
 
@@ -897,7 +1279,7 @@ def list_to_streams(
     autocreate: bool = False,
     unsubscribing_others: bool = False,
     is_default_stream: bool = False,
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
@@ -926,16 +1308,10 @@ def list_to_streams(
     missing_stream_dicts: list[StreamDict] = []
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
-    if unsubscribing_others:
-        existing_recipient_ids = [stream.recipient_id for stream in existing_stream_map.values()]
-        subs = Subscription.objects.filter(
-            user_profile=user_profile, recipient_id__in=existing_recipient_ids, active=True
-        )
-        sub_map = {sub.recipient_id: sub for sub in subs}
-        for stream in existing_stream_map.values():
-            sub = sub_map.get(stream.recipient_id, None)
-            if not can_remove_subscribers_from_stream(stream, user_profile, sub):
-                raise JsonableError(_("Insufficient permission"))
+    if unsubscribing_others and not bulk_can_remove_subscribers_from_streams(
+        list(existing_stream_map.values()), user_profile
+    ):
+        raise JsonableError(_("Insufficient permission"))
 
     message_retention_days_not_none = False
     web_public_stream_requested = False
@@ -1046,24 +1422,6 @@ def ensure_stream(
     )[0]
 
 
-def get_occupied_streams(realm: Realm) -> QuerySet[Stream]:
-    """Get streams with subscribers"""
-    exists_expression = Exists(
-        Subscription.objects.filter(
-            active=True,
-            is_user_active=True,
-            user_profile__realm=realm,
-            recipient_id=OuterRef("recipient_id"),
-        ),
-    )
-    occupied_streams = (
-        Stream.objects.filter(realm=realm, deactivated=False)
-        .alias(occupied=exists_expression)
-        .filter(occupied=True)
-    )
-    return occupied_streams
-
-
 def get_stream_post_policy_value_based_on_group_setting(setting_group: UserGroup) -> int:
     if (
         hasattr(setting_group, "named_user_group")
@@ -1079,7 +1437,7 @@ def get_stream_post_policy_value_based_on_group_setting(setting_group: UserGroup
 def stream_to_dict(
     stream: Stream,
     recent_traffic: dict[int, int] | None = None,
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
 ) -> APIStreamDict:
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
@@ -1094,22 +1452,12 @@ def stream_to_dict(
         # passing stream data to spectators.
         stream_weekly_traffic = None
 
-    if setting_groups_dict is not None:
-        can_add_subscribers_group = setting_groups_dict[stream.can_add_subscribers_group_id]
-        can_administer_channel_group = setting_groups_dict[stream.can_administer_channel_group_id]
-        can_send_message_group = setting_groups_dict[stream.can_send_message_group_id]
-        can_remove_subscribers_group = setting_groups_dict[stream.can_remove_subscribers_group_id]
-    else:
-        can_add_subscribers_group = get_group_setting_value_for_api(
-            stream.can_add_subscribers_group
-        )
-        can_administer_channel_group = get_group_setting_value_for_api(
-            stream.can_administer_channel_group
-        )
-        can_send_message_group = get_group_setting_value_for_api(stream.can_send_message_group)
-        can_remove_subscribers_group = get_group_setting_value_for_api(
-            stream.can_remove_subscribers_group
-        )
+    assert setting_groups_dict is not None
+    can_add_subscribers_group = setting_groups_dict[stream.can_add_subscribers_group_id]
+    can_administer_channel_group = setting_groups_dict[stream.can_administer_channel_group_id]
+    can_send_message_group = setting_groups_dict[stream.can_send_message_group_id]
+    can_remove_subscribers_group = setting_groups_dict[stream.can_remove_subscribers_group_id]
+    can_subscribe_group = setting_groups_dict[stream.can_subscribe_group_id]
 
     stream_post_policy = get_stream_post_policy_value_based_on_group_setting(
         stream.can_send_message_group
@@ -1121,6 +1469,7 @@ def stream_to_dict(
         can_administer_channel_group=can_administer_channel_group,
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
+        can_subscribe_group=can_subscribe_group,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
         description=stream.description,
@@ -1153,12 +1502,10 @@ def get_streams_for_user(
     include_web_public: bool = False,
     include_subscribed: bool = True,
     exclude_archived: bool = True,
-    include_all_active: bool = False,
+    include_all: bool = False,
     include_owner_subscribed: bool = False,
+    include_can_access_content: bool = False,
 ) -> list[Stream]:
-    if include_all_active and not user_profile.is_realm_admin:
-        raise JsonableError(_("User not authorized for this query"))
-
     include_public = include_public and user_profile.can_access_public_streams()
 
     # Start out with all streams in the realm.
@@ -1169,10 +1516,19 @@ def get_streams_for_user(
     if exclude_archived:
         query = query.filter(deactivated=False)
 
-    if include_all_active:
-        streams = query.only(
-            *Stream.API_FIELDS, "can_send_message_group", "can_send_message_group__named_user_group"
+    if include_all:
+        all_streams = list(
+            query.only(
+                *Stream.API_FIELDS,
+                "can_send_message_group",
+                "can_send_message_group__named_user_group",
+                # Both of these fields are need for get_content_access_streams.
+                "is_in_zephyr_realm",
+                "recipient_id",
+            )
         )
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+        return get_metadata_access_streams(user_profile, all_streams, user_group_membership_details)
     else:
         # We construct a query as the or (|) of the various sources
         # this user requested streams from.
@@ -1185,14 +1541,53 @@ def get_streams_for_user(
             else:
                 query_filter |= option
 
-        if include_subscribed:
+        should_add_owner_subscribed_filter = include_owner_subscribed and user_profile.is_bot
+
+        if include_can_access_content:
+            all_streams = list(
+                query.only(
+                    *Stream.API_FIELDS,
+                    "can_send_message_group",
+                    "can_send_message_group__named_user_group",
+                    # Both of these fields are need for get_content_access_streams.
+                    "is_in_zephyr_realm",
+                    "recipient_id",
+                )
+            )
+            user_group_membership_details = UserGroupMembershipDetails(
+                user_recursive_group_ids=None
+            )
+            content_access_streams = get_content_access_streams(
+                user_profile, all_streams, user_group_membership_details
+            )
+            # Optimization: Currently, only include_owner_subscribed
+            # has the ability to add additional results to
+            # content_access_streams. We return early to save us a
+            # database query down the line if we do not need to add
+            # include_owner_subscribed filter.
+            if not should_add_owner_subscribed_filter:
+                return content_access_streams
+
+            content_access_stream_ids = [stream.id for stream in content_access_streams]
+            content_access_stream_check = Q(id__in=set(content_access_stream_ids))
+            add_filter_option(content_access_stream_check)
+
+        # Subscribed channels will already have been included if
+        # include_can_access_content is True.
+        if not include_can_access_content and include_subscribed:
             subscribed_stream_ids = get_subscribed_stream_ids_for_user(user_profile)
             recipient_check = Q(id__in=set(subscribed_stream_ids))
             add_filter_option(recipient_check)
-        if include_public:
+
+        # All accessible public channels will already have been
+        # included if include_can_access_content is True.
+        if not include_can_access_content and include_public:
             invite_only_check = Q(invite_only=False)
             add_filter_option(invite_only_check)
-        if include_web_public:
+
+        # All accessible web-public channels will already have been
+        # included if include_can_access_content is True.
+        if not include_can_access_content and include_web_public:
             # This should match get_web_public_streams_queryset
             web_public_check = Q(
                 is_web_public=True,
@@ -1201,7 +1596,8 @@ def get_streams_for_user(
                 deactivated=False,
             )
             add_filter_option(web_public_check)
-        if include_owner_subscribed and user_profile.is_bot:
+
+        if should_add_owner_subscribed_filter:
             bot_owner = user_profile.bot_owner
             assert bot_owner is not None
             owner_stream_ids = get_subscribed_stream_ids_for_user(bot_owner)
@@ -1220,7 +1616,7 @@ def get_streams_for_user(
 
 def get_group_setting_value_dict_for_streams(
     streams: list[Stream],
-) -> dict[int, int | AnonymousSettingGroupDict]:
+) -> dict[int, int | UserGroupMembersDict]:
     setting_group_ids = set()
     for stream in streams:
         for setting_name in Stream.stream_permission_group_settings:
@@ -1231,10 +1627,10 @@ def get_group_setting_value_dict_for_streams(
 
 def get_setting_values_for_group_settings(
     group_ids: list[int],
-) -> dict[int, int | AnonymousSettingGroupDict]:
+) -> dict[int, int | UserGroupMembersDict]:
     user_groups = UserGroup.objects.filter(id__in=group_ids).select_related("named_user_group")
 
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] = dict()
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] = dict()
     anonymous_group_ids = []
     for group in user_groups:
         if hasattr(group, "named_user_group"):
@@ -1264,13 +1660,13 @@ def get_setting_values_for_group_settings(
     all_members = user_members.union(group_subgroups)
     for member_type, group_id, member_id in all_members:
         if group_id not in setting_groups_dict:
-            setting_groups_dict[group_id] = AnonymousSettingGroupDict(
+            setting_groups_dict[group_id] = UserGroupMembersDict(
                 direct_members=[],
                 direct_subgroups=[],
             )
 
         anonymous_group_dict = setting_groups_dict[group_id]
-        assert isinstance(anonymous_group_dict, AnonymousSettingGroupDict)
+        assert isinstance(anonymous_group_dict, UserGroupMembersDict)
         if member_type == "user":
             anonymous_group_dict.direct_members.append(member_id)
         else:
@@ -1285,9 +1681,10 @@ def do_get_streams(
     include_web_public: bool = False,
     include_subscribed: bool = True,
     exclude_archived: bool = True,
-    include_all_active: bool = False,
+    include_all: bool = False,
     include_default: bool = False,
     include_owner_subscribed: bool = False,
+    include_can_access_content: bool = False,
 ) -> list[APIStreamDict]:
     # This function is only used by API clients now.
 
@@ -1297,8 +1694,9 @@ def do_get_streams(
         include_web_public,
         include_subscribed,
         exclude_archived,
-        include_all_active,
+        include_all,
         include_owner_subscribed,
+        include_can_access_content,
     )
 
     stream_ids = {stream.id for stream in streams}
@@ -1319,21 +1717,17 @@ def do_get_streams(
     return stream_dicts
 
 
-def get_subscribed_private_streams_for_user(user_profile: UserProfile) -> QuerySet[Stream]:
-    exists_expression = Exists(
-        Subscription.objects.filter(
-            user_profile=user_profile,
-            active=True,
-            is_user_active=True,
-            recipient_id=OuterRef("recipient_id"),
-        ),
+def notify_stream_is_recently_active_update(stream: Stream, value: bool) -> None:
+    event = dict(
+        type="stream",
+        op="update",
+        property="is_recently_active",
+        value=value,
+        stream_id=stream.id,
+        name=stream.name,
     )
-    subscribed_private_streams = (
-        Stream.objects.filter(realm=user_profile.realm, invite_only=True, deactivated=False)
-        .alias(subscribed=exists_expression)
-        .filter(subscribed=True)
-    )
-    return subscribed_private_streams
+
+    send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
 
 
 @transaction.atomic(durable=True)
@@ -1350,15 +1744,7 @@ def update_stream_active_status_for_realm(realm: Realm, date_days_ago: datetime)
 
     # Send events to notify the users about the change in the stream's active status.
     for stream in streams_to_mark_inactive:
-        event = dict(
-            type="stream",
-            op="update",
-            property="is_recently_active",
-            value=False,
-            stream_id=stream.id,
-            name=stream.name,
-        )
-        send_event_on_commit(stream.realm, event, active_user_ids(stream.realm_id))
+        notify_stream_is_recently_active_update(stream, False)
 
     count = streams_to_mark_inactive.update(is_recently_active=False)
     return count
@@ -1372,3 +1758,16 @@ def check_update_all_streams_active_status(
     for realm in Realm.objects.filter(deactivated=False):
         count += update_stream_active_status_for_realm(realm, date_days_ago)
     return count
+
+
+def send_stream_deletion_event(
+    realm: Realm, user_ids: Iterable[int], streams: list[Stream]
+) -> None:
+    stream_deletion_event = dict(
+        type="stream",
+        op="delete",
+        # "streams" is deprecated, kept only for compatibility.
+        streams=[dict(stream_id=stream.id) for stream in streams],
+        stream_ids=[stream.id for stream in streams],
+    )
+    send_event_on_commit(realm, stream_deletion_event, user_ids)

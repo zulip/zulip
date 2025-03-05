@@ -11,23 +11,38 @@
     }
 
     & ul {
-        margin: 0 0 var(--markdown-interelement-space-px) 20px;
-    }
-
-    /* Swap the left and right margins of bullets for Right-To-Left languages */
-    &.rtl ul {
-        margin-right: 20px;
-        margin-left: 0;
+        margin: 0 0 var(--markdown-interelement-space-px) 0;
+        margin-inline-start: 3.5ch;
     }
 
     & ol {
-        margin: 0 0 var(--markdown-interelement-space-px) 20px;
+        margin: 0 0 var(--markdown-interelement-space-px) 0;
+        margin-inline-start: 3.5ch;
     }
 
-    /* Swap the left and right margins of ordered list for Right-To-Left languages */
-    &.rtl ol {
-        margin-right: 8px;
-        margin-left: 0;
+    /* We set margin according to the length of the longest list counter. */
+    .counter-length-1 {
+        margin-inline-start: 2.5ch;
+    }
+
+    .counter-length-2 {
+        margin-inline-start: 3.5ch;
+    }
+
+    .counter-length-3 {
+        margin-inline-start: 4.5ch;
+    }
+
+    .counter-length-4 {
+        margin-inline-start: 5.5ch;
+    }
+
+    .counter-length-5 {
+        margin-inline-start: 6.5ch;
+    }
+
+    .counter-length-6 {
+        margin-inline-start: 7.5ch;
     }
 
     & hr {
@@ -406,7 +421,7 @@
            subtle).
 
            We prevent this by setting a fixed height for inline
-           previews. 100px is chosen because we don't want images to
+           previews. 8em is chosen because we don't want images to
            overwhelm conversation in message feeds, as it does in chat
            tools that show images at half-screen height or larger.
 
@@ -415,8 +430,8 @@
            that either use a scrollable region or set a fixed width
            for images so that the browser statically knows whether
            it'll need to overflow. We choose fixed width here. */
-        height: 100px;
-        width: 150px;
+        height: 8em;
+        width: 12em;
 
         /* Inline image containers also need an inline-block display in order
            to implement the desired grid layout. */
@@ -524,7 +539,7 @@
         border: 1px solid hsl(0deg 0% 87%);
         padding: 0.5em 0.75em;
         margin-bottom: 0.25em;
-        word-break: break-word;
+        overflow-wrap: anywhere;
         min-height: 48px;
     }
 
@@ -919,6 +934,7 @@
     &::-webkit-scrollbar-thumb {
         background-color: hsl(0deg 0% 0% / 30%);
         border-radius: 20px;
+        cursor: auto;
         transition: background-color 0.2s ease;
     }
 

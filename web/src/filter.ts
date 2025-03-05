@@ -11,6 +11,7 @@ import {$t} from "./i18n.ts";
 import * as message_parser from "./message_parser.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
+import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
@@ -750,6 +751,20 @@ export class Filter {
             const operand = term.operand;
             const canonicalized_operator = Filter.canonicalize_operator(term.operator);
             if (canonicalized_operator === "is") {
+                // Some operands have their own negative words, like
+                // unresolved, rather than the default "exclude " prefix.
+                const custom_negated_operand_phrases: Record<string, string> = {
+                    resolved: "unresolved",
+                };
+                const negated_phrase = custom_negated_operand_phrases[operand];
+                if (term.negated && negated_phrase !== undefined) {
+                    return {
+                        type: "is_operator",
+                        verb: "",
+                        operand: negated_phrase,
+                    };
+                }
+
                 const verb = term.negated ? "exclude " : "";
                 return {
                     type: "is_operator",
@@ -851,7 +866,7 @@ export class Filter {
             if (term.operand === undefined) {
                 return false;
             }
-            if (!hash_parser.allowed_web_public_narrows.includes(term.operator)) {
+            if (!hash_parser.is_an_allowed_web_public_narrow(term.operator, term.operand)) {
                 return false;
             }
         }
@@ -1044,6 +1059,17 @@ export class Filter {
     is_in_home(): boolean {
         // Combined feed view
         return this._terms.length === 1 && this.has_operand("in", "home");
+    }
+
+    has_exactly_channel_topic_operators(): boolean {
+        if (
+            this.terms().length === 2 &&
+            this.has_operator("channel") &&
+            this.has_operator("topic")
+        ) {
+            return true;
+        }
+        return false;
     }
 
     is_keyword_search(): boolean {
@@ -1364,7 +1390,13 @@ export class Filter {
                 if (!person) {
                     return email;
                 }
+                if (muted_users.is_user_muted(person.user_id)) {
+                    if (people.should_add_guest_user_indicator(person.user_id)) {
+                        return $t({defaultMessage: "Muted user (guest)"});
+                    }
 
+                    return $t({defaultMessage: "Muted user"});
+                }
                 if (people.should_add_guest_user_indicator(person.user_id)) {
                     return $t({defaultMessage: "{name} (guest)"}, {name: person.full_name});
                 }
@@ -1411,7 +1443,7 @@ export class Filter {
                 case "is-dm":
                     return $t({defaultMessage: "Direct message feed"});
                 case "is-resolved":
-                    return $t({defaultMessage: "Topics marked as resolved"});
+                    return $t({defaultMessage: "Resolved topics"});
                 case "is-followed":
                     return $t({defaultMessage: "Followed topics"});
                 // These cases return false for is_common_narrow, and therefore are not
@@ -1543,6 +1575,14 @@ export class Filter {
 
     _canonicalize_terms(terms_mixed_case: NarrowTerm[]): NarrowTerm[] {
         return terms_mixed_case.map((term: NarrowTerm) => Filter.canonicalize_term(term));
+    }
+
+    adjust_with_operand_to_message(msg_id: number): void {
+        const narrow_terms = this._terms.filter((term) => term.operator !== "with");
+        const adjusted_with_term = {operator: "with", operand: `${msg_id}`};
+        const adjusted_terms = [...narrow_terms, adjusted_with_term];
+        this._terms = adjusted_terms;
+        this.requires_adjustment_for_moved_with_target = false;
     }
 
     filter_with_new_params(params: NarrowTerm): Filter {

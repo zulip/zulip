@@ -37,6 +37,7 @@ import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as unread_ui from "./unread_ui.ts";
+import * as user_group_edit from "./user_group_edit.ts";
 import * as user_profile from "./user_profile.ts";
 
 // In theory, this function should apply the account-level defaults,
@@ -102,6 +103,14 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             stream_permission_group_settings_schema.parse(property),
             sub,
             group_setting_value_schema.parse(value),
+        );
+        if (property === "can_subscribe_group" || property === "can_add_subscribers_group") {
+            stream_settings_ui.update_subscription_elements(sub);
+        }
+        user_group_edit.update_stream_setting_in_permissions_panel(
+            stream_permission_group_settings_schema.parse(property),
+            group_setting_value_schema.parse(value),
+            sub,
         );
         return;
     }
@@ -233,7 +242,7 @@ export function mark_subscribed(
     }
 
     // update navbar if necessary
-    message_view_header.maybe_rerender_title_area_for_stream(sub);
+    message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
 
     if (stream_create.get_name() === sub.name) {
         // In this case, we just created this channel using this very
@@ -275,7 +284,7 @@ export function mark_unsubscribed(sub: StreamSubscription): void {
             stream_settings_ui.update_settings_for_unsubscribed(sub);
         }
         // update navbar if necessary
-        message_view_header.maybe_rerender_title_area_for_stream(sub);
+        message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
     } else {
         // Already unsubscribed
         return;

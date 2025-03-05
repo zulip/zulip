@@ -23,6 +23,10 @@ developers during daylight hours in North America (roughly between
 15:00 UTC and 1:00 UTC), but the sun never sets on the Zulip
 community. Most questions get a reply within minutes to a few hours.
 
+Before posting your first message, please read the [community
+norms](#community-norms) section below in its entirety. It explains how to
+engage with the Zulip community.
+
 You can also [read conversations](https://chat.zulip.org/) in the community
 without creating an account. If you are evaluating using Zulip for your
 organization, check out these [tips](/try-zulip/) for exploring the product in
@@ -31,52 +35,71 @@ action in the development community.
 <br/>
 # Community norms
 
-Zulip is a friendly and welcoming community, and we love meeting new
-people, hearing about what brought them to Zulip, and getting their
-feedback.
+## How we communicate
 
-## Getting started
+- Use **informal language**; there’s no need for titles like “Sir” or “Madam”.
+- Use **[gender-neutral
+  language](https://en.wikipedia.org/wiki/Gender-neutral_language)**. For
+  example:
+    - **Good**: Does anyone need a review on **their** PR?
+    - **Not good**: Does anyone need a review on **his** PR?
+- Aim to **communicate professionally**, using full sentences with correct spelling
+  and grammar.
+- Follow the community **[code of
+  conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html)**.
 
-- Send test messages to [#test
-  here](https://chat.zulip.org/#narrow/channel/7-test-here) or as a PM
-  to yourself to avoid disturbing others.
-- Start a [new topic](/help/introduction-to-topics) unless you’re replying
-  to an existing conversation. If you see a new user talking about
-  something unrelated on an existing topic, [move the messages to an
-  appropriate new topic](/help/move-content-to-another-topic).
-- If you’re not sure where to start, introduce yourself and your
-  interests in [#new
-  members](https://chat.zulip.org/#narrow/channel/95-new-members),
-  using your name as the topic to create a dedicated space.
-- Follow the community [code of
-  conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
+Read the [guide on how we
+communicate](https://zulip.readthedocs.io/en/latest/contributing/how-we-communicate.html)
+to learn more.
 
-## Communication style
+## How to ask for help
 
-- Converse informally; there’s no need to use titles like “Sir” or “Madam”.
-- Use [gender-neutral
-  language](https://en.wikipedia.org/wiki/Gender-neutral_language). For
-  example, avoid using a pronoun like “her” or “his” in sentences like
-  “Every developer should clean [their] keyboard at least once a
-  week.”
+- Formulate a **clear question**, which includes an appropriate amount of context
+  and a specific request for help. Link to **relevant references** (e.g., GitHub
+  issues, Zulip's documentation, etc.).
+- When relevant, include the **full traceback** in a [code
+  block](/help/code-blocks) (not a screenshot).
+- If working on a code contribution, **try to solve your own problem first**,
+  including reading through relevant documentation and code. Identify and
+  describe the precise point on which you feel stuck.
 
-## Getting help
-- When asking for help, provide the details needed for others to help
-  you. For example, include the **full traceback** in a [code
-  block](/help/code-blocks) (not a screenshot), a link to the code or
-  a draft PR you’re having trouble debugging, etc.
-- Ask questions on channels rather than DMing core contributors. You’ll
-  get answers faster since other people can help, and it makes it
-  possible for others to benefit from the discussion.
-- Don’t ask the same question in multiple places. Moderators read
-  every public channel, and make sure every question gets a reply.
-- Use @-mentions sparingly. Unlike IRC or Slack, Zulip’s topics make
-  it easy to see what you’re replying to, so you don’t need to mention
-  your conversation partner to make sure they will see or understand
-  your reply. Core contributors will often @-mention someone who asked
-  a question hours earlier to make sure they see the reply, but there
-  is generally no need to @-mention a core contributor unless you need
-  their timely attention.
+ Moderators read every public channel, and make sure that questions are
+ addressed. To avoid disrupting work in the community:
+
+- **Never ask the same question in multiple places**.
+- If you are new to the community, **default to never using @-mentions**.
+  Unnecessary mentions make it harder for Zulip's maintainers to see and respond
+  to urgent messages. You can use Zulip's [silent
+  mentions](https://zulip.com/help/mention-a-user-or-group#silently-mention-a-user)
+  to refer to a user without notifying them.
+
+## How to give feedback
+
+If you have ideas for how to make Zulip better, we’d love to hear from you!
+Learn how to [report
+bugs](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html),
+[suggest features and
+improvements](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html),
+and [share your
+experience](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html#evaluation-and-onboarding-feedback)
+with Zulip.
+
+## Where to post
+
+- **Ask questions in channels**, rather than DMing core contributors. You’ll get
+  answers faster since more people can help, and others will be able to benefit
+  from the discussion.
+- **Start a [new topic](/help/introduction-to-topics)** unless you’re replying
+  to an existing conversation.
+- If you like, **introduce yourself** in the [#new members
+  channel](https://chat.zulip.org/#narrow/channel/95-new-members), using your
+  name as the topic. Tells us what brings you to the community!
+- **Test messages** should only be sent to the [#test
+  here](https://chat.zulip.org/#narrow/channel/7-test-here) channel, or as DMs
+  to yourself.
+
+The section below gives a detailed overview of the channels in the Zulip
+community — take a look there to learn more.
 
 <br/>
 # Where do I send my message?

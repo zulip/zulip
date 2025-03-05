@@ -282,12 +282,13 @@ conversations with unread messages.
 """)
 
     content1_of_start_conversation_topic_name = _("""
-To kick off a new conversation, click **Start new conversation** below.
-The new conversation thread will be labeled with its own topic.
+To kick off a new conversation, pick a channel in the left sidebar, and click
+the `+` button next to its name.
 """)
 
     content2_of_start_conversation_topic_name = _("""
-For a good topic name, think about finishing the sentence: “Hey, can we chat about…?”
+Label your conversation with a topic. Think about finishing the sentence: “Hey,
+can we chat about…?”
 """)
 
     content3_of_start_conversation_topic_name = _("""

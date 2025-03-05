@@ -18,6 +18,12 @@ When you deactivate a user:
 * [Email invitations and invite links](/help/invite-new-users) created by the
   user will be disabled.
 
+* Other users will be able to see that the user has been deactivated (e.g., on
+  their [user card](/help/user-cards)). In sidebars and elsewhere, a user's
+  [availability](/help/status-and-availability) will be replaced with a
+  deactivated icon
+  (<span class="user-circle user-circle-deactivated zulip-icon zulip-icon-user-circle-deactivated"></span>).
+
 * Even if your organization [allows users to join without an
   invitation](/help/restrict-account-creation#set-whether-invitations-are-required-to-join),
   this user will not be able to rejoin with the same email account.

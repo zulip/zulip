@@ -32,9 +32,31 @@ const dollar_stream = {
     type: "stream",
 };
 
+const markdown_stream = {
+    name: "Markdown [md]",
+    description: "markdown",
+    stream_id: 7,
+    subscribed: true,
+    type: "stream",
+};
+
 stream_data.add_sub(sweden_stream);
 stream_data.add_sub(denmark_stream);
 stream_data.add_sub(dollar_stream);
+stream_data.add_sub(markdown_stream);
+
+run_test("stream_link_syntax_test", () => {
+    assert.equal(topic_link_util.get_stream_link_syntax("Sweden"), "#**Sweden**");
+    assert.equal(topic_link_util.get_stream_link_syntax("Denmark"), "#**Denmark**");
+    assert.equal(
+        topic_link_util.get_stream_link_syntax("$$MONEY$$"),
+        "[#&#36;&#36;MONEY&#36;&#36;](#narrow/channel/6-.24.24MONEY.24.24)",
+    );
+    assert.equal(
+        topic_link_util.get_stream_link_syntax("Markdown [md]"),
+        "[#Markdown &#91;md&#93;](#narrow/channel/7-Markdown-.5Bmd.5D)",
+    );
+});
 
 run_test("stream_topic_link_syntax_test", () => {
     assert.equal(
@@ -78,12 +100,29 @@ run_test("stream_topic_link_syntax_test", () => {
         topic_link_util.get_fallback_markdown_link("$$MONEY$$"),
         "[#&#36;&#36;MONEY&#36;&#36;](#narrow/channel/6-.24.24MONEY.24.24)",
     );
+    assert.equal(
+        topic_link_util.get_fallback_markdown_link("Markdown [md]"),
+        "[#Markdown &#91;md&#93;](#narrow/channel/7-Markdown-.5Bmd.5D)",
+    );
 
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("Sweden", "&ab"),
         "[#Sweden > &amp;ab](#narrow/channel/1-Sweden/topic/.26ab)",
     );
+    assert.equal(
+        topic_link_util.get_stream_topic_link_syntax("Sweden", "&ab]"),
+        "[#Sweden > &amp;ab&#93;](#narrow/channel/1-Sweden/topic/.26ab.5D)",
+    );
+
+    assert.equal(
+        topic_link_util.get_stream_topic_link_syntax("Sweden", "&a[b"),
+        "[#Sweden > &amp;a&#91;b](#narrow/channel/1-Sweden/topic/.26a.5Bb)",
+    );
 
     // Only for full coverage of the module.
     assert.equal(topic_link_util.escape_invalid_stream_topic_characters("Sweden"), "Sweden");
+    assert.equal(
+        topic_link_util.as_html_link_syntax_unsafe("test", "example.com"),
+        '<a href="example.com">test</a>',
+    );
 });

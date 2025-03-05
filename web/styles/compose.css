@@ -242,7 +242,7 @@
                 color: var(--color-compose-chevron-arrow);
                 text-decoration: none;
                 cursor: default;
-                transition: none 0.2s ease-in-out;
+                transition: 0.2s ease-in-out;
                 transition-property: background, color;
 
                 &.narrow_to_compose_recipients {
@@ -358,7 +358,8 @@
 .edit-content-container:has(
         .message_edit_content.textarea-approaching-limit.flash
     ) {
-    animation: message-limit-flash 0.5s ease-in-out 3;
+    /* This should align with the timing in compose_validate.validate_message_length. */
+    animation: message-limit-flash 0.5s ease-in-out 1;
 }
 
 #message-content-container .composebox-buttons {
@@ -534,14 +535,14 @@
     grid-area: scroller-backward;
     justify-content: flex-start;
     border-radius: 0 0 0 3px;
-    background: var(--color-compose-background-scroll-backward);
+    background: var(--gradient-compose-scroll-backward);
 
     &:hover {
-        background: var(--color-compose-background-scroll-backward-hover);
+        background: var(--gradient-compose-scroll-backward-hover);
     }
 
     &:active {
-        background: var(--color-compose-background-scroll-backward-active);
+        background: var(--gradient-compose-scroll-backward-active);
 
         .scroller-backward-icon {
             /* Subtly shift arrow in scroll direction. */
@@ -554,14 +555,14 @@
     grid-area: scroller-forward;
     justify-content: flex-end;
     border-radius: 0 0 3px;
-    background: var(--color-compose-background-scroll-forward);
+    background: var(--gradient-compose-scroll-forward);
 
     &:hover {
-        background: var(--color-compose-background-scroll-forward-hover);
+        background: var(--gradient-compose-scroll-forward-hover);
     }
 
     &:active {
-        background: var(--color-compose-background-scroll-forward-active);
+        background: var(--gradient-compose-scroll-forward-active);
 
         .scroller-forward-icon {
             /* Subtly shift arrow in scroll direction. */
@@ -592,7 +593,7 @@
 }
 
 .message-limit-indicator:not(:empty) {
-    font-size: 12px;
+    font-size: 0.8571em; /* 12px at 14px/em */
     color: var(--color-limit-indicator);
     width: max-content;
 
@@ -642,12 +643,15 @@
     right: 0;
     color: var(--color-compose-send-control-button);
     background: transparent;
-    font-size: 12.5px;
+    /* 12.5px at 14px em */
+    font-size: 0.8928em;
     font-weight: normal;
-    line-height: 20px;
+    /* 3px 7px at 12.5px font size at 14px em */
+    line-height: 1.6em;
     opacity: 0.7;
     border: 0;
-    padding: 3px 7px;
+    /* 3px 7px at 12.5px font size at 14px em */
+    padding: 0.24em 0.56em;
     border-radius: 8px;
     vertical-align: unset;
     text-shadow: none;
@@ -1024,7 +1028,15 @@ textarea.new_message_textarea {
 
 #compose_recipient_box {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    /* When displaying #topic-not-mandatory-placeholder,
+       we let it occupy the entire topic box. Otherwise,
+       we set and preserve named areas for the ordinary
+       topic text and the clear-topic button. */
+    grid-template-columns:
+        [topic-box-start topic-start] minmax(0, 1fr)
+        [topic-end topic-clear-button-start] auto [topic-clear-button-end topic-box-end];
+    grid-template-rows: auto;
+    align-content: center;
     align-items: stretch;
     flex: 1 1 0;
     border: 1px solid var(--color-compose-recipient-box-border-color);
@@ -1047,6 +1059,8 @@ textarea.new_message_textarea {
 
     /* Styles for input in the recipient_box */
     #stream_message_recipient_topic {
+        grid-area: topic;
+        color: var(--color-compose-recipient-box-text-color);
         /* Override grid's effective `max-content` min-width */
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1057,10 +1071,26 @@ textarea.new_message_textarea {
         padding: 4px 6px;
         /* Reset height to let `align-items: stretch` on the grid parent handle this. */
         height: auto;
+
+        &.empty-topic-display::placeholder {
+            color: var(--color-compose-recipient-box-text-color);
+        }
+    }
+
+    #topic-not-mandatory-placeholder {
+        grid-area: topic-box;
+        white-space: nowrap;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        padding: 5px 6px;
+        display: none;
+        visibility: hidden;
+        pointer-events: none;
     }
 
     /* Styles for new conversation button in the recipient_box */
     #recipient_box_clear_topic_button {
+        grid-area: topic-clear-button;
         /* Set the border radius smaller, relative to the parent */
         border-radius: 2px;
         padding: 6px;
@@ -1083,8 +1113,8 @@ textarea.new_message_textarea {
         }
     }
 
-    #stream_message_recipient_topic:placeholder-shown
-        + #recipient_box_clear_topic_button {
+    #stream_message_recipient_topic:not(.empty-topic-display):placeholder-shown
+        ~ #recipient_box_clear_topic_button {
         visibility: hidden;
     }
     /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
@@ -1101,10 +1131,16 @@ textarea.new_message_textarea {
     color: var(--color-compose-recipient-box-text-color);
     background-color: var(--color-compose-recipient-box-background-color);
     border-color: var(--color-compose-recipient-box-border-color);
+    max-width: 30vw;
 
     &.dropdown-widget-button {
         padding: 0 6px;
         border-radius: 4px;
+    }
+
+    .dropdown_widget_value {
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
 }
 
@@ -1170,8 +1206,8 @@ textarea.new_message_textarea {
 
     .zulip-icon-send {
         display: block;
-        font-size: 17px;
-        line-height: 16px;
+        font-size: 1.2143em; /* 17px at 14px/em */
+        line-height: 0.9412; /* 16px at 17px/em */
     }
 
     .loader {
@@ -1185,10 +1221,14 @@ textarea.new_message_textarea {
     color: var(--color-text-popover-menu);
 
     .enter_sends_choice {
-        display: flex;
-        gap: 8px;
         padding: 4px 10px;
-        align-items: flex-start;
+        gap: 0 8px;
+        display: grid;
+        /* 1em and 1.5em were chosen from playing around with different values
+           and picking some that looked reasonable. */
+        grid-template:
+            "radio-button instructions" 1.5em
+            ".            instructions" auto / 1em auto;
 
         &:hover {
             background: var(--color-background-hover-popover-menu);
@@ -1209,8 +1249,12 @@ textarea.new_message_textarea {
         & .enter_sends_choice_radio {
             width: auto;
             cursor: pointer;
-            margin: 4px 0 0;
+            /* Radio buttons scale with height, and here we're just
+               matching that to the active font-size. */
+            height: 1em;
             accent-color: hsl(217deg 100% 60%);
+            grid-area: radio-button;
+            align-self: center;
 
             &:focus {
                 outline: 1px dotted hsl(0deg 0% 20%);
@@ -1233,6 +1277,7 @@ textarea.new_message_textarea {
         flex-shrink: 0;
         gap: 3px;
         white-space: nowrap;
+        grid-area: instructions;
     }
 
     .enter_sends_choice_text {
@@ -1315,6 +1360,9 @@ textarea.new_message_textarea {
         height: 1.2727em;
         /* 30px at 22px/1em */
         width: 1.3636em;
+        /* Adhere to the width of formatting buttons,
+           despite flexbox context. */
+        flex: 0 0 auto;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1368,27 +1416,6 @@ textarea.new_message_textarea {
             display: none;
         }
     }
-
-    .compose_draft_button {
-        font-size: 15px;
-        font-weight: 600;
-        font-family: "Source Sans 3 VF", sans-serif;
-        padding: 0 5px;
-        position: relative;
-        top: 0.7px;
-    }
-
-    .compose_help_button {
-        /* 20px at 16px/1em */
-        font-size: 1.25em;
-        /* 32px at 20px/1em */
-        height: 1.6em;
-        /* 34.2833 at 20px/1em */
-        width: 1.7142em;
-        /* Adhere to the width of this button,
-           despite flexbox context. */
-        flex: 0 0 auto;
-    }
 }
 
 .less-dense-mode {
@@ -1416,7 +1443,7 @@ textarea.new_message_textarea {
 
     &.disabled-message-send-controls {
         & button {
-            pointer-events: none;
+            cursor: default;
             opacity: 0.5;
         }
     }
@@ -1466,11 +1493,11 @@ textarea.new_message_textarea {
         color: var(--color-text-default);
 
         .stream-privacy-type-icon {
-            font-size: 13px;
-            width: 13px;
-            height: 13px;
+            font-size: 0.9286em; /* 13px at 14px em */
+            width: 1em;
+            height: 1em;
             position: relative;
-            top: 2px;
+            top: 0.1538em; /* 2px at 13px/em */
         }
     }
 
@@ -1624,21 +1651,20 @@ textarea.new_message_textarea {
 }
 
 .saved_snippets-dropdown-list-container {
-    width: 250px;
+    width: 17.8571em; /* 250px at 14px/em */
 
     .dropdown-list .dropdown-list-item-common-styles {
-        padding: 5px 10px;
+        padding: 0.3571em 0.7143em; /* 5px 10px at 14px/em */
         display: flex;
         flex-direction: column;
 
         .dropdown-list-item-name {
-            line-height: 15px;
+            line-height: 1.2em;
         }
 
         .dropdown-list-item-description {
-            white-space: nowrap;
             font-weight: 400;
-            font-size: 13px;
+            font-size: 0.9283em; /* 13px at 14px/em */
             opacity: 0.8;
             padding: 0;
             text-overflow: ellipsis;

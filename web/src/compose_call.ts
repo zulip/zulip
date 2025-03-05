@@ -41,7 +41,9 @@ export function compute_show_audio_chat_button(): boolean {
         (available_providers.zoom &&
             realm.realm_video_chat_provider === available_providers.zoom.id) ||
         (available_providers.big_blue_button &&
-            realm.realm_video_chat_provider === available_providers.big_blue_button.id)
+            realm.realm_video_chat_provider === available_providers.big_blue_button.id) ||
+        (available_providers.zoom_server_to_server &&
+            realm.realm_video_chat_provider === available_providers.zoom_server_to_server.id)
     ) {
         return true;
     }

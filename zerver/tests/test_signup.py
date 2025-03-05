@@ -53,6 +53,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     HostRequestMock,
     avatar_disk_path,
+    dns_txt_answer,
     find_key_by_email,
     get_test_image_file,
     load_subdomain_token,
@@ -1039,8 +1040,8 @@ class LoginTest(ZulipTestCase):
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
         with (
-            self.assert_database_query_count(95),
-            self.assert_memcached_count(14),
+            self.assert_database_query_count(94),
+            self.assert_memcached_count(15),
             self.captureOnCommitCallbacks(execute=True),
         ):
             self.register(self.nonreg_email("test"), "test")
@@ -1238,7 +1239,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
         result = self.client_get(urlsplit(unsubscribe_link).path)
 
-        # The welcome email jobs are no longer scheduled.
+        # The welcome email job are no longer scheduled.
         self.assertEqual(result.status_code, 200)
         self.assertEqual(0, ScheduledEmail.objects.filter(users=user_profile).count())
 
@@ -1247,8 +1248,8 @@ class EmailUnsubscribeTests(ZulipTestCase):
         We provide one-click unsubscribe links in digest e-mails that you can
         click even when logged out to stop receiving them.
 
-        Unsubscribing from these emails also dequeues any digest email jobs that
-        have been queued.
+        Since pending digests are in a RabbitMQ queue, we cannot unqueue them
+        once they're enqueued.
         """
         user_profile = self.example_user("hamlet")
         self.assertTrue(user_profile.enable_digest_emails)
@@ -1269,8 +1270,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
             to_user_ids=[user_profile.id],
             context=context,
         )
-
-        self.assertEqual(1, ScheduledEmail.objects.filter(users=user_profile).count())
+        self.assert_length(ScheduledEmail.objects.filter(users=user_profile), 0)
 
         # Simulate unsubscribing from digest e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "digest")
@@ -1282,7 +1282,6 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         user_profile.refresh_from_db()
         self.assertFalse(user_profile.enable_digest_emails)
-        self.assertEqual(0, ScheduledEmail.objects.filter(users=user_profile).count())
 
     def test_login_unsubscribe(self) -> None:
         """
@@ -2159,7 +2158,7 @@ class RealmCreationTest(ZulipTestCase):
     def test_subdomain_check_api(self) -> None:
         result = self.client_get("/json/realm/subdomain/zulip")
         self.assert_in_success_response(
-            ["Subdomain already in use. Please choose a different one."], result
+            ["Subdomain is already in use. Please choose a different one."], result
         )
 
         result = self.client_get("/json/realm/subdomain/zu_lip")
@@ -2989,7 +2988,7 @@ class UserSignUpTest(ZulipTestCase):
         )
         self.assert_in_success_response(
             [
-                "Subdomain already in use. Please choose a different one.",
+                "Subdomain is already in use. Please choose a different one.",
                 'value="Test"',
                 'name="realm_name"',
             ],
@@ -4135,8 +4134,11 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(mirror_dummy.role, UserProfile.ROLE_GUEST)
 
     @patch(
-        "DNS.dnslookup",
-        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+        "dns.resolver.resolve",
+        return_value=dns_txt_answer(
+            "sipbtest.passwd.ns.athena.mit.edu.",
+            "sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh",
+        ),
     )
     def test_registration_of_mirror_dummy_user(self, ignored: Any) -> None:
         password = "test"
@@ -4216,8 +4218,11 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_logged_in_user_id(user_profile.id)
 
     @patch(
-        "DNS.dnslookup",
-        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+        "dns.resolver.resolve",
+        return_value=dns_txt_answer(
+            "sipbtest.passwd.ns.athena.mit.edu.",
+            "sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh",
+        ),
     )
     def test_registration_of_active_mirror_dummy_user(self, ignored: Any) -> None:
         """

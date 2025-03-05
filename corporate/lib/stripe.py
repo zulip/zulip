@@ -1561,21 +1561,21 @@ class BillingSession(ABC):
         customer = self.get_customer()
         assert customer is not None
         current_plan = get_current_plan_by_customer(customer)
-        if current_plan is None:
-            fixed_price_offer = CustomerPlanOffer.objects.filter(
-                customer=customer, status=CustomerPlanOffer.CONFIGURED
+        if current_plan is not None and self.check_plan_tier_is_billable(current_plan.tier):
+            fixed_price_next_plan = CustomerPlan.objects.filter(
+                customer=customer,
+                status=CustomerPlan.NEVER_STARTED,
+                fixed_price__isnull=False,
             ).first()
-            assert fixed_price_offer is not None
-            fixed_price_offer.delete()
-            return "Fixed-price plan offer deleted"
-        fixed_price_next_plan = CustomerPlan.objects.filter(
-            customer=customer,
-            status=CustomerPlan.NEVER_STARTED,
-            fixed_price__isnull=False,
+            assert fixed_price_next_plan is not None
+            fixed_price_next_plan.delete()
+            return "Fixed-price scheduled plan deleted"
+        fixed_price_offer = CustomerPlanOffer.objects.filter(
+            customer=customer, status=CustomerPlanOffer.CONFIGURED
         ).first()
-        assert fixed_price_next_plan is not None
-        fixed_price_next_plan.delete()
-        return "Fixed-price scheduled plan deleted"
+        assert fixed_price_offer is not None
+        fixed_price_offer.delete()
+        return "Fixed-price plan offer deleted"
 
     def update_customer_sponsorship_status(self, sponsorship_pending: bool) -> str:
         customer = self.get_customer()
@@ -2250,7 +2250,7 @@ class BillingSession(ABC):
             return  # nocoverage
 
         min_licenses = self.min_licenses_for_plan(plan.tier)
-        if min_licenses > renewal_license_count:  # nocoverage
+        if min_licenses > renewal_license_count:
             # If we are renewing less licenses than the minimum required for the plan, we need to
             # adjust `license_at_next_renewal` for the customer.
             raise BillingError(
@@ -2891,7 +2891,9 @@ class BillingSession(ABC):
     ) -> int:
         customer = self.get_customer()
         if customer is not None and customer.minimum_licenses:
-            assert customer.monthly_discounted_price or customer.annual_discounted_price
+            # This could be either because the customer has a fixed
+            # monthly_discounted_price or annual_discounted_price, or
+            # because we wanted to override their minimum.
             return customer.minimum_licenses
 
         if tier == CustomerPlan.TIER_SELF_HOSTED_BASIC:

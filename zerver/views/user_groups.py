@@ -22,7 +22,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
-from zerver.lib.types import AnonymousSettingGroupDict
+from zerver.lib.types import UserGroupMembersDict
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
     access_user_group_for_deactivation,
@@ -33,6 +33,7 @@ from zerver.lib.user_groups import (
     get_direct_memberships_of_users,
     get_group_setting_value_for_api,
     get_subgroup_ids,
+    get_system_user_group_by_name,
     get_user_group_direct_member_ids,
     get_user_group_member_ids,
     is_user_in_group,
@@ -43,6 +44,7 @@ from zerver.lib.user_groups import (
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
 from zerver.models import NamedUserGroup, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.models.users import get_system_bot
 from zerver.views.streams import compose_views
 
@@ -58,12 +60,12 @@ def add_user_group(
     members: Json[list[int]],
     description: str,
     subgroups: Json[list[int]] | None = None,
-    can_add_members_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_join_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_leave_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_manage_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_mention_group: Json[int | AnonymousSettingGroupDict] | None = None,
-    can_remove_members_group: Json[int | AnonymousSettingGroupDict] | None = None,
+    can_add_members_group: Json[int | UserGroupMembersDict] | None = None,
+    can_join_group: Json[int | UserGroupMembersDict] | None = None,
+    can_leave_group: Json[int | UserGroupMembersDict] | None = None,
+    can_manage_group: Json[int | UserGroupMembersDict] | None = None,
+    can_mention_group: Json[int | UserGroupMembersDict] | None = None,
+    can_remove_members_group: Json[int | UserGroupMembersDict] | None = None,
 ) -> HttpResponse:
     user_profile.realm.ensure_not_on_limited_plan()
     user_profiles = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
@@ -71,13 +73,14 @@ def add_user_group(
 
     group_settings_map = {}
     request_settings_dict = locals()
+    nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
     for setting_name, permission_config in NamedUserGroup.GROUP_PERMISSION_SETTINGS.items():
         if setting_name not in request_settings_dict:  # nocoverage
             continue
 
         if request_settings_dict[setting_name] is not None:
             setting_value = parse_group_setting_value(
-                request_settings_dict[setting_name], setting_name
+                request_settings_dict[setting_name], nobody_group
             )
             setting_value_group = access_user_group_for_setting(
                 setting_value,
@@ -116,7 +119,7 @@ def get_user_groups(
 ) -> HttpResponse:
     user_groups = user_groups_in_realm_serialized(
         user_profile.realm, include_deactivated_groups=include_deactivated_groups
-    )
+    ).api_groups
     return json_success(request, data={"user_groups": user_groups})
 
 
@@ -161,6 +164,7 @@ def edit_user_group(
         do_update_user_group_description(user_group, description, acting_user=user_profile)
 
     request_settings_dict = locals()
+    nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
     for setting_name, permission_config in NamedUserGroup.GROUP_PERMISSION_SETTINGS.items():
         if setting_name not in request_settings_dict:  # nocoverage
             continue
@@ -169,12 +173,12 @@ def edit_user_group(
             continue
 
         setting_value = request_settings_dict[setting_name]
-        new_setting_value = parse_group_setting_value(setting_value.new, setting_name)
+        new_setting_value = parse_group_setting_value(setting_value.new, nobody_group)
 
         expected_current_setting_value = None
         if setting_value.old is not None:
             expected_current_setting_value = parse_group_setting_value(
-                setting_value.old, setting_name
+                setting_value.old, nobody_group
             )
 
         current_value = getattr(user_group, setting_name)

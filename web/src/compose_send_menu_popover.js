@@ -74,9 +74,20 @@ export function open_send_later_menu() {
                             current_time.getTime() +
                                 scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
                         ),
-                        onClose() {
+                        onClose(selectedDates, _dateStr, instance) {
                             // Return to normal state.
                             $send_later_modal_content.css("pointer-events", "all");
+                            const selected_date = selectedDates[0];
+
+                            if (selected_date && selected_date < instance.config.minDate) {
+                                scheduled_messages.set_minimum_scheduled_message_delay_minutes_note(
+                                    true,
+                                );
+                            } else {
+                                scheduled_messages.set_minimum_scheduled_message_delay_minutes_note(
+                                    false,
+                                );
+                            }
                         },
                     },
                 );

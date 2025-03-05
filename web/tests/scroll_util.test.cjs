@@ -96,13 +96,16 @@ run_test("scroll_element_into_container", () => {
                 top = arg;
                 return this;
             },
+            offset: () => ({
+                top: 0,
+            }),
             __zjquery: true,
         };
     })();
 
     const $elem1 = {
         innerHeight: () => 25,
-        position: () => ({
+        offset: () => ({
             top: 0,
         }),
     };
@@ -111,7 +114,7 @@ run_test("scroll_element_into_container", () => {
 
     const $elem2 = {
         innerHeight: () => 15,
-        position: () => ({
+        offset: () => ({
             top: 250,
         }),
     };

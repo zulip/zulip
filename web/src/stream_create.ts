@@ -12,7 +12,6 @@ import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
-import * as people from "./people.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -80,16 +79,6 @@ class StreamSubscriptionError {
     report_no_subs_to_stream(): void {
         $("#stream_subscription_error").text(
             $t({defaultMessage: "You cannot create a channel with no subscribers."}),
-        );
-        $("#stream_subscription_error").show();
-    }
-
-    cant_create_stream_without_subscribing(): void {
-        $("#stream_subscription_error").text(
-            $t({
-                defaultMessage:
-                    "You must be an organization administrator to create a channel without subscribing.",
-            }),
         );
         $("#stream_subscription_error").show();
     }
@@ -509,9 +498,23 @@ export function show_new_stream_modal(): void {
         }
     }
 
+    const $add_subscribers_container = $(
+        "#stream_creation_form .subscriber_list_settings",
+    ).expectOne();
+
+    stream_ui_updates.enable_or_disable_add_subscribers_elements(
+        $add_subscribers_container,
+        // User should always be allowed to add subscribers when
+        // creating a new channel regardless of their presence in
+        // realm.can_add_subscribers_group
+        true,
+        true,
+    );
+
     // set default state for "announce stream" and "default stream" option.
     $("#stream_creation_form .default-stream input").prop("checked", false);
     update_announce_stream_state();
+    stream_ui_updates.update_can_subscribe_group_label($("#stream-creation"));
     stream_ui_updates.update_default_stream_and_stream_privacy_state($("#stream-creation"));
     clear_error_display();
 }
@@ -542,6 +545,7 @@ export function set_up_handlers(): void {
     $container.on("change", ".stream-privacy-values input", () => {
         update_announce_stream_state();
         stream_ui_updates.update_default_stream_and_stream_privacy_state($container);
+        stream_ui_updates.update_can_subscribe_group_label($container);
     });
 
     $container.on("change", ".default-stream input", () => {
@@ -575,11 +579,6 @@ export function set_up_handlers(): void {
             stream_create_subscribers.pill_widget.appendValue(
                 stream_create_subscribers.pill_widget.getCurrentText()!,
             );
-            return;
-        }
-
-        if (!principals.includes(people.my_current_user_id()) && !current_user.is_admin) {
-            stream_subscription_error.cant_create_stream_without_subscribing();
             return;
         }
 

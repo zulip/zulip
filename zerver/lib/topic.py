@@ -6,6 +6,8 @@ import orjson
 from django.db import connection
 from django.db.models import F, Func, JSONField, Q, QuerySet, Subquery, TextField, Value
 from django.db.models.functions import Cast
+from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
 from zerver.lib.types import EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.utils import assert_is_not_none
@@ -74,6 +76,39 @@ def messages_for_topic(
         recipient_id=stream_recipient_id,
         subject__iexact=topic_name,
     )
+
+
+def get_first_message_for_user_in_topic(
+    realm_id: int,
+    user_profile: UserProfile | None,
+    recipient_id: int,
+    topic_name: str,
+    history_public_to_subscribers: bool,
+    acting_user_has_channel_content_access: bool = False,
+) -> int | None:
+    # Guard against incorrectly calling this function without
+    # first checking for channel access.
+    assert acting_user_has_channel_content_access
+
+    if history_public_to_subscribers:
+        return (
+            messages_for_topic(realm_id, recipient_id, topic_name)
+            .values_list("id", flat=True)
+            .first()
+        )
+
+    elif user_profile is not None:
+        return (
+            UserMessage.objects.filter(
+                user_profile=user_profile,
+                message__recipient_id=recipient_id,
+                message__subject__iexact=topic_name,
+            )
+            .values_list("message_id", flat=True)
+            .first()
+        )
+
+    return None
 
 
 def save_message_for_edit_use_case(message: Message) -> None:
@@ -156,9 +191,9 @@ def update_messages_for_topic_edit(
         #
         # This equates to:
         #    "edit_history" = (
-        #      (COALESCE("zerver_message"."edit_history", '[]'))::jsonb
-        #      ||
         #      ( '[{ ..json event.. }]' )::jsonb
+        #      ||
+        #      (COALESCE("zerver_message"."edit_history", '[]'))::jsonb
         #     )::text
         "edit_history": Cast(
             Func(
@@ -347,4 +382,11 @@ def maybe_rename_empty_topic_to_general_chat(
 ) -> str:
     if is_channel_message and topic_name == "" and not allow_empty_topic_name:
         return Message.EMPTY_TOPIC_FALLBACK_NAME
+    return topic_name
+
+
+def get_topic_display_name(topic_name: str, language: str) -> str:
+    if topic_name == "":
+        with override_language(language):
+            return _(Message.EMPTY_TOPIC_FALLBACK_NAME)
     return topic_name

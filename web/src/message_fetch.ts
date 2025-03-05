@@ -28,6 +28,7 @@ import {narrow_term_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 const response_schema = z.object({
     anchor: z.number(),
@@ -126,7 +127,7 @@ export function fetch_more_if_required_for_current_msg_list(
     if (has_found_oldest && has_found_newest && message_lists.current.visibly_empty()) {
         // Even after loading more messages, we have
         // no messages to display in this narrow.
-        narrow_banner.show_empty_narrow_message();
+        narrow_banner.show_empty_narrow_message(message_lists.current.data.filter);
         compose_closed_ui.update_buttons_for_private();
         compose_recipient.check_posting_policy_for_compose_box();
     }
@@ -317,6 +318,30 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
     return JSON.stringify(narrow_terms);
 }
 
+export function get_narrow_for_message_fetch(filter: Filter): string {
+    let narrow_data = filter.public_terms();
+    if (page_params.narrow !== undefined) {
+        narrow_data = [...narrow_data, ...page_params.narrow];
+    }
+    if (page_params.is_spectator) {
+        const web_public_narrow: NarrowTerm[] = [
+            {operator: "channels", operand: "web-public", negated: false},
+        ];
+        // This logic is not ideal in that, in theory, an existing `channels`
+        // operator could be present, but not in a useful way. We don't attempt
+        // to validate the narrow is compatible with spectators here; the server
+        // will return an error if appropriate.
+        narrow_data = [...narrow_data, ...web_public_narrow];
+    }
+
+    let narrow_param_string = "";
+    if (narrow_data.length > 0) {
+        narrow_param_string = JSON.stringify(narrow_data);
+        narrow_param_string = handle_operators_supporting_id_based_api(narrow_param_string);
+    }
+    return narrow_param_string;
+}
+
 function get_parameters_for_message_fetch_api(opts: MessageFetchOptions): MessageFetchAPIParams {
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
@@ -338,23 +363,9 @@ function get_parameters_for_message_fetch_api(opts: MessageFetchOptions): Messag
         blueslip.error("Message list data is undefined!");
     }
 
-    let narrow_data = msg_list_data.filter.public_terms();
-    if (page_params.narrow !== undefined) {
-        narrow_data = [...narrow_data, ...page_params.narrow];
-    }
-    if (page_params.is_spectator) {
-        const web_public_narrow: NarrowTerm[] = [
-            {operator: "channels", operand: "web-public", negated: false},
-        ];
-        // This logic is not ideal in that, in theory, an existing `channels`
-        // operator could be present, but not in a useful way. We don't attempt
-        // to validate the narrow is compatible with spectators here; the server
-        // will return an error if appropriate.
-        narrow_data = [...narrow_data, ...web_public_narrow];
-    }
-    if (narrow_data.length > 0) {
-        const narrow_param_string = JSON.stringify(narrow_data);
-        data.narrow = handle_operators_supporting_id_based_api(narrow_param_string);
+    const narrow = get_narrow_for_message_fetch(msg_list_data.filter);
+    if (narrow !== "") {
+        data.narrow = narrow;
     }
     return data;
 }
@@ -422,7 +433,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                     !opts.msg_list.is_combined_feed_view &&
                     opts.msg_list.visibly_empty()
                 ) {
-                    narrow_banner.show_empty_narrow_message();
+                    narrow_banner.show_empty_narrow_message(opts.msg_list.data.filter);
                 }
 
                 // TODO: This should probably do something explicit with
@@ -434,28 +445,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
 
             ui_report.show_error($("#connection-error"));
 
-            // We need to respect the server's rate-limiting headers, but beyond
-            // that, we also want to avoid contributing to a thundering herd if
-            // the server is giving us 500s/502s.
-            //
-            // So we do the maximum of the retry-after header and an exponential
-            // backoff with ratio 2 and half jitter. Starts at 1-2s and ends at
-            // 16-32s after 5 failures.
-            const backoff_scale = Math.min(2 ** attempt, 32);
-            const backoff_delay_secs = ((1 + Math.random()) / 2) * backoff_scale;
-            let rate_limit_delay_secs = 0;
-            const rate_limited_error_schema = z.object({
-                "retry-after": z.number(),
-                code: z.literal("RATE_LIMIT_HIT"),
-            });
-            const parsed = rate_limited_error_schema.safeParse(xhr.responseJSON);
-            if (xhr.status === 429 && parsed?.success && parsed?.data) {
-                // Add a bit of jitter to the required delay suggested by the
-                // server, because we may be racing with other copies of the web
-                // app.
-                rate_limit_delay_secs = parsed.data["retry-after"] + Math.random() * 0.5;
-            }
-            const delay_secs = Math.max(backoff_delay_secs, rate_limit_delay_secs);
+            const delay_secs = util.get_retry_backoff_seconds(xhr, attempt, true);
             setTimeout(() => {
                 load_messages(opts, attempt + 1);
             }, delay_secs * 1000);

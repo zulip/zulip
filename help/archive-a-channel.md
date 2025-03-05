@@ -1,14 +1,12 @@
 # Archive a channel
 
-{!admin-only.md!}
-
 You can archive channels you no longer plan to use. Archiving a channel:
 
 - Removes it from the left sidebar for all users.
 - Prevents new messages from being sent to the channel.
 - Prevents messages in the channel from being edited, deleted, or moved.
 
-Archiving a channel does not remove subscribers, or change who can access it.
+Archiving a channel does not unsubscribe users, or change who can access it.
 Messages in archived channels still appear in [search
 results](/help/search-for-messages), the [combined feed](/help/combined-feed),
 and [recent conversations](/help/recent-conversations).

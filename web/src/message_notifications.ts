@@ -40,7 +40,7 @@ function get_notification_content(message: Message | TestNotificationMessage): s
     let content;
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
-    ui_util.replace_emoji_with_text($content);
+    ui_util.convert_unicode_eligible_emoji_to_unicode($content);
     ui_util.change_katex_to_raw_latex($content);
     ui_util.potentially_collapse_quotes($content);
     spoilers.hide_spoilers_in_notification($content);
@@ -156,7 +156,8 @@ function get_notification_title(
             return title_prefix + " " + title_suffix;
         case "stream": {
             const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-            title_suffix = " (#" + stream_name + " > " + message.topic + ")";
+            const topic_display_name = util.get_final_topic_display_name(message.topic);
+            title_suffix = " (#" + stream_name + " > " + topic_display_name + ")";
             break;
         }
     }

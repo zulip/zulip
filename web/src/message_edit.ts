@@ -48,13 +48,16 @@ import * as onboarding_steps from "./onboarding_steps.ts";
 import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as rows from "./rows.ts";
+import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import * as typing from "./typing.ts";
 import * as ui_report from "./ui_report.ts";
+import * as ui_util from "./ui_util.ts";
 import * as upload from "./upload.ts";
 import {the} from "./util.ts";
 import * as util from "./util.ts";
@@ -309,7 +312,7 @@ export function stream_and_topic_exist_in_edit_history(
     }
 
     for (const edit_history_event of message.edit_history) {
-        if (!edit_history_event.prev_stream && !edit_history_event.prev_topic) {
+        if (!edit_history_event.prev_stream && edit_history_event.prev_topic === undefined) {
             // Message was not moved in this edit event.
             continue;
         }
@@ -322,7 +325,7 @@ export function stream_and_topic_exist_in_edit_history(
             message_dict.stream_id = edit_history_event.prev_stream;
         }
 
-        if (edit_history_event.prev_topic) {
+        if (edit_history_event.prev_topic !== undefined) {
             // This edit event changed the topic.  We expect the
             // following to be true due to the invariants of the edit
             // history data structure:
@@ -364,7 +367,7 @@ export function show_topic_edit_spinner($row: JQuery): void {
 }
 
 export function end_if_focused_on_inline_topic_edit(): void {
-    const $focused_elem = $(".topic_edit_form").find(":focus");
+    const $focused_elem = $(".topic_edit").find(":focus");
     if ($focused_elem.length === 1) {
         $focused_elem.trigger("blur");
         const $recipient_row = $focused_elem.closest(".recipient_row");
@@ -422,22 +425,53 @@ function handle_message_row_edit_escape(e: JQuery.KeyDownEvent): void {
     e.preventDefault();
 }
 
-function handle_inline_topic_edit_keydown(e: JQuery.KeyDownEvent, $recipient_row: JQuery): void {
-    if (keydown_util.is_enter_event(e)) {
-        // Handle Enter key in the recipient bar/inline topic edit form
+function handle_inline_topic_edit_keydown(this: HTMLElement, e: JQuery.KeyDownEvent): void {
+    e.stopPropagation();
+    const $form = $(this);
+    const $form_inline_input = $form.find<HTMLInputElement>("input.inline_topic_edit");
+
+    if ($form_inline_input.is(":focus") && keydown_util.is_enter_event(e)) {
+        // Handle Enter key event in the inline topic edit UI.
+        e.preventDefault();
         if ($(".typeahead:visible").length > 0) {
-            // Accepting typeahead should not trigger a save.
-            e.preventDefault();
+            // Accepting a suggestion from the typeahead should not trigger a save.
             return;
         }
+        const $recipient_row = $form.closest(".recipient_row");
         try_save_inline_topic_edit($recipient_row);
-        e.stopPropagation();
-        e.preventDefault();
     } else if (e.key === "Escape") {
-        // Handle Esc
-        end_if_focused_on_inline_topic_edit();
-        e.stopPropagation();
+        // Handle Escape key event in the inline topic edit UI.
         e.preventDefault();
+        end_if_focused_on_inline_topic_edit();
+    }
+}
+
+function handle_inline_topic_edit_change(this: HTMLInputElement): void {
+    const $inline_topic_edit_input = $(this);
+    if ($inline_topic_edit_input.hasClass("invalid-input")) {
+        // If invalid-input class is present on the inline topic edit
+        // input field, remove it as soon as the user starts typing
+        // as that probably means the user is trying to fix the error.
+        $inline_topic_edit_input.removeClass("invalid-input");
+    }
+
+    const $topic_edit_save_button = $inline_topic_edit_input
+        .closest(".topic_edit_form")
+        .find(".topic_edit_save");
+    if (realm.realm_mandatory_topics && util.is_topic_name_considered_empty(this.value)) {
+        // When the topic is mandatory in a realm and the new topic is considered empty,
+        // we disable the save button and show a tooltip with an error message.
+        ui_util.disable_element_and_add_tooltip(
+            $topic_edit_save_button,
+            $t({defaultMessage: "Topics are required in this organization."}),
+        );
+        return;
+    }
+    if ($topic_edit_save_button.parent().hasClass("disabled-tooltip")) {
+        // If we reach here, it means the save button was disabled previously
+        // and the user has started typing in the input field, probably to fix
+        // the error. So, we re-enable the save button and remove the tooltip.
+        ui_util.enable_element_and_remove_tooltip($topic_edit_save_button);
     }
 }
 
@@ -656,6 +690,11 @@ function start_edit_with_content(
     }
     const row_id = rows.id($row);
     upload.setup_upload(upload.edit_config(row_id));
+    // Setup dropdown for saved snippets button in the current
+    // message edit control buttons tray.
+    saved_snippets_ui.setup_saved_snippets_dropdown_widget(
+        `.saved-snippets-message-edit-widget[data-message-id="${CSS.escape(row_id.toString())}"]`,
+    );
 }
 
 export function start($row: JQuery, edit_box_open_callback?: () => void): void {
@@ -892,12 +931,11 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     const $form = $(
         render_topic_edit_form({
             max_topic_length: realm.max_topic_length,
+            realm_mandatory_topics: realm.realm_mandatory_topics,
+            empty_string_topic_display_name: util.get_final_topic_display_name(""),
         }),
     );
     message_lists.current.show_edit_topic_on_recipient_row($recipient_row, $form);
-    $form.on("keydown", (e) => {
-        handle_inline_topic_edit_keydown(e, $recipient_row);
-    });
     $(".topic_edit_spinner").hide();
     const msg_id = rows.id_for_recipient_row($recipient_row);
     const message = message_lists.current.get(msg_id);
@@ -905,16 +943,16 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     const topic = message.topic;
     const $inline_topic_edit_input = $form.find<HTMLInputElement>("input.inline_topic_edit");
     $inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
-    if (topic === "") {
-        const topic_display_name = util.get_final_topic_display_name(topic);
-        $inline_topic_edit_input.attr("placeholder", topic_display_name);
-    }
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
     composebox_typeahead.initialize_topic_edit_typeahead(
         $inline_topic_edit_input,
         stream_name,
         false,
     );
+
+    $form.on("keydown", handle_inline_topic_edit_keydown);
+
+    $inline_topic_edit_input.on("input", handle_inline_topic_edit_change);
 }
 
 export function end_inline_topic_edit($row: JQuery): void {
@@ -936,6 +974,7 @@ export function end_message_row_edit($row: JQuery): void {
 
     const message = message_lists.current.get(row_id);
     if (message !== undefined && currently_editing_messages.has(message.id)) {
+        typing.stop_message_edit_notifications(message.id);
         currently_editing_messages.delete(message.id);
         message_lists.current.hide_edit_message($row);
         compose_call.abort_video_callbacks(message.id.toString());
@@ -973,7 +1012,8 @@ export function try_save_inline_topic_edit($row: JQuery): void {
     const message = message_lists.current.get(message_id);
     assert(message?.type === "stream");
     const old_topic = message.topic;
-    const new_topic = $row.find<HTMLInputElement>("input.inline_topic_edit").val()?.trim();
+    const $inline_topic_edit_input = $row.find<HTMLInputElement>("input.inline_topic_edit");
+    const new_topic = $inline_topic_edit_input.val()?.trim();
     assert(new_topic !== undefined);
     const topic_changed = new_topic !== old_topic;
 
@@ -981,6 +1021,15 @@ export function try_save_inline_topic_edit($row: JQuery): void {
         // this means the inline_topic_edit was opened and submitted without
         // changing anything, therefore, we should just close the inline topic edit.
         end_inline_topic_edit($row);
+        return;
+    }
+
+    if (realm.realm_mandatory_topics && util.is_topic_name_considered_empty(new_topic)) {
+        // When the topic is mandatory in a realm and the new topic is considered
+        // empty, we don't allow the user to save the topic. Instead, we show the
+        // error visually via the invalid-input class and focus on the input field.
+        $inline_topic_edit_input.addClass("invalid-input");
+        $inline_topic_edit_input.trigger("focus");
         return;
     }
 
@@ -1004,7 +1053,6 @@ export function try_save_inline_topic_edit($row: JQuery): void {
 }
 
 export function do_save_inline_topic_edit($row: JQuery, message: Message, new_topic: string): void {
-    const msg_list = message_lists.current;
     show_topic_edit_spinner($row);
 
     if (message.locally_echoed) {
@@ -1067,13 +1115,6 @@ export function do_save_inline_topic_edit($row: JQuery, message: Message, new_to
                 return;
             }
             loading.destroy_indicator($spinner);
-            if (msg_list === message_lists.current) {
-                const message = channel.xhr_error_message(
-                    $t({defaultMessage: "Error saving edit"}),
-                    xhr,
-                );
-                $row.find(".edit_error").text(message).css("display", "inline-block");
-            }
         },
     });
 }

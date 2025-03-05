@@ -2,9 +2,10 @@ import assert from "minimalistic-assert";
 
 import * as group_permission_settings from "./group_permission_settings.ts";
 import {page_params} from "./page_params.ts";
+import type {User} from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import {current_user, realm} from "./state_data.ts";
-import type {GroupSettingValue} from "./state_data.ts";
+import type {CurrentUser, GroupSettingValue} from "./state_data.ts";
 import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 
@@ -56,6 +57,7 @@ export function user_has_permission_for_group_setting(
     setting_value: GroupSettingValue,
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
+    user: CurrentUser | User = current_user,
 ): boolean {
     if (page_params.is_spectator) {
         return false;
@@ -67,11 +69,11 @@ export function user_has_permission_for_group_setting(
     );
     assert(settings_config !== undefined);
 
-    if (!settings_config.allow_everyone_group && current_user.is_guest) {
+    if (!settings_config.allow_everyone_group && user.is_guest) {
         return false;
     }
 
-    return user_groups.is_user_in_setting_group(setting_value, current_user.user_id);
+    return user_groups.is_user_in_setting_group(setting_value, user.user_id);
 }
 
 export function user_can_invite_users_by_email(): boolean {
@@ -90,7 +92,19 @@ export function user_can_create_multiuse_invite(): boolean {
     );
 }
 
-export function can_subscribe_others_to_all_streams(): boolean {
+export function user_can_summarize_topics(): boolean {
+    if (!realm.server_can_summarize_topics) {
+        return false;
+    }
+
+    return user_has_permission_for_group_setting(
+        realm.realm_can_summarize_topics_group,
+        "can_summarize_topics_group",
+        "realm",
+    );
+}
+
+export function can_subscribe_others_to_all_accessible_streams(): boolean {
     return user_has_permission_for_group_setting(
         realm.realm_can_add_subscribers_group,
         "can_add_subscribers_group",
@@ -162,7 +176,10 @@ export function can_manage_user_group(group_id: number): boolean {
 
 export function can_add_members_to_user_group(group_id: number): boolean {
     const group = user_groups.get_user_group_from_id(group_id);
-
+    // We cannot add members if the group is deactivated.
+    if (group.deactivated) {
+        return false;
+    }
     if (
         user_has_permission_for_group_setting(
             group.can_add_members_group,
@@ -178,7 +195,10 @@ export function can_add_members_to_user_group(group_id: number): boolean {
 
 export function can_remove_members_from_user_group(group_id: number): boolean {
     const group = user_groups.get_user_group_from_id(group_id);
-
+    // We cannot remove members if the group is deactivated.
+    if (group.deactivated) {
+        return false;
+    }
     if (
         user_has_permission_for_group_setting(
             group.can_remove_members_group,
@@ -194,7 +214,10 @@ export function can_remove_members_from_user_group(group_id: number): boolean {
 
 export function can_join_user_group(group_id: number): boolean {
     const group = user_groups.get_user_group_from_id(group_id);
-
+    // One cannot join a deactivated group.
+    if (group.deactivated) {
+        return false;
+    }
     if (user_has_permission_for_group_setting(group.can_join_group, "can_join_group", "group")) {
         return true;
     }
@@ -203,8 +226,11 @@ export function can_join_user_group(group_id: number): boolean {
 }
 
 export function can_leave_user_group(group_id: number): boolean {
+    // One cannot leave a deactivated group.
     const group = user_groups.get_user_group_from_id(group_id);
-
+    if (group.deactivated) {
+        return false;
+    }
     if (user_has_permission_for_group_setting(group.can_leave_group, "can_leave_group", "group")) {
         return true;
     }
@@ -293,7 +319,9 @@ export function user_email_not_configured(): boolean {
 }
 
 export function bot_type_id_to_string(type_id: number): string | undefined {
-    const bot_type = page_params.bot_types.find((bot_type) => bot_type.type_id === type_id);
+    const bot_type = Object.values(settings_config.bot_type_values).find(
+        (bot_type) => bot_type.type_id === type_id,
+    );
 
     if (bot_type === undefined) {
         return undefined;

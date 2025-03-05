@@ -577,7 +577,7 @@ In frontend, we have split the `property_types` into three objects:
 Once you've determined whether the new setting belongs, the next step
 is to find the right subsection of that page to put the setting
 in. For example in this case of `mandatory_topics` it will lie in
-"Other settings" (`other_settings`) subsection.
+"Compose settings" (`org-compose-settings`) subsection.
 
 _If you're not sure in which section your feature belongs, it's
 better to discuss it in

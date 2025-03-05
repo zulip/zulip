@@ -543,6 +543,7 @@ def build_attachment(
         is_realm_public=True,
         path_id=s3_path,
         file_name=fileinfo["name"],
+        content_type=fileinfo.get("mimetype"),
     )
 
     attachment_dict = model_to_dict(attachment, exclude=["owner", "messages", "realm"])

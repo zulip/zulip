@@ -17,7 +17,7 @@ using the call provider (Jitsi, Zoom, etc.)
 
 {!start-composing.md!}
 
-1. Click the **video camera** (<i class="zulip-icon zulip-icon-video-call"></i>)
+1. Click the **Add video call** (<i class="zulip-icon zulip-icon-video-call"></i>)
    icon at the bottom of the compose box. This will insert a **Join video call.**
    link into your message.
 
@@ -34,9 +34,10 @@ using the call provider (Jitsi, Zoom, etc.)
 
 1. Navigate to a channel, topic, or direct message view.
 
-1. Tap the **video camera**
-   (<img src="/static/images/help/mobile-video-icon.svg" alt="video" class="help-center-icon"/>)
-   button at the bottom of the app. This will insert a **Click to join video call**
+1. Tap the **Add video call**
+   ( <img src="/static/images/help/mobile-video-icon.svg" alt="video"
+   class="help-center-icon"/> )
+   icon at the bottom of the app. This will insert a **Click to join video call**
    link into your message.
 
 1. If you are in a channel view, choose a destination topic by tapping the
@@ -61,9 +62,9 @@ using the call provider (Jitsi, Zoom, etc.)
 
 {!start-composing.md!}
 
-1. Click the **phone** (<i class="zulip-icon zulip-icon-voice-call"></i>) icon
-   at the bottom of the compose box. This will insert a **Join voice call.**
-   link into your message.
+1. Click the **Add voice call** (<i class="zulip-icon
+   zulip-icon-voice-call"></i>) icon at the bottom of the compose box. This
+   will insert a **Join voice call.** link into your message.
 
 1. Send the message.
 
@@ -101,7 +102,7 @@ supported by Zulip are:
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings**, select the desired provider from the
+1. Under **Compose settings**, select the desired provider from the
    **Call provider** dropdown.
 
 {!save-changes.md!}
@@ -118,7 +119,7 @@ instance of Jitsi Meet.
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings**, select **Custom URL** from the
+1. Under **Compose settings**, select **Custom URL** from the
    **Jitsi server URL** dropdown.
 
 1. Enter the URL of your self-hosted Jitsi Meet server.
@@ -127,9 +128,28 @@ instance of Jitsi Meet.
 
 {end_tabs}
 
+## Unlink your Zoom account from Zulip
+
+If you linked your Zoom account to Zulip, and no longer want it to be connected,
+you can unlink it.
+
+{start_tabs}
+
+1. Log in to the [Zoom App Marketplace](https://marketplace.zoom.us/), and
+   select **Manage**.
+
+1. Select **Added Apps** and click the **Remove** button next to the Zulip app.
+
+1. Click **Confirm**.
+
+{end_tabs}
+
 [big-blue-button-configuration]: https://zulip.readthedocs.io/en/stable/production/video-calls.html#bigbluebutton
 [zoom-configuration]: https://zulip.readthedocs.io/en/stable/production/video-calls.html#zoom
 
 ## Related articles
 
+* [Jitsi Meet integration](/integrations/doc/jitsi)
+* [Zoom integration integration](/integrations/doc/zoom)
+* [BigBlueButton integration](/integrations/doc/big-blue-button)
 * [Insert a link](/help/insert-a-link)

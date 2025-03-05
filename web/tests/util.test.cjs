@@ -372,6 +372,16 @@ run_test("format_array_as_list", () => {
         "<b>apple</b>, <b>banana</b>, and <b>orange</b>",
     );
 
+    // Conjunction format
+    assert.equal(
+        util.format_array_as_list_with_conjuction(array, "narrow"),
+        "apple, banana, orange",
+    );
+    assert.equal(
+        util.format_array_as_list_with_conjuction(array, "long"),
+        "apple, banana, and orange",
+    );
+
     // when Intl.ListFormat does not exist
     with_overrides(({override}) => {
         override(global.Intl, "ListFormat", undefined);
@@ -382,6 +392,15 @@ run_test("format_array_as_list", () => {
         assert.equal(
             util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
             "<b>apple</b>, <b>banana</b>, <b>orange</b>",
+        );
+
+        assert.equal(
+            util.format_array_as_list_with_conjuction(array, "narrow"),
+            "apple, banana, orange",
+        );
+        assert.equal(
+            util.format_array_as_list_with_conjuction(array, "long"),
+            "apple, banana, orange",
         );
     });
 });
@@ -509,4 +528,63 @@ run_test("get_final_topic_display_name", ({override}) => {
     assert.deepEqual(util.get_final_topic_display_name(""), "translated: general chat");
     override(realm, "realm_empty_topic_display_name", "random topic name");
     assert.deepEqual(util.get_final_topic_display_name(""), "random topic name");
+});
+
+run_test("is_topic_name_considered_empty", ({override}) => {
+    // Topic is not considered empty if it is distinct string
+    // other than "(no topic)", or realm_empty_topic_display_name.
+    assert.ok(!util.is_topic_name_considered_empty("some topic"));
+
+    // Topic is considered empty if it is an empty string.
+    assert.ok(util.is_topic_name_considered_empty(""));
+
+    // Topic is considered empty if it is equal to "(no topic)".
+    assert.ok(util.is_topic_name_considered_empty("(no topic)"));
+
+    // Topic name is considered empty if it is equal to realm_empty_topic_display_name.
+    override(realm, "realm_empty_topic_display_name", "general chat");
+    assert.ok(util.is_topic_name_considered_empty("general chat"));
+});
+
+run_test("get_retry_backoff_seconds", () => {
+    const xhr_500_error = {
+        status: 500,
+    };
+
+    // Shorter backoff scale
+    // First retry should be between 1-2 seconds.
+    let backoff = util.get_retry_backoff_seconds(xhr_500_error, 1, true);
+    assert.ok(backoff >= 1);
+    assert.ok(backoff < 3);
+    // 100th retry should be between 16-32 seconds.
+    backoff = util.get_retry_backoff_seconds(xhr_500_error, 100, true);
+    assert.ok(backoff >= 16);
+    assert.ok(backoff <= 32);
+
+    // Longer backoff scale
+    // First retry should be between 1-2 seconds.
+    backoff = util.get_retry_backoff_seconds(xhr_500_error, 1);
+    assert.ok(backoff >= 1);
+    assert.ok(backoff <= 3);
+    // 100th retry should be between 45-90 seconds.
+    backoff = util.get_retry_backoff_seconds(xhr_500_error, 100);
+    assert.ok(backoff >= 45);
+    assert.ok(backoff <= 90);
+
+    const xhr_rate_limit_error = {
+        status: 429,
+        responseJSON: {
+            code: "RATE_LIMIT_HIT",
+            msg: "API usage exceeded rate limit",
+            result: "error",
+            "retry-after": 28.706807374954224,
+        },
+    };
+    // First retry should be greater than the retry-after value.
+    backoff = util.get_retry_backoff_seconds(xhr_rate_limit_error, 1);
+    assert.ok(backoff >= 28.706807374954224);
+    // 100th retry should be between 45-90 seconds.
+    backoff = util.get_retry_backoff_seconds(xhr_rate_limit_error, 100);
+    assert.ok(backoff >= 45);
+    assert.ok(backoff <= 90);
 });

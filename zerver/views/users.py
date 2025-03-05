@@ -45,6 +45,7 @@ from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
     CannotDeactivateLastUserError,
+    EmailAlreadyInUseError,
     JsonableError,
     MissingAuthenticationError,
     OrganizationAdministratorRequiredError,
@@ -71,15 +72,14 @@ from zerver.lib.users import (
     access_user_by_email,
     access_user_by_id,
     add_service,
-    check_bot_creation_policy,
     check_bot_name_available,
     check_can_access_user,
+    check_can_create_bot,
     check_full_name,
     check_short_name,
     check_valid_bot_config,
     check_valid_bot_type,
     check_valid_interface_type,
-    get_api_key,
     get_users_for_api,
     max_message_id_for_user,
     validate_user_custom_profile_data,
@@ -189,7 +189,7 @@ def reactivate_user_backend(
     )
     if target.is_bot:
         assert target.bot_type is not None
-        check_bot_creation_policy(user_profile, target.bot_type)
+        check_can_create_bot(user_profile, target.bot_type)
         check_bot_name_available(user_profile.realm_id, target.full_name, is_activation=True)
     do_reactivate_user(target, acting_user=user_profile)
     return json_success(request)
@@ -406,7 +406,7 @@ def avatar_by_email(
     except UserProfile.DoesNotExist:
         # If there is no such user, treat it as a new gravatar
         avatar_version = 1
-        url = get_gravatar_url(email, avatar_version, medium)
+        url = get_gravatar_url(email, avatar_version, realm.id, medium)
 
     assert url is not None
     if request.META["QUERY_STRING"]:
@@ -604,7 +604,7 @@ def add_bot_backend(
         raise JsonableError(_("Bad name or username"))
     try:
         get_user_by_delivery_email(email, user_profile.realm)
-        raise JsonableError(_("Username already in use"))
+        raise EmailAlreadyInUseError
     except UserProfile.DoesNotExist:
         pass
 
@@ -614,7 +614,7 @@ def add_bot_backend(
         is_activation=False,
     )
 
-    check_bot_creation_policy(user_profile, bot_type)
+    check_can_create_bot(user_profile, bot_type)
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
 
@@ -678,7 +678,7 @@ def add_bot_backend(
 
     notify_created_bot(bot_profile)
 
-    api_key = get_api_key(bot_profile)
+    api_key = bot_profile.api_key
 
     json_result = dict(
         user_id=bot_profile.id,
@@ -706,7 +706,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
         # Bots are supposed to have only one API key, at least for now.
         # Therefore we can safely assume that one and only valid API key will be
         # the first one.
-        api_key = get_api_key(bot_profile)
+        api_key = bot_profile.api_key
 
         return dict(
             username=bot_profile.email,
@@ -811,7 +811,7 @@ def create_user_backend(
 
     try:
         get_user_by_delivery_email(email, user_profile.realm)
-        raise JsonableError(_("Email '{email}' already in use").format(email=email))
+        raise EmailAlreadyInUseError
     except UserProfile.DoesNotExist:
         pass
 
@@ -859,7 +859,7 @@ def get_subscription_backend(
     stream_id: PathOnly[Json[int]],
 ) -> HttpResponse:
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
-    (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
+    (stream, sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
 
     subscription_status = {"is_subscribed": subscribed_to_stream(target_user, stream_id)}
 

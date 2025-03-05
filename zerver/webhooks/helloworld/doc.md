@@ -20,7 +20,7 @@ integration](/api/incoming-webhooks-walkthrough).
     environment](https://zulip.readthedocs.io/en/latest/development/overview.html):
 
     ```
-        (zulip-py3-venv) vagrant@vagrant:/srv/zulip$
+        (zulip-server) vagrant@vagrant:/srv/zulip$
         ./manage.py send_webhook_fixture_message \
         > --fixture=zerver/tests/fixtures/helloworld/hello.json \
         > '--url=http://localhost:9991/api/v1/external/helloworld?api_key=abcdefgh&stream=channel%20name;'

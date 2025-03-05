@@ -3,9 +3,7 @@ import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
 import {FoldDict} from "./fold_dict.ts";
-import * as group_permission_settings from "./group_permission_settings.ts";
 import {$t} from "./i18n.ts";
-import {page_params} from "./page_params.ts";
 import type {UserGroupUpdateEvent} from "./server_event_types.ts";
 import * as settings_config from "./settings_config.ts";
 import type {GroupPermissionSetting, GroupSettingValue, StateData} from "./state_data.ts";
@@ -22,11 +20,6 @@ export const user_group_schema = raw_user_group_schema.extend({
     direct_subgroup_ids: z.set(z.number()),
 });
 export type UserGroup = z.infer<typeof user_group_schema>;
-
-export type UserGroupForDropdownListWidget = {
-    name: string;
-    unique_id: number;
-};
 
 let user_group_name_dict: FoldDict<UserGroup>;
 let user_group_by_id_dict: Map<number, UserGroup>;
@@ -88,8 +81,7 @@ export function maybe_get_user_group_from_id(group_id: number): UserGroup | unde
     return user_group_by_id_dict.get(group_id);
 }
 
-export function update(event: UserGroupUpdateEvent): void {
-    const group = get_user_group_from_id(event.group_id);
+export function update(event: UserGroupUpdateEvent, group: UserGroup): void {
     if (event.data.name !== undefined) {
         user_group_name_dict.delete(group.name);
         group.name = event.data.name;
@@ -148,6 +140,13 @@ export function get_user_group_from_name(name: string): UserGroup | undefined {
     return user_group_name_dict.get(name);
 }
 
+export function realm_has_deactivated_user_groups(): boolean {
+    const realm_user_groups = get_realm_user_groups(true);
+    const deactivated_group_count = realm_user_groups.filter((group) => group.deactivated).length;
+
+    return deactivated_group_count > 0;
+}
+
 export function get_realm_user_groups(include_deactivated = false): UserGroup[] {
     const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
     return user_groups.filter((group) => {
@@ -163,9 +162,22 @@ export function get_realm_user_groups(include_deactivated = false): UserGroup[] 
     });
 }
 
-export function get_all_realm_user_groups(include_deactivated = false): UserGroup[] {
+export function get_all_realm_user_groups(
+    include_deactivated = false,
+    include_internet_group = false,
+): UserGroup[] {
     const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
-    return user_groups.filter((group) => include_deactivated || !group.deactivated);
+    return user_groups.filter((group) => {
+        if (!include_deactivated && group.deactivated) {
+            return false;
+        }
+
+        if (!include_internet_group && group.name === "role:internet") {
+            return false;
+        }
+
+        return true;
+    });
 }
 
 export function get_user_groups_allowed_to_mention(): UserGroup[] {
@@ -294,8 +306,11 @@ export function is_setting_group_empty(setting_group: GroupSettingValue): boolea
     return true;
 }
 
-export function get_user_groups_of_user(user_id: number): UserGroup[] {
-    const user_groups_realm = get_realm_user_groups();
+export function get_user_groups_of_user(
+    user_id: number,
+    include_deactivated_groups = false,
+): UserGroup[] {
+    const user_groups_realm = get_realm_user_groups(include_deactivated_groups);
     const groups_of_user = user_groups_realm.filter((group) => is_user_in_group(group.id, user_id));
     return groups_of_user;
 }
@@ -472,6 +487,29 @@ export function is_user_in_group(
     return false;
 }
 
+export function group_has_permission(setting_value: GroupSettingValue, group_id: number): boolean {
+    if (typeof setting_value === "number") {
+        if (setting_value === group_id) {
+            return true;
+        }
+
+        return is_subgroup_of_target_group(setting_value, group_id);
+    }
+
+    const direct_subgroup_ids = setting_value.direct_subgroups;
+    if (direct_subgroup_ids.includes(group_id)) {
+        return true;
+    }
+
+    for (const direct_subgroup_id of direct_subgroup_ids) {
+        if (is_subgroup_of_target_group(direct_subgroup_id, group_id)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export function is_user_in_any_group(
     user_group_ids: number[],
     user_id: number,
@@ -530,7 +568,10 @@ export function is_user_in_setting_group(
     return false;
 }
 
-function get_display_name_for_system_group_option(setting_name: string, name: string): string {
+export function get_display_name_for_system_group_option(
+    setting_name: string,
+    name: string,
+): string {
     // We use a special label for the "Nobody" system group for clarity.
     if (setting_name === "direct_message_permission_group" && name === "Nobody") {
         return $t({defaultMessage: "Direct messages disabled"});
@@ -575,70 +616,6 @@ export function check_system_user_group_allowed_for_setting(
     }
 
     return true;
-}
-
-export function get_realm_user_groups_for_setting(
-    setting_name: string,
-    setting_type: "realm" | "stream" | "group",
-    for_new_settings_ui = false,
-): UserGroup[] {
-    const group_setting_config = group_permission_settings.get_group_permission_setting_config(
-        setting_name,
-        setting_type,
-    );
-
-    if (group_setting_config === undefined) {
-        return [];
-    }
-
-    const system_user_groups = settings_config.system_user_groups_list
-        .filter((group) =>
-            check_system_user_group_allowed_for_setting(
-                group.name,
-                group_setting_config,
-                for_new_settings_ui,
-            ),
-        )
-        .map((group) => {
-            const user_group = get_user_group_from_name(group.name);
-            if (!user_group) {
-                throw new Error(`Unknown group name: ${group.name}`);
-            }
-            return user_group;
-        });
-
-    if (!page_params.development_environment || group_setting_config.require_system_group) {
-        return system_user_groups;
-    }
-
-    const user_groups_excluding_system_groups = get_realm_user_groups();
-
-    return [...system_user_groups, ...user_groups_excluding_system_groups];
-}
-
-export function get_realm_user_groups_for_dropdown_list_widget(
-    setting_name: string,
-    setting_type: "realm" | "stream" | "group",
-): UserGroupForDropdownListWidget[] {
-    const allowed_setting_groups = get_realm_user_groups_for_setting(setting_name, setting_type);
-
-    return allowed_setting_groups.map((group) => {
-        if (!group.is_system_group) {
-            return {
-                name: group.name,
-                unique_id: group.id,
-            };
-        }
-
-        const display_name = settings_config.system_user_groups_list.find(
-            (system_group) => system_group.name === group.name,
-        )!.dropdown_option_name;
-
-        return {
-            name: get_display_name_for_system_group_option(setting_name, display_name),
-            unique_id: group.id,
-        };
-    });
 }
 
 export function get_display_group_name(group_name: string): string {

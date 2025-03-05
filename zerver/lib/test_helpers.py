@@ -12,6 +12,8 @@ from unittest import mock
 from unittest.mock import patch
 
 import boto3.session
+import dns.rdtypes.ANY.TXT
+import dns.resolver
 import fakeldap
 import ldap
 import orjson
@@ -526,9 +528,6 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         untested_patterns = {p.replace("\\", "") for p in pattern_cnt if pattern_cnt[p] == 0}
 
         exempt_patterns = {
-            # TODO: Add tests when we are sure about what needs to be
-            # served to the user as summary.
-            "api/v1/messages/summary",
             # We exempt some patterns that are called via Tornado.
             "api/v1/events",
             "api/v1/events/internal",
@@ -796,3 +795,16 @@ def ratelimit_rule(
 def consume_response(response: HttpResponseBase) -> None:
     assert response.streaming
     collections.deque(response, maxlen=0)
+
+
+def dns_txt_answer(name_str: str, txt: str) -> dns.resolver.Answer:
+    name = dns.name.from_text(name_str)
+    rdclass = dns.rdataclass.IN
+    rdtype = dns.rdatatype.TXT
+    response = dns.message.make_query(
+        name, rdtype, rdclass, flags=dns.flags.QR | dns.flags.RA | dns.flags.RD
+    )
+    response.find_rrset(dns.message.ANSWER, name, rdclass, rdtype, create=True).add(
+        dns.rdtypes.ANY.TXT.TXT(rdclass, rdtype, txt)
+    )
+    return dns.resolver.Answer(name, rdtype, rdclass, response)

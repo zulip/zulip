@@ -35,5 +35,5 @@ def setup_node_modules(production: bool = DEFAULT_PRODUCTION) -> None:
                 "--frozen-lockfile",
                 "--prefer-offline",
                 *(["--prod"] if production else []),
-            ]
+            ],
         )

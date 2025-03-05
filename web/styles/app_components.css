@@ -32,10 +32,20 @@ kbd {
     background-color: var(--color-kbd-background);
     color: var(--color-kbd-text);
     margin: 0.25em 0.1em;
-    padding: 0.1em 0.4em;
+    padding: 0.2em 0.4em;
     text-shadow: 0 1px 0 hsl(0deg 0% 100%);
     /* Prevent selection */
     user-select: none;
+    position: relative;
+    min-height: 1em;
+    min-width: 1em;
+
+    .zulip-icon::before {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
 }
 
 @media (width < $sm_min) {
@@ -352,7 +362,7 @@ div.overlay {
     opacity: 0;
     visibility: hidden;
 
-    transition: none 0.2s ease-in;
+    transition: 0.2s ease-in;
     transition-property: opacity, visibility;
     overflow: hidden;
 
@@ -522,7 +532,8 @@ input.settings_text_input {
     border: 1px solid var(--color-border-tip);
     border-radius: 4px;
     padding: 10px;
-    font-size: 1rem;
+    /* previously 1rem = 16px at 14px em = 1.1428em */
+    font-size: 1.1428em;
     line-height: 1.5;
     color: hsl(0deg 0% 40%);
 
@@ -675,7 +686,7 @@ input.settings_text_input {
 
 .animated-purple-button {
     color: hsl(0deg 0% 100%);
-    transition: none 80ms linear;
+    transition: 80ms linear;
     transition-property: background-color, box-shadow;
     box-shadow: none;
     /* This color just passes WCAG AA */
@@ -726,7 +737,7 @@ input.settings_text_input {
             transition: color 0.2s ease;
         }
 
-        transition: none 0.2s ease;
+        transition: 0.2s ease;
         transition-property: background-color, color;
     }
 
@@ -1108,6 +1119,10 @@ input.settings_text_input {
                 word-wrap: unset;
             }
 
+            .copy-overlay-message {
+                font-size: 1.2em;
+            }
+
             .restore-overlay-message {
                 cursor: pointer;
                 color: hsl(170deg 48% 54%);
@@ -1148,6 +1163,7 @@ input.settings_text_input {
     justify-content: space-between;
     outline: none;
     color: var(--color-text-default);
+    width: 206px;
 
     &:disabled {
         cursor: not-allowed;
@@ -1370,4 +1386,56 @@ input.settings_text_input {
 
 .text-error {
     color: hsl(1.06deg 44.66% 50.39%);
+}
+
+.sticky-bottom-option {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    color: var(--color-dropdown-item);
+    border: none;
+    border-top: 1px solid var(--color-border-zulip-button);
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+
+    &:hover {
+        color: var(--color-dropdown-item);
+        background-color: var(--background-color-active-dropdown-item);
+    }
+
+    &:focus {
+        background-color: var(--background-color-active-dropdown-item);
+        outline: none;
+    }
+}
+
+/* Styling for invalid inputs */
+input.invalid-input {
+    /* The use of !important is necessary here to override
+       border-color specified for text input elements in
+       dark_theme.css which has a higher specificity. */
+    border-color: var(--color-invalid-input-border) !important;
+
+    &:focus {
+        box-shadow: var(--color-invalid-input-box-shadow);
+    }
+}
+
+/* This is a utility class for line clamping. */
+.line-clamp {
+    /* Despite the below prefixed properties being deprecated,
+       the co-dependency of these three properties is a fully
+       specified behavior and will continue to be supported.
+       Reference: https://developer.mozilla.org/en-US/docs/Web/CSS/line-clamp */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    /* The value of --line-clamp-value is not defined globally and instead
+       inherits the value from another class or the parent element. If it
+       is not defined, it defaults to 2. */
+    -webkit-line-clamp: var(--line-clamp-value, 2);
+    /* Also define the standard property 'line-clamp' for compatibility,
+       for when the vendor prefix "-webkit-" is no longer required. */
+    line-clamp: var(--line-clamp-value, 2);
+    text-overflow: ellipsis;
+    overflow: hidden;
 }

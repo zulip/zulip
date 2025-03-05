@@ -1,6 +1,8 @@
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
+import type {Bot} from "./bot_data.ts";
+import * as bot_data from "./bot_data.ts";
 import * as color_data from "./color_data.ts";
 import {FoldDict} from "./fold_dict.ts";
 import {page_params} from "./page_params.ts";
@@ -9,7 +11,7 @@ import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import type {GroupSettingValue, StateData} from "./state_data.ts";
+import type {CurrentUser, GroupSettingValue, StateData} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import type {StreamPermissionGroupSetting} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
@@ -20,7 +22,6 @@ import type {
     StreamSpecificNotificationSettings,
     StreamSubscription,
 } from "./sub_store.ts";
-import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
@@ -294,6 +295,12 @@ export function slug_to_stream_id(slug: string): number | undefined {
         return stream.stream_id;
     }
 
+    // Neither format found a channel, so it's inaccessible or doesn't
+    // exist. But at least we have a stream ID; give that to the caller.
+    if (newFormatStreamId) {
+        return newFormatStreamId;
+    }
+
     // Unexpected shape, or the old shape and we don't know of a stream with
     // the given name.
     return undefined;
@@ -321,6 +328,10 @@ export function get_non_default_stream_names(): {name: string; unique_id: number
 
 export function get_unsorted_subs(): StreamSubscription[] {
     return [...stream_info.values()];
+}
+
+export function get_unsorted_subs_with_content_access(): StreamSubscription[] {
+    return [...stream_info.values()].filter((sub) => has_content_access(sub));
 }
 
 export function num_subscribed_subs(): number {
@@ -471,26 +482,169 @@ export function is_new_stream_announcements_stream_muted(): boolean {
     return is_muted(realm.realm_new_stream_announcements_stream_id);
 }
 
-export function can_toggle_subscription(sub: StreamSubscription): boolean {
-    // You can always remove your subscription if you're subscribed.
-    //
-    // One can only join a stream if it is public (!invite_only) and
-    // your role is Member or above (!is_guest).
-    // Spectators cannot subscribe to any streams.
-    //
-    // Note that the correctness of this logic relies on the fact that
-    // one cannot be subscribed to a deactivated stream.
-    return (
-        (sub.subscribed || (!current_user.is_guest && !(sub.invite_only || sub.is_archived))) &&
-        !page_params.is_spectator
+// This function will be true for every case since the server should be
+// preventing a StreamSubscription from reaching clients without
+// metadata access.
+// This function can be used to allow callers to log blueslip errors
+// when the client seems to have a group it shouldn't have access to,
+// in order to find server bugs.
+export function has_metadata_access(sub: StreamSubscription): boolean {
+    if (sub.is_web_public) {
+        return true;
+    }
+
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    if (!current_user.is_guest && !sub.invite_only) {
+        return true;
+    }
+
+    if (sub.subscribed) {
+        return true;
+    }
+
+    if (can_administer_channel(sub)) {
+        return true;
+    }
+
+    const can_add_subscribers = settings_data.user_has_permission_for_group_setting(
+        sub.can_add_subscribers_group,
+        "can_add_subscribers_group",
+        "stream",
+    );
+    if (can_add_subscribers) {
+        return true;
+    }
+
+    const can_subscribe = settings_data.user_has_permission_for_group_setting(
+        sub.can_subscribe_group,
+        "can_subscribe_group",
+        "stream",
+    );
+    if (can_subscribe) {
+        return true;
+    }
+
+    return false;
+}
+
+export function has_content_access_via_group_permissions(sub: StreamSubscription): boolean {
+    const can_add_subscribers = settings_data.user_has_permission_for_group_setting(
+        sub.can_add_subscribers_group,
+        "can_add_subscribers_group",
+        "stream",
+    );
+    if (can_add_subscribers) {
+        return true;
+    }
+
+    const can_subscribe = settings_data.user_has_permission_for_group_setting(
+        sub.can_subscribe_group,
+        "can_subscribe_group",
+        "stream",
+    );
+    if (can_subscribe) {
+        return true;
+    }
+
+    return false;
+}
+
+export let has_content_access = (sub: StreamSubscription): boolean => {
+    if (sub.is_web_public) {
+        return true;
+    }
+
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    if (sub.subscribed) {
+        return true;
+    }
+
+    if (!has_metadata_access(sub)) {
+        return false;
+    }
+
+    if (current_user.is_guest) {
+        /* istanbul ignore next */
+        return false;
+    }
+
+    if (has_content_access_via_group_permissions(sub)) {
+        return true;
+    }
+
+    if (sub.invite_only) {
+        return false;
+    }
+
+    // We do not do an admin check here since having admin permissions
+    // to a private channel does not give user access to that channel's
+    // content.
+
+    return true;
+};
+
+export function rewire_has_content_access(value: typeof has_content_access): void {
+    has_content_access = value;
+}
+
+function can_administer_channel(sub: StreamSubscription): boolean {
+    // Note that most callers should use wrappers like
+    // can_change_permissions_requiring_content_access, since actions
+    // that can grant access to message content require content access
+    // in addition to being a channel administrator.
+    if (current_user.is_admin) {
+        return true;
+    }
+
+    return settings_data.user_has_permission_for_group_setting(
+        sub.can_administer_channel_group,
+        "can_administer_channel_group",
+        "stream",
     );
 }
 
+export function can_toggle_subscription(sub: StreamSubscription): boolean {
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    // Currently, you can always remove your subscription if you're subscribed.
+    if (sub.subscribed) {
+        return true;
+    }
+
+    if (has_content_access(sub)) {
+        return true;
+    }
+
+    return false;
+}
+
+export function get_current_user_and_their_bots_with_post_messages_permission(
+    sub: StreamSubscription,
+): (CurrentUser | Bot)[] {
+    const current_user_and_their_bots: (CurrentUser | Bot)[] = [
+        current_user,
+        ...bot_data.get_all_bots_for_current_user(),
+    ];
+    const senders_with_post_messages_permission: (CurrentUser | Bot)[] = [];
+
+    for (const sender of current_user_and_their_bots) {
+        if (can_post_messages_in_stream(sub, sender.user_id)) {
+            senders_with_post_messages_permission.push(sender);
+        }
+    }
+    return senders_with_post_messages_permission;
+}
+
 export function can_access_stream_email(sub: StreamSubscription): boolean {
-    return (
-        (sub.subscribed || sub.is_web_public || (!current_user.is_guest && !sub.invite_only)) &&
-        !page_params.is_spectator
-    );
+    return get_current_user_and_their_bots_with_post_messages_permission(sub).length > 0;
 }
 
 export function can_access_topic_history(sub: StreamSubscription): boolean {
@@ -501,62 +655,49 @@ export function can_access_topic_history(sub: StreamSubscription): boolean {
 }
 
 export function can_preview(sub: StreamSubscription): boolean {
-    return sub.subscribed || !sub.invite_only || sub.previously_subscribed;
+    if (!sub.history_public_to_subscribers) {
+        return false;
+    }
+    return has_content_access(sub);
 }
 
-export function can_change_permissions(sub: StreamSubscription): boolean {
-    // Whether the current user has permission to administer this stream.
-    // Organisation admins have this permission regardless of whether
-    // they are part of can_administer_channel_group. Non-subscribers with
-    // these permission can edit name and description of a private channel
-    // without being subscribed to it.
-
-    if (sub.invite_only && !sub.subscribed) {
+export function can_change_permissions_requiring_content_access(sub: StreamSubscription): boolean {
+    if (!has_content_access(sub)) {
         return false;
     }
 
-    if (current_user.is_admin) {
-        return true;
-    }
-
-    return user_groups.is_user_in_setting_group(
-        sub.can_administer_channel_group,
-        people.my_current_user_id(),
-    );
+    return can_administer_channel(sub);
 }
 
-export function can_edit_description(sub: StreamSubscription): boolean {
-    if (current_user.is_admin) {
-        return true;
+export function can_change_permissions_requiring_metadata_access(sub: StreamSubscription): boolean {
+    if (!has_metadata_access(sub)) {
+        return false;
     }
 
-    return user_groups.is_user_in_setting_group(
-        sub.can_administer_channel_group,
-        people.my_current_user_id(),
-    );
+    return can_administer_channel(sub);
 }
 
 export function can_view_subscribers(sub: StreamSubscription): boolean {
-    // Guest users can't access subscribers of any(public or private) non-subscribed streams.
-    return current_user.is_admin || sub.subscribed || (!current_user.is_guest && !sub.invite_only);
+    return has_metadata_access(sub);
 }
 
 export function can_subscribe_others(sub: StreamSubscription): boolean {
-    if (sub.invite_only && !sub.subscribed) {
+    if (!has_content_access(sub)) {
         return false;
     }
 
-    if (settings_data.can_subscribe_others_to_all_streams()) {
+    if (settings_data.can_subscribe_others_to_all_accessible_streams()) {
         return true;
     }
 
-    if (can_change_permissions(sub)) {
+    if (can_administer_channel(sub)) {
         return true;
     }
 
-    return user_groups.is_user_in_setting_group(
+    return settings_data.user_has_permission_for_group_setting(
         sub.can_add_subscribers_group,
-        people.my_current_user_id(),
+        "can_add_subscribers_group",
+        "stream",
     );
 }
 
@@ -588,17 +729,21 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
         return false;
     }
 
-    if (current_user.is_admin) {
+    if (can_administer_channel(sub)) {
         return true;
     }
 
-    return user_groups.is_user_in_setting_group(
+    return settings_data.user_has_permission_for_group_setting(
         sub.can_remove_subscribers_group,
-        people.my_current_user_id(),
+        "can_remove_subscribers_group",
+        "stream",
     );
 }
 
-export let can_post_messages_in_stream = function (stream: StreamSubscription): boolean {
+export let can_post_messages_in_stream = function (
+    stream: StreamSubscription,
+    sender_id: number = current_user.user_id,
+): boolean {
     if (stream.is_archived) {
         return false;
     }
@@ -607,11 +752,18 @@ export let can_post_messages_in_stream = function (stream: StreamSubscription): 
         return false;
     }
 
+    let sender: CurrentUser | User;
+    if (sender_id === current_user.user_id) {
+        sender = current_user;
+    } else {
+        sender = people.get_by_user_id(sender_id);
+    }
     const can_send_message_group = stream.can_send_message_group;
     return settings_data.user_has_permission_for_group_setting(
         can_send_message_group,
         "can_send_message_group",
         "stream",
+        sender,
     );
 };
 

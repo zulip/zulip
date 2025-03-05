@@ -39,7 +39,6 @@ with test_server_running(
     )
     from zerver.actions.users import change_user_is_active
     from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
-    from zerver.lib.users import get_api_key
     from zerver.models.groups import NamedUserGroup, SystemGroups
     from zerver.models.realms import get_realm
     from zerver.models.users import get_user
@@ -75,7 +74,7 @@ with test_server_running(
     user.can_change_user_emails = True
     user.save(update_fields=["can_create_users", "can_change_user_emails"])
 
-    api_key = get_api_key(user)
+    api_key = user.api_key
     site = "http://zulip.zulipdev.com:9981"
     client = Client(
         email=email,
@@ -88,7 +87,7 @@ with test_server_running(
     realm = get_realm("zulip")
     user = get_user(email, realm)
 
-    api_key = get_api_key(user)
+    api_key = user.api_key
     site = "http://zulip.zulipdev.com:9981"
     owner_client = Client(
         email=email,
@@ -101,7 +100,7 @@ with test_server_running(
     guest_user = do_create_user(
         "guest@zulip.com", "secret", get_realm("zulip"), "Mr. Guest", acting_user=None
     )
-    api_key = get_api_key(guest_user)
+    api_key = guest_user.api_key
     nonadmin_client = Client(
         email=email,
         api_key=api_key,

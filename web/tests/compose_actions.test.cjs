@@ -42,6 +42,7 @@ const compose_fade = mock_esm("../src/compose_fade", {
 });
 const compose_pm_pill = mock_esm("../src/compose_pm_pill", {
     get_user_ids_string: () => "",
+    get_user_ids: () => [],
 });
 const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea: noop,
@@ -78,6 +79,9 @@ mock_esm("../src/resize", {
 mock_esm("../src/popovers", {
     hide_all: noop,
 });
+mock_esm("../src/saved_snippets_ui", {
+    setup_saved_snippets_dropdown_widget_if_needed: noop,
+});
 
 const people = zrequire("people");
 
@@ -89,7 +93,7 @@ const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
 const {set_realm} = zrequire("state_data");
 
-const realm = {};
+const realm = {realm_mandatory_topics: true};
 set_realm(realm);
 
 const start = compose_actions.start;

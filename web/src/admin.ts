@@ -31,7 +31,6 @@ const admin_settings_label = {
         defaultMessage: "Advertise organization in the Zulip communities directory",
     }),
     // Organization settings
-    realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
     realm_mandatory_topics: $t({defaultMessage: "Require topics in channel messages"}),
     realm_new_stream_announcements_stream: $t({defaultMessage: "New channel announcements"}),
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
@@ -72,6 +71,9 @@ const admin_settings_label = {
     }),
     realm_enable_guest_user_indicator: $t({
         defaultMessage: "Display “(guest)” after names of guest users",
+    }),
+    realm_enable_guest_user_dm_warning: $t({
+        defaultMessage: "Warn when composing a DM to a guest",
     }),
 };
 
@@ -148,7 +150,7 @@ export function build_page(): void {
         realm_email_changes_disabled: realm.realm_email_changes_disabled,
         realm_avatar_changes_disabled: realm.realm_avatar_changes_disabled,
         can_add_emojis: settings_data.user_can_add_custom_emoji(),
-        can_create_new_bots: settings_bots.can_create_new_bots(),
+        can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
         realm_message_content_edit_limit_minutes:
             settings_components.get_realm_time_limits_in_minutes(
                 "realm_message_content_edit_limit_seconds",
@@ -158,7 +160,8 @@ export function build_page(): void {
                 "realm_message_content_delete_limit_seconds",
             ),
         realm_message_retention_days: realm.realm_message_retention_days,
-        realm_allow_edit_history: realm.realm_allow_edit_history,
+        realm_message_edit_history_visibility_policy:
+            realm.realm_message_edit_history_visibility_policy,
         realm_allow_message_editing: realm.realm_allow_message_editing,
         language_list,
         realm_default_language_name: get_language_name(realm.realm_default_language),
@@ -194,10 +197,11 @@ export function build_page(): void {
         msg_edit_limit_dropdown_values: settings_config.msg_edit_limit_dropdown_values,
         msg_delete_limit_dropdown_values: settings_config.msg_delete_limit_dropdown_values,
         msg_move_limit_dropdown_values: settings_config.msg_move_limit_dropdown_values,
-        bot_creation_policy_values: settings_bots.bot_creation_policy_values,
         email_address_visibility_values: settings_config.email_address_visibility_values,
         waiting_period_threshold_dropdown_values:
             settings_config.waiting_period_threshold_dropdown_values,
+        message_edit_history_visibility_policy_values:
+            settings_config.message_edit_history_visibility_policy_values,
         can_create_multiuse_invite: settings_data.user_can_create_multiuse_invite(),
         can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
         realm_invite_required: realm.realm_invite_required,
@@ -215,7 +219,6 @@ export function build_page(): void {
         color_scheme_values: settings_config.color_scheme_values,
         web_home_view_values: settings_config.web_home_view_values,
         settings_object: realm_user_settings_defaults,
-        information_section_checkbox_group: settings_config.information_section_checkbox_group,
         information_density_settings: settings_config.get_information_density_preferences(),
         settings_render_only: settings_config.get_settings_render_only(),
         settings_label: settings_config.realm_user_settings_defaults_labels,
@@ -247,18 +250,22 @@ export function build_page(): void {
         automatically_unmute_topics_in_muted_streams_policy_values:
             settings_config.automatically_follow_or_unmute_topics_policy_values,
         realm_enable_guest_user_indicator: realm.realm_enable_guest_user_indicator,
+        realm_enable_guest_user_dm_warning: realm.realm_enable_guest_user_dm_warning,
         active_user_list_dropdown_widget_name: settings_users.active_user_list_dropdown_widget_name,
         deactivated_user_list_dropdown_widget_name:
             settings_users.deactivated_user_list_dropdown_widget_name,
         giphy_help_link,
         ...get_realm_level_notification_settings(),
+        group_setting_labels: settings_config.all_group_setting_labels.realm,
+        server_can_summarize_topics: realm.server_can_summarize_topics,
+        is_plan_self_hosted: realm.realm_plan_type === 1,
     };
 
     const rendered_admin_tab = render_admin_tab(options);
     $("#settings_content .organization-box").html(rendered_admin_tab);
     $("#settings_content .alert").removeClass("show");
 
-    settings_bots.update_bot_settings_tip($("#admin-bot-settings-tip"), true);
+    settings_bots.update_bot_settings_tip($("#admin-bot-settings-tip"));
     settings_invites.update_invite_user_panel();
     insert_tip_box();
 
@@ -266,8 +273,6 @@ export function build_page(): void {
         demo_organizations_ui.insert_demo_organization_warning();
         demo_organizations_ui.handle_demo_organization_conversion();
     }
-
-    $("#id_realm_bot_creation_policy").val(realm.realm_bot_creation_policy);
 
     $("#id_realm_digest_weekday").val(realm.realm_digest_weekday);
 

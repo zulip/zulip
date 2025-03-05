@@ -16,7 +16,6 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
-from zerver.lib.users import get_api_key
 from zerver.models import UserProfile
 
 # Hack for mit.edu users whose Kerberos usernames don't match what they zephyr
@@ -63,7 +62,7 @@ def webathena_kerberos_login(
 
     # TODO: Send these data via (say) RabbitMQ
     try:
-        api_key = get_api_key(user_profile)
+        api_key = user_profile.api_key
         command = [
             "/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache",
             user,

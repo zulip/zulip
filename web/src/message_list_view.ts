@@ -14,7 +14,6 @@ import render_single_message from "../templates/single_message.hbs";
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as compose_fade from "./compose_fade.ts";
-import * as compose_state from "./compose_state.ts";
 import * as condense from "./condense.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -42,6 +41,8 @@ import * as submessage from "./submessage.ts";
 import {is_same_day} from "./time_zone_util.ts";
 import * as timerender from "./timerender.ts";
 import type {TopicLink} from "./types.ts";
+import * as typing_data from "./typing_data.ts";
+import * as typing_events from "./typing_events.ts";
 import * as user_topics from "./user_topics.ts";
 import type {AllVisibilityPolicies} from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -63,6 +64,7 @@ export type MessageContainer = {
     msg: Message;
     sender_is_bot: boolean;
     sender_is_guest: boolean;
+    sender_is_deactivated: boolean;
     should_add_guest_indicator_for_sender: boolean;
     small_avatar_url: string;
     status_message: string | false;
@@ -85,7 +87,6 @@ export type MessageGroup = {
     | {
           is_stream: true;
           all_visibility_policies: AllVisibilityPolicies;
-          always_visible_topic_edit: boolean;
           display_recipient: string;
           invite_only: boolean;
           is_subscribed: boolean;
@@ -93,7 +94,6 @@ export type MessageGroup = {
           is_web_public: boolean;
           just_unsubscribed?: boolean;
           match_topic: string | undefined;
-          on_hover_topic_edit: boolean;
           recipient_bar_color: string;
           stream_id: number;
           stream_name?: string;
@@ -190,7 +190,7 @@ function analyze_edit_history(
                 moved = true;
             }
 
-            if (edit_history_event.prev_topic) {
+            if (edit_history_event.prev_topic !== undefined) {
                 // TODO: Possibly this assert could be removed if we tightened the type
                 // on edit history elements such that a `prev_topic` being present means a
                 // `topic` element is.
@@ -297,35 +297,14 @@ function get_timestr(message: Message): string {
 }
 
 function get_topic_edit_properties(message: Message): {
-    always_visible_topic_edit: boolean;
-    on_hover_topic_edit: boolean;
     is_topic_editable: boolean;
     user_can_resolve_topic: boolean;
 } {
-    let always_visible_topic_edit = false;
-    let on_hover_topic_edit = false;
-
     const is_topic_editable = message_edit.is_topic_editable(message);
-
     // if a user who can edit a topic, can resolve it as well
     const user_can_resolve_topic = is_topic_editable;
 
-    if (is_topic_editable) {
-        // Messages with no topics should always have an edit icon visible
-        // to encourage updating them. Admins can also edit any topic.
-        if (
-            message.type === "stream" &&
-            message.topic === compose_state.empty_topic_placeholder()
-        ) {
-            always_visible_topic_edit = true;
-        } else {
-            on_hover_topic_edit = true;
-        }
-    }
-
     return {
-        always_visible_topic_edit,
-        on_hover_topic_edit,
         is_topic_editable,
         user_can_resolve_topic,
     };
@@ -660,6 +639,7 @@ export class MessageListView {
         small_avatar_url: string;
         sender_is_bot: boolean;
         sender_is_guest: boolean;
+        sender_is_deactivated: boolean;
         should_add_guest_indicator_for_sender: boolean;
         is_hidden: boolean;
         mention_classname: string | undefined;
@@ -669,6 +649,15 @@ export class MessageListView {
         moved: boolean;
         modified: boolean;
     } {
+        const is_typing = typing_data.is_message_editing(message.id);
+        if (is_typing) {
+            // Ensure the typing animation is rendered when a user switches
+            // to a view where someone is editing a message.
+            setTimeout(() => {
+                typing_events.render_message_editing_typing(message.id, true);
+            }, 0);
+        }
+
         /*
             If the message needs to be hidden because the sender was muted, we do
             a few things:
@@ -732,6 +721,7 @@ export class MessageListView {
 
         const sender_is_bot = people.sender_is_bot(message);
         const sender_is_guest = people.sender_is_guest(message);
+        const sender_is_deactivated = people.sender_is_deactivated(message);
         const should_add_guest_indicator_for_sender = people.should_add_guest_user_indicator(
             message.sender_id,
         );
@@ -749,6 +739,7 @@ export class MessageListView {
             small_avatar_url,
             sender_is_bot,
             sender_is_guest,
+            sender_is_deactivated,
             should_add_guest_indicator_for_sender,
             is_hidden,
             mention_classname,

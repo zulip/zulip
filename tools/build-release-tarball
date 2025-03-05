@@ -76,7 +76,7 @@ mv zulip-git-version "$OUTPUT_DIR/$prefix/"
 
 cd "$OUTPUT_DIR/$prefix"
 
-ln -s "$BASEDIR/zulip-py3-venv" .
+uv sync --frozen
 
 # create var/log directory in the new temporary checkout
 mkdir -p "var/log"

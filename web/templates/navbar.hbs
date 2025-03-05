@@ -1,20 +1,22 @@
 <div class="header">
     <nav class="header-main" id="top_navbar">
         <div class="column-left">
-            <a class="left-sidebar-toggle-button {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" tabindex="0" role="button">
-                <i class="fa fa-reorder" aria-hidden="true"></i>
-                <span class="left-sidebar-toggle-unreadcount">0</span>
+            <a class="header-button left-sidebar-toggle-button {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" tabindex="0" role="button">
+                <i class="zulip-icon zulip-icon-panel-left-dashed"></i>
+                <i class="zulip-icon zulip-icon-panel-left"></i>
+                <span class="left-sidebar-toggle-unreadcount"></span>
             </a>
             <a href="" class="brand no-style">
                 <img id="realm-navbar-wide-logo" src="" alt="" class="nav-logo no-drag"/>
-                <img id="realm-navbar-icon-logo" alt="" src="{{ realm_icon_url }}" class="nav-logo no-drag"/>
             </a>
         </div>
         <div class="column-middle" id="navbar-middle">
             <div class="column-middle-inner">
                 <div id="streamlist-toggle" class="tippy-zulip-delayed-tooltip {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" data-tooltip-template-id="show-left-sidebar-tooltip-template">
-                    <a class="left-sidebar-toggle-button" role="button" tabindex="0"><i class="fa fa-reorder" aria-hidden="true"></i>
-                        <span class="left-sidebar-toggle-unreadcount">0</span>
+                    <a class="left-sidebar-toggle-button" role="button" tabindex="0">
+                        <i class="zulip-icon zulip-icon-panel-left-dashed"></i>
+                        <i class="zulip-icon zulip-icon-panel-left"></i>
+                        <span class="left-sidebar-toggle-unreadcount"></span>
                     </a>
                 </div>
                 <div class="top-navbar-container">
@@ -41,11 +43,6 @@
                     {{t 'Log in' }}
                 </a>
             </div>
-            <div id="userlist-toggle" class="hidden-for-spectators">
-                <a id="userlist-toggle-button" role="button" class="header-button navbar-item" tabindex="0">
-                    <i class="zulip-icon zulip-icon-user-list"></i>
-                </a>
-            </div>
             <div id="help-menu" class="navbar-item">
                 <a class="header-button tippy-zulip-delayed-tooltip" tabindex="0" role="button" data-tooltip-template-id="help-menu-tooltip-template">
                     <i class="zulip-icon zulip-icon-help-bigger" aria-hidden="true"></i>
@@ -64,6 +61,11 @@
             <div class="spectator_narrow_login_button only-visible-for-spectators" data-tippy-content="{{t 'Log in' }}" data-tippy-placement="bottom">
                 <a id="login_button" class="header-button login_button navbar-item" tabindex="0">
                     <i class="zulip-icon zulip-icon-log-in"></i>
+                </a>
+            </div>
+            <div id="userlist-toggle" class="hidden-for-spectators">
+                <a id="userlist-toggle-button" role="button" class="header-button navbar-item" tabindex="0">
+                    <i class="zulip-icon zulip-icon-user-list"></i>
                 </a>
             </div>
         </div>

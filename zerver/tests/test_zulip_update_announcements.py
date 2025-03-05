@@ -9,6 +9,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.create_realm import do_create_realm
+from zerver.actions.streams import do_deactivate_stream
 from zerver.data_import.mattermost import do_convert_data
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.message import remove_single_newlines
@@ -200,6 +201,32 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             self.assertEqual(stream_messages[1].content, "Announcement message 4.")
             self.assertEqual(realm.zulip_update_announcements_level, 4)
 
+            # One new update added.
+            new_updates = [
+                ZulipUpdateAnnouncement(
+                    level=5,
+                    message="Announcement message 5.",
+                ),
+            ]
+            self.zulip_update_announcements.extend(new_updates)
+
+            # Verify that update message is skipped if configured channel gets deactivated.
+            # Note: 'do_deactivate_stream' sets 'zulip_update_announcements_stream' to None.
+            channel_id = realm.zulip_update_announcements_stream.id
+            do_deactivate_stream(realm.zulip_update_announcements_stream, acting_user=None)
+
+            with time_machine.travel(now + timedelta(days=8), tick=False):
+                send_zulip_update_announcements(skip_delay=False)
+            realm.refresh_from_db()
+            channel_messages = Message.objects.filter(
+                realm=realm,
+                sender=notification_bot,
+                recipient__type_id=channel_id,
+                date_sent__gte=now + timedelta(days=8),
+            ).order_by("id")
+            self.assert_length(channel_messages, 0)
+            self.assertEqual(realm.zulip_update_announcements_level, 5)
+
     def test_send_zulip_update_announcements_skip_delay(self) -> None:
         with mock.patch(
             "zerver.lib.zulip_update_announcements.zulip_update_announcements",
@@ -377,7 +404,7 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             assert group_direct_message is not None
             self.assertIn(
                 "These notifications are currently turned off in your organization. "
-                "If you configure a stream within one week, your organization will not miss any update messages.",
+                "If you configure a channel within one week, your organization will not miss any update messages.",
                 group_direct_message.content,
             )
 

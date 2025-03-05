@@ -88,9 +88,7 @@ HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
     URLRedirect("/help/browse-and-subscribe-to-streams", "/help/browse-and-subscribe-to-channels"),
     URLRedirect("/help/unsubscribe-from-a-stream", "/help/unsubscribe-from-a-channel"),
     URLRedirect("/help/view-stream-subscribers", "/help/view-channel-subscribers"),
-    URLRedirect(
-        "/help/add-or-remove-users-from-a-stream", "/help/add-or-remove-users-from-a-channel"
-    ),
+    URLRedirect("/help/add-or-remove-users-from-a-stream", "/help/subscribe-users-to-a-channel"),
     URLRedirect("/help/pin-a-stream", "/help/pin-a-channel"),
     URLRedirect("/help/change-the-color-of-a-stream", "/help/change-the-color-of-a-channel"),
     URLRedirect("/help/move-content-to-another-stream", "/help/move-content-to-another-channel"),
@@ -127,6 +125,7 @@ HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
     URLRedirect("/help/quote-and-reply", "/help/quote-or-forward-a-message"),
     URLRedirect("/help/change-a-users-role", "/help/user-roles"),
     URLRedirect("/help/roles-and-permissions", "/help/user-roles"),
+    URLRedirect("/help/add-or-remove-users-from-a-channel", "/help/subscribe-users-to-a-channel"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

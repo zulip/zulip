@@ -135,6 +135,7 @@ class Stream(models.Model):
     can_send_message_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
+    can_subscribe_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT, related_name="+")
 
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "show all topics" for a
@@ -175,7 +176,31 @@ class Stream(models.Model):
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
         ),
+        "can_subscribe_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.NOBODY,
+        ),
     }
+
+    stream_permission_group_settings_requiring_content_access = [
+        "can_add_subscribers_group",
+        "can_subscribe_group",
+    ]
+    assert set(stream_permission_group_settings_requiring_content_access).issubset(
+        stream_permission_group_settings.keys()
+    )
+
+    stream_permission_group_settings_granting_metadata_access = [
+        "can_add_subscribers_group",
+        "can_administer_channel_group",
+        "can_subscribe_group",
+    ]
+    assert set(stream_permission_group_settings_granting_metadata_access).issubset(
+        stream_permission_group_settings.keys()
+    )
 
     class Meta:
         indexes = [
@@ -219,6 +244,7 @@ class Stream(models.Model):
         "can_administer_channel_group_id",
         "can_send_message_group_id",
         "can_remove_subscribers_group_id",
+        "can_subscribe_group_id",
         "is_recently_active",
     ]
 
@@ -246,16 +272,6 @@ def get_all_streams(realm: Realm, include_archived_channels: bool = True) -> Que
         return get_active_streams(realm)
 
     return Stream.objects.filter(realm=realm)
-
-
-def get_linkable_streams(realm_id: int) -> QuerySet[Stream]:
-    """
-    This returns the streams that we are allowed to linkify using
-    something like "#frontend" in our markup. For now the business
-    rule is that you can link any stream in the realm that hasn't
-    been deactivated (similar to how get_active_streams works).
-    """
-    return Stream.objects.filter(realm_id=realm_id, deactivated=False)
 
 
 def get_stream(stream_name: str, realm: Realm) -> Stream:

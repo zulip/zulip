@@ -79,7 +79,6 @@ from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
 from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.lib.user_groups import get_system_user_group_for_user
-from zerver.lib.users import get_api_key
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_fixture_http_headers,
@@ -956,7 +955,7 @@ Output:
         # TODO: use encode_user where possible
         assert "@" in email
         user = get_user_by_delivery_email(email, get_realm(realm))
-        api_key = get_api_key(user)
+        api_key = user.api_key
 
         return self.encode_credentials(email, api_key)
 
@@ -1463,7 +1462,7 @@ Output:
         bulk_remove_subscriptions(realm, [user_profile], [stream], acting_user=None)
 
     # Subscribe to a stream by making an API request
-    def common_subscribe_to_streams(
+    def subscribe_via_post(
         self,
         user: UserProfile,
         subscriptions_raw: list[str] | list[dict[str, str]],
@@ -1521,7 +1520,7 @@ Output:
         """
         Mark all messages within the topic associated with message `target_message_id` as resolved.
         """
-        message = access_message(acting_user, target_message_id)
+        message = access_message(acting_user, target_message_id, is_modifying_message=False)
         return self.api_patch(
             acting_user,
             f"/api/v1/messages/{target_message_id}",
@@ -2437,7 +2436,7 @@ one or more new messages.
     def build_webhook_url(self, *args: str, **kwargs: str) -> str:
         url = self.URL_TEMPLATE
         if url.find("api_key") >= 0:
-            api_key = get_api_key(self.test_user)
+            api_key = self.test_user.api_key
             url = self.URL_TEMPLATE.format(api_key=api_key, stream=self.CHANNEL_NAME)
         else:
             url = self.URL_TEMPLATE.format(stream=self.CHANNEL_NAME)
