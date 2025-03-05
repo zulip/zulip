@@ -12,6 +12,7 @@ from functools import _lru_cache_wrapper, lru_cache, wraps
 from itertools import islice, product
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
+from bmemcached.exceptions import MemcachedException
 from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
@@ -226,7 +227,10 @@ def cache_set(
 
     remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
-    cache_backend.set(final_key, (val,), timeout=timeout)
+    try:
+        cache_backend.set(final_key, (val,), timeout=timeout)
+    except MemcachedException as e:
+        logger.exception(e)
     remote_cache_stats_finish()
 
 
@@ -278,7 +282,10 @@ def cache_set_many(
         new_items[new_key] = item
     items = new_items
     remote_cache_stats_start()
-    get_cache_backend(cache_name).set_many(items, timeout=timeout)
+    try:
+        get_cache_backend(cache_name).set_many(items, timeout=timeout)
+    except MemcachedException as e:
+        logger.exception(e)
     remote_cache_stats_finish()
 
 
