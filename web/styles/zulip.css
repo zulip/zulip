@@ -1479,7 +1479,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     .flatpickr-confirm {
         color: hsl(0deg 0% 100%);
         background-color: hsl(213deg 90% 65%);
-        font-size: 18px;
+        font-size: var(--flatpickr-confirm-button-font-size);
         font-weight: 600;
     }
 
