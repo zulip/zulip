@@ -250,7 +250,9 @@ input {
 
 .widget-error {
     color: hsl(1deg 45% 50%);
-    font-size: 12px;
+    font-size: 0.8571em; /* 12px at 14px/em */
+    display: flex;
+    align-items: center;
 }
 
 .poll-question-check,
