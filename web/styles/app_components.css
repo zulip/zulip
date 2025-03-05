@@ -882,8 +882,9 @@ input.settings_text_input {
 #stream_settings .save-button-controls,
 #settings_page .save-button-controls,
 #user_group_settings .save-button-controls {
-    display: inline;
-    margin: 4px 8px;
+    display: flex;
+    margin: 0.2857em 0.5714em; /* 4px 8px at 14px/em */
+    align-items: center;
 
     &.hide {
         display: none;
@@ -951,15 +952,11 @@ input.settings_text_input {
         }
 
         .save-discard-widget-button-icon {
-            vertical-align: middle;
             margin-right: 3px;
             font-size: 1.0714em; /* 15px at 14px/em */
             font-weight: 400;
-        }
-
-        .save-discard-widget-button-text {
-            vertical-align: middle;
-            line-height: 1;
+            display: flex;
+            align-items: center;
         }
     }
 }
