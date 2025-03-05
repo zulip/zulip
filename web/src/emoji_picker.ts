@@ -743,7 +743,7 @@ export function toggle_emoji_popover(
             show_as_overlay_always: false,
             // We want to hide the popover if the reference is
             // hidden but not on first attempt to show it.
-            show_as_overlay_if_reference_hidden_at_trigger: true,
+            message_feed_overlay_detection: true,
         },
     );
 }

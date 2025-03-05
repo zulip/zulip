@@ -403,7 +403,8 @@ export function toggle_popover_menu(
     options?: {
         show_as_overlay_on_mobile: boolean;
         show_as_overlay_always: boolean;
-        show_as_overlay_if_reference_hidden_at_trigger?: boolean;
+        // Only works for elements which are in message feed.
+        message_feed_overlay_detection?: boolean;
     },
 ): tippy.Instance {
     const instance = target._tippy;
@@ -420,8 +421,13 @@ export function toggle_popover_menu(
         (options?.show_as_overlay_on_mobile === true &&
             ui_util.matches_viewport_state("lt_md_min")) ||
         options?.show_as_overlay_always === true;
-    // Show the popover as over if the reference element is hidden.
-    if (!show_as_overlay && options?.show_as_overlay_if_reference_hidden_at_trigger) {
+
+    // Show the popover as overlay if the reference element is hidden in message feed.
+    if (
+        !show_as_overlay &&
+        options?.message_feed_overlay_detection &&
+        $(target).parents("#message_feed_container").length === 1
+    ) {
         const target_props = $(target).get_offset_to_window();
         const viewport_info = message_viewport.message_viewport_info();
         if (
@@ -431,6 +437,7 @@ export function toggle_popover_menu(
             show_as_overlay = true;
         }
     }
+
     if (show_as_overlay) {
         mobile_popover_props = {
             ...get_props_for_popover_centering(popover_props),
