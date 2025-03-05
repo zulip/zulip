@@ -606,7 +606,8 @@
     }
 
     .message_inline_video,
-    .message_inline_animated_image_still {
+    .message_inline_animated_image_still,
+    .youtube-video a[data-id] {
         &:hover {
             &::after {
                 transform: scale(1);
@@ -636,20 +637,6 @@
             height: 100%;
             width: 100%;
         }
-    }
-
-    .youtube-video .fa-play::before,
-    .embed-video .fa-play::before {
-        position: absolute;
-        margin: var(--margin-top, 32px) 0 0 var(--margin-left, 45px);
-        padding: 5px 8px 5px 10px;
-        font-size: 12px;
-        border-radius: 4px;
-        background-color: hsl(0deg 0% 0%);
-        color: hsl(0deg 0% 100%);
-        opacity: 0.7;
-        top: 0;
-        left: 0;
     }
 
     .message_embed {
