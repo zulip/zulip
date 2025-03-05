@@ -164,6 +164,24 @@ function do_update_users_for_search(): void {
 
 const update_users_for_search = _.throttle(do_update_users_for_search, 50);
 
+export function initialize_activity(): void {
+    $("html").on("mousemove", () => {
+        activity.set_new_user_input(true);
+    });
+
+    $(window).on("focus", () => {
+        activity.mark_client_active(redraw_user);
+    });
+    $(window).idle({
+        idle: activity.DEFAULT_IDLE_TIMEOUT_MS,
+        onIdle: activity.mark_client_idle,
+        onActive() {
+            activity.mark_client_active(redraw_user);
+        },
+        keepTracking: true,
+    });
+}
+
 export function initialize(opts: {narrow_by_email: (email: string) => void}): void {
     narrow_by_email = opts.narrow_by_email;
 

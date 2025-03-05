@@ -772,6 +772,7 @@ test("initialize", ({override, override_rewire}) => {
     override(pm_list, "update_private_messages", noop);
     override(watchdog, "check_for_unsuspend", noop);
     override(buddy_list, "fill_screen_with_content", noop);
+    override(buddy_list, "insert_or_move", noop);
     override_rewire(activity_ui, "update_presence_indicators", noop);
 
     let payload;
@@ -815,7 +816,7 @@ test("initialize", ({override, override_rewire}) => {
         func();
     });
 
-    activity.initialize();
+    activity_ui.initialize_activity();
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
         zephyr_mirror_active: true,
@@ -835,12 +836,13 @@ test("initialize", ({override, override_rewire}) => {
 
     $(window).idle = (params) => {
         params.onIdle();
+        params.onActive();
     };
     payload = undefined;
     set_timeout_function_called = false;
 
     $(window).off("focus");
-    activity.initialize();
+    activity_ui.initialize_activity();
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
         zephyr_mirror_active: false,
@@ -853,7 +855,7 @@ test("initialize", ({override, override_rewire}) => {
 
     assert.ok($("#zephyr-mirror-error").hasClass("show"));
     assert.ok(!activity.new_user_input);
-    assert.equal(activity.compute_active_status(), "idle");
+    assert.equal(activity.compute_active_status(), "active");
 
     // Exercise the mousemove handler, which just
     // sets a flag.
@@ -877,7 +879,7 @@ test("electron_bridge", ({override_rewire}) => {
     with_bridge_idle(true, () => {
         activity.mark_client_idle();
         assert.equal(activity.compute_active_status(), "idle");
-        activity.mark_client_active();
+        activity.mark_client_active(activity_ui.redraw_user);
         assert.equal(activity.compute_active_status(), "idle");
     });
 
@@ -885,14 +887,14 @@ test("electron_bridge", ({override_rewire}) => {
         override(electron_bridge, "electron_bridge", undefined);
         activity.mark_client_idle();
         assert.equal(activity.compute_active_status(), "idle");
-        activity.mark_client_active();
+        activity.mark_client_active(activity_ui.redraw_user);
         assert.equal(activity.compute_active_status(), "active");
     });
 
     with_bridge_idle(false, () => {
         activity.mark_client_idle();
         assert.equal(activity.compute_active_status(), "active");
-        activity.mark_client_active();
+        activity.mark_client_active(activity_ui.redraw_user);
         assert.equal(activity.compute_active_status(), "active");
     });
 
@@ -901,9 +903,51 @@ test("electron_bridge", ({override_rewire}) => {
     assert.ok(activity.received_new_messages);
 });
 
+test("test_presence_update_for_self_user", ({override}) => {
+    let payload;
+    override(channel, "post", (arg) => {
+        if (payload === undefined) {
+            payload = arg;
+        }
+    });
+    override(watchdog, "check_for_unsuspend", noop);
+    override(buddy_list, "insert_or_move", noop);
+
+    $.create("[data-presence-indicator-user-id]", {
+        children: [
+            {
+                to_$() {
+                    return {
+                        attr: () => 1,
+                        removeClass() {
+                            return this;
+                        },
+                        addClass: noop,
+                    };
+                },
+            },
+        ],
+    });
+
+    activity.mark_client_idle();
+    assert.equal(activity.compute_active_status(), "idle");
+    activity.mark_client_active(activity_ui.redraw_user);
+
+    payload.success({
+        zephyr_mirror_active: true,
+        presences: {},
+        msg: "",
+        result: "success",
+        server_timestamp: 0,
+        presence_last_update_id: -1,
+    });
+
+    assert.equal(activity.compute_active_status(), "active");
+});
+
 test("test_send_or_receive_no_presence_for_spectator", () => {
     page_params.is_spectator = true;
-    activity.send_presence_to_server();
+    activity.send_presence_to_server(undefined, activity_ui.redraw_user);
 });
 
 test("check_should_redraw_new_user", ({override}) => {
