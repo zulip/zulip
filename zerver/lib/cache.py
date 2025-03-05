@@ -7,7 +7,7 @@ import secrets
 import sys
 import time
 import traceback
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from functools import _lru_cache_wrapper, lru_cache, wraps
 from itertools import islice, product
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
@@ -546,19 +546,19 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm_id:
     # Imported here to avoid cyclic dependency.
     from zerver.models.users import is_cross_realm_bot_email
 
-    keys = []
-    for user_profile in user_profiles:
-        keys.append(user_profile_by_id_cache_key(user_profile.id))
-        keys.append(user_profile_narrow_by_id_cache_key(user_profile.id))
-        keys.append(user_profile_by_api_key_cache_key(user_profile.api_key))
-        keys.append(user_profile_by_email_realm_id_cache_key(user_profile.email, realm_id))
-        keys.append(user_profile_delivery_email_cache_key(user_profile.delivery_email, realm_id))
-        if user_profile.is_bot and is_cross_realm_bot_email(user_profile.email):
-            # Handle clearing system bots from their special cache.
-            keys.append(bot_profile_cache_key(user_profile.email, realm_id))
-            keys.append(get_cross_realm_dicts_key())
+    def user_profile_key_iterator() -> Iterator[str]:
+        for user_profile in user_profiles:
+            yield user_profile_by_id_cache_key(user_profile.id)
+            yield user_profile_narrow_by_id_cache_key(user_profile.id)
+            yield user_profile_by_api_key_cache_key(user_profile.api_key)
+            yield user_profile_by_email_realm_id_cache_key(user_profile.email, realm_id)
+            yield user_profile_delivery_email_cache_key(user_profile.delivery_email, realm_id)
+            if user_profile.is_bot and is_cross_realm_bot_email(user_profile.email):
+                # Handle clearing system bots from their special cache.
+                yield bot_profile_cache_key(user_profile.email, realm_id)
+                yield get_cross_realm_dicts_key()
 
-    cache_delete_many(keys)
+    cache_delete_many(user_profile_key_iterator())
 
 
 def delete_display_recipient_cache(user_profile: "UserProfile") -> None:
