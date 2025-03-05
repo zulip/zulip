@@ -95,6 +95,7 @@
         }
 
         .stream-to-topic-arrow {
+            margin-left: 0.375em; /* 6px at 16px em */
             cursor: default;
             color: var(--color-compose-chevron-arrow);
             text-decoration: none;
