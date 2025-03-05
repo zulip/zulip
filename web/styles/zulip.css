@@ -2192,7 +2192,7 @@ body:not(.hide-left-sidebar) {
         font-size: 0.93em;
         width: 0.93em;
         height: 0.93em;
-        padding-right: 2px;
+        padding-right: 5px;
     }
 
     .zulip-icon {
