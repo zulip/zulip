@@ -867,7 +867,7 @@ test("content_typeahead_selected", ({override}) => {
     ct.get_or_set_completing_for_tests("stream");
     let warned_for_stream_link = false;
     override(compose_validate, "warn_if_private_stream_is_linked", (linked_stream) => {
-        assert.equal(linked_stream, sweden_stream);
+        assert.ok(linked_stream === sweden_stream || linked_stream === broken_link_stream);
         warned_for_stream_link = true;
     });
 
@@ -889,6 +889,18 @@ test("content_typeahead_selected", ({override}) => {
     expected_value = "#**Sweden>";
     assert.equal(actual_value, expected_value);
 
+    query = "#**A* al";
+    ct.get_or_set_token_for_testing("A* al");
+    actual_value = ct.content_typeahead_selected(broken_link_stream, query, input_element);
+    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A*-Algorithm)>";
+    assert.equal(actual_value, expected_value);
+
+    query = "#>";
+    ct.get_or_set_token_for_testing("#");
+    actual_value = ct.content_typeahead_selected(broken_link_stream, query, input_element);
+    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A*-Algorithm)>";
+    assert.equal(actual_value, expected_value);
+
     // topic_list
     ct.get_or_set_completing_for_tests("topic_list");
 
@@ -899,6 +911,7 @@ test("content_typeahead_selected", ({override}) => {
             topic: "testing",
             topic_display_name: "testing",
             type: "topic_list",
+            used_syntax_prefix: "#**",
             stream_data: {
                 name: "Sweden",
             },
@@ -916,6 +929,7 @@ test("content_typeahead_selected", ({override}) => {
             topic: "testing",
             topic_display_name: "testing",
             type: "topic_list",
+            used_syntax_prefix: "#**",
             stream_data: {
                 name: "Sweden",
             },
@@ -934,7 +948,7 @@ test("content_typeahead_selected", ({override}) => {
         {
             topic: "testing",
             type: "topic_list",
-            is_shortcut_syntax_used: true,
+            used_syntax_prefix: "#>",
             stream_data: {
                 name: "Sweden",
             },
@@ -952,6 +966,7 @@ test("content_typeahead_selected", ({override}) => {
             topic: "Sweden",
             topic_display_name: "Sweden",
             type: "topic_list",
+            used_syntax_prefix: "#**",
             is_channel_link: false,
             stream_data: {
                 name: "Sweden",
@@ -970,6 +985,7 @@ test("content_typeahead_selected", ({override}) => {
             topic: "",
             topic_display_name: get_final_topic_display_name(""),
             type: "topic_list",
+            used_syntax_prefix: "#**",
             is_channel_link: false,
             stream_data: {
                 name: "Sweden",
@@ -987,6 +1003,7 @@ test("content_typeahead_selected", ({override}) => {
             topic: "Sweden",
             topic_display_name: "Sweden",
             type: "topic_list",
+            used_syntax_prefix: "#**",
             is_channel_link: true,
             stream_data: {
                 name: "Sweden",
@@ -1005,8 +1022,8 @@ test("content_typeahead_selected", ({override}) => {
         {
             topic: "",
             type: "topic_list",
+            used_syntax_prefix: "#>",
             is_channel_link: true,
-            is_shortcut_syntax_used: true,
             stream_data: {
                 name: "A* Algorithm",
             },
@@ -1015,6 +1032,25 @@ test("content_typeahead_selected", ({override}) => {
         input_element,
     );
     expected_value = "Hello [#A&#42; Algorithm](#narrow/channel/6-A*-Algorithm) ";
+    assert.equal(actual_value, expected_value);
+
+    query = "Hello #**A* Algorithm>";
+    ct.get_or_set_token_for_testing("");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "fast",
+            topic_display_name: "fast",
+            type: "topic_list",
+            used_syntax_prefix: "#**",
+            is_channel_link: false,
+            stream_data: {
+                name: "A* Algorithm",
+            },
+        },
+        query,
+        input_element,
+    );
+    expected_value = "Hello [#A&#42; Algorithm > fast](#narrow/channel/6-A*-Algorithm/topic/fast) ";
     assert.equal(actual_value, expected_value);
 
     // syntax
@@ -2044,6 +2080,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     ];
     assert_typeahead_equals("#**stream**>", topic_jump);
     assert_typeahead_equals("#**stream** >", topic_jump);
+    assert_typeahead_equals("[#A&#42; Algorithm](#narrow/channel/6-A*-Algorithm) >", topic_jump);
     assert_typeahead_equals("#**Sweden>some topic** >", []); // Already completed a topic.
 
     // topic_list
@@ -2051,7 +2088,6 @@ test("begins_typeahead", ({override, override_rewire}) => {
     function typed_topics(stream, topics) {
         const matches_list = topics.map((topic, index) => ({
             is_channel_link: topic === stream && index === 0,
-            is_shortcut_syntax_used: false,
             stream_data: {
                 ...stream_data.get_sub_by_name("Sweden"),
                 rendered_description: "",
@@ -2060,6 +2096,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
             is_empty_string_topic: topic === "",
             topic_display_name: get_final_topic_display_name(topic),
             type: "topic_list",
+            used_syntax_prefix: "#**",
         }));
         return matches_list;
     }

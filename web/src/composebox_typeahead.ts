@@ -91,7 +91,7 @@ export type TopicSuggestion = {
     // is_channel_link will be used when we want to only render the stream as an
     // option in the topic typeahead while having #**stream_name> as the token.
     is_channel_link: boolean;
-    is_shortcut_syntax_used: boolean;
+    used_syntax_prefix: string;
     stream_data: StreamPillData;
 };
 
@@ -921,7 +921,9 @@ export function get_candidates(
         // Stream regex modified from marked.js
         // Matches '#**stream name** >' at the end of a split.
         const stream_regex = /#\*\*([^*>]+)\*\*\s?>$/;
-        const should_jump_inside_typeahead = stream_regex.test(split[0]);
+        const fallback_stream_regex = /\[#([^*>]+)]\(#[^)]*\)\s>$/;
+        const should_jump_inside_typeahead =
+            stream_regex.test(split[0]) || fallback_stream_regex.test(split[0]);
         if (should_jump_inside_typeahead) {
             completing = "topic_jump";
             token = ">";
@@ -941,29 +943,44 @@ export function get_candidates(
         // `>` is enclosed in a capture group to use the below
         // code path for both syntaxes.
         const shortcut_regex = /#(>)([^*\n]*)$/;
-
+        // Matches '[#channel](url)>some text' at the end of a split.
+        const fallback_stream_topic_regex = /(\[#)([^*>]+)]\(#[^)]*\)>([^*\n]*)$/;
+        const fallback_tokens = fallback_stream_topic_regex.exec(split[0]);
         const stream_topic_tokens = stream_topic_regex.exec(split[0]);
         const topic_shortcut_tokens = shortcut_regex.exec(split[0]);
-        const tokens = stream_topic_tokens ?? topic_shortcut_tokens;
+        const tokens = stream_topic_tokens ?? topic_shortcut_tokens ?? fallback_tokens;
         const should_begin_typeahead = tokens !== null;
         if (should_begin_typeahead) {
             completing = "topic_list";
             let sub: sub_store.StreamSubscription | undefined;
-            let is_shortcut_syntax_used = false;
+            let used_syntax_prefix = "#**";
             if (tokens[1] === ">") {
                 // The shortcut syntax is used.
                 const stream_id = compose_state.stream_id();
                 if (stream_id !== undefined) {
                     sub = stream_data.get_sub_by_id(stream_id);
                 }
-                is_shortcut_syntax_used = true;
+                used_syntax_prefix = "#>";
             } else {
-                const stream_name = tokens[1];
+                let stream_name;
+                if (tokens[1] === "[#") {
+                    assert(tokens[2] !== undefined);
+                    stream_name = topic_link_util.html_unescape_invalid_stream_topic_characters(
+                        tokens[2],
+                    );
+                    used_syntax_prefix = "[#";
+                } else {
+                    stream_name = tokens[1];
+                }
                 assert(stream_name !== undefined);
                 sub = stream_data.get_sub_by_name(stream_name);
             }
 
-            token = tokens[2] ?? "";
+            if (used_syntax_prefix === "[#") {
+                token = tokens[3] ?? "";
+            } else {
+                token = tokens[2] ?? "";
+            }
 
             // Don't autocomplete if there is a space following '>'
             if (token.startsWith(" ")) {
@@ -987,7 +1004,7 @@ export function get_candidates(
                     is_empty_string_topic: topic === "",
                     type: "topic_list",
                     is_channel_link: false,
-                    is_shortcut_syntax_used,
+                    used_syntax_prefix,
                     stream_data: {
                         ...sub,
                         type: "stream",
@@ -1010,7 +1027,7 @@ export function get_candidates(
                         is_empty_string_topic: false,
                         type: "topic_list",
                         is_channel_link: true,
-                        is_shortcut_syntax_used,
+                        used_syntax_prefix,
                         stream_data: {
                             ...sub,
                             type: "stream",
@@ -1201,7 +1218,7 @@ export function content_typeahead_selected(
             // will generate a broken url.
             if (topic_link_util.will_produce_broken_stream_topic_link(item.name)) {
                 // use markdown link syntax
-                beginning += topic_link_util.get_fallback_markdown_link(item.name);
+                beginning += topic_link_util.get_fallback_markdown_link(item.name) + ">";
             } else {
                 beginning += "#**" + item.name + ">";
             }
@@ -1237,6 +1254,9 @@ export function content_typeahead_selected(
             const index = beginning.lastIndexOf("**");
             if (index !== -1) {
                 beginning = beginning.slice(0, index) + ">";
+            } else {
+                // fallback stream link was generated
+                beginning = beginning.slice(0, -2) + ">";
             }
             break;
         }
@@ -1255,7 +1275,7 @@ export function content_typeahead_selected(
             // will cause encoding issues.
             // "beginning" contains all the text before the cursor, so we use lastIndexOf to
             // avoid any other stream+topic mentions in the message.
-            const syntax_text = item.is_shortcut_syntax_used ? "#>" : "#**";
+            const syntax_text = item.used_syntax_prefix;
             const syntax_start_index = beginning.lastIndexOf(syntax_text);
             let replacement_text;
             if (item.is_channel_link) {
