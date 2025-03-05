@@ -1507,12 +1507,6 @@ div.settings-radio-input-parent {
         }
     }
 
-    #groups_overlay {
-        .display-type {
-            display: none;
-        }
-    }
-
     #subscription_overlay,
     #groups_overlay {
         .user-groups-container,
