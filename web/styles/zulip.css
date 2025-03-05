@@ -498,12 +498,6 @@ body.has-overlay-scrollbar {
                 );
             }
         }
-
-        .divider {
-            color: hsl(0deg 0% 88%);
-            font-size: 20px;
-            line-height: 1;
-        }
     }
 
     .spectator_narrow_login_button {
