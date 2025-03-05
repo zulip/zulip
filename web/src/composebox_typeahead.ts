@@ -1342,10 +1342,21 @@ export function initialize_topic_edit_typeahead(
     return new Typeahead(bootstrap_typeahead_input, {
         dropup,
         highlighter_html(item: string): string {
-            return typeahead_helper.render_typeahead_item({primary: item});
+            const is_empty_string_topic = item === "";
+            const topic_display_name = util.get_final_topic_display_name(item);
+            return typeahead_helper.render_typeahead_item({
+                primary: topic_display_name,
+                is_empty_string_topic,
+            });
+        },
+        matcher(item: string, query: string): boolean {
+            const matcher = get_topic_matcher(query);
+            return matcher(item);
         },
         sorter(items: string[], query: string): string[] {
-            const sorted = typeahead_helper.sorter(query, items, (x) => x);
+            const sorted = typeahead_helper.sorter(query, items, (x) =>
+                util.get_final_topic_display_name(x),
+            );
             if (sorted.length > 0 && !sorted.includes(query)) {
                 sorted.unshift(query);
             }
