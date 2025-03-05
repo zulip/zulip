@@ -668,16 +668,16 @@ export function initialize_everything(state_data) {
                 topic,
             );
 
-            assert(latest_msg_id !== undefined);
+            const narrow = [
+                {operator: "channel", operand: sub.stream_id.toString()},
+                {operator: "topic", operand: topic},
+            ];
 
-            message_view.show(
-                [
-                    {operator: "channel", operand: sub.stream_id.toString()},
-                    {operator: "topic", operand: topic},
-                    {operator: "with", operand: latest_msg_id},
-                ],
-                {trigger: "sidebar"},
-            );
+            if (latest_msg_id !== undefined) {
+                narrow.push({operator: "with", operand: latest_msg_id});
+            }
+
+            message_view.show(narrow, {trigger: "sidebar"});
         },
     });
     drafts.initialize_ui();
