@@ -352,7 +352,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             if (!first_operand.includes(",")) {
                 const recipient_user = people.get_by_user_id(user_ids[0]);
                 // You have no direct messages with this person
-                if (people.is_current_user(recipient_user.email)) {
+                if (people.is_my_user_id(recipient_user.user_id)) {
                     return {
                         title: $t({
                             defaultMessage:
@@ -456,7 +456,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     ),
                 };
             }
-            if (people.is_current_user(first_operand)) {
+            if (people.is_my_user_id(person_in_dms.user_id)) {
                 return {
                     title: $t({
                         defaultMessage: "You don't have any direct message conversations yet.",

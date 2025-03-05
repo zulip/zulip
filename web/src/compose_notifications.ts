@@ -119,6 +119,9 @@ function get_message_recipient(message: Message): MessageRecipient {
         };
         return channel_message_recipient;
     }
+
+    // Only the stream format uses a string for this.
+    assert(typeof message.display_recipient !== "string");
     const direct_message_recipient: MessageRecipient = {
         message_type: "direct",
         recipient_text: "",
@@ -130,7 +133,10 @@ function get_message_recipient(message: Message): MessageRecipient {
         );
         return direct_message_recipient;
     }
-    if (people.is_current_user(message.reply_to)) {
+    if (
+        message.display_recipient.length === 1 &&
+        people.is_my_user_id(util.the(message.display_recipient).id)
+    ) {
         direct_message_recipient.recipient_text = $t({
             defaultMessage: "direct messages with yourself",
         });
@@ -322,7 +328,7 @@ function get_above_composebox_narrow_url(message: Message): string {
 // the message_lists.current (!can_apply_locally; a.k.a. "a search").
 export function notify_messages_outside_current_search(messages: Message[]): void {
     for (const message of messages) {
-        if (!people.is_current_user(message.sender_email)) {
+        if (!people.is_my_user_id(message.sender_id)) {
             continue;
         }
         const above_composebox_narrow_url = get_above_composebox_narrow_url(message);

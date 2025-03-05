@@ -89,7 +89,7 @@ export function notifies(message: Message): boolean {
     // alert words into a message, just because that can be annoying for
     // certain types of workflows where everybody on your team, including
     // yourself, sets up an alert word to effectively mention the team.
-    return !people.is_current_user(message.sender_email) && message.alerted;
+    return !people.is_my_user_id(message.sender_id) && message.alerted;
 }
 
 export const initialize = (params: StateData["alert_words"]): void => {

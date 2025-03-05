@@ -1506,7 +1506,7 @@ export function initialize({
                     // filter out inactive users, inserted users and current user
                     // from pill insertion
                     const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
-                    const current_user = people.is_current_user(user.email);
+                    const current_user = people.is_my_user_id(user.user_id);
                     if (
                         people.is_person_active(user_id) &&
                         !inserted_users.includes(user.user_id) &&
