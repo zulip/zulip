@@ -14,6 +14,7 @@ const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
+const { redraw_user } = require("../src/activity_ui");
 
 const $window_stub = $.create("window-stub");
 set_global("to_$", () => $window_stub);
@@ -813,7 +814,7 @@ test("initialize", ({override, override_rewire}) => {
         func();
     });
 
-    activity.initialize();
+    activity_ui.initialize_activity();
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
         zephyr_mirror_active: true,
@@ -838,7 +839,7 @@ test("initialize", ({override, override_rewire}) => {
     set_timeout_function_called = false;
 
     $(window).off("focus");
-    activity.initialize();
+    activity_ui.initialize_activity();
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
         zephyr_mirror_active: false,
@@ -875,7 +876,7 @@ test("electron_bridge", ({override_rewire}) => {
     with_bridge_idle(true, () => {
         activity.mark_client_idle();
         assert.equal(activity.compute_active_status(), "idle");
-        activity.mark_client_active();
+        activity.mark_client_active(redraw_user);
         assert.equal(activity.compute_active_status(), "idle");
     });
 
@@ -883,14 +884,14 @@ test("electron_bridge", ({override_rewire}) => {
         override(electron_bridge, "electron_bridge", undefined);
         activity.mark_client_idle();
         assert.equal(activity.compute_active_status(), "idle");
-        activity.mark_client_active();
+        activity.mark_client_active(redraw_user);
         assert.equal(activity.compute_active_status(), "active");
     });
 
     with_bridge_idle(false, () => {
         activity.mark_client_idle();
         assert.equal(activity.compute_active_status(), "active");
-        activity.mark_client_active();
+        activity.mark_client_active(redraw_user);
         assert.equal(activity.compute_active_status(), "active");
     });
 
