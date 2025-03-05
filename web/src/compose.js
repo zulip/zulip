@@ -70,6 +70,7 @@ export function render_preview_area() {
     const content = $compose_textarea.val();
     const $preview_message_area = $("#compose .preview_message_area");
     compose_ui.render_and_show_preview(
+        $("#compose"),
         $("#compose .markdown_preview_spinner"),
         $("#compose .preview_content"),
         content,

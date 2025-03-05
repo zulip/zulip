@@ -1307,6 +1307,7 @@ export function show_compose_spinner(): void {
 }
 
 export function render_and_show_preview(
+    $preview_container: JQuery,
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
@@ -1356,7 +1357,7 @@ export function render_and_show_preview(
             success(response_data) {
                 if (
                     preview_render_count !== compose_state.get_preview_render_count() ||
-                    !$("#compose").hasClass("preview_mode")
+                    !$preview_container.hasClass("preview_mode")
                 ) {
                     // The user is no longer in preview mode or the compose
                     // input has already been updated with new raw Markdown
