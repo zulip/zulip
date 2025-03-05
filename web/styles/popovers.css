@@ -1104,8 +1104,6 @@ ul.popover-group-menu-member-list {
         position: absolute;
         top: unset;
         left: unset;
-        /* Presence dot does not scale, because
-           the avatar itself does not scale. */
         font-size: var(--length-user-status-circle);
         line-height: 1;
         right: -1px;
