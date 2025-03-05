@@ -24,6 +24,11 @@ run_test("postprocess_content", () => {
                 '<div class="message_inline_image">' +
                 '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" title="inline image">upload</a> ' +
                 '<a role="button">button</a> ' +
+                "</div>" +
+                '<div class="youtube-video message_inline_image">' +
+                '<a class="" href="https://www.youtube.com/watch?v=tyKJueEk0XM">' +
+                '<img src="https://i.ytimg.com/vi/tyKJueEk0XM/default.jpg">' +
+                "</a>" +
                 "</div>",
         ),
         '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
@@ -34,6 +39,11 @@ run_test("postprocess_content", () => {
             '<div class="message_inline_image">' +
             '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" target="_blank" rel="noopener noreferrer" aria-label="inline image">upload</a> ' +
             '<a role="button">button</a> ' +
+            "</div>" +
+            '<div class="youtube-video message_inline_image">' +
+            '<a class="" href="https://www.youtube.com/watch?v=tyKJueEk0XM" target="_blank" rel="noopener noreferrer">' +
+            '<img src="https://i.ytimg.com/vi/tyKJueEk0XM/mqdefault.jpg" loading="lazy">' +
+            "</a>" +
             "</div>",
     );
 });
