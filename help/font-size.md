@@ -1,25 +1,26 @@
-# Font size and line spacing
+# Font size
 
-Zulip offers a choice between a font size and line spacing option that is
-comfortable for most users, and a compact mode for users who prefer to see more
-content at once.
+Zulip offers a range of font size options, from 12 to 20, to make the UI
+feel comfortable on any screen.
 
-## Enable or disable compact mode
+## Change font size
 
 {start_tabs}
 
 {tab|desktop-web}
 
-{settings_tab|preferences}
+{!personal-menu.md!}
 
-1. Under **General**, toggle **Compact mode**.
+1. Click <i class="zulip-icon zulip-icon-plus"></i> to increase the font size, <i class="zulip-icon
+   zulip-icon-minus"></i> to decrease it, and <i class="zulip-icon
+   zulip-icon-type-big"></i> to reset to the default.
 
 {end_tabs}
 
 ## Zoom in or out
 
-To further customize font size in Zulip, you can adjust it by zooming in or out
-in your browser, or in the Zulip desktop app.
+You can further adjust the font size by zooming in or out in your browser, or in
+the Zulip desktop app.
 
 {start_tabs}
 
@@ -41,4 +42,5 @@ in your browser, or in the Zulip desktop app.
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Review your settings](/help/review-your-settings)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
+* [Line spacing](/help/line-spacing)
 * [Dark theme](/help/dark-theme)
