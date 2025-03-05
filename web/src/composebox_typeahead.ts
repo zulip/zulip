@@ -1464,15 +1464,21 @@ export function initialize({
                 is_empty_string_topic,
             });
         },
+        matcher(item: string, query: string): boolean {
+            const matcher = get_topic_matcher(query);
+            return matcher(item);
+        },
         sorter(items: string[], query: string): string[] {
-            const sorted = typeahead_helper.sorter(query, items, (x) => x);
+            const sorted = typeahead_helper.sorter(query, items, (x) =>
+                util.get_final_topic_display_name(x),
+            );
             if (sorted.length > 0 && !sorted.includes(query)) {
                 sorted.unshift(query);
             }
             return sorted;
         },
         option_label(matching_items: string[], item: string): string | false {
-            if (item !== "" && !matching_items.includes(item)) {
+            if (!matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
             }
             return false;
