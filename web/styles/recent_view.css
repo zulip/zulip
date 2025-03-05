@@ -105,8 +105,7 @@
     }
 
     .zulip-icon-send-dm {
-        /* Legacy 11.2px size at 14px/1em. */
-        font-size: 0.8em;
+        font-size: 1em;
         text-align: center;
         opacity: 0.6;
     }
