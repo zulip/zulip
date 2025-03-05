@@ -602,9 +602,9 @@
 
     .keyboard-button {
         color: var(--color-hotkey-hint);
-        font-size: 12px;
+        font-size: 0.75em; /* 12px at 16px/em */
         font-weight: 500;
-        padding: 2px 4px;
+        padding: 0.125em 0.25em; /* 2px 4px at 16px/em */
         border-radius: 3px;
         border: 1px solid var(--color-hotkey-hint);
     }
