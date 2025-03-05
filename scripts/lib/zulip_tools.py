@@ -755,7 +755,15 @@ def atomic_nagios_write(
     with open(path + ".tmp", "w") as fh:
         fh.write("|".join([str(event_time), str(status_int), status, message]) + "\n")
     os.rename(path + ".tmp", path)
-    return status_int
+
+    # Return code should be if the cron job ran to completion
+    # successfully, not if the result of the check was outside of
+    # bounds ("ok" / "critical"); this prevents the Sentry cron
+    # wrapper from spamming with a "failure" email if the nagios check
+    # requires multiple failures in a row.
+    if status == "unknown":
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
