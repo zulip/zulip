@@ -239,6 +239,10 @@ type UserCardPopoverData = {
 };
 
 export let fetch_presence_for_popover = (user_id: number): void => {
+    if (page_params.is_spectator) {
+        return;
+    }
+
     if (!people.is_active_user_for_popover(user_id) || people.get_by_user_id(user_id).is_bot) {
         return;
     }
