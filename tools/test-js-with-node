@@ -182,6 +182,7 @@ EXEMPT_FILES = make_set(
         "web/src/popover_menus.ts",
         "web/src/popover_menus_data.ts",
         "web/src/popovers.ts",
+        "web/src/popup_banners.ts",
         "web/src/read_receipts.ts",
         "web/src/realm_icon.ts",
         "web/src/realm_logo.ts",
