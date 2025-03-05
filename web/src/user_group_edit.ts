@@ -6,6 +6,7 @@ import {z} from "zod";
 
 import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
 import render_confirm_join_group_direct_member from "../templates/confirm_dialog/confirm_join_group_direct_member.hbs";
+import render_group_deactivated_info_banner from "../templates/modal_banner/user_group_deactivated_info_banner.hbs";
 import render_group_info_banner from "../templates/modal_banner/user_group_info_banner.hbs";
 import render_settings_checkbox from "../templates/settings/settings_checkbox.hbs";
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
@@ -998,6 +999,18 @@ export function show_settings_for(group: UserGroup): void {
     $edit_container.show();
     show_membership_settings(group);
     show_general_settings(group);
+
+    const context = {
+        banner_type: compose_banner.WARNING,
+        classname: "group_deactivated",
+        hide_close_button: true,
+    };
+
+    if (group.deactivated) {
+        $("#user_group_settings .group-banner .group-info-banner").html(
+            render_group_deactivated_info_banner(context),
+        );
+    }
 
     $edit_container
         .find(".group-assigned-permissions")
