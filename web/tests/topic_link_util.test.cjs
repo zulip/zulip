@@ -125,4 +125,9 @@ run_test("stream_topic_link_syntax_test", () => {
         topic_link_util.as_html_link_syntax_unsafe("test", "example.com"),
         '<a href="example.com">test</a>',
     );
+
+    assert.equal(
+        topic_link_util.html_unescape_invalid_stream_topic_characters("&#36;&#36;MONEY&#36;&#36;"),
+        "$$MONEY$$",
+    );
 });
