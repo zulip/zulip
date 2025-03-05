@@ -1716,14 +1716,6 @@ export function set_custom_profile_field_data(
     }
 }
 
-export function is_current_user(email?: string | null): boolean {
-    if (email === null || email === undefined || page_params.is_spectator) {
-        return false;
-    }
-
-    return email.toLowerCase() === my_current_email().toLowerCase();
-}
-
 export function initialize_current_user(user_id: number): void {
     my_user_id = user_id;
 }
