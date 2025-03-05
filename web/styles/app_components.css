@@ -973,7 +973,7 @@ input.settings_text_input {
     }
 
     &.zulip-icon-lock,
-    &.zulip-icon-users {
+    &.zulip-icon-send-dm {
         font-size: 0.8em;
     }
 }
