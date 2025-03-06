@@ -87,6 +87,6 @@ Permissions for moving messages between channels can be configured separately.
 * [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
 * [Move content to another channel](/help/move-content-to-another-channel)
-* [Restrict message editing and
-  deletion](/help/restrict-message-editing-and-deletion)
+* [Restrict message editing and deletion](/help/restrict-message-editing-and-deletion)
+* [Restrict message edit history access](/help/restrict-message-edit-history-access)
 * [User roles](/help/user-roles)
