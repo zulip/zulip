@@ -316,23 +316,33 @@ labels.
 ## Common questions
 
 - **What if somebody is already working on the issue I want to claim?** There
-  are lots of issue to work on! If somebody else is actively working on the
-  issue, you can find a different one, or help with
-  reviewing their work.
+  are lots of issues to work on (likely
+  [hundreds](https://github.com/zulip/zulip/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22help%20wanted%22%20no%3Aassignee)
+  in the server repository)! If somebody else is actively working on the issue,
+  you can find a different one, or help with reviewing their work.
+
+- **What if it looks like the person who's assigned an issue is no longer
+  working on it?** Post a comment on the issue, e.g., "Hi @ someone! Are you
+  still working on this one? I'd like to pick it up if not." You can pick up the
+  issue if they say they don't plan to work on it more.
+
+  - **What if I don't get a response?** If you don't get a reply within 2-3
+    days, go ahead and post a comment that you are working on the issue, and
+    submit a pull request. If the original assignee ends up submitting a pull
+    request first, no worries! You can help by providing feedback on their work,
+    or submit your own PR if you think a different approach is needed (as
+    described above).
+
+- **What if there is already a pull request for the issue I want to work on?**
+  See our [guide on continuing unfinished
+  work](https://zulip.readthedocs.io/en/latest/contributing/continuing-unfinished-work.html).
+
 - **What if somebody else claims an issue while I'm figuring out whether or not to
   work on it?** No worries! You can contribute by providing feedback on
   their pull request. If you've made good progress in understanding part of the
   codebase, you can also find another "help wanted" issue in the same area to
   work on.
-- **What if there is already a pull request for the issue I want to work on?**
-  See our [guide on continuing unfinished
-  work](https://zulip.readthedocs.io/en/latest/contributing/continuing-unfinished-work.html).
-- **What if I ask if someone is still working on an issue, and they don't
-  respond?** If you don't get a reply within 2-3 days, go ahead and post a comment
-  that you are working on the issue, and submit a pull request. If the original
-  assignee ends up submitting a pull request first, no worries! You can help by
-  providing feedback on their work, or submit your own PR if you think a
-  different approach is needed (as described above).
+
 - **Can I work on an old issue?** Of course! Open issues marked as “help wanted”
   are generally eligible to be worked on. If you find that the context around
   the issue has changed (e.g., the UI looks different), do your best to apply
@@ -369,7 +379,8 @@ labels.
 - **I think my PR is done, but it hasn't been merged yet. What's going on?**
   1. **Double-check that you have addressed all the feedback**, including any comments
      on [Git commit
-     discipline](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html).
+     discipline](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html),
+     and that automated tests are passing.
   2. If all the feedback has been addressed, did you [leave a
      comment](https://zulip.readthedocs.io/en/latest/contributing/review-process.html#how-to-help-move-the-review-process-forward)
      explaining that you have done so and **requesting another review**? If not,
