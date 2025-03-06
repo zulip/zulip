@@ -1016,12 +1016,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
 }
 
 .home-error-bar {
-    margin-top: 5px;
     display: none;
-
-    .alert {
-        margin-bottom: auto;
-    }
 }
 
 .streamname {
