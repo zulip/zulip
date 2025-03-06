@@ -85,6 +85,7 @@
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 gap: 3px;
+                align-items: baseline;
             }
 
             .compose-stream-name {
@@ -111,13 +112,11 @@
 
     .pronouns,
     .autocomplete_secondary {
-        align-self: end;
+        align-self: baseline;
         opacity: 0.8;
         font-size: 85%;
         overflow: hidden;
         text-overflow: ellipsis;
-        position: relative;
-        top: -2px;
 
         & > a {
             color: var(--color-dropdown-item);
