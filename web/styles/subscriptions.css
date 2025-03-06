@@ -67,7 +67,7 @@
 }
 
 #add_new_user_group {
-    height: var(--settings-overlay-header-button-height);
+    height: var(--settings-overlay-header-left-button-height);
 }
 
 .create_user_group_plus_button,
@@ -80,7 +80,7 @@
     color: hsl(0deg 0% 0%);
     margin: 0 0 0 5px;
     height: 100%;
-    width: var(--settings-overlay-header-button-height);
+    width: var(--settings-overlay-header-left-button-height);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -546,7 +546,7 @@ h4.user_group_setting_subsection_title {
             height: var(--settings-overlay-subheader-height);
 
             #add_new_subscription {
-                height: var(--settings-overlay-header-button-height);
+                height: var(--settings-overlay-header-left-button-height);
             }
         }
     }
@@ -928,7 +928,10 @@ h4.user_group_setting_subsection_title {
     .tab-switcher {
         display: flex;
         flex-wrap: nowrap;
-        height: var(--settings-overlay-header-button-height);
+    }
+
+    .left .tab-switcher {
+        height: var(--settings-overlay-header-left-button-height);
     }
 
     #user-group-creation,
@@ -1040,8 +1043,13 @@ h4.user_group_setting_subsection_title {
         margin-left: 15px;
 
         .tab-container {
+            .tab-switcher {
+                height: var(--settings-overlay-header-right-button-height);
+                margin: 0;
+            }
+
             .ind-tab {
-                padding: 3px 4px;
+                padding: 0 4px;
                 min-width: 80px;
                 width: auto;
                 display: flex;
@@ -1052,6 +1060,8 @@ h4.user_group_setting_subsection_title {
             padding-top: 5px;
             margin-left: auto;
             margin-right: 18px;
+            height: var(--settings-overlay-header-right-button-height);
+            display: flex;
 
             .subscribe-button,
             .join_leave_button,
@@ -1059,6 +1069,11 @@ h4.user_group_setting_subsection_title {
             .deactivate {
                 margin-right: 3px;
                 text-decoration: none;
+                padding: 0 10px;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                box-sizing: border-box;
             }
 
             .deactivate {
@@ -1067,11 +1082,6 @@ h4.user_group_setting_subsection_title {
                 .icon-container {
                     display: flex;
                 }
-            }
-
-            /* We need this rule to center the user-group-x icon better */
-            .deactivate-group-button {
-                padding: 8px 10px 4px;
             }
         }
     }
