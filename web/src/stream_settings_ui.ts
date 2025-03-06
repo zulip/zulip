@@ -1051,15 +1051,19 @@ export function initialize(): void {
         open_create_stream();
     });
 
-    $("#channels_overlay_container").on("click", "#stream_creation_form [data-dismiss]", (e) => {
-        e.preventDefault();
-        // we want to make sure that the click is not just a simulated
-        // click; this fixes an issue where hitting "Enter" would
-        // trigger this code path due to bootstrap magic.
-        if (e.clientY !== 0) {
-            stream_edit.open_edit_panel_empty();
-        }
-    });
+    $("#channels_overlay_container").on(
+        "click",
+        "#stream_creation_form .create_stream_cancel",
+        (e) => {
+            e.preventDefault();
+            // we want to make sure that the click is not just a simulated
+            // click; this fixes an issue where hitting "Enter" would
+            // trigger this code path due to bootstrap magic.
+            if (e.clientY !== 0) {
+                stream_edit.open_edit_panel_empty();
+            }
+        },
+    );
 
     $("#channels_overlay_container").on("click", ".email-address", function (this: HTMLElement) {
         selectText(this);
