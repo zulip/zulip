@@ -34,6 +34,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.topic import (
     MESSAGE__TOPIC,
+    RESOLVED_TOPIC_PREFIX,
     TOPIC_NAME,
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
@@ -215,8 +216,11 @@ def normalize_body_for_import(body: str) -> str:
     return truncate_content(body, settings.MAX_MESSAGE_LENGTH, "\n[message truncated]")
 
 
+TOPIC_TRUNCATION_MESSAGE = "..."
+
+
 def truncate_topic(topic_name: str) -> str:
-    return truncate_content(topic_name, MAX_TOPIC_NAME_LENGTH, "...")
+    return truncate_content(topic_name, MAX_TOPIC_NAME_LENGTH, TOPIC_TRUNCATION_MESSAGE)
 
 
 def visible_edit_history_for_message(
@@ -240,6 +244,35 @@ def visible_edit_history_for_message(
         visible_edit_history.append(edit_history_event)
 
     return visible_edit_history
+
+
+# This is similar to what we do in build_message_edit_request in
+# zerver/actions/message_edit.py, but since we don't have the
+# pre-truncation topic name in the message edit history object,
+# the logic for the topic resolved case is different here.
+def topic_resolve_toggled(topic: str, prev_topic: str) -> bool:
+    resolved_prefix_len = len(RESOLVED_TOPIC_PREFIX)
+    truncation_len = len(TOPIC_TRUNCATION_MESSAGE)
+    # Topic unresolved
+    if prev_topic.startswith(RESOLVED_TOPIC_PREFIX) and not topic.startswith(RESOLVED_TOPIC_PREFIX):
+        return prev_topic[resolved_prefix_len:] == topic
+
+    # Topic resolved
+    if topic.startswith(RESOLVED_TOPIC_PREFIX) and not prev_topic.startswith(RESOLVED_TOPIC_PREFIX):
+        if len(prev_topic) <= MAX_TOPIC_NAME_LENGTH - resolved_prefix_len:
+            # When the topic was resolved, it was not truncated,
+            # so we remove the resolved prefix and compare.
+            return topic[resolved_prefix_len:] == prev_topic
+        if topic.endswith(TOPIC_TRUNCATION_MESSAGE):
+            # When the topic was resolved, it was likely truncated,
+            # so we confirm the previous topic starts with the topic
+            # without the resolved prefix and truncation message.
+            topic_without_resolved_prefix_and_truncation_message = topic[
+                resolved_prefix_len:-truncation_len
+            ]
+            return prev_topic.startswith(topic_without_resolved_prefix_and_truncation_message)
+
+    return False
 
 
 def messages_for_ids(
@@ -284,6 +317,29 @@ def messages_for_ids(
         if message_id in search_fields:
             msg_dict.update(search_fields[message_id])
         if "edit_history" in msg_dict:
+            # In addition to computing last_moved_timestamp, we recompute
+            # last_edit_timestamp, because the logic powering the database
+            # field updates it on moves as well, and we'd like to show the
+            # correct value for messages that had only been moved.
+            last_moved_timestamp = 0
+            last_edit_timestamp = 0
+            for item in msg_dict["edit_history"]:
+                if "prev_stream" in item:
+                    last_moved_timestamp = max(last_moved_timestamp, item["timestamp"])
+                elif "prev_topic" in item and not topic_resolve_toggled(
+                    item["topic"], item["prev_topic"]
+                ):
+                    last_moved_timestamp = max(last_moved_timestamp, item["timestamp"])
+                if "prev_content" in item:
+                    last_edit_timestamp = max(last_edit_timestamp, item["timestamp"])
+            if last_moved_timestamp != 0:
+                msg_dict["last_moved_timestamp"] = last_moved_timestamp
+            if last_edit_timestamp != 0:
+                msg_dict["last_edit_timestamp"] = last_edit_timestamp
+            else:
+                # Remove it if it was already present.
+                msg_dict.pop("last_edit_timestamp", None)
+
             if (
                 message_edit_history_visibility_policy
                 == MessageEditHistoryVisibilityPolicyEnum.none.value
@@ -294,6 +350,7 @@ def messages_for_ids(
                     message_edit_history_visibility_policy, msg_dict["edit_history"]
                 )
                 msg_dict["edit_history"] = visible_edit_history
+
         msg_dict["can_access_sender"] = msg_dict["sender_id"] not in inaccessible_sender_ids
         message_list.append(msg_dict)
 

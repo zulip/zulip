@@ -20,6 +20,25 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 365**
+
+* [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): Added
+  `last_moved_timestamp` field to message objects for when the message
+  was last moved to a different channel or topic. If the message's topic
+  has only been [resolved or unresolved](/help/resolve-a-topic), then
+  the field is not present. Clients should use this field, rather than
+  parsing the message object's `edit_history` array, to display an
+  indicator that the message has been moved.
+ * [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): The
+  `last_edit_timestamp` field on message objects is only present if the
+  message's content has been edited. Previously, this field was present
+  if the message's content had been edited or moved to a different
+  channel or topic. Clients should use this field, rather than parsing
+  the message object's `edit_history` array, to display an indicator
+  that the message has been edited.
+
 **Feature level 364**
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),

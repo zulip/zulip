@@ -22,6 +22,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, messages_for_topic
 from zerver.lib.types import StreamMessageEditRequest
 from zerver.lib.user_topics import (
@@ -1471,6 +1472,14 @@ class MessageMoveTopicTest(ZulipTestCase):
             f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
         )
 
+        message_fetch_result = self.client_get(
+            f"/json/messages/{msg_id}",
+        )
+        self.assert_json_success(message_fetch_result)
+        message_dict = orjson.loads(message_fetch_result.content)["message"]
+        self.assert_json_success(result)
+        self.assertNotIn("last_moved_timestamp", message_dict)
+
         # Note that we are removing the prefix from the already truncated topic,
         # so unresolved_topic_name will not be the same as the original topic_name
         unresolved_topic_name = new_topic_name.replace(RESOLVED_TOPIC_PREFIX, "")
@@ -1490,6 +1499,14 @@ class MessageMoveTopicTest(ZulipTestCase):
             f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as unresolved.",
         )
 
+        message_fetch_result = self.client_get(
+            f"/json/messages/{msg_id}",
+        )
+        self.assert_json_success(message_fetch_result)
+        message_dict = orjson.loads(message_fetch_result.content)["message"]
+        self.assert_json_success(result)
+        self.assertNotIn("last_moved_timestamp", message_dict)
+
     def test_notify_resolve_and_move_topic(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login("hamlet")
@@ -1498,16 +1515,22 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.subscribe(user_profile, stream.name)
 
         # Resolve a topic normally first
-        msg_id = self.send_stream_message(user_profile, stream.name, "foo", topic_name=topic_name)
+        time_zero = timezone_now().replace(microsecond=0)
+        with time_machine.travel(time_zero, tick=False):
+            msg_id = self.send_stream_message(
+                user_profile, stream.name, "foo", topic_name=topic_name
+            )
         resolved_topic_name = RESOLVED_TOPIC_PREFIX + topic_name
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "topic": resolved_topic_name,
-                "propagate_mode": "change_all",
-            },
-        )
-        self.assert_json_success(result)
+        first_message_move_time = time_zero + timedelta(seconds=2)
+        with time_machine.travel(first_message_move_time, tick=False):
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "topic": resolved_topic_name,
+                    "propagate_mode": "change_all",
+                },
+            )
+            self.assert_json_success(result)
 
         messages = get_topic_messages(user_profile, stream, resolved_topic_name)
         self.assert_length(messages, 2)
@@ -1516,15 +1539,25 @@ class MessageMoveTopicTest(ZulipTestCase):
             f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
         )
 
+        message_fetch_result = self.client_get(
+            f"/json/messages/{msg_id}",
+        )
+        self.assert_json_success(message_fetch_result)
+        message_dict = orjson.loads(message_fetch_result.content)["message"]
+        self.assert_json_success(result)
+        self.assertNotIn("last_moved_timestamp", message_dict)
+
         # Test unresolving a topic while moving it (✔ test -> bar)
         new_topic_name = "bar"
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "topic": new_topic_name,
-                "propagate_mode": "change_all",
-            },
-        )
+        second_message_move_time = time_zero + timedelta(seconds=4)
+        with time_machine.travel(second_message_move_time, tick=False):
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "topic": new_topic_name,
+                    "propagate_mode": "change_all",
+                },
+            )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, stream, new_topic_name)
         self.assert_length(messages, 3)
@@ -1533,21 +1566,45 @@ class MessageMoveTopicTest(ZulipTestCase):
             f"This topic was moved here from #**public stream>✔ test** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
 
+        message_fetch_result = self.client_get(
+            f"/json/messages/{msg_id}",
+        )
+        self.assert_json_success(message_fetch_result)
+        message_dict = orjson.loads(message_fetch_result.content)["message"]
+        self.assert_json_success(result)
+        self.assertEqual(
+            message_dict["last_moved_timestamp"],
+            datetime_to_timestamp(second_message_move_time),
+        )
+
         # Now test moving the topic while also resolving it (bar -> ✔ baz)
         new_resolved_topic_name = RESOLVED_TOPIC_PREFIX + "baz"
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "topic": new_resolved_topic_name,
-                "propagate_mode": "change_all",
-            },
-        )
+        third_message_move_time = time_zero + timedelta(seconds=6)
+        with time_machine.travel(third_message_move_time, tick=False):
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "topic": new_resolved_topic_name,
+                    "propagate_mode": "change_all",
+                },
+            )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, stream, new_resolved_topic_name)
         self.assert_length(messages, 4)
         self.assertEqual(
             messages[3].content,
             f"This topic was moved here from #**public stream>{new_topic_name}** by @_**{user_profile.full_name}|{user_profile.id}**.",
+        )
+
+        message_fetch_result = self.client_get(
+            f"/json/messages/{msg_id}",
+        )
+        self.assert_json_success(message_fetch_result)
+        message_dict = orjson.loads(message_fetch_result.content)["message"]
+        self.assert_json_success(result)
+        self.assertEqual(
+            message_dict["last_moved_timestamp"],
+            datetime_to_timestamp(third_message_move_time),
         )
 
     def test_mark_topic_as_resolved(self) -> None:
