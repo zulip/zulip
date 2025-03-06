@@ -43,6 +43,7 @@ from zproject.email_backends import EmailLogBackEnd, get_forward_address
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
 
+EMAIL_DATE_FORMAT = "%a, %d %b %Y %H:%M:%S %z"
 MAX_CONNECTION_TRIES = 3
 
 ## Logging setup ##
@@ -94,6 +95,7 @@ def build_email(
     from_address: str | None = None,
     reply_to_email: str | None = None,
     language: str | None = None,
+    date: str | None = None,
     context: Mapping[str, Any] = {},
     realm: Realm | None = None,
 ) -> EmailMultiAlternatives:
@@ -123,6 +125,14 @@ def build_email(
     # came out of Microsoft Outlook and friends, but seems reasonably
     # commonly-recognized.
     extra_headers = {"X-Auto-Response-Suppress": "All"}
+
+    if date is None:
+        # Messages enqueued via the `email_senders` queue provide a
+        # Date header of when they were enqueued; Django would also
+        # add a default-now header if we left this off, but doing so
+        # ourselves here explicitly makes it slightly more consistent.
+        date = timezone_now().strftime(EMAIL_DATE_FORMAT)
+    extra_headers["Date"] = date
 
     if realm is not None:
         # formaddr is meant for formatting (display_name, email_address) pair for headers like "To",
@@ -255,6 +265,7 @@ def send_email(
     from_address: str | None = None,
     reply_to_email: str | None = None,
     language: str | None = None,
+    date: str | None = None,
     context: Mapping[str, Any] = {},
     realm: Realm | None = None,
     connection: BaseEmailBackend | None = None,
@@ -269,6 +280,7 @@ def send_email(
         from_address=from_address,
         reply_to_email=reply_to_email,
         language=language,
+        date=date,
         context=context,
         realm=realm,
     )

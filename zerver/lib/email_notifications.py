@@ -27,7 +27,7 @@ from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.queue import queue_event_on_commit
-from zerver.lib.send_email import FromAddress, send_future_email
+from zerver.lib.send_email import EMAIL_DATE_FORMAT, FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timezone import canonicalize_timezone
@@ -586,6 +586,8 @@ def do_send_missedmessage_events_reply_in_zulip(
         )
     from_address = FromAddress.NOREPLY
 
+    user_tz = user_profile.timezone or settings.TIME_ZONE
+    local_time = timezone_now().astimezone(zoneinfo.ZoneInfo(canonicalize_timezone(user_tz)))
     email_dict = {
         "template_prefix": "zerver/emails/missed_message",
         "to_user_ids": [user_profile.id],
@@ -593,6 +595,7 @@ def do_send_missedmessage_events_reply_in_zulip(
         "from_address": from_address,
         "reply_to_email": str(Address(display_name=reply_to_name, addr_spec=reply_to_address)),
         "context": context,
+        "date": local_time.strftime(EMAIL_DATE_FORMAT),
     }
     queue_event_on_commit("email_senders", email_dict)
 
