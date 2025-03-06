@@ -60,9 +60,19 @@
             }
         }
 
-        &.change_visibility_policy .visibility-status-icon:hover::before {
+        &.change_visibility_policy
+            .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
             /* Show vertical ellipsis when user hovers over visibility indicator icon. */
-            content: "\f155";
+            background-image: url("../shared/icons/more-vertical.svg");
+            background-repeat: no-repeat;
+            background-position: left bottom;
+            background-size: contain;
+            width: var(--base-font-size-px);
+            height: var(--base-font-size-px);
+
+            &::before {
+                content: "";
+            }
         }
 
         &.change_visibility_policy .recent-view-row-topic-menu {

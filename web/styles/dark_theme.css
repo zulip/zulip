@@ -484,6 +484,12 @@
         }
     }
 
+    #recent_view
+        .change_visibility_policy
+        .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
+        filter: invert(1);
+    }
+
     .drafts-container .header-body .delete-drafts-group > *:focus {
         background-color: hsl(228deg 11% 17%);
     }
