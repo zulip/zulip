@@ -104,6 +104,8 @@ run_test("update_count_in_dom", () => {
         stream_unread_messages: 666,
     };
 
+    $(".selected-home-view").set_find_results(".sidebar-menu-icon", $("<menu-icon>"));
+
     make_elem($(".top_left_mentions"), "<mentioned-count>");
 
     make_elem($(".top_left_inbox"), "<home-count>");
