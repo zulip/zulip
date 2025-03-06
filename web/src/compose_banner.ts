@@ -274,3 +274,19 @@ export function show_unknown_zoom_user_error(email: string): void {
 export function has_error(): boolean {
     return $("#compose_banners .error:visible").length > 0;
 }
+
+export function is_any_banner_visible(): boolean {
+    const $compose_banner_container = $("#compose_banners");
+
+    if ($compose_banner_container.length === 0) {
+        return false;
+    }
+
+    for (const class_name of Object.keys(CLASSNAMES)) {
+        if ($(`#compose_banners .${CSS.escape(class_name)}`).length > 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
