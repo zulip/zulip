@@ -37,6 +37,7 @@ export const CLASSNAMES = {
     ...MESSAGE_SENT_CLASSNAMES,
     non_interleaved_view_messages_fading: "non_interleaved_view_messages_fading",
     interleaved_view_messages_fading: "interleaved_view_messages_fading",
+    topic_is_moved: "topic_is_moved",
     // unmute topic notifications are styled like warnings but have distinct behaviour
     unmute_topic_notification: "unmute_topic_notification warning-style",
     // warnings
