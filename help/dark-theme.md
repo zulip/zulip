@@ -34,4 +34,5 @@ color scheme regardless of your operating system configuration.
 * [Set up your account](/help/set-up-your-account)
 * [Review your settings](/help/review-your-settings)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
-* [Font size and line spacing](/help/font-size)
+* [Font size](/help/font-size)
+* [Line spacing](/help/line-spacing)
