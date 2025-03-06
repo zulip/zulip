@@ -396,7 +396,8 @@ export function update_topic_displayed_text(
         $input.attr("placeholder", util.get_final_topic_display_name(""));
         $input.addClass("empty-topic-display");
     } else {
-        $topic_not_mandatory_placeholder.show(10, update_placeholder_visibility);
+        $topic_not_mandatory_placeholder.show();
+        update_placeholder_visibility();
         $input.on("input", update_placeholder_visibility);
     }
 
