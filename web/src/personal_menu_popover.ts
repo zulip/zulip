@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_navbar_personal_menu_popover from "../templates/popovers/navbar/navbar_personal_menu_popover.hbs";
 
 import * as channel from "./channel.ts";
+import * as information_density from "./information_density.ts";
 import * as message_view from "./message_view.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -105,6 +106,36 @@ export function initialize(): void {
                 popovers.hide_all();
                 e.preventDefault();
             });
+
+            $popper.on("click", ".info-density-controls button", function (this: HTMLElement, e) {
+                const changed_property =
+                    information_density.information_density_properties_schema.parse(
+                        $(this).parent().attr("data-property"),
+                    );
+                const new_setting_value =
+                    information_density.get_new_value_for_information_density_settings(
+                        $(this),
+                        changed_property,
+                    );
+                const data = information_density.update_information_density_settings(
+                    $(this),
+                    changed_property,
+                    new_setting_value,
+                );
+                information_density.enable_or_disable_control_buttons($popper);
+                void channel.patch({
+                    url: "/json/settings",
+                    data,
+                });
+                e.preventDefault();
+            });
+
+            const resizeObserver = new ResizeObserver(() => {
+                void instance.popperInstance?.update();
+            });
+            resizeObserver.observe(document.querySelector("#personal-menu-dropdown")!);
+
+            information_density.enable_or_disable_control_buttons($popper);
             void instance.popperInstance?.update();
         },
         onShow(instance) {

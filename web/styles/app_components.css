@@ -1439,3 +1439,55 @@ input.invalid-input {
     text-overflow: ellipsis;
     overflow: hidden;
 }
+
+.info-density-controls {
+    .button-group {
+        border-radius: 5px;
+        border: 1px solid var(--color-info-density-control-border);
+        width: 100%;
+        display: grid;
+        grid-auto-flow: column;
+
+        .info-density-button {
+            border: none;
+            background-color: var(--color-background-popover);
+            padding: 4px 7px;
+            display: inline-flex;
+            align-items: center;
+            vertical-align: unset;
+            justify-content: center;
+            margin: 0;
+
+            &:first-of-type {
+                border-top-left-radius: 5px;
+                border-bottom-left-radius: 5px;
+            }
+
+            &:last-of-type {
+                border-top-right-radius: 5px;
+                border-bottom-right-radius: 5px;
+            }
+
+            &:hover:not(:disabled) {
+                background-color: var(
+                    --color-info-density-button-hover-background
+                );
+            }
+
+            &:focus {
+                outline: none;
+            }
+
+            &:disabled {
+                cursor: not-allowed;
+            }
+
+            .zulip-icon {
+                display: flex;
+                align-items: center;
+                color: var(--color-info-denisty-button-icon);
+                opacity: 0.7;
+            }
+        }
+    }
+}

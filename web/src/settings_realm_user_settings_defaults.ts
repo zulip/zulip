@@ -1,14 +1,12 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import {z} from "zod";
 
 import * as audible_notifications from "./audible_notifications.ts";
-import {
-    NON_COMPACT_MODE_FONT_SIZE_PX,
-    NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
-} from "./information_density.ts";
+import * as information_density from "./information_density.ts";
 import * as overlays from "./overlays.ts";
-import {page_params} from "./page_params.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
+import * as settings_components from "./settings_components.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_preferences from "./settings_preferences.ts";
@@ -33,6 +31,13 @@ export function maybe_disable_widgets(): void {
         $(".organization-box [data-name='organization-level-user-defaults']")
             .find(".play_notification_sound")
             .addClass("control-label-disabled");
+
+        $(".organization-box [data-name='organization-level-user-defaults']")
+            .find(".info-density-button")
+            .prop("disabled", true);
+        $(".organization-box [data-name='organization-level-user-defaults']")
+            .find(".information-density-settings")
+            .addClass("disabled-setting");
     }
 }
 
@@ -76,24 +81,20 @@ export function set_up(): void {
         });
     });
 
-    if (!page_params.development_environment) {
-        $<HTMLInputElement>("#realm_dense_mode").on("change", function (this: HTMLInputElement) {
-            const val = this.checked;
-            if (val) {
-                $container.find(".information-density-settings").hide();
-                return;
-            }
-
-            if (
-                !realm_user_settings_defaults.dense_mode &&
-                (realm_user_settings_defaults.web_font_size_px !== NON_COMPACT_MODE_FONT_SIZE_PX ||
-                    realm_user_settings_defaults.web_line_height_percent !==
-                        NON_COMPACT_MODE_LINE_HEIGHT_PERCENT)
-            ) {
-                $container.find(".information-density-settings").show();
-            }
-        });
-    }
+    $container.find(".info-density-button").on("click", function (this: HTMLElement, e) {
+        e.preventDefault();
+        const changed_property = z
+            .enum(["web_font_size_px", "web_line_height_percent"])
+            .parse($(this).parent().attr("data-property"));
+        const new_value = information_density.get_new_value_for_information_density_settings(
+            $(this),
+            changed_property,
+        );
+        $(this).closest(".button-group").find(".current-value").text(new_value);
+        information_density.enable_or_disable_control_buttons($container);
+        const $subsection = $(this).closest(".settings-subsection-parent");
+        settings_components.save_discard_default_realm_settings_widget_status_handler($subsection);
+    });
 
     settings_notifications.set_up(realm_default_settings_panel);
 
