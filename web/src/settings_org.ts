@@ -1234,7 +1234,7 @@ export function register_save_discard_widget_handlers(
 
     $container.on(
         "click",
-        ".subsection-header .subsection-changes-save button",
+        ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
         function (this: HTMLElement, e: JQuery.ClickEvent) {
             e.preventDefault();
             e.stopPropagation();
