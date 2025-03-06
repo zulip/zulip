@@ -407,6 +407,7 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
         alice.user_id,
         fred.user_id,
         jill.user_id,
+        me.user_id,
     ]);
 
     override_rewire(narrow_state, "stream_id", () => stream_id);
@@ -428,7 +429,7 @@ test("get_conversation_participants", ({override_rewire}) => {
 
     const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
     stream_data.add_sub(rome_sub);
-    peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id]);
+    peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id, me.user_id]);
 
     const filter = new Filter([
         {operator: "channel", operand: rome_sub.channel_id},
