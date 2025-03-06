@@ -301,7 +301,7 @@
     }
 
     .pill-label {
-        min-width: 30px;
+        min-width: var(--search-pill-label-min-width);
     }
 
     @media (width >= $md_min) {
