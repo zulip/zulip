@@ -674,6 +674,11 @@ h4.user_group_setting_subsection_title {
     opacity: 0.6;
 }
 
+.deactivated-user-group-icon-right {
+    margin-left: 3px;
+    opacity: 0.6;
+}
+
 .left .group-name,
 .right .group-name {
     display: flex;
@@ -1475,12 +1480,6 @@ div.settings-radio-input-parent {
 
         &.show {
             left: 0%;
-        }
-    }
-
-    #groups_overlay {
-        .display-type {
-            display: none;
         }
     }
 
