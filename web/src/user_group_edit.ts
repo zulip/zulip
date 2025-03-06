@@ -1813,64 +1813,6 @@ export function setup_page(callback: () => void): void {
     populate_and_fill();
 }
 
-type DeactivationBannerArgs = {
-    streams_using_group_for_setting: {
-        stream_name: string;
-        setting_url: string | undefined;
-    }[];
-    groups_using_group_for_setting: {
-        group_name: string;
-        setting_url: string;
-    }[];
-    realm_using_group_for_setting: boolean;
-};
-
-function parse_args_for_deactivation_banner(
-    objections: Record<string, unknown>[],
-): DeactivationBannerArgs {
-    const args: DeactivationBannerArgs = {
-        streams_using_group_for_setting: [],
-        groups_using_group_for_setting: [],
-        realm_using_group_for_setting: false,
-    };
-    for (const objection of objections) {
-        if (objection.type === "channel") {
-            const stream_id = objection.channel_id;
-            assert(typeof stream_id === "number");
-            const sub = stream_data.get_sub_by_id(stream_id);
-            if (sub !== undefined) {
-                args.streams_using_group_for_setting.push({
-                    stream_name: sub.name,
-                    setting_url: hash_util.channels_settings_edit_url(sub, "general"),
-                });
-            } else {
-                args.streams_using_group_for_setting.push({
-                    stream_name: $t({defaultMessage: "Unknown channel"}),
-                    setting_url: undefined,
-                });
-            }
-            continue;
-        }
-
-        if (objection.type === "user_group") {
-            const group_id = objection.group_id;
-            assert(typeof group_id === "number");
-            const group = user_groups.get_user_group_from_id(group_id);
-            const setting_url = hash_util.group_edit_url(group, "general");
-            args.groups_using_group_for_setting.push({
-                group_name: user_groups.get_display_group_name(group.name),
-                setting_url,
-            });
-            continue;
-        }
-
-        if (objection.type === "realm") {
-            args.realm_using_group_for_setting = true;
-        }
-    }
-    return args;
-}
-
 export function initialize(): void {
     $("#groups_overlay_container").on("click", ".group-row", function (this: HTMLElement) {
         if ($(this).closest(".check, .user_group_settings_wrapper").length === 0) {
@@ -1944,10 +1886,7 @@ export function initialize(): void {
                             "disabled",
                             true,
                         );
-                        const objections = parsed.data.objections;
-                        const template_args = parse_args_for_deactivation_banner(objections);
-                        const rendered_error_banner =
-                            render_cannot_deactivate_group_banner(template_args);
+                        const rendered_error_banner = render_cannot_deactivate_group_banner();
                         $("#dialog_error")
                             .html(rendered_error_banner)
                             .addClass("alert-error")
