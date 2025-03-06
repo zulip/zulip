@@ -87,6 +87,7 @@
 
         .compose-reply-button-wrapper {
             flex-grow: 1;
+            display: flex;
             overflow: hidden;
         }
 
@@ -104,6 +105,7 @@
             min-width: inherit;
             margin: 1px;
             flex-shrink: 0;
+            align-self: stretch;
 
             color: var(--color-compose-embedded-button-text-color);
 
@@ -133,9 +135,14 @@
         }
     }
 
+    .new_direct_message_button_container {
+        display: flex;
+    }
+
     #new_direct_message_button {
         /* Keep the new message button sized to match
            adjacent buttons. */
+        align-self: stretch;
         font-size: inherit;
         min-width: inherit;
         line-height: var(--line-height-compose-buttons);
