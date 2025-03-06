@@ -382,15 +382,6 @@
     /* Legacy values */
     --legacy-body-line-height-unitless: calc(20 / 14);
 
-    .more-dense-mode {
-        /* The legacy values here are not altered by JavaScript */
-        --base-font-size-px: 14px;
-        --base-line-height-unitless: 1.214;
-        --markdown-interelement-space-px: 5px;
-        --markdown-interelement-doubled-space-px: 10px;
-        --message-box-markdown-aligned-vertical-space: 5px;
-    }
-
     /* Message area */
     /* In the legacy layout at 16px/1em density, 918.6px is
        the widest the message area gets, so we preserve this
