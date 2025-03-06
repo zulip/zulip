@@ -1036,7 +1036,7 @@ textarea.new_message_textarea {
     grid-template-columns:
         [topic-box-start topic-start] minmax(0, 1fr)
         [topic-end topic-clear-button-start] auto [topic-clear-button-end topic-box-end];
-    grid-template-rows: auto;
+    grid-template-rows: [topic-box-start topic-start topic-clear-button-start] auto [topic-clear-button-end topic-end topic-box-end];
     align-content: center;
     align-items: stretch;
     flex: 1 1 0;
