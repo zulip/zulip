@@ -226,7 +226,9 @@ function do_resend_invite({$row, invite_id}: {$row: JQuery; invite_id: string}):
             dialog_widget.close();
             $resend_button.prop("disabled", true);
             $resend_button.text($t({defaultMessage: "Sent!"}));
-            $resend_button.removeClass("resend button-warning").addClass("sea-green");
+            $resend_button
+                .removeClass("resend action-button-quiet-warning")
+                .addClass("action-button-quiet-brand");
         },
     });
 }
@@ -266,8 +268,8 @@ export function on_load_success(
         const $row = $(this).closest(".invite_row");
         const email = $row.find(".email").text();
         const referred_by = $row.find(".referred_by").text();
-        const invite_id = $(this).attr("data-invite-id")!;
-        const is_multiuse = $(this).attr("data-is-multiuse")!;
+        const invite_id = $(this).closest("td").attr("data-invite-id")!;
+        const is_multiuse = $(this).closest("td").attr("data-is-multiuse")!;
         const ctx = {
             is_multiuse: is_multiuse === "true",
             email,
@@ -300,7 +302,7 @@ export function on_load_success(
 
         const $row = $(this).closest(".invite_row");
         const email = $row.find(".email").text();
-        const invite_id = $(this).attr("data-invite-id")!;
+        const invite_id = $(this).closest("td").attr("data-invite-id")!;
         const html_body = render_settings_resend_invite_modal({email});
 
         confirm_dialog.launch({

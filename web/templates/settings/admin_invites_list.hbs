@@ -31,15 +31,23 @@
     <td>
         <span>{{invited_as_text}}</span>
     </td>
-    <td class="actions">
+    <td class="actions" data-invite-id="{{id}}" data-is-multiuse="{{#unless is_multiuse}}false{{else}}true{{/unless}}">
         {{#unless is_multiuse}}
-        <button class="button rounded small resend button-warning" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}">
-            {{t "Resend" }}
-        </button>
+        {{> ../components/action_button
+          label=(t 'Resend')
+          type="quiet"
+          intent="warning"
+          custom_classes="resend inline-block"
+          disabled=disable_buttons
+          }}
         {{/unless}}
-        <button class="button rounded small revoke button-danger" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}" data-is-multiuse="{{is_multiuse}}">
-            {{t "Revoke" }}
-        </button>
+        {{> ../components/action_button
+          label=(t 'Revoke')
+          type="quiet"
+          intent="danger"
+          custom_classes="revoke inline-block"
+          disabled=disable_buttons
+          }}
     </td>
 </tr>
 {{/with}}
