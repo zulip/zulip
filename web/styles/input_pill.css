@@ -235,7 +235,9 @@
 #integration-url-filter-branches .pill-container {
     width: 100%;
     box-sizing: border-box;
-    background-color: var(--color-background-invitee-emails-pill-container);
+    background-color: var(
+        --color-background-pill-container-without-placeholder
+    );
 }
 
 .add_subscribers_container .pill-container,
