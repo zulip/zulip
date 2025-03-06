@@ -10,7 +10,12 @@ This page explains how to upgrade a Zulip server, including:
 - [Upgrading PostgreSQL](#upgrading-postgresql)
 - [Upgrading the operating system](#upgrading-the-operating-system)
 
-If you have an questions or problems with your upgrade process, best-effort
+We recommend always running [the latest Zulip server
+release](../overview/release-lifecycle.md#stable-releases). We work extremely
+hard to make sure these releases are stable and have no regressions, and that
+the upgrade process Just Works.
+
+If you do have any questions or problems with your upgrade process, best-effort
 community support is available in the [Zulip development
 community](https://zulip.com/development-community/).
 
