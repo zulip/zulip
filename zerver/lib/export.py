@@ -1199,6 +1199,7 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
     normal_rows: list[Record] = []
     dummy_rows: list[Record] = []
 
+    realm_user_default = RealmUserDefault.objects.get(realm=realm)
     for row in rows:
         if exportable_user_ids is not None:
             if row["id"] in exportable_user_ids:
@@ -1208,6 +1209,9 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
                 # inactive is_mirror_dummy users.
                 row["is_mirror_dummy"] = True
                 row["is_active"] = False
+                for settings_name in RealmUserDefault.property_types:
+                    value = getattr(realm_user_default, settings_name)
+                    row[settings_name] = value
 
         if row["is_mirror_dummy"]:
             dummy_rows.append(row)
