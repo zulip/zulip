@@ -6,12 +6,14 @@ import {z} from "zod";
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_inline_stream_or_topic_reference from "../templates/inline_stream_or_topic_reference.hbs";
 import render_topic_already_exists_warning_banner from "../templates/modal_banner/topic_already_exists_warning_banner.hbs";
+import render_unsubscribed_participants_warning_banner from "../templates/modal_banner/unsubscribed_participants_warning_banner.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
 import render_left_sidebar_stream_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_actions_popover.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as browser_history from "./browser_history.ts";
+import {get_conversation_participants_callback} from "./buddy_data.ts";
 import * as clipboard_handler from "./clipboard_handler.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
@@ -25,6 +27,8 @@ import type {Message} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
+import {get_user_by_id_assert_valid} from "./people.ts";
+import type {User} from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {left_sidebar_tippy_options} from "./popover_menus.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
@@ -36,6 +40,7 @@ import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
+import * as subscriber_api from "./subscriber_api.ts";
 import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
@@ -502,6 +507,83 @@ export async function build_move_topic_to_stream_popover(
             is_disabled;
     }
 
+    // Warn if any of current topic participants are NOT subscribed
+    // to the destination stream.
+    function warn_unsubscribed_participants(destination_stream_id: number): void {
+        $("#move_topic_modal .unsubscribed-participants-warning").remove();
+
+        const participants = get_conversation_participants_callback()();
+        const unsubscribed_participant_ids = [...participants].filter(
+            (user_id) => !stream_data.is_user_subscribed(destination_stream_id, user_id),
+        );
+
+        if (unsubscribed_participant_ids.length === 0) {
+            // This is true in the following cases, for all of which we do nothing :
+            // 1- Conversation (topic) has no participants.
+            // 2- All participants are subscribed to the destination stream.
+            // 3- Destination stream is current stream.
+            return;
+        }
+
+        const unsubscribed_participants: User[] = unsubscribed_participant_ids.map((user_id) =>
+            get_user_by_id_assert_valid(user_id),
+        );
+
+        const destination_stream = stream_data.get_sub_by_id(destination_stream_id)!;
+        const can_subscribe_other_users = stream_data.can_subscribe_others(destination_stream);
+        const few_unsubscribed_participants = unsubscribed_participant_ids.length <= 5;
+
+        const context = {
+            banner_type: compose_banner.WARNING,
+            classname: "unsubscribed-participants-warning",
+            button_text: can_subscribe_other_users
+                ? few_unsubscribed_participants
+                    ? $t({defaultMessage: "Subscribe them"})
+                    : $t({defaultMessage: "Subscribe all of them"})
+                : null,
+            hide_close_button: true,
+            n_unsubscribed_participants: unsubscribed_participant_ids.length,
+            last_index: unsubscribed_participant_ids.length - 1,
+            stream_id: destination_stream_id,
+            stream_name: destination_stream.name,
+            stream_color: destination_stream.color,
+            invite_only: destination_stream.invite_only,
+            is_web_public: destination_stream.is_web_public,
+            unsubscribed_participants,
+            few_unsubscribed_participants,
+        };
+
+        const warning_banner = render_unsubscribed_participants_warning_banner(context);
+        $("#move_topic_modal .simplebar-content").prepend($(warning_banner));
+
+        $(".unsubscribed-participants-warning .main-view-banner-action-button").on(
+            "click",
+            (event) => {
+                event.preventDefault();
+
+                function success(): void {
+                    $(event.target).parents(".main-view-banner").remove();
+                }
+
+                function xhr_failure(xhr: JQuery.jqXHR): void {
+                    $(event.target).parents(".main-view-banner").remove();
+                    ui_report.error(
+                        $t_html({defaultMessage: "Failed to subscribe participants"}),
+                        xhr,
+                        $("#move_topic_modal #dialog_error"),
+                    );
+                }
+
+                subscriber_api.add_user_ids_to_stream(
+                    unsubscribed_participant_ids,
+                    destination_stream,
+                    success,
+                    xhr_failure,
+                );
+            },
+        );
+    }
+
     function move_topic(): void {
         const params = get_params_from_form();
 
@@ -681,6 +763,7 @@ export async function build_move_topic_to_stream_popover(
         set_stream_topic_typeahead();
         render_selected_stream();
         maybe_show_topic_already_exists_warning();
+        warn_unsubscribed_participants(stream_widget_value);
 
         dropdown.hide();
         event.preventDefault();
