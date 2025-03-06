@@ -1704,6 +1704,7 @@ export function setup_page(callback: () => void): void {
                 realm.realm_org_type === settings_config.all_org_type_values.business.code,
             max_user_group_name_length: user_groups.max_user_group_name_length,
             all_group_setting_labels: settings_config.all_group_setting_labels,
+            has_billing_access: settings_data.user_has_billing_access(),
         };
 
         const groups_overlay_html = render_user_group_settings_overlay(template_data);

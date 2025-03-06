@@ -9,7 +9,6 @@ from zerver.actions.users import (
     do_change_can_change_user_emails,
     do_change_can_create_users,
     do_change_can_forge_sender,
-    do_change_is_billing_admin,
     do_change_user_role,
 )
 from zerver.lib.exceptions import JsonableError
@@ -25,7 +24,6 @@ ROLE_CHOICES = [
     "can_forge_sender",
     "can_create_users",
     "can_change_user_emails",
-    "is_billing_admin",
 ]
 
 
@@ -71,7 +69,6 @@ ONLY perform this on customer request from an authorized person.
             "can_forge_sender",
             "can_create_users",
             "can_change_user_emails",
-            "is_billing_admin",
         ]:
             new_role = user_role_map[options["new_role"]]
             if not options["grant"]:
@@ -122,11 +119,3 @@ ONLY perform this on customer request from an authorized person.
             elif not user.can_change_user_emails and not options["grant"]:
                 raise CommandError("User can't change user emails for this realm.")
             do_change_can_change_user_emails(user, options["grant"])
-        else:
-            assert options["new_role"] == "is_billing_admin"
-            if user.is_billing_admin and options["grant"]:
-                raise CommandError("User already is a billing admin for this realm.")
-            elif not user.is_billing_admin and not options["grant"]:
-                raise CommandError("User is not a billing admin for this realm.")
-
-            do_change_is_billing_admin(user, options["grant"])
