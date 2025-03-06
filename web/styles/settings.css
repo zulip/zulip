@@ -268,12 +268,6 @@ h3,
         display: inline !important;
     }
 
-    /* Messy implementation of buttons with text and a pencil icon in them
-       having spacing before the pencil icon. */
-    button[data-dismiss="modal"] i.fa-pencil {
-        margin-left: 3px;
-    }
-
     .hidden-email {
         font-style: italic;
     }
