@@ -346,25 +346,26 @@ export class DropdownWidget {
                         return;
                     }
 
+                    function get_item_by_index(index: number): JQuery {
+                        const item = list_items[index];
+                        assert(item !== undefined);
+                        return $popper.find(`.list-item[data-unique-id="${item.unique_id}"]`);
+                    }
+
                     function first_item(): JQuery {
-                        const first_item = list_items[0];
-                        assert(first_item !== undefined);
-                        return $popper.find(`.list-item[data-unique-id="${first_item.unique_id}"]`);
+                        return get_item_by_index(0);
                     }
 
                     function last_item(): JQuery {
-                        const last_item = list_items.at(-1);
-                        assert(last_item !== undefined);
-                        return $popper.find(`.list-item[data-unique-id="${last_item.unique_id}"]`);
+                        return get_item_by_index(list_items.length - 1);
                     }
 
-                    const render_all_items_and_focus_last_item = (): void => {
+                    const render_all_items = (): void => {
                         assert(this.list_widget !== undefined);
                         // List widget doesn't render all items by default, so we need to render all
                         // the items and focus on the last element.
                         const list_items = this.list_widget.get_current_list();
                         this.list_widget.render(list_items.length);
-                        trigger_element_focus(last_item());
                     };
 
                     const handle_arrow_down_on_last_item = (): void => {
@@ -387,7 +388,8 @@ export class DropdownWidget {
 
                     const handle_arrow_up_on_sticky_bottom_option = (): void => {
                         if (list_items.length > 0) {
-                            render_all_items_and_focus_last_item();
+                            render_all_items();
+                            trigger_element_focus(last_item());
                         } else if (!this.hide_search_box) {
                             trigger_element_focus($search_input);
                         }
@@ -401,17 +403,35 @@ export class DropdownWidget {
                         }
                     };
 
+                    const handle_arrow_down_on_sequential_focus = (): void => {
+                        switch (e.target) {
+                            case $search_input.get(0):
+                                handle_arrow_down_on_search_input();
+                                break;
+                            case $sticky_bottom_option.get(0):
+                                handle_arrow_down_on_sticky_bottom_option();
+                                break;
+                            case last_item().get(0):
+                                handle_arrow_down_on_last_item();
+                                break;
+                            default:
+                                trigger_element_focus($(e.target).next());
+                        }
+                    };
+
                     const handle_arrow_up_on_search_input = (): void => {
                         if (this.sticky_bottom_option) {
                             trigger_element_focus($sticky_bottom_option);
                         } else {
-                            render_all_items_and_focus_last_item();
+                            render_all_items();
+                            trigger_element_focus(last_item());
                         }
                     };
 
                     const handle_arrow_up_on_first_item = (): void => {
                         if (this.hide_search_box) {
-                            render_all_items_and_focus_last_item();
+                            render_all_items();
+                            trigger_element_focus(last_item());
                         } else {
                             trigger_element_focus($search_input);
                         }
@@ -443,19 +463,7 @@ export class DropdownWidget {
 
                         case "Tab":
                         case "ArrowDown":
-                            switch (e.target) {
-                                case $search_input.get(0):
-                                    handle_arrow_down_on_search_input();
-                                    break;
-                                case $sticky_bottom_option.get(0):
-                                    handle_arrow_down_on_sticky_bottom_option();
-                                    break;
-                                case last_item().get(0):
-                                    handle_arrow_down_on_last_item();
-                                    break;
-                                default:
-                                    trigger_element_focus($(e.target).next());
-                            }
+                            handle_arrow_down_on_sequential_focus();
                             break;
 
                         case "ArrowUp":
