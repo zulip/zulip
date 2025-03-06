@@ -365,9 +365,10 @@ export function update_topic_displayed_text(
     if (topic_name === undefined) {
         topic_name = "";
     }
-    // When topics are mandatory, we just call topic() as usual.
+    compose_state.topic(topic_name);
+
+    // When topics are mandatory, no additional adjustments are needed.
     if (realm.realm_mandatory_topics) {
-        compose_state.topic(topic_name);
         return;
     }
     // Otherwise, we have some adjustments to make to display:
@@ -400,8 +401,6 @@ export function update_topic_displayed_text(
         update_placeholder_visibility();
         $input.on("input", update_placeholder_visibility);
     }
-
-    compose_state.topic(topic_name);
 }
 
 export let update_compose_area_placeholder_text = (): void => {
