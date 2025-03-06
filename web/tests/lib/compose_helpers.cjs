@@ -41,7 +41,7 @@ class FakeComposeBox {
         this.$content_textarea.trigger("blur");
 
         this.$preview_message_area.css = noop;
-        $(".compose-submit-button .loader").show();
+        $(".compose-submit-button .modal__spinner").show();
     }
 
     show_message_preview() {
@@ -67,7 +67,7 @@ class FakeComposeBox {
     }
 
     compose_spinner_selector() {
-        return ".compose-submit-button .loader";
+        return ".compose-submit-button .modal__spinner";
     }
 
     markdown_spinner_selector() {
@@ -87,7 +87,7 @@ class FakeComposeBox {
     }
 
     show_submit_button_spinner() {
-        $(".compose-submit-button .loader").show();
+        $(".compose-submit-button .modal__spinner").show();
     }
 
     set_textarea_toggle_class_function(f) {
