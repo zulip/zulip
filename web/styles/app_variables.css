@@ -780,7 +780,7 @@
         color-mix(in srgb, #c2c2c2 80%, transparent),
         color-mix(in srgb, #fff 5%, transparent)
     );
-    --color-background-invitee-emails-pill-container: light-dark(
+    --color-background-pill-container-without-placeholder: light-dark(
         hsl(0deg 0% 100%),
         hsl(0deg 0% 0% / 20%)
     );
