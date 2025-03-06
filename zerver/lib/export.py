@@ -708,7 +708,7 @@ def export_from_config(
                     # no users are considered consenting.
                     consenting_user_ids: set[int] | None = set()
                 elif export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
-                    consenting_user_ids = get_consented_user_ids(realm)
+                    consenting_user_ids = context["exportable_user_ids"]
                 else:
                     assert export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT
                     # In a full export without consent, the concept is meaningless,
@@ -1465,6 +1465,7 @@ def export_partial_message_files(
     response: TableData,
     export_type: int,
     collected_client_ids: set[int],
+    exportable_user_ids: set[int] | None,
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
     output_dir: Path | None = None,
 ) -> set[int]:
@@ -1500,7 +1501,8 @@ def export_partial_message_files(
 
     consented_user_ids: set[int] = set()
     if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
-        consented_user_ids = get_consented_user_ids(realm)
+        assert exportable_user_ids is not None
+        consented_user_ids = exportable_user_ids
 
     if export_type == RealmExport.EXPORT_PUBLIC:
         recipient_streams = Stream.objects.filter(realm=realm, invite_only=False)
@@ -2142,7 +2144,9 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> dict[str, int | di
     return stats
 
 
-def get_exportable_scheduled_message_ids(realm: Realm, export_type: int) -> set[int]:
+def get_exportable_scheduled_message_ids(
+    realm: Realm, export_type: int, exportable_user_ids: set[int] | None
+) -> set[int]:
     """
     Scheduled messages are private to the sender, so which ones we export depends on the
     public/consent/full export mode.
@@ -2152,7 +2156,8 @@ def get_exportable_scheduled_message_ids(realm: Realm, export_type: int) -> set[
         return set()
 
     if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
-        sender_ids = get_consented_user_ids(realm)
+        assert exportable_user_ids is not None
+        sender_ids = exportable_user_ids
         return set(
             ScheduledMessage.objects.filter(sender_id__in=sender_ids, realm=realm).values_list(
                 "id", flat=True
@@ -2182,7 +2187,9 @@ def do_export_realm(
 
     create_soft_link(source=output_dir, in_progress=True)
 
-    exportable_scheduled_message_ids = get_exportable_scheduled_message_ids(realm, export_type)
+    exportable_scheduled_message_ids = get_exportable_scheduled_message_ids(
+        realm, export_type, exportable_user_ids
+    )
     collected_client_ids = set(
         ScheduledMessage.objects.filter(id__in=exportable_scheduled_message_ids)
         .order_by("sending_client_id")
@@ -2217,6 +2224,7 @@ def do_export_realm(
         realm,
         response,
         export_type=export_type,
+        exportable_user_ids=exportable_user_ids,
         output_dir=output_dir,
         collected_client_ids=collected_client_ids,
     )
@@ -2652,12 +2660,17 @@ def export_realm_wrapper(
         export_row.date_started = timezone_now()
         export_row.save(update_fields=["status", "date_started"])
 
+        exportable_user_ids = None
+        if export_row.type == RealmExport.EXPORT_FULL_WITH_CONSENT:
+            exportable_user_ids = get_consented_user_ids(export_row.realm)
+
         tarball_path, stats = do_export_realm(
             realm=export_row.realm,
             output_dir=output_dir,
             threads=threads,
             export_type=export_row.type,
             export_as_active=export_as_active,
+            exportable_user_ids=exportable_user_ids,
         )
 
         RealmAuditLog.objects.create(
