@@ -445,12 +445,15 @@ def process_raw_message_batch(
         date_sent = raw_message["date_sent"]
         sender_user_id = raw_message["sender_id"]
         if "channel_name" in raw_message:
+            is_private = False
             recipient_id = get_recipient_id_from_channel_name(raw_message["channel_name"])
         elif "direct_message_group_members" in raw_message:
+            is_private = True
             recipient_id = get_recipient_id_from_direct_message_group_members(
                 raw_message["direct_message_group_members"]
             )
         elif "pm_members" in raw_message:
+            is_private = True
             members = raw_message["pm_members"]
             member_ids = {user_id_mapper.get(member) for member in members}
             pm_members[message_id] = member_ids
@@ -500,6 +503,7 @@ def process_raw_message_batch(
             has_image=has_image,
             has_link=has_link,
             has_attachment=has_attachment,
+            is_private=is_private,
         )
         zerver_message.append(message)
         build_reactions(

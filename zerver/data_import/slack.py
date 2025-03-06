@@ -1033,6 +1033,7 @@ def channel_message_to_zerver_message(
             has_image=has_image,
             has_link=has_link,
             has_attachment=has_attachment,
+            is_private=is_private
         )
         zerver_message.append(zulip_message)
 

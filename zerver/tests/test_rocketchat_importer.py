@@ -1054,7 +1054,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assert_length(set(direct_message_group_recipients), 2)
         self.assertEqual(group_direct_messages[0].sender.email, "hermionegranger@email.com")
         self.assertEqual(group_direct_messages[0].content, "Hey people!")
-
+        self.assertEqual(group_direct_messages[0].subject, "")
         self.assertEqual(group_direct_messages[2].sender.email, "harrypotter@email.com")
         self.assertRegex(
             group_direct_messages[2].content,
@@ -1075,6 +1075,7 @@ class RocketChatImporter(ZulipTestCase):
             personal_messages[0].content,
             "Hey @**Hermione Granger** :grin:, how's everything going?",
         )
+        self.assertEqual(personal_messages[0].subject, "")
 
         self.verify_emoji_code_foreign_keys()
 

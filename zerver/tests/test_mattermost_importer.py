@@ -27,6 +27,7 @@ from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.topic import EXPORT_TOPIC_NAME
 from zerver.models import Message, Reaction, Recipient, UserProfile
 from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
@@ -902,6 +903,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             group_direct_messages[0].content, "Who is going to Hogsmeade this weekend?\n\n"
         )
+        self.assertEqual(group_direct_messages[0].subject, "")
 
         personal_messages = messages.filter(recipient__type=Recipient.PERSONAL).order_by(
             "date_sent"
@@ -914,6 +916,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertTrue(personal_messages[0].has_attachment)
         self.assertTrue(personal_messages[0].has_image)
         self.assertTrue(personal_messages[0].has_link)
+        self.assertEqual(personal_messages[0].subject, "")
 
     def test_do_convert_data_with_masking(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
