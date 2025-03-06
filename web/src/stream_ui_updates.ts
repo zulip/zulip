@@ -5,6 +5,7 @@ import type * as tippy from "tippy.js";
 import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
 import render_stream_can_subscribe_group_label from "../templates/stream_settings/stream_can_subscribe_group_label.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
+import render_stream_settings_archived_tip from "../templates/stream_settings/stream_settings_archived_tip.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
 import * as hash_parser from "./hash_parser.ts";
@@ -141,7 +142,7 @@ export function initialize_cant_subscribe_popover(): void {
 }
 
 export function set_up_right_panel_section(sub: StreamSubscription): void {
-    if (sub.subscribed) {
+    if (sub.subscribed && !sub.is_archived) {
         stream_edit_toggler.toggler.enable_tab("personal");
         stream_edit_toggler.toggler.goto(stream_edit_toggler.select_tab);
     } else {
@@ -242,6 +243,17 @@ export function update_default_stream_and_stream_privacy_state($container: JQuer
         return;
     }
 
+    if (!is_stream_creation) {
+        const stream_id = Number.parseInt(
+            $container.closest(".subscription_settings.show").attr("data-stream-id")!,
+            10,
+        );
+        const sub = sub_store.get(stream_id);
+        if (sub?.is_archived) {
+            $default_stream.find("input").prop("disabled", true);
+            return;
+        }
+    }
     const privacy_type = $container.find("input[type=radio][name=privacy]:checked").val();
     const is_invite_only =
         privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
@@ -326,6 +338,9 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     update_web_public_stream_privacy_option_state($("#stream_permission_settings"));
 
     if (!sub.can_change_stream_permissions_requiring_content_access) {
+        if (sub.is_archived) {
+            $general_settings_container.find(".default-stream").addClass("control-label-disabled");
+        }
         const $stream_privacy_values = $stream_settings
             .find($(".stream-privacy-values"))
             .find("input, button");
@@ -367,12 +382,13 @@ export function update_stream_privacy_icon_in_settings(sub: StreamSubscription):
 
     const $stream_settings = stream_settings_containers.get_edit_container(sub);
 
-    $stream_settings.find(".general_settings .large-icon").replaceWith(
+    $stream_settings.find(".stream_section[data-stream-section='general'] .large-icon").replaceWith(
         $(
             render_stream_privacy_icon({
                 invite_only: sub.invite_only,
                 color: sub.color,
                 is_web_public: sub.is_web_public,
+                is_archived: sub.is_archived,
             }),
         ),
     );
@@ -385,6 +401,9 @@ export function update_permissions_banner(sub: StreamSubscription): void {
 
     const rendered_tip = render_stream_settings_tip(sub);
     $settings.find(".stream-settings-tip-container").html(rendered_tip);
+
+    const rendered_archived_tip = render_stream_settings_archived_tip(sub);
+    $settings.find(".stream-settings-archived-tip-container").html(rendered_archived_tip);
 }
 
 export function update_notification_setting_checkbox(
@@ -450,6 +469,10 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
             tooltip_message = $t({
                 defaultMessage:
                     "You do not have permission to add other users to channels in this organization.",
+            });
+        } else if (sub.is_archived) {
+            tooltip_message = $t({
+                defaultMessage: "Can't add subscribers to an archived channel.",
             });
         } else {
             tooltip_message = $t({

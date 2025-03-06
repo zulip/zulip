@@ -187,6 +187,10 @@ export function is_content_editable(message: Message, edit_limit_seconds_buffer 
         return false;
     }
 
+    if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
+        return false;
+    }
+
     if (realm.realm_message_content_edit_limit_seconds === null) {
         return true;
     }

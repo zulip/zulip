@@ -225,6 +225,7 @@ for (const stream_id of [stream1, stream2, stream3, stream4, stream6]) {
         color: "",
         invite_only: false,
         is_web_public: true,
+        is_archived: false,
         subscribed: true,
     });
 }
@@ -415,6 +416,7 @@ function generate_topic_data(topic_info_array) {
             invite_only: false,
             is_web_public: true,
             is_private: false,
+            is_archived: false,
             last_msg_time: "Just now",
             last_msg_url: "https://www.example.com",
             full_last_msg_date_time: "date at time",

@@ -51,6 +51,7 @@ type TopicPopoverContext = {
     stream_name: string;
     stream_id: number;
     stream_muted: boolean;
+    stream_archived: boolean;
     topic_display_name: string;
     is_empty_string_topic: boolean;
     topic_unmuted: boolean;
@@ -250,8 +251,10 @@ export function get_topic_popover_content_context({
     const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     const has_unread_messages = num_unread_for_topic(sub.stream_id, topic_name) > 0;
-    const can_move_topic = settings_data.user_can_move_messages_between_streams();
-    const can_rename_topic = settings_data.user_can_move_messages_to_another_topic();
+    const can_move_topic =
+        !sub.is_archived && settings_data.user_can_move_messages_between_streams();
+    const can_rename_topic =
+        !sub.is_archived && settings_data.user_can_move_messages_to_another_topic();
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
     const is_spectator = page_params.is_spectator;
@@ -260,6 +263,7 @@ export function get_topic_popover_content_context({
         stream_name: sub.name,
         stream_id: sub.stream_id,
         stream_muted: sub.is_muted,
+        stream_archived: sub.is_archived,
         topic_display_name: util.get_final_topic_display_name(topic_name),
         is_empty_string_topic: topic_name === "",
         topic_unmuted,
