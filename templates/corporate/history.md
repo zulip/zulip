@@ -129,6 +129,12 @@ badge](https://www.capterra.com/p/197945/Zulip/).
 
 ## Press highlights
 
+- September 2024: An in-depth interview with Zulip’s head of product [on The
+  Changelog podcast](https://changelog.com/podcast/607): *“We talk about Zulip’s
+  origins, how it’s open source, the way it’s led, no VC funding, what makes it
+  different/better, how you can self-host it or use their cloud, moving to
+  Zulip, contributing and being a part of the community… all the things.”*
+
 - June 2024: An in-depth [review of
   Zulip](https://www.hostingadvice.com/blog/emerging-open-source-team-chat-app-set-to-rival-slack/)
   is published on [HostingAdvice.com](https://www.hostingadvice.com/).
