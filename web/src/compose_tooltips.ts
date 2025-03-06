@@ -105,13 +105,12 @@ export function initialize(): void {
         appendTo: () => document.body,
         onShow(instance) {
             const $new_conversation_button = $("#new_conversation_button");
+            const $reply_button = $("#left_bar_compose_reply_button_big");
             const conversation_type = $new_conversation_button.attr("data-conversation-type");
             if (conversation_type === "stream") {
-                if ($new_conversation_button.prop("disabled")) {
+                if ($reply_button.prop("disabled")) {
                     instance.setContent(
-                        parse_html(
-                            $("#compose_disable_stream_reply_button_tooltip_template").html(),
-                        ),
+                        parse_html($("#new_stream_message_button_tooltip_template").html()),
                     );
                 } else {
                     instance.setContent(
