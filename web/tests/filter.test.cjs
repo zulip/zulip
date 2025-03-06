@@ -1376,6 +1376,14 @@ test("parse", () => {
     terms = [{operator: "sender", operand: "leo+test@zulip.com"}];
     _test();
 
+    string = "sender:me";
+    terms = [{operator: "sender", operand: `${me.email}`}];
+    _test();
+
+    string = "-sender:me";
+    terms = [{operator: "sender", operand: `${me.email}`, negated: true}];
+    _test();
+
     string = "https://www.google.com";
     terms = [{operator: "search", operand: "https://www.google.com"}];
     _test();
