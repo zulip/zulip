@@ -87,7 +87,12 @@ h3,
 
 #change_password_modal,
 #change_email_modal {
-    max-width: 480px;
+    width: 34.2857em; /* 480px at 14px/em */
+    max-width: 90vw;
+}
+
+#change-email-form-input-email {
+    max-width: 90%;
 }
 
 #change_email_modal {
