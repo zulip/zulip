@@ -62,6 +62,6 @@ These permissions can be granted to any combination of
 * [Edit a message](/help/edit-a-message)
 * [Delete a message](/help/delete-a-message)
 * [Delete a topic](/help/delete-a-topic)
-* [Disable message edit history](/help/disable-message-edit-history)
+* [Restrict message edit history access](/help/restrict-message-edit-history-access)
 * [Configure message retention policy](/help/message-retention-policy)
 * [Restrict moving messages](/help/restrict-moving-messages)

@@ -8891,11 +8891,13 @@ paths:
                           if they wish to delete the uploaded files returned in this response,
                           which might otherwise remain visible only in message edit history.
 
-                          Note that [access to message edit
-                          history](/help/disable-message-edit-history) is configurable; this detail
-                          may be important in presenting the question clearly to users.
+                          Note that [access to message edit history][edit-history-access]
+                          is configurable; this detail may be important in presenting the
+                          question clearly to users.
 
                           New in Zulip 10.0 (feature level 285).
+
+                          [edit-history-access]: /help/restrict-message-edit-history-access
                         items:
                           $ref: "#/components/schemas/Attachment"
                     example:
@@ -24271,8 +24273,9 @@ components:
             ordered chronologically from most recent to least recent
             edit.
 
-            Not present if the message has never been edited or if the realm has
-            [disabled viewing of message edit history][disable-edit-history].
+            Not present if the message has never been edited or moved,
+            or if [viewing message edit history][edit-history-access]
+            is not allowed in the organization.
 
             Every object will contain `user_id` and `timestamp`.
 
@@ -24282,7 +24285,7 @@ components:
             only the topic was edited, only `prev_topic` and `topic`
             will be present in addition to `user_id` and `timestamp`.
 
-            [disable-edit-history]: /help/disable-message-edit-history
+            [edit-history-access]: /help/restrict-message-edit-history-access
 
             **Changes**: In Zulip 10.0 (feature level 284), removed the
             `prev_rendered_content_version` field as it is an internal
