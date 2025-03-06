@@ -109,6 +109,7 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
             "from_name": FromAddress.security_email_from_name(user_profile=user),
             "from_address": FromAddress.NOREPLY,
             "context": context,
+            "date": local_time,
         }
         queue_json_publish_rollback_unsafe("email_senders", email_dict)
 

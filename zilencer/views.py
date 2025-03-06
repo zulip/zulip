@@ -1192,6 +1192,7 @@ def update_remote_realm_data_for_server(
         "template_prefix": "zerver/emails/internal_billing_notice",
         "to_emails": [BILLING_SUPPORT_EMAIL],
         "from_address": FromAddress.tokenized_no_reply_address(),
+        "date": timezone_now(),
     }
     for context in new_locally_deleted_remote_realms_on_paid_plan_contexts:
         email_dict["context"] = context

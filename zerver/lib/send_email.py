@@ -6,7 +6,7 @@ import re
 import smtplib
 from collections.abc import Callable, Mapping
 from contextlib import suppress
-from datetime import timedelta
+from datetime import datetime, timedelta
 from email.headerregistry import Address
 from email.message import EmailMessage
 from email.parser import Parser
@@ -94,6 +94,7 @@ def build_email(
     from_address: str | None = None,
     reply_to_email: str | None = None,
     language: str | None = None,
+    date: str | None = None,
     context: Mapping[str, Any] = {},
     realm: Realm | None = None,
 ) -> EmailMultiAlternatives:
@@ -123,6 +124,12 @@ def build_email(
     # came out of Microsoft Outlook and friends, but seems reasonably
     # commonly-recognized.
     extra_headers = {"X-Auto-Response-Suppress": "All"}
+
+    if date is not None:
+        with contextlib.suppress(ValueError):
+            extra_headers["Date"] = datetime.fromisoformat(date).strftime(
+                "%a, %d %b %Y %H:%M:%S %z"
+            )
 
     if realm is not None:
         # formaddr is meant for formatting (display_name, email_address) pair for headers like "To",
@@ -255,6 +262,7 @@ def send_email(
     from_address: str | None = None,
     reply_to_email: str | None = None,
     language: str | None = None,
+    date: str | None = None,
     context: Mapping[str, Any] = {},
     realm: Realm | None = None,
     connection: BaseEmailBackend | None = None,
@@ -269,6 +277,7 @@ def send_email(
         from_address=from_address,
         reply_to_email=reply_to_email,
         language=language,
+        date=date,
         context=context,
         realm=realm,
     )
