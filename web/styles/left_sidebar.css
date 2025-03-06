@@ -731,6 +731,10 @@ li.active-sub-filter {
     }
 }
 
+.sidebar-menu-icon.hide {
+    visibility: hidden;
+}
+
 /* Don't show the scheduled messages item... */
 li.top_left_scheduled_messages {
     display: none;
