@@ -47,5 +47,6 @@ count for the current channel directly in your message view.
 
 * [Introduction to channels](/help/introduction-to-channels)
 * [View channel subscribers](/help/view-channel-subscribers)
+* [Pin information](/help/pin-information)
 * [Rename a channel](/help/rename-a-channel)
 * [Change a channel's description](/help/change-the-channel-description)
