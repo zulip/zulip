@@ -244,6 +244,7 @@
 ## Organization settings
 * [Configure organization language](/help/configure-organization-language)
 * [Custom emoji](/help/custom-emoji)
+* [Configure call provider](/help/configure-call-provider)
 * [Add a custom linkifier](/help/add-a-custom-linkifier)
 * [Require topics in channel messages](/help/require-topics)
 * [Disable message edit history](/help/disable-message-edit-history)
