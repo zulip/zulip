@@ -13,9 +13,9 @@ final 10.0 release, but are not available in 10.0-beta1.
 - Replaced the compact mode setting with flexible options for font
   size and line spacing in the Zulip web app.
 
-### Zulip Server 10.0-beta1
+### Zulip Server 10.0-beta2
 
-_Released 2025-02-28_
+_Released 2025-03-06_
 
 #### Highlights
 
@@ -41,8 +41,9 @@ _Released 2025-02-28_
   rather than being fully deleted, so Zulip's audit logs still
   maintain a complete history of permissions changes.
 - Group settings were redesigned, with many new administration
-  permissions, and a new Permissions panel showing all the permissions
-  that membership in the group grants.
+  permissions, support for viewing deactivated groups, and a new
+  Permissions panel showing all the permissions that membership in the
+  group grants.
 - Channel administration permissions have been restructured to be
   based on groups, with new settings for administrering channels,
   adding subscribers, removing them, and being able to join channels.
@@ -148,11 +149,14 @@ _Released 2025-02-28_
   support those image formats. Animated images with very high total
   pixel counts now preview the first few frames, rather than not
   offering a preview at all.
+- Increased the size of image and video previews.
 - Added a new API endpoint for bulk-fetching messages by ID. Improved
   API support for fetching users by email address.
 - Added API support for changing another user's email address, with a
   `can_change_user_emails` administrative permission issued via
   management shell.
+- Hiding the right and left sidebars now allows the message feed to
+  use more space, and works better in the mobile web view.
 - Unread mentions in direct messages are now visually decorated with
   an `@` in lists of conversations, just like unread mentions in
   channels.
@@ -160,10 +164,14 @@ _Released 2025-02-28_
   each role.
 - Clicking on the channel name while viewing a topic in a channel is
   now another way to reach the Channel Feed for that channel.
+- Channel popovers now offer marking all messages as unread if there
+  are no unread messages.
 - New Airbyte and Onyx integrations. Updated GitHub, GitLab, GoCD,
   Linear, and NewRelic integrations. Removed the OpsBeat and Desk.com
   integrations, as the products are defunct. Refreshed the
   documentation for dozens of integrations.
+- All Git integrations support configuring branches to filter in the
+  integration setup interface.
 - The GitHub webhook now has a flag to filter activity from private
   repositories. Fixed several bugs as well.
 - The `ignore_pull_requests` flag for the Travis CI integration was
@@ -192,7 +200,8 @@ _Released 2025-02-28_
   other actions.
 - Redesigned the UI for changing your name or email address.
 - Redesigned the top-of-screen banners.
-- Redesigned the modal for moving topics.
+- Redesigned the modal for moving topics, including a new warning
+  banner when moving messages will combine two topics.
 - Redesigned the channel color picker experience.
 - Redesigned how users are displayed across the app to be consistent
   in how deactivated status, status emoji, guest markers, and other
@@ -202,6 +211,7 @@ _Released 2025-02-28_
   section.
 - Improved how the left sidebar displays the state where one is
   viewing a non-existent topic (E.g., when starting a topic).
+- Improved keyboard focus outlines in the left and right sidebars.
 - Improved how very tall messages are collapsed and navigated over
   with the arrow keys.
 - Improved hotkey documentation for macOS users with non-Mac keyboards.
@@ -217,6 +227,9 @@ _Released 2025-02-28_
 - Improved handling of scheduled messages to be sent very soon.
 - Improved move-topic modal to better guess the initial value for
   which collection of messages to move.
+- Improved compose user mention typeahead to de-prioritize bots.
+- Improved internationalization (emoji picker categories, joining
+  lists of names without hardcoding `,` as a the separator, etc.)
 - Fixed a bug where new user accounts joining an organization that had
   been idle in recent months would be created with very few messages
   in their combined feed.
@@ -243,19 +256,25 @@ _Released 2025-02-28_
 - Fixed the left sidebar sometimes not scrolling properly when
   navigating to a topic.
 - Fixed several subtle race bugs involving local echo of sent messages.
-- Fixed several subtle bugs involving the compose preview area's height.
+- Fixed several subtle bugs involving the compose preview area's
+  height and handling of races.
 - Fixed languages with custom playgrounds not being offered in the
   default code block languages UI.
 - Fixed an issue that could cause browser/desktop app windows to
   reload before a previously suspended laptop had gained reliable
   access to the network.
 - Fixed buggy URL-escaping of filenames in tooltips.
+- Fixed a buggy outgoing email error-handling code path that would
+  retry failing SMTP requests indefinitely.
 - Fixed bugs preventing reliably rolling restart of server processes.
 - Fixed several issues with the "load more" button in the recent view.
 - Fixed handling of several rare race conditions.
 - Fixed animated images incorrectly autoplaying on Firefox, even when
   the user has configured them to only play on hover.
 - Fixed a bug that allowed the creation of invalid linkifiers.
+- Fixed several bugs with typeahead and copy/paste of links to
+  channels and topics with names containing special characters.
+- Fixed multiple bugs involving caching of user objects.
 - Fixed inconsistencies in display order of group direct message recipients.
 - Renamed `stream` to `channel` in generated URLs, now that enough
   time has passed since `channel` support was added to mobile clients.
@@ -279,10 +298,6 @@ _Released 2025-02-28_
 
 #### Upgrade notes for 10.0
 
-- There's a known bug in 10.0-beta1 that will permanently break
-  `/near/` URL links to existing topics named "general
-  chat". Installations that make use of topics with that name should
-  not upgrade to `10.0-beta1`. (The bug will be fixed in 10.0.)
 - This release contains many new features and usability improvements
   that you'll want to highlight for your users, especially if you've
   disabled [Zulip
