@@ -14,9 +14,9 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import {$t_html} from "./i18n.ts";
+import * as branch_pill from "./integration_branch_pill.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import {place_caret_at_end} from "./ui_util.ts";
 import * as util from "./util.ts";
 
 type ConfigOption = {
@@ -55,6 +55,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         let stream_input_dropdown_widget: DropdownWidget;
         let integration_input_dropdown_widget: DropdownWidget;
         let previous_selected_integration = "";
+        let branch_pill_widget: branch_pill.BranchPillWidget | undefined;
 
         const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
         const $topic_input = $<HTMLInputElement>("input#integration-url-topic-input");
@@ -77,6 +78,35 @@ export function show_generate_integration_url_modal(api_key: string): void {
             );
         });
 
+        function show_branch_filtering_ui(): void {
+            $("#integration-url-filter-branches").toggleClass(
+                "hide",
+                $("#integration-url-all-branches").prop("checked"),
+            );
+
+            const $pill_container = $("#integration-url-filter-branches .pill-container");
+            if ($pill_container.length > 0 && branch_pill_widget === undefined) {
+                branch_pill_widget = branch_pill.create_pills($pill_container);
+                branch_pill_widget.onPillCreate(() => {
+                    update_url();
+                });
+                branch_pill_widget.onPillRemove(() => {
+                    update_url();
+                });
+            }
+
+            if (
+                !$("#integration-url-all-branches").prop("checked") &&
+                branch_pill_widget !== undefined &&
+                branch_pill_widget.items().length === 0
+            ) {
+                branch_pill_widget.appendValue("main");
+            }
+
+            $("#integration-url-branches-text").trigger("focus");
+            update_url();
+        }
+
         function render_config(config: ConfigOption[]): void {
             const validated_config = config_options_schema.parse(config);
             $config_container.empty();
@@ -89,16 +119,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                         render_generate_integration_url_filter_branches_modal();
                     $config_element = $(filter_branches_html);
                     $config_element.find("#integration-url-all-branches").on("change", () => {
-                        $("#integration-url-filter-branches").toggleClass(
-                            "hide",
-                            $("#integration-url-all-branches").prop("checked"),
-                        );
-                        $("#integration-url-branches-text").trigger("focus");
-                        place_caret_at_end(util.the($("#integration-url-branches-text")));
-                        update_url();
-                    });
-                    $config_element.find("#integration-url-branches-text").on("input", () => {
-                        update_url();
+                        show_branch_filtering_ui();
                     });
                 } else if (option.validator === "check_bool") {
                     const config_html = render_generate_integration_url_config_checkbox_modal({
@@ -213,7 +234,23 @@ export function show_generate_integration_url_modal(api_key: string): void {
             if (config) {
                 for (const option of config) {
                     let $input_element;
-                    if (option.validator === "check_bool") {
+                    if (
+                        option.key === "branches" &&
+                        !$("#integration-url-all-branches").prop("checked")
+                    ) {
+                        const $pill_container = $(
+                            "#integration-url-filter-branches .pill-container",
+                        );
+                        if ($pill_container.length > 0 && branch_pill_widget !== undefined) {
+                            const branch_names = branch_pill_widget
+                                .items()
+                                .map((item) => item.branch)
+                                .join(",");
+                            if (branch_names !== "") {
+                                params.set(option.key, branch_names);
+                            }
+                        }
+                    } else if (option.validator === "check_bool") {
                         $input_element = $(`#integration-url-${option.key}-checkbox`);
                         if ($input_element.prop("checked")) {
                             params.set(option.key, "true");
@@ -221,14 +258,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     } else if (option.validator === "check_string") {
                         $input_element = $(`#integration-url-${option.key}-text`);
                         const value = $input_element.val();
-                        // If the config option is "branches", ensure the checkbox is unchecked.
-                        if (
-                            value &&
-                            (option.key !== "branches" ||
-                                $<HTMLInputElement>("#integration-url-all-branches").prop(
-                                    "checked",
-                                ) === false)
-                        ) {
+                        if (value) {
                             params.set(option.key, value.toString());
                         }
                     }
@@ -372,6 +402,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
 
             stream_input_dropdown_widget.render(direct_messages_option.unique_id);
             $config_container.empty();
+            branch_pill_widget = undefined;
         }
     }
 
