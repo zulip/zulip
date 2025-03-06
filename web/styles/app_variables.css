@@ -195,6 +195,8 @@
         --search-box-height: 1.75em; /* 28px at 16px em */
     }
 
+    --search-pill-label-min-width: 2.1429em; /* 30px at 14px/em */
+
     /*
     Since #navbar_alerts_wrapper can take variable height depending upon
     window width / language, we sync its height in navbar_alerts.js
@@ -546,6 +548,8 @@
        them, and a square aspect-ratio, even under
        `box-sizing: border-box` in the area. */
     --length-input-pill-image: calc(var(--height-input-pill) - 2px);
+    --length-input-pill-exit: 1.1429em; /* 16px at 14px/em */
+    --input-pill-side-padding: 0.3571em; /* 5px at 14px/em */
     --vertical-spacing-input-pill: 2px;
     --outer-spacing-input-pill-container: var(--vertical-spacing-input-pill);
     --horizontal-spacing-input-pill: 6px;
