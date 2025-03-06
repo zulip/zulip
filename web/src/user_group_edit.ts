@@ -1952,6 +1952,12 @@ export function initialize(): void {
                             .html(rendered_error_banner)
                             .addClass("alert-error")
                             .show();
+
+                        $("#dialog_error .permissions-button").on("click", () => {
+                            select_tab = "permissions";
+                            update_toggler_for_group_setting();
+                            dialog_widget.close();
+                        });
                     } else {
                         ui_report.error($t({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
                     }

@@ -1392,6 +1392,30 @@ div.settings-radio-input-parent {
     margin: -6px 0 -6px -10px;
 }
 
+#deactivation-confirm-modal {
+    .alert {
+        padding-right: 14px;
+    }
+
+    .cannot-deactivate-group-banner {
+        border: none;
+        margin: 0;
+
+        .banner-text {
+            margin: 0;
+            padding-right: 4px;
+        }
+
+        .permissions-button {
+            text-wrap: nowrap;
+
+            &:focus {
+                outline: 0;
+            }
+        }
+    }
+}
+
 @media (width < $lg_min) {
     .user-groups-container,
     .subscriptions-container {
