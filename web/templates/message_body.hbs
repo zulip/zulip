@@ -1,30 +1,34 @@
 {{#if include_sender}}
     {{> message_avatar . ~}}
 {{/if}}
-<span class="message_sender">
+<div class="message_sender">
     {{#if include_sender}}
-        <span class="sender_info_hover sender_name" role="button" tabindex="0">
-            <span class="view_user_card_tooltip sender_name_text" data-is-bot="{{sender_is_bot}}">
+    <div class="sender_info">
+        <div class="sender_info_hover sender_name" role="button" tabindex="0">
+            <div class="view_user_card_tooltip sender_name_text" data-is-bot="{{sender_is_bot}}">
                 {{> user_full_name name=msg/sender_full_name should_add_guest_user_indicator=should_add_guest_indicator_for_sender}}
-            </span>
+            </div>
             {{#unless status_message}}
             {{> status_emoji msg/status_emoji_info}}
             {{/unless}}
-        </span>
+        </div>
         {{#if sender_is_bot}}
-        <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+        <div class="bot-icon">
+            <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+        </div>
         {{/if}}
-        {{#if status_message}}
-            <span class="rendered_markdown status-message">{{rendered_markdown status_message}}</span>
-            {{#if message_edit_notices_for_status_message}}
-                {{> edited_notice .}}
-            {{/if}}
-        {{/if}}
-        {{#if message_edit_notices_alongside_sender}}
+    </div>
+    {{#if status_message}}
+        <div class="rendered_markdown status-message">{{rendered_markdown status_message}}</div>
+        {{#if message_edit_notices_for_status_message}}
             {{> edited_notice .}}
         {{/if}}
     {{/if}}
-</span>
+    {{#if message_edit_notices_alongside_sender}}
+        {{> edited_notice .}}
+    {{/if}}
+    {{/if}}
+</div>
 
 <a {{#unless msg/locally_echoed}}href="{{ msg/url }}"{{/unless}} class="message-time">
     {{#unless include_sender}}
