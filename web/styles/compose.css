@@ -222,6 +222,7 @@
             /* Ensure the marker ( < ) stays centered vertically
               with the dropdown, even when adjacent stacking pills
               in, e.g., a group DM. */
+            align-self: center;
             display: flex;
             align-items: center;
             /* Ensure horizontal centering, too. */
@@ -1463,8 +1464,6 @@ textarea.new_message_textarea {
 
 #compose_select_recipient_widget_wrapper {
     display: flex;
-    justify-content: flex-start;
-    height: var(--compose-recipient-box-min-height);
 
     &:focus-visible {
         outline: 0;
