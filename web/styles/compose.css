@@ -1335,6 +1335,10 @@ textarea.new_message_textarea {
 }
 
 #compose-recipient {
+    /* Enforce a shared, 'normal' line-height on
+       the recipient elements for baseline alignment,
+       and better use of the recipient-row space. */
+    line-height: normal;
     display: flex;
     flex: 1 1 0;
     /* Use this containing flex element to
