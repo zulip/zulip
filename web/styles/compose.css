@@ -1418,18 +1418,6 @@ textarea.new_message_textarea {
     }
 }
 
-.less-dense-mode {
-    .compose-control-buttons-container {
-        .compose_control_button {
-            /* Slightly reduce width so that buttons don't overflow the available
-            space at mobile widths */
-            @media (width < 400px) {
-                width: 1.28em;
-            }
-        }
-    }
-}
-
 .message-send-controls {
     display: flex;
 
