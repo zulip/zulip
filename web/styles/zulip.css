@@ -2199,6 +2199,12 @@ body:not(.spectator-view) {
         padding-right: 5px;
     }
 
+    .decorated-stream-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .zulip-icon {
         margin-top: 2px;
     }
