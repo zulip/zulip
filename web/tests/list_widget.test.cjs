@@ -527,6 +527,105 @@ run_test("sorting", () => {
     assert.ok(cleared);
     expected_html = html_for([ellen, alice, bob, cal, dave]);
     assert.deepEqual($container.$appended_data.html(), expected_html);
+});
+
+run_test("Apply consecutive sorts", () => {
+    const $container = make_container();
+    const $scroll_container = make_scroll_container();
+    const $sort_container = make_sort_container();
+
+    let cleared;
+    $container.empty = () => {
+        cleared = true;
+    };
+
+    const alice = {name: "alice", salary: 50};
+    const bob = {name: "bob", salary: 40};
+    const cal = {name: "cal", salary: 30};
+    const dave = {name: "dave", salary: 20};
+    const ellen = {name: "ellen", salary: 95};
+    const bob_2 = {name: "bob", salary: 20};
+    const cal_2 = {name: "cal", salary: 60};
+
+    const list = [alice, bob, cal, dave, ellen, bob_2, cal_2];
+
+    const opts = {
+        name: "sorting-list",
+        $parent_container: $sort_container,
+        modifier_html: (item) => div(item.name) + div(item.salary),
+        get_item: (item) => item,
+        filter: {
+            predicate: () => true,
+        },
+        sort_fields: {
+            ...ListWidget.generic_sort_functions("alphabetic", ["name"]),
+            ...ListWidget.generic_sort_functions("numeric", ["salary"]),
+        },
+        $simplebar_container: $scroll_container,
+    };
+
+    function html_for(people) {
+        return people.map((item) => opts.modifier_html(item)).join("");
+    }
+
+    ListWidget.create($container, list, opts);
+
+    let button_opts;
+    let $button;
+    let expected_html;
+
+    // Apply sorting by salary first, then by name
+    button_opts = {
+        sort_type: "numeric",
+        prop_name: "salary",
+        list_name: "my-list",
+        active: false,
+    };
+
+    $button = sort_button(button_opts);
+
+    $sort_container.f.apply($button);
+
+    button_opts = {
+        sort_type: "alphabetic",
+        prop_name: "name",
+        list_name: "my-list",
+        active: false,
+    };
+
+    $button = sort_button(button_opts);
+
+    $sort_container.f.apply($button);
+
+    assert.ok(cleared);
+    assert.ok($button.siblings_deactivated);
+
+    expected_html = html_for([alice, bob_2, bob, cal, cal_2, dave, ellen]);
+    assert.deepEqual($container.$appended_data.html(), expected_html);
+
+    // Apply sorting by salary again, the previous sort by salary should be removed
+    button_opts = {
+        sort_type: "numeric",
+        prop_name: "salary",
+        list_name: "my-list",
+        active: false,
+    };
+
+    $button = sort_button(button_opts);
+
+    cleared = false;
+    $sort_container.f.apply($button);
+    assert.ok(cleared);
+    expected_html = html_for([bob_2, dave, cal, bob, alice, cal_2, ellen]);
+    assert.deepEqual($container.$appended_data.html(), expected_html);
+    assert.ok(!$button.hasClass("descend"));
+
+    // Hit the salary field again to reverse the salary sorting
+    cleared = false;
+    $sort_container.f.apply($button);
+    assert.ok(cleared);
+    expected_html = html_for([ellen, cal_2, alice, bob, cal, bob_2, dave]);
+    assert.deepEqual($container.$appended_data.html(), expected_html);
     assert.ok($button.hasClass("descend"));
 });
 
