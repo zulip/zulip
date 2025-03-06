@@ -82,7 +82,12 @@ export function generic_row_button_error(xhr: JQuery.jqXHR, $button: JQuery): vo
     }
 }
 
-export function hide_error($target: JQuery): void {
+export function hide_error($target: JQuery, instantly = false): void {
+    if (instantly) {
+        $target.removeClass("show");
+        return;
+    }
+
     $target.addClass("fade-out");
     setTimeout(() => {
         $target.removeClass("show fade-out");
