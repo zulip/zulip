@@ -1,12 +1,22 @@
-# Zulip BigBlueButton integration
+# Use BigBlueButton as your call provider in Zulip
 
-Zulip supports using [BigBlueButton](https://bigbluebutton.org/) as its
-video call provider.
+You can configure BigBlueButton as the call provider for your organization.
+Users will be able to start a BigBlueButton call and invite others using the
+**add video call** (<i class="zulip-icon zulip-icon-video-call"></i>) or
+**add voice call** (<i class="zulip-icon zulip-icon-voice-call"></i>) button
+[in the compose box](/help/start-a-call).
 
 !!! warn ""
 
     **Note:** This is currently only possible on self-hosted Zulip
     installations, and you'll need a BigBlueButton server.
+
+## Configure BigBlueButton as your call provider
+
+By default, Zulip integrates with
+[Jitsi Meet](https://jitsi.org/jitsi-meet/), a fully-encrypted, 100% open
+source video conferencing solution. You can configure Zulip to use BigBlueButton
+as your call provider instead.
 
 {start_tabs}
 
@@ -22,16 +32,18 @@ video call provider.
 1. Restart the Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.
 
-1. Select BigBlueButton as the organization's
-   [video call provider][video call provider].
+{settings_tab|organization-settings}
+
+1. Under **Compose settings**, select BigBlueButton from the **Call provider**
+   dropdown.
+
+1. Click **Save changes**.
 
 {end_tabs}
 
-You're done! Zulip's [call button](/help/start-a-call) will now create
-meetings using BigBlueButton.
-
 ### Related documentation
 
+- [How to start a call](/help/start-a-call)
+- [Jitsi Meet integration](/integrations/doc/jitsi)
+- [Zoom integration](/integrations/doc/zoom)
 * [BigBlueButton server configuration](https://docs.bigbluebutton.org/administration/customize/#other-configuration-changes)
-
-[video call provider]: /help/start-a-call#changing-your-organizations-video-call-provider
