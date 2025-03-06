@@ -225,4 +225,15 @@ def send_event_rollback_unsafe(
 def send_event_on_commit(
     realm: Realm, event: Mapping[str, Any], users: Iterable[int] | Iterable[Mapping[str, Any]]
 ) -> None:
+    if not settings.USING_RABBITMQ:
+        # In tests, round-trip the event through JSON, as happens with
+        # RabbitMQ.  zerver.lib.queue also enforces this, but the
+        # on-commit nature of the event sending makes it difficult to
+        # trace which event was at fault -- so we also check it
+        # immediately, here.
+        try:
+            event = orjson.loads(orjson.dumps(event))
+        except TypeError:
+            print(event)
+            raise
     transaction.on_commit(lambda: send_event_rollback_unsafe(realm, event, users))
