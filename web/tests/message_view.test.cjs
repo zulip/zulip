@@ -136,7 +136,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
             Some common words were excluded from your search. <br/>You searched for:
             <span>channel: new</span>
             <span>topic: test</span>
-                <span>search</span>
+                <span class="search-query-word">search</span>
                 <del>a</del>
     </div>
 </div>
@@ -160,7 +160,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
     <div class="empty-feed-notice-description">
             You searched for:
             <span>channel: hello world</span>
-                <span>searchA</span>
+                <span class="search-query-word">searchA</span>
     </div>
 </div>
 `,
@@ -183,7 +183,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
     <div class="empty-feed-notice-description">
             You searched for:
             <span>topic: hello</span>
-                <span>searchB</span>
+                <span class="search-query-word">searchB</span>
     </div>
 </div>
 `,
@@ -608,7 +608,10 @@ run_test("show_empty_narrow_message_with_search", ({mock_template, override}) =>
 
     const current_filter = set_filter([["search", "grail"]]);
     narrow_banner.show_empty_narrow_message(current_filter);
-    assert.match($(".empty_feed_notice_main").html(), /<span>grail<\/span>/);
+    assert.match(
+        $(".empty_feed_notice_main").html(),
+        /<span class="search-query-word">grail<\/span>/,
+    );
 });
 
 run_test("hide_empty_narrow_message", () => {
