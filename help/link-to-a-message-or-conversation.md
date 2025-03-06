@@ -184,3 +184,4 @@ formatted for you. You can paste as plain text if you prefer with
 * [Add a custom linkifier](/help/add-a-custom-linkifier)
 * [Message formatting](/help/format-your-message-using-markdown)
 * [Linking to your organization](/help/linking-to-zulip)
+* [Pin information](/help/pin-information)

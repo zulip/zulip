@@ -223,6 +223,7 @@
 * [Set default channels for new users](/help/set-default-channels-for-new-users)
 * [Rename a channel](/help/rename-a-channel)
 * [Change a channel's description](/help/change-the-channel-description)
+* [Pin information](/help/pin-information)
 * [Change the privacy of a channel](/help/change-the-privacy-of-a-channel)
 * [Delete or archive a channel](/help/archive-a-channel)
 

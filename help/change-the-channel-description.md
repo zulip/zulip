@@ -49,6 +49,7 @@ disabled. Use Markdown formatting to include a link to a website, Zulip
 
 ## Related articles
 
+* [Pin information](/help/pin-information)
 * [View channel information](/help/view-channel-information)
 * [Rename a channel](/help/rename-a-channel)
 * [Markdown formatting][markdown-formatting]
