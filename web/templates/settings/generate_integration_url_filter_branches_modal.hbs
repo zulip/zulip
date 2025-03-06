@@ -10,7 +10,8 @@
 <div class="input-group hide" id="integration-url-filter-branches">
     <label for="integration-url-branches-text" class="modal-label-field">
         {{t "Which branches should notifications be sent for?"}}
-        (<i>{{t "comma-separated list"}}</i>)
     </label>
-    <input type="text" id="integration-url-branches-text" class="modal_text_input integration-url-parameter" value="main"/>
+    <div class="pill-container">
+        <div id="integration-url-branches-text" class="input" contenteditable="true"></div>
+    </div>
 </div>
