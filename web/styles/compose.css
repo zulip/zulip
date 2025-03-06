@@ -1039,6 +1039,8 @@ textarea.new_message_textarea {
     align-content: center;
     align-items: stretch;
     flex: 1 1 0;
+    /* 128px at 16px/1em */
+    min-width: 8em;
     border: 1px solid var(--color-compose-recipient-box-border-color);
     border-radius: 4px;
     transition: border-color 0.2s ease;
@@ -1124,7 +1126,9 @@ textarea.new_message_textarea {
 }
 
 #compose_select_recipient_widget {
-    width: auto;
+    width: 100%;
+    /* 256px at 16px/1em */
+    max-width: 16em;
     outline: none;
     /* We override the component-level colors to
        ensure concord with the topic box. */
@@ -1464,6 +1468,8 @@ textarea.new_message_textarea {
 #compose_select_recipient_widget_wrapper {
     display: flex;
     justify-content: flex-start;
+    /* absolute min-width is needed to truncate text */
+    min-width: 0;
     height: var(--compose-recipient-box-min-height);
 
     &:focus-visible {
@@ -1476,6 +1482,7 @@ textarea.new_message_textarea {
 
     .dropdown_widget_value {
         flex-grow: 1;
+        overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         color: var(--color-text-default);
