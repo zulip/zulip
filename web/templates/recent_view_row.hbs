@@ -3,7 +3,7 @@
         <div class="flex_container flex_container_pm">
             <div class="left_part recent_view_focusable" data-col-index="{{ column_indexes.stream }}">
                 {{#if is_private}}
-                <span class="zulip-icon zulip-icon-user"></span>
+                <span class="zulip-icon zulip-icon-send-dm"></span>
                 <a href="{{pm_url}}" class="recent-view-table-link">{{t "Direct messages" }}</a>
                 {{else}}
                 <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">

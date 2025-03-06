@@ -104,9 +104,8 @@
         padding-left: 0.1428em; /* Legacy 2px size at 14px/1em. */
     }
 
-    .zulip-icon-user {
-        /* Legacy 11.2px size at 14px/1em. */
-        font-size: 0.8em;
+    .zulip-icon-send-dm {
+        font-size: 1em;
         text-align: center;
         opacity: 0.6;
     }
