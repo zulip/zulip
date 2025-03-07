@@ -125,7 +125,8 @@ The Zulip Cloud Free [plan](https://zulip.com/plans/#cloud) includes a total of
 
 In organizations on a self-hosted server, server administrators can configure
 the maximum size for uploaded files via the `MAX_FILE_UPLOAD_SIZE`
-[server setting][system-settings].
+[server setting][system-settings]. Setting it to 0 disables file uploads, and
+hides the UI for uploading files from the web and desktop apps.
 
 [system-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
 
