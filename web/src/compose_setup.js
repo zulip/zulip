@@ -37,6 +37,7 @@ import {get_timestamp_for_flatpickr} from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as upload from "./upload.ts";
 import * as user_topics from "./user_topics.ts";
+import {the} from "./util.ts";
 import * as widget_modal from "./widget_modal.ts";
 
 export function abort_xhr() {
@@ -575,6 +576,16 @@ export function initialize() {
 
     $("#compose").on("click", ".narrow_to_compose_recipients", (e) => {
         e.preventDefault();
+        if (compose_recipient.check_hide_go_to_conversation_button_intro_tooltip()) {
+            const element = the($(".conversation-arrow"));
+            const instance = element._tippy;
+            if (instance !== undefined) {
+                instance.destroy();
+            }
+            onboarding_steps.post_onboarding_step_as_read(
+                "intro_go_to_conversation_button_tooltip",
+            );
+        }
         message_view.to_compose_target();
     });
 
@@ -593,6 +604,7 @@ export function initialize() {
         } else {
             compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
         }
+        compose_recipient.maybe_show_go_to_conversation_button_intro_tooltip();
     });
 
     $(".compose-scrollable-buttons").on(
