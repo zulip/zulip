@@ -17,7 +17,9 @@ provider supported by the `boto` library).
 
 Regardless of the backend you choose, you can configure the maximum
 size of individual uploaded files using the `MAX_FILE_UPLOAD_SIZE`
-[server setting](../production/settings.md).
+[server setting](../production/settings.md). Setting it to 0 disables
+file uploads, and hides the UI for uploading files from the web and
+desktop apps.
 
 ## S3 backend configuration
 
