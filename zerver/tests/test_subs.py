@@ -8522,6 +8522,12 @@ class AccessStreamTest(ZulipTestCase):
         access_stream_by_id(hamlet, public_stream.id)
         access_stream_by_name(hamlet, public_stream.name)
 
+        # Archive channel to verify require_active_channel code path
+        do_deactivate_stream(public_stream, acting_user=hamlet)
+        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
+            access_stream_by_id(hamlet, public_stream.id, require_active_channel=True)
+        access_stream_by_id(hamlet, public_stream.id, require_active_channel=False)
+
         # Nobody can access a public stream in another realm
         mit_realm = get_realm("zephyr")
         mit_stream = ensure_stream(mit_realm, "mit_stream", invite_only=False, acting_user=None)
