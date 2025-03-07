@@ -1889,12 +1889,6 @@ label.preferences-radio-choice-label {
                 100% - var(--settings-overlay-header-height) -
                     var(--settings-overlay-subheader-height)
             );
-
-            & li.active {
-                /* Don't highlight the active section in the settings list. */
-                background: inherit;
-                border-bottom: 1px solid hsl(0deg 0% 93%);
-            }
         }
     }
 }
