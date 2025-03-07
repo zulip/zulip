@@ -701,13 +701,13 @@
 
 .message-actions-button {
     box-sizing: border-box;
+    align-self: stretch;
     /* Display the actions buttons as
        flex containers for positioning
        text and spinners. */
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 28px;
     padding: 0 10px;
     border-radius: 4px;
     border: 0;
@@ -715,6 +715,10 @@
 }
 
 .message_edit_save {
+    /* Because the save button is inside this container,
+       we set the height here so the container stretches
+       with the flexbox. */
+    height: 100%;
     /* Match Save button's basic colors to
        the compose box Send button. */
     color: var(--color-compose-send-button-icon-color);
