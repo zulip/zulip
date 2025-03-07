@@ -10,12 +10,14 @@ import glob
 import hashlib
 import logging
 import os
+import secrets
 import shutil
 import subprocess
 import tempfile
 from collections.abc import Callable, Iterable, Mapping
 from contextlib import suppress
 from datetime import datetime
+from email.headerregistry import Address
 from functools import cache
 from typing import TYPE_CHECKING, Any, Optional, TypeAlias, TypedDict, cast
 from urllib.parse import urlsplit
@@ -81,7 +83,7 @@ from zerver.models import (
 )
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import get_realm
+from zerver.models.realms import get_fake_email_domain, get_realm
 from zerver.models.saved_snippets import SavedSnippet
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
@@ -1182,6 +1184,13 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
 EXCLUDED_USER_PROFILE_FIELDS = ["api_key", "password", "uuid"]
 
 
+def get_randomized_exported_user_dummy_email_address(realm: Realm) -> str:
+    random_token = secrets.token_hex(16)
+    return Address(
+        username=f"exported-user-{random_token}", domain=get_fake_email_domain(realm.host)
+    ).addr_spec
+
+
 def custom_fetch_user_profile(response: TableData, context: Context) -> None:
     realm = context["realm"]
     exportable_user_ids = context["exportable_user_ids"]
@@ -1209,7 +1218,18 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
                 # inactive is_mirror_dummy users.
                 row["is_mirror_dummy"] = True
                 row["is_active"] = False
+                if row["email_address_visibility"] == UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY:
+                    # The user chose not to make their email address visible even to the realm administrators.
+                    # Generate a dummy email address for them so that this preference can't be bypassed
+                    # through the export feature.
+                    row["delivery_email"] = get_randomized_exported_user_dummy_email_address(realm)
+
                 for settings_name in RealmUserDefault.property_types:
+                    if settings_name == "email_address_visibility":
+                        # We should respect users' preference for whether to show their email
+                        # address to others across the export->import cycle.
+                        continue
+
                     value = getattr(realm_user_default, settings_name)
                     row[settings_name] = value
 
