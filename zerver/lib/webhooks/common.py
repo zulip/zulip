@@ -32,7 +32,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
-from zerver.lib.validator import check_bool
+from zerver.lib.validator import check_bool, check_string
 from zerver.models import UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """\
@@ -61,6 +61,7 @@ class PresetConfigOption(str, Enum):
     # accidentally trigger a config's custom behavior when
     # manually declaring new config with identical key name.
     BRANCHES = "z_branches"
+    MAPPING = "z_mapping"
 
 
 @dataclass
@@ -87,6 +88,12 @@ class WebhookConfigOption:
                     name=config.value,
                     description=description,
                     validator=check_bool,
+                )
+            case PresetConfigOption.MAPPING:
+                return cls(
+                    name=config.value,
+                    description=description,
+                    validator=check_string,
                 )
 
         raise AssertionError(

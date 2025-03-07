@@ -697,6 +697,22 @@ that uses them is selected:
 
     Some integrations that uses this are: GitHub, Gitea, GOGS.
 
+  2. **MAPPING**: Adds a new option to the "Where to send notification?" drop
+    down field called "Matching Zulip channel". This setting is meant to be
+    used by chat-app integrations like Slack. It lets the user choose whether
+    messages from the third-party app should be sent to Zulip channels that
+    match the messages' original channel name or not.
+
+    If selected, this will disable the  "Send all notification to a single topic"
+    field and adds `&z_mapping=channels` variable to the integration URL, like so:
+
+    ```
+    {{zulip_url}}/api/v1/external/github?api_key=kT2KTUBJVv0kAyrwY3povICtTaczHQwl&z_mapping=channels
+    ```
+
+    The integration endpoint can check for this variable to determine whether the
+    user has selected this option or not.
+
 
 ## Related articles
 
