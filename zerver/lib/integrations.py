@@ -385,7 +385,11 @@ EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
 ]
 
 WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
-    WebhookIntegration("airbrake", ["monitoring"]),
+    WebhookIntegration(
+        "airbrake",
+        ["monitoring"],
+        config_options=[WebhookConfigOption.preset_config(PresetConfigOption.MAPPING)],
+    ),
     WebhookIntegration("airbyte", ["monitoring"]),
     WebhookIntegration(
         "alertmanager",
@@ -463,6 +467,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
                 description="Exclude notifications from private repositories",
                 validator=check_bool,
             ),
+            WebhookConfigOption.preset_config(PresetConfigOption.MAPPING),
         ],
     ),
     WebhookIntegration(
