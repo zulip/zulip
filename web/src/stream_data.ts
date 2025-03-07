@@ -1062,3 +1062,21 @@ export function get_options_for_dropdown_widget(): (dropdown_widget.Option & {
         }))
         .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
 }
+
+export function get_streams_for_move_messages_widget(): (dropdown_widget.Option & {
+    stream: StreamSubscription;
+})[] {
+    return get_unsorted_subs_with_content_access()
+        .filter((stream) => !stream.is_archived)
+        .sort((a, b) => {
+            if (a.subscribed !== b.subscribed) {
+                return a.subscribed ? -1 : 1;
+            }
+            return util.strcmp(a.name.toLowerCase(), b.name.toLowerCase());
+        })
+        .map((stream) => ({
+            name: stream.name,
+            unique_id: stream.stream_id,
+            stream,
+        }));
+}
