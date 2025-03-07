@@ -38,8 +38,8 @@ have content access in order to change this configuration.
 
 {!select-channel-view-general.md!}
 
-1. Under **Channel permissions**, configure **Who can subscribe anyone to this
-   channel**.
+1. Under **Advanced configurations**, configure **Who can subscribe anyone to
+   this channel**.
 
 {!save-changes.md!}
 
