@@ -53,10 +53,7 @@ from zerver.models.realms import (
     MessageEditHistoryVisibilityPolicyEnum,
     OrgTypeEnum,
 )
-from zerver.views.user_settings import (
-    check_information_density_setting_values,
-    check_settings_values,
-)
+from zerver.views.user_settings import check_settings_values
 
 
 def parse_jitsi_server_url(value: str, special_values_map: Mapping[str, str | None]) -> str | None:
@@ -704,15 +701,6 @@ def update_realm_user_settings_defaults(
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)
 
     realm_user_default = RealmUserDefault.objects.get(realm=user_profile.realm)
-
-    if (
-        dense_mode is not None
-        or web_font_size_px is not None
-        or web_line_height_percent is not None
-    ):
-        check_information_density_setting_values(
-            realm_user_default, dense_mode, web_font_size_px, web_line_height_percent
-        )
 
     request_settings = {k: v for k, v in locals().items() if k in RealmUserDefault.property_types}
     for k, v in request_settings.items():

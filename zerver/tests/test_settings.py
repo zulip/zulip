@@ -580,14 +580,10 @@ class ChangeSettingsTest(ZulipTestCase):
         hamlet.save()
         self.login("hamlet")
 
-        data: dict[str, str | int] = {"web_font_size_px": 16}
-        result = self.client_patch("/json/settings", data)
-        self.assert_json_error(
-            result,
-            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
-        )
-
-        data = {"web_font_size_px": 16, "dense_mode": orjson.dumps(False).decode()}
+        data: dict[str, str | int] = {
+            "web_font_size_px": 16,
+            "dense_mode": orjson.dumps(False).decode(),
+        }
         result = self.client_patch("/json/settings", data)
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
@@ -618,13 +614,6 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assertEqual(hamlet.web_font_size_px, 14)
         self.assertEqual(hamlet.dense_mode, True)
 
-        data = {"web_line_height_percent": 140}
-        result = self.client_patch("/json/settings", data)
-        self.assert_json_error(
-            result,
-            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
-        )
-
         data = {"web_line_height_percent": 140, "dense_mode": orjson.dumps(False).decode()}
         result = self.client_patch("/json/settings", data)
         self.assert_json_success(result)
@@ -648,20 +637,6 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assertEqual(hamlet.web_font_size_px, 14)
         self.assertEqual(hamlet.web_line_height_percent, 122)
         self.assertEqual(hamlet.dense_mode, False)
-
-        data = {"dense_mode": orjson.dumps(True).decode(), "web_font_size_px": 16}
-        result = self.client_patch("/json/settings", data)
-        self.assert_json_error(
-            result,
-            "Incompatible values for 'dense_mode' and 'web_font_size_px'.",
-        )
-
-        data = {"dense_mode": orjson.dumps(True).decode(), "web_line_height_percent": 140}
-        result = self.client_patch("/json/settings", data)
-        self.assert_json_error(
-            result,
-            "Incompatible values for 'dense_mode' and 'web_line_height_percent'.",
-        )
 
         data = {
             "dense_mode": orjson.dumps(True).decode(),
