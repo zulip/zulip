@@ -17,6 +17,11 @@
 </div>
 <div class="user_group_settings_wrapper" data-group-id="{{group.id}}">
     <div class="inner-box">
+        {{#if group.deactivated}}
+        <div class="deactivated-group-banner">
+            This group is deactivated. It can't be mentioned or used for any permissions.
+        </div>
+        {{/if}}
 
         <div class="group_general_settings group_setting_section" data-group-section="general">
             <div class="group-header">
@@ -34,7 +39,7 @@
                     </button>
                 </div>
             </div>
-            <div class="group-adescription-wrapper">
+            <div class="group-description-wrapper">
                 <span class="group-description">
                     {{group.description}}
                 </span>

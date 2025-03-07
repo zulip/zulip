@@ -100,7 +100,21 @@ h3,
     cursor: not-allowed;
 }
 
-
+/*
+Add the CSS for the banner in the appropriate stylesheet
+*/
+.deactivated-group-banner {
+    background-color: #ffff99; /* Light yellow */
+    color: #333; /* Dark text for contrast */
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 1px solid #e6e600; /* Slightly darker yellow border */
+    margin-bottom: 10px; /* Space below the banner */
+    position: sticky; /* Optional: keep it visible while scrolling */
+    top: 0;
+    z-index: 1;
+}
 
 #account-settings .deactivate_realm_button {
     margin-left: 10px;
