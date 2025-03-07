@@ -282,6 +282,20 @@ Here are the details of each `PresetConfigOption`:
     Integration(s) using this: GitHub, Gitea, Gitlab, rhodecode, azuredevops
     bitbucket3, bitbucket2, Gogs.
 
+  2. **MAPPING**: Adds a new option to the "Where to send notification?" drop
+    down field called "Matching Zulip channel". This setting is meant to be
+    used by chat-app integrations like Slack. It lets the user choose whether
+    messages from the third-party app should be sent to Zulip channels that
+    match the messages' original channel name or not.
+
+    If selected, this will disable the  "Send all notification to a single topic"
+    field and adds `&z_mapping=channels` variable to the integration URL, like
+    this:
+
+    ```
+    {{zulip_url}}/api/v1/external/slack?api_key=kT2KTUBJVv0kAyrwY3povICtTaczHQwl&z_mapping=channels
+    ```
+
 ## Step 4: Manually testing the webhook
 
 For either one of the command line tools, first, you'll need to get an
