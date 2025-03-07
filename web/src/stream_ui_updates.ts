@@ -510,9 +510,7 @@ export function enable_or_disable_add_subscribers_elements(
                 .addClass("add_subscribers_disabled");
         }
     } else {
-        const $add_subscribers_button = $container_elem
-            .find('button[name="add_subscriber"]')
-            .expectOne();
+        const $add_subscribers_button = $container_elem.find(".add-subscriber-button").expectOne();
         $add_subscribers_button.prop("disabled", !enable_elem);
         if (enable_elem) {
             $add_subscribers_button.css("pointer-events", "");

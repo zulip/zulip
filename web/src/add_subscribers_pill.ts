@@ -101,7 +101,7 @@ export function set_up_handlers_for_add_button_state(
     $pill_container: JQuery,
 ): void {
     const $pill_widget_input = $pill_container.find(".input");
-    const $pill_widget_button = $pill_container.closest(".add-button-container").find(".button");
+    const $pill_widget_button = $pill_container.closest(".add-button-container").find("button");
     // Disable the add button first time the pill container is created.
     $pill_widget_button.prop("disabled", true);
 
