@@ -147,10 +147,6 @@
     .table_fix_head table th {
         padding: 8px;
         text-align: left;
-
-        &[data-sort] {
-            padding-right: var(--table-header-sortable-column-padding-right);
-        }
     }
 
     #recent_view_filter_buttons {
@@ -433,11 +429,11 @@
     }
 
     .recent-view-topic-header {
-        width: 35%;
+        width: 33%;
     }
 
     .recent-view-unread-header {
-        width: 5%;
+        width: 7%;
 
         .zulip-icon-unread {
             position: relative;
