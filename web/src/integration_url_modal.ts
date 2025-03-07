@@ -151,6 +151,9 @@ export function show_generate_integration_url_modal(api_key: string): void {
         $override_topic.on("change", function () {
             const checked = this.checked;
             $topic_input.parent().toggleClass("hide", !checked);
+            if (!$topic_input.parent().hasClass("hide")) {
+                $topic_input.trigger("focus");
+            }
         });
 
         $show_integration_events.on("change", () => {
@@ -352,6 +355,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         ): void {
             stream_input_dropdown_widget.render();
             $(".integration-url-stream-wrapper").trigger("input");
+            dropdown.hide();
             const user_selected_option = stream_input_dropdown_widget.value();
             if (user_selected_option === direct_messages_option.unique_id) {
                 $override_topic.prop("checked", false).prop("disabled", true);
@@ -362,8 +366,6 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 $override_topic.closest(".input-group").removeClass("control-label-disabled");
             }
             $override_topic.trigger("change");
-
-            dropdown.hide();
             event.preventDefault();
             event.stopPropagation();
         }
