@@ -1182,7 +1182,7 @@ export function handle_deleted_group(group_id: number): void {
     }
 
     if (is_editing_group(group_id)) {
-        open_right_panel_empty();
+        $("#groups_overlay .deactivated-user-group-icon-right").show();
     }
     redraw_user_group_list();
 }
