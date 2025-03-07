@@ -261,6 +261,11 @@
         }
 
         .emoji-search-results-container {
+            /* Keep it hidden initially to avoid it taking extra height
+               when the emoji popover is initially rendered which can
+               cause the popover to render at incorrect position when
+               the search container is hidden `onMount`. */
+            display: none;
             height: 18.8667em; /* 283px at 15px/em */
 
             .emoji-popover-results-heading {
