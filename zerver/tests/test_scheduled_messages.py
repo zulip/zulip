@@ -60,7 +60,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Scheduling a message to a stream you are subscribed is successful.
         result = self.do_schedule_message(
-            "channel", verona_stream_id, content + " 1", scheduled_delivery_timestamp
+            "channel", verona_stream_id, f"{content} 1", scheduled_delivery_timestamp
         )
         scheduled_message = self.last_scheduled_message()
         self.assert_json_success(result)
@@ -75,7 +75,7 @@ class ScheduledMessageTest(ZulipTestCase):
         # Scheduling a direct message with user IDs is successful.
         othello = self.example_user("othello")
         result = self.do_schedule_message(
-            "direct", [othello.id], content + " 3", scheduled_delivery_timestamp
+            "direct", [othello.id], f"{content} 3", scheduled_delivery_timestamp
         )
         scheduled_message = self.last_scheduled_message()
         self.assert_json_success(result)
@@ -88,7 +88,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Cannot schedule a direct message with user emails.
         result = self.do_schedule_message(
-            "direct", [othello.email], content + " 4", scheduled_delivery_timestamp
+            "direct", [othello.email], f"{content} 4", scheduled_delivery_timestamp
         )
         self.assert_json_error(result, 'to["int"] is not an integer')
 
@@ -98,7 +98,7 @@ class ScheduledMessageTest(ZulipTestCase):
         scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
         verona_stream_id = self.get_stream_id("Verona")
         result = self.do_schedule_message(
-            "channel", verona_stream_id, content + " 1", scheduled_delivery_timestamp
+            "channel", verona_stream_id, f"{content} 1", scheduled_delivery_timestamp
         )
         self.assert_json_success(result)
 
@@ -147,7 +147,7 @@ class ScheduledMessageTest(ZulipTestCase):
         sender = self.example_user("hamlet")
         othello = self.example_user("othello")
         response = self.do_schedule_message(
-            "direct", [othello.id], content + " 3", scheduled_delivery_timestamp
+            "direct", [othello.id], f"{content} 3", scheduled_delivery_timestamp
         )
         self.assert_json_success(response)
         scheduled_message = self.last_scheduled_message()
@@ -416,7 +416,7 @@ class ScheduledMessageTest(ZulipTestCase):
         scheduled_delivery_timestamp = int(time.time() - 86400)
 
         result = self.do_schedule_message(
-            "channel", verona_stream_id, content + " 1", scheduled_delivery_timestamp
+            "channel", verona_stream_id, f"{content} 1", scheduled_delivery_timestamp
         )
         self.assert_json_error(result, "Scheduled delivery time must be in the future.")
 
@@ -605,7 +605,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         othello = self.example_user("othello")
         result = self.do_schedule_message(
-            "direct", [othello.id], content + " 3", scheduled_delivery_timestamp
+            "direct", [othello.id], f"{content} 3", scheduled_delivery_timestamp
         )
 
         # Multiple scheduled messages
