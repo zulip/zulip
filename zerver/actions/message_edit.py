@@ -1339,9 +1339,7 @@ def build_message_edit_request(
     is_stream_edited = False
     target_stream = orig_stream
     if stream_id is not None:
-        target_stream = access_stream_by_id_for_message(
-            user_profile, stream_id, require_active=True
-        )[0]
+        target_stream = access_stream_by_id_for_message(user_profile, stream_id)[0]
         is_stream_edited = True
 
     return StreamMessageEditRequest(

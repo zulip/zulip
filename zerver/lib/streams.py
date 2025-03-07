@@ -765,7 +765,6 @@ def access_stream_common(
     user_profile: UserProfile,
     stream: Stream,
     error: str,
-    require_active: bool = True,
     require_content_access: bool = True,
 ) -> Subscription | None:
     """Common function for backend code where the target use attempts to
@@ -782,7 +781,7 @@ def access_stream_common(
     try:
         assert stream.recipient_id is not None
         sub = Subscription.objects.get(
-            user_profile=user_profile, recipient_id=stream.recipient_id, active=require_active
+            user_profile=user_profile, recipient_id=stream.recipient_id, active=True
         )
     except Subscription.DoesNotExist:
         sub = None
@@ -803,7 +802,6 @@ def access_stream_common(
 def access_stream_by_id(
     user_profile: UserProfile,
     stream_id: int,
-    require_active: bool = True,
     require_content_access: bool = True,
 ) -> tuple[Stream, Subscription | None]:
     error = _("Invalid channel ID")
@@ -816,7 +814,6 @@ def access_stream_by_id(
         user_profile,
         stream,
         error,
-        require_active=require_active,
         require_content_access=require_content_access,
     )
     return (stream, sub)
@@ -825,7 +822,6 @@ def access_stream_by_id(
 def access_stream_by_id_for_message(
     user_profile: UserProfile,
     stream_id: int,
-    require_active: bool = True,
     require_content_access: bool = True,
 ) -> tuple[Stream, Subscription | None]:
     """
@@ -842,7 +838,6 @@ def access_stream_by_id_for_message(
         user_profile,
         stream,
         error,
-        require_active=require_active,
         require_content_access=require_content_access,
     )
     return (stream, sub)
