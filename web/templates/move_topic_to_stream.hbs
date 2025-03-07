@@ -5,11 +5,18 @@
         <div class="input-group">
             <label class="modal-field-label">New channel</label>
             {{> dropdown_widget_wrapper widget_name="move_topic_to_stream"}}
-        </div>
+        </div>  
         {{/unless}}
         <div class="input-group">
             <label for="move-topic-new-topic-name" class="modal-field-label">New topic</label>
-            <input id="move-topic-new-topic-name" name="new_topic_name" type="text" class="move_messages_edit_topic modal_text_input {{#unless realm_mandatory_topics}}empty-topic-placeholder-display{{/unless}}" autocomplete="off" {{#unless realm_mandatory_topics}}placeholder="{{empty_string_topic_display_name}}"{{/unless}} value="{{topic_name}}" {{#if disable_topic_input}}disabled{{/if}} maxlength="{{ max_topic_length }}"/>
+            <div class="topic_input_container">
+                <input id="move-topic-new-topic-name" name="new_topic_name" type="text" class="move_messages_edit_topic modal_text_input {{#unless realm_mandatory_topics}}empty-topic-placeholder-display{{/unless}}" autocomplete="off" {{#unless realm_mandatory_topics}}placeholder="{{empty_string_topic_display_name}}"{{/unless}} value="{{topic_name}}" {{#if disable_topic_input}}disabled{{/if}} maxlength="{{ max_topic_length }}"/>
+                {{#unless disable_topic_input}}
+                <span class="topic_clear_button" role="button" tabindex="0" aria-label="{{t 'Clear topic' }}">
+                    <i class="fa fa-times"></i>
+                </span>
+                {{/unless}}
+            </div>
         </div>
         <input name="old_topic_name" type="hidden" value="{{topic_name}}" />
         <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />
