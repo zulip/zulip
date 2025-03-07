@@ -765,6 +765,7 @@ def access_stream_common(
     user_profile: UserProfile,
     stream: Stream,
     error: str,
+    *,
     require_content_access: bool = True,
 ) -> Subscription | None:
     """Common function for backend code where the target use attempts to
@@ -802,6 +803,7 @@ def access_stream_common(
 def access_stream_by_id(
     user_profile: UserProfile,
     stream_id: int,
+    *,
     require_content_access: bool = True,
 ) -> tuple[Stream, Subscription | None]:
     error = _("Invalid channel ID")
@@ -822,6 +824,7 @@ def access_stream_by_id(
 def access_stream_by_id_for_message(
     user_profile: UserProfile,
     stream_id: int,
+    *,
     require_content_access: bool = True,
 ) -> tuple[Stream, Subscription | None]:
     """
@@ -875,7 +878,7 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
 
 
 def access_stream_by_name(
-    user_profile: UserProfile, stream_name: str, require_content_access: bool = True
+    user_profile: UserProfile, stream_name: str, *, require_content_access: bool = True
 ) -> tuple[Stream, Subscription | None]:
     error = _("Invalid channel name '{channel_name}'").format(channel_name=stream_name)
     try:
