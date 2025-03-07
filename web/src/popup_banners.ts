@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as banners from "./banners.ts";
 import type {Banner} from "./banners.ts";
+import * as buttons from "./buttons.ts";
 import {$t} from "./i18n.ts";
 
 const CONNECTION_ERROR_POPUP_BANNER: Banner = {
@@ -24,8 +25,18 @@ export function open_connection_error_popup_banner(opts: {
     on_retry_callback: () => void;
     is_get_events_error?: boolean;
 }): void {
-    // If the banner is already open, don't open it again.
-    if ($("#popup_banners_wrapper").find(".connection-error-banner").length > 0) {
+    // If the banner is already open, don't open it again, and instead remove
+    // the loading indicator on the retry button, if it was being shown.
+    const $banner = $("#popup_banners_wrapper").find(".connection-error-banner");
+    if ($banner.length > 0) {
+        const $retry_connection_button = $banner.find(".retry-connection");
+        if ($retry_connection_button.find(".button-loading-indicator").length > 0) {
+            // Add some delay before hiding the loading indicator, to visually
+            // indicate that the retry sequence was executed again but failed.
+            setTimeout(() => {
+                buttons.hide_button_loading_indicator($retry_connection_button);
+            }, 1000);
+        }
         return;
     }
     // Prevent the interference between the server errors from
@@ -36,10 +47,11 @@ export function open_connection_error_popup_banner(opts: {
     }
     banners.append(CONNECTION_ERROR_POPUP_BANNER, $("#popup_banners_wrapper"));
 
-    $("#popup_banners_wrapper").on("click", ".retry-connection", (e) => {
+    $("#popup_banners_wrapper").on("click", ".retry-connection", function (this: HTMLElement, e) {
         e.preventDefault();
         e.stopPropagation();
 
+        buttons.show_button_loading_indicator($(this));
         opts.on_retry_callback();
     });
 }
