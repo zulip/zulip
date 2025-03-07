@@ -1310,7 +1310,9 @@ label.preferences-radio-choice-label {
 }
 
 .right.show .emoji_alt_code {
-    font-size: 1.2em;
+    /* This better aligns the example alt code
+       with the other emoji styles. */
+    margin-right: 1px;
 }
 
 .invite-user-link .fa-user-plus {
