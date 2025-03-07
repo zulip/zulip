@@ -31,7 +31,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
-from zerver.lib.validator import check_bool
+from zerver.lib.validator import check_bool, check_string
 from zerver.models import UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """\
@@ -63,7 +63,7 @@ class WebhookConfigOption:
 
     @classmethod
     def preset_config(
-        cls, config: Literal["branches"], description: str = ""
+        cls, config: Literal["branches", "mapping"], description: str = ""
     ) -> "WebhookConfigOption":
         """
         This WebhookConfigOptions comes with a custom UI and logic in the
@@ -78,6 +78,12 @@ class WebhookConfigOption:
                     name=CONFIG_OPTIONS_ENCODING.format(config=config),
                     description=description,
                     validator=check_bool,
+                )
+            case "mapping":
+                return cls(
+                    name=CONFIG_OPTIONS_ENCODING.format(config),
+                    description=description,
+                    validator=check_string,
                 )
 
         raise AssertionError(
