@@ -76,7 +76,8 @@ in a stable release.
   some cherry-picked changes. This branch is usually delayed by one to two weeks
   from `main` to allow for recent changes to be validated further prior to being
   deployed to customers.
-- You can also run [a fork of Zulip][fork-zulip].
+- You can also run [a fork of Zulip][fork-zulip] on top of any of
+  these branches.
 
 [upgrade-from-git]: ../production/upgrade.md#upgrading-from-a-git-repository
 
@@ -99,11 +100,19 @@ that lets you view the documentation for other versions.
 
 ## Client apps
 
-Zulip's official client apps support all Zulip server versions (and
-Git commits) released in the **previous 18 months**.
+Zulip's official client apps support all Zulip server versions
+released in the **previous 18 months**.
 
-[The API changelog](https://zulip.com/api/changelog) details all changes to the
-API, to make it easy for client developers to maintain compatibility.
+The official client apps are designed to be compatible with
+intermediate Zulip server Git commits between the oldest supported
+server release and the current `main` branch.
+
+This allows server administrators to take advantage of the ability to
+upgrade to [Git versions](#git-versions) without breaking clients.
+
+[The API changelog](https://zulip.com/api/changelog) details all
+changes to the API, to make it easy for third-party client developers
+to maintain a similar level of compatibility.
 
 ### Mobile app
 
@@ -135,6 +144,17 @@ users attempting to access the server with extremely old or known
 insecure versions of the Zulip desktop and mobile apps, with an error
 message telling the user to upgrade.
 
+### Terminal app
+
+The beta Zulip [terminal app](https://github.com/zulip/zulip-terminal)
+is designed to support the same range of server versions targeted by
+other client apps.
+
+However, we do not support running old versions of the terminal app
+against the latest Zulip server. This means that terminal app users
+will sometimes need to upgrade to the latest version after their Zulip
+Server is upgraded to a new major release.
+
 ## Server and client app compatibility
 
 Zulip is designed to make sure you can always run the [latest server
@@ -148,8 +168,8 @@ versions of the mobile and desktop apps released in the last 12 months. Because
 these clients auto-update, the vast majority of active clients will have upgraded
 by the time we desupport a version.
 
-As noted [above](#client-apps), Zulip's official client apps support all Zulip
-server versions (and Git commits) released in the **previous 18 months**.
+As noted [above](#client-apps), Zulip's official client apps support
+all Zulip server versions released in the **previous 18 months**.
 
 ### Upgrade nag
 
