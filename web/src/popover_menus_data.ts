@@ -133,6 +133,8 @@ type GearMenuContext = {
     user_has_billing_access: boolean;
     user_color_scheme: number;
     color_scheme_values: ColorSchemeValues;
+    web_font_size_px: number;
+    web_line_height_percent: number;
 };
 
 type BillingInfo = {
@@ -411,6 +413,9 @@ export function get_gear_menu_content_context(): GearMenuContext {
         // user color scheme
         user_color_scheme: user_settings.color_scheme,
         color_scheme_values: settings_config.color_scheme_values,
+        // information density settings
+        web_font_size_px: user_settings.web_font_size_px,
+        web_line_height_percent: user_settings.web_line_height_percent,
     };
 }
 

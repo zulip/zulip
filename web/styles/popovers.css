@@ -1465,6 +1465,12 @@ ul.popover-group-menu-member-list {
         0.6666/1.0666 em on each side. */
         margin: 0 0.625em;
     }
+
+    .info-density-controls {
+        /* Left and right paddings are set to match the alignment with
+        other items in the menu. */
+        padding: 0.4em 0.6666em 0.25em;
+    }
 }
 
 ul.popover-menu-list {

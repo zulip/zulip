@@ -102,6 +102,24 @@
                 <span class="slider"></span>
             </div>
         </li>
+        <li role="none" class="popover-menu-list-item only-visible-for-spectators">
+            <div class="info-density-controls">
+                {{> ../../settings/info_density_control_button_group
+                  property="web_font_size_px"
+                  default_icon_class="zulip-icon-type-big"
+                  property_value=web_font_size_px
+                  for_settings_ui=false
+                  prefix="gear_menu_"
+                  }}
+                {{> ../../settings/info_density_control_button_group
+                  property="web_line_height_percent"
+                  default_icon_class="zulip-icon-line-height-big"
+                  property_value=web_line_height_percent
+                  for_settings_ui=false
+                  prefix="gear_menu_"
+                  }}
+            </div>
+        </li>
         <li role="none" class="link-item popover-menu-list-item only-visible-for-spectators">
             <a role="menuitem" tabindex="0" class="change-language-spectator popover-menu-link">
                 <i class="popover-menu-icon zulip-icon zulip-icon-f-globe" aria-hidden="true"></i>
