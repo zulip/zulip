@@ -346,47 +346,48 @@ h4.user_group_setting_subsection_title {
    font sizes, we always show two rows of buttons.
 
    We also show two rows of buttons on particularly narrow
-   screens where the full overlay doesn't have enough space
-   for all the buttons. */
-@container settings-overlay (width >= $settings_overlay_sidebar_collapse_breakpoint) or (width <= 36em) {
-    @container subscriptions (width < calc(80em + 80px)) {
-        #subscription_overlay .subscriptions-container {
-            .left {
-                .list-toggler-container {
-                    height: 5em;
-                    justify-content: end;
-                    flex-wrap: wrap;
-                }
-
-                .tab-switcher {
-                    margin-right: 0;
-                }
-
-                .tab-switcher:first-child {
-                    /* This forces the other buttons to the next row */
-                    width: 100%;
-                    display: flex;
-                    justify-content: end;
-                }
-            }
-
-            .right .display-type {
+   screens where there's only one panel and the overlay doesn't
+   have enough space for all the buttons. */
+@container settings-overlay (
+    ((width >= $settings_overlay_sidebar_collapse_breakpoint) and (width < calc(80em + 80px)))
+    or ((width < $settings_overlay_sidebar_collapse_breakpoint) and (width <= 36em))
+) {
+    #subscription_overlay .subscriptions-container {
+        .left {
+            .list-toggler-container {
                 height: 5em;
+                justify-content: end;
+                flex-wrap: wrap;
             }
 
-            .streams-list {
-                /* Calculated from several heights and padding/margin measurements
-                in .list-toggler-container and .stream_filter, with some added
-                fiddling to see what worked best at 12px - 20px font sizes.
-                Notably this height is shorter than the similar calculation
-                below because the toggler is taller.
-                When we redesign this area we should make this less brittle. */
-                height: calc(100% - 5.4em - 40px);
+            .tab-switcher {
+                margin-right: 0;
             }
 
-            #stream_settings {
-                height: calc(100% - 5em);
+            .tab-switcher:first-child {
+                /* This forces the other buttons to the next row */
+                width: 100%;
+                display: flex;
+                justify-content: end;
             }
+        }
+
+        .right .display-type {
+            height: 5em;
+        }
+
+        .streams-list {
+            /* Calculated from several heights and padding/margin measurements
+            in .list-toggler-container and .stream_filter, with some added
+            fiddling to see what worked best at 12px - 20px font sizes.
+            Notably this height is shorter than the similar calculation
+            below because the toggler is taller.
+            When we redesign this area we should make this less brittle. */
+            height: calc(100% - 5.4em - 40px);
+        }
+
+        #stream_settings {
+            height: calc(100% - 5em);
         }
     }
 }
