@@ -2190,6 +2190,7 @@ body:not(.spectator-view) {
 .dropdown-list-container .dropdown-list .dropdown-list-item-common-styles {
     position: relative;
     display: flex;
+    align-items: center;
     color: var(--color-dropdown-item);
     padding: 3px 10px 3px 8px;
     font-weight: 400;
@@ -2198,13 +2199,14 @@ body:not(.spectator-view) {
 
     .stream-privacy-type-icon {
         font-size: 0.93em;
+        /* We set only the width so that flexbox
+           can do its work to properly center,
+           regardless of the height. */
         width: 0.93em;
-        height: 0.93em;
         padding-right: 5px;
-    }
-
-    .zulip-icon {
-        margin-top: 2px;
+        /* Override the [data-tippy-root]
+           style in `tooltips.css`. */
+        top: 0;
     }
 
     .dropdown-list-delete {
