@@ -797,12 +797,12 @@ export function dispatch_normal_event(event) {
             // here from `settings_account` when this file is converted to typescript,
             // and use them instead of `privacy_settings`.
             const privacy_settings = [
-                "send_stream_typing_notifications",
+                "allow_private_data_export",
+                "email_address_visibility",
+                "presence_enabled",
                 "send_private_typing_notifications",
                 "send_read_receipts",
-                "presence_enabled",
-                "email_address_visibility",
-                "allow_private_data_export",
+                "send_stream_typing_notifications",
             ];
 
             if (privacy_settings.includes(event.property)) {
@@ -819,31 +819,31 @@ export function dispatch_normal_event(event) {
 
             const user_preferences = [
                 "color_scheme",
-                "web_font_size_px",
-                "web_line_height_percent",
                 "default_language",
-                "web_home_view",
                 "demote_inactive_streams",
                 "dense_mode",
-                "web_mark_read_on_scroll_policy",
-                "web_channel_default_view",
+                "display_emoji_reaction_users",
                 "emojiset",
-                "web_escape_navigates_to_home_view",
+                "enter_sends",
                 "fluid_layout_width",
+                "hide_ai_features",
                 "high_contrast_mode",
                 "receives_typing_notifications",
+                "starred_message_counts",
                 "timezone",
-                "twenty_four_hour_time",
                 "translate_emoticons",
-                "display_emoji_reaction_users",
+                "twenty_four_hour_time",
                 "user_list_style",
                 "web_animate_image_previews",
-                "web_stream_unreads_count_display_policy",
-                "starred_message_counts",
+                "web_channel_default_view",
+                "web_escape_navigates_to_home_view",
+                "web_font_size_px",
+                "web_home_view",
+                "web_line_height_percent",
+                "web_mark_read_on_scroll_policy",
                 "web_navigate_to_sent_message",
-                "enter_sends",
+                "web_stream_unreads_count_display_policy",
                 "web_suggest_update_timezone",
-                "hide_ai_features",
             ];
 
             const original_home_view = user_settings.web_home_view;
