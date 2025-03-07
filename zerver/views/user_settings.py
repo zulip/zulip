@@ -38,12 +38,7 @@ from zerver.lib.email_validation import (
     validate_email_is_valid,
     validate_email_not_already_in_realm,
 )
-from zerver.lib.exceptions import (
-    IncompatibleParameterValuesError,
-    JsonableError,
-    RateLimitedError,
-    UserDeactivatedError,
-)
+from zerver.lib.exceptions import JsonableError, RateLimitedError, UserDeactivatedError
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.response import json_success
@@ -56,7 +51,7 @@ from zerver.lib.typed_endpoint_validators import (
     timezone_validator,
 )
 from zerver.lib.upload import upload_avatar_image
-from zerver.models import EmailChangeStatus, RealmUserDefault, UserBaseSettings, UserProfile
+from zerver.models import EmailChangeStatus, UserProfile
 from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
 from zerver.views.auth import redirect_to_deactivation_notice
 from zproject.backends import check_password_strength, email_belongs_to_ldap
@@ -195,30 +190,6 @@ def check_settings_values(
                 seconds=email_notifications_batching_period_seconds
             )
         )
-
-
-def check_information_density_setting_values(
-    setting_object: UserProfile | RealmUserDefault,
-    dense_mode: bool | None,
-    web_font_size_px: int | None,
-    web_line_height_percent: int | None,
-) -> None:
-    dense_mode = dense_mode if dense_mode is not None else setting_object.dense_mode
-    web_font_size_px = (
-        web_font_size_px if web_font_size_px is not None else setting_object.web_font_size_px
-    )
-    web_line_height_percent = (
-        web_line_height_percent
-        if web_line_height_percent is not None
-        else setting_object.web_line_height_percent
-    )
-
-    if dense_mode:
-        if web_font_size_px != UserBaseSettings.WEB_FONT_SIZE_PX_COMPACT:
-            raise IncompatibleParameterValuesError("dense_mode", "web_font_size_px")
-
-        if web_line_height_percent != UserBaseSettings.WEB_LINE_HEIGHT_PERCENT_COMPACT:
-            raise IncompatibleParameterValuesError("dense_mode", "web_line_height_percent")
 
 
 @human_users_only
@@ -413,15 +384,6 @@ def json_change_settings(
         else:
             # Note that check_change_full_name strips the passed name automatically
             check_change_full_name(user_profile, full_name, user_profile)
-
-    if (
-        dense_mode is not None
-        or web_font_size_px is not None
-        or web_line_height_percent is not None
-    ):
-        check_information_density_setting_values(
-            user_profile, dense_mode, web_font_size_px, web_line_height_percent
-        )
 
     # Loop over user_profile.property_types
     request_settings = {k: v for k, v in locals().items() if k in user_profile.property_types}
