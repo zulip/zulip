@@ -36,6 +36,9 @@
                         {{t "Disable" }}
                     {{/if}}
                 </span>
+            {{else if (eq unique_id -2)}}
+                {{!-- This is the option for PresetUrlOption.MAPPING --}}
+                <i class="zulip-icon zulip-icon-equal channel-privacy-type-icon" aria-hidden="true"></i> {{name}}
             {{else}}
                 {{#if bold_current_selection}}
                     <span class="dropdown-list-bold-selected">{{name}}</span>

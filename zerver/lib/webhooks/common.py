@@ -59,6 +59,7 @@ OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig(
 class PresetUrlOption(str, Enum):
     BRANCHES = "branches"
     IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
+    MAPPING = "mapping"
 
 
 @dataclass
@@ -95,6 +96,12 @@ class WebhookUrlOption:
                     name=config.value,
                     label="Exclude notifications from private repositories",
                     validator=check_bool,
+                )
+            case PresetUrlOption.MAPPING:
+                return cls(
+                    name=config.value,
+                    label="",
+                    validator=check_string,
                 )
 
         raise AssertionError(_("Unknown 'PresetUrlOption': {config}").format(config=config))
