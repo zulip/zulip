@@ -775,10 +775,6 @@ input.settings_text_input {
         background-color: hsl(0deg 0% 100%);
         word-break: normal;
 
-        &[data-sort] {
-            padding-right: var(--table-header-sortable-column-padding-right);
-        }
-
         &.active::after,
         &[data-sort]:hover::after {
             content: " \f0d8";
