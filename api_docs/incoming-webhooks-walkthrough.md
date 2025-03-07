@@ -266,7 +266,8 @@ They primarily serve two purposes:
 
 - To construct unique `WebhookUrlOption` objects with special logic. These presets
 construct configuration options that come with custom UI elements and additional logic
-unique to each setting, and are usually tailored for a category of integration.
+unique to each setting, and are usually tailored for a category of integration. For
+example, `PresetUrlOption.MAPPING`.
 
 - To construct commonly used `WebhookUrlOption` settings. These presets construct
 normal configuration options, they are abstracted as presets mainly to be easily reusable.
@@ -312,6 +313,20 @@ Here are the details of each `PresetUrlOption`:
     This setting is meant to be used by "version-control" integrations such as GitHub.
 
     Integration using this: GitHub.
+
+  1. **`MAPPING`**: Adds a new option to the "Where to send notification?" drop
+    down field called "Matching Zulip channel". This setting is meant to be
+    used by chat-app integrations like Slack. It lets the user choose whether
+    messages from the third-party app should be sent to Zulip channels that
+    match the messages' original channel name or not.
+
+    If selected, this will disable the  "Send all notifications to a single topic"
+    field and adds `&mapping=channels` variable to the integration URL, like
+    this:
+
+    ```
+    {{zulip_url}}/api/v1/external/slack?api_key=kT2KTUBJVv0kAyrwY3povICtTaczHQwl&mapping=channels
+    ```
 
 ## Step 4: Manually testing the webhook
 
