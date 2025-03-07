@@ -399,7 +399,11 @@ EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
 ]
 
 WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
-    WebhookIntegration("airbrake", ["monitoring"]),
+    WebhookIntegration(
+        "airbrake",
+        ["monitoring"],
+        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.MAPPING)],
+    ),
     WebhookIntegration("airbyte", ["monitoring"]),
     WebhookIntegration(
         "alertmanager",
@@ -473,6 +477,7 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
         url_options=[
             WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
             WebhookUrlOption.build_preset_config(PresetUrlOption.IGNORE_PRIVATE_REPOSITORIES),
+            WebhookUrlOption.build_preset_config(PresetUrlOption.MAPPING),
         ],
     ),
     WebhookIntegration(
