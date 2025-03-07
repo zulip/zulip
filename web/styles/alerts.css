@@ -32,6 +32,10 @@
     }
 }
 
+.home-error-bar {
+    display: none;
+}
+
 /* alert box component changes */
 .alert-box {
     /* We define this variable in web/styles/app_variables.css,
