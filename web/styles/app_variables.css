@@ -618,13 +618,6 @@
     */
     --popover-tippy-arrow-before-offset: -6.5px;
 
-    /*
-    Padding used in headers for sortable columns in table to make sure
-    that the arrow is visible completely for different screen widths,
-    languages and font-size including when hovering over the header.
-    */
-    --table-header-sortable-column-padding-right: 1em;
-
     /* Color picker popover values */
     --size-color-swatch: 1em;
     --grid-gap-color-swatch: 1em;
