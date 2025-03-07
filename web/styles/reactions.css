@@ -73,12 +73,7 @@
         .emoji_alt_code {
             /* Apply the same margins as on graphical emoji. */
             margin: 1px 3px;
-            /* Reset some properties from the base .emoji_alt_code
-               class that aren't appropriate in a flexbox context. */
-            position: static;
-            /* Flexbox will handle baselines, so don't mess with the
-               line-height. */
-            line-height: inherit;
+            font-size: 0.8em;
         }
     }
 
@@ -89,12 +84,12 @@
            flexbox to handle the vertical alignment. */
         margin: 0 3px;
         /* Set the 12.6px text on a 13px line;
-           the goal is to have that 13px line
-           center correctly on the vertical with
-           the 17px-square emoji, resulting in
-           2px of space above and below the
-           reaction count/name. */
-        line-height: 13px;
+           the goal is to center correctly on the
+           vertical with square emoji, resulting in
+           equal space above and below the reaction
+           count/name.
+           13px at 12.6/1em */
+        line-height: 1.0317em;
     }
 
     .message_reaction:hover .message_reaction_count {
@@ -303,16 +298,6 @@
             overflow: hidden;
         }
     }
-}
-
-.emoji_alt_code {
-    position: relative;
-    top: 4px;
-    font-size: 0.8em;
-    display: inline-block;
-    vertical-align: top;
-    margin: 0 1px 0 0;
-    line-height: 1em;
 }
 
 .typeahead .emoji {
