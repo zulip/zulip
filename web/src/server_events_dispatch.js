@@ -819,12 +819,9 @@ export function dispatch_normal_event(event) {
 
             const user_preferences = [
                 "color_scheme",
-                "web_font_size_px",
-                "web_line_height_percent",
                 "default_language",
                 "web_home_view",
                 "demote_inactive_streams",
-                "dense_mode",
                 "web_mark_read_on_scroll_policy",
                 "web_channel_default_view",
                 "emojiset",
@@ -904,19 +901,19 @@ export function dispatch_normal_event(event) {
                 );
                 activity_ui.build_user_sidebar();
             }
-            if (event.property === "dense_mode") {
-                $("body").toggleClass("less-dense-mode");
-                $("body").toggleClass("more-dense-mode");
-                information_density.set_base_typography_css_variables();
-                information_density.calculate_timestamp_widths();
-            }
             if (
+                event.property === "dense_mode" ||
                 event.property === "web_font_size_px" ||
                 event.property === "web_line_height_percent"
             ) {
-                information_density.set_base_typography_css_variables();
-                information_density.calculate_timestamp_widths();
+                // We just ignore events for "dense_mode", "web_font_size_px"
+                // and "web_line_height_percent" settings as we are fine
+                // with a window not being updated due to changes being done
+                // from another window and also helps in avoiding weird issues
+                // on clicking the "+"/"-" buttons multiple times quickly when
+                // updating these settings.
             }
+
             if (event.property === "web_mark_read_on_scroll_policy") {
                 unread_ui.update_unread_banner();
             }
