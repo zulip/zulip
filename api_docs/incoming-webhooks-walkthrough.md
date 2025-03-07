@@ -304,6 +304,15 @@ Currently configured preset URL options:
   `ignore_private_repositories` boolean parameter will be added to the
   [generated integration URL](/help/generate-integration-url).
 
+- **`MAPPING`**: This preset is intended to be used for [chat-app
+  integrations](/integrations/communication) (like Slack), and adds a
+  special option, **Matching Zulip channel**, to the UI for where to send
+  Zulip notification messages. This special option maps the notification
+  messages to Zulip channels that match the messages' original channel
+  name in the third-party app. When selected, this requires setting a
+  single topic for notification messages, and adds `&mapping=channels`
+  to the [generated integration URL](/help/generate-integration-url).
+
 ## Step 4: Manually testing the webhook
 
 For either one of the command line tools, first, you'll need to get an
