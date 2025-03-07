@@ -593,6 +593,14 @@
         cursor: pointer;
     }
 
+    .youtube-video img {
+        /* We do this for the sake of increasing
+           the size of older YouTube thumbnail
+           previews, but there are no ill effects
+           on newer preview images. */
+        object-fit: contain;
+    }
+
     &.rtl .twitter-image img,
     &.rtl .message_inline_image img,
     &.rtl .message_inline_ref img {
