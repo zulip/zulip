@@ -1836,6 +1836,10 @@ label.preferences-radio-choice-label {
             display: flex;
             justify-content: space-between;
             height: var(--settings-overlay-header-height);
+            /* We need the height to disregard border and
+               padding values added to other instances of
+               .settings-header. */
+            box-sizing: border-box;
 
             .fa-chevron-left {
                 transform: translate(-50px, 0);
