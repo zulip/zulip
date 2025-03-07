@@ -32,7 +32,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
-from zerver.lib.validator import check_string
+from zerver.lib.validator import check_bool, check_string
 from zerver.models import UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """\
@@ -59,6 +59,7 @@ OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig(
 class PresetConfigOption(str, Enum):
     BRANCHES = "branches"
     IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
+    MAPPING = "mapping"
 
 
 @dataclass
@@ -88,6 +89,12 @@ class WebhookConfigOption:
                     name=config.value,
                     description="Exclude notifications from private repositories",
                     validator=check_bool,
+                )
+            case PresetConfigOption.MAPPING:
+                return cls(
+                    name=config.value,
+                    description="",
+                    validator=check_string,
                 )
 
         raise AssertionError(_("Unknown 'PresetConfigOption': {config}").format(config=config))
