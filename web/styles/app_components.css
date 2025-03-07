@@ -783,8 +783,6 @@ input.settings_text_input {
         &[data-sort]:hover::after {
             content: " \f0d8";
             white-space: pre;
-            display: inline-block;
-            position: absolute;
             padding-top: 3px;
             font: normal normal normal 12px/1 FontAwesome;
             font-size: inherit;
