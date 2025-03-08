@@ -302,12 +302,6 @@ export function initialize_kitchen_sink_stuff() {
         $("body").addClass("high-contrast");
     }
 
-    if (!user_settings.dense_mode) {
-        $("body").addClass("less-dense-mode");
-    } else {
-        $("body").addClass("more-dense-mode");
-    }
-
     $(window).on("blur", () => {
         $(document.body).addClass("window_blurred");
     });
