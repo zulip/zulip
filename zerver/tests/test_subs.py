@@ -3350,7 +3350,7 @@ class StreamAdminTest(ZulipTestCase):
 
         return stream
 
-    def archive_stream(self, stream: Stream) -> None:
+    def archive_stream(self, stream: Stream, *, expect_can_subscribe: bool = True) -> None:
         """
         Archive the stream and assess the result.
         """
@@ -3399,11 +3399,38 @@ class StreamAdminTest(ZulipTestCase):
         streams = [s["name"] for s in self.assert_json_success(result)["streams"]]
         self.assertIn(deactivated_stream_name, streams)
 
-        # You can't subscribe to archived stream.
+        # You can still subscribe to archived stream, if you have content access.
+        hamlet = self.example_user("hamlet")
         result = self.subscribe_via_post(
-            self.example_user("hamlet"), [deactivated_stream_name], allow_fail=True
+            hamlet,
+            [deactivated_stream_name],
+            allow_fail=not expect_can_subscribe,
         )
-        self.assert_json_error(result, f"Unable to access channel ({deactivated_stream_name}).")
+        if expect_can_subscribe:
+            self.assert_json_success(result)
+        else:
+            self.assert_json_error(result, "Unable to access channel (privstream).")
+
+            # now grant content access
+            setting_group_member_dict = UserGroupMembersDict(
+                direct_members=[hamlet.id], direct_subgroups=[]
+            )
+            do_change_stream_group_based_setting(
+                stream, "can_subscribe_group", setting_group_member_dict, acting_user=hamlet
+            )
+
+            result = self.subscribe_via_post(hamlet, [deactivated_stream_name])
+            self.assert_json_success(result)
+
+        # You can still unsubscribe from an archived stream.
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps([deactivated_stream_name]).decode(),
+                "principals": orjson.dumps([hamlet.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
 
         # You cannot re-archive the stream
         with self.capture_send_event_calls(expected_num_events=0) as events:
@@ -3458,7 +3485,7 @@ class StreamAdminTest(ZulipTestCase):
         priv_stream = self.set_up_stream_for_archiving(
             "privstream", subscribed=False, invite_only=True
         )
-        self.archive_stream(priv_stream)
+        self.archive_stream(priv_stream, expect_can_subscribe=False)
 
     def attempt_unsubscribe_of_principal(
         self,
