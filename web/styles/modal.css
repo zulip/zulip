@@ -661,3 +661,28 @@
 #topic-summary-modal {
     width: 45em;
 }
+
+.topic_input_container {
+    position: relative;
+    width: 100%;
+}
+
+.topic_clear_button {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: hsl(0deg 0% 75%);
+    cursor: pointer;
+    padding: 5px;
+    display: none;
+    font-size: 14px;
+}
+
+.topic_clear_button:hover {
+    color: hsl(0deg 0% 50%);
+}
+
+.topic_input_container input:not([disabled]):valid ~ .topic_clear_button {
+    display: inline-block;
+}

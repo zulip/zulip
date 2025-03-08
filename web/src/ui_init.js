@@ -391,6 +391,13 @@ function initialize_unread_ui() {
     unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
 }
 
+function initialize_topic_clear_buttons() {
+    $(document).on("click", ".topic_clear_button", function () {
+        const $input = $(this).siblings("input");
+        $input.val("").trigger("input").trigger("focus");
+    });
+}
+
 export function initialize_everything(state_data) {
     /*
         When we initialize our various modules, a lot
@@ -427,6 +434,7 @@ export function initialize_everything(state_data) {
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. Because information
        density is so fundamental, we initialize that first, however. */
+    initialize_topic_clear_buttons();
     initialize_user_settings(state_data.user_settings);
     sidebar_ui.restore_sidebar_toggle_status();
     i18n.initialize({language_list: page_params.language_list});
