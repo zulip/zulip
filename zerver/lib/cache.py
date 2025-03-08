@@ -492,7 +492,6 @@ realm_user_dict_fields: list[str] = [
     "avatar_version",
     "is_active",
     "role",
-    "is_billing_admin",
     "is_bot",
     "timezone",
     "date_joined",

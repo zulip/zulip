@@ -209,7 +209,6 @@ def fetch_initial_state_data(
             # restrictions apply to these users as well, and it lets
             # us avoid unnecessary conditionals.
             role=UserProfile.ROLE_GUEST,
-            is_billing_admin=False,
             avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
             # ID=0 is not used in real Zulip databases, ensuring this is unique.
             id=0,
@@ -675,7 +674,6 @@ def fetch_initial_state_data(
         state["is_owner"] = settings_user.is_realm_owner
         state["is_moderator"] = settings_user.is_moderator
         state["is_guest"] = settings_user.is_guest
-        state["is_billing_admin"] = settings_user.is_billing_admin
         state["user_id"] = settings_user.id
         state["email"] = settings_user.email
         state["delivery_email"] = settings_user.delivery_email
@@ -1102,7 +1100,7 @@ def apply_event(
                             get_default_stream_ids_for_realm(user_profile.realm_id)
                         )
 
-                for field in ["delivery_email", "email", "full_name", "is_billing_admin"]:
+                for field in ["delivery_email", "email", "full_name"]:
                     if field in person and field in state:
                         state[field] = person[field]
 
@@ -1154,9 +1152,6 @@ def apply_event(
                     p["is_admin"] = is_administrator_role(person["role"])
                     p["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
                     p["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
-
-                if "is_billing_admin" in person:
-                    p["is_billing_admin"] = person["is_billing_admin"]
 
                 if "custom_profile_field" in person:
                     custom_field_id = str(person["custom_profile_field"]["id"])

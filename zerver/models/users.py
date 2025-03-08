@@ -504,8 +504,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # See also `long_term_idle`.
     is_active = models.BooleanField(default=True, db_index=True)
 
-    is_billing_admin = models.BooleanField(default=False, db_index=True)
-
     is_bot = models.BooleanField(default=False, db_index=True)
     bot_type = models.PositiveSmallIntegerField(null=True, db_index=True)
     bot_owner = models.ForeignKey("self", null=True, on_delete=models.SET_NULL)

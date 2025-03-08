@@ -49,7 +49,6 @@ export const user_update_schema = z.object({user_id: z.number()}).and(
         z.object({delivery_email: z.nullable(z.string())}),
         z.object({new_email: z.string()}),
         z.object({full_name: z.string()}),
-        z.object({is_billing_admin: z.boolean()}),
         z.object({role: z.number()}),
         z.object({email: z.string(), timezone: z.string()}),
         z.object({is_active: z.boolean()}),
@@ -139,13 +138,6 @@ export const update_person = function update(person: UserUpdate): void {
             current_user.is_moderator !== person_obj.is_moderator
         ) {
             current_user.is_moderator = person_obj.is_moderator;
-        }
-    }
-
-    if ("is_billing_admin" in person) {
-        person_obj.is_billing_admin = person.is_billing_admin;
-        if (people.is_my_user_id(person.user_id)) {
-            current_user.is_billing_admin = person_obj.is_billing_admin;
         }
     }
 
