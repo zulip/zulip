@@ -142,6 +142,10 @@ function remove_div(_div: JQuery, ranges: Range[]): void {
 }
 
 function copy_selection_to_clipboard(selection: Selection): void {
+    if (selection.rangeCount === 0) {
+        return;
+    }
+
     const range = selection.getRangeAt(0);
     const div = document.createElement("div");
     div.append(range.cloneContents());
