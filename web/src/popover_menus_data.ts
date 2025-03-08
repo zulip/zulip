@@ -350,8 +350,9 @@ function get_billing_info(): BillingInfo {
         return billing_info;
     }
 
-    const is_plan_standard = realm.realm_plan_type === 3;
-    const is_plan_plus = realm.realm_plan_type === 10;
+    const is_plan_standard =
+        realm.realm_plan_type === settings_config.realm_plan_types.standard.code;
+    const is_plan_plus = realm.realm_plan_type === settings_config.realm_plan_types.plus.code;
     const is_org_on_paid_plan = is_plan_standard || is_plan_plus;
 
     billing_info.show_remote_billing = !page_params.corporate_enabled;
@@ -363,8 +364,9 @@ function get_billing_info(): BillingInfo {
 
 export function get_gear_menu_content_context(): GearMenuContext {
     const user_has_billing_access = settings_data.user_has_billing_access();
-    const is_plan_standard = realm.realm_plan_type === 3;
-    const is_plan_plus = realm.realm_plan_type === 10;
+    const is_plan_standard =
+        realm.realm_plan_type === settings_config.realm_plan_types.standard.code;
+    const is_plan_plus = realm.realm_plan_type === settings_config.realm_plan_types.plus.code;
     const is_org_on_paid_plan = is_plan_standard || is_plan_plus;
     const billing_info = get_billing_info();
     return {
@@ -373,15 +375,18 @@ export function get_gear_menu_content_context(): GearMenuContext {
         is_owner: current_user.is_owner,
         is_admin: current_user.is_admin,
         is_spectator: page_params.is_spectator,
-        is_self_hosted: realm.realm_plan_type === 1,
+        is_self_hosted: realm.realm_plan_type === settings_config.realm_plan_types.self_hosted.code,
         is_development_environment: page_params.development_environment,
-        is_plan_limited: realm.realm_plan_type === 2,
+        is_plan_limited: realm.realm_plan_type === settings_config.realm_plan_types.limited.code,
         is_plan_standard,
-        is_plan_standard_sponsored_for_free: realm.realm_plan_type === 4,
+        is_plan_standard_sponsored_for_free:
+            realm.realm_plan_type === settings_config.realm_plan_types.standard_free.code,
         is_plan_plus,
         is_org_on_paid_plan,
-        is_business_org: realm.realm_org_type === 10,
-        is_education_org: realm.realm_org_type === 30 || realm.realm_org_type === 35,
+        is_business_org: realm.realm_org_type === settings_config.all_org_type_values.business.code,
+        is_education_org:
+            realm.realm_org_type === settings_config.all_org_type_values.education_nonprofit.code ||
+            realm.realm_org_type === settings_config.all_org_type_values.education.code,
         standard_plan_name: "Zulip Cloud Standard",
         server_needs_upgrade: realm.server_needs_upgrade,
         version_display_string: gear_menu_util.version_display_string(),
