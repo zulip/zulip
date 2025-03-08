@@ -203,7 +203,6 @@ def json_change_settings(
     old_password: str | None = None,
     new_password: str | None = None,
     twenty_four_hour_time: Json[bool] | None = None,
-    dense_mode: Json[bool] | None = None,
     web_mark_read_on_scroll_policy: Annotated[
         Json[int], check_int_in_validator(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES)
     ]

@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 364**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings)
+  [`GET /events`](/api/get-events): Removed `dense_mode` setting.
+
 **Feature level 363**
 
 * `PATCH /realm`, [`GET /events`](/api/get-events),

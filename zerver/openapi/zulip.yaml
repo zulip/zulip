@@ -12243,8 +12243,12 @@ paths:
         Note that this endpoint cannot, at present, be used to modify
         settings for existing users in any way.
 
-        **Changes**: New in Zulip 5.0 (feature level 96). If any parameters
-        sent in the request are not supported by this endpoint, an
+        **Changes**: Removed `dense_mode` setting in Zulip 10.0 (feature level 364)
+        as we now have `web_font_size_px` and `web_line_height_percent`
+        settings for more control.
+
+        New in Zulip 5.0 (feature level 96). If any parameters sent in the
+        request are not supported by this endpoint, an
         [`ignored_parameters_unsupported`][ignored-parameters] array will
         be returned in the JSON success response.
 
@@ -12264,12 +12268,6 @@ paths:
             schema:
               type: object
               properties:
-                dense_mode:
-                  description: |
-                    This setting has no effect at present. It is reserved for use in controlling
-                    the default font size in Zulip.
-                  type: boolean
-                  example: true
                 starred_message_counts:
                   description: |
                     Whether clients should display the [number of starred
@@ -12787,8 +12785,6 @@ paths:
                   type: boolean
                   example: true
             encoding:
-              dense_mode:
-                contentType: application/json
               starred_message_counts:
                 contentType: application/json
               receives_typing_notifications:
@@ -14436,7 +14432,11 @@ paths:
         works, avoids clients needing to worry about large classes of
         potentially messy races, etc.
 
-        **Changes**: Before Zulip 7.0 (feature level 183), the
+        **Changes**: Removed `dense_mode` setting in Zulip 10.0 (feature level 364)
+        as we now have `web_font_size_px` and `web_line_height_percent`
+        settings for more control.
+
+        Before Zulip 7.0 (feature level 183), the
         `realm_community_topic_editing_limit_seconds` property
         was returned by the response. It was removed because it
         had not been in use since the realm setting
@@ -15666,8 +15666,12 @@ paths:
 
                           A dictionary containing the user's personal settings.
 
-                          **Changes**: New in Zulip 5.0 (feature level 89). Previously,
-                          these settings appeared in the top-level object, where they are
+                          **Changes**: Removed `dense_mode` setting in Zulip 10.0
+                          (feature level 364) as we now have `web_font_size_px` and
+                          `web_line_height_percent` settings for more control.
+
+                          New in Zulip 5.0 (feature level 89). Previously, these
+                          settings appeared in the top-level object, where they are
                           available for clients without the `user_settings_object` client
                           capability for backwards-compatibility.
                         additionalProperties: false
@@ -15676,11 +15680,6 @@ paths:
                             type: boolean
                             description: |
                               Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
-                          dense_mode:
-                            type: boolean
-                            description: |
-                              This setting has no effect at present. It is reserved for use in controlling
-                              the default font size in Zulip.
                           web_mark_read_on_scroll_policy:
                             type: integer
                             description: |
@@ -16622,25 +16621,6 @@ paths:
                           their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has chosen to demote inactive channels.
-
-                          See [PATCH /settings](/api/update-settings) for details on
-                          the meaning of this setting.
-
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
-                          connecting to newer servers should declare the `user_settings_object`
-                          client capability and access the `user_settings` object instead.
-
-                          [capabilities]: /api/register-queue#parameter-client_capabilities
-                      dense_mode:
-                        deprecated: true
-                        type: boolean
-                        description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
-                          and only for clients that did not include `user_settings_object` in
-                          their [`client_capabilities`][capabilities] when registering the event queue.
-
-                          Whether the user has switched on dense mode. Dense mode is an experimental
-                          feature that is only available in development environments.
 
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
@@ -18393,11 +18373,6 @@ paths:
                               `realm_default_twenty_four_hour_time` in
                               the top-level response object (only when `realm` was
                               present in `fetch_event_types`).
-                          dense_mode:
-                            type: boolean
-                            description: |
-                              This setting has no effect at present. It is reserved for use in
-                              controlling the default font size in Zulip.
                           web_mark_read_on_scroll_policy:
                             type: integer
                             description: |
@@ -19455,11 +19430,15 @@ paths:
       description: |
         This endpoint is used to edit the current user's settings.
 
-        **Changes**: Prior to Zulip 5.0 (feature level 80), this
-        endpoint only supported the `full_name`, `email`,
-        `old_password`, and `new_password` parameters. Notification
-        settings were managed by `PATCH /settings/notifications`, and
-        all other settings by `PATCH /settings/display`.
+        **Changes**: Removed `dense_mode` setting in Zulip 10.0
+        (feature level 364) as we now have `web_font_size_px` and
+        `web_line_height_percent` settings for more control.
+
+        Prior to Zulip 5.0 (feature level 80), this endpoint only
+        supported the `full_name`, `email`, `old_password`, and
+        `new_password` parameters. Notification settings were
+        managed by `PATCH /settings/notifications`, and all other
+        settings by `PATCH /settings/display`.
 
         The feature level 80 migration to merge these endpoints did not
         change how request parameters are encoded. However, it did change
@@ -19529,15 +19508,6 @@ paths:
                 twenty_four_hour_time:
                   description: |
                     Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
-
-                    **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
-                    the `PATCH /settings/display` endpoint.
-                  type: boolean
-                  example: true
-                dense_mode:
-                  description: |
-                    This setting has no effect at present. It is reserved for use in controlling
-                    the default font size in Zulip.
 
                     **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
                     the `PATCH /settings/display` endpoint.
@@ -20196,8 +20166,6 @@ paths:
                   example: true
             encoding:
               twenty_four_hour_time:
-                contentType: application/json
-              dense_mode:
                 contentType: application/json
               web_mark_read_on_scroll_policy:
                 contentType: application/json

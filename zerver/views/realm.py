@@ -586,7 +586,6 @@ def update_realm_user_settings_defaults(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    dense_mode: Json[bool] | None = None,
     web_mark_read_on_scroll_policy: Json[
         Annotated[
             int,
