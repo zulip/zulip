@@ -85,6 +85,7 @@ from zerver.models import (
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
+from zerver.models.saved_snippets import SavedSnippet
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
 if TYPE_CHECKING:
@@ -333,6 +334,7 @@ DATE_FIELDS: dict[TableName, list[Field]] = {
         "date_failed",
         "date_deleted",
     ],
+    "zerver_savedsnippet": ["date_created"],
     "zerver_scheduledmessage": ["scheduled_timestamp"],
     "zerver_stream": ["date_created"],
     "zerver_namedusergroup": ["date_created"],
@@ -1023,6 +1025,13 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=OnboardingStep,
         normal_parent=user_profile_config,
         include_rows="user_id__in",
+    )
+
+    Config(
+        table="zerver_savedsnippet",
+        model=SavedSnippet,
+        normal_parent=user_profile_config,
+        include_rows="user_profile_id__in",
     )
 
     Config(
