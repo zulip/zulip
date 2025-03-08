@@ -34,6 +34,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_set_realm_authentication_methods,
 )
+from zerver.actions.saved_snippets import do_create_saved_snippet
 from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.user_activity import do_update_user_activity_interval
 from zerver.actions.user_settings import do_change_user_setting
@@ -2486,6 +2487,15 @@ class SingleUserExportTest(ExportFile):
                     message=smile_message_id,
                 ),
             )
+
+        # We violate alphabetical order here but this creates a RealmAuditLog entry and we want the stream
+        # subscription event which will occur next to be the last RealmAuditLog entry.
+        do_create_saved_snippet("snippet title", "snippet content", cordelia)
+
+        @checker
+        def zerver_savedsnippet(records: list[Record]) -> None:
+            self.assertEqual(records[-1]["title"], "snippet title")
+            self.assertEqual(records[-1]["content"], "snippet content")
 
         self.subscribe(cordelia, "Scotland")
 
