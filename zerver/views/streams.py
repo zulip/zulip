@@ -280,6 +280,7 @@ def update_stream_backend(
     (stream, sub) = access_stream_for_delete_or_update_requiring_metadata_access(
         user_profile, stream_id
     )
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
 
     # Validate that the proposed state for permissions settings is permitted.
     if is_private is not None:
@@ -335,11 +336,16 @@ def update_stream_backend(
     if not proposed_is_private and user_profile.realm.moderation_request_channel == stream:
         raise JsonableError(_("Moderation request channel must be private."))
 
-    if is_private is not None:
-        # We require even channel administrators to be actually
-        # subscribed to make a private stream public, via this
-        # stricted access_stream check.
-        access_stream_by_id(user_profile, stream_id)
+    if is_private is not None and not user_has_content_access(
+        user_profile,
+        stream,
+        user_group_membership_details,
+        is_subscribed=sub is not None,
+    ):
+        raise JsonableError(_("Channel content access is required."))
+        # In addition to channel administration permissions, changing
+        # public/private status for channels requires content access
+        # to the channel.
 
     # Enforce restrictions on creating web-public streams. Since these
     # checks are only required when changing a stream to be
@@ -419,9 +425,6 @@ def update_stream_backend(
         if validate_group_setting_value_change(
             current_setting_api_value, new_setting_value, expected_current_setting_value
         ):
-            user_group_membership_details = UserGroupMembershipDetails(
-                user_recursive_group_ids=None
-            )
             if (
                 setting_name in Stream.stream_permission_group_settings_requiring_content_access
                 and not user_has_content_access(
@@ -431,7 +434,8 @@ def update_stream_backend(
                     is_subscribed=sub is not None,
                 )
             ):
-                raise JsonableError(_("Invalid channel ID"))
+                raise JsonableError(_("Channel content access is required."))
+
             with transaction.atomic(durable=True):
                 user_group_api_value_for_setting = access_user_group_api_value_for_setting(
                     new_setting_value,
