@@ -10662,7 +10662,10 @@ paths:
         to a specified channel depends on the [channel's permissions
         settings](/help/channel-permissions).
 
-        **Changes**: Before Zulip 10.0 (feature level 357), the
+        **Changes**: Before Zulip 10.0 (feature level 362),
+        subscriptions in archived channels could not be modified.
+
+        Before Zulip 10.0 (feature level 357), the
         `can_subscribe_group` permission, which allows members of the
         group to subscribe themselves to the channel, did not exist.
 
@@ -10931,6 +10934,9 @@ paths:
       tags: ["channels"]
       description: |
         Update which channels you are subscribed to.
+
+        **Changes**: Before Zulip 10.0 (feature level 362),
+        subscriptions in archived channels could not be modified.
       requestBody:
         required: false
         content:
@@ -11065,13 +11071,16 @@ paths:
           by the [`can_remove_subscribers_group`][can-remove-parameter]
           for the channel.
 
-        **Changes**: Before Zulip 8.0 (feature level 208), if a user
-        specified by the [`principals`][principals-param] parameter was
-        a deactivated user, or did not exist, then an HTTP status code
-        of 403 was returned with `code: "UNAUTHORIZED_PRINCIPAL"` in the
-        error response. As of this feature level, an HTTP status code of
-        400 is returned with `code: "BAD_REQUEST"` in the error response
-        for these cases.
+        **Changes**: Before Zulip 10.0 (feature level 362),
+        subscriptions in archived channels could not be modified.
+
+        Before Zulip 8.0 (feature level 208), if a user specified by
+        the [`principals`][principals-param] parameter was a
+        deactivated user, or did not exist, then an HTTP status code
+        of 403 was returned with `code: "UNAUTHORIZED_PRINCIPAL"` in
+        the error response. As of this feature level, an HTTP status
+        code of 400 is returned with `code: "BAD_REQUEST"` in the
+        error response for these cases.
 
         Before Zulip 8.0 (feature level 197),
         the `can_remove_subscribers_group` setting
@@ -15431,7 +15440,11 @@ paths:
                           Important for clients containing UI where one can browse channels to subscribe
                           to.
 
-                          **Changes**: Prior to Zulip 10.0 (feature level 349), if a user was
+                          **Changes**: Before Zulip 10.0 (feature level 362), archived channels did
+                          not appear in this list, even if the `archived_channels` [client
+                          capability][client-capabilities] was declared by the client.
+
+                          Prior to Zulip 10.0 (feature level 349), if a user was
                           in `can_administer_channel_group` of a channel that they never
                           subscribed to, but not an organization administrator, the channel
                           in question would not be part of this array.
@@ -20685,7 +20698,10 @@ paths:
         [private channel's permissions](/help/channel-permissions#private-channels)
         depends on them being subscribed to the channel.
 
-        **Changes**: Removed `stream_post_policy` and `is_announcement_only`
+        **Changes**: Before Zulip 10.0 (feature level 362), channel privacy could not be
+        edited for archived channels.
+
+        Removed `stream_post_policy` and `is_announcement_only`
         parameters in Zulip 10.0 (feature level 333), as permission to post
         in the channel is now controlled by `can_send_message_group`.
       x-curl-examples-parameters:
