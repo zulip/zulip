@@ -919,7 +919,7 @@ class StreamAdminTest(ZulipTestCase):
         }
         stream_id = get_stream("private_stream_1", user_profile.realm).id
         result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "Invalid channel ID")
+        self.assert_json_error(result, "Channel content access is required.")
 
         stream = self.subscribe(user_profile, "private_stream_1")
         self.assertFalse(stream.is_in_zephyr_realm)
@@ -2319,7 +2319,7 @@ class StreamAdminTest(ZulipTestCase):
                 "is_private": orjson.dumps(True).decode(),
             },
         )
-        self.assert_json_error(result, "Invalid channel ID")
+        self.assert_json_error(result, "Channel content access is required.")
 
     def test_non_admin_cannot_access_unsub_private_stream(self) -> None:
         iago = self.example_user("iago")
@@ -2911,7 +2911,7 @@ class StreamAdminTest(ZulipTestCase):
             params,
         )
         if setting_name in Stream.stream_permission_group_settings_requiring_content_access:
-            self.assert_json_error(result, "Invalid channel ID")
+            self.assert_json_error(result, "Channel content access is required.")
         else:
             self.assert_json_success(result)
             stream = get_stream("stream_name2", realm)
@@ -2937,7 +2937,7 @@ class StreamAdminTest(ZulipTestCase):
             params,
         )
         if setting_name in Stream.stream_permission_group_settings_requiring_content_access:
-            self.assert_json_error(result, "Invalid channel ID")
+            self.assert_json_error(result, "Channel content access is required.")
             do_change_stream_group_based_setting(
                 stream,
                 "can_add_subscribers_group",
