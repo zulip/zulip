@@ -20,6 +20,19 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 362**
+
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`DELETE /users/me/subscriptions`](/api/unsubscribe): Subscriptions
+  in archived channels can now be edited by users with the appropriate
+  permission, just like in non-archived channels.
+* [`PATCH /streams/{stream_id}`](/api/update-stream): Archived
+  channels can now be converted between public and private channels,
+  just like non-archived channels.
+* [`POST /register`](/api/register-queue): The `never_subscribed` data
+  structure now includes archived channels for clients that declared
+  the `archived_channels` client capability.
+
 **Feature level 361**
 
 * [`POST /messages/{message_id}/typing`](/api/set-typing-status-for-message-edit):
