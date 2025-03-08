@@ -14843,6 +14843,14 @@ paths:
                           exist as all onboarding steps were implicitly hotspots.
                         items:
                           $ref: "#/components/schemas/OnboardingStep"
+                      onboarding_video_url:
+                        type: string
+                        description: |
+                          URL of the onboarding video displayed to new users.
+
+                          Present unless disabled by the server administrators in `/etc/zulip/settings.py`.
+
+                          **Changes**: New in Zulip 10.0 (feature level 362).
                       max_message_id:
                         type: integer
                         deprecated: true

@@ -44,7 +44,7 @@ from zerver.lib.upload import (
 )
 from zerver.lib.upload.base import StreamingSourceWithSize
 from zerver.lib.upload.s3 import S3UploadBackend
-from zerver.models import Attachment, RealmEmoji, UserProfile
+from zerver.models import Attachment, OnboardingStep, RealmEmoji, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot
 
@@ -360,6 +360,12 @@ class S3Test(ZulipTestCase):
         target_user_profile = do_create_user(
             "user@zulip.com", "password", get_realm("zulip"), "user", acting_user=None
         )
+
+        # 'visibility_policy_banner' is already marked as read for new users.
+        # Delete that row to avoid integrity error in copy_default_settings.
+        OnboardingStep.objects.filter(
+            user=target_user_profile, onboarding_step="visibility_policy_banner"
+        ).delete()
 
         copy_default_settings(source_user_profile, target_user_profile)
 

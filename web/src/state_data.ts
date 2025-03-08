@@ -272,6 +272,7 @@ export const realm_schema = z.object({
     max_stream_description_length: z.number(),
     max_stream_name_length: z.number(),
     max_topic_length: z.number(),
+    onboarding_video_url: z.optional(z.string()),
     password_min_guesses: z.number(),
     password_min_length: z.number(),
     password_max_length: z.number(),

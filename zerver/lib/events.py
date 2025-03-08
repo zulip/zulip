@@ -518,6 +518,9 @@ def fetch_initial_state_data(
             ).name
         )
 
+        if settings.ONBOARDING_VIDEO_URL is not None:
+            state["onboarding_video_url"] = settings.ONBOARDING_VIDEO_URL
+
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         state["realm_user_settings_defaults"] = {}
