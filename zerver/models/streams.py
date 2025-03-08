@@ -313,7 +313,7 @@ def bulk_get_streams(realm: Realm, stream_names: set[str]) -> dict[str, Any]:
             "upper(zerver_stream.name::text) IN (SELECT upper(name) FROM unnest(%s) AS name)"
         )
         return (
-            get_active_streams(realm)
+            get_all_streams(realm, include_archived_channels=True)
             .select_related("can_send_message_group", "can_send_message_group__named_user_group")
             .extra(where=[where_clause], params=(list(stream_names),))  # noqa: S610
         )

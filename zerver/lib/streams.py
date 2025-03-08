@@ -500,7 +500,7 @@ def access_stream_for_send_message(
         else:
             raise JsonableError(_("User not authorized for this query"))
 
-    # Deactivated streams are not accessible.
+    # You cannot send mesasges to archived channels
     if stream.deactivated:
         if archived_channel_notice:
             return
@@ -1262,9 +1262,7 @@ def filter_stream_authorization_for_adding_subscribers(
         )
 
     unauthorized_streams = [
-        stream
-        for stream in streams
-        if stream.deactivated or stream.id not in content_access_stream_ids
+        stream for stream in streams if stream.id not in content_access_stream_ids
     ]
     unauthorized_stream_ids = {stream.id for stream in unauthorized_streams}
 
