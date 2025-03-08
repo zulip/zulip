@@ -175,6 +175,10 @@ export const presence_schema = z.object({
     idle_timestamp: z.number().optional(),
 });
 
+export const realm_billing_schema = z.object({
+    has_pending_sponsorship_request: z.boolean(),
+});
+
 export const saved_snippet_schema = z.object({
     id: z.number(),
     title: z.string(),
@@ -305,6 +309,7 @@ export const realm_schema = z.object({
     realm_can_delete_own_message_group: group_setting_value_schema,
     realm_can_invite_users_group: group_setting_value_schema,
     realm_can_manage_all_groups: group_setting_value_schema,
+    realm_can_manage_billing_group: group_setting_value_schema,
     realm_can_mention_many_users_group: group_setting_value_schema,
     realm_can_move_messages_between_channels_group: group_setting_value_schema,
     realm_can_move_messages_between_topics_group: group_setting_value_schema,
@@ -434,6 +439,11 @@ export const state_data_schema = z
     .object({alert_words: z.array(z.string())})
     .transform((alert_words) => ({alert_words}))
     .and(z.object({realm_emoji: realm_emoji_map_schema}).transform((emoji) => ({emoji})))
+    .and(
+        z
+            .object({realm_billing: realm_billing_schema})
+            .transform((realm_billing) => ({realm_billing})),
+    )
     .and(z.object({realm_bots: z.array(server_add_bot_schema)}).transform((bot) => ({bot})))
     .and(
         z
@@ -557,9 +567,11 @@ export type StateData = z.infer<typeof state_data_schema>;
 
 export type CurrentUser = StateData["current_user"];
 export type Realm = StateData["realm"];
+export type RealmBilling = StateData["realm_billing"]["realm_billing"];
 
 export let current_user: CurrentUser;
 export let realm: Realm;
+export let realm_billing: RealmBilling;
 
 export function set_current_user(initial_current_user: CurrentUser): void {
     current_user = initial_current_user;
@@ -567,4 +579,8 @@ export function set_current_user(initial_current_user: CurrentUser): void {
 
 export function set_realm(initial_realm: Realm): void {
     realm = initial_realm;
+}
+
+export function set_realm_billing(params: StateData["realm_billing"]): void {
+    realm_billing = params.realm_billing;
 }

@@ -218,6 +218,8 @@ test_realm_group_settings(
     settings_data.user_can_invite_users_by_email,
 );
 
+test_realm_group_settings("realm_can_manage_billing_group", settings_data.user_has_billing_access);
+
 test_realm_group_settings(
     "realm_can_move_messages_between_channels_group",
     settings_data.user_can_move_messages_between_streams,

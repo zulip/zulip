@@ -208,7 +208,7 @@ function submit_invitation_form(): void {
                     is_admin: current_user.is_admin,
                     is_invitee_deactivated,
                     license_limit_reached: parsed.data.license_limit_reached,
-                    has_billing_access: current_user.is_owner || current_user.is_billing_admin,
+                    has_billing_access: settings_data.user_has_billing_access(),
                     daily_limit_reached: parsed.data.daily_limit_reached,
                 });
                 ui_report.message(error_response, $invite_status, "alert-error");

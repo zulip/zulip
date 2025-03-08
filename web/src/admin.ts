@@ -259,6 +259,7 @@ export function build_page(): void {
         group_setting_labels: settings_config.all_group_setting_labels.realm,
         server_can_summarize_topics: realm.server_can_summarize_topics,
         is_plan_self_hosted: realm.realm_plan_type === 1,
+        has_billing_access: settings_data.user_has_billing_access(),
     };
 
     const rendered_admin_tab = render_admin_tab(options);
@@ -280,11 +281,17 @@ export function build_page(): void {
     const is_plan_self_hosted = realm.realm_plan_type === 1;
     if (current_user.is_admin && !(is_plan_plus || is_plan_self_hosted)) {
         $("#realm_can_access_all_users_group_widget").prop("disabled", true);
-        const opts = {
-            content: $t({
+
+        const opts: {content?: string} = {};
+        if (settings_data.user_has_billing_access()) {
+            opts.content = $t({
                 defaultMessage: "This feature is available on Zulip Cloud Plus. Upgrade to access.",
-            }),
-        };
+            });
+        } else {
+            opts.content = $t({
+                defaultMessage: "This feature is available on Zulip Cloud Plus.",
+            });
+        }
 
         tippy.default(the($("#realm_can_access_all_users_group_widget_container")), opts);
     }

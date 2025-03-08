@@ -49,7 +49,7 @@ from zerver.lib.logging_util import log_to_file
 from zerver.lib.send_email import (
     FromAddress,
     send_email,
-    send_email_to_billing_admins_and_realm_owners,
+    send_email_to_users_with_billing_access_and_realm_owners,
 )
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.url_encoding import append_url_query_string
@@ -3407,7 +3407,7 @@ class BillingSession(ABC):
                 session.type == Session.CARD_UPDATE_FROM_BILLING_PAGE
                 and not self.has_billing_access()
             ):
-                raise JsonableError(_("Must be a billing administrator or an organization owner"))
+                raise JsonableError(_("Insufficient permission"))
             return {"session": session.to_dict()}
 
         stripe_invoice_id = event_status_request.stripe_invoice_id
@@ -4170,7 +4170,7 @@ class RealmBillingSession(BillingSession):
                 event_type=BillingSessionEventType.SPONSORSHIP_APPROVED, event_time=timezone_now()
             )
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, self.realm.id)
-        for user in self.realm.get_human_billing_admin_and_realm_owner_users():
+        for user in self.realm.get_human_users_with_billing_access_and_realm_owner_users():
             with override_language(user.default_language):
                 # Using variable to make life easier for translators if these details change.
                 message = _(
@@ -4185,7 +4185,7 @@ class RealmBillingSession(BillingSession):
                     end_link="](/help/linking-to-zulip-website)",
                 )
                 internal_send_private_message(notification_bot, user, message)
-        return f"Sponsorship approved for {self.billing_entity_display_name}; Emailed organization owners and billing admins."
+        return f"Sponsorship approved for {self.billing_entity_display_name}; Emailed organization owners and users with billing permission."
 
     @override
     def is_sponsored(self) -> bool:
@@ -5575,7 +5575,7 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
                 "upgrade_url": f"{realm.url}{reverse('upgrade_page')}",
                 "realm": realm,
             }
-            send_email_to_billing_admins_and_realm_owners(
+            send_email_to_users_with_billing_access_and_realm_owners(
                 "zerver/emails/realm_auto_downgraded",
                 realm,
                 from_name=FromAddress.security_email_from_name(language=realm.default_language),

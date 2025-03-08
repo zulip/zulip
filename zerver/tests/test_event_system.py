@@ -1231,6 +1231,7 @@ class FetchQueriesTest(ZulipTestCase):
             presence=1,
             # 2 of the 3 queries here are for fetching 'realm_user_groups' data.
             realm=3,
+            realm_billing=1,
             realm_bot=1,
             realm_domains=1,
             realm_embedded_bots=0,

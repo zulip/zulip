@@ -367,6 +367,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # UserGroup which is allowed to manage plans and billing.
+    can_manage_billing_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # UserGroup which is allowed to use wildcard mentions in large channels.
     can_mention_many_users_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
@@ -804,6 +809,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_everyone_group=False,
             default_group_name=SystemGroups.OWNERS,
         ),
+        can_manage_billing_group=GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.ADMINISTRATORS,
+        ),
         can_mention_many_users_group=GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
@@ -955,12 +967,17 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             role__in=roles,
         )
 
-    def get_human_billing_admin_and_realm_owner_users(self) -> QuerySet["UserProfile"]:
+    def get_human_users_with_billing_access_and_realm_owner_users(self) -> QuerySet["UserProfile"]:
+        from zerver.lib.user_groups import get_recursive_group_members
+
+        can_manage_billing_group_members = get_recursive_group_members(
+            self.can_manage_billing_group.id
+        )
+
         return UserProfile.objects.filter(
-            Q(role=UserProfile.ROLE_REALM_OWNER) | Q(is_billing_admin=True),
-            realm=self,
+            Q(id__in=can_manage_billing_group_members)
+            | Q(role=UserProfile.ROLE_REALM_OWNER, realm=self, is_active=True),
             is_bot=False,
-            is_active=True,
         )
 
     def get_active_users(self) -> QuerySet["UserProfile"]:

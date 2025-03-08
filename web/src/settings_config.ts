@@ -651,6 +651,7 @@ export const all_group_setting_labels = {
             defaultMessage: "Who can start a direct message conversation",
         }),
         can_manage_all_groups: $t({defaultMessage: "Who can administer all user groups"}),
+        can_manage_billing_group: $t({defaultMessage: "Who can manage plans and billing"}),
         can_create_groups: $t({defaultMessage: "Who can create user groups"}),
         can_move_messages_between_topics_group: $t({
             defaultMessage: "Who can move messages to another topic",
@@ -748,6 +749,7 @@ export const realm_group_permission_settings: {
         subsection_heading: $t({defaultMessage: "Other permissions"}),
         subsection_key: "org-other-permissions",
         settings: [
+            "can_manage_billing_group",
             "can_summarize_topics_group",
             "can_create_write_only_bots_group",
             "can_create_bots_group",

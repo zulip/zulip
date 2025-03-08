@@ -595,9 +595,8 @@ class PlansPageTest(ZulipTestCase):
         organization_member = "hamlet"
         self.login(organization_member)
         result = self.client_get("/plans/", subdomain="zulip")
-        self.assert_in_success_response(["Current plan"], result)
-        self.assert_in_success_response(["/sponsorship/"], result)
-        self.assert_not_in_success_response(["/accounts/go/?next=%2Fsponsorship%2F"], result)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual("/billing/", result["Location"])
 
         # Test root domain, with login on different domain
         result = self.client_get("/plans/", subdomain="")

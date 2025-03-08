@@ -750,7 +750,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def has_billing_access(self) -> bool:
-        return self.is_realm_owner or self.is_billing_admin
+        return self.has_permission("can_manage_billing_group")
 
     @property
     def is_realm_owner(self) -> bool:

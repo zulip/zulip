@@ -832,6 +832,7 @@ function setup_page(callback: () => void): void {
                 !realm.zulip_plan_is_not_limited || !current_user.is_owner,
             group_setting_labels: settings_config.all_group_setting_labels.stream,
             realm_has_archived_channels,
+            has_billing_access: settings_data.user_has_billing_access(),
         };
 
         const rendered = render_stream_settings_overlay(template_data);
