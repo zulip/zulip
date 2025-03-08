@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 362**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events):
+  Added new  `can_resolve_topics_group` realm setting, which is a
+  [group-setting value](/api/group-setting-values) describing the set of
+  users with permission to resolve topics in a stream.
+
 **Feature level 361**
 
 * [`POST /messages/{message_id}/typing`](/api/set-typing-status-for-message-edit):
