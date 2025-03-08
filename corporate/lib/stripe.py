@@ -3511,12 +3511,6 @@ class BillingSession(ABC):
             org_type = form.cleaned_data["organization_type"]
             self.save_org_type_from_request_sponsorship_session(org_type)
 
-            if request_context["realm_user"] is not None:
-                # TODO: Refactor to not create an import cycle.
-                from zerver.actions.users import do_change_is_billing_admin
-
-                do_change_is_billing_admin(request_context["realm_user"], True)
-
             org_type_display_name = get_org_type_display_name(org_type)
 
         user_info = request_context["user_info"]
@@ -4095,10 +4089,6 @@ class RealmBillingSession(BillingSession):
             customer, created = Customer.objects.update_or_create(
                 realm=self.realm, defaults={"stripe_customer_id": stripe_customer_id}
             )
-            from zerver.actions.users import do_change_is_billing_admin
-
-            assert self.user is not None
-            do_change_is_billing_admin(self.user, True)
             return customer
         else:
             customer, created = Customer.objects.update_or_create(

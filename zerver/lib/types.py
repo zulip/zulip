@@ -348,7 +348,6 @@ class RawUserDict(TypedDict):
     avatar_version: int
     is_active: bool
     role: int
-    is_billing_admin: bool
     is_bot: bool
     timezone: str
     date_joined: datetime

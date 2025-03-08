@@ -1,0 +1,5 @@
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email), [`GET /users/me`](/api/get-own-user),
+  [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Removed `is_billing_admin` field from user objects, as the permission to manage
+  plans and billing in the organization is now controlled by `can_manage_billing_group`.

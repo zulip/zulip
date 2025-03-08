@@ -142,25 +142,16 @@ run_test("updates", ({override}) => {
     assert.equal(person.is_owner, true);
     assert.equal(person.role, settings_config.user_role_values.owner.code);
 
-    user_events.update_person({user_id: me.user_id, is_billing_admin: true});
     person = people.get_by_email(me.email);
-    assert.ok(person.is_billing_admin);
     assert.equal(person.role, settings_config.user_role_values.member.code);
-    assert.ok(current_user.is_billing_admin);
 
-    user_events.update_person({user_id: me.user_id, is_billing_admin: false});
     person = people.get_by_email(me.email);
     assert.equal(person.user_id, me.user_id);
-    assert.ok(!person.is_billing_admin);
     assert.equal(person.role, settings_config.user_role_values.member.code);
-    assert.ok(!current_user.is_billing_admin);
 
-    user_events.update_person({user_id: isaac.user_id, is_billing_admin: false});
     person = people.get_by_email(isaac.email);
     assert.equal(person.user_id, isaac.user_id);
-    assert.ok(!person.is_billing_admin);
     assert.equal(person.role, settings_config.user_role_values.owner.code);
-    assert.ok(!current_user.is_billing_admin);
 
     let user_id;
     let full_name;

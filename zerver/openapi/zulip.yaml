@@ -514,12 +514,6 @@ paths:
                                           type: integer
                                           description: |
                                             The ID of the user affected by this change.
-                                        is_billing_admin:
-                                          type: boolean
-                                          description: |
-                                            A boolean specifying whether the user is now a billing administrator.
-
-                                            **Changes**: New in Zulip 5.0 (feature level 73).
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -1118,7 +1112,6 @@ paths:
                                       "is_admin": false,
                                       "is_owner": false,
                                       "is_guest": false,
-                                      "is_billing_admin": false,
                                       "role": 400,
                                       "is_bot": false,
                                       "full_name": "full name",
@@ -9292,7 +9285,6 @@ paths:
                               "delivery_email": null,
                               "is_admin": false,
                               "is_owner": false,
-                              "is_billing_admin": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
                               "bot_type": null,
@@ -9337,7 +9329,6 @@ paths:
                               "timezone": "",
                               "is_admin": false,
                               "is_owner": false,
-                              "is_billing_admin": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "is_active": true,
@@ -9355,7 +9346,6 @@ paths:
                               "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
                               "is_admin": false,
                               "is_owner": false,
-                              "is_billing_admin": false,
                               "role": 400,
                               "user_id": 23,
                               "bot_type": 1,
@@ -9673,14 +9663,6 @@ paths:
 
                           **Changes**: New in Zulip 3.0 (feature level 8).
                         example: false
-                      is_billing_admin:
-                        type: boolean
-                        description: |
-                          A boolean indicating if the requesting user is
-                          a billing administrator.
-
-                          **Changes**: New in Zulip 5.0 (feature level 73).
-                        example: false
                       role:
                         type: integer
                         enum:
@@ -9773,7 +9755,6 @@ paths:
                         "is_owner": false,
                         "role": 200,
                         "is_guest": false,
-                        "is_billing_admin": false,
                         "is_bot": false,
                         "is_active": true,
                         "timezone": "",
@@ -13146,7 +13127,6 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
-                            "is_billing_admin": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
@@ -13281,7 +13261,6 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
-                            "is_billing_admin": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
@@ -19013,14 +18992,6 @@ paths:
                           Whether the current user is an [organization owner](/api/roles-and-permissions).
 
                           **Changes**: New in Zulip 3.0 (feature level 11).
-                      is_billing_admin:
-                        type: boolean
-                        description: |
-                          Present if `realm_user` is present in `fetch_event_types`.
-
-                          Whether the current user is a billing administrator.
-
-                          **Changes**: New in Zulip 5.0 (feature level 73).
                       is_moderator:
                         type: boolean
                         description: |
@@ -19087,7 +19058,6 @@ paths:
                                 is_owner: {}
                                 is_admin: {}
                                 is_guest: {}
-                                is_billing_admin: {}
                                 is_bot: {}
                                 # Referenced schema properties are rendered before any
                                 # non-referenced properties in the API documentation, so
@@ -24852,7 +24822,6 @@ components:
             is_owner: {}
             is_admin: {}
             is_guest: {}
-            is_billing_admin: {}
             is_bot: {}
             bot_type:
               nullable: true
@@ -24921,12 +24890,6 @@ components:
           type: boolean
           description: |
             A boolean specifying whether the user is a guest user.
-        is_billing_admin:
-          type: boolean
-          description: |
-            A boolean specifying whether the user is a billing administrator.
-
-            **Changes**: New in Zulip 5.0 (feature level 73).
         is_bot:
           type: boolean
           description: |
