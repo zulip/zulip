@@ -425,6 +425,11 @@
             .zulip-icon.zulip-icon-bot {
                 align-self: center;
                 margin-left: 5px;
+                /* The bot icon is center-aligned but appears
+                slightly misaligned with the bot name text due
+                to its shape. Adding a negative top margin ensures
+                it's proper alignment. */
+                margin-top: -0.12em;
             }
 
             .sender_name {
