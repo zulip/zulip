@@ -161,7 +161,7 @@ function copy_selection_to_clipboard(selection: Selection): void {
     clipboard_handler.execute_copy(cb);
 }
 
-// We want to grab the closest katex-display up the tree
+// We want to grab the closest katex span up the tree
 // in cases where we can resolve the selected katex expression
 // from a math block into an inline expression.
 // The returned element from this function
@@ -187,23 +187,23 @@ function get_nearest_html_element(node: Node | null): Element | null {
 
     We want to avoid this behavior if the selection
     spreads across multiple katex displays i.e. the
-    focus and anchor are not part of the same katex-display.
+    focus and anchor are not part of the same katex span.
 */
 function improve_katex_selection_range(selection: Selection): void {
     const anchor_element = get_nearest_html_element(selection.anchorNode);
     const focus_element = get_nearest_html_element(selection.focusNode);
-    // If the anchor and focus end up in different katex-displays, this selection
+    // If the anchor and focus end up in different katex spans, this selection
     // isn't meant to be an inline expression, so we perform an early return.
     if (
         focus_element &&
         anchor_element &&
-        focus_element?.closest(".katex-display") !== anchor_element?.closest(".katex-display")
+        focus_element?.closest(".katex") !== anchor_element?.closest(".katex")
     ) {
         return;
     }
 
     if (anchor_element) {
-        const parent = anchor_element.closest(".katex-display");
+        const parent = anchor_element.closest(".katex");
         const is_math_block = parent !== null && parent !== selection.anchorNode;
         if (is_math_block) {
             const range = document.createRange();
@@ -212,7 +212,7 @@ function improve_katex_selection_range(selection: Selection): void {
             selection.addRange(range);
         }
     } else if (focus_element) {
-        const parent = focus_element.closest(".katex-display");
+        const parent = focus_element.closest(".katex");
         const is_math_block = parent !== null && parent !== selection.focusNode;
         if (is_math_block) {
             const range = document.createRange();
