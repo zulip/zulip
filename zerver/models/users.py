@@ -82,7 +82,6 @@ class UserBaseSettings(models.Model):
     WEB_FONT_SIZE_PX_DEFAULT = 16
     WEB_LINE_HEIGHT_PERCENT_COMPACT = 122
     WEB_LINE_HEIGHT_PERCENT_DEFAULT = 140
-    dense_mode = models.BooleanField(default=False)
     web_font_size_px = models.PositiveSmallIntegerField(default=WEB_FONT_SIZE_PX_DEFAULT)
     web_line_height_percent = models.PositiveSmallIntegerField(
         default=WEB_LINE_HEIGHT_PERCENT_DEFAULT
@@ -307,7 +306,6 @@ class UserBaseSettings(models.Model):
         default_language=str,
         web_home_view=str,
         demote_inactive_streams=int,
-        dense_mode=bool,
         emojiset=str,
         enable_drafts_synchronization=bool,
         enter_sends=bool,

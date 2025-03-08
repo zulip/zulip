@@ -1040,14 +1040,6 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.web_channel_default_view, 1);
 
-    event = event_fixtures.user_settings__dense_mode;
-    override(user_settings, "dense_mode", false);
-    toggled = [];
-    assert_same(event.value, true);
-    dispatch(event);
-    assert_same(user_settings.dense_mode, false);
-    assert_same(toggled, []);
-
     event = event_fixtures.user_settings__web_font_size_px;
     override(user_settings, "web_font_size_px", 14);
     assert_same(event.value, 16);

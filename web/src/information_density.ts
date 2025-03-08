@@ -41,14 +41,6 @@ const BODY_FONT_CONTENT_BOX = BODY_FONT_ASCENT + BODY_FONT_DESCENT;
 // than the line-height.
 const MAXIMUM_BLOCK_HEIGHT_IN_EMS = BODY_FONT_CONTENT_BOX / BODY_FONT_EM_SIZE;
 
-// Eventually these legacy values and references to them should be removed;
-// but in the awkward stage where legacy values are in play for
-// certain things (e.g., calculating line-height-based offsets for
-// emoji alignment), it's necessary to have access to these values.
-export const LEGACY_LINE_HEIGHT_UNITLESS = 1.214;
-export const LEGACY_FONT_SIZE_PX = 14;
-export const LEGACY_LINE_HEIGHT_PERCENT = 122;
-
 export const NON_COMPACT_MODE_FONT_SIZE_PX = 16;
 export const NON_COMPACT_MODE_LINE_HEIGHT_PERCENT = 140;
 
@@ -113,9 +105,7 @@ function set_vertical_alignment_values(line_height_unitless: number): void {
 export function set_base_typography_css_variables(): void {
     const font_size_px = user_settings.web_font_size_px;
     const line_height_percent = user_settings.web_line_height_percent;
-    const line_height_unitless = user_settings.dense_mode
-        ? LEGACY_LINE_HEIGHT_UNITLESS
-        : line_height_percent / 100;
+    const line_height_unitless = line_height_percent / 100;
     const line_height_px = line_height_unitless * font_size_px;
     /* This percentage is a legacy value, rounding up from .294;
        additional logic might be useful to make this adjustable;
@@ -136,9 +126,7 @@ export function set_base_typography_css_variables(): void {
 }
 
 export function calculate_timestamp_widths(): void {
-    const base_font_size_px = user_settings.dense_mode
-        ? LEGACY_FONT_SIZE_PX
-        : user_settings.web_font_size_px;
+    const base_font_size_px = user_settings.web_font_size_px;
     const $temp_time_div = $("<div>");
     $temp_time_div.attr("id", "calculated-timestamp-widths");
     // Size the div to the width of the largest timestamp,

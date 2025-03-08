@@ -902,15 +902,15 @@ export function dispatch_normal_event(event) {
                 activity_ui.build_user_sidebar();
             }
             if (
-                event.property === "dense_mode" ||
                 event.property === "web_font_size_px" ||
                 event.property === "web_line_height_percent"
             ) {
-                // We just ignore events for "dense_mode", "web_font_size_px"
-                // and "web_line_height_percent" settings as we are fine
-                // with a window not being updated due to changes being done
-                // from another window and also helps in avoiding weird issues
-                // on clicking the "+"/"-" buttons multiple times quickly when
+                // We just ignore events for web_font_size_px"
+                // and "web_line_height_percent" settings as we
+                // are fine with a window not being updated due
+                // to changes being done from another window and
+                // also helps in avoiding weird issues on clicking
+                // the "+"/"-" buttons multiple times quickly when
                 // updating these settings.
             }
 
