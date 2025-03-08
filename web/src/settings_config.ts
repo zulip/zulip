@@ -1230,3 +1230,11 @@ export const bot_type_values = {
         name: $t({defaultMessage: "Embedded bot"}),
     },
 };
+
+export const realm_plan_types = {
+    self_hosted: {code: 1},
+    limited: {code: 2},
+    standard: {code: 3},
+    standard_free: {code: 4},
+    plus: {code: 10},
+};
