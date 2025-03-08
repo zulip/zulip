@@ -441,10 +441,11 @@ class StripeTestCase(ZulipTestCase):
         self.next_month = datetime(2012, 2, 2, 3, 4, 5, tzinfo=timezone.utc)
         self.next_year = datetime(2013, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
 
-        # Make hamlet billing admin for testing.
+        # Add hamlet in `can_manage_billing_group` for testing.
         hamlet = self.example_user("hamlet")
-        hamlet.is_billing_admin = True
-        hamlet.save(update_fields=["is_billing_admin"])
+        iago = self.example_user("iago")
+        do_change_user_role(hamlet, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
 
         self.billing_session: (
             RealmBillingSession | RemoteRealmBillingSession | RemoteServerBillingSession
@@ -2193,9 +2194,9 @@ class StripeTest(StripeTestCase):
     @mock_stripe()
     def test_upgrade_race_condition_during_card_upgrade(self, *mocks: Mock) -> None:
         hamlet = self.example_user("hamlet")
-        othello = self.example_user("othello")
-        self.login_user(othello)
-        othello_upgrade_page_response = self.client_get("/upgrade/")
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        iago_upgrade_page_response = self.client_get("/upgrade/")
 
         self.login_user(hamlet)
         self.add_card_to_customer_for_upgrade()
@@ -2220,9 +2221,9 @@ class StripeTest(StripeTestCase):
         assert customer.stripe_customer_id is not None
         [hamlet_invoice] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
 
-        self.login_user(othello)
+        self.login_user(iago)
         with self.settings(CLOUD_FREE_TRIAL_DAYS=60):
-            # Othello completed the upgrade while we were waiting on success payment event for Hamlet.
+            # Iago completed the upgrade while we were waiting on success payment event for Hamlet.
             # NOTE: Used free trial to avoid creating any stripe invoice events.
             self.client_billing_post(
                 "/billing/upgrade",
@@ -2230,9 +2231,9 @@ class StripeTest(StripeTestCase):
                     "billing_modality": "charge_automatically",
                     "schedule": "annual",
                     "signed_seat_count": self.get_signed_seat_count_from_response(
-                        othello_upgrade_page_response
+                        iago_upgrade_page_response
                     ),
-                    "salt": self.get_salt_from_response(othello_upgrade_page_response),
+                    "salt": self.get_salt_from_response(iago_upgrade_page_response),
                     "license_management": "automatic",
                 },
             )
@@ -2608,7 +2609,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
             self.assertIn("Zulip support request <noreply-", self.email_display_from(message))
-            self.assertIn("Requested by: King Hamlet (Member)", message.body)
+            self.assertIn("Requested by: King Hamlet (Organization owner)", message.body)
             self.assertIn(
                 "Support URL: http://zulip.testserver/activity/support?q=zulip", message.body
             )
@@ -2660,7 +2661,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
             self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
-            self.assertIn("Requested by: King Hamlet (Member)", message.body)
+            self.assertIn("Requested by: King Hamlet (Organization owner)", message.body)
             self.assertIn(
                 "Support URL: http://zulip.testserver/activity/support?q=zulip", message.body
             )
@@ -2689,7 +2690,7 @@ class StripeTest(StripeTestCase):
         self.login_user(self.example_user("othello"))
         response = self.client_get("/billing/")
         self.assert_in_success_response(
-            ["You must be an organization owner or a billing administrator to view this page."],
+            ["You do not have permission to view this page."],
             response,
         )
 
@@ -2719,12 +2720,10 @@ class StripeTest(StripeTestCase):
         )
 
     def test_redirect_for_billing_page(self) -> None:
-        user = self.example_user("iago")
+        user = self.example_user("othello")
         self.login_user(user)
         response = self.client_get("/billing/")
-        not_admin_message = (
-            "You must be an organization owner or a billing administrator to view this page."
-        )
+        not_admin_message = "You do not have permission to view this page."
         self.assert_in_success_response([not_admin_message], response)
 
         user.realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE
@@ -2851,6 +2850,13 @@ class StripeTest(StripeTestCase):
 
     def test_redirect_for_upgrade_page(self) -> None:
         user = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        self.login_user(cordelia)
+        # Cordelia is not in `can_manage_billing_group`, so can't access the page.
+        response = self.client_get("/upgrade/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/billing/")
+
         self.login_user(user)
 
         response = self.client_get("/upgrade/")
@@ -3077,14 +3083,12 @@ class StripeTest(StripeTestCase):
             },
         )
 
-        self.login_user(self.example_user("iago"))
+        self.login_user(self.example_user("othello"))
         response = self.client_billing_get(
             "/billing/event/status",
             {"stripe_session_id": response_dict["stripe_session_id"]},
         )
-        self.assert_json_error_contains(
-            response, "Must be a billing administrator or an organization owner"
-        )
+        self.assert_json_error_contains(response, "Insufficient permission")
 
         self.login_user(self.example_user("hamlet"))
         response = self.client_get("/billing/")
@@ -4754,6 +4758,10 @@ class StripeTest(StripeTestCase):
                 )
                 users.append(user)
 
+            user = users[0]
+            user.role = UserProfile.ROLE_REALM_OWNER
+            user.save(update_fields=["role"])
+
             customer = None
             if create_stripe_customer:
                 billing_session = RealmBillingSession(users[0])
@@ -5201,11 +5209,6 @@ class RequiresBillingAccessTest(StripeTestCase):
     def test_json_endpoints_permissions(self) -> None:
         guest = self.example_user("polonius")
         member = self.example_user("othello")
-        realm_admin = self.example_user("iago")
-
-        billing_admin = self.example_user("hamlet")
-        billing_admin.is_billing_admin = True
-        billing_admin.save(update_fields=["is_billing_admin"])
 
         tested_endpoints = set()
 
@@ -5249,16 +5252,16 @@ class RequiresBillingAccessTest(StripeTestCase):
         )
 
         check_users_cant_access(
-            [guest, member, realm_admin],
-            "Must be a billing administrator or an organization owner",
+            [guest, member],
+            "Insufficient permission",
             "/json/billing/plan",
             "PATCH",
             {},
         )
 
         check_users_cant_access(
-            [guest, member, realm_admin],
-            "Must be a billing administrator or an organization owner",
+            [guest, member],
+            "Insufficient permission",
             "/json/billing/session/start_card_update_session",
             "POST",
             {},
@@ -5298,37 +5301,19 @@ class RequiresBillingAccessTest(StripeTestCase):
         response = self.client_get("/upgrade/", follow=True)
         self.assertEqual(response.status_code, 404)
 
-        non_owner_non_billing_admin = self.example_user("othello")
-        self.login_user(non_owner_non_billing_admin)
-        response = self.client_get("/billing/")
-        self.assert_in_success_response(
-            ["You must be an organization owner or a billing administrator to view this page."],
-            response,
-        )
-        # Check that non-admins can sign up and pay
-        self.add_card_and_upgrade(non_owner_non_billing_admin)
-        # Check that the non-admin othello can still access /billing
-        response = self.client_get("/billing/")
-        self.assert_in_success_response(["Zulip Cloud Standard"], response)
-        self.assert_not_in_success_response(
-            ["You must be an organization owner or a billing administrator to view this page."],
-            response,
-        )
-
-        # Check realm owners can access billing, even though they are not a billing admin
+        # Check user in `can_manage_billing_group` has access
         desdemona = self.example_user("desdemona")
         desdemona.role = UserProfile.ROLE_REALM_OWNER
         desdemona.save(update_fields=["role"])
         self.login_user(self.example_user("desdemona"))
+        self.add_card_and_upgrade(desdemona)
         response = self.client_get("/billing/")
         self.assert_in_success_response(["Zulip Cloud Standard"], response)
 
-        # Check that member who is not a billing admin does not have access
+        # Check that member who is not in `can_manage_billing_group` does not have access
         self.login_user(self.example_user("cordelia"))
         response = self.client_get("/billing/")
-        self.assert_in_success_response(
-            ["You must be an organization owner or a billing administrator"], response
-        )
+        self.assert_in_success_response(["You do not have permission to view this page."], response)
 
 
 class BillingHelpersTest(ZulipTestCase):
@@ -6813,14 +6798,14 @@ class TestSupportBillingHelpers(StripeTestCase):
         self.assertEqual(message_to_owner.content, expected_message)
         self.assertEqual(message_to_owner.recipient.type, Recipient.PERSONAL)
 
-        # Organization billing admins get the notification bot message
+        # Hamlet is in `can_manage_billing_group` so should get the notification bot message
         hamlet_recipient = self.example_user("hamlet").recipient
-        message_to_billing_admin = Message.objects.filter(
+        message_to_hamlet = Message.objects.filter(
             realm_id=realm.id, sender=sender.id, recipient=hamlet_recipient
         ).first()
-        assert message_to_billing_admin is not None
-        self.assertEqual(message_to_billing_admin.content, expected_message)
-        self.assertEqual(message_to_billing_admin.recipient.type, Recipient.PERSONAL)
+        assert message_to_hamlet is not None
+        self.assertEqual(message_to_hamlet.content, expected_message)
+        self.assertEqual(message_to_hamlet.recipient.type, Recipient.PERSONAL)
 
     def test_update_realm_sponsorship_status(self) -> None:
         lear = get_realm("lear")

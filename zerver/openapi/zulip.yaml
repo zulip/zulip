@@ -4819,6 +4819,16 @@ paths:
                                               create and edit user groups.
 
                                             [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                                    can_manage_billing_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to manage plans and billing in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level ZF-51430d). Previously, only owners
+                                            and users with `is_billing_admin` property set to `true` were allowed to
+                                            manage plans and billing.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_summarize_topics_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -17128,6 +17138,16 @@ paths:
                                 create and edit user groups.
 
                               [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                      realm_can_manage_billing_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to manage plans and billing in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level ZF-51430d). Previously, only owners
+                              and users with `is_billing_admin` property set to `true` were allowed to
+                              manage plans and billing.
                       realm_can_create_public_channel_group:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
@@ -18279,6 +18299,23 @@ paths:
                           **Changes**: New in Zulip 5.0 (feature level 74). Previously,
                           this was hardcoded to 90 seconds, and clients should use that as a fallback
                           value when interacting with servers where this field is not present.
+                      realm_billing:
+                        type: object
+                        additionalProperties: false
+                        description: |
+                          Present if `realm_billing` is present in `fetch_event_types`.
+
+                          A dictionary containing billing information of the organization.
+
+                          **Changes**: New in Zulip 10.0 (feature level ZF-51430d).
+                        properties:
+                          has_pending_sponsorship_request:
+                            type: boolean
+                            description: |
+                              Whether there is a pending sponsorship request for the organization. Note that
+                              this field will always be `false` if the user is not in `can_manage_billing_group`.
+
+                              **Changes**: New in Zulip 10.0 (feature level ZF-51430d).
                       realm_moderation_request_channel_id:
                         type: integer
                         description: |

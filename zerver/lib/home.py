@@ -58,45 +58,6 @@ def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
     return realm.plan_type in [Realm.PLAN_TYPE_STANDARD_FREE, Realm.PLAN_TYPE_SELF_HOSTED]
 
 
-def get_billing_info(user_profile: UserProfile | None) -> BillingInfo:
-    # See https://zulip.com/help/user-roles for clarity.
-    show_billing = False
-    show_plans = False
-    sponsorship_pending = False
-
-    # We want to always show the remote billing option as long as the user is authorized,
-    # except on zulipchat.com where it's not applicable.
-    show_remote_billing = (
-        (not settings.CORPORATE_ENABLED)
-        and user_profile is not None
-        and user_profile.has_billing_access
-    )
-
-    # This query runs on home page load, so we want to avoid
-    # hitting the database if possible. So, we only run it for the user
-    # types that can actually see the billing info.
-    if settings.CORPORATE_ENABLED and user_profile is not None and user_profile.has_billing_access:
-        from corporate.models import CustomerPlan, get_customer_by_realm
-
-        customer = get_customer_by_realm(user_profile.realm)
-        if customer is not None:
-            if customer.sponsorship_pending:
-                sponsorship_pending = True
-
-            if CustomerPlan.objects.filter(customer=customer).exists():
-                show_billing = True
-
-        if user_profile.realm.plan_type == Realm.PLAN_TYPE_LIMITED:
-            show_plans = True
-
-    return BillingInfo(
-        show_billing=show_billing,
-        show_plans=show_plans,
-        sponsorship_pending=sponsorship_pending,
-        show_remote_billing=show_remote_billing,
-    )
-
-
 def get_user_permission_info(user_profile: UserProfile | None) -> UserPermissionInfo:
     if user_profile is not None:
         return UserPermissionInfo(
@@ -180,7 +141,6 @@ def build_page_params_for_home_page_load(
 
     furthest_read_time = get_furthest_read_time(user_profile)
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
-    billing_info = get_billing_info(user_profile)
     user_permission_info = get_user_permission_info(user_profile)
 
     # Pass parameters to the client-side JavaScript code.
@@ -202,11 +162,7 @@ def build_page_params_for_home_page_load(
         embedded_bots_enabled=settings.EMBEDDED_BOTS_ENABLED,
         two_fa_enabled=two_fa_enabled,
         apps_page_url=get_apps_page_url(),
-        show_billing=billing_info.show_billing,
-        show_remote_billing=billing_info.show_remote_billing,
         promote_sponsoring_zulip=promote_sponsoring_zulip_in_realm(realm),
-        show_plans=billing_info.show_plans,
-        sponsorship_pending=billing_info.sponsorship_pending,
         show_webathena=user_permission_info.show_webathena,
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.

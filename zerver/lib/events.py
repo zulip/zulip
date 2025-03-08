@@ -126,6 +126,24 @@ def always_want(msg_type: str) -> bool:
     return True
 
 
+def has_pending_sponsorship_request(
+    user_profile: UserProfile | None, user_has_billing_access: bool | None = None
+) -> bool:
+    sponsorship_pending = False
+
+    if user_has_billing_access is None:
+        user_has_billing_access = user_profile is not None and user_profile.has_billing_access
+
+    if settings.CORPORATE_ENABLED and user_profile is not None and user_has_billing_access:
+        from corporate.models import get_customer_by_realm
+
+        customer = get_customer_by_realm(user_profile.realm)
+        if customer is not None:
+            sponsorship_pending = customer.sponsorship_pending
+
+    return sponsorship_pending
+
+
 def fetch_initial_state_data(
     user_profile: UserProfile | None,
     *,
@@ -586,6 +604,23 @@ def fetch_initial_state_data(
             # Set home view to recent conversations for spectators regardless of default.
             web_home_view="recent_topics",
         )
+
+    settings_user_recursive_group_ids = set()
+
+    if want("realm_billing") or want("realm_user"):
+        settings_user_recursive_group_ids = set(
+            get_recursive_membership_groups(settings_user).values_list("id", flat=True)
+        )
+
+    if want("realm_billing"):
+        state["realm_billing"] = {}
+        user_has_billing_access = (
+            realm.can_manage_billing_group_id in settings_user_recursive_group_ids
+        )
+        state["realm_billing"]["has_pending_sponsorship_request"] = has_pending_sponsorship_request(
+            settings_user, user_has_billing_access
+        )
+
     if want("realm_user"):
         state["raw_users"] = get_users_for_api(
             realm,
@@ -612,10 +647,6 @@ def fetch_initial_state_data(
             settings_user,
             medium=False,
             client_gravatar=False,
-        )
-
-        settings_user_recursive_group_ids = set(
-            get_recursive_membership_groups(settings_user).values_list("id", flat=True)
         )
 
         state["can_create_private_streams"] = (

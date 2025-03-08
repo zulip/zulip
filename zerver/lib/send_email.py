@@ -434,7 +434,7 @@ def send_email_to_admins(
     )
 
 
-def send_email_to_billing_admins_and_realm_owners(
+def send_email_to_users_with_billing_access_and_realm_owners(
     template_prefix: str,
     realm: Realm,
     from_name: str | None = None,
@@ -444,7 +444,9 @@ def send_email_to_billing_admins_and_realm_owners(
 ) -> None:
     send_email(
         template_prefix,
-        to_user_ids=[user.id for user in realm.get_human_billing_admin_and_realm_owner_users()],
+        to_user_ids=[
+            user.id for user in realm.get_human_users_with_billing_access_and_realm_owner_users()
+        ],
         from_name=from_name,
         from_address=from_address,
         language=language,

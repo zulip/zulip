@@ -19,7 +19,7 @@ import * as settings_config from "./settings_config.ts";
 import type {ColorSchemeValues} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as starred_messages from "./starred_messages.ts";
-import {current_user, realm} from "./state_data.ts";
+import {current_user, realm, realm_billing} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import {num_unread_for_topic} from "./unread.ts";
@@ -131,6 +131,12 @@ type GearMenuContext = {
     user_has_billing_access: boolean;
     user_color_scheme: number;
     color_scheme_values: ColorSchemeValues;
+};
+
+type BillingInfo = {
+    show_billing: boolean;
+    show_remote_billing: boolean;
+    show_plans: boolean;
 };
 
 export function get_actions_popover_content_context(message_id: number): ActionPopoverContext {
@@ -334,11 +340,33 @@ export function get_personal_menu_content_context(): PersonalMenuContext {
     };
 }
 
-export function get_gear_menu_content_context(): GearMenuContext {
-    const user_has_billing_access = current_user.is_billing_admin || current_user.is_owner;
+function get_billing_info(): BillingInfo {
+    const billing_info = {
+        show_remote_billing: false,
+        show_billing: false,
+        show_plans: false,
+    };
+    if (!settings_data.user_has_billing_access()) {
+        return billing_info;
+    }
+
     const is_plan_standard = realm.realm_plan_type === 3;
     const is_plan_plus = realm.realm_plan_type === 10;
     const is_org_on_paid_plan = is_plan_standard || is_plan_plus;
+
+    billing_info.show_remote_billing = !page_params.corporate_enabled;
+    billing_info.show_plans = !realm.zulip_plan_is_not_limited;
+    billing_info.show_billing = is_org_on_paid_plan;
+
+    return billing_info;
+}
+
+export function get_gear_menu_content_context(): GearMenuContext {
+    const user_has_billing_access = settings_data.user_has_billing_access();
+    const is_plan_standard = realm.realm_plan_type === 3;
+    const is_plan_plus = realm.realm_plan_type === 10;
+    const is_org_on_paid_plan = is_plan_standard || is_plan_plus;
+    const billing_info = get_billing_info();
     return {
         realm_name: realm.realm_name,
         realm_url: new URL(realm.realm_url).hostname,
@@ -363,11 +391,11 @@ export function get_gear_menu_content_context(): GearMenuContext {
         is_guest: current_user.is_guest,
         login_link: page_params.development_environment ? "/devlogin/" : "/login/",
         promote_sponsoring_zulip: page_params.promote_sponsoring_zulip,
-        show_billing: page_params.show_billing,
-        show_remote_billing: page_params.show_remote_billing,
-        show_plans: page_params.show_plans,
+        show_billing: billing_info.show_billing,
+        show_remote_billing: billing_info.show_remote_billing,
+        show_plans: billing_info.show_plans,
         show_webathena: page_params.show_webathena,
-        sponsorship_pending: page_params.sponsorship_pending,
+        sponsorship_pending: realm_billing.has_pending_sponsorship_request,
         user_has_billing_access,
         // user color scheme
         user_color_scheme: user_settings.color_scheme,

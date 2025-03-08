@@ -117,7 +117,14 @@ import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spoilers from "./spoilers.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
-import {current_user, realm, set_current_user, set_realm, state_data_schema} from "./state_data.ts";
+import {
+    current_user,
+    realm,
+    set_current_user,
+    set_realm,
+    set_realm_billing,
+    state_data_schema,
+} from "./state_data.ts";
 import * as stream_card_popover from "./stream_card_popover.ts";
 import * as stream_create from "./stream_create.ts";
 import * as stream_data from "./stream_data.ts";
@@ -423,6 +430,7 @@ export function initialize_everything(state_data) {
 
     set_current_user(state_data.current_user);
     set_realm(state_data.realm);
+    set_realm_billing(state_data.realm_billing);
 
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. Because information

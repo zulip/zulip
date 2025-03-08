@@ -254,6 +254,14 @@ export function user_can_add_custom_emoji(): boolean {
     );
 }
 
+export function user_has_billing_access(): boolean {
+    return user_has_permission_for_group_setting(
+        realm.realm_can_manage_billing_group,
+        "can_manage_billing_group",
+        "realm",
+    );
+}
+
 export function user_can_move_messages_to_another_topic(): boolean {
     return user_has_permission_for_group_setting(
         realm.realm_can_move_messages_between_topics_group,

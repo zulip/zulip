@@ -206,7 +206,7 @@ def require_billing_access(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.has_billing_access:
-            raise JsonableError(_("Must be a billing administrator or an organization owner"))
+            raise JsonableError(_("Insufficient permission"))
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
