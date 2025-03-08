@@ -3362,6 +3362,8 @@ class StreamAdminTest(ZulipTestCase):
             result = self.client_delete("/json/streams/" + str(stream_id))
         self.assert_json_success(result)
 
+        stream.refresh_from_db()
+
         # We no longer send subscription events for stream deactivations.
         sub_events = [e for e in events if e["event"]["type"] == "subscription"]
         self.assertEqual(sub_events, [])
