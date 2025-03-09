@@ -564,6 +564,7 @@ export function initialize(): void {
                     $("#change_stream_info_modal .dialog_submit_button")
                         .addClass("save-button")
                         .attr("data-stream-id", stream_id);
+                    setup_stream_name_input_resize();
                 },
                 update_submit_disabled_state_on_change: true,
             });
@@ -629,6 +630,18 @@ export function initialize(): void {
         }
 
         dialog_widget.submit_api_request(channel.patch, url, data);
+    }
+
+    function setup_stream_name_input_resize(): void {
+        const $mirror = $("#change_stream_name_input_mirror");
+        const $input = $("#change_stream_name");
+
+        $input.on("input", () => {
+            const current_text = String($input.val() ?? $input.attr("placeholder") ?? "");
+            $mirror.text(current_text);
+            $input.width($mirror.width() ?? 0);
+        });
+        $input.trigger("input");
     }
 
     $("#channels_overlay_container").on(
