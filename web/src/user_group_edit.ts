@@ -503,8 +503,18 @@ export function update_group_details(group: UserGroup): void {
     $edit_container.find(".group-description").text(group.description);
 }
 
-function update_toggler_for_group_setting(): void {
-    toggler.goto(select_tab);
+function update_toggler_for_group_setting(group: UserGroup): void {
+    if (!group.deactivated) {
+        toggler.enable_tab("permissions");
+        toggler.goto(select_tab);
+    } else {
+        if (select_tab === "permissions") {
+            toggler.goto("general");
+        } else {
+            toggler.goto(select_tab);
+        }
+        toggler.disable_tab("permissions");
+    }
 }
 
 function get_membership_status_context(group: UserGroup): {
@@ -989,7 +999,7 @@ export function show_settings_for(group: UserGroup): void {
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
-    update_toggler_for_group_setting();
+    update_toggler_for_group_setting(group);
 
     toggler.get().prependTo("#user_group_settings .tab-container");
     const $edit_container = get_edit_container(group);
@@ -1895,7 +1905,7 @@ export function initialize(): void {
 
                         $("#dialog_error .permissions-button").on("click", () => {
                             select_tab = "permissions";
-                            update_toggler_for_group_setting();
+                            update_toggler_for_group_setting(user_group);
                             dialog_widget.close();
                         });
                     } else {
