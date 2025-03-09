@@ -1239,12 +1239,10 @@ nav {
 }
 
 div.topic_edit_spinner {
-    display: inline-block;
-    width: 18px;
-    height: 18px;
-    margin-top: -1px;
-    padding: 2px;
-    vertical-align: middle;
+    display: flex;
+    align-items: center;
+    width: 1.2em; /* 18px at 15px/em  (from font size set in .message-header-contents) */
+    height: 1.2em; /* 18px at 15px/em */
 }
 
 div.toggle_resolve_topic_spinner {
@@ -1254,8 +1252,8 @@ div.toggle_resolve_topic_spinner {
 
 div.topic_edit_spinner .loading_indicator_spinner,
 div.toggle_resolve_topic_spinner .loading_indicator_spinner {
-    width: 14px;
-    height: 14px;
+    width: 0.9333em; /* 14px at 15px/em  (from font size set in .message-header-contents) */
+    height: 0.9333em; /* 14px at 15px/em */
 
     & path {
         fill: var(--color-recipient-bar-controls-spinner);
