@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 444**
+
+* [`PATCH /settings`](/api/update-settings): Added support for bulk updating
+  settings for specified users or members of user groups using `target_users`
+  and `skip_if_already_edited` parameters.
+
 **Feature level 443**
 
 * [`GET /attachments`](/api/get-attachments), [`GET /events`](/api/get-events):

@@ -21163,9 +21163,18 @@ paths:
       description: |
         This endpoint is used to edit the current user's settings.
 
-        **Changes**: Removed `dense_mode` setting in Zulip 10.0
-        (feature level 364) as we now have `web_font_size_px` and
-        `web_line_height_percent` settings for more control.
+        When invoked by a realm admin, it supports bulk updates to
+        settings for specified users or members of user groups using
+        the `target_users` parameter.
+
+        **Changes**: Added support for bulk updating the settings
+        for specified users or members of user groups in
+        Zulip 12.0 (feature level 444) using the `target_users`
+        and `skip_if_already_edited` parameters.
+
+        Removed `dense_mode` setting in Zulip 10.0 (feature level 364)
+        as we now have `web_font_size_px` and `web_line_height_percent`
+        settings for more control.
 
         Prior to Zulip 5.0 (feature level 80), this endpoint only
         supported the `full_name`, `email`, `old_password`, and
@@ -21212,6 +21221,42 @@ paths:
             schema:
               type: object
               properties:
+                target_users:
+                  description: |
+                    An object specifying the collection of users whose settings should be modified,
+                    for modification of other users' settings by an organization administrator.
+                    When this parameter is absent, this API endpoint always modifies the current
+                    user's own settings.
+
+                    **Changes**: New in Zulip 12.0 (feature level 444).
+                  type: object
+                  properties:
+                    user_ids:
+                      description: |
+                        A list of integer user IDs representing individual users whose settings will be updated.
+                      type: array
+                      items:
+                        type: integer
+                    group_ids:
+                      description: |
+                        A list of integer group IDs representing user groups, where settings will be applied to
+                        all active members of the specified groups.
+                      type: array
+                      items:
+                        type: integer
+                    skip_if_already_edited:
+                      description: |
+                        Whether to skip editing the settings of users who have previously edited their settings,
+                        which can be useful for adjusting a default without overriding users' own directly
+                        expressed preferences.
+                      type: boolean
+                      example: false
+                  example:
+                    {
+                      "user_ids": [6, 8],
+                      "group_ids": [24],
+                      skip_if_alread_edited: false,
+                    }
                 full_name:
                   description: |
                     A new display name for the user.
@@ -21945,6 +21990,10 @@ paths:
                   type: boolean
                   example: true
             encoding:
+              target_users:
+                contentType: application/json
+              skip_if_already_edited:
+                contentType: application/json
               twenty_four_hour_time:
                 contentType: application/json
               web_mark_read_on_scroll_policy:
