@@ -1,0 +1,40 @@
+name: Merge API changelogs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "unmerged.d/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  merge-api-changelogs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add required permissions
+        run: chmod +x ./tools/merge-api-changelogs
+
+      - name: Run merge-api-changelogs
+        run: ./tools/merge-api-changelogs
+
+      - name: Push changes
+        run: git push origin HEAD:main
