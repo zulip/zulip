@@ -1229,8 +1229,11 @@ class FetchQueriesTest(ZulipTestCase):
             muted_users=1,
             onboarding_steps=1,
             presence=1,
-            # 2 of the 3 queries here are for fetching 'realm_user_groups' data.
+            # 2 of the 3 queries here are a single query that is used
+            # both for the 'realm' event type and the
+            # 'realm_user_groups' event type.
             realm=3,
+            # Similarly, this query is shared with the realm_user total.
             realm_billing=1,
             realm_bot=1,
             realm_domains=1,
