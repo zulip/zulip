@@ -2207,11 +2207,16 @@ body:not(.spectator-view) {
         margin-top: 2px;
     }
 
-    .dropdown-list-delete {
+    .dropdown-list-delete,
+    .dropdown-list-edit {
         position: absolute;
         top: 0;
         right: 5px;
         visibility: hidden;
+    }
+
+    .dropdown-list-edit {
+        right: 25px;
     }
 
     &:focus,
@@ -2221,7 +2226,8 @@ body:not(.spectator-view) {
         background-color: var(--background-color-active-dropdown-item);
         outline: none;
 
-        .dropdown-list-delete {
+        .dropdown-list-delete,
+        .dropdown-list-edit {
             visibility: visible;
         }
     }
