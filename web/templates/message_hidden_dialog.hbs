@@ -1,6 +1,18 @@
 <p>
     <em>
-        {{t "This message was hidden because you have muted the sender." }}
-        <a class="reveal_hidden_message">{{t "Click here to reveal." }}</a>
+        <div class="muted_sender_warning" >
+            <div class="first-line" >
+                <div class="muted_sender">
+                    <b>{{t "Muted sender"}}</b>
+                </div>
+                <button class="reveal_button action-button action-button-borderless-neutral">
+                    <a class="reveal_hidden_message">
+                    <i class="zulip-icon zulip-icon-eye"></i>
+                    {{t "Reveal" }}
+                    </a>
+                </button>
+            </div>
+            <div class="muted_sender_text">{{t "This message was hidden because you have muted the sender." }}</div>
+        </div>
     </em>
 </p>
