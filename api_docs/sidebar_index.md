@@ -25,5 +25,6 @@
 * [Message formatting](/api/message-formatting)
 * [Client libraries](/api/client-libraries)
 * [API changelog](/api/changelog)
+* [OpenAPI](/api/openapi)
 
 {!rest-endpoints.md!}
