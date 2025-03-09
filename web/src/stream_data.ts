@@ -1020,7 +1020,7 @@ export function get_options_for_dropdown_widget(): {
     unique_id: number;
     stream: StreamSubscription;
 }[] {
-    return subscribed_subs()
+    return get_unsorted_subs_with_content_access()
         .filter((stream) => !stream.is_archived)
         .map((stream) => ({
             name: stream.name,
