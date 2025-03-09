@@ -1042,6 +1042,14 @@ export function get_realm_users(): User[] {
     return [...active_user_dict.values()];
 }
 
+export function get_realm_users_and_welcome_bot(): User[] {
+    return [...active_user_dict.values(), WELCOME_BOT];
+}
+
+export function get_realm_users_and_system_bots(): User[] {
+    return [...active_user_dict.values(), ...cross_realm_dict.values()];
+}
+
 export function get_realm_active_human_users(): User[] {
     // includes ONLY humans from your realm
     const humans = [];
