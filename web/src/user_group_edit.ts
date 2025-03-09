@@ -1011,6 +1011,7 @@ export function show_settings_for(group: UserGroup): void {
     };
 
     if (group.deactivated) {
+        toggler.disable_tab("permissions");
         $("#user_group_settings .group-banner").html(render_modal_banner(context));
     }
 
