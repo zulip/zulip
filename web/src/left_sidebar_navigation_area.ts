@@ -76,6 +76,12 @@ export function update_dom_with_unread_counts(
     ui_util.update_unread_count_in_dom($streams_header, counts.stream_unread_messages);
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
 
+    if (counts.home_unread_messages === 0) {
+        $home_view_li.find(".sidebar-menu-icon").addClass("hide");
+    } else {
+        $home_view_li.find(".sidebar-menu-icon").removeClass("hide");
+    }
+
     if (!skip_animations) {
         animate_mention_changes($mentioned_li, counts.mentioned_message_count);
     }
@@ -239,6 +245,10 @@ export function handle_home_view_changed(new_home_view: string): void {
     const $current_home_view = $(".selected-home-view");
     const $new_home_view = get_view_rows_by_view_name(new_home_view);
     const res = unread.get_counts();
+
+    if ($current_home_view.find(".sidebar-menu-icon").hasClass("hide")) {
+        $current_home_view.find(".sidebar-menu-icon").removeClass("hide");
+    }
 
     // Remove class from current home view
     $current_home_view.removeClass("selected-home-view");
