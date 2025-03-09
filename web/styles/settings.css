@@ -575,10 +575,6 @@ input[type="checkbox"] {
     display: block;
     padding: 6px 9px;
     text-decoration: none;
-
-    &:hover {
-        color: hsl(156deg 41% 40%);
-    }
 }
 
 .remove-alert-word {

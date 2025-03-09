@@ -377,7 +377,7 @@ export function add_a_new_bot(): void {
 }
 
 export function set_up(): void {
-    $("#download_botserverrc").on("click", function () {
+    $("#download_botserverrc").on("click", () => {
         let content = "";
 
         for (const bot of bot_data.get_all_bots_for_current_user()) {
@@ -391,10 +391,11 @@ export function set_up(): void {
             }
         }
 
-        $(this).attr(
+        $("#hidden-botserverrc-download").attr(
             "href",
             "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content),
         );
+        $("#hidden-botserverrc-download")[0]?.click();
     });
 
     const toggler = components.toggle({
@@ -485,10 +486,15 @@ export function set_up(): void {
         user_profile.show_user_profile(bot, "manage-profile-tab");
     });
 
-    $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
+    $("#active_bots_list").on("click", "button.download_bot_zuliprc", function () {
         const $bot_info = $(this).closest(".bot-information-box").find(".bot-card-info");
         const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
-        $(this).attr("href", generate_zuliprc_url(bot_id));
+        const bot_email = $bot_info.find(".bot-card-email .bot-card-value").text();
+
+        // Select the <a> element by matching data-email.
+        const $zuliprc_link = $(`.hidden-zuliprc-download[data-email="${bot_email}"]`);
+        $zuliprc_link.attr("href", generate_zuliprc_url(bot_id));
+        $zuliprc_link[0]?.click();
     });
 
     $("#active_bots_list").on("click", "button.open_bots_subscribed_streams", function (e) {
