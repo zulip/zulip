@@ -185,17 +185,17 @@ const DESKTOP_NOTIFICATIONS_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            type: "primary",
+            attention: "primary",
             label: $t({defaultMessage: "Enable notifications"}),
             custom_classes: "request-desktop-notifications",
         },
         {
-            type: "quiet",
+            attention: "quiet",
             label: $t({defaultMessage: "Customize notifications"}),
             custom_classes: "customize-desktop-notifications",
         },
         {
-            type: "borderless",
+            attention: "borderless",
             label: $t({defaultMessage: "Never ask on this computer"}),
             custom_classes: "reject-desktop-notifications",
         },
@@ -213,7 +213,7 @@ const CONFIGURE_OUTGOING_MAIL_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            type: "quiet",
+            attention: "quiet",
             label: $t({defaultMessage: "Configuration instructions"}),
             custom_classes: "configure-outgoing-mail-instructions",
         },
@@ -231,7 +231,7 @@ const INSECURE_DESKTOP_APP_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            type: "quiet",
+            attention: "quiet",
             label: $t({defaultMessage: "Download the latest version"}),
             custom_classes: "download-latest-zulip-version",
         },
@@ -246,7 +246,7 @@ const PROFILE_MISSING_REQUIRED_FIELDS_BANNER: AlertBanner = {
     label: $t({defaultMessage: "Your profile is missing required fields."}),
     buttons: [
         {
-            type: "quiet",
+            attention: "quiet",
             label: $t({defaultMessage: "Edit your profile"}),
             custom_classes: "edit-profile-required-fields",
         },
@@ -264,7 +264,7 @@ const ORGANIZATION_PROFILE_INCOMPLETE_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            type: "quiet",
+            attention: "quiet",
             label: $t({
                 defaultMessage: "Edit profile",
             }),
@@ -283,12 +283,12 @@ const SERVER_NEEDS_UPGRADE_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            type: "quiet",
+            attention: "quiet",
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "server-upgrade-learn-more",
         },
         {
-            type: "borderless",
+            attention: "borderless",
             label: $t({defaultMessage: "Dismiss for a week"}),
             custom_classes: "server-upgrade-nag-dismiss",
         },
@@ -328,12 +328,12 @@ const bankruptcy_banner = (): AlertBanner => {
         label,
         buttons: [
             {
-                type: "quiet",
+                attention: "quiet",
                 label: $t({defaultMessage: "Yes, please!"}),
                 custom_classes: "accept-bankruptcy",
             },
             {
-                type: "borderless",
+                attention: "borderless",
                 label: $t({defaultMessage: "No, I'll catch up."}),
                 custom_classes: "banner-close-action",
             },
@@ -385,12 +385,12 @@ const time_zone_update_offer_banner = (): AlertBanner => {
         ),
         buttons: [
             {
-                type: "quiet",
+                attention: "quiet",
                 label: $t({defaultMessage: "Yes, please!"}),
                 custom_classes: "accept-update-time-zone",
             },
             {
-                type: "borderless",
+                attention: "borderless",
                 label: $t({defaultMessage: "No, don't ask again."}),
                 custom_classes: "decline-time-zone-update",
             },
