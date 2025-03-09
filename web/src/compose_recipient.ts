@@ -110,6 +110,7 @@ function update_fade(): void {
 
     compose_validate.warn_if_topic_resolved(true);
     compose_fade.set_focused_recipient(msg_type);
+    compose_validate.clear_topic_moved_info();
     compose_fade.update_all();
 }
 
