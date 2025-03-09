@@ -812,6 +812,20 @@ input.settings_text_input {
     .actions {
         width: 1%;
         white-space: nowrap;
+        /* For the same font size (0.9143em) applied to the
+        fa-paper-plane icon as the fa-pencil icon, the computed
+        value for the fa-paper-plane icon turns out to be larger.
+        Therefore, we are adjusting it by applying a different
+        font size (0.8577em) specifically for the fa-paper-plane
+        icon to equalize them. */
+        .fa-paper-plane,
+        .fa-check {
+            font-size: 0.8577em !important;
+        }
+
+        .invite-sent {
+            pointer-events: none;
+        }
     }
 
     th.actions {
