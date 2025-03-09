@@ -145,3 +145,7 @@
     color: var(--color-text-danger-banner);
     border-color: var(--color-border-danger-banner);
 }
+
+.popup-alert-banner {
+    margin: 5px 0 10px;
+}
