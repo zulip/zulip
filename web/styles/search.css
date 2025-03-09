@@ -290,11 +290,15 @@
                     background-color: var(--color-background-user-pill);
                 }
             }
+
+            .pill-image {
+                min-width: var(--length-input-pill-image);
+            }
         }
     }
 
     .pill-label {
-        min-width: 30px;
+        min-width: 2.5em; /* 35px at 14px/em */
     }
 
     @media (width >= $md_min) {
