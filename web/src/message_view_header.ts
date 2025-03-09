@@ -88,6 +88,28 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         };
     }
 
+    const term_types = filter?.sorted_term_types();
+    if (filter.has_negated_operand("is", "dm")) {
+        if (term_types.length === 1) {
+            return {
+                title: $t({defaultMessage: "Filtered view"}),
+                description: $t({
+                    defaultMessage: "Excluding direct messages from your feed.",
+                }),
+                zulip_icon: "all-messages",
+                link: "/help/search-for-messages",
+            };
+        }
+        return {
+            title: $t({defaultMessage: "Custom filtered view"}),
+            description: $t({
+                defaultMessage: "Your feed is filtered with multiple conditions.",
+            }),
+            zulip_icon: "all-messages",
+            link: "/help/search-for-messages",
+        };
+    }
+
     const title = filter.get_title();
     const description = filter.get_description()?.description;
     const link = filter.get_description()?.link;
