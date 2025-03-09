@@ -225,7 +225,7 @@ from zerver.lib.events import apply_events, fetch_initial_state_data, post_proce
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.muted_users import get_mute_object
-from zerver.lib.streams import check_update_all_streams_active_status
+from zerver.lib.streams import check_update_all_streams_active_status, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_dummy_file,
@@ -240,6 +240,7 @@ from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict, UserGroupMembersDict
 from zerver.lib.upload import upload_message_attachment
 from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
     get_group_setting_value_for_api,
     get_role_based_system_groups_dict,
 )
@@ -1265,6 +1266,144 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(state_change_expected=False) as events:
             do_remove_reaction(self.user_profile, message, "1f389", "unicode_emoji")
         check_reaction_remove("events[0]", events[0])
+
+    def do_test_events_on_changing_private_stream_permission_settings_granting_metadata_access(
+        self, setting_name: str
+    ) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        private_stream = get_stream("private_stream", iago.realm)
+        self.login_user(iago)
+        params = {}
+
+        self.assertFalse(
+            user_has_metadata_access(
+                hamlet,
+                private_stream,
+                UserGroupMembershipDetails(user_recursive_group_ids=None),
+                is_subscribed=False,
+            )
+        )
+        params[setting_name] = orjson.dumps(
+            {
+                "new": {
+                    "direct_members": [hamlet.id],
+                    "direct_subgroups": [],
+                },
+            }
+        ).decode()
+        with self.verify_action(num_events=1, include_subscribers=False) as events:
+            result = self.client_patch(
+                f"/json/streams/{private_stream.id}",
+                params,
+            )
+        self.assert_json_success(result)
+        check_stream_create("events[0]", events[0])
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=iago.realm, is_system_group=True
+        )
+        private_stream = get_stream("private_stream", iago.realm)
+        self.assertTrue(
+            user_has_metadata_access(
+                hamlet,
+                private_stream,
+                UserGroupMembershipDetails(user_recursive_group_ids=None),
+                is_subscribed=False,
+            )
+        )
+        params[setting_name] = orjson.dumps(
+            {
+                "new": nobody_group.id,
+            }
+        ).decode()
+        with self.verify_action(num_events=1) as events:
+            result = self.client_patch(
+                f"/json/streams/{private_stream.id}",
+                params,
+            )
+        self.assert_json_success(result)
+        check_stream_delete("events[0]", events[0])
+
+    def do_test_events_on_changing_private_stream_permission_settings_not_granting_metadata_access(
+        self, setting_name: str
+    ) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        private_stream = get_stream("private_stream", iago.realm)
+        params = {}
+        self.login_user(iago)
+        expected_num_events = 1
+        if setting_name == "can_send_message_group":
+            expected_num_events = 2
+
+        self.assertFalse(
+            user_has_metadata_access(
+                hamlet,
+                private_stream,
+                UserGroupMembershipDetails(user_recursive_group_ids=None),
+                is_subscribed=False,
+            )
+        )
+        params[setting_name] = orjson.dumps(
+            {
+                "new": {
+                    "direct_members": [hamlet.id],
+                    "direct_subgroups": [],
+                },
+            }
+        ).decode()
+        with self.capture_send_event_calls(expected_num_events=expected_num_events) as events:
+            result = self.client_patch(
+                f"/json/streams/{private_stream.id}",
+                params,
+            )
+        self.assert_json_success(result)
+        event = events[0]["event"]
+        self.assertEqual(event["type"], "stream")
+        self.assertEqual(event["op"], "update")
+        self.assertEqual(event["stream_id"], private_stream.id)
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=iago.realm, is_system_group=True
+        )
+        private_stream = get_stream("private_stream", iago.realm)
+        self.assertFalse(
+            user_has_metadata_access(
+                hamlet,
+                private_stream,
+                UserGroupMembershipDetails(user_recursive_group_ids=None),
+                is_subscribed=False,
+            )
+        )
+        params[setting_name] = orjson.dumps(
+            {
+                "new": nobody_group.id,
+            }
+        ).decode()
+        with self.capture_send_event_calls(expected_num_events=expected_num_events) as events:
+            result = self.client_patch(
+                f"/json/streams/{private_stream.id}",
+                params,
+            )
+        self.assert_json_success(result)
+        event = events[0]["event"]
+        self.assertEqual(event["type"], "stream")
+        self.assertEqual(event["op"], "update")
+        self.assertEqual(event["stream_id"], private_stream.id)
+
+    def test_events_on_changing_private_stream_permission_settings(self) -> None:
+        self.make_stream("private_stream", invite_only=True)
+        self.subscribe(self.example_user("iago"), "private_stream")
+        for setting_name in Stream.stream_permission_group_settings:
+            if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
+                self.do_test_events_on_changing_private_stream_permission_settings_granting_metadata_access(
+                    setting_name
+                )
+            else:
+                self.do_test_events_on_changing_private_stream_permission_settings_not_granting_metadata_access(
+                    setting_name
+                )
 
     def test_invite_user_event(self) -> None:
         self.user_profile = self.example_user("iago")
