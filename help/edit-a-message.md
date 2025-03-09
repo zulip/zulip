@@ -43,10 +43,9 @@ edit the content of a message sent by another user.
 
 !!! tip ""
 
-    After you have edited a message, the message is publicly
-    marked as **EDITED**. You can
+    When you edit a message, everyone will see it labeled as **edited**. You can
     [view a message's edit history](/help/view-a-messages-edit-history)
-    if it is [enabled](/help/disable-message-edit-history) in your organization.
+    if it is [allowed](/help/disable-message-edit-history) in your organization.
 
 ## Message notifications
 
