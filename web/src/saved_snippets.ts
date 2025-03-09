@@ -21,7 +21,7 @@ export function get_saved_snippet_by_id(saved_snippet_id: number): SavedSnippet 
     return saved_snippet;
 }
 
-export function add_saved_snippet(saved_snippet: SavedSnippet): void {
+export function update_saved_snippet_dict(saved_snippet: SavedSnippet): void {
     saved_snippets_dict.set(saved_snippet.id, saved_snippet);
 }
 
@@ -39,6 +39,7 @@ export function get_options_for_dropdown_widget(): Option[] {
         description: saved_snippet.content,
         bold_current_selection: true,
         has_delete_icon: true,
+        has_edit_icon: true,
     }));
 
     return options;
