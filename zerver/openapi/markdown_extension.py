@@ -26,6 +26,7 @@ from zerver.openapi.openapi import (
     NO_EXAMPLE,
     Parameter,
     check_additional_imports,
+    check_non_v1_api_pattern,
     check_requires_administrator,
     generate_openapi_fixture,
     get_curl_include_exclude,
@@ -34,6 +35,7 @@ from zerver.openapi.openapi import (
     get_openapi_summary,
     get_parameters_description,
     get_responses_description,
+    is_avatar_endpoint,
     openapi_spec,
 )
 
@@ -209,6 +211,10 @@ def curl_method_arguments(endpoint: str, method: str, api_url: str) -> list[str]
     method = method.upper()
     url = f"{api_url}/v1{endpoint}"
     valid_methods = ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"]
+    if is_avatar_endpoint(endpoint, method):
+        # For the avatar endpoints we redirect the client to the actual
+        # avatar URL.
+        return ["-sL", url]
     if method == "GET":
         # Then we need to make sure that each -d option translates to becoming
         # a GET parameter (in the URL) and not a POST parameter (in the body).
@@ -322,7 +328,8 @@ def generate_curl_example(
 
     if authentication_required:
         lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
-
+    if is_avatar_endpoint(endpoint, method):
+        lines.append("    -o avatar.png")
     for parameter in parameters:
         if parameter.kind == "path":
             continue
@@ -513,11 +520,19 @@ class APIHeaderPreprocessor(BasePreprocessor):
         path, method = function.rsplit(":", 1)
         raw_title = get_openapi_summary(path, method)
         description_dict = get_openapi_description(path, method)
+        path_method_string = f"`{method.upper()} {self.api_url}/v1{path}`"
+
+        if check_non_v1_api_pattern(path, method):
+            # For api endpoints not in v1_api_and_json_patterns,
+            # exclude the  "api/v1" string from the API path.
+            zulip_url = str(self.api_url).removesuffix("/api")
+            path_method_string = f"`{method.upper()} {zulip_url}{path}`"
+
         return [
             *("# " + line for line in raw_title.splitlines()),
             *(["{!api-admin-only.md!}"] if check_requires_administrator(path, method) else []),
             "",
-            f"`{method.upper()} {self.api_url}/v1{path}`",
+            path_method_string,
             "",
             *description_dict.splitlines(),
         ]
