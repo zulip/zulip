@@ -8,9 +8,15 @@
                 <button type="submit" class="bootstrap-btn open_edit_bot_form tippy-zulip-delayed-tooltip" data-sidebar-form="edit-bot" data-tippy-content="{{t 'Edit bot' }}" data-email="{{email}}">
                     <i class="fa fa-pencil blue" aria-hidden="true"></i>
                 </button>
-                <a type="submit" download="{{zuliprc}}" class="bootstrap-btn download_bot_zuliprc tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Download zuliprc' }}" data-email="{{email}}">
-                    <i class="fa fa-download sea-green" aria-hidden="true"></i>
-                </a>
+                <span>
+                    <a type="submit" download="{{zuliprc}}" data-email="{{email}}" data-user-id="{{user_id}}" class="hidden-zuliprc-download" hidden></a>
+                    {{> ../components/icon_button
+                      custom_classes="download_bot_zuliprc tippy-zulip-delayed-tooltip inline-block"
+                      fa_icon="download"
+                      intent="brand"
+                      data-tippy-content=(t 'Download zuliprc')
+                      }}
+                </span>
                 <button type="submit" id="copy_zuliprc" class="bootstrap-btn copy_zuliprc tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Copy zuliprc' }}">
                     <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
                 </button>
