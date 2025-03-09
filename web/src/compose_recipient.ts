@@ -289,7 +289,14 @@ function get_options_for_recipient_widget(): Option[] {
     return options;
 }
 
+export function is_dropdown_open(): boolean {
+    return $(".tippy-box").is(":visible");
+}
+
 export function toggle_compose_recipient_dropdown(): void {
+    // Hide any kind of banner if opened
+    // before opening the dropdown.
+    compose_banner.clear_all();
     $("#compose_select_recipient_widget").trigger("click");
 }
 

@@ -28,7 +28,23 @@ user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
 set_global("document", {
     to_$: () => $("document-stub"),
+    querySelector() {
+        return {
+            style: noop,
+        };
+    },
 });
+
+global.MutationObserver = class {
+    constructor(callback) {
+        this.callback = callback;
+    }
+    observe(target, options) {
+        this.target = target;
+        this.options = options;
+    }
+    disconnect() {}
+};
 
 const autosize = noop;
 autosize.update = noop;
@@ -159,6 +175,9 @@ test("start", ({override, override_rewire, mock_template}) => {
     stub_message_row($textarea);
     $elem.set_find_results(".message-textarea", $textarea);
     $elem.set_find_results(".message-limit-indicator", $indicator);
+    const $container = $(".message_comp");
+    const $banner = $("#compose_banners");
+    $container.set_find_results(".topic_resolved", $banner);
 
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
