@@ -46,6 +46,7 @@ from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
 from zerver.lib.export import Record, do_export_realm, do_export_user, export_usermessages_batch
 from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
+from zerver.lib.message_cache import MessageDict
 from zerver.lib.migration_status import STALE_MIGRATIONS, AppMigrations, MigrationStatusJson
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
@@ -60,6 +61,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import BadImageError
 from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_attachment
+from zerver.lib.url_encoding import encode_stream, near_message_url
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     AlertWord,
@@ -429,6 +431,15 @@ class RealmImportExportTest(ExportFile):
             event_time=timezone_now(),
         )
         self.export_realm(original_realm, export_type, exportable_user_ids)
+
+    def get_message_near_link(
+        self, message_id: int, realm: Realm, relative_link: bool = False
+    ) -> str:
+        wide_message_dict = MessageDict.wide_dict(Message.objects.get(id=message_id), realm.id)
+        url = near_message_url(realm, wide_message_dict)
+        if relative_link:
+            return url.removeprefix(realm.url)
+        return url
 
     def test_export_files_from_local(self) -> None:
         user = self.example_user("hamlet")
@@ -1345,6 +1356,148 @@ class RealmImportExportTest(ExportFile):
         self.assertIn(
             f'data-user-id="{imported_hamlet_id}"', prev_version_of_message["prev_rendered_content"]
         )
+
+    def test_import_public_messages_with_near_link(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+
+        denmark_channel = get_stream("Denmark", original_realm)
+        encoded_channel = encode_stream(denmark_channel.id, denmark_channel.name)
+        channel_link_message = (
+            f"[channel near link](http://zulip.testserver/#narrow/channel/{encoded_channel})"
+        )
+        self.send_stream_message(self.example_user("iago"), "Denmark", channel_link_message)
+
+        topic_link_message = f"[topic near link](http://zulip.testserver/#narrow/channel/{encoded_channel}/topic/test)"
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_link_message)
+
+        near_link_target_message = "near link!"
+        near_link_target_message_id = self.send_stream_message(
+            self.example_user("othello"), "Denmark", near_link_target_message
+        )
+
+        quote_and_reply_message = f"[message near link](http://zulip.testserver/#narrow/channel/{encoded_channel}/topic/test/near/{near_link_target_message_id})"
+        self.send_stream_message(self.example_user("othello"), "Denmark", quote_and_reply_message)
+
+        self.export_realm_and_create_auditlog(original_realm)
+
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+        imported_denmark_channel = Stream.objects.get(name="Denmark", realm=imported_realm)
+        encoded_imported_channel = encode_stream(
+            imported_denmark_channel.id, imported_denmark_channel.name
+        )
+
+        imported_channel_link_message = Message.objects.get(
+            content=channel_link_message, sender__realm=imported_realm
+        )
+
+        self.assertEqual(
+            imported_channel_link_message.rendered_content,
+            f'<p><a href="/#narrow/channel/{encoded_imported_channel}">channel near link</a></p>',
+        )
+        imported_topic_link_message = Message.objects.get(
+            content=topic_link_message, sender__realm=imported_realm
+        )
+        self.assertEqual(
+            imported_topic_link_message.rendered_content,
+            f'<p><a href="/#narrow/channel/{encoded_imported_channel}/topic/test">topic near link</a></p>',
+        )
+        imported_quote_and_reply_message = Message.objects.get(
+            content=quote_and_reply_message, sender__realm=imported_realm
+        )
+        imported_near_link_target_message = Message.objects.get(
+            content=near_link_target_message, sender__realm=imported_realm
+        )
+        self.assertEqual(
+            imported_quote_and_reply_message.rendered_content,
+            f'<p><a href="/#narrow/channel/{encoded_imported_channel}/topic/test/near/{imported_near_link_target_message.id}">message near link</a></p>',
+        )
+
+    def test_import_private_messages_with_near_link(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+
+        # The first scenario happens in a group message between iago
+        # , hamlet and ZOE.
+        # ---
+        #   iago : "test content"
+        #   ZOE : "Iago [said](http://zulip.testserver/#narrow/dm/7,10,11-pm/near/257): test content"
+        # ---
+        iago_message_id = self.send_group_direct_message(
+            self.example_user("iago"), [self.example_user("hamlet"), self.example_user("ZOE")]
+        )
+        iago_message_near_link = self.get_message_near_link(iago_message_id, original_realm)
+
+        zoe_message_context = f"Iago [said]({iago_message_near_link}): test content"
+        self.send_group_direct_message(
+            self.example_user("ZOE"),
+            [self.example_user("hamlet"), self.example_user("iago")],
+            zoe_message_context,
+        )
+
+        # The second scenario happens in a direct message between
+        # iago and hamlet.
+        # ---
+        #   hamlet : "test content"
+        #   iago : "Hamlet [said](http://zulip.testserver/#narrow/dm/10,11-pm/near/259): test content"
+        # ---
+        hamlet_dm_id = self.send_personal_message(
+            self.example_user("hamlet"), self.example_user("iago")
+        )
+        hamlet_dm_near_link = self.get_message_near_link(hamlet_dm_id, original_realm)
+
+        iago_dm_context = f"Hamlet [said]({hamlet_dm_near_link}): test content"
+        self.send_personal_message(
+            self.example_user("iago"), self.example_user("hamlet"), iago_dm_context
+        )
+
+        consented_user_ids = ["iago", "hamlet", "ZOE"]
+        for user_id in consented_user_ids:
+            do_change_user_setting(
+                self.example_user(user_id), "allow_private_data_export", True, acting_user=None
+            )
+
+        self.export_realm_and_create_auditlog(original_realm)
+
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        # Fetch imported messages and validate the remapped near links
+        imported_iago_message_id = Message.objects.get(
+            content="test content",
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+            sender__realm=imported_realm,
+        ).id
+        imported_zoe_message = Message.objects.get(
+            content=zoe_message_context,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+            sender__realm=imported_realm,
+        )
+
+        imported_hamlet_dm_id = Message.objects.get(
+            content="test content", recipient__type=Recipient.PERSONAL, sender__realm=imported_realm
+        ).id
+        imported_iago_message = Message.objects.get(
+            content=iago_dm_context,
+            recipient__type=Recipient.PERSONAL,
+            sender__realm=imported_realm,
+        )
+
+        expected_iago_message_near_link = self.get_message_near_link(
+            imported_iago_message_id, imported_realm, True
+        )
+        expected_hamlet_dm_near_link = self.get_message_near_link(
+            imported_hamlet_dm_id, imported_realm, True
+        )
+
+        assert imported_zoe_message.rendered_content is not None
+        assert imported_iago_message.rendered_content is not None
+
+        self.assertIn(expected_iago_message_near_link, imported_zoe_message.rendered_content)
+        self.assertIn(expected_hamlet_dm_near_link, imported_iago_message.rendered_content)
 
     def get_realm_getters(self) -> list[Callable[[Realm], object]]:
         names = set()
