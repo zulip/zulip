@@ -2331,7 +2331,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login_user(hamlet)
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -2353,7 +2353,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # Now verify client_gravatar doesn't run with EMAIL_ADDRESS_VISIBILITY_ADMINS
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,

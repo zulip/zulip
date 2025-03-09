@@ -56,8 +56,15 @@ from zerver.lib.typed_endpoint_validators import (
     timezone_validator,
 )
 from zerver.lib.upload import upload_avatar_image
-from zerver.models import EmailChangeStatus, RealmUserDefault, UserBaseSettings, UserProfile
+from zerver.models import (
+    EmailChangeStatus,
+    RealmAuditLog,
+    RealmUserDefault,
+    UserBaseSettings,
+    UserProfile,
+)
 from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.views.auth import redirect_to_deactivation_notice
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
@@ -227,6 +234,8 @@ def json_change_settings(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    target_users: Json[dict[str, list[int]]] | None = None,
+    skip_if_already_edited: Json[bool] = False,
     full_name: str | None = None,
     email: str | None = None,
     old_password: str | None = None,
@@ -339,6 +348,69 @@ def json_change_settings(
     # TODO: Change the cache flushing strategy to make sure cache
     # does not contain stale objects.
     user_profile = UserProfile.objects.get(id=user_profile.id)
+
+    # Loop over user_profile.property_types
+    request_settings = {
+        k: v for k, v in locals().items() if k in user_profile.property_types and v is not None
+    }
+
+    if target_users is not None:
+        if not user_profile.is_realm_owner:
+            raise JsonableError(
+                _("Only organisation admins can change this setting for other users.")
+            )
+
+        user_ids = target_users.get("users", [])
+        user_group_ids = target_users.get("user_groups", [])
+        users = UserProfile.objects.filter(
+            id__in=user_ids, realm=user_profile.realm, is_active=True
+        )
+        if set(user_ids) != set(users.values_list("id", flat=True)):
+            raise JsonableError(_("Invalid user ids provided."))
+
+        # users_in_user_groups = UserProfile.objects.filter(
+        #     usergroupmembership__user_group_id__in=user_group_ids,
+        #     realm=user_profile.realm,
+        #     is_active=True,
+        # ).distinct()
+
+        total_users = list(users)  # + list(users_in_user_groups)
+        users_to_update = []
+        if not total_users:
+            raise JsonableError(_("No valid users specified."))
+
+        if timezone is not None:
+            request_settings["timezone"] = timezone
+
+        for k in request_settings:
+            if k in UserBaseSettings.SENSITIVE_USER_FIELDS:
+                raise JsonableError(_("Admin cannot change sensitive settings for other users."))
+
+        for k, v in request_settings.items():
+            users_to_update = []
+            for user in total_users:
+                if (
+                    skip_if_already_edited
+                    and RealmAuditLog.objects.filter(
+                        modified_user=user,
+                        event_type=AuditLogEventType.USER_SETTING_CHANGED,
+                        extra_data__property=k,
+                    ).exists()
+                ):
+                    continue
+                if getattr(user, k) != v:
+                    users_to_update.append(user)
+
+            if users_to_update:
+                do_change_user_setting(
+                    users_to_update,
+                    k,
+                    v,
+                    acting_user=user_profile,
+                )
+
+        return json_success(request, data={})
+
     if (
         default_language is not None
         or notification_sound is not None
@@ -423,14 +495,12 @@ def json_change_settings(
             user_profile, dense_mode, web_font_size_px, web_line_height_percent
         )
 
-    # Loop over user_profile.property_types
-    request_settings = {k: v for k, v in locals().items() if k in user_profile.property_types}
     for k, v in request_settings.items():
         if v is not None and getattr(user_profile, k) != v:
-            do_change_user_setting(user_profile, k, v, acting_user=user_profile)
+            do_change_user_setting([user_profile], k, v, acting_user=user_profile)
 
     if timezone is not None and user_profile.timezone != timezone:
-        do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
+        do_change_user_setting([user_profile], "timezone", timezone, acting_user=user_profile)
 
     return json_success(request, data=result)
 

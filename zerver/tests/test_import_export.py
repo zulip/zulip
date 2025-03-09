@@ -708,10 +708,10 @@ class RealmImportExportTest(ExportFile):
         # Iago and Hamlet consented to export their private data.
         consented_user_ids = [self.example_user(user).id for user in ["iago", "hamlet"]]
         do_change_user_setting(
-            self.example_user("iago"), "allow_private_data_export", True, acting_user=None
+            [self.example_user("iago")], "allow_private_data_export", True, acting_user=None
         )
         do_change_user_setting(
-            self.example_user("hamlet"), "allow_private_data_export", True, acting_user=None
+            [self.example_user("hamlet")], "allow_private_data_export", True, acting_user=None
         )
 
         self.export_realm_and_create_auditlog(
