@@ -522,6 +522,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_delete_own_message_group: int | UserGroupMembersDict | None = None
     can_invite_users_group: int | UserGroupMembersDict | None = None
     can_manage_all_groups: int | UserGroupMembersDict | None = None
+    can_manage_billing_group: int | UserGroupMembersDict | None = None
     can_mention_many_users_group: int | UserGroupMembersDict | None = None
     can_move_messages_between_channels_group: int | UserGroupMembersDict | None = None
     can_move_messages_between_topics_group: int | UserGroupMembersDict | None = None
@@ -566,7 +567,6 @@ class RealmUser(BaseModel):
     avatar_version: int
     full_name: str
     is_admin: bool
-    is_billing_admin: bool
     is_owner: bool
     is_bot: bool
     is_guest: bool
@@ -647,7 +647,6 @@ class PersonFullName(BaseModel):
 
 class PersonIsBillingAdmin(BaseModel):
     user_id: int
-    is_billing_admin: bool
 
 
 class PersonRole(BaseModel):
@@ -681,6 +680,12 @@ class EventRealmUserUpdate(BaseEvent):
         | PersonTimezone
         | PersonIsActive
     )
+
+
+class EventRealmBilling(BaseEvent):
+    type: Literal["realm_billing"]
+    property: str
+    value: bool
 
 
 class EventRestart(BaseEvent):

@@ -258,7 +258,9 @@ export function build_page(): void {
         ...get_realm_level_notification_settings(),
         group_setting_labels: settings_config.all_group_setting_labels.realm,
         server_can_summarize_topics: realm.server_can_summarize_topics,
-        is_plan_self_hosted: realm.realm_plan_type === 1,
+        is_plan_self_hosted:
+            realm.realm_plan_type === settings_config.realm_plan_types.self_hosted.code,
+        has_billing_access: settings_data.user_has_billing_access(),
     };
 
     const rendered_admin_tab = render_admin_tab(options);
@@ -276,15 +278,22 @@ export function build_page(): void {
 
     $("#id_realm_digest_weekday").val(realm.realm_digest_weekday);
 
-    const is_plan_plus = realm.realm_plan_type === 10;
-    const is_plan_self_hosted = realm.realm_plan_type === 1;
+    const is_plan_plus = realm.realm_plan_type === settings_config.realm_plan_types.plus.code;
+    const is_plan_self_hosted =
+        realm.realm_plan_type === settings_config.realm_plan_types.self_hosted.code;
     if (current_user.is_admin && !(is_plan_plus || is_plan_self_hosted)) {
         $("#realm_can_access_all_users_group_widget").prop("disabled", true);
-        const opts = {
-            content: $t({
+
+        const opts: {content?: string} = {};
+        if (settings_data.user_has_billing_access()) {
+            opts.content = $t({
                 defaultMessage: "This feature is available on Zulip Cloud Plus. Upgrade to access.",
-            }),
-        };
+            });
+        } else {
+            opts.content = $t({
+                defaultMessage: "This feature is available on Zulip Cloud Plus.",
+            });
+        }
 
         tippy.default(the($("#realm_can_access_all_users_group_widget_container")), opts);
     }

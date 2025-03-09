@@ -137,7 +137,6 @@ from zerver.actions.user_settings import (
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
-    do_change_is_billing_admin,
     do_change_user_role,
     do_deactivate_user,
     do_update_outgoing_webhook_service,
@@ -2565,24 +2564,6 @@ class NormalActionsTest(BaseAction):
             else:
                 check_user_group_add_members("events[3]", events[3])
                 check_stream_delete("events[4]", events[4])
-
-    def test_change_is_billing_admin(self) -> None:
-        reset_email_visibility_to_everyone_in_zulip_realm()
-
-        # Important: We need to refresh from the database here so that
-        # we don't have a stale UserProfile object with an old value
-        # for email being passed into this next function.
-        self.user_profile.refresh_from_db()
-
-        with self.verify_action() as events:
-            do_change_is_billing_admin(self.user_profile, True)
-        check_realm_user_update("events[0]", events[0], "is_billing_admin")
-        self.assertEqual(events[0]["person"]["is_billing_admin"], True)
-
-        with self.verify_action() as events:
-            do_change_is_billing_admin(self.user_profile, False)
-        check_realm_user_update("events[0]", events[0], "is_billing_admin")
-        self.assertEqual(events[0]["person"]["is_billing_admin"], False)
 
     def test_change_is_owner(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()

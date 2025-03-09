@@ -20,6 +20,22 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 363**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_manage_billing_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission manage plans and billing for the organization.
+* [`POST /register`](/api/register-queue): Added a new `realm_billing` object
+  containing additional information about the organization's billing state,
+  such as sponsorship request status.
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email), [`GET /users/me`](/api/get-own-user),
+  [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Removed `is_billing_admin` field from user objects, as the permission to manage
+  plans and billing in the organization is now controlled by `can_manage_billing_group`.
+
 **Feature level 362**
 
 * [`POST /users/me/subscriptions`](/api/subscribe),

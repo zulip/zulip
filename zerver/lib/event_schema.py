@@ -41,6 +41,7 @@ from zerver.lib.event_types import (
     EventPresence,
     EventReactionAdd,
     EventReactionRemove,
+    EventRealmBilling,
     EventRealmBotAdd,
     EventRealmBotDelete,
     EventRealmBotUpdate,
@@ -108,7 +109,6 @@ from zerver.lib.event_types import (
     PersonEmail,
     PersonFullName,
     PersonIsActive,
-    PersonIsBillingAdmin,
     PersonRole,
     PersonTimezone,
     PlanTypeData,
@@ -175,6 +175,7 @@ check_muted_users = make_checker(EventMutedUsers)
 check_onboarding_steps = make_checker(EventOnboardingSteps)
 check_reaction_add = make_checker(EventReactionAdd)
 check_reaction_remove = make_checker(EventReactionRemove)
+check_realm_billing = make_checker(EventRealmBilling)
 check_realm_bot_delete = make_checker(EventRealmBotDelete)
 check_realm_deactivated = make_checker(EventRealmDeactivated)
 check_realm_domains_add = make_checker(EventRealmDomainsAdd)
@@ -256,7 +257,6 @@ PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     delivery_email=PersonDeliveryEmail,
     email=PersonEmail,
     full_name=PersonFullName,
-    is_billing_admin=PersonIsBillingAdmin,
     role=PersonRole,
     timezone=PersonTimezone,
     is_active=PersonIsActive,

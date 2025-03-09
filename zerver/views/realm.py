@@ -153,6 +153,7 @@ def update_realm(
     can_create_write_only_bots_group: Json[GroupSettingChangeRequest] | None = None,
     can_invite_users_group: Json[GroupSettingChangeRequest] | None = None,
     can_manage_all_groups: Json[GroupSettingChangeRequest] | None = None,
+    can_manage_billing_group: Json[GroupSettingChangeRequest] | None = None,
     can_mention_many_users_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_between_channels_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_between_topics_group: Json[GroupSettingChangeRequest] | None = None,
@@ -241,6 +242,7 @@ def update_realm(
         or can_create_groups is not None
         or can_invite_users_group is not None
         or can_manage_all_groups is not None
+        or can_manage_billing_group is not None
     ) and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequiredError
 

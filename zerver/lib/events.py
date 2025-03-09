@@ -126,6 +126,24 @@ def always_want(msg_type: str) -> bool:
     return True
 
 
+def has_pending_sponsorship_request(
+    user_profile: UserProfile | None, user_has_billing_access: bool | None = None
+) -> bool:
+    sponsorship_pending = False
+
+    if user_has_billing_access is None:
+        user_has_billing_access = user_profile is not None and user_profile.has_billing_access
+
+    if settings.CORPORATE_ENABLED and user_profile is not None and user_has_billing_access:
+        from corporate.models import get_customer_by_realm
+
+        customer = get_customer_by_realm(user_profile.realm)
+        if customer is not None:
+            sponsorship_pending = customer.sponsorship_pending
+
+    return sponsorship_pending
+
+
 def fetch_initial_state_data(
     user_profile: UserProfile | None,
     *,
@@ -170,6 +188,60 @@ def fetch_initial_state_data(
     state["zulip_version"] = ZULIP_VERSION
     state["zulip_feature_level"] = API_FEATURE_LEVEL
     state["zulip_merge_base"] = ZULIP_MERGE_BASE
+
+    if user_profile is not None:
+        settings_user = user_profile
+    else:
+        assert spectator_requested_language is not None
+        # When UserProfile=None, we want to serve the values for various
+        # settings as the defaults.  Instead of copying the default values
+        # from models/users.py here, we access these default values from a
+        # temporary UserProfile object that will not be saved to the database.
+        #
+        # We also can set various fields to avoid duplicating code
+        # unnecessarily.
+        settings_user = UserProfile(
+            full_name="Anonymous User",
+            email="username@example.com",
+            delivery_email="username@example.com",
+            realm=realm,
+            # We tag logged-out users as guests because most guest
+            # restrictions apply to these users as well, and it lets
+            # us avoid unnecessary conditionals.
+            role=UserProfile.ROLE_GUEST,
+            avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+            # ID=0 is not used in real Zulip databases, ensuring this is unique.
+            id=0,
+            default_language=spectator_requested_language,
+            # Set home view to recent conversations for spectators regardless of default.
+            web_home_view="recent_topics",
+        )
+
+    # We fetch early some collections of group that we need to
+    # efficiently compute permissions.
+    settings_user_recursive_group_ids = set()
+    if want("realm_billing") or want("realm_user"):
+        settings_user_recursive_group_ids = set(
+            get_recursive_membership_groups(settings_user).values_list("id", flat=True)
+        )
+
+    if want("realm_user_groups") or want("realm"):
+        realm_setting_group_ids = {
+            getattr(realm, setting_name + "_id")
+            for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
+        }
+
+        # Optimizing opportunity: This fetches more data than
+        # we strictly need when "realm_user_groups" is not in
+        # fetch_event_types; we need the membership of the
+        # anonymous groups in realm_setting_group_ids and the
+        # IDs of the NamedUserGroup objects used there, but
+        # don't need the other NamedUserGroup fields.
+        realm_groups_data = user_groups_in_realm_serialized(
+            realm,
+            include_deactivated_groups=include_deactivated_groups,
+            realm_setting_group_ids=realm_setting_group_ids,
+        )
 
     if want("alert_words"):
         state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)
@@ -268,24 +340,6 @@ def fetch_initial_state_data(
 
         # Send server_timestamp, to match the format of `GET /presence` requests.
         state["server_timestamp"] = time.time()
-
-    realm_setting_group_ids = {
-        getattr(realm, setting_name + "_id")
-        for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
-    }
-
-    if want("realm_user_groups") or want("realm"):
-        # Optimizing opportunity: This fetches more data than
-        # we strictly need when "realm_user_groups" is not in
-        # fetch_event_types; we need the membership of the
-        # anonymous groups in realm_setting_group_ids and the
-        # IDs of the NamedUserGroup objects used there, but
-        # don't need the other NamedUserGroup fields.
-        realm_groups_data = user_groups_in_realm_serialized(
-            realm,
-            include_deactivated_groups=include_deactivated_groups,
-            realm_setting_group_ids=realm_setting_group_ids,
-        )
 
     if want("realm_user_groups"):
         state["realm_user_groups"] = realm_groups_data.api_groups
@@ -558,34 +612,15 @@ def fetch_initial_state_data(
     if want("realm_playgrounds"):
         state["realm_playgrounds"] = get_realm_playgrounds(realm)
 
-    if user_profile is not None:
-        settings_user = user_profile
-    else:
-        assert spectator_requested_language is not None
-        # When UserProfile=None, we want to serve the values for various
-        # settings as the defaults.  Instead of copying the default values
-        # from models/users.py here, we access these default values from a
-        # temporary UserProfile object that will not be saved to the database.
-        #
-        # We also can set various fields to avoid duplicating code
-        # unnecessarily.
-        settings_user = UserProfile(
-            full_name="Anonymous User",
-            email="username@example.com",
-            delivery_email="username@example.com",
-            realm=realm,
-            # We tag logged-out users as guests because most guest
-            # restrictions apply to these users as well, and it lets
-            # us avoid unnecessary conditionals.
-            role=UserProfile.ROLE_GUEST,
-            is_billing_admin=False,
-            avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
-            # ID=0 is not used in real Zulip databases, ensuring this is unique.
-            id=0,
-            default_language=spectator_requested_language,
-            # Set home view to recent conversations for spectators regardless of default.
-            web_home_view="recent_topics",
+    if want("realm_billing"):
+        state["realm_billing"] = {}
+        user_has_billing_access = (
+            realm.can_manage_billing_group_id in settings_user_recursive_group_ids
         )
+        state["realm_billing"]["has_pending_sponsorship_request"] = has_pending_sponsorship_request(
+            settings_user, user_has_billing_access
+        )
+
     if want("realm_user"):
         state["raw_users"] = get_users_for_api(
             realm,
@@ -614,10 +649,6 @@ def fetch_initial_state_data(
             client_gravatar=False,
         )
 
-        settings_user_recursive_group_ids = set(
-            get_recursive_membership_groups(settings_user).values_list("id", flat=True)
-        )
-
         state["can_create_private_streams"] = (
             realm.can_create_private_channel_group_id in settings_user_recursive_group_ids
         )
@@ -643,7 +674,6 @@ def fetch_initial_state_data(
         state["is_owner"] = settings_user.is_realm_owner
         state["is_moderator"] = settings_user.is_moderator
         state["is_guest"] = settings_user.is_guest
-        state["is_billing_admin"] = settings_user.is_billing_admin
         state["user_id"] = settings_user.id
         state["email"] = settings_user.email
         state["delivery_email"] = settings_user.delivery_email
@@ -1070,7 +1100,7 @@ def apply_event(
                             get_default_stream_ids_for_realm(user_profile.realm_id)
                         )
 
-                for field in ["delivery_email", "email", "full_name", "is_billing_admin"]:
+                for field in ["delivery_email", "email", "full_name"]:
                     if field in person and field in state:
                         state[field] = person[field]
 
@@ -1122,9 +1152,6 @@ def apply_event(
                     p["is_admin"] = is_administrator_role(person["role"])
                     p["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
                     p["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
-
-                if "is_billing_admin" in person:
-                    p["is_billing_admin"] = person["is_billing_admin"]
 
                 if "custom_profile_field" in person:
                     custom_field_id = str(person["custom_profile_field"]["id"])

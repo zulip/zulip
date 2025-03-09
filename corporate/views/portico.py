@@ -112,6 +112,8 @@ def plans_view(request: HttpRequest) -> HttpResponse:
             return redirect_to_login(next="/plans/")
         if request.user.is_guest:
             return TemplateResponse(request, "404.html", status=404)
+        if not request.user.has_billing_access:
+            return HttpResponseRedirect(reverse("billing_page"))
 
         customer = get_customer_by_realm(realm)
         context.on_free_tier = customer is None and not context.is_sponsored

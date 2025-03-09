@@ -26,7 +26,6 @@ from zerver.actions.users import (
     do_change_can_change_user_emails,
     do_change_can_create_users,
     do_change_can_forge_sender,
-    do_change_is_billing_admin,
     do_change_user_role,
     do_deactivate_user,
     do_delete_user,
@@ -964,22 +963,6 @@ class PermissionTest(ZulipTestCase):
         }
         self.assertEqual(last_realm_audit_log.extra_data, expected_extra_data)
 
-        do_change_is_billing_admin(desdemona, True)
-
-        last_realm_audit_log = RealmAuditLog.objects.last()
-        assert last_realm_audit_log is not None
-
-        self.assertEqual(
-            last_realm_audit_log.event_type, AuditLogEventType.USER_SPECIAL_PERMISSION_CHANGED
-        )
-        self.assertEqual(last_realm_audit_log.modified_user, desdemona)
-        expected_extra_data = {
-            "property": "is_billing_admin",
-            RealmAuditLog.OLD_VALUE: False,
-            RealmAuditLog.NEW_VALUE: True,
-        }
-        self.assertEqual(last_realm_audit_log.extra_data, expected_extra_data)
-
 
 class QueryCountTest(ZulipTestCase):
     def test_create_user_with_multiple_streams(self) -> None:
@@ -1683,7 +1666,6 @@ class UserProfileTest(ZulipTestCase):
                 bot_type=1,
                 is_active=True,
                 is_admin=False,
-                is_billing_admin=False,
                 is_bot=True,
                 is_guest=False,
                 is_owner=False,
