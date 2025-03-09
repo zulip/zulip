@@ -180,14 +180,7 @@
     <source class="notification-sound-source-mp3" type="audio/mpeg" />
 </audio>
 
-<div class="alert-box">
-    <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
-        <div class="exit"></div>
-        <strong class="message">{{ _('Unable to connect to Zulip.') }}</strong>
-        {{ _('Updates may be delayed.') }}
-        {{ _('Retrying soon…') }}
-        <a class="restart_get_events_button">{{ _('Try now.') }}</a>
-    </div>
+<div id="popup_banners_wrapper" class="banner-wrapper alert-box">
     <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
         <div class="exit"></div>
         {# The below isn't tagged for translation

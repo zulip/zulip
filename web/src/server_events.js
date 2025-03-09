@@ -7,12 +7,12 @@ import * as echo from "./echo.ts";
 import * as loading from "./loading.ts";
 import * as message_events from "./message_events.ts";
 import {page_params} from "./page_params.ts";
+import * as popup_banners from "./popup_banners.ts";
 import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_dispatch from "./server_events_dispatch.js";
 import {server_message_schema} from "./server_message.ts";
-import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 import * as watchdog from "./watchdog.ts";
 
@@ -146,16 +146,6 @@ function get_events_success(events) {
     }
 }
 
-function show_ui_connection_error() {
-    ui_report.show_error($("#connection-error"));
-    $("#connection-error").addClass("get-events-error");
-}
-
-function hide_ui_connection_error() {
-    ui_report.hide_error($("#connection-error"));
-    $("#connection-error").removeClass("get-events-error");
-}
-
 function get_events({dont_block = false} = {}) {
     if (reload_state.is_in_progress()) {
         return;
@@ -202,7 +192,7 @@ function get_events({dont_block = false} = {}) {
             try {
                 get_events_xhr = undefined;
                 get_events_failures = 0;
-                hide_ui_connection_error();
+                popup_banners.close_connection_error_popup_banner();
 
                 get_events_success(data.events);
             } catch (error) {
@@ -230,15 +220,20 @@ function get_events({dont_block = false} = {}) {
                 } else if (error_type === "timeout") {
                     // Retry indefinitely on timeout.
                     get_events_failures = 0;
-                    hide_ui_connection_error();
+                    popup_banners.close_connection_error_popup_banner();
                 } else {
                     get_events_failures += 1;
                 }
 
                 if (get_events_failures >= 8) {
-                    show_ui_connection_error();
+                    popup_banners.open_connection_error_popup_banner({
+                        on_retry_callback() {
+                            restart_get_events({dont_block: true});
+                        },
+                        is_get_events_error: true,
+                    });
                 } else {
-                    hide_ui_connection_error();
+                    popup_banners.close_connection_error_popup_banner();
                 }
             } catch (error) {
                 blueslip.error("Failed to handle get_events error", undefined, error);
@@ -285,9 +280,6 @@ export function initialize(params) {
         // Immediately poll for new events on unsuspend
         blueslip.log("Restarting get_events due to unsuspend");
         get_events_failures = 0;
-        restart_get_events({dont_block: true});
-    });
-    $(".restart_get_events_button").on("click", () => {
         restart_get_events({dont_block: true});
     });
 

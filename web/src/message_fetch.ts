@@ -1,4 +1,3 @@
-import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
@@ -22,12 +21,12 @@ import * as message_viewport from "./message_viewport.ts";
 import * as narrow_banner from "./narrow_banner.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import {narrow_term_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
-import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
 const response_schema = z.object({
@@ -392,18 +391,16 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         url: "/json/messages",
         data,
         success(raw_data) {
-            if (!$("#connection-error").hasClass("get-events-error")) {
-                ui_report.hide_error($("#connection-error"));
-            }
+            popup_banners.close_connection_error_popup_banner(true);
             const data = response_schema.parse(raw_data);
             get_messages_success(data, opts);
         },
         error(xhr) {
-            if (xhr.status === 400 && !$("#connection-error").hasClass("get-events-error")) {
+            if (xhr.status === 400) {
                 // We successfully reached the server, so hide the
                 // connection error notice, even if the request failed
                 // for other reasons.
-                ui_report.hide_error($("#connection-error"));
+                popup_banners.close_connection_error_popup_banner(true);
             }
 
             if (
@@ -443,7 +440,11 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 return;
             }
 
-            ui_report.show_error($("#connection-error"));
+            popup_banners.open_connection_error_popup_banner({
+                on_retry_callback() {
+                    load_messages(opts, attempt + 1);
+                },
+            });
 
             const delay_secs = util.get_retry_backoff_seconds(xhr, attempt, true);
             setTimeout(() => {

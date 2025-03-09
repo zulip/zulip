@@ -1015,15 +1015,6 @@ div.focused-message-list.is-conversation-view .recipient_row {
     margin-right: var(--right-sidebar-avatar-right-margin);
 }
 
-.home-error-bar {
-    margin-top: 5px;
-    display: none;
-
-    .alert {
-        margin-bottom: auto;
-    }
-}
-
 .streamname {
     font-weight: bold;
 }
