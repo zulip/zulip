@@ -35,6 +35,8 @@ import * as util from "./util.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
+export const delete_message_container: Message[] = [];
+
 type ServerMessage = RawMessage & {local_id?: string};
 
 const send_message_api_response_schema = z.object({
@@ -148,7 +150,7 @@ function failed_message_success(message_id: number): void {
     show_failed_message_success(message_id);
 }
 
-function resend_message(
+export function resend_message(
     message: Message,
     $row: JQuery,
     {
@@ -181,6 +183,8 @@ function resend_message(
 
         // Resend succeeded, so mark as no longer failed
         failed_message_success(message_id);
+
+        $row.remove();
     }
 
     function on_error(response: string, _server_error_code: string): void {
@@ -625,7 +629,7 @@ export function rewire_message_send_error(value: typeof message_send_error): voi
     message_send_error = value;
 }
 
-function abort_message(message: Message): void {
+export function abort_message(message: Message): void {
     // Update the rendered data first since it is most user visible.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);
@@ -634,6 +638,8 @@ function abort_message(message: Message): void {
     for (const msg_list_data of message_lists.non_rendered_data()) {
         msg_list_data.remove([message.id]);
     }
+
+    delete_message_container.push(message);
 }
 
 export function display_slow_send_loading_spinner(message: Message): void {
@@ -651,6 +657,7 @@ export function display_slow_send_loading_spinner(message: Message): void {
 export function initialize({
     on_send_message_success,
     send_message,
+    remove_failed_message,
 }: {
     on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
     send_message: (
@@ -658,6 +665,7 @@ export function initialize({
         on_success: (raw_data: unknown) => void,
         error: (response: string, _server_error_code: string) => void,
     ) => void;
+    remove_failed_message: (message: Message) => void;
 }): void {
     function on_failed_action(
         selector: string,
@@ -667,6 +675,7 @@ export function initialize({
             {
                 on_send_message_success,
                 send_message,
+                remove_failed_message,
             }: {
                 on_send_message_success: (request: Message, data: PostMessageAPIData) => void;
                 send_message: (
@@ -674,6 +683,7 @@ export function initialize({
                     on_success: (raw_data: unknown) => void,
                     error: (response: string, _server_error_code: string) => void,
                 ) => void;
+                remove_failed_message: (message: Message) => void;
             },
         ) => void,
     ): void {
@@ -691,7 +701,7 @@ export function initialize({
                 );
                 return;
             }
-            callback(message, $row, {on_send_message_success, send_message});
+            callback(message, $row, {on_send_message_success, send_message, remove_failed_message});
         });
     }
 
