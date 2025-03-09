@@ -1007,7 +1007,7 @@ def channel_message_to_zerver_message(
         # threads each generate a unique topic labeled by the date and
         # a counter among topics on that day.
         topic_name = "imported from Slack"
-        if convert_slack_threads and "thread_ts" in message:
+        if convert_slack_threads and not is_private and "thread_ts" in message:
             thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
             thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
             # The topic name is "2015-08-18 Slack thread 2", where the counter at the end is to disambiguate
@@ -1021,6 +1021,9 @@ def channel_message_to_zerver_message(
                 topic_name = f"{thread_date} Slack thread {count}"
                 thread_map[thread_ts_str] = topic_name
 
+        if is_private:
+            topic_name = ""
+
         zulip_message = build_message(
             topic_name=topic_name,
             date_sent=get_timestamp_from_message(message),
@@ -1033,6 +1036,7 @@ def channel_message_to_zerver_message(
             has_image=has_image,
             has_link=has_link,
             has_attachment=has_attachment,
+            is_private=is_private,
         )
         zerver_message.append(zulip_message)
 
