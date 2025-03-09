@@ -10,7 +10,7 @@ from django.test import override_settings
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule
-from zerver.models import Draft, ScheduledMessageNotificationEmail, UserProfile
+from zerver.models import Draft, NamedUserGroup, ScheduledMessageNotificationEmail, UserProfile
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_user_profile_by_api_key
 
@@ -620,6 +620,117 @@ class ChangeSettingsTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.web_font_size_px, 14)
         self.assertEqual(hamlet.web_line_height_percent, 122)
+
+    def test_admin_change_settings_for_other_users(self) -> None:
+        # Non-admin cannot change settings for other users
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=iago.realm
+        )
+
+        target_users_dict = {
+            "user_ids": [iago.id, othello.id],
+            "group_ids": [hamletcharacters_group.id],
+            "skip_if_already_edited": False,
+        }
+        self.assertEqual(cordelia.automatically_follow_topics_where_mentioned, False)
+        self.assertEqual(hamlet.automatically_follow_topics_where_mentioned, False)
+        self.assertEqual(othello.automatically_follow_topics_where_mentioned, False)
+        self.assertEqual(iago.automatically_follow_topics_where_mentioned, False)
+
+        self.login("hamlet")
+        data = {
+            "target_users": orjson.dumps(target_users_dict).decode(),
+            "automatically_follow_topics_where_mentioned": orjson.dumps(True).decode(),
+            "web_font_size_px": orjson.dumps(18).decode(),
+        }
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        # Admin can change non-sensitive settings for other users
+        self.login("desdemona")
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        cordelia.refresh_from_db()
+        othello.refresh_from_db()
+        iago.refresh_from_db()
+        hamlet.refresh_from_db()
+        self.assertEqual(cordelia.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(cordelia.web_font_size_px, 18)
+        self.assertEqual(hamlet.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(hamlet.web_font_size_px, 18)
+        self.assertEqual(othello.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(othello.web_font_size_px, 18)
+        self.assertEqual(iago.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(iago.web_font_size_px, 18)
+
+        # Test skip users who have already edited their specific settings
+        target_users_dict["skip_if_already_edited"] = True
+        data = {
+            "target_users": orjson.dumps(target_users_dict).decode(),
+            "automatically_follow_topics_where_mentioned": orjson.dumps(False).decode(),
+        }
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        cordelia.refresh_from_db()
+        othello.refresh_from_db()
+        iago.refresh_from_db()
+        hamlet.refresh_from_db()
+        self.assertEqual(cordelia.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(othello.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(iago.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(hamlet.automatically_follow_topics_where_mentioned, True)
+
+        # Admin cannot change sensitive settings for other users.
+        data = {
+            "target_users": orjson.dumps(target_users_dict).decode(),
+            "send_read_receipts": orjson.dumps(False).decode(),
+        }
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(result, "Cannot change this setting for other users.")
+
+        # Admin cannot change timezone setting for other users.
+        data = {
+            "target_users": orjson.dumps(target_users_dict).decode(),
+            "timezone": "Asia/Kolkata",
+        }
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(result, "Cannot change this setting for other users.")
+
+        # Test with invalid users.
+        invalid_target_users_dict = {
+            "user_ids": [500, othello.id],
+            "skip_if_already_edited": False,
+        }
+        data = {
+            "target_users": orjson.dumps(invalid_target_users_dict).decode(),
+            "automatically_follow_topics_where_mentioned": orjson.dumps(False).decode(),
+        }
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(result, "Invalid user ID: 500")
+
+        # Test with invalid groups.
+        invalid_target_users_dict = {
+            "group_ids": [500, hamletcharacters_group.id],
+            "skip_if_already_edited": False,
+        }
+        data = {
+            "target_users": orjson.dumps(invalid_target_users_dict).decode(),
+            "automatically_follow_topics_where_mentioned": orjson.dumps(False).decode(),
+        }
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(result, "Invalid user group ID: 500")
+
+        # Test target users dict without user_ids and group_ids.
+        data = {
+            "target_users": orjson.dumps({"skip_if_already_edited": False}).decode(),
+            "automatically_follow_topics_where_mentioned": orjson.dumps(False).decode(),
+        }
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(result, "Either user_ids or group_ids must be provided.")
 
 
 class UserChangesTest(ZulipTestCase):
