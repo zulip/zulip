@@ -202,6 +202,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     // the function call in compose_setup.js not displaying banner.
     if (!narrow_state.narrowed_by_reply()) {
         compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
+        compose_recipient.maybe_show_go_to_conversation_button_intro_tooltip();
     }
     compose_ui.maybe_show_scrolling_formatting_buttons("#message-formatting-controls-container");
 };
@@ -467,6 +468,7 @@ export let cancel = (): void => {
     compose_state.set_message_type(undefined);
     compose_pm_pill.clear();
     $(document).trigger("compose_canceled.zulip");
+    compose_recipient.check_hide_go_to_conversation_button_intro_tooltip();
 };
 
 export function rewire_cancel(value: typeof cancel): void {
