@@ -106,7 +106,11 @@
             </h3>
             {{> settings_save_discard_widget section_name="desktop-message-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
-
+        <div class="tip desktop-setting-notications">
+            {{#tr}}Zulip needs your permission to <z-link>enable desktop notifications.</z-link>
+                {{#*inline "z-link"}}<a class="request-desktop-notifications alert-link" role="button" tabindex=0>{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
+        </div>
         {{#unless for_realm_settings}}
         <p><a class="send_test_notification">{{t "Send a test notification" }}</a></p>
         {{/unless}}
