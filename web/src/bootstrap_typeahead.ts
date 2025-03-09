@@ -267,6 +267,8 @@ export class Typeahead<ItemType extends string | object> {
     // Used for custom situations where we want to hide the typeahead
     // after selecting an option, instead of the default call to lookup().
     hideAfterSelect: () => boolean;
+    ignore_keyup?: (() => boolean) | undefined;
+    on_show: (() => void) | undefined;
     hideOnEmptyAfterBackspace: boolean;
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
@@ -312,6 +314,8 @@ export class Typeahead<ItemType extends string | object> {
         this.updateElementContent = options.updateElementContent ?? true;
         this.showOnClick = options.showOnClick ?? true;
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
+        this.ignore_keyup = options.ignore_keyup;
+        this.on_show = options.on_show;
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
         this.getCustomItemClassname = options.getCustomItemClassname;
         this.listen();
@@ -529,7 +533,10 @@ export class Typeahead<ItemType extends string | object> {
         this.render(final_items.slice(0, this.items), matching_items);
 
         if (!this.shown) {
-            return this.show();
+            this.show();
+            if (this.on_show) {
+                this.on_show();
+            }
         }
 
         return this;
@@ -656,7 +663,12 @@ export class Typeahead<ItemType extends string | object> {
     maybeStopAdvance(e: JQuery.KeyPressEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): void {
         if (
             (this.stopAdvance || (e.key !== "Tab" && e.key !== "Enter")) &&
-            !this.advanceKeys.includes(e.key)
+            !this.advanceKeys.includes(e.key) &&
+            !(
+                the(this.input_element.$element).id === "private_message_recipient" &&
+                e.shiftKey &&
+                e.key === "Tab"
+            )
         ) {
             e.stopPropagation();
         }
@@ -727,6 +739,9 @@ export class Typeahead<ItemType extends string | object> {
 
     keyup(e: JQuery.KeyUpEvent): void {
         this.mouse_moved_since_typeahead = false;
+        if (this.ignore_keyup?.()) {
+            return;
+        }
         // NOTE: Ideally we can ignore meta keyup calls here but
         // it's better to just trigger the lookup call to update the list in case
         // it did modify the query. For example, `Command + delete` on Mac
@@ -917,4 +932,6 @@ type TypeaheadOptions<ItemType> = {
     showOnClick?: boolean;
     hideAfterSelect?: () => boolean;
     getCustomItemClassname?: (item: ItemType) => string;
+    ignore_keyup?: () => boolean;
+    on_show?: () => void;
 };
