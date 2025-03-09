@@ -14,7 +14,7 @@ from django.utils.html import escape
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
-from pydantic import Json
+from pydantic import BaseModel, Json, model_validator
 from pydantic.functional_validators import AfterValidator
 
 from confirmation.models import (
@@ -55,7 +55,10 @@ from zerver.lib.typed_endpoint_validators import (
     timezone_validator,
 )
 from zerver.lib.upload import upload_avatar_image
-from zerver.models import EmailChangeStatus, UserProfile
+from zerver.lib.user_groups import get_members_and_subgroups_of_groups
+from zerver.lib.users import user_ids_to_users
+from zerver.models import EmailChangeStatus, RealmAuditLog, UserBaseSettings, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 from zerver.views.auth import redirect_to_deactivation_notice
@@ -227,6 +230,17 @@ def check_settings_values(
         )
 
 
+class TargetUsersData(BaseModel):
+    user_ids: list[int] = []
+    group_ids: list[int] = []
+
+    @model_validator(mode="after")
+    def validate_terms(self) -> "TargetUsersData":
+        if not self.user_ids and not self.group_ids:
+            raise JsonableError(_("Either user_ids or group_ids must be provided."))
+        return self
+
+
 @human_users_only
 @typed_endpoint
 def json_change_settings(
@@ -313,7 +327,9 @@ def json_change_settings(
     send_private_typing_notifications: Json[bool] | None = None,
     send_read_receipts: Json[bool] | None = None,
     send_stream_typing_notifications: Json[bool] | None = None,
+    skip_if_already_edited: Json[bool] | None = None,
     starred_message_counts: Json[bool] | None = None,
+    target_users: Json[TargetUsersData] | None = None,
     timezone: Annotated[str, timezone_validator()] | None = None,
     translate_emoticons: Json[bool] | None = None,
     twenty_four_hour_time: Json[bool] | None = None,
@@ -356,6 +372,72 @@ def json_change_settings(
     # TODO: Change the cache flushing strategy to make sure cache
     # does not contain stale objects.
     user_profile = UserProfile.objects.get(id=user_profile.id)
+
+    # Loop over user_profile.property_types
+    request_settings = {
+        setting_name: requested_value
+        for setting_name, requested_value in locals().items()
+        if setting_name in user_profile.property_types and requested_value is not None
+    }
+
+    if target_users is not None:
+        if not user_profile.is_realm_owner:
+            raise JsonableError(
+                _("Only organization admins can change this setting for other users.")
+            )
+
+        if timezone is not None:
+            # timezone is not part of UserBaseSettings.property_types because it's defined
+            # directly on UserProfile, not in the UserBaseSettings abstract base class.
+            # UserBaseSettings contains only preferences shared between UserProfile and
+            # RealmUserDefault (for organization-wide defaults).
+            request_settings["timezone"] = timezone
+
+        for setting_name in request_settings:
+            if (
+                setting_name in UserBaseSettings.SECURITY_SENSITIVE_USER_SETTINGS
+                or setting_name in ["email", "new_password"]
+            ):
+                raise JsonableError(_("Admin cannot change sensitive settings for other users."))
+
+        user_ids = target_users.user_ids
+        group_ids = target_users.group_ids
+        group_members_dict = get_members_and_subgroups_of_groups(set(group_ids))
+        group_member_ids = set()
+        for members_data in group_members_dict.values():
+            group_member_ids.update(members_data.direct_members)
+        all_user_ids = list(set(user_ids) | group_member_ids)
+        # Get the list of users from the same realm as the user_profile.
+        users = user_ids_to_users(all_user_ids, user_profile.realm, allow_deactivated=False)
+
+        for setting_name, requested_value in request_settings.items():
+            if skip_if_already_edited:
+                already_edited_user_ids = set(
+                    RealmAuditLog.objects.filter(
+                        modified_user__in=users,
+                        event_type=AuditLogEventType.USER_SETTING_CHANGED,
+                        extra_data__property=setting_name,
+                    ).values_list("modified_user_id", flat=True)
+                )
+
+                eligible_users = [user for user in users if user.id not in already_edited_user_ids]
+            else:
+                eligible_users = users
+
+            users_to_update = [
+                user for user in eligible_users if getattr(user, setting_name) != requested_value
+            ]
+
+            if users_to_update:
+                do_change_user_setting(
+                    users_to_update,
+                    setting_name,
+                    requested_value,
+                    acting_user=user_profile,
+                )
+
+        return json_success(request, data={})
+
     if (
         default_language is not None
         or notification_sound is not None
@@ -431,8 +513,6 @@ def json_change_settings(
             # Note that check_change_full_name strips the passed name automatically
             check_change_full_name(user_profile, full_name, user_profile)
 
-    # Loop over user_profile.property_types
-    request_settings = {k: v for k, v in locals().items() if k in user_profile.property_types}
     for k, v in request_settings.items():
         if v is not None and getattr(user_profile, k) != v:
             do_change_user_setting([user_profile], k, v, acting_user=user_profile)

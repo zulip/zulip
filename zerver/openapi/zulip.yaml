@@ -21570,8 +21570,16 @@ paths:
       tags: ["users"]
       description: |
         This endpoint is used to edit the current user's settings.
+        When invoked by a realm owner, it supports bulk updates to
+        settings for specified users or members of user groups using
+        the `target_users` parameter.
 
-        **Changes**: Removed `dense_mode` setting in Zulip 10.0
+        **Changes**: New in Zulip 11.0 (feature level ZF-4fcc57),
+        Added support for bulk updates to settings for specified
+        users or members of user groups using the `target_users`
+        and `skip_if_already_edited` parameters.
+
+        Removed `dense_mode` setting in Zulip 10.0
         (feature level 364) as we now have `web_font_size_px` and
         `web_line_height_percent` settings for more control.
 
@@ -21620,6 +21628,42 @@ paths:
             schema:
               type: object
               properties:
+                target_users:
+                  description: |
+                    An object specifying the users and user groups whose settings an
+                    administrator intends to modify. It contains two optional fields
+                    `user_ids` and `group_ids`. This parameter is only applicable when
+                    the requesting user has realm owner privileges, enabling updates
+                    across multiple users or group members.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-4fcc57).
+                  type: object
+                  properties:
+                    user_ids:
+                      description: |
+                        A list of integer user IDs representing individual users whose settings will be updated.
+                      type: array
+                      items:
+                        type: integer
+                    group_ids:
+                      description: |
+                        A list of integer group IDs representing user groups, where settings will be applied to
+                        all active members of the specified groups.
+                      type: array
+                      items:
+                        type: integer
+                  example: {"user_ids": [6, 8], "group_ids": [24]}
+                skip_if_already_edited:
+                  description: |
+                    Whether to skip updating a user's setting if it has been previously
+                    modified by user. This parameter is only applicable when the requesting
+                    user has realm owner privileges, enabling bulk updates across multiple
+                    users or group members. If provided, the server validates the user IDs
+                    and ensures they belong to the same realm as the administrator.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-4fcc57).
+                  type: boolean
+                  example: false
                 full_name:
                   description: |
                     A new display name for the user.
@@ -22344,6 +22388,10 @@ paths:
                   type: boolean
                   example: true
             encoding:
+              target_users:
+                contentType: application/json
+              skip_if_already_edited:
+                contentType: application/json
               twenty_four_hour_time:
                 contentType: application/json
               web_mark_read_on_scroll_policy:

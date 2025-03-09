@@ -2555,7 +2555,7 @@ class EditMessageTest(ZulipTestCase):
         for user in users:
             self.subscribe(user, stream.name)
             do_change_user_setting(
-                user,
+                [user],
                 "automatically_follow_topics_policy",
                 UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
                 acting_user=None,
@@ -2667,7 +2667,7 @@ class EditMessageTest(ZulipTestCase):
         for user in users:
             self.subscribe(user, stream.name)
             do_change_user_setting(
-                user,
+                [user],
                 "automatically_unmute_topics_in_muted_streams_policy",
                 UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
                 acting_user=None,
@@ -2738,7 +2738,7 @@ class EditMessageTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "automatically_follow_topics_policy",
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,

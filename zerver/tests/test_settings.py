@@ -7,10 +7,12 @@ import orjson
 from django.http import HttpRequest
 from django.test import override_settings
 
+from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule
-from zerver.models import Draft, ScheduledMessageNotificationEmail, UserProfile
+from zerver.models import Draft, NamedUserGroup, ScheduledMessageNotificationEmail, UserProfile
+from zerver.models.realms import get_realm
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_user_profile_by_api_key
 
@@ -615,6 +617,94 @@ class ChangeSettingsTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.web_font_size_px, 14)
         self.assertEqual(hamlet.web_line_height_percent, 122)
+
+    def create_user_group_for_test(
+        self, group_name: str, acting_user: UserProfile
+    ) -> NamedUserGroup:
+        members = [self.example_user("iago")]
+        return check_add_user_group(
+            get_realm("zulip"), group_name, members, acting_user=acting_user
+        )
+
+    def test_admin_change_settings_for_other_users(self) -> None:
+        # Non-admin cannot change settings for other users
+        self.login("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        leadership_group = self.create_user_group_for_test("leadership", acting_user=othello)
+        target_users_dict = {
+            "user_ids": [cordelia.id, othello.id],
+            "group_ids": [leadership_group.id],
+        }
+        self.assertEqual(cordelia.automatically_follow_topics_where_mentioned, False)
+        self.assertEqual(othello.automatically_follow_topics_where_mentioned, False)
+        self.assertEqual(iago.automatically_follow_topics_where_mentioned, False)
+        data = {
+            "target_users": orjson.dumps(target_users_dict).decode(),
+            "automatically_follow_topics_where_mentioned": orjson.dumps(True).decode(),
+            "timezone": "Asia/Kolkata",
+        }
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(
+            result, "Only organization admins can change this setting for other users."
+        )
+
+        # Admin can change non-sensitive settings for other users
+        self.login("desdemona")
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        self.assertEqual(cordelia.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(cordelia.timezone, "Asia/Kolkata")
+        self.assertEqual(othello.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(othello.timezone, "Asia/Kolkata")
+        self.assertEqual(iago.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(iago.timezone, "Asia/Kolkata")
+
+        # Test skip users who have already edited their specific settings
+        data = {
+            "target_users": orjson.dumps(target_users_dict).decode(),
+            "automatically_follow_topics_where_mentioned": orjson.dumps(False).decode(),
+            "skip_if_already_edited": orjson.dumps(True).decode(),
+        }
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_success(result)
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        self.assertEqual(cordelia.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(othello.automatically_follow_topics_where_mentioned, True)
+        self.assertEqual(iago.automatically_follow_topics_where_mentioned, True)
+
+        # Admin cannot change sensitive settings for other users
+        data = {
+            "target_users": orjson.dumps(target_users_dict).decode(),
+            "send_read_receipts": orjson.dumps(False).decode(),
+        }
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(result, "Admin cannot change sensitive settings for other users.")
+
+        # Test with invalid users
+        invalid_target_users_dict = {
+            "user_ids": [500, 600],
+        }
+        data = {
+            "target_users": orjson.dumps(invalid_target_users_dict).decode(),
+            "automatically_follow_topics_where_mentioned": orjson.dumps(False).decode(),
+        }
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(result, "Invalid user ID: 600")
+
+        # Test with empty target users dict
+        data = {
+            "target_users": orjson.dumps({}).decode(),
+            "automatically_follow_topics_where_mentioned": orjson.dumps(False).decode(),
+        }
+        result = self.client_patch("/json/settings", data)
+        self.assert_json_error(result, "Either user_ids or group_ids must be provided.")
 
 
 class UserChangesTest(ZulipTestCase):
