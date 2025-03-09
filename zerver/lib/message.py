@@ -284,6 +284,25 @@ def messages_for_ids(
         if message_id in search_fields:
             msg_dict.update(search_fields[message_id])
         if "edit_history" in msg_dict:
+            # In addition to computing last_moved_timestamp, we recompute
+            # last_edit_timestamp, because the logic powering the database
+            # field updates it on moves as well, and we'd like to show the
+            # correct value for messages that had only been moved.
+            last_moved_timestamp = 0
+            last_edit_timestamp = 0
+            for item in msg_dict["edit_history"]:
+                if "prev_topic" in item or "prev_stream" in item:
+                    last_moved_timestamp = max(last_moved_timestamp, item["timestamp"])
+                if "prev_content" in item:
+                    last_edit_timestamp = max(last_edit_timestamp, item["timestamp"])
+            if last_moved_timestamp != 0:
+                msg_dict["last_moved_timestamp"] = last_moved_timestamp
+            if last_edit_timestamp != 0:
+                msg_dict["last_edit_timestamp"] = last_edit_timestamp
+            else:
+                # Remove it if it was already present.
+                msg_dict.pop("last_edit_timestamp", None)
+
             if (
                 message_edit_history_visibility_policy
                 == MessageEditHistoryVisibilityPolicyEnum.none.value
@@ -294,6 +313,7 @@ def messages_for_ids(
                     message_edit_history_visibility_policy, msg_dict["edit_history"]
                 )
                 msg_dict["edit_history"] = visible_edit_history
+
         msg_dict["can_access_sender"] = msg_dict["sender_id"] not in inaccessible_sender_ids
         message_list.append(msg_dict)
 
