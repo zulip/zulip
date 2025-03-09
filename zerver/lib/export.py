@@ -102,6 +102,7 @@ IdSource: TypeAlias = tuple[TableName, Field]
 SourceFilter: TypeAlias = Callable[[Record], bool]
 
 CustomFetch: TypeAlias = Callable[[TableData, Context], None]
+CustomReturnIds: TypeAlias = Callable[[TableData], set[int]]
 
 
 class MessagePartial(TypedDict):
@@ -507,6 +508,7 @@ class Config:
         filter_args: FilterArgs | None = None,
         custom_fetch: CustomFetch | None = None,
         custom_tables: list[TableName] | None = None,
+        custom_return_ids: CustomReturnIds | None = None,
         concat_and_destroy: list[TableName] | None = None,
         id_source: IdSource | None = None,
         source_filter: SourceFilter | None = None,
@@ -527,6 +529,7 @@ class Config:
         self.exclude = exclude
         self.custom_fetch = custom_fetch
         self.custom_tables = custom_tables
+        self.custom_return_ids = custom_return_ids
         self.concat_and_destroy = concat_and_destroy
         self.id_source = id_source
         self.source_filter = source_filter
@@ -589,6 +592,13 @@ class Config:
                     need to assign a virtual_parent, or there
                     may be deeper issues going on."""
                 )
+
+    def return_ids(self, response: TableData) -> set[int]:
+        if self.custom_return_ids is not None:
+            return self.custom_return_ids(response)
+        else:
+            assert self.table is not None
+            return {row["id"] for row in response[self.table]}
 
 
 def export_from_config(
@@ -655,7 +665,7 @@ def export_from_config(
         assert parent is not None
         assert parent.table is not None
         assert config.include_rows is not None
-        parent_ids = [r["id"] for r in response[parent.table]]
+        parent_ids = parent.return_ids(response)
         filter_params: dict[str, Any] = {config.include_rows: parent_ids}
         if config.filter_args is not None:
             filter_params.update(config.filter_args)
@@ -825,6 +835,12 @@ def get_realm_config() -> Config:
             "zerver_userprofile",
             "zerver_userprofile_mirrordummy",
         ],
+        # When child tables want to fetch the list of ids of objects exported from
+        # the parent table, they should get ids from both zerver_userprofile and
+        # zerver_userprofile_mirrordummy:
+        custom_return_ids=lambda table_data: {
+            row["id"] for row in table_data["zerver_userprofile"]
+        }.union({row["id"] for row in table_data["zerver_userprofile_mirrordummy"]}),
         # set table for children who treat us as normal parent
         table="zerver_userprofile",
         virtual_parent=realm_config,
