@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -21,6 +21,10 @@ const inbox_util = zrequire("inbox_util");
 const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
+const narrow_state = zrequire("narrow_state");
+const {update_user_topics, is_topic_muted} = zrequire("user_topics");
+const {MessageList} = zrequire("message_list");
+const {MessageListData} = zrequire("message_list_data");
 
 set_current_user({});
 const realm = {};
@@ -38,6 +42,20 @@ mock_esm("../src/settings_data", {
 });
 mock_esm("../src/spectators", {
     login_to_access() {},
+});
+
+set_global("document", "document-stub");
+const message_lists = mock_esm("../src/message_lists");
+function MessageListView() {
+    return {
+        maybe_rerender: noop,
+        append: noop,
+        prepend: noop,
+        is_current_message_list: () => true,
+    };
+}
+mock_esm("../src/message_list_view", {
+    MessageListView,
 });
 
 function empty_narrow_html(title, html, search_data) {
@@ -226,8 +244,16 @@ run_test("urls", () => {
     assert.equal(emails, "me@example.com");
 });
 
-run_test("show_empty_narrow_message", ({mock_template, override}) => {
+run_test("show_empty_narrow_message", ({mock_template, override, override_rewire}) => {
     override(realm, "stop_words", []);
+
+    const list = new MessageList({
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: new Filter([]),
+        }),
+    });
+    message_lists.current = list;
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
@@ -597,6 +623,58 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         empty_narrow_html(
             "translated: None of your messages have emoji reactions yet.",
             'translated HTML: Learn more about emoji reactions <a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">here</a>.',
+        ),
+    );
+
+    const muted_stream_id = 101;
+    const muted_stream = {
+        name: "muted stream",
+        stream_id: muted_stream_id,
+    };
+
+    stream_data.add_sub(muted_stream);
+
+    const muted_topics = ["topic_one", "topic_two"];
+    const current_timestamp = Date.now();
+
+    override_rewire(people, "maybe_get_user_by_id", noop);
+
+    list.add_messages(
+        [
+            {
+                id: 0,
+                stream_id: muted_stream.stream_id,
+                topic: "topic_one",
+            },
+            {
+                id: 1,
+                stream_id: muted_stream.stream_id,
+                topic: "topic_two",
+            },
+        ],
+        {},
+        true,
+    );
+
+    for (const topic of muted_topics) {
+        update_user_topics(muted_stream.stream_id, muted_stream.name, topic, 1, current_timestamp);
+    }
+
+    const muted_message_check =
+        is_topic_muted(muted_stream_id, "topic_one") &&
+        is_topic_muted(muted_stream_id, "topic_two") &&
+        list.data._all_items.length > 0;
+
+    assert.equal(muted_message_check, true);
+
+    override_rewire(narrow_state, "has_message_in_muted_topic", () => true);
+
+    current_filter = set_filter([["stream", muted_stream_id.toString()]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: This feed is empty, because you have muted all the topics in this channel.",
         ),
     );
 });
