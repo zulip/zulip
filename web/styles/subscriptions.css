@@ -122,6 +122,7 @@ h3.user_group_setting_subsection_title {
     font-size: 1.5em;
     font-weight: normal;
     line-height: 1.5;
+    margin: 4px 15px 4px 8px;
 }
 
 h4.stream_setting_subsection_title {
@@ -339,89 +340,54 @@ h4.user_group_setting_subsection_title {
 }
 
 /* There's an awkward width of modal that is wider than the
-   @media breakpoint that collapses the left pane, but still
-   narrow enough (965px at 14px em) that the sort buttons need
-   a second row to be visible without overlapping other UI. */
-@container settings-overlay (width >= $settings_overlay_sidebar_collapse_breakpoint) {
-    @container subscriptions (width < calc(60em + 70px)) {
-        #subscription_overlay .subscriptions-container {
-            .left {
-                .list-toggler-container {
-                    height: 5em;
-                    justify-content: end;
-                    flex-wrap: wrap;
-                }
+   breakpoint that collapses the left pane, but still narrow
+   enough that the sort buttons need a second row to be visible
+   without overlapping other UI. Note that for 16px and larger
+   font sizes, we always show two rows of buttons.
 
-                .tab-switcher {
-                    margin-right: 0;
-                }
-
-                .tab-switcher:first-child {
-                    /* This forces the other buttons to the next row */
-                    width: 100%;
-                    display: flex;
-                    justify-content: end;
-                }
-            }
-
-            .right .display-type {
+   We also show two rows of buttons on particularly narrow
+   screens where there's only one panel and the overlay doesn't
+   have enough space for all the buttons. */
+@container settings-overlay (
+    ((width >= $settings_overlay_sidebar_collapse_breakpoint) and (width < calc(80em + 80px)))
+    or ((width < $settings_overlay_sidebar_collapse_breakpoint) and (width <= 36em))
+) {
+    #subscription_overlay .subscriptions-container {
+        .left {
+            .list-toggler-container {
                 height: 5em;
+                justify-content: end;
+                flex-wrap: wrap;
             }
 
-            .streams-list {
-                /* Calculated from several heights and padding/margin measurements
-                in .list-toggler-container and .stream_filter, with some added
-                fiddling to see what worked best at 12px - 20px font sizes.
-                Notably this height is shorter than the similar calculation
-                below because the toggler is taller.
-                When we redesign this area we should make this less brittle. */
-                height: calc(100% - 5.4em - 40px);
+            .tab-switcher {
+                margin-right: 0;
             }
 
-            #stream_settings {
-                height: calc(100% - 5em);
+            .tab-switcher:first-child {
+                /* This forces the other buttons to the next row */
+                width: 100%;
+                display: flex;
+                justify-content: end;
             }
         }
-    }
-}
 
-/* Copy all the above styles for the breakpoint where the overlay
-   becomes 40% left pane and 60% right pane, since that automatically
-   qualifies the modal for collapsing the buttons into two rows, and
-   especially for smaller font-sizes this will happen before the
-   breakpoint for the subscriptions container width. */
-@media (width < $lg_min) {
-    @container settings-overlay (width >= $settings_overlay_sidebar_collapse_breakpoint) {
-        #subscription_overlay .subscriptions-container {
-            .left {
-                .list-toggler-container {
-                    height: 5em;
-                    justify-content: end;
-                    flex-wrap: wrap;
-                }
+        .right .display-type {
+            height: 5em;
+        }
 
-                .tab-switcher {
-                    margin-right: 0;
-                }
+        .streams-list {
+            /* Calculated from several heights and padding/margin measurements
+            in .list-toggler-container and .stream_filter, with some added
+            fiddling to see what worked best at 12px - 20px font sizes.
+            Notably this height is shorter than the similar calculation
+            below because the toggler is taller.
+            When we redesign this area we should make this less brittle. */
+            height: calc(100% - 5.4em - 40px);
+        }
 
-                .tab-switcher:first-child {
-                    width: 100%;
-                    display: flex;
-                    justify-content: end;
-                }
-            }
-
-            .right .display-type {
-                height: 5em;
-            }
-
-            .streams-list {
-                height: calc(100% - 5.4em - 40px);
-            }
-
-            #stream_settings {
-                height: calc(100% - 5em);
-            }
+        #stream_settings {
+            height: calc(100% - 5em);
         }
     }
 }
@@ -481,7 +447,7 @@ h4.user_group_setting_subsection_title {
         position: relative;
         display: inline-block;
         vertical-align: top;
-        width: 50%;
+        width: 40%;
         height: calc(100% - var(--settings-overlay-header-height));
         margin: 0 -2px;
     }
@@ -552,7 +518,7 @@ h4.user_group_setting_subsection_title {
     }
 
     .right {
-        width: calc(50% + 1px);
+        width: calc(60% + 1px);
 
         .nothing-selected .create_stream_button,
         .nothing-selected .create_user_group_button {
@@ -1052,7 +1018,7 @@ h4.user_group_setting_subsection_title {
         .tab-container {
             .ind-tab {
                 padding: 3px 4px;
-                min-width: 80px;
+                min-width: 5.7142em; /* 80px at 14px/em */
                 width: auto;
                 display: flex;
             }
@@ -1430,17 +1396,6 @@ div.settings-radio-input-parent {
     .user-groups-container,
     .subscriptions-container {
         max-width: 95%;
-    }
-
-    #groups_overlay,
-    #subscription_overlay {
-        .left {
-            width: 40%;
-        }
-
-        .right {
-            width: calc(60% - 1px);
-        }
     }
 }
 
