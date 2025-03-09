@@ -578,6 +578,7 @@ export type FormattedDraft =
       }
     | {
           is_stream: false;
+          is_dm_with_self: boolean;
           draft_id: string;
           recipients: string;
           raw_content: string;
@@ -653,11 +654,19 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
         };
     }
 
+    let is_dm_with_self = false;
     const emails = util.extract_pm_recipients(draft.private_message_recipient);
+    if (emails.length === 1) {
+        const user = people.get_by_email(emails[0]!);
+        if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
+            is_dm_with_self = true;
+        }
+    }
     const recipients = people.emails_to_full_names_string(emails);
     return {
         draft_id: draft.id,
         is_stream: false,
+        is_dm_with_self,
         recipients,
         raw_content: draft.content,
         time_stamp,
