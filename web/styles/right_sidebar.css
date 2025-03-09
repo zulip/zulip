@@ -605,39 +605,15 @@
     margin-bottom: var(--sidebar-bottom-spacing);
 
     .invite-user-link {
-        grid-template:
-            "left-spacing icon text" /
-            calc(var(--right-sidebar-toggle-width-offset) - 2px)
-            var(--right-sidebar-presence-circle-width)
-            minmax(0, 1fr);
-
-        .zulip-icon-user-plus {
-            grid-area: icon;
-            justify-self: center;
-            /* Smaller icon size to align the link text with the other buddy list links */
-            font-size: 13px;
-        }
-
-        .right-sidebar-wrappable-text-inner {
-            grid-area: text;
-        }
+        /* TODO: We should eventually change the grid to use the correct
+           --right-sidebar-presence-circle-width with left spacing, and
+           share that left spacing value here. */
+        padding-left: calc(var(--right-sidebar-toggle-width-offset) + 0.3em);
     }
 }
 
 #user-list.with_avatars .invite-user-link {
-    /* Subtract 2px to account for the border on this element */
-    grid-template:
-        "icon middle-spacing text" /
-        var(--right-sidebar-header-icon-toggle-width)
-        calc(
-            var(--right-sidebar-text-indent-with-avatar) - 2px -
-                var(--right-sidebar-header-icon-toggle-width)
-        )
-        minmax(0, 1fr);
-
-    .zulip-icon-user-plus {
-        margin-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
-    }
+    padding-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
 }
 
 #buddy-list-actions-menu-popover {
