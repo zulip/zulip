@@ -236,6 +236,9 @@ export function set_focus(opts: ComposeTriggeredOptions): void {
     if (window.getSelection()!.toString() === "" || opts.trigger !== "message click") {
         const focus_area = get_focus_area(opts);
         $(focus_area).trigger("focus");
+        if (focus_area === "#private_message_recipient") {
+            $(focus_area).trigger("click");
+        }
     }
 }
 
