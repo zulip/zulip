@@ -287,7 +287,7 @@ test("basics", () => {
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(filter.has_negated_operand("channels", "public"));
-    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
     assert.ok(filter.may_contain_multiple_conversations());
@@ -299,7 +299,7 @@ test("basics", () => {
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.has_negated_operand("channels", "public"));
-    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.can_apply_locally());
     assert.ok(filter.includes_full_stream_history());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
@@ -466,7 +466,7 @@ test("basics", () => {
     assert.ok(filter.supports_collapsing_recipients());
     // This next check verifies what is probably a bug; see the
     // comment in the can_apply_locally implementation.
-    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
     assert.ok(filter.may_contain_multiple_conversations());
@@ -539,7 +539,7 @@ test("basics", () => {
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
     assert.ok(filter.includes_full_stream_history());
-    assert.ok(!filter.can_apply_locally());
+    assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
     assert.ok(!filter.may_contain_multiple_conversations());
@@ -1038,8 +1038,34 @@ test("predicate_basics", ({override}) => {
     assert.ok(predicate({type: direct_message}));
     assert.ok(!predicate({type: stream_message}));
 
+    const new_sub_id = new_stream_id();
+    const new_sub = {
+        name: "new-subscription",
+        stream_id: new_sub_id,
+    };
+
+    stream_data.add_sub(new_sub);
     predicate = get_predicate([["channels", "public"]]);
-    assert.ok(predicate({}));
+    assert.ok(predicate({type: stream_message, stream_id: new_sub_id}));
+
+    predicate = get_predicate([["channels", "web-public"]]);
+    stream_data.update_stream_privacy(new_sub, {
+        invite_only: false,
+        history_public_to_subscriber: false,
+        is_web_public: true,
+    });
+    assert.ok(predicate({type: stream_message, stream_id: new_sub_id}));
+
+    predicate = predicate = get_predicate([["channels", "archived"]]);
+    assert.ok(!predicate({type: direct_message, stream_id: new_sub_id}));
+
+    predicate = predicate = get_predicate([["channels", "archived"]]);
+    assert.ok(!predicate({type: stream_message, stream_id: new_sub_id}));
+    stream_data.mark_archived(new_sub_id);
+    assert.ok(predicate({type: stream_message, stream_id: new_sub_id}));
+
+    predicate = get_predicate([["channels", "random"]]);
+    assert.ok(!predicate({type: stream_message, stream_id: new_sub_id}));
 
     predicate = get_predicate([["is", "starred"]]);
     assert.ok(predicate({starred: true}));
