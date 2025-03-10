@@ -64,7 +64,7 @@ from zerver.models.realms import (
     get_realm,
 )
 from zerver.models.users import get_user_profile_by_id
-from zerver.views.invite import get_invitee_emails_set
+from zerver.views.invite import get_invitees_set
 from zilencer.lib.remote_counts import MissingDataError, compute_max_monthly_messages
 from zilencer.models import (
     RemoteRealm,
@@ -582,18 +582,19 @@ def support(
                 context["error_message"] = error.msg
 
     if query:
-        key_words = get_invitee_emails_set(query)
+        key_words = get_invitees_set(query)
 
+        key_word_emails = [key_word.email for key_word in key_words]
         case_insensitive_users_q = Q()
-        for key_word in key_words:
-            case_insensitive_users_q |= Q(delivery_email__iexact=key_word)
+        for key_word_email in key_word_emails:
+            case_insensitive_users_q |= Q(delivery_email__iexact=key_word_email)
         users = set(UserProfile.objects.filter(case_insensitive_users_q))
-        realms = set(Realm.objects.filter(string_id__in=key_words))
+        realms = set(Realm.objects.filter(string_id__in=key_word_emails))
 
-        for key_word in key_words:
+        for key_word_email in key_word_emails:
             try:
-                URLValidator()(key_word)
-                parse_result = urlsplit(key_word)
+                URLValidator()(key_word_email)
+                parse_result = urlsplit(key_word_email)
                 hostname = parse_result.hostname
                 assert hostname is not None
                 if parse_result.port:
@@ -602,7 +603,7 @@ def support(
                 with suppress(Realm.DoesNotExist):
                     realms.add(get_realm(subdomain))
             except ValidationError:
-                users.update(UserProfile.objects.filter(full_name__iexact=key_word))
+                users.update(UserProfile.objects.filter(full_name__iexact=key_word_email))
 
         # full_names can have , in them
         users.update(UserProfile.objects.filter(full_name__iexact=query))
@@ -613,7 +614,7 @@ def support(
         confirmations: list[dict[str, Any]] = []
 
         preregistration_user_ids = [
-            user.id for user in PreregistrationUser.objects.filter(email__in=key_words)
+            user.id for user in PreregistrationUser.objects.filter(email__in=key_word_emails)
         ]
         confirmations += get_confirmations(
             [Confirmation.USER_REGISTRATION, Confirmation.INVITATION],
@@ -622,7 +623,7 @@ def support(
         )
 
         preregistration_realm_ids = [
-            user.id for user in PreregistrationRealm.objects.filter(email__in=key_words)
+            user.id for user in PreregistrationRealm.objects.filter(email__in=key_word_emails)
         ]
         confirmations += get_confirmations(
             [Confirmation.REALM_CREATION],
