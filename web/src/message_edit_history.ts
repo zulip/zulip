@@ -332,8 +332,11 @@ export function initialize(): void {
             }
 
             if (
-                realm.realm_message_edit_history_visibility_policy !==
-                message_edit_history_visibility_policy_values.never.code
+                realm.realm_message_edit_history_visibility_policy ===
+                    message_edit_history_visibility_policy_values.always.code ||
+                (realm.realm_message_edit_history_visibility_policy ===
+                    message_edit_history_visibility_policy_values.moves_only.code &&
+                    message.last_moved_timestamp !== undefined)
             ) {
                 fetch_and_render_message_history(message);
                 $("#message-history-overlay .exit-sign").trigger("focus");

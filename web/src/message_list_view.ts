@@ -55,11 +55,13 @@ export type MessageContainer = {
     include_sender: boolean;
     is_hidden: boolean;
     last_edit_timestamp: number | undefined;
+    last_moved_timestamp: number | undefined;
     mention_classname: string | undefined;
     message_edit_notices_in_left_col: boolean;
     message_edit_notices_alongside_sender: boolean;
     message_edit_notices_for_status_message: boolean;
     modified: boolean;
+    edited: boolean;
     moved: boolean;
     msg: Message;
     sender_is_bot: boolean;
@@ -162,69 +164,6 @@ function same_recipient(a: MessageContainer | undefined, b: MessageContainer | u
         return false;
     }
     return util.same_recipient(a.msg, b.msg);
-}
-
-function analyze_edit_history(
-    message: Message,
-    last_edit_timestamp: number | undefined,
-): {
-    edited: boolean;
-    moved: boolean;
-    resolve_toggled: boolean;
-} {
-    // Returns a dict of booleans that describe the message's history:
-    //   * edited: if the message has had its content edited
-    //   * moved: if the message has had its stream/topic edited
-    //   * resolve_toggled: if the message has had a topic resolve/unresolve edit
-    let edited = false;
-    let moved = false;
-    let resolve_toggled = false;
-
-    if (message.edit_history !== undefined) {
-        for (const edit_history_event of message.edit_history) {
-            if (edit_history_event.prev_content) {
-                edited = true;
-            }
-
-            if (edit_history_event.prev_stream) {
-                moved = true;
-            }
-
-            if (edit_history_event.prev_topic !== undefined) {
-                // TODO: Possibly this assert could be removed if we tightened the type
-                // on edit history elements such that a `prev_topic` being present means a
-                // `topic` element is.
-                assert(edit_history_event.topic !== undefined);
-                // We know it has a topic edit. Now we need to determine if
-                // it was a true move or a resolve/unresolve.
-                if (
-                    resolved_topic.is_resolved(edit_history_event.topic) &&
-                    edit_history_event.topic.slice(2) === edit_history_event.prev_topic
-                ) {
-                    // Resolved.
-                    resolve_toggled = true;
-                    continue;
-                }
-                if (
-                    resolved_topic.is_resolved(edit_history_event.prev_topic) &&
-                    edit_history_event.prev_topic.slice(2) === edit_history_event.topic
-                ) {
-                    // Unresolved.
-                    resolve_toggled = true;
-                    continue;
-                }
-                // Otherwise, it is a real topic rename/move.
-                moved = true;
-            }
-        }
-    } else if (last_edit_timestamp !== undefined) {
-        // When the edit_history is disabled for the organization, we do not receive the edit_history
-        // variable in the message object. In this case, we will check if the last_edit_timestamp is
-        // available or not. Since we don't have the edit_history, we can't determine if the message
-        // was moved or edited. Therefore, we simply mark the messages as edited.
-        edited = true;
-    }
-    return {edited, moved, resolve_toggled};
 }
 
 function get_group_display_date(message: Message, display_year: boolean): string {
@@ -592,8 +531,10 @@ export class MessageListView {
         );
     }
 
-    _get_message_edited_vars(message: Message): {
+    _get_message_edited_and_moved_vars(message: Message): {
         last_edit_timestamp: number | undefined;
+        last_moved_timestamp: number | undefined;
+        edited: boolean;
         moved: boolean;
         modified: boolean;
     } {
@@ -603,25 +544,14 @@ export class MessageListView {
         } else {
             last_edit_timestamp = message.last_edit_timestamp;
         }
-        const edit_history_details = analyze_edit_history(message, last_edit_timestamp);
-
-        if (!last_edit_timestamp || !(edit_history_details.moved || edit_history_details.edited)) {
-            // For messages whose edit history at most includes
-            // resolving topics, we don't display an EDITED/MOVED
-            // notice at all. (The message actions popover will still
-            // display an edit history option, so you can see when it
-            // was marked as resolved if you need to).
-            return {
-                last_edit_timestamp: undefined,
-                moved: false,
-                modified: false,
-            };
-        }
+        const last_moved_timestamp = message.last_moved_timestamp;
 
         return {
             last_edit_timestamp,
-            moved: edit_history_details.moved && !edit_history_details.edited,
-            modified: true,
+            last_moved_timestamp,
+            edited: last_edit_timestamp !== undefined,
+            moved: last_moved_timestamp !== undefined,
+            modified: last_edit_timestamp !== undefined || last_moved_timestamp !== undefined,
         };
     }
 
@@ -646,6 +576,8 @@ export class MessageListView {
         include_sender: boolean;
         status_message: string | false;
         last_edit_timestamp: number | undefined;
+        last_moved_timestamp: number | undefined;
+        edited: boolean;
         moved: boolean;
         modified: boolean;
     } {
@@ -745,7 +677,7 @@ export class MessageListView {
             mention_classname,
             include_sender,
             ...this._maybe_get_me_message(is_hidden, message),
-            ...this._get_message_edited_vars(message),
+            ...this._get_message_edited_and_moved_vars(message),
         };
     }
 

@@ -384,20 +384,36 @@ export function initialize(): void {
             if (!message_container.modified) {
                 return false;
             }
-            // We know the message has been modified, so we either have a timestamp
-            // from the server or from a local edit.
-            assert(message_container.last_edit_timestamp !== undefined);
-            const last_modified_time_string = get_time_string(
-                message_container.last_edit_timestamp,
-            );
+            let edited_time_string = "";
+            let moved_time_string = "";
+            if (message_container.edited) {
+                // We know the message has been edited, so we either have a timestamp
+                // from the server or from a local edit.
+                assert(message_container.last_edit_timestamp !== undefined);
+                edited_time_string = get_time_string(message_container.last_edit_timestamp);
+            }
+            if (message_container.moved) {
+                // We know the message has been moved, so we have a timestamp from
+                // the server.
+                assert(message_container.last_moved_timestamp !== undefined);
+                moved_time_string = get_time_string(message_container.last_moved_timestamp);
+            }
+            const edit_history_access =
+                realm.realm_message_edit_history_visibility_policy ===
+                message_edit_history_visibility_policy_values.always.code;
+            const message_moved_and_move_history_access =
+                realm.realm_message_edit_history_visibility_policy ===
+                    message_edit_history_visibility_policy_values.moves_only.code &&
+                message_container.moved;
             instance.setContent(
                 parse_html(
                     render_message_edit_notice_tooltip({
                         moved: message_container.moved,
-                        last_edit_timestr: last_modified_time_string,
-                        realm_message_edit_history_is_visible:
-                            realm.realm_message_edit_history_visibility_policy !==
-                            message_edit_history_visibility_policy_values.never.code,
+                        edited: message_container.edited,
+                        edited_time_string,
+                        moved_time_string,
+                        edit_history_access,
+                        message_moved_and_move_history_access,
                     }),
                 ),
             );
