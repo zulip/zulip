@@ -49,6 +49,7 @@ class EmailLogBackEnd(EmailBackend):
             "reply_to": email.reply_to,
             "recipients": email.to,
             "body": email.body,
+            "date": email.extra_headers.get("Date", "?"),
             "html_message": html_message,
         }
 
