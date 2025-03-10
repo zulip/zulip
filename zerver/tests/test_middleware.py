@@ -89,13 +89,13 @@ class OpenGraphTest(ZulipTestCase):
         # in the first paragraph.
         self.check_title_and_description(
             "/help/disable-message-edit-history",
-            "Disable message edit history | Zulip help center",
+            "Configure viewing message edit history | Zulip help center",
             [
                 "In Zulip, users can view the edit history of a message. | To remove the",
                 "best to delete the message entirely. ",
             ],
             [
-                "Disable message edit history",
+                "Configure viewing message edit history",
                 "feature is only available",
                 "Related articles",
                 "Restrict message editing",
