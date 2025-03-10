@@ -812,7 +812,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         can_manage_billing_group=GroupPermissionSetting(
             require_system_group=False,
             allow_internet_group=False,
-            allow_nobody_group=True,
+            allow_nobody_group=False,
             allow_everyone_group=False,
             default_group_name=SystemGroups.ADMINISTRATORS,
         ),
