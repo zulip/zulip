@@ -969,6 +969,11 @@ def apply_event(
                 if saved_snippet["id"] == event["saved_snippet_id"]:
                     del state["saved_snippets"][idx]
                     break
+        elif event["op"] == "update":
+            for idx, saved_snippet in enumerate(state["saved_snippets"]):
+                if saved_snippet["id"] == event["saved_snippet"]["id"]:
+                    state["saved_snippets"][idx] = event["saved_snippet"]
+                    break
 
     elif event["type"] == "drafts":
         if event["op"] == "add":
