@@ -1516,6 +1516,10 @@ msgstr ""
 msgid "Already have an account?"
 msgstr ""
 
+#: template/zerver/login.html:156
+msgid "Don't have an account?"
+msgstr ""
+
 #: templates/zerver/accounts_home.html:92
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:21
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.txt:6
