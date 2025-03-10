@@ -100,14 +100,18 @@ export function rewire_get_by_user_id(value: typeof get_by_user_id): void {
     get_by_user_id = value;
 }
 
+export function rewire_maybe_get_user_by_id(value: typeof maybe_get_user_by_id): void {
+    maybe_get_user_by_id = value;
+}
+
 // This is type unsafe version of get_by_user_id for the callers that expects undefined values.
-export function maybe_get_user_by_id(user_id: number, ignore_missing = false): User | undefined {
+export let maybe_get_user_by_id = (user_id: number, ignore_missing = false): User | undefined => {
     if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
         blueslip.error("Unknown user_id in maybe_get_user_by_id", {user_id});
         return undefined;
     }
     return people_by_user_id_dict.get(user_id);
-}
+};
 
 export function validate_user_ids(user_ids: number[]): number[] {
     const good_ids = [];
