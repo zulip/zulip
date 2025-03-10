@@ -8,15 +8,16 @@ import * as topic_link_util from "./topic_link_util.ts";
 
 // The standard Clipboard API do not support custom mime types like
 // text/x-gfm, but this approach does, except on Safari.
-export function execute_copy(handle_copy_event: (e: ClipboardEvent) => void): void {
+export function execute_copy(
+    handle_copy_event: (e: ClipboardEvent) => void,
+    fallback_text: string,
+): void {
     // On Safari, the copy command only works if there's a current
-    // selection, so we create a selection. We expect nobody will see
-    // the fallback text unless some browser doesn't support copy
-    // event handlers, so we set the text of the dummy field simply
-    // indicating an unexpected error.
+    // selection, so we create a selection, with the link set as
+    // fallback text for it.
     const dummy = document.createElement("input");
     document.body.append(dummy);
-    dummy.value = "Copy failed!";
+    dummy.value = fallback_text;
     dummy.select();
 
     document.addEventListener("copy", handle_copy_event);
@@ -54,7 +55,7 @@ export async function copy_link_to_clipboard(link: string): Promise<void> {
             e.preventDefault();
             resolve();
         }
-        execute_copy(handle_copy_event);
+        execute_copy(handle_copy_event, link);
     });
 }
 
