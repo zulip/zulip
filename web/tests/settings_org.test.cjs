@@ -573,7 +573,7 @@ test("set_up", ({override, override_rewire}) => {
         override,
         $(".admin-realm-form").get_on_handler(
             "click",
-            ".subsection-header .subsection-changes-save button",
+            ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
         ),
     );
     test_upload_realm_icon(override, upload_realm_logo_or_icon);
