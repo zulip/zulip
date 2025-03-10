@@ -1146,14 +1146,17 @@ textarea.new_message_textarea {
 }
 
 #compose_select_recipient_widget {
-    width: auto;
+    /* We set width to 100% to get the ellipsis when
+       needed, but the flex and max-width properties
+       on the widget wrapper ultimately determine
+       how much space the channel picker occupies. */
+    width: 100%;
     outline: none;
     /* We override the component-level colors to
        ensure concord with the topic box. */
     color: var(--color-compose-recipient-box-text-color);
     background-color: var(--color-compose-recipient-box-background-color);
     border-color: var(--color-compose-recipient-box-border-color);
-    max-width: 30vw;
 
     &.dropdown-widget-button {
         padding: 0 6px;
@@ -1487,6 +1490,17 @@ textarea.new_message_textarea {
 
 #compose_select_recipient_widget_wrapper {
     display: flex;
+    /* Allow the contents wrapped here to
+       expand the available space... */
+    white-space: nowrap;
+    flex: 0 1 fit-content;
+    /* But force an ellipsis here, rather than
+       just on an inner element. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Finally, hold this to a maximum width of
+       40% of the recipient row. */
+    max-width: 40%;
 
     &:focus-visible {
         outline: 0;
