@@ -40,12 +40,73 @@ function image_to_zulip_markdown(
     return src ? "[" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
 }
 
+// Returns 2 or more if there are multiple valid text nodes in the tree.
+function check_multiple_text_nodes(child_nodes: ChildNode[]): number {
+    let textful_nodes = 0;
+
+    for (const child of child_nodes) {
+        // We do not consider empty childNodes, comments and
+        // childNodes containing newlines.
+        if (child.nodeValue?.trim() === "" || child.nodeName === "#comment") {
+            continue;
+        }
+
+        if (child.nodeValue && child.nodeType === Node.TEXT_NODE) {
+            textful_nodes += 1;
+            if (textful_nodes >= 2) {
+                return textful_nodes;
+            }
+        }
+
+        textful_nodes += check_multiple_text_nodes([...child.childNodes]);
+
+        if (textful_nodes >= 2) {
+            return textful_nodes;
+        }
+    }
+
+    return textful_nodes;
+}
+
 function within_single_element(html_fragment: HTMLElement): boolean {
     return (
         html_fragment.childNodes.length === 1 &&
         html_fragment.firstElementChild !== null &&
         html_fragment.firstElementChild.innerHTML !== ""
     );
+}
+
+// We count textful child nodes to decide if styles should
+// be removed (e.g., for headings that contain <br> and other tags in the fragment).
+// Empty nodes like comments or newline-only text should not be counted.
+function has_single_textful_child_node(html_fragment: HTMLElement): boolean {
+    let textful_nodes = 0;
+    textful_nodes = check_multiple_text_nodes([...html_fragment.childNodes]);
+    if (textful_nodes >= 2) {
+        return false;
+    }
+    return (
+        html_fragment.firstElementChild !== null && html_fragment.firstElementChild.innerHTML !== ""
+    );
+}
+
+function get_the_only_textful_child_content(child_nodes: ChildNode[]): string | null {
+    for (const child of child_nodes) {
+        if (child.nodeValue?.trim() === "" || child.nodeName === "#comment") {
+            continue;
+        }
+
+        if (child.nodeValue && child.nodeType === Node.TEXT_NODE) {
+            // We return directly, as it is already verified that exactly one
+            // such text node exists.
+            return child.nodeValue;
+        }
+        const child_text_node = get_the_only_textful_child_content([...child.childNodes]);
+        if (child_text_node) {
+            return child_text_node;
+        }
+    }
+    return null;
 }
 
 export function is_white_space_pre(paste_html: string): boolean {
@@ -119,16 +180,25 @@ export function paste_handler_converter(
         .querySelector("body");
     assert(copied_html_fragment !== null);
 
-    const copied_within_single_element = within_single_element(copied_html_fragment);
+    const has_single_child_with_valid_text = has_single_textful_child_node(copied_html_fragment);
+
     const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE"];
     // If the entire selection copied is within a single HTML element (like an
     // `h1`), we don't want to retain its styling, except when it is needed to
     // identify the intended structure of the copied content.
     if (
-        copied_within_single_element &&
+        has_single_child_with_valid_text &&
         copied_html_fragment.firstElementChild !== null &&
         !outer_elements_to_retain.includes(copied_html_fragment.firstElementChild.nodeName)
     ) {
+        // This will always return some text as it is already ensured
+        // that such a text node exists in `has_single_textful_child_node`.
+        const text_content = get_the_only_textful_child_content([...copied_html_fragment.children]);
+        if (text_content) {
+            return text_content;
+        }
+        // Ideally, this should never happen.
+        // Just for fallback in case it does.
         paste_html = copied_html_fragment.firstElementChild.innerHTML;
     }
 
