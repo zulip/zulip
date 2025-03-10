@@ -2,6 +2,7 @@ import collections
 import logging
 import os
 import shutil
+from collections.abc import Sequence
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from difflib import unified_diff
@@ -10,7 +11,7 @@ from typing import Any
 import bmemcached
 import orjson
 import pyvips
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, ResultSet
 from django.conf import settings
 from django.core.cache import cache
 from django.core.management.base import CommandError
@@ -38,6 +39,8 @@ from zerver.lib.migration_status import (
     parse_migration_status,
 )
 from zerver.lib.mime_types import guess_type
+from zerver.lib.narrow import BadNarrowOperatorError, InvalidOperatorCombinationError
+from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
@@ -56,6 +59,7 @@ from zerver.lib.thumbnail import (
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend, upload_emoji_image
 from zerver.lib.upload.s3 import get_bucket
+from zerver.lib.url_decoding import Filter, is_same_server_narrow_link, parse_narrow_url
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
@@ -456,6 +460,10 @@ def fix_message_rendered_content(
             # in this use case.
             get_user_upload_previews(realm.id, message[content_key])
 
+            message[rendered_content_key] = fix_narrow_urls_in_message_content(
+                message[rendered_content_key]
+            )
+
             continue
 
         try:
@@ -479,6 +487,9 @@ def fix_message_rendered_content(
                 sent_by_bot=sent_by_bot,
                 translate_emoticons=translate_emoticons,
             ).rendered_content
+            # Near-links fix has to be done here for third-party platforms
+            # import because those doesn't have any rendered content yet.
+            rendered_content = fix_narrow_urls_in_message_content(rendered_content)
 
             message[rendered_content_key] = rendered_content
             if "scheduled_timestamp" not in message:
@@ -494,6 +505,181 @@ def fix_message_rendered_content(
             logging.warning(
                 "Error in Markdown rendering for message ID %s; continuing", message["id"]
             )
+
+
+def find_relative_links_from_soup(
+    soup: BeautifulSoup, relative_link_prefixes: Sequence[str]
+) -> ResultSet[Any]:
+    patterns_to_search: list[str] = relative_link_prefixes
+    # Include legacy links without the leading "/"
+    for prefix in relative_link_prefixes:
+        if prefix.startswith("/"):
+            patterns_to_search.append(prefix.removeprefix("/"))
+        else:
+            patterns_to_search.append("/" + prefix)
+
+    return soup.find_all(
+        lambda tag: tag.name == "a"
+        and tag.has_attr("href")
+        and (tag.get("href").startswith(tuple(patterns_to_search)))
+    )
+
+
+def get_filter_instance_of_url(url: str) -> Filter | None:
+    if not is_same_server_narrow_link(url):
+        return None
+
+    narrow_terms = parse_narrow_url(url)
+    if not narrow_terms:
+        return None
+
+    return Filter(narrow_terms)
+
+
+def fix_narrow_urls_in_message_content(rendered_content: str) -> str:
+    """
+    Remaps the object IDs of narrow links in message contents.
+    This currently only handles these types of narrow links:
+     - Channel link
+     - Topic link
+     - Channel message link
+     - DM-with link
+     - DM message link
+    """
+    # TODO: All exported narrow links in messages are broken,
+    # this only fixes the most common cases. We can extend this
+    # to fix other narrow links.
+    soup = BeautifulSoup(rendered_content, "html.parser")
+
+    channel_narrow_links = find_relative_links_from_soup(
+        soup, ["/#narrow/channel", "/#narrow/stream"]
+    )
+
+    for link in channel_narrow_links:
+        channel_narrow_url = link["href"]
+
+        try:
+            terms_handler = get_filter_instance_of_url(channel_narrow_url)
+        except (BadNarrowOperatorError, InvalidOperatorCombinationError):
+            continue
+
+        if not terms_handler:
+            continue
+
+        # Fix channel ID
+        channel_terms = terms_handler.get_terms("channel")
+        if len(channel_terms) != 1:
+            continue
+        channel_term = channel_terms[0]
+
+        old_channel_id = channel_term.operator
+        channel_id_map = ID_MAP["stream"]
+        new_channel_id = channel_id_map.get(old_channel_id)
+        if not new_channel_id:
+            continue
+
+        new_channel_term: NarrowTerm = channel_term
+        new_channel_term.operand = new_channel_id
+
+        try:
+            terms_handler.update_term(channel_term, new_channel_term)
+        except AssertionError:
+            continue
+
+        topic_term = terms_handler.get_terms("topic")
+        if not topic_term:
+            link["href"] = terms_handler.generate_channel_url()
+            continue
+
+        message_terms = terms_handler.get_terms_with_message_id()
+        if len(message_terms) != 1:
+            link["href"] = terms_handler.generate_topic_url()
+            continue
+
+        # Fix message ID
+        message_term = message_terms[0]
+        message_id = message_term.operator
+        channel_id_map = ID_MAP["message"]
+        new_message_id = channel_id_map.get(message_id)
+        if new_message_id is None:
+            link["href"] = terms_handler.generate_topic_url()
+            continue
+        new_message_term: NarrowTerm = message_term
+        new_message_term.operand = new_message_id
+
+        try:
+            terms_handler.update_term(message_term, new_channel_term)
+        except AssertionError:
+            continue
+        try:
+            link["href"] = terms_handler.generate_message_url()
+        except InvalidOperatorCombinationError:
+            continue
+
+    dm_narrow_links = find_relative_links_from_soup(soup, ["/#narrow/dm", "/#narrow/pm-with"])
+
+    for link in dm_narrow_links:
+        message_narrow_url = link["href"]
+
+        try:
+            terms_handler = get_filter_instance_of_url(message_narrow_url)
+        except (BadNarrowOperatorError, InvalidOperatorCombinationError):
+            continue
+
+        if not terms_handler:
+            continue
+
+        # Fix DM recipient IDs
+        dm_terms = terms_handler.get_terms("dm")
+        if len(dm_terms) != 1:
+            continue
+
+        dm_term = dm_terms[0]
+
+        dm_recipients = dm_term.operand
+        if isinstance(dm_recipients, str | int):
+            continue
+
+        user_id_map = ID_MAP["user_profile"]
+        new_dm_recipient = [
+            user_id_map[user_id] for user_id in dm_recipients if user_id in user_id_map
+        ]
+        if new_dm_recipient == []:
+            link["href"] = "#"
+            continue
+        new_dm_term = dm_term
+        new_dm_term.operator = new_dm_recipient
+        try:
+            terms_handler.update_term(dm_term, new_dm_term)
+        except AssertionError:
+            continue
+
+        message_terms = terms_handler.get_terms_with_message_id()
+        if len(message_terms) != 1:
+            link["href"] = terms_handler.generate_dm_with_url()
+            continue
+
+        # Fix message ID
+        message_term = message_terms[0]
+        message_id = message_term.operator
+        message_id_map = ID_MAP["message"]
+        new_message_id = message_id_map.get(message_id)
+        if new_message_id is None:
+            link["href"] = terms_handler.generate_topic_url()
+            continue
+        new_message_term: NarrowTerm = message_term
+        new_message_term.operand = new_message_id
+
+        try:
+            terms_handler.update_term(message_term, new_channel_term)
+        except AssertionError:
+            continue
+        try:
+            link["href"] = terms_handler.generate_message_url()
+        except InvalidOperatorCombinationError:
+            continue
+
+    return str(soup)
 
 
 def fix_message_edit_history(
