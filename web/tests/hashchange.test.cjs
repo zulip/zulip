@@ -235,7 +235,7 @@ function test_helper({override, override_rewire, change_tab}) {
 
 run_test("hash_interactions", ({override, override_rewire}) => {
     $window_stub = $.create("window-stub");
-    override(user_settings, "web_home_view", "recent_topics");
+    override(user_settings, "web_home_view", "recent");
 
     const helper = test_helper({override, override_rewire, change_tab: true});
 
@@ -281,7 +281,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
 
     // Test old "#recent_topics" hash redirects to "#recent".
     recent_view_ui_shown = false;
-    window.location.hash = "#recent_topics";
+    window.location.hash = "#recent";
 
     helper.clear_events();
     $window_stub.trigger("hashchange");
