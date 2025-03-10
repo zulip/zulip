@@ -1721,17 +1721,6 @@ body:not(.hide-left-sidebar) {
     }
 }
 
-body:not(.spectator-view) {
-    /* The large Log In button for spectators makes this rule
-       inappropriate for that view. */
-    @container header-container (width < $cq_xl_min) {
-        #navbar-middle {
-            /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
-            margin-right: var(--right-column-collapsed-sidebar-width);
-        }
-    }
-}
-
 /* We have some regrettable but temporarily necessary code duplication
    in the queries that follow.
 
@@ -1742,6 +1731,13 @@ body:not(.spectator-view) {
    However, in browsers that lag the spec, we fall back to the original
    media queries. The layout will not look as good as it could, but
    essential scrolling behavior will be maintained. */
+
+@container header-container (width < $cq_xl_min) {
+    #navbar-middle {
+        /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
+        margin-right: var(--right-column-collapsed-sidebar-width);
+    }
+}
 
 @container app (width < $cq_xl_min) {
     .app-main {
