@@ -208,6 +208,22 @@ function message_matches_search_term(message: Message, operator: string, operand
             return message.stream_id.toString() === operand;
         }
 
+        case "channels":
+            if (message.type !== "stream") {
+                return false;
+            }
+            switch (operand) {
+                case "web-public":
+                    return stream_data.is_web_public(message.stream_id);
+                case "public":
+                    return !stream_data.is_invite_only_by_stream_id(message.stream_id);
+                case "archived":
+                    return stream_data.is_stream_archived(message.stream_id);
+                default:
+                    blueslip.error(`Invalid channels operand: ${operand}`);
+                    return false;
+            }
+
         case "topic":
             if (message.type !== "stream") {
                 return false;
@@ -1580,13 +1596,6 @@ export class Filter {
             // processor.
             return false;
         }
-
-        // TODO: It's not clear why `channels:` filters would not be
-        // applicable locally.
-        if (this.has_operator("channels") || this.has_negated_operand("channels", "public")) {
-            return false;
-        }
-
         // If we get this far, we're good!
         return true;
     }
