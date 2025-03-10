@@ -6,6 +6,7 @@ import {z} from "zod";
 
 import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
 import render_confirm_join_group_direct_member from "../templates/confirm_dialog/confirm_join_group_direct_member.hbs";
+import render_modal_banner from "../templates/modal_banner/modal_banner.hbs";
 import render_group_info_banner from "../templates/modal_banner/user_group_info_banner.hbs";
 import render_settings_checkbox from "../templates/settings/settings_checkbox.hbs";
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
@@ -503,8 +504,18 @@ export function update_group_details(group: UserGroup): void {
     $edit_container.find(".group-description").text(group.description);
 }
 
-function update_toggler_for_group_setting(): void {
-    toggler.goto(select_tab);
+function update_toggler_for_group_setting(group: UserGroup): void {
+    if (!group.deactivated) {
+        toggler.enable_tab("permissions");
+        toggler.goto(select_tab);
+    } else {
+        if (select_tab === "permissions") {
+            toggler.goto("general");
+        } else {
+            toggler.goto(select_tab);
+        }
+        toggler.disable_tab("permissions");
+    }
 }
 
 function get_membership_status_context(group: UserGroup): {
@@ -989,7 +1000,7 @@ export function show_settings_for(group: UserGroup): void {
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
-    update_toggler_for_group_setting();
+    update_toggler_for_group_setting(group);
 
     toggler.get().prependTo("#user_group_settings .tab-container");
     const $edit_container = get_edit_container(group);
@@ -998,6 +1009,20 @@ export function show_settings_for(group: UserGroup): void {
     $edit_container.show();
     show_membership_settings(group);
     show_general_settings(group);
+
+    const context = {
+        banner_type: compose_banner.WARNING,
+        classname: "group_deactivated",
+        hide_close_button: true,
+        banner_text: $t({
+            defaultMessage:
+                "This group is deactivated. It can't be mentioned or used for any permissions.",
+        }),
+    };
+
+    if (group.deactivated) {
+        $("#user_group_settings .group-banner").html(render_modal_banner(context));
+    }
 
     $edit_container
         .find(".group-assigned-permissions")
@@ -1182,7 +1207,7 @@ export function handle_deleted_group(group_id: number): void {
     }
 
     if (is_editing_group(group_id)) {
-        open_right_panel_empty();
+        $("#groups_overlay .deactivated-user-group-icon-right").show();
     }
     redraw_user_group_list();
 }
@@ -1895,7 +1920,7 @@ export function initialize(): void {
 
                         $("#dialog_error .permissions-button").on("click", () => {
                             select_tab = "permissions";
-                            update_toggler_for_group_setting();
+                            update_toggler_for_group_setting(user_group);
                             dialog_widget.close();
                         });
                     } else {
