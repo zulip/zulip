@@ -1767,8 +1767,13 @@ export function get_custom_fields_by_type(
     return filteredProfileData;
 }
 
-export function is_my_user_id(user_id: number): boolean {
-    return user_id === my_user_id;
+export let is_my_user_id = (user_id: number): boolean => {
+    const is_my_user_id = user_id === my_user_id;
+    return is_my_user_id;
+};
+
+export function rewire_is_my_user_id(value: typeof is_my_user_id): void {
+    is_my_user_id = value;
 }
 
 export function compare_by_name(a: User, b: User): number {

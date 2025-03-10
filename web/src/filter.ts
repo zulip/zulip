@@ -1401,6 +1401,9 @@ export class Filter {
 
                     return $t({defaultMessage: "Muted user"});
                 }
+                if (people.is_my_user_id(person.user_id)) {
+                    return $t({defaultMessage: "Message with yourself"});
+                }
                 if (people.should_add_guest_user_indicator(person.user_id)) {
                     return $t({defaultMessage: "{name} (guest)"}, {name: person.full_name});
                 }
