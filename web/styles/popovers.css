@@ -1445,6 +1445,15 @@ ul.popover-group-menu-member-list {
             color: var(--color-gear-menu-blue-text);
         }
     }
+
+    .theme-switcher {
+        /* Left and right margins are set to match the alignment with
+        other items in the menu. Other elements have space of 0.6666em
+        on both sides, but they have font size set to 1em and theme
+        switcher has font size set to 1.0666em. So, we need space of
+        0.6666/1.0666 em on each side. */
+        margin: 0 0.625em;
+    }
 }
 
 ul.popover-menu-list {
