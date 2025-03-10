@@ -469,7 +469,11 @@ export class MessageList {
         const is_web_public = sub?.is_web_public;
         if (sub === undefined || sub.is_archived) {
             deactivated = true;
-        } else if (!subscribed && !this.last_message_historical) {
+        } else if (
+            !subscribed &&
+            !this.last_message_historical &&
+            this.last_message_historical !== undefined
+        ) {
             just_unsubscribed = true;
         }
 
