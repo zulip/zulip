@@ -683,8 +683,20 @@ class ImageAttachment(models.Model):
     original_height_px = models.IntegerField()
     frames = models.IntegerField()
 
+    # indicates whether we attempted to delete this image
+    deleted = models.BooleanField(default=False)
+
     # Contains a list of zerver.lib.thumbnail.StoredThumbnailFormat objects, serialized
     thumbnail_metadata = models.JSONField(default=list, null=False)
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=["deleted"],
+                name="zerver_imageattachment_deleted_true_idx",
+                condition=Q(deleted=True),
+            )
+        ]
 
 
 class AbstractAttachment(models.Model):
@@ -705,6 +717,9 @@ class AbstractAttachment(models.Model):
     size = models.IntegerField()
 
     content_type = models.TextField(null=True)
+
+    # indicates whether we attempted to delete this attachment
+    deleted = models.BooleanField(default=False)
 
     # The two fields below serve as caches to let us avoid looking up
     # the corresponding messages/streams to check permissions before
@@ -752,6 +767,15 @@ class ArchivedAttachment(AbstractAttachment):
         ArchivedMessage, related_name="attachment_set", related_query_name="attachment"
     )
 
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=["deleted"],
+                name="zerver_archivedattachment_deleted_true_idx",
+                condition=Q(deleted=True),
+            )
+        ]
+
 
 class Attachment(AbstractAttachment):
     messages = models.ManyToManyField(Message)
@@ -766,6 +790,11 @@ class Attachment(AbstractAttachment):
                 "realm",
                 "create_time",
                 name="zerver_attachment_realm_create_time",
+            ),
+            models.Index(
+                fields=["deleted"],
+                name="zerver_attachment_deleted_true_idx",
+                condition=Q(deleted=True),
             ),
         ]
 
