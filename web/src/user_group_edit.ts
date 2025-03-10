@@ -129,7 +129,7 @@ function update_add_members_elements(group: UserGroup): void {
     // Otherwise, we adjust whether the widgets are disabled based on
     // whether this user is authorized to add members.
     const $input_element = $add_members_container.find(".input").expectOne();
-    const $button_element = $add_members_container.find('button[name="add_member"]').expectOne();
+    const $button_element = $add_members_container.find("#add_member").expectOne();
 
     if (settings_data.can_add_members_to_user_group(group.id)) {
         $input_element.prop("contenteditable", true);
