@@ -317,7 +317,7 @@ quickly insert them into the message you're composing.
 **Web and desktop updates**
 - When you copy a Zulip link and paste it anywhere that accepts HTML formatting
   (e.g., your email, GitHub, docs, etc.), the link will be formatted as it would
-  be in Zulip (e.g., [#channel > topic]({link_to_a_message_or_conversation_url}).
+  be in Zulip (e.g., [#channel > topic]({link_to_a_message_or_conversation_url})).
 - To [link]({link_to_a_message_or_conversation_url}) to a topic in the channel
   you're composing to, you can now just type `#>` followed by a few letters from
   the topic name, and pick the desired topic from the autocomplete.
