@@ -1410,6 +1410,7 @@ function handle_post_view_change(
     } else {
         compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
     }
+    compose_recipient.check_hide_go_to_conversation_button_intro_tooltip();
 
     scheduled_messages_feed_ui.update_schedule_message_indicator();
     typing_events.render_notifications_for_narrow();
