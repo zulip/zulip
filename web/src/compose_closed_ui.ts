@@ -195,14 +195,6 @@ export function initialize(): void {
             // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
             update_reply_recipient_label();
-
-            // Disable compose reply button if the selected message is a stream
-            // message and the user is not allowed to post in the stream the message
-            // belongs to.
-            if (maybe_get_selected_message_stream_id() !== undefined) {
-                update_buttons_for_stream_views();
-                update_buttons_for_non_specific_views();
-            }
         }
     });
 
