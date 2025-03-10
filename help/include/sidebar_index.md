@@ -48,8 +48,9 @@
 
 ## Preferences
 * [Dark theme](/help/dark-theme)
-* [Configure send message keys](/help/configure-send-message-keys)
 * [Font size](/help/font-size)
+* [Line spacing](/help/line-spacing)
+* [Configure send message keys](/help/configure-send-message-keys)
 * [Change your language](/help/change-your-language)
 * [Change your time zone](/help/change-your-timezone)
 * [Change the time format](/help/change-the-time-format)

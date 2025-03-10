@@ -23,7 +23,8 @@ preference settings, including the following:
     * [Language](/help/change-your-language)
     * [Time format](/help/change-the-time-format)
     * [Light theme vs. dark theme](/help/dark-theme)
-    * [Font size and line spacing](/help/font-size)
+    * [Font size](/help/font-size)
+    * [Line spacing](/help/line-spacing)
     * [Emoji theme](/help/emoji-and-emoticons#change-your-emoji-set)
     * [Home view](/help/configure-home-view)
       ([Inbox](/help/inbox) vs.
