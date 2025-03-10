@@ -4,7 +4,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import * as clipboard_handler from "./clipboard_handler.ts";
 import * as message_lists from "./message_lists.ts";
 import * as rows from "./rows.ts";
 import * as util from "./util.ts";
@@ -138,26 +137,6 @@ function restore_original_selection(ranges: Range[]): void {
     }
 }
 
-function copy_selection_to_clipboard(selection: Selection): void {
-    if (selection.rangeCount === 0) {
-        return;
-    }
-
-    const range = selection.getRangeAt(0);
-    const div = document.createElement("div");
-    div.append(range.cloneContents());
-    const html_content = div.innerHTML.trim();
-    const plain_text = selection.toString().trim();
-
-    // https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand#browser_compatibility
-    const cb = (e: ClipboardEvent): void => {
-        e.clipboardData?.setData("text/html", html_content);
-        e.clipboardData?.setData("text/plain", plain_text);
-        e.preventDefault();
-    };
-    clipboard_handler.execute_copy(cb);
-}
-
 // We want to grab the closest katex span up the tree
 // in cases where we can resolve the selected katex expression
 // from a math block into an inline expression.
@@ -220,7 +199,7 @@ function improve_katex_selection_range(selection: Selection): void {
     }
 }
 
-export function copy_handler(): void {
+export function copy_handler(): boolean {
     // This is the main handler for copying message content via
     // `Ctrl+C` in Zulip (note that this is totally independent of the
     // "select region" copy behavior on Linux; that is handled
@@ -261,15 +240,13 @@ export function copy_handler(): void {
         // TODO: Add a reference for this statement, I just tested
         // it in console for various selection directions and found this
         // to be the case not sure why there is no online reference for it.
-        copy_selection_to_clipboard(selection);
-        return;
+        return false;
     }
 
     if (!skip_same_td_check && start_id === end_id) {
         // Check whether the selection both starts and ends in the
         // same message.  If so, Let the browser handle this.
-        copy_selection_to_clipboard(selection);
-        return;
+        return false;
     }
 
     // We've now decided to handle the copy event ourselves.
@@ -294,6 +271,10 @@ export function copy_handler(): void {
 
         $div.remove();
     }, 0);
+
+    // Tell the keyboard code that we did the copy ourselves, and thus
+    // the browser should not handle the copy.
+    return true;
 }
 
 export function analyze_selection(selection: Selection): {
