@@ -271,7 +271,7 @@ class SlackWebhookTests(WebhookTestCase):
         )
 
     def test_message_with_complex_formatted_texts(self) -> None:
-        message_body = "this is text messages with overlapping formatting\n_**bold with italic**_\n~**bold with strike through**~\n~*italic with strike through*~\n~***all three***~"
+        message_body = "this is text messages with overlapping formatting\n***bold with italic***\n~~**bold with strike through**~~\n~~*italic with strike through*~~\n~~***all three***~~"
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_complex_formatted_texts",
@@ -281,7 +281,7 @@ class SlackWebhookTests(WebhookTestCase):
         )
 
     def test_message_with_complex_formatted_mentions(self) -> None:
-        message_body = "@**John Doe** **#general** ~~***@**all*****~"
+        message_body = "@**John Doe** **#general** ~~***@**all*****~~"
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_complex_formatted_mentions",
