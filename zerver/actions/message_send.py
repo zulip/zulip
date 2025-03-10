@@ -1204,7 +1204,7 @@ def do_send_messages(
                 user_ids_without_access_to_sender = user_ids_receiving_event - set(
                     user_ids_who_can_access_sender
                 )
-                event["user_ids_without_access_to_sender"] = user_ids_without_access_to_sender
+                event["user_ids_without_access_to_sender"] = list(user_ids_without_access_to_sender)
 
         if send_request.local_id is not None:
             event["local_id"] = send_request.local_id
