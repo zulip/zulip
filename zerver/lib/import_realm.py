@@ -172,6 +172,7 @@ ID_MAP: dict[str, dict[int, int]] = {
     "realmuserdefault": {},
     "scheduledmessage": {},
     "onboardingusermessage": {},
+    "savedsnippet": {},
 }
 
 id_map_to_list: dict[str, dict[int, list[int]]] = {
@@ -1523,6 +1524,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         bulk_import_model(data, AlertWord)
 
     if "zerver_savedsnippet" in data:
+        fix_datetime_fields(data, "zerver_savedsnippet")
         re_map_foreign_keys(
             data, "zerver_savedsnippet", "user_profile", related_table="user_profile"
         )
