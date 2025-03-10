@@ -27,7 +27,7 @@ def get_unmerged_changelogs() -> str:
     for file_name in changelog_files_list:
         file_path = Path(f"{dir_path}/{file_name}")
         with open(file_path) as f:
-            changelogs += f.read().strip("\n")
+            changelogs += f.read().strip("\n") + "\n"
 
     return changelogs
 
@@ -74,7 +74,7 @@ def merge_changelogs(changelogs: str, new_feature_level: int) -> None:
             if re.fullmatch(r"## Changes in Zulip \d+\.\d+\n", line):
                 changelogs_merged = True
                 file.write(f"\n**Feature level {new_feature_level}**\n")
-                file.write(f"\n{changelogs}\n")
+                file.write(f"\n{changelogs}")
 
     print(f"Changelogs merged to {changelog_path}.")
 
