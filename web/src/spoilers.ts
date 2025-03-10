@@ -65,14 +65,49 @@ export function initialize(): void {
         }
 
         // Allow selecting text inside a spoiler header.
+        // Flag to prevent toggling the spoiler multiple times in quick succession
+        let spoilerToggled = false;
+
         const selection = document.getSelection();
+        // If there's a text selection, defer spoiler toggling until the selection is cleared
         if (selection && selection.type === "Range") {
+            let selectionCleared = false;
+
+            // On mouseup, check if the selection has been cleared
+            $(document).one("mouseup", () => {
+                const newSelection = document.getSelection();
+                if (!newSelection || newSelection.type !== "Range") {
+                    selectionCleared = true;
+                }
+            });
+
+            // On the next click, toggle spoiler only if the selection has been cleared
+            $(document).one("click", () => {
+                if (selectionCleared) {
+                    toggle_spoiler($spoiler_content, $button, $arrow);
+                }
+            });
+
             return;
         }
 
         e.preventDefault();
         e.stopPropagation();
 
+        if (!spoilerToggled) {
+            // Toggle the spoiler only if it hasn't been toggled during text selection
+            toggle_spoiler($spoiler_content, $button, $arrow);
+            spoilerToggled = true;
+        }
+    });
+
+    // Toggles the visibility of the spoiler content by expanding or collapsing it.
+    // If the spoiler content is currently open, this function will collapse it,
+    // hide the content, and update the associated button's state and ARIA attributes.
+    // If the spoiler content is currently closed, this function will expand it,
+    // show the content, and update the button's state and ARIA attributes accordingly.
+
+    function toggle_spoiler($spoiler_content: JQuery, $button: JQuery, $arrow: JQuery): void {
         if ($spoiler_content.hasClass("spoiler-content-open")) {
             // Content was open, we are collapsing
             $arrow.removeClass("spoiler-button-open");
@@ -92,5 +127,5 @@ export function initialize(): void {
 
             expand_spoiler($spoiler_content);
         }
-    });
+    }
 }
