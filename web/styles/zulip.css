@@ -1229,16 +1229,19 @@ nav {
     text-align: center;
 }
 
-div.topic_edit_spinner {
+div.topic_edit_spinner,
+div.toggle_resolve_topic_spinner {
     display: flex;
     align-items: center;
     width: 1.2em; /* 18px at 15px/em  (from font size set in .message-header-contents) */
     height: 1.2em; /* 18px at 15px/em */
 }
 
-div.toggle_resolve_topic_spinner {
-    margin-top: -12px;
-    padding-left: 9px;
+.on_hover_topic_unresolve,
+.on_hover_topic_resolve {
+    /* Matches the width set in `show_toggle_resolve_topic_spinner`,
+       to ensure spinner and resolve icon are the same width */
+    width: 1em;
 }
 
 div.topic_edit_spinner .loading_indicator_spinner,

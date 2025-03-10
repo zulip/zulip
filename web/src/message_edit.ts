@@ -735,7 +735,7 @@ export function start($row: JQuery, edit_box_open_callback?: () => void): void {
 function show_toggle_resolve_topic_spinner($row: JQuery): void {
     const $spinner = $row.find(".toggle_resolve_topic_spinner");
     loading.make_indicator($spinner);
-    $spinner.css({width: "18px"});
+    $spinner.css({width: "1em"});
     $row.find(".on_hover_topic_resolve, .on_hover_topic_unresolve").hide();
     $row.find(".toggle_resolve_topic_spinner").show();
 }
