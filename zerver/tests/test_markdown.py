@@ -648,13 +648,13 @@ class MarkdownLinkTest(ZulipTestCase):
         msg = "http://zulip.testserver/#narrow/channel/999-hello"
         self.assertEqual(
             markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            '<p><a href="#narrow/channel/999-hello">http://zulip.testserver/#narrow/channel/999-hello</a></p>',
+            '<p><a href="/#narrow/channel/999-hello">http://zulip.testserver/#narrow/channel/999-hello</a></p>',
         )
 
         msg = f"http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt"
         self.assertEqual(
             markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            f'<p><a href="user_uploads/{realm.id}/ff/file.txt">http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt</a></p>',
+            f'<p><a href="/user_uploads/{realm.id}/ff/file.txt">http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt</a></p>',
         )
 
         msg = "http://zulip.testserver/not:relative"
@@ -671,7 +671,7 @@ class MarkdownLinkTest(ZulipTestCase):
 
         self.assertEqual(
             markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            '<p><a href="#channels/all">http://zulip.testserver/#channels/all</a></p>',
+            '<p><a href="/#channels/all">http://zulip.testserver/#channels/all</a></p>',
         )
 
     def test_md_relative_link(self) -> None:
@@ -682,13 +682,13 @@ class MarkdownLinkTest(ZulipTestCase):
         msg = "[hello](http://zulip.testserver/#narrow/channel/999-hello)"
         self.assertEqual(
             markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            '<p><a href="#narrow/channel/999-hello">hello</a></p>',
+            '<p><a href="/#narrow/channel/999-hello">hello</a></p>',
         )
 
         msg = f"[hello](http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt)"
         self.assertEqual(
             markdown_convert(msg, message_realm=realm, message=message).rendered_content,
-            f'<p><a href="user_uploads/{realm.id}/ff/file.txt">hello</a></p>',
+            f'<p><a href="/user_uploads/{realm.id}/ff/file.txt">hello</a></p>',
         )
 
         msg = "[hello](http://zulip.testserver/not:relative)"
