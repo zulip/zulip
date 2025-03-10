@@ -1022,12 +1022,12 @@ class GetRealmStatusesTest(ZulipTestCase):
 
         # If the user has no presence at all, disabling presence_enabled should not change that state.
         with time_machine.travel(now, tick=False), self.captureOnCommitCallbacks(execute=True):
-            do_change_user_setting(hamlet, "presence_enabled", False, acting_user=hamlet)
+            do_change_user_setting([hamlet], "presence_enabled", False, acting_user=hamlet)
         self.assertFalse(UserPresence.objects.filter(user_profile=hamlet).exists())
 
         # Enabling presence_enabled creates a new, current presence record.
         with time_machine.travel(now, tick=False), self.captureOnCommitCallbacks(execute=True):
-            do_change_user_setting(hamlet, "presence_enabled", True, acting_user=hamlet)
+            do_change_user_setting([hamlet], "presence_enabled", True, acting_user=hamlet)
 
         presence = UserPresence.objects.get(user_profile=hamlet)
         self.assertEqual(presence.last_connected_time, now)
@@ -1036,7 +1036,7 @@ class GetRealmStatusesTest(ZulipTestCase):
         # Disabling presence_enabled with a very recent presence record will cause it to get backdated
         # by some minutes to make the user immediately appear offline.
         with time_machine.travel(now, tick=False), self.captureOnCommitCallbacks(execute=True):
-            do_change_user_setting(hamlet, "presence_enabled", False, acting_user=hamlet)
+            do_change_user_setting([hamlet], "presence_enabled", False, acting_user=hamlet)
         presence = UserPresence.objects.get(user_profile=hamlet)
         self.assertEqual(
             presence.last_connected_time,
@@ -1066,7 +1066,7 @@ class GetRealmStatusesTest(ZulipTestCase):
 
         # With a very old presence record, disabling presence_enabled should not change that.
         with time_machine.travel(now, tick=False), self.captureOnCommitCallbacks(execute=True):
-            do_change_user_setting(hamlet, "presence_enabled", False, acting_user=hamlet)
+            do_change_user_setting([hamlet], "presence_enabled", False, acting_user=hamlet)
         presence = UserPresence.objects.get(user_profile=hamlet)
         self.assertEqual(presence.last_connected_time, now - timedelta(days=100))
         self.assertEqual(presence.last_active_time, now - timedelta(days=100))
@@ -1081,7 +1081,7 @@ class GetRealmStatusesTest(ZulipTestCase):
         presence.save()
 
         with time_machine.travel(now, tick=False), self.captureOnCommitCallbacks(execute=True):
-            do_change_user_setting(hamlet, "presence_enabled", False, acting_user=hamlet)
+            do_change_user_setting([hamlet], "presence_enabled", False, acting_user=hamlet)
         presence = UserPresence.objects.get(user_profile=hamlet)
         self.assertEqual(
             presence.last_connected_time,
