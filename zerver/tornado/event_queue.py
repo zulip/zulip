@@ -1110,7 +1110,9 @@ def process_message_event(
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
     disable_external_notifications = event_template.get("disable_external_notifications", False)
-    user_ids_without_access_to_sender = event_template.get("user_ids_without_access_to_sender", [])
+    user_ids_without_access_to_sender = set(
+        event_template.get("user_ids_without_access_to_sender", [])
+    )
     realm_host = event_template.get("realm_host", "")
 
     wide_dict: dict[str, Any] = event_template["message_dict"]
