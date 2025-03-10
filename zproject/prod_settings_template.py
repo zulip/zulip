@@ -886,3 +886,7 @@ CAMO_URI = "/external_content/"
 
 ## Directory containing Markdown files for the server's policies.
 # POLICIES_DIRECTORY = "/etc/zulip/policies/"
+
+## URL of the onboarding video displayed to new users.
+## Set it to None to disable it.
+# ONBOARDING_VIDEO_URL: str | None = "../../static/videos/onboarding-video.mp4"
