@@ -977,13 +977,6 @@ exports.fixtures = {
         value: 2,
     },
 
-    user_settings__dense_mode: {
-        type: "user_settings",
-        op: "update",
-        property: "dense_mode",
-        value: true,
-    },
-
     user_settings__display_emoji_reaction_users: {
         type: "user_settings",
         op: "update",

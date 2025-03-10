@@ -8,6 +8,7 @@ import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
+import * as information_density from "./information_density.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
 import * as popovers from "./popovers.ts";
@@ -185,6 +186,25 @@ export function initialize(): void {
                     theme.set_theme_for_spectator(theme_code);
                 });
             });
+
+            $popper.on("click", ".info-density-controls button", function (this: HTMLElement, e) {
+                const changed_property =
+                    information_density.information_density_properties_schema.parse(
+                        $(this).closest(".button-group").attr("data-property"),
+                    );
+                information_density.update_information_density_settings($(this), changed_property);
+                information_density.enable_or_disable_control_buttons($popper);
+                e.preventDefault();
+            });
+
+            const resizeObserver = new ResizeObserver(() => {
+                requestAnimationFrame(() => {
+                    void instance.popperInstance?.update();
+                });
+            });
+            resizeObserver.observe(document.querySelector("#gear-menu-dropdown")!);
+
+            information_density.enable_or_disable_control_buttons($popper);
         },
         onShow: render,
         onHidden(instance) {

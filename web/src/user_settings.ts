@@ -42,7 +42,6 @@ export const user_settings_schema = stream_notification_settings_schema
         color_scheme: z.number(),
         default_language: z.string(),
         demote_inactive_streams: z.number(),
-        dense_mode: z.boolean(),
         desktop_icon_count_display: z.number(),
         display_emoji_reaction_users: z.boolean(),
         email_address_visibility: z.number(),

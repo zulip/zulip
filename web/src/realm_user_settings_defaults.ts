@@ -11,7 +11,6 @@ export const realm_default_settings_schema = z.object({
     color_scheme: z.number(),
     default_language: z.string(),
     demote_inactive_streams: z.number(),
-    dense_mode: z.boolean(),
     desktop_icon_count_display: z.number(),
     display_emoji_reaction_users: z.boolean(),
     email_address_visibility: z.number(),

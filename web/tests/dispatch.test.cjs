@@ -1040,28 +1040,17 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.web_channel_default_view, 1);
 
-    event = event_fixtures.user_settings__dense_mode;
-    override(user_settings, "dense_mode", false);
-    settings_preferences.user_settings_panel = {
-        container: "#user-preferences",
-    };
-    override(information_density, "set_base_typography_css_variables", noop);
-    toggled = [];
-    dispatch(event);
-    assert_same(user_settings.dense_mode, true);
-    assert_same(toggled, ["less-dense-mode", "more-dense-mode"]);
-
     event = event_fixtures.user_settings__web_font_size_px;
     override(user_settings, "web_font_size_px", 14);
-    override(information_density, "set_base_typography_css_variables", noop);
+    assert_same(event.value, 16);
     dispatch(event);
-    assert_same(user_settings.web_font_size_px, 16);
+    assert_same(user_settings.web_font_size_px, 14);
 
     event = event_fixtures.user_settings__web_line_height_percent;
-    override(user_settings, "web_font_size_px", 122);
-    override(information_density, "set_base_typography_css_variables", noop);
+    override(user_settings, "web_line_height_percent", 122);
+    assert_same(event.value, 130);
     dispatch(event);
-    assert_same(user_settings.web_line_height_percent, 130);
+    assert_same(user_settings.web_line_height_percent, 122);
 
     {
         const stub = make_stub();
