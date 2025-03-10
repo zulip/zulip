@@ -340,16 +340,16 @@
             <div class="m-10 inline-block organization-permissions-parent">
                 {{#if is_plan_self_hosted}}
                     {{> group_setting_value_pill_input
-                    setting_name="realm_can_manage_billing_group"
-                    label=group_setting_labels.can_manage_billing_group
-                    help_link="/help/self-hosted-billing"
-                    }}
+                      setting_name="realm_can_manage_billing_group"
+                      label=group_setting_labels.can_manage_billing_group
+                      help_link="/help/self-hosted-billing"
+                      }}
                 {{else}}
                     {{> group_setting_value_pill_input
-                    setting_name="realm_can_manage_billing_group"
-                    label=group_setting_labels.can_manage_billing_group
-                    help_link="/help/zulip-cloud-billing"
-                    }}
+                      setting_name="realm_can_manage_billing_group"
+                      label=group_setting_labels.can_manage_billing_group
+                      help_link="/help/zulip-cloud-billing"
+                      }}
                 {{/if}}
 
                 <div class="disabled-unfinished-feature" style="display: none">
