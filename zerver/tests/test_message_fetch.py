@@ -293,6 +293,16 @@ class NarrowBuilderTest(ZulipTestCase):
             "NOT (EXISTS (SELECT 1 \nFROM zerver_usertopic \nWHERE zerver_usertopic.user_profile_id = %(param_1)s AND zerver_usertopic.visibility_policy = %(param_2)s AND upper(zerver_usertopic.topic_name) = upper(zerver_message.subject) AND zerver_usertopic.recipient_id = zerver_message.recipient_id))",
         )
 
+    def test_add_term_using_is_operator_for_muted_topics(self) -> None:
+        mute_channel(self.realm, self.user_profile, "Verona")
+        term = NarrowParameter(operator="is", operand="muted", negated=False)
+        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
+
+    def test_add_term_using_is_operator_for_negated_muted_topics(self) -> None:
+        mute_channel(self.realm, self.user_profile, "Verona")
+        term = NarrowParameter(operator="is", operand="muted", negated=True)
+        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
+
     def test_add_term_using_non_supported_operator_should_raise_error(self) -> None:
         term = NarrowParameter(operator="is", operand="non_supported")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
