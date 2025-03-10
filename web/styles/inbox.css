@@ -587,6 +587,12 @@
     padding: 5px 10px;
     display: flex;
     flex-direction: column;
+    /* For columnar flex items, we need
+       to make set alignment to the start
+       of the flex container. This pushes
+       back against non-columnar flexboxes
+       that require centered alignment. */
+    align-items: flex-start;
 }
 
 .recent-view-filter-dropdown-list-container .dropdown-list-item-name,
