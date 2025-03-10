@@ -109,7 +109,7 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
     }
 }
 
-function select_div($div: JQuery, selection: Selection): void {
+function insert_and_select_div($div: JQuery, selection: Selection): void {
     $div.css({
         position: "absolute",
         left: "-99999px",
@@ -245,7 +245,6 @@ export function copy_handler(): void {
     const start_id = analysis.start_id;
     const end_id = analysis.end_id;
     const skip_same_td_check = analysis.skip_same_td_check;
-    const $div = $("<div>");
 
     if (start_id === undefined || end_id === undefined || start_id > end_id) {
         // In this case either the starting message or the ending
@@ -282,11 +281,12 @@ export function copy_handler(): void {
     // chance for overlaps between same message ids, avoiding which is much
     // more difficult since we can get a range (start_id and end_id) for
     // each selection `Range`.
+    const $div = $("<div>");
     construct_copy_div($div, start_id, end_id);
 
     // Select div so that the browser will copy it
     // instead of copying the original selection
-    select_div($div, selection);
+    insert_and_select_div($div, selection);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     document.execCommand("copy");
     setTimeout(() => {
