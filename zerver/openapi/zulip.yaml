@@ -7221,6 +7221,7 @@ paths:
                                 id: {}
                                 is_me_message: {}
                                 last_edit_timestamp: {}
+                                last_moved_timestamp: {}
                                 reactions: {}
                                 recipient_id: {}
                                 sender_email: {}
@@ -8588,6 +8589,7 @@ paths:
                               id: {}
                               is_me_message: {}
                               last_edit_timestamp: {}
+                              last_moved_timestamp: {}
                               reactions: {}
                               recipient_id: {}
                               sender_email: {}
@@ -22488,6 +22490,7 @@ paths:
                           id: {}
                           is_me_message: {}
                           last_edit_timestamp: {}
+                          last_moved_timestamp: {}
                           reactions: {}
                           recipient_id: {}
                           sender_email: {}
@@ -24146,6 +24149,7 @@ components:
             id: {}
             is_me_message: {}
             last_edit_timestamp: {}
+            last_moved_timestamp: {}
             reactions: {}
             recipient_id: {}
             sender_email: {}
@@ -24335,10 +24339,31 @@ components:
         last_edit_timestamp:
           type: integer
           description: |
-            The UNIX timestamp for when the message was last edited,
-            in UTC seconds.
+            The UNIX timestamp for when the message's content was last edited, in UTC seconds.
 
-            Not present if the message has never been edited.
+            Not present if the message's content has never been edited.
+
+            Clients are recommended to use this field, rather than parsing the
+            `edit_history` object, to display EDITED indicators on messages that have been
+            previously edited.
+
+            **Changes**: Prior to Zulip 10.0 (feature level ZF-a748a3), this was the time
+            when the message was last edited or moved.
+        last_moved_timestamp:
+          type: integer
+          description: |
+            The UNIX timestamp for when the message was last moved to a different channel
+            or topic, in UTC seconds.
+
+            Not present if the message has never been moved.
+
+            Clients are recommended to use this field, rather than parsing the
+            `edit_history` object, to display MOVED indicators on messages that have been
+            previously moved.
+
+            **Changes**: New in Zulip 10.0 (feature level ZF-a748a3). Previously, only
+            last_edit_timestamp was available, and parsing `edit_history` was required
+            in order to correctly display MOVED notices.
         reactions:
           type: array
           description: |

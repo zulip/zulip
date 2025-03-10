@@ -1,8 +1,9 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from operator import itemgetter
 from unittest import mock
 
 import orjson
+import time_machine
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_edit import get_mentions_for_message_updates
@@ -18,6 +19,7 @@ from zerver.lib.message import messages_for_ids
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, queries_captured
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Attachment, Message, NamedUserGroup, Realm, UserProfile, UserTopic
@@ -543,13 +545,14 @@ class EditMessageTest(ZulipTestCase):
 
         # Now verify that if we fetch the message directly, there's no
         # edit history data attached.
-        messages_result = self.client_get(
-            "/json/messages", {"anchor": msg_id_1, "num_before": 0, "num_after": 10}
+        message_fetch_result = self.client_get(
+            f"/json/messages/{msg_id_1}",
         )
-        self.assert_json_success(messages_result)
-        json_messages = orjson.loads(messages_result.content)
-        for msg in json_messages["messages"]:
-            self.assertNotIn("edit_history", msg)
+        self.assert_json_success(message_fetch_result)
+        message_dict = orjson.loads(message_fetch_result.content)["message"]
+        self.assertNotIn("edit_history", message_dict)
+        # We still have a last edit timestamp present.
+        self.assertIn("last_edit_timestamp", message_dict)
 
     def test_edit_message_history(self) -> None:
         self.login("hamlet")
@@ -754,17 +757,48 @@ class EditMessageTest(ZulipTestCase):
         self.subscribe(hamlet, stream_1.name)
         self.subscribe(hamlet, stream_2.name)
         self.subscribe(hamlet, stream_3.name)
-        msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "stream 1", topic_name="topic 1", content="content 1"
-        )
+        time_zero = timezone_now().replace(microsecond=0)
 
-        result = self.client_patch(
-            f"/json/messages/{msg_id}",
-            {
-                "content": "content 2",
-            },
-        )
-        self.assert_json_success(result)
+        with time_machine.travel(time_zero, tick=False):
+            msg_id = self.send_stream_message(
+                self.example_user("hamlet"),
+                "stream 1",
+                topic_name="topic 1",
+                content="content 1",
+            )
+
+        def expect_last_edit_timestamps(
+            last_edit: datetime | None, last_moved: datetime | None
+        ) -> None:
+            message_fetch_result = self.client_get(
+                f"/json/messages/{msg_id}",
+            )
+            self.assert_json_success(message_fetch_result)
+            message_dict = orjson.loads(message_fetch_result.content)["message"]
+            if last_edit is not None:
+                self.assertEqual(
+                    message_dict["last_edit_timestamp"], datetime_to_timestamp(last_edit)
+                )
+            else:
+                self.assertNotIn("last_edit_timestamp", message_dict)
+            if last_moved is not None:
+                self.assertEqual(
+                    message_dict["last_moved_timestamp"], datetime_to_timestamp(last_moved)
+                )
+            else:
+                self.assertNotIn("last_moved_timestamp", message_dict)
+
+        first_edit_time = time_zero + timedelta(seconds=1)
+        with time_machine.travel(first_edit_time, tick=False):
+            result = self.client_patch(
+                f"/json/messages/{msg_id}",
+                {
+                    "content": "content 2",
+                },
+            )
+            self.assert_json_success(result)
+            expect_last_edit_timestamps(first_edit_time, None)
+
         history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
         self.assertEqual(history[0]["prev_content"], "content 1")
         self.assertEqual(history[0]["user_id"], hamlet.id)
@@ -779,13 +813,17 @@ class EditMessageTest(ZulipTestCase):
             },
         )
 
-        result = self.client_patch(
-            f"/json/messages/{msg_id}",
-            {
-                "topic": "topic 2",
-            },
-        )
-        self.assert_json_success(result)
+        first_move_time = time_zero + timedelta(seconds=2)
+        with time_machine.travel(first_move_time, tick=False):
+            result = self.client_patch(
+                f"/json/messages/{msg_id}",
+                {
+                    "topic": "topic 2",
+                },
+            )
+            self.assert_json_success(result)
+            expect_last_edit_timestamps(first_edit_time, first_move_time)
+
         history = orjson.loads(assert_is_not_none(Message.objects.get(id=msg_id).edit_history))
         self.assertEqual(history[0]["prev_topic"], "topic 1")
         self.assertEqual(history[0]["topic"], "topic 2")
