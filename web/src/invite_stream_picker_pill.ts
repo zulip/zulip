@@ -45,7 +45,23 @@ export function add_default_stream_pills(pill_widget: stream_pill.StreamPillWidg
     }
 }
 
-export function create($stream_pill_container: JQuery): stream_pill.StreamPillWidget {
+export function add_specific_stream_pills(
+    pill_widget: stream_pill.StreamPillWidget,
+    stream_ids: number[],
+): void {
+    for (const stream_id of stream_ids) {
+        const sub = stream_data.get_sub_by_id(stream_id);
+        if (sub) {
+            stream_pill.append_stream(sub, pill_widget, false);
+        }
+    }
+}
+
+export function create(
+    $stream_pill_container: JQuery,
+    stream_ids?: number[],
+    is_edit_invite_modal = false,
+): stream_pill.StreamPillWidget {
     const pill_widget = input_pill.create({
         $container: $stream_pill_container,
         create_item_from_text: create_item_from_stream_name,
@@ -53,7 +69,11 @@ export function create($stream_pill_container: JQuery): stream_pill.StreamPillWi
         generate_pill_html: stream_pill.generate_pill_html,
         get_display_value_from_item: stream_pill.get_display_value_from_item,
     });
-    add_default_stream_pills(pill_widget);
+    if (stream_ids && is_edit_invite_modal) {
+        add_specific_stream_pills(pill_widget, stream_ids);
+    } else {
+        add_default_stream_pills(pill_widget);
+    }
     set_up_pill_typeahead({pill_widget, $pill_container: $stream_pill_container});
     return pill_widget;
 }
