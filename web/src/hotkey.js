@@ -1144,8 +1144,7 @@ export function process_hotkey(e, hotkey) {
             navigate.page_down();
             return true;
         case "copy_with_c":
-            copy_messages.copy_handler();
-            return true;
+            return copy_messages.copy_handler();
     }
 
     if (
