@@ -127,18 +127,15 @@ function select_div($div: JQuery, selection: Selection): void {
     selection.selectAllChildren(util.the($div));
 }
 
-function remove_div(_div: JQuery, ranges: Range[]): void {
-    window.setTimeout(() => {
-        const selection = window.getSelection();
-        assert(selection !== null);
-        selection.removeAllRanges();
+function restore_original_selection(ranges: Range[]): void {
+    // Should be called inside a setTimeout(..., 0).
+    const selection = window.getSelection();
+    assert(selection !== null);
+    selection.removeAllRanges();
 
-        for (const range of ranges) {
-            selection.addRange(range);
-        }
-
-        $("#copytempdiv").remove();
-    }, 0);
+    for (const range of ranges) {
+        selection.addRange(range);
+    }
 }
 
 function copy_selection_to_clipboard(selection: Selection): void {
@@ -292,7 +289,11 @@ export function copy_handler(): void {
     select_div($div, selection);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     document.execCommand("copy");
-    remove_div($div, ranges);
+    setTimeout(() => {
+        restore_original_selection(ranges);
+
+        $div.remove();
+    }, 0);
 }
 
 export function analyze_selection(selection: Selection): {
