@@ -304,6 +304,10 @@ Files: zerver/lib/ccache.py
 Copyright: 2013 David Benjamin and Alan Huang
 License: Expat
 
+Files: zerver/management/commands/makemessages.py
+Copyright: 2012-2013 Andrey Antukh <niwi@niwi.be>
+License: BSD-3-Clause
+
 Files: zerver/lib/markdown/fenced_code.py
 Copyright: 2006-2008 Waylan Limberg
 License: BSD-3-Clause
