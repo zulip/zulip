@@ -20,6 +20,7 @@ import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_util from "./ui_util.ts";
+import type {Message} from "./message_store.ts";
 import * as util from "./util.ts";
 
 export let set_count = (count: number): void => {
@@ -46,6 +47,7 @@ const draft_schema = z.intersection(
         // and 1 for drafts created since that change, to avoid a flood
         // of old drafts showing up when this feature was introduced.
         drafts_version: z.number().default(0),
+        message: z.custom<Message>().optional(),
     }),
     z.discriminatedUnion("type", [
         z.object({
@@ -73,6 +75,7 @@ const possibly_buggy_draft_schema = z.intersection(
         updatedAt: z.number(),
         is_sending_saving: z.boolean().default(false),
         drafts_version: z.number().default(0),
+        message: z.custom<Message>().optional(),
     }),
     z.discriminatedUnion("type", [
         z.object({

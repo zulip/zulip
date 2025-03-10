@@ -385,7 +385,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         const state = {
             get_events_running_called: 1,
             reify_message_id_checked: 0,
-            send_msg_called: 1,
+            send_msg_called: 2,
         };
         assert.deepEqual(stub_state, state);
         assert.ok(echo_error_msg_checked);

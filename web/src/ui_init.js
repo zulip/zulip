@@ -533,6 +533,7 @@ export function initialize_everything(state_data) {
     echo.initialize({
         on_send_message_success: compose.send_message_success,
         send_message: transmit.send_message,
+        remove_failed_message: compose.remove_failed_message,
     });
     stream_create.initialize();
     stream_edit.initialize();
@@ -691,7 +692,10 @@ export function initialize_everything(state_data) {
         },
     });
     drafts.initialize_ui();
-    drafts_overlay_ui.initialize();
+    drafts_overlay_ui.initialize({
+        on_send_message_success: compose.send_message_success,
+        send_message: transmit.send_message,
+    });
     // This needs to happen after activity_ui.initialize, so that user_filter
     // is defined. Also, must happen after people.initialize()
     onboarding_steps.initialize(state_data.onboarding_steps, message_view.show);

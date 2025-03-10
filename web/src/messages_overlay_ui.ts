@@ -9,6 +9,7 @@ export type Context = {
     row_item_selector: string;
     box_item_selector: string;
     id_attribute_name: string;
+    get_items_list_selector?: () => string;
     get_items_ids: () => string[];
     on_enter: () => void;
     on_delete: () => void;
@@ -79,7 +80,10 @@ export function set_initial_element(element_id: string | undefined, context: Con
         const focus_element = current_element.children[0];
         assert(focus_element instanceof HTMLElement);
         activate_element(focus_element, context);
-        util.the($(`.${CSS.escape(context.items_list_selector)}`)).scrollTop = 0;
+        const selector = context.get_items_list_selector
+            ? context.get_items_list_selector()
+            : `.${CSS.escape(context.items_list_selector)}`;
+        util.the($(selector)).scrollTop = 0;
     }
 }
 
