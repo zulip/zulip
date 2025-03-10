@@ -104,6 +104,20 @@ can conveniently access plan management from the Zulip app. See [help center
 documentation](https://zulip.com/help/self-hosted-billing) for detailed
 instructions.
 
+#### Configure who can manage plans and billing
+
+::::{tab-set}
+
+:::{tab-item} Zulip Server 10.0+
+
+Follow [these
+instructions](https://zulip.com/help/self-hosted-billing#configure-who-can-manage-plans-and-billing)
+to configure who can manage plans and billing.
+
+:::
+
+:::{tab-item} Older versions
+
 You can add billing administrators using the `change_user_role` [management
 command][management-commands], passing [the organization's
 `string_id`][accessing-string-id], and the email address of the Zulip user who
@@ -119,6 +133,10 @@ option:
 ```
 /home/zulip/deployments/current/manage.py change_user_role --revoke -r '' username@example.com is_billing_admin
 ```
+
+:::
+
+::::
 
 [management-commands]: ../production/management-commands.md
 [accessing-string-id]: https://zulip.readthedocs.io/en/stable/production/management-commands.html#accessing-an-organization-s-string-id
