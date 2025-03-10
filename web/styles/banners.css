@@ -42,6 +42,12 @@
     display: flex;
     gap: 8px;
     margin-left: 10px;
+
+    & a {
+        &:hover {
+            text-decoration: none;
+        }
+    }
 }
 
 .banner-close-button {
