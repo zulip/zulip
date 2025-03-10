@@ -220,8 +220,22 @@
 
     #compose-recipient {
         &.compose-recipient-direct-selected {
+            #compose_select_recipient_widget_wrapper {
+                /* As the DM-pill area expands, we want to
+                   hold the DM picker to the first line. */
+                align-self: flex-start;
+            }
+
             #compose_select_recipient_widget {
                 border-radius: 4px !important;
+                height: var(--compose-recipient-box-min-height);
+            }
+
+            .topic-marker-container {
+                /* As the DM-pill area expands, we likewise
+                   want to keep the topic marker aligned with
+                   the DM picker. */
+                align-self: flex-start;
             }
         }
 
