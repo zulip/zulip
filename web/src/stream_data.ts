@@ -786,13 +786,13 @@ export function is_subscribed(stream_id: number): boolean {
 export function get_stream_privacy_policy(stream_id: number): string {
     const sub = sub_store.get(stream_id)!;
 
-    if (sub.is_web_public) {
+    if (sub?.is_web_public) {
         return settings_config.stream_privacy_policy_values.web_public.code;
     }
-    if (!sub.invite_only) {
+    if (!sub?.invite_only) {
         return settings_config.stream_privacy_policy_values.public.code;
     }
-    if (sub.invite_only && !sub.history_public_to_subscribers) {
+    if (sub?.invite_only && !sub?.history_public_to_subscribers) {
         return settings_config.stream_privacy_policy_values.private.code;
     }
     return settings_config.stream_privacy_policy_values.private_with_public_history.code;
@@ -1020,7 +1020,7 @@ export function get_options_for_dropdown_widget(): {
     unique_id: number;
     stream: StreamSubscription;
 }[] {
-    return subscribed_subs()
+    return get_unsorted_subs_with_content_access()
         .filter((stream) => !stream.is_archived)
         .map((stream) => ({
             name: stream.name,

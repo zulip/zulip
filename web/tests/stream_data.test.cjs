@@ -284,6 +284,22 @@ test("basics", () => {
 
     assert.deepEqual(stream_data.get_options_for_dropdown_widget(), [
         {
+            name: "25-or-6-to-4",
+            stream: {
+                name: "25-or-6-to-4",
+                stream_id: 400,
+            },
+            unique_id: 400,
+        },
+        {
+            name: "99",
+            stream: {
+                name: "99",
+                stream_id: 401,
+            },
+            unique_id: 401,
+        },
+        {
             name: "social",
             stream: {
                 color: "red",
@@ -295,6 +311,14 @@ test("basics", () => {
                 subscribed: true,
             },
             unique_id: 2,
+        },
+        {
+            name: "Some Stream",
+            stream: {
+                name: "Some Stream",
+                stream_id: 99,
+            },
+            unique_id: 99,
         },
         {
             name: "test",
@@ -308,10 +332,40 @@ test("basics", () => {
             },
             unique_id: 3,
         },
+        {
+            name: "web_public_stream",
+            stream: {
+                color: "yellow",
+                history_public_to_subscribers: true,
+                invite_only: false,
+                is_muted: false,
+                is_web_public: true,
+                name: "web_public_stream",
+                stream_id: 4,
+                subscribed: false,
+            },
+            unique_id: 4,
+        },
     ]);
 
     test.is_archived = true;
     assert.deepEqual(stream_data.get_options_for_dropdown_widget(), [
+        {
+            name: "25-or-6-to-4",
+            stream: {
+                name: "25-or-6-to-4",
+                stream_id: 400,
+            },
+            unique_id: 400,
+        },
+        {
+            name: "99",
+            stream: {
+                name: "99",
+                stream_id: 401,
+            },
+            unique_id: 401,
+        },
         {
             name: "social",
             stream: {
@@ -324,6 +378,28 @@ test("basics", () => {
                 subscribed: true,
             },
             unique_id: 2,
+        },
+        {
+            name: "Some Stream",
+            stream: {
+                name: "Some Stream",
+                stream_id: 99,
+            },
+            unique_id: 99,
+        },
+        {
+            name: "web_public_stream",
+            stream: {
+                color: "yellow",
+                history_public_to_subscribers: true,
+                invite_only: false,
+                is_muted: false,
+                is_web_public: true,
+                name: "web_public_stream",
+                stream_id: 4,
+                subscribed: false,
+            },
+            unique_id: 4,
         },
     ]);
 });

@@ -554,12 +554,12 @@ export function is_user_in_setting_group(
         return is_user_in_group(setting_value, user_id);
     }
 
-    const direct_members = setting_value.direct_members;
+    const direct_members = setting_value?.direct_members ?? [];
     if (direct_members.includes(user_id)) {
         return true;
     }
 
-    const direct_subgroups = setting_value.direct_subgroups;
+    const direct_subgroups = setting_value?.direct_subgroups ?? [];
     for (const direct_subgroup_id of direct_subgroups) {
         if (is_user_in_group(direct_subgroup_id, user_id)) {
             return true;
