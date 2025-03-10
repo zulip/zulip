@@ -1,0 +1,25 @@
+{{#> compose_banner . }}
+    {{#if is_empty_topic}}
+        <p class="banner_message">
+            {{#tr}}
+                The general chat you were composing at (<z-link></z-link>) was moved, and the destination for your message has been updated to its new location.
+                {{#*inline "z-link"~}}
+                    <a class="above_compose_banner_action_link" href="{{narrow_url}}">
+                        {{~> ../inline_stream_or_topic_reference stream=old_stream topic_display_name=orig_topic show_colored_icon=show_colored_icon~}}
+                    </a>
+                {{~/inline}}
+            {{/tr}}
+        </p>
+    {{else}}
+        <p class="banner_message">
+            {{#tr}}
+                The topic you were composing to (<z-link></z-link>) was moved, and the destination for your message has been updated to its new location.
+                {{#*inline "z-link"~}}
+                    <a class="above_compose_banner_action_link" href="{{narrow_url}}">
+                        {{~> ../inline_stream_or_topic_reference stream=old_stream topic_display_name=orig_topic show_colored_icon=show_colored_icon~}}
+                    </a>
+                {{~/inline}}
+            {{/tr}}
+        </p>
+    {{/if}}
+{{/compose_banner}}
