@@ -623,6 +623,12 @@ test("stream_settings", ({override}) => {
     assert.equal(sub_rows[1].color, "amber");
     assert.equal(sub_rows[2].color, "cinnamon");
 
+    sub_rows = stream_settings_data.get_streams_for_settings_page(true);
+    assert.equal(sub_rows.length, 3);
+    assert.equal(sub_rows[0].color, "blue");
+    assert.equal(sub_rows[1].color, "amber");
+    assert.equal(sub_rows[2].color, "cinnamon");
+
     sub_rows = stream_data.get_streams_for_admin();
     assert.equal(sub_rows[0].name, "a");
     assert.equal(sub_rows[1].name, "b");

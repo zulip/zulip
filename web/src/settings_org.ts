@@ -1108,7 +1108,7 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
 
 export let init_dropdown_widgets = (): void => {
     const notification_stream_options = (): dropdown_widget.Option[] => {
-        const streams = stream_settings_data.get_streams_for_settings_page();
+        const streams = stream_settings_data.get_streams_for_settings_page(true);
         const options: dropdown_widget.Option[] = streams.map((stream) => ({
             name: stream.name,
             unique_id: stream.stream_id,

@@ -141,7 +141,9 @@ export function get_unmatched_streams_for_notification_settings(): ({
     return notification_settings;
 }
 
-export function get_streams_for_settings_page(): SettingsSubscription[] {
+export function get_streams_for_settings_page(
+    exclude_archived_streams = false,
+): SettingsSubscription[] {
     // TODO: This function is only used for copy-from-stream, so
     //       the current name is slightly misleading now, plus
     //       it's not entirely clear we need unsubscribed streams
@@ -157,7 +159,11 @@ export function get_streams_for_settings_page(): SettingsSubscription[] {
     }
     subscribed_rows.sort(by_name);
     unsubscribed_rows.sort(by_name);
-    const all_subs = [...unsubscribed_rows, ...subscribed_rows];
+    let all_subs = [...unsubscribed_rows, ...subscribed_rows];
+
+    if (exclude_archived_streams) {
+        all_subs = all_subs.filter((stream) => !stream.is_archived);
+    }
 
     return get_subs_for_settings(all_subs);
 }
