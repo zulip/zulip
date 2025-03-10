@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as resize from "./resize.ts";
 import {stringify_time} from "./timerender.ts";
 import {user_settings} from "./user_settings.ts";
 
@@ -99,6 +100,7 @@ export function set_base_typography_css_variables(): void {
     );
 
     set_vertical_alignment_values(line_height_unitless);
+    resize.resize_page_components();
 }
 
 export function calculate_timestamp_widths(): void {
