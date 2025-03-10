@@ -61,7 +61,9 @@ From image editing program:
             bot_type=UserProfile.DEFAULT_BOT,
             acting_user=None,
         )
-        self.set_avatar(twitter_bot, "static/images/features/twitter.png")
+        self.set_avatar(
+            twitter_bot, "static/images/landing-page/features/mock-conversation/twitter.png"
+        )
 
         bulk_add_subscriptions(
             realm, [stream], list(UserProfile.objects.filter(realm=realm)), acting_user=None
@@ -91,7 +93,7 @@ From image editing program:
             {
                 "sender": fisher,
                 "content": "I'm also a big fan of inline link, tweet, video, and image previews. "
-                "Check out this picture of Çet Whalin[](/static/images/features/whale.png)!",
+                "Check out this picture of Çet Whalin[](/static/images/landing-page/features/mock-conversation/whale.png)!",
             },
             {
                 "sender": starr,
