@@ -42,6 +42,10 @@ don't hesitate to reach out at [sales@zulip.com](mailto:sales@zulip.com).
 
 {end_tabs}
 
+### Configure who can manage plans and billing
+
+{!configure-who-can-manage-plans.md!}
+
 ## Cancel paid plan
 
 If you cancel your plan, your organization will be downgraded to **Zulip Cloud
