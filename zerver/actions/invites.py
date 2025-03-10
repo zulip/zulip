@@ -468,6 +468,7 @@ def do_send_user_invite_email(
             "corporate_enabled": settings.CORPORATE_ENABLED,
         },
         "realm_id": realm.id,
+        "date": event_time.isoformat(),
     }
     queue_event_on_commit("email_senders", event)
 
