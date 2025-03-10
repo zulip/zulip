@@ -432,6 +432,19 @@ class NarrowBuilder:
         elif operand == "followed":
             cond = get_followed_topic_condition_sa(self.user_profile.id)
             return query.where(maybe_negate(cond))
+        elif operand == "muted":
+            # TODO: If we also have a channel operator, this could be
+            # a lot more efficient if limited to only those muting
+            # rules that appear in such channels.
+            conditions = exclude_muting_conditions(
+                self.user_profile, [NarrowParameter(operator="is", operand="muted")]
+            )
+            if conditions:
+                return query.where(maybe_negate(not_(and_(*conditions))))
+
+            # This is the case where no channels or topics were muted.
+            return query.where(maybe_negate(false()))
+
         raise BadNarrowOperatorError("unknown 'is' operand " + operand)
 
     _alphanum = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")

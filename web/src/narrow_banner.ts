@@ -287,6 +287,13 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     return {
                         title: $t({defaultMessage: "You aren't following any topics."}),
                     };
+
+                case "muted":
+                    return {
+                        title: $t({
+                            defaultMessage: "You have no messages in muted topics and channels.",
+                        }),
+                    };
             }
             // fallthrough to default case if no match is found
             break;

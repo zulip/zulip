@@ -293,6 +293,16 @@ class NarrowBuilderTest(ZulipTestCase):
             "NOT (EXISTS (SELECT 1 \nFROM zerver_usertopic \nWHERE zerver_usertopic.user_profile_id = %(param_1)s AND zerver_usertopic.visibility_policy = %(param_2)s AND upper(zerver_usertopic.topic_name) = upper(zerver_message.subject) AND zerver_usertopic.recipient_id = zerver_message.recipient_id))",
         )
 
+    def test_add_term_using_is_operator_for_muted_topics(self) -> None:
+        mute_channel(self.realm, self.user_profile, "Verona")
+        term = NarrowParameter(operator="is", operand="muted", negated=False)
+        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
+
+    def test_add_term_using_is_operator_for_negated_muted_topics(self) -> None:
+        mute_channel(self.realm, self.user_profile, "Verona")
+        term = NarrowParameter(operator="is", operand="muted", negated=True)
+        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
+
     def test_add_term_using_non_supported_operator_should_raise_error(self) -> None:
         term = NarrowParameter(operator="is", operand="non_supported")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
@@ -5251,6 +5261,54 @@ class MessageIsTest(ZulipTestCase):
         )
         messages = self.assert_json_success(result)["messages"]
         self.assert_length(messages, 1)
+
+    def test_message_is_muted(self) -> None:
+        self.login("iago")
+        is_muted_narrow = orjson.dumps([dict(operator="is", operand="muted")]).decode()
+        is_unmuted_narrow = orjson.dumps(
+            [dict(operator="is", operand="muted", negated=True)]
+        ).decode()
+
+        # Have another user generate a message in a topic that isn't muted by the user.
+        msg_id = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="hey")
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=is_muted_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 0)
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=is_unmuted_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
+
+        stream_id = self.get_stream_id("Denmark", self.example_user("hamlet").realm)
+
+        # Mute the topic.
+        payload = {
+            "stream_id": stream_id,
+            "topic": "hey",
+            "visibility_policy": int(UserTopic.VisibilityPolicy.MUTED),
+        }
+        self.client_post("/json/user_topics", payload)
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=is_muted_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
+
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=is_unmuted_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 0)
+
+        # We could do more tests, but test_exclude_muting_conditions
+        # covers that code path pretty well.
 
 
 class MessageVisibilityTest(ZulipTestCase):
