@@ -613,6 +613,7 @@ test("stream_settings", ({override}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        is_archived: true,
     };
     stream_data.add_sub(cinnamon);
     stream_data.add_sub(amber);
@@ -620,8 +621,8 @@ test("stream_settings", ({override}) => {
 
     let sub_rows = stream_settings_data.get_streams_for_settings_page();
     assert.equal(sub_rows[0].color, "blue");
-    assert.equal(sub_rows[1].color, "amber");
-    assert.equal(sub_rows[2].color, "cinnamon");
+    /* Archived channel "ambed" is skipped, since it is archived. */
+    assert.equal(sub_rows[1].color, "cinnamon");
 
     sub_rows = stream_data.get_streams_for_admin();
     assert.equal(sub_rows[0].name, "a");
