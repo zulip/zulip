@@ -725,6 +725,16 @@ test("can_mark_messages_read", () => {
     filter = new Filter(in_home_negated);
     assert.ok(!filter.can_mark_messages_read());
 
+    const is_muted = [{operator: "is", operand: "muted"}];
+    const is_muted_negated = [{operator: "is", operand: "muted", negated: true}];
+    filter = new Filter(is_muted);
+    assert.ok(!filter.can_mark_messages_read());
+    assert_not_mark_read_with_is_operands(is_muted);
+    assert_not_mark_read_with_has_operands(is_muted);
+    assert_not_mark_read_when_searching(is_muted);
+    filter = new Filter(is_muted_negated);
+    assert.ok(filter.can_mark_messages_read());
+
     // Do not mark messages as read when in an unsupported 'in:*' filter.
     const in_random = [{operator: "in", operand: "xxxxxxxxx"}];
     const in_random_negated = [{operator: "in", operand: "xxxxxxxxx", negated: true}];
@@ -1096,6 +1106,26 @@ test("predicate_basics", ({override}) => {
     with_overrides(({override}) => {
         override(page_params, "narrow_stream", "kiosk");
         assert.ok(predicate({stream_id: 1234}));
+    });
+
+    override(user_topics, "is_topic_visible_in_home", () => false);
+    predicate = get_predicate([["is", "muted"]]);
+    assert.ok(predicate({stream_id: unknown_stream_id, stream: "unknown"}));
+    assert.ok(!predicate({type: direct_message}));
+
+    // Muted topic is a part of is-muted.
+    with_overrides(({override}) => {
+        override(user_topics, "is_topic_visible_in_home", () => false);
+        assert.ok(predicate({stream_id: foo_stream_id, topic: "bar"}));
+    });
+
+    // Muted stream is a part of is:muted.
+    assert.ok(predicate({stream_id: muted_stream.stream_id, topic: "bar"}));
+
+    // Muted stream but topic is unmuted or followed is not a part of is-muted.
+    with_overrides(({override}) => {
+        override(user_topics, "is_topic_visible_in_home", () => true);
+        assert.ok(!predicate({stream_id: muted_stream.stream_id, topic: "bar"}));
     });
 
     predicate = get_predicate([["near", 5]]);
@@ -1624,6 +1654,10 @@ test("describe", ({mock_template, override}) => {
 
     narrow = [{operator: "is", operand: "followed"}];
     string = "followed topics";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [{operator: "is", operand: "muted"}];
+    string = "muted messages";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     // operands with their own negative words, like resolved.
@@ -2701,6 +2735,9 @@ run_test("is_in_home", () => {
 
 run_test("excludes_muted_topics", () => {
     let filter = new Filter([{operator: "is", operand: "starred"}]);
+    assert.ok(!filter.excludes_muted_topics());
+
+    filter = new Filter([{operator: "is", operand: "muted"}]);
     assert.ok(!filter.excludes_muted_topics());
 
     filter = new Filter([{operator: "in", operand: "home", negated: true}]);
