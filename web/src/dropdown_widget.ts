@@ -73,6 +73,9 @@ export type DropdownWidgetOptions = {
     disable_for_spectators?: boolean;
     dropdown_input_visible_selector?: string;
     prefer_top_start_placement?: boolean;
+    // Boolean variable to check whether the dropdown is opened
+    // with a keyboard trigger or not.
+    dropdown_triggered_via_keyboard?: boolean;
 };
 
 export class DropdownWidget {
@@ -106,6 +109,7 @@ export class DropdownWidget {
     disable_for_spectators: boolean;
     dropdown_input_visible_selector: string;
     prefer_top_start_placement: boolean;
+    dropdown_triggered_via_keyboard: boolean;
 
     // TODO: This is only used in one widget, with no implementation
     // here, so should be generalized or reworked.
@@ -140,6 +144,7 @@ export class DropdownWidget {
         this.dropdown_input_visible_selector =
             options.dropdown_input_visible_selector ?? this.widget_selector;
         this.prefer_top_start_placement = options.prefer_top_start_placement ?? false;
+        this.dropdown_triggered_via_keyboard = false;
     }
 
     init(): void {
@@ -246,6 +251,16 @@ export class DropdownWidget {
             return;
         }
 
+        // We want to prevent focus from moving to the list item
+        // when it is clicked using a mouse.
+        $(this.widget_selector).on("mousedown", () => {
+            this.dropdown_triggered_via_keyboard = false;
+        });
+
+        $(this.widget_selector).on("keydown", () => {
+            this.dropdown_triggered_via_keyboard = true;
+        });
+
         tippy.delegate(delegate_container, {
             ...popover_menus.default_popover_props,
             target: this.widget_selector,
@@ -275,6 +290,7 @@ export class DropdownWidget {
                 const $search_input = $popper.find<HTMLInputElement>(
                     "input.dropdown-list-search-input",
                 );
+                const selected_item_unique_id = this.current_value;
 
                 this.list_widget = ListWidget.create(
                     $dropdown_list_body,
@@ -283,7 +299,12 @@ export class DropdownWidget {
                         name: `${CSS.escape(this.widget_name)}-list-widget`,
                         get_item: ListWidget.default_get_item,
                         modifier_html(item) {
-                            return render_dropdown_list({item});
+                            return render_dropdown_list({
+                                item: {
+                                    ...item,
+                                    is_item_selected: item.unique_id === selected_item_unique_id,
+                                },
+                            });
                         },
                         filter: {
                             $element: $search_input,
@@ -452,8 +473,17 @@ export class DropdownWidget {
                     }
                 });
 
+                // We want to prevent focus from moving to the list item
+                // when it is clicked with a mouse. This is necessary because
+                // it was reported that the blue focus outline briefly appears
+                // when items are clicked, before the dropdown closes.
+                $popper.on("mousedown", ".list-item", (event) => {
+                    event.preventDefault();
+                });
+
                 // Click on item.
                 $popper.on("click", ".list-item", (event) => {
+                    event.preventDefault();
                     const selected_unique_id = $(event.currentTarget).attr("data-unique-id");
                     assert(selected_unique_id !== undefined);
                     this.current_value = selected_unique_id;
@@ -468,10 +498,39 @@ export class DropdownWidget {
                     this.item_click_callback(event, instance, this, true);
                 });
 
-                // Set focus on first element when dropdown opens.
+                // Adjust focus based on how the dropdown was opened
                 setTimeout(() => {
                     if (this.hide_search_box) {
-                        $dropdown_list_body.find(".list-item:first-child").trigger("focus");
+                        if (this.dropdown_triggered_via_keyboard) {
+                            // IF the dropdown is opened by keyboard, focus on the first item.
+                            const $selected_item = $dropdown_list_body.find(
+                                `.list-item[data-unique-id="${this.current_value}"]`,
+                            );
+                            $selected_item.trigger("focus");
+                        } else {
+                            assert(this.list_widget !== undefined);
+                            // Above, we avoided focusing on any item of the dropdown
+                            // when it is opened by a mousedown event. However, as soon
+                            // as the user presses ArrowUp or ArrowDown, we move the focus
+                            // on the first item of the dropdown.
+                            const first_item = this.list_widget.get_current_list()[0];
+                            if (first_item) {
+                                const $first_item = $popper.find(
+                                    `.list-item[data-unique-id="${first_item.unique_id}"]`,
+                                );
+                                this.$events_container.one(
+                                    "keydown",
+                                    `${this.widget_selector}, ${this.widget_wrapper_id}`,
+                                    (e) => {
+                                        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                                            $first_item.trigger("focus");
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                        }
+                                    },
+                                );
+                            }
+                        }
                     } else {
                         $search_input.trigger("focus");
                     }
