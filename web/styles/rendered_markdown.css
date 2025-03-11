@@ -630,10 +630,18 @@
             /* 32px at 14px/1em */
             background-size: 2.2857em;
             position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
+            /* Match the width to the background size. */
+            width: 2.2857em;
+            height: 2.2857em;
+            /* Center according to those widths; at present,
+               thumbnails are 8em tall and 12em wide. So,
+               2.2857em / 2 = 1.1429em as the center of the
+               play button. We subtract that value from half
+               the height (8em/2) to get the `top:` value,
+               and then subtract the same from half the width
+               (12em/2) to get the `left:` value. */
+            top: 2.8571em;
+            left: 4.8571em;
             border-radius: 100%;
             transform: scale(0.8);
             transition: transform 0.2s;
