@@ -76,7 +76,7 @@ export function initialize() {
         compose_validate.update_send_button_status();
     });
     $("#compose-send-button").on("mouseleave", () => {
-        $(".message-send-controls").removeClass("disabled-message-send-controls");
+        $("#compose-send-button").removeClass("disabled-message-send-controls");
     });
 
     $("textarea#compose-textarea").on("input propertychange", () => {
