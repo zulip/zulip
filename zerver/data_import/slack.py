@@ -47,6 +47,7 @@ from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
 )
+from zerver.lib import html_to_markdown
 from zerver.lib.emoji import codepoint_to_name, get_emoji_file_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
 from zerver.lib.mime_types import guess_type
@@ -842,6 +843,7 @@ def get_messages_iterator(
             if json_name.endswith(".json"):
                 all_json_names[json_name].append(dir_path)
 
+    canvases_added = set()
     # Sort json_name by date
     for json_name in sorted(all_json_names.keys()):
         messages_for_one_day: list[ZerverFieldsT] = []
@@ -859,10 +861,16 @@ def get_messages_iterator(
                     # skipping those messages is simpler.
                     continue
                 if message.get("mimetype") == "application/vnd.slack-docs":
-                    # This is a Slack "Post" which is HTML-formatted,
-                    # and we don't have a clean way to import at the
-                    # moment.  We skip them on import.
-                    continue
+                    # This is a Slack "Post" which is HTML-formatted
+                    canvases_added.add(message.get("id"))
+                    file_url = message.get("url_private_download")
+                    response = requests.get(file_url)
+                    response.encoding = "utf-8"
+                    # response encoding to "utf-8" is required to specify encoding for response.text
+                    text = html_to_markdown.convert_html_to_markdown(response.text)
+                    # markdownify is used to convert text from HTML to Markdown format
+                    message["text"] = "*Imported from Slack Canvas*\n" + text
+                    message["ts"] = message.get("created")
                 if dir_name in added_channels:
                     message["channel_name"] = dir_name
                 elif dir_name in added_mpims:
@@ -872,6 +880,24 @@ def get_messages_iterator(
                 messages.append(message)
             messages_for_one_day += messages
 
+        canvases_dir = os.path.join(slack_data_dir, "canvases.json")
+        if os.path.exists(canvases_dir):
+            canvases = get_data_file(canvases_dir)
+            for canvas in canvases:
+                # print(canvas)
+                if canvas.get("id") in canvases_added:
+                    continue
+                # This is a Slack "Post" which is HTML-formatted
+                file_url = canvas.get("url_private_download")
+                response = requests.get(file_url)
+                response.encoding = "utf-8"
+                # response encoding to "utf-8" is required to specify encoding for response.text
+                text = html_to_markdown.convert_html_to_markdown(response.text)
+                # markdownify is used to convert text from HTML to Markdown format
+                canvas["text"] = "*Imported from Slack Canvas*\n" + text
+                canvas["ts"] = canvas.get("created")
+                # canvas["pm_name"] = canvas.get("user")
+                messages_for_one_day.append(canvas)
         # we sort the messages according to the timestamp to show messages with
         # the proper date order
         yield from sorted(messages_for_one_day, key=get_timestamp_from_message)
@@ -960,6 +986,10 @@ def channel_message_to_zerver_message(
             else:
                 recipient_id = slack_recipient_name_to_zulip_recipient_id[members[0]]
                 sender_recipient_id = slack_recipient_name_to_zulip_recipient_id[members[1]]
+        else:
+            is_private = True
+            recipient_id = slack_recipient_name_to_zulip_recipient_id[message.get("user")]
+            sender_recipient_id = recipient_id
 
         message_id = NEXT_ID("message")
 
