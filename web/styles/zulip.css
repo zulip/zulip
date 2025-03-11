@@ -506,10 +506,7 @@ body.has-overlay-scrollbar {
         right: 0;
         height: var(--header-height);
         width: var(--header-height);
-
-        @media (width >= $xl_min) and (height >= 600px) {
-            display: none;
-        }
+        display: none;
 
         .login_button {
             display: flex;
@@ -1541,32 +1538,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     }
 }
 
-@media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
-    .spectator-view {
-        #navbar-middle {
-            /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
-            margin-right: calc(var(--header-height) * 3 + 10px);
-        }
-
-        #help-menu,
-        #gear-menu {
-            position: relative;
-            right: var(--header-height);
-        }
-
-        #top_navbar .column-right .spectator_login_buttons {
-            display: none;
-        }
-    }
-
-    .header-main .column-right {
-        /* For a diminutive right column in the navbar,
-           allow the width to be that of the flexing
-           button elements. */
-        width: auto;
-    }
-}
-
 %hide-right-sidebar {
     .column-right {
         display: none;
@@ -1736,6 +1707,34 @@ body:not(.hide-left-sidebar) {
     #navbar-middle {
         /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
         margin-right: var(--right-column-collapsed-sidebar-width);
+    }
+
+    .spectator-view {
+        #navbar-middle {
+            /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: calc(var(--header-height) * 3 + 10px);
+        }
+
+        #help-menu,
+        #gear-menu {
+            position: relative;
+            right: var(--header-height);
+        }
+
+        #top_navbar .column-right .spectator_login_buttons {
+            display: none;
+        }
+
+        .spectator_narrow_login_button {
+            display: block;
+        }
+    }
+
+    .header-main .column-right {
+        /* For a diminutive right column in the navbar,
+           allow the width to be that of the flexing
+           button elements. */
+        width: auto;
     }
 }
 
