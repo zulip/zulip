@@ -531,6 +531,7 @@
                 display: flex;
                 align-items: center;
                 gap: 10px;
+                margin-right: 18px;
 
                 .drag-icon {
                     color: hsl(0deg 0% 75%);
