@@ -1332,6 +1332,9 @@ label.preferences-radio-choice-label {
     min-height: 35px;
 }
 
+.download_bot_zuliprc,
+.copy_zuliprc,
+.open_bots_subscribed_streams,
 .manage-bot-button,
 .deactivate-bot-button {
     display: inline-flex;
