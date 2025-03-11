@@ -3,6 +3,8 @@ import secrets
 from collections.abc import Callable
 from typing import TypeVar
 
+from django.db import models
+
 T = TypeVar("T")
 
 
@@ -41,3 +43,28 @@ def optional_bytes_to_mib(value: int | None) -> int | None:
         return None
     else:
         return value >> 20
+
+
+def get_fk_field_name(model: type[models.Model], related_model: type[models.Model]) -> str | None:
+    """
+    Get the name of the foreign key field in model, pointing the related_model table.
+    Returns None if there is no such field.
+
+    Example usage:
+
+    get_fk_field_name(UserProfile, Realm) returns "realm"
+    """
+
+    fields = model._meta.get_fields()
+    foreign_key_fields_to_related_model = [
+        field
+        for field in fields
+        if hasattr(field, "related_model") and field.related_model == related_model
+    ]
+
+    if len(foreign_key_fields_to_related_model) == 0:
+        return None
+
+    assert len(foreign_key_fields_to_related_model) == 1
+
+    return foreign_key_fields_to_related_model[0].name
