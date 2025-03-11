@@ -590,7 +590,8 @@ input[type="checkbox"] {
 }
 
 .alert-notification {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     vertical-align: top;
     height: auto !important;
     width: auto !important;
@@ -619,8 +620,8 @@ input[type="checkbox"] {
     }
 
     .loading_indicator_spinner {
-        width: 13px;
-        height: 20px;
+        width: 0.9283em; /* 13px at 14px/em */
+        height: 1.4286em; /* 20px at 14px/em */
         margin: 0;
     }
 
@@ -639,6 +640,10 @@ input[type="checkbox"] {
         margin-right: 6px;
         vertical-align: middle;
         margin-top: -2px;
+    }
+
+    .settings-save-checkmark {
+        width: 0.9285em; /* 13px at 14px/em */
     }
 }
 
