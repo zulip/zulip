@@ -434,6 +434,8 @@
 
     .recent-view-unread-header {
         width: 7%;
+        /* 64px at 20px/1em */
+        min-width: 3.2em;
 
         .zulip-icon-unread {
             position: relative;
