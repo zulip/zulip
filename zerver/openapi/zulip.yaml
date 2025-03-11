@@ -410,6 +410,10 @@ paths:
                                   description: |
                                     Object containing the changed details of the user.
                                     It has multiple forms depending on the value changed.
+
+                                    **Changes**: Removed `is_billing_admin` field in Zulip 10.0
+                                    (feature level 363), as it was replaced by the
+                                    `can_manage_billing_group` realm setting.
                                   oneOf:
                                     - type: object
                                       description: |
@@ -505,15 +509,6 @@ paths:
                                             - 300
                                             - 400
                                             - 600
-                                    - type: object
-                                      additionalProperties: false
-                                      description: |
-                                        When billing role of a user changes.
-                                      properties:
-                                        user_id:
-                                          type: integer
-                                          description: |
-                                            The ID of the user affected by this change.
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -9611,6 +9606,9 @@ paths:
       tags: ["users"]
       description: |
         Get basic data about the user/bot that requests this endpoint.
+
+        **Changes**: Removed `is_billing_admin` field in Zulip 10.0 (feature level 363), as it was
+        replaced by the `can_manage_billing_group` realm setting.
       responses:
         "200":
           description: Success
@@ -24805,6 +24803,9 @@ components:
       type: object
       description: |
         A dictionary containing basic data on a given Zulip user.
+
+        **Changes**: Removed `is_billing_admin` field in Zulip 10.0 (feature level 363), as it was
+        replaced by the `can_manage_billing_group` realm setting.
       properties:
         user_id:
           type: integer
