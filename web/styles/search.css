@@ -287,15 +287,14 @@
                 /* Match border radius to image */
                 border-radius: 4px;
                 max-width: none;
+                /* Set the minimum width on the pill container;
+                   this accommodates the avatar, a minimum
+                   two-character username, and the closing X.
+                   90px at 20px/1em */
+                min-width: 4.5em;
                 display: grid;
                 grid-template-columns:
-                    var(--length-input-pill-image) minmax(
-                        calc(
-                            var(--search-pill-label-min-width) + 2 *
-                                var(--input-pill-side-padding)
-                        ),
-                        1fr
-                    )
+                    var(--length-input-pill-image) minmax(0, 1fr)
                     var(--length-input-pill-exit);
 
                 /* Don't inherit large line-height for user pills themselves, either. */
@@ -306,10 +305,6 @@
                 }
             }
         }
-    }
-
-    .pill-label {
-        min-width: var(--search-pill-label-min-width);
     }
 
     @media (width >= $md_min) {
