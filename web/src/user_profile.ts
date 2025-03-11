@@ -1134,6 +1134,8 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         return;
     }
 
+    const hide_deactivate_button =
+        current_user.is_admin && !current_user.is_owner && person.is_owner;
     const html_body = render_admin_human_form({
         user_id,
         email: person.delivery_email,
@@ -1141,6 +1143,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: person.is_owner && !current_user.is_owner,
         is_active,
+        hide_deactivate_button,
     });
 
     $container.append($(html_body));
