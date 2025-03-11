@@ -163,13 +163,16 @@ export function is_spectator_compatible(hash: string): boolean {
     const main_hash = get_hash_category(hash);
 
     if (main_hash === "narrow") {
-        let hash_section = get_hash_section(hash);
-        const second_hash_section = get_nth_hash_section(hash, 2);
-        if (hash_section.startsWith("-")) {
-            hash_section = hash_section.slice(1);
-        }
-        if (!is_an_allowed_web_public_narrow(hash_section, second_hash_section)) {
-            return false;
+        const hash_components = hash
+            .split(/\//)
+            .filter((hash_component) => hash_component !== "#narrow");
+
+        for (let i = 0; i < hash_components.length; i += 2) {
+            const hash_section = hash_components[i]!.replace(/^-/, "");
+            const second_hash_section = hash_components[i + 1]!;
+            if (!is_an_allowed_web_public_narrow(hash_section, second_hash_section)) {
+                return false;
+            }
         }
         return true;
     }
