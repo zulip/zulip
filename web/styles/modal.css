@@ -720,7 +720,6 @@
         visibility: hidden;
 
         #navigation-tour-video-ended-button {
-            background-color: hsl(240deg 96% 68%);
             color: hsl(0deg 0% 100%) !important;
             cursor: pointer;
             font-size: 200%;
