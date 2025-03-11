@@ -5,6 +5,4 @@ or [topic](/help/move-content-to-another-topic).
 
 Modified messages are tagged as **edited** or **moved**, with the **edited**
 indicator taking priority. You can view the history of how a message was
-edited and moved, if this is allowed in your organization. In organizations
-where viewing message edit history is not allowed, moved messages are simply
-marked as **edited**.
+edited and moved, if this is allowed in your organization.
