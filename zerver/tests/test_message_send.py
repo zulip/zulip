@@ -59,7 +59,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import UserGroupMembersDict
+from zerver.lib.types import UserGroupMembersData
 from zerver.models import (
     Message,
     NamedUserGroup,
@@ -385,7 +385,7 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assertEqual(self.get_last_message().content, "Test message by notification bot")
 
-        setting_group_member_dict = UserGroupMembersDict(
+        setting_group_member_dict = UserGroupMembersData(
             direct_members=[othello.id], direct_subgroups=[owners_group.id]
         )
         do_change_stream_group_based_setting(
@@ -453,7 +453,7 @@ class MessagePOSTTest(ZulipTestCase):
             othello, stream_name, "Not authorized to send to channel 'private_stream"
         )
 
-        othello_group_member_dict = UserGroupMembersDict(
+        othello_group_member_dict = UserGroupMembersData(
             direct_members=[othello.id], direct_subgroups=[]
         )
         do_change_stream_group_based_setting(
@@ -490,7 +490,7 @@ class MessagePOSTTest(ZulipTestCase):
         # `history_public_to_subscribers` might be a relevant property
         # for public channels
         guest_user = self.example_user("polonius")
-        guest_user_group_member_dict = UserGroupMembersDict(
+        guest_user_group_member_dict = UserGroupMembersData(
             direct_members=[guest_user.id], direct_subgroups=[]
         )
         do_change_stream_group_based_setting(

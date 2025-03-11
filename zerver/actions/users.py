@@ -39,7 +39,7 @@ from zerver.lib.streams import (
     stream_to_dict,
 )
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info
-from zerver.lib.types import UserGroupMembersDict
+from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
@@ -287,7 +287,7 @@ def send_group_update_event_for_anonymous_group_setting(
     realm = setting_group.realm
     for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
         if getattr(named_group, setting_name + "_id") == setting_group.id:
-            new_setting_value = UserGroupMembersDict(
+            new_setting_value = UserGroupMembersData(
                 direct_members=group_members_dict[setting_group.id],
                 direct_subgroups=group_subgroups_dict[setting_group.id],
             )
@@ -310,7 +310,7 @@ def send_realm_update_event_for_anonymous_group_setting(
     realm = setting_group.realm
     for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
         if getattr(realm, setting_name + "_id") == setting_group.id:
-            new_setting_value = UserGroupMembersDict(
+            new_setting_value = UserGroupMembersData(
                 direct_members=group_members_dict[setting_group.id],
                 direct_subgroups=group_subgroups_dict[setting_group.id],
             )

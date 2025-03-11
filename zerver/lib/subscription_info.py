@@ -33,7 +33,7 @@ from zerver.lib.types import (
     RawSubscriptionDict,
     SubscriptionInfo,
     SubscriptionStreamDict,
-    UserGroupMembersDict,
+    UserGroupMembersData,
 )
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
@@ -46,7 +46,7 @@ from zerver.models.streams import get_all_streams
 
 
 def get_web_public_subs(
-    realm: Realm, anonymous_group_membership: dict[int, UserGroupMembersDict]
+    realm: Realm, anonymous_group_membership: dict[int, UserGroupMembersData]
 ) -> SubscriptionInfo:
     color_idx = 0
 
@@ -161,7 +161,7 @@ def build_unsubscribed_sub_from_stream_dict(
 def build_stream_api_dict(
     raw_stream_dict: RawStreamDict,
     recent_traffic: dict[int, int] | None,
-    anonymous_group_membership: dict[int, UserGroupMembersDict],
+    anonymous_group_membership: dict[int, UserGroupMembersData],
 ) -> APIStreamDict:
     # Add a few computed fields not directly from the data models.
     if recent_traffic is not None:
@@ -297,7 +297,7 @@ def build_stream_dict_for_sub(
 def build_stream_dict_for_never_sub(
     raw_stream_dict: RawStreamDict,
     recent_traffic: dict[int, int] | None,
-    anonymous_group_membership: dict[int, UserGroupMembersDict],
+    anonymous_group_membership: dict[int, UserGroupMembersData],
 ) -> NeverSubscribedStreamDict:
     is_archived = raw_stream_dict["deactivated"]
     creator_id = raw_stream_dict["creator_id"]
@@ -649,7 +649,7 @@ def gather_subscriptions_helper(
     user_profile: UserProfile,
     include_subscribers: bool = True,
     include_archived_channels: bool = False,
-    anonymous_group_membership: dict[int, UserGroupMembersDict] | None = None,
+    anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
 ) -> SubscriptionInfo:
     realm = user_profile.realm
     all_streams = get_all_streams(

@@ -23,7 +23,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import APIStreamDict, UserGroupMembersDict
+from zerver.lib.types import APIStreamDict, UserGroupMembersData
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
     get_group_setting_value_for_register_api,
@@ -146,7 +146,7 @@ def send_stream_creation_event(
     stream: Stream,
     user_ids: list[int],
     recent_traffic: dict[int, int] | None = None,
-    anonymous_group_membership: dict[int, UserGroupMembersDict] | None = None,
+    anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
 ) -> None:
     event = dict(
         type="stream",
@@ -263,7 +263,7 @@ def create_stream_if_needed(
     can_remove_subscribers_group: UserGroup | None = None,
     can_subscribe_group: UserGroup | None = None,
     acting_user: UserProfile | None = None,
-    anonymous_group_membership: dict[int, UserGroupMembersDict] | None = None,
+    anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
@@ -359,7 +359,7 @@ def create_streams_if_needed(
     realm: Realm,
     stream_dicts: list[StreamDict],
     acting_user: UserProfile | None = None,
-    anonymous_group_membership: dict[int, UserGroupMembersDict] | None = None,
+    anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
@@ -1292,7 +1292,7 @@ def list_to_streams(
     autocreate: bool = False,
     unsubscribing_others: bool = False,
     is_default_stream: bool = False,
-    anonymous_group_membership: dict[int, UserGroupMembersDict] | None = None,
+    anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
@@ -1450,7 +1450,7 @@ def get_stream_post_policy_value_based_on_group_setting(setting_group: UserGroup
 def stream_to_dict(
     stream: Stream,
     recent_traffic: dict[int, int] | None = None,
-    anonymous_group_membership: dict[int, UserGroupMembersDict] | None = None,
+    anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
 ) -> APIStreamDict:
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
@@ -1512,7 +1512,7 @@ def stream_to_dict(
 
 
 def get_web_public_streams(
-    realm: Realm, anonymous_group_membership: dict[int, UserGroupMembersDict]
+    realm: Realm, anonymous_group_membership: dict[int, UserGroupMembersData]
 ) -> list[APIStreamDict]:  # nocoverage
     query = get_web_public_streams_queryset(realm)
     streams = query.only(*Stream.API_FIELDS)
@@ -1640,13 +1640,13 @@ def get_streams_for_user(
 
 def get_anonymous_group_membership_dict_for_streams(
     streams: list[Stream],
-) -> dict[int, UserGroupMembersDict]:
+) -> dict[int, UserGroupMembersData]:
     setting_group_ids = set()
     for stream in streams:
         for setting_name in Stream.stream_permission_group_settings:
             setting_group_ids.add(getattr(stream, setting_name + "_id"))
 
-    anonymous_groups_membership_dict: dict[int, UserGroupMembersDict] = dict()
+    anonymous_groups_membership_dict: dict[int, UserGroupMembersData] = dict()
 
     anonymous_group_ids = UserGroup.objects.filter(
         id__in=setting_group_ids, named_user_group=None
@@ -1667,7 +1667,7 @@ def do_get_streams(
     include_default: bool = False,
     include_owner_subscribed: bool = False,
     include_can_access_content: bool = False,
-    anonymous_group_membership: dict[int, UserGroupMembersDict] | None = None,
+    anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
 ) -> list[APIStreamDict]:
     # This function is only used by API clients now.
 

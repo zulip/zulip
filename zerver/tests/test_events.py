@@ -241,7 +241,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.types import ProfileDataElementUpdateDict, UserGroupMembersDict
+from zerver.lib.types import ProfileDataElementUpdateDict, UserGroupMembersData
 from zerver.lib.upload import upload_message_attachment
 from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
@@ -1951,7 +1951,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["group"]["can_join_group"], nobody_group.id)
         self.assertEqual(
             events[0]["group"]["can_manage_group"],
-            UserGroupMembersDict(direct_members=[12], direct_subgroups=[]),
+            UserGroupMembersData(direct_members=[12], direct_subgroups=[]),
         )
         everyone_group = NamedUserGroup.objects.get(
             name=SystemGroups.EVERYONE, realm=self.user_profile.realm, is_system_group=True
@@ -1980,19 +1980,19 @@ class NormalActionsTest(BaseAction):
         check_user_group_add("events[0]", events[0])
         self.assertEqual(
             events[0]["group"]["can_join_group"],
-            UserGroupMembersDict(
+            UserGroupMembersData(
                 direct_members=[othello.id], direct_subgroups=[moderators_group.id]
             ),
         )
         self.assertEqual(
             events[0]["group"]["can_manage_group"],
-            UserGroupMembersDict(
+            UserGroupMembersData(
                 direct_members=[othello.id], direct_subgroups=[moderators_group.id]
             ),
         )
         self.assertEqual(
             events[0]["group"]["can_mention_group"],
-            UserGroupMembersDict(
+            UserGroupMembersData(
                 direct_members=[othello.id], direct_subgroups=[moderators_group.id]
             ),
         )
@@ -2039,7 +2039,7 @@ class NormalActionsTest(BaseAction):
         check_user_group_update("events[0]", events[0], {"can_mention_group"})
         self.assertEqual(
             events[0]["data"]["can_mention_group"],
-            UserGroupMembersDict(
+            UserGroupMembersData(
                 direct_members=[othello.id], direct_subgroups=[moderators_group.id]
             ),
         )
@@ -3184,19 +3184,21 @@ class NormalActionsTest(BaseAction):
         check_user_group_update("events[6]", events[6], {"can_mention_group"})
         self.assertEqual(
             events[3]["data"]["can_add_members_group"],
-            UserGroupMembersDict(direct_members=[], direct_subgroups=[]),
+            UserGroupMembersData(direct_members=[], direct_subgroups=[]),
         )
         self.assertEqual(
             events[4]["data"]["can_manage_group"],
-            UserGroupMembersDict(direct_members=[], direct_subgroups=[]),
+            UserGroupMembersData(direct_members=[], direct_subgroups=[]),
         )
         self.assertEqual(
             events[5]["data"]["can_create_public_channel_group"],
-            UserGroupMembersDict(direct_members=[], direct_subgroups=[members_group.id]),
+            UserGroupMembersData(direct_members=[], direct_subgroups=[members_group.id]),
         )
         self.assertEqual(
             events[6]["data"]["can_mention_group"],
-            UserGroupMembersDict(direct_members=[hamlet.id], direct_subgroups=[members_group.id]),
+            UserGroupMembersData(
+                direct_members=[hamlet.id], direct_subgroups=[members_group.id]
+            ),
         )
 
         user_profile = self.example_user("cordelia")
@@ -3212,19 +3214,21 @@ class NormalActionsTest(BaseAction):
         check_user_group_update("events[6]", events[6], {"can_mention_group"})
         self.assertEqual(
             events[3]["data"]["can_add_members_group"],
-            UserGroupMembersDict(direct_members=[], direct_subgroups=[]),
+            UserGroupMembersData(direct_members=[], direct_subgroups=[]),
         )
         self.assertEqual(
             events[4]["data"]["can_manage_group"],
-            UserGroupMembersDict(direct_members=[], direct_subgroups=[]),
+            UserGroupMembersData(direct_members=[], direct_subgroups=[]),
         )
         self.assertEqual(
             events[5]["data"]["can_create_public_channel_group"],
-            UserGroupMembersDict(direct_members=[], direct_subgroups=[members_group.id]),
+            UserGroupMembersData(direct_members=[], direct_subgroups=[members_group.id]),
         )
         self.assertEqual(
             events[6]["data"]["can_mention_group"],
-            UserGroupMembersDict(direct_members=[hamlet.id], direct_subgroups=[members_group.id]),
+            UserGroupMembersData(
+                direct_members=[hamlet.id], direct_subgroups=[members_group.id]
+            ),
         )
 
         user_profile = self.example_user("shiva")
@@ -3244,7 +3248,7 @@ class NormalActionsTest(BaseAction):
         check_realm_user_remove("events[4]]", events[4])
         self.assertEqual(
             events[3]["data"]["can_mention_group"],
-            UserGroupMembersDict(direct_members=[], direct_subgroups=[members_group.id]),
+            UserGroupMembersData(direct_members=[], direct_subgroups=[members_group.id]),
         )
 
         user_profile = self.example_user("aaron")
@@ -3335,21 +3339,21 @@ class NormalActionsTest(BaseAction):
         check_user_group_update("events[6]", events[6], {"can_mention_group"})
         self.assertEqual(
             events[3]["data"]["can_add_members_group"],
-            UserGroupMembersDict(direct_members=[user_profile.id], direct_subgroups=[]),
+            UserGroupMembersData(direct_members=[user_profile.id], direct_subgroups=[]),
         )
         self.assertEqual(
             events[4]["data"]["can_manage_group"],
-            UserGroupMembersDict(direct_members=[user_profile.id], direct_subgroups=[]),
+            UserGroupMembersData(direct_members=[user_profile.id], direct_subgroups=[]),
         )
         self.assertEqual(
             events[5]["data"]["can_create_public_channel_group"],
-            UserGroupMembersDict(
+            UserGroupMembersData(
                 direct_members=[user_profile.id], direct_subgroups=[hamletcharacters_group.id]
             ),
         )
         self.assertEqual(
             events[6]["data"]["can_mention_group"],
-            UserGroupMembersDict(
+            UserGroupMembersData(
                 direct_members=[user_profile.id], direct_subgroups=[members_group.id]
             ),
         )
@@ -4038,7 +4042,9 @@ class RealmPropertyActionTest(BaseAction):
         check_realm_update_dict("events[0]", events[0])
         self.assertEqual(
             events[0]["data"][setting_name],
-            UserGroupMembersDict(direct_members=[othello.id], direct_subgroups=[admins_group.id]),
+            UserGroupMembersData(
+                direct_members=[othello.id], direct_subgroups=[admins_group.id]
+            ),
         )
 
         old_setting_api_value = get_group_setting_value_for_api(setting_group)
@@ -4082,7 +4088,7 @@ class RealmPropertyActionTest(BaseAction):
         check_realm_update_dict("events[0]", events[0])
         self.assertEqual(
             events[0]["data"][setting_name],
-            UserGroupMembersDict(
+            UserGroupMembersData(
                 direct_members=[self.user_profile.id], direct_subgroups=[moderators_group.id]
             ),
         )
@@ -4759,7 +4765,7 @@ class SubscribeActionTest(BaseAction):
 
             check_message("events[3]", events[3])
 
-        setting_group_member_dict = UserGroupMembersDict(
+        setting_group_member_dict = UserGroupMembersData(
             direct_members=[self.user_profile.id],
             direct_subgroups=[moderators_group.id],
         )
@@ -4775,7 +4781,7 @@ class SubscribeActionTest(BaseAction):
         check_stream_update("events[0]", events[0])
         self.assertEqual(
             events[0]["value"],
-            UserGroupMembersDict(
+            UserGroupMembersData(
                 direct_members=[self.user_profile.id], direct_subgroups=[moderators_group.id]
             ),
         )
