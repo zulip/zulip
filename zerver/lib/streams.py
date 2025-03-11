@@ -23,7 +23,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import APIStreamDict, UserGroupMembersDataDict
+from zerver.lib.types import APIStreamDict, UserGroupMembersDataDict, UserGroupMembersTypedDict
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
     get_recursive_membership_groups,
@@ -1443,6 +1443,16 @@ def get_stream_post_policy_value_based_on_group_setting(setting_group: UserGroup
     return Stream.STREAM_POST_POLICY_EVERYONE
 
 
+def convert_to_user_group_members_typed_dict(
+    value: int | UserGroupMembersDataDict,
+) -> int | UserGroupMembersTypedDict:
+    if isinstance(value, UserGroupMembersDataDict):
+        return UserGroupMembersTypedDict(
+            direct_members=value.direct_members, direct_subgroups=value.direct_subgroups
+        )
+    return value
+
+
 def stream_to_dict(
     stream: Stream,
     recent_traffic: dict[int, int] | None = None,
@@ -1462,11 +1472,21 @@ def stream_to_dict(
         stream_weekly_traffic = None
 
     assert setting_groups_dict is not None
-    can_add_subscribers_group = setting_groups_dict[stream.can_add_subscribers_group_id]
-    can_administer_channel_group = setting_groups_dict[stream.can_administer_channel_group_id]
-    can_send_message_group = setting_groups_dict[stream.can_send_message_group_id]
-    can_remove_subscribers_group = setting_groups_dict[stream.can_remove_subscribers_group_id]
-    can_subscribe_group = setting_groups_dict[stream.can_subscribe_group_id]
+    can_add_subscribers_group = convert_to_user_group_members_typed_dict(
+        setting_groups_dict[stream.can_add_subscribers_group_id]
+    )
+    can_administer_channel_group = convert_to_user_group_members_typed_dict(
+        setting_groups_dict[stream.can_administer_channel_group_id]
+    )
+    can_send_message_group = convert_to_user_group_members_typed_dict(
+        setting_groups_dict[stream.can_send_message_group_id]
+    )
+    can_remove_subscribers_group = convert_to_user_group_members_typed_dict(
+        setting_groups_dict[stream.can_remove_subscribers_group_id]
+    )
+    can_subscribe_group = convert_to_user_group_members_typed_dict(
+        setting_groups_dict[stream.can_subscribe_group_id]
+    )
 
     stream_post_policy = get_stream_post_policy_value_based_on_group_setting(
         stream.can_send_message_group

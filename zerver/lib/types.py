@@ -141,6 +141,11 @@ class UserTopicDict(TypedDict, total=False):
     visibility_policy: int
 
 
+class UserGroupMembersTypedDict(TypedDict):
+    direct_members: list[int]
+    direct_subgroups: list[int]
+
+
 @dataclass
 class UserGroupMembersDataDict:
     direct_members: list[int]
@@ -199,11 +204,11 @@ class SubscriptionStreamDict(TypedDict):
     """
 
     audible_notifications: bool | None
-    can_add_subscribers_group: int | UserGroupMembersDataDict
-    can_administer_channel_group: int | UserGroupMembersDataDict
-    can_send_message_group: int | UserGroupMembersDataDict
-    can_remove_subscribers_group: int | UserGroupMembersDataDict
-    can_subscribe_group: int | UserGroupMembersDataDict
+    can_add_subscribers_group: int | UserGroupMembersTypedDict
+    can_administer_channel_group: int | UserGroupMembersTypedDict
+    can_send_message_group: int | UserGroupMembersTypedDict
+    can_remove_subscribers_group: int | UserGroupMembersTypedDict
+    can_subscribe_group: int | UserGroupMembersTypedDict
     color: str
     creator_id: int | None
     date_created: int
@@ -233,11 +238,11 @@ class SubscriptionStreamDict(TypedDict):
 
 class NeverSubscribedStreamDict(TypedDict):
     is_archived: bool
-    can_add_subscribers_group: int | UserGroupMembersDataDict
-    can_administer_channel_group: int | UserGroupMembersDataDict
-    can_send_message_group: int | UserGroupMembersDataDict
-    can_remove_subscribers_group: int | UserGroupMembersDataDict
-    can_subscribe_group: int | UserGroupMembersDataDict
+    can_add_subscribers_group: int | UserGroupMembersTypedDict
+    can_administer_channel_group: int | UserGroupMembersTypedDict
+    can_send_message_group: int | UserGroupMembersTypedDict
+    can_remove_subscribers_group: int | UserGroupMembersTypedDict
+    can_subscribe_group: int | UserGroupMembersTypedDict
     creator_id: int | None
     date_created: int
     description: str
@@ -263,11 +268,11 @@ class DefaultStreamDict(TypedDict):
     """
 
     is_archived: bool
-    can_add_subscribers_group: int | UserGroupMembersDataDict
-    can_administer_channel_group: int | UserGroupMembersDataDict
-    can_send_message_group: int | UserGroupMembersDataDict
-    can_remove_subscribers_group: int | UserGroupMembersDataDict
-    can_subscribe_group: int | UserGroupMembersDataDict
+    can_add_subscribers_group: int | UserGroupMembersTypedDict
+    can_administer_channel_group: int | UserGroupMembersTypedDict
+    can_send_message_group: int | UserGroupMembersTypedDict
+    can_remove_subscribers_group: int | UserGroupMembersTypedDict
+    can_subscribe_group: int | UserGroupMembersTypedDict
     creator_id: int | None
     date_created: int
     description: str

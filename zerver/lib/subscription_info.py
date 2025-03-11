@@ -19,6 +19,7 @@ from zerver.lib.stream_subscription import (
 )
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.streams import (
+    convert_to_user_group_members_typed_dict,
     get_group_setting_value_dict_for_streams,
     get_setting_values_for_group_settings,
     get_stream_post_policy_value_based_on_group_setting,
@@ -36,10 +37,21 @@ from zerver.lib.types import (
     SubscriptionInfo,
     SubscriptionStreamDict,
     UserGroupMembersDataDict,
+    UserGroupMembersTypedDict,
 )
 from zerver.lib.user_groups import UserGroupMembershipDetails, get_recursive_membership_groups
 from zerver.models import Realm, Stream, Subscription, UserProfile
 from zerver.models.streams import get_all_streams
+
+
+def bulk_convert_to_user_group_members_typed_dict(
+    group_members_dict: dict[int, int | UserGroupMembersDataDict],
+) -> dict[int, int | UserGroupMembersTypedDict]:
+    result_dict: dict[int, int | UserGroupMembersTypedDict] = dict()
+    for key, value in group_members_dict.items():
+        result_dict[key] = convert_to_user_group_members_typed_dict(value)
+
+    return result_dict
 
 
 def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
@@ -53,7 +65,9 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
 
     subscribed = []
     streams = get_web_public_streams_queryset(realm)
-    setting_groups_dict = get_group_setting_value_dict_for_streams(list(streams))
+    setting_groups_dict = bulk_convert_to_user_group_members_typed_dict(
+        get_group_setting_value_dict_for_streams(list(streams))
+    )
 
     for stream in streams:
         # Add Stream fields.
@@ -162,15 +176,18 @@ def build_stream_api_dict(
     # migration.
     is_announcement_only = raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
 
-    can_add_subscribers_group = setting_groups_dict[raw_stream_dict["can_add_subscribers_group_id"]]
-    can_administer_channel_group = setting_groups_dict[
+    setting_groups_typed_dict = bulk_convert_to_user_group_members_typed_dict(setting_groups_dict)
+    can_add_subscribers_group = setting_groups_typed_dict[
+        raw_stream_dict["can_add_subscribers_group_id"]
+    ]
+    can_administer_channel_group = setting_groups_typed_dict[
         raw_stream_dict["can_administer_channel_group_id"]
     ]
-    can_send_message_group = setting_groups_dict[raw_stream_dict["can_send_message_group_id"]]
-    can_remove_subscribers_group = setting_groups_dict[
+    can_send_message_group = setting_groups_typed_dict[raw_stream_dict["can_send_message_group_id"]]
+    can_remove_subscribers_group = setting_groups_typed_dict[
         raw_stream_dict["can_remove_subscribers_group_id"]
     ]
-    can_subscribe_group = setting_groups_dict[raw_stream_dict["can_subscribe_group_id"]]
+    can_subscribe_group = setting_groups_typed_dict[raw_stream_dict["can_subscribe_group_id"]]
 
     return APIStreamDict(
         is_archived=raw_stream_dict["deactivated"],
@@ -301,17 +318,20 @@ def build_stream_dict_for_never_sub(
     else:
         stream_weekly_traffic = None
 
-    can_add_subscribers_group_value = setting_groups_dict[
+    setting_groups_typed_dict = bulk_convert_to_user_group_members_typed_dict(setting_groups_dict)
+    can_add_subscribers_group_value = setting_groups_typed_dict[
         raw_stream_dict["can_add_subscribers_group_id"]
     ]
-    can_administer_channel_group_value = setting_groups_dict[
+    can_administer_channel_group_value = setting_groups_typed_dict[
         raw_stream_dict["can_administer_channel_group_id"]
     ]
-    can_send_message_group_value = setting_groups_dict[raw_stream_dict["can_send_message_group_id"]]
-    can_remove_subscribers_group_value = setting_groups_dict[
+    can_send_message_group_value = setting_groups_typed_dict[
+        raw_stream_dict["can_send_message_group_id"]
+    ]
+    can_remove_subscribers_group_value = setting_groups_typed_dict[
         raw_stream_dict["can_remove_subscribers_group_id"]
     ]
-    can_subscribe_group_value = setting_groups_dict[raw_stream_dict["can_subscribe_group_id"]]
+    can_subscribe_group_value = setting_groups_typed_dict[raw_stream_dict["can_subscribe_group_id"]]
 
     # Backwards-compatibility addition of removed field.
     is_announcement_only = raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
