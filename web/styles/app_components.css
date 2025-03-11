@@ -883,7 +883,7 @@ input.settings_text_input {
     .save-discard-widget-button {
         border-radius: 5px;
         border: 1px solid hsl(0deg 0% 80%);
-        padding: 3px 14px 4px 11px;
+        padding: 0.2143em 1em 0.2857em 0.7857em; /* 3px 14px 4px 11px at 14px/em */
         text-decoration: none;
         color: hsl(0deg 0% 47%);
         min-width: 80px;
@@ -919,6 +919,7 @@ input.settings_text_input {
             &.saving {
                 background-color: hsl(156deg 14% 40%);
                 border-color: hsl(156deg 14% 40%);
+                display: flex;
             }
         }
 
@@ -935,8 +936,8 @@ input.settings_text_input {
                 }
 
                 .save-discard-widget-button-loading {
-                    display: inline-block;
-                    margin-right: 2px;
+                    display: block;
+                    margin-right: 0.5em; /* 7px at 14px/em */
                 }
             }
         }
