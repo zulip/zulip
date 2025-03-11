@@ -267,7 +267,7 @@
                 /* Replaced by the 5px gap. */
                 margin-right: 0;
                 /* Don't inherit large line-height for user pill labels. */
-                line-height: 1;
+                line-height: 1.1;
             }
 
             .pill {
@@ -284,7 +284,7 @@
                 grid-template-columns: auto 1fr auto;
 
                 /* Don't inherit large line-height for user pills themselves, either. */
-                line-height: 1;
+                line-height: 1.1;
 
                 &:not(.deactivated-pill) {
                     background-color: var(--color-background-user-pill);
