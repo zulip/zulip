@@ -26,7 +26,7 @@
         </div>
         <div class="custom-profile-field-form"></div>
     </form>
-    <div class="input-group">
+    <div class="input-group {{#if hide_deactivate_button}}hide{{/if}}">
         {{#if is_active}}
         {{> ../components/action_button custom_classes="deactivate_user_button" type="quiet" intent="danger" label=(t "Deactivate user") aria-label=(t "Deactivate user") }}
         {{else}}
