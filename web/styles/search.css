@@ -288,7 +288,15 @@
                 border-radius: 4px;
                 max-width: none;
                 display: grid;
-                grid-template-columns: auto 1fr auto;
+                grid-template-columns:
+                    var(--length-input-pill-image) minmax(
+                        calc(
+                            var(--search-pill-label-min-width) + 2 *
+                                var(--input-pill-side-padding)
+                        ),
+                        1fr
+                    )
+                    var(--length-input-pill-exit);
 
                 /* Don't inherit large line-height for user pills themselves, either. */
                 line-height: 1.1;
