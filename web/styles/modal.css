@@ -705,6 +705,10 @@
         aspect-ratio: 16 / 9;
         cursor: pointer;
         border: 1px solid hsl(0deg 0% 50%);
+
+        &.dimmed-background {
+            opacity: 0.4;
+        }
     }
 
     #navigation-tour-video-ended-button-wrapper {

@@ -135,12 +135,14 @@ function show_navigation_tour_video(navigation_tour_video_url: string | null): v
                             "hidden",
                         );
                         video_ended_button_visible = false;
+                        $video.removeClass("dimmed-background");
                     }
                 });
 
                 $video.on("ended", () => {
                     $("#navigation-tour-video-ended-button-wrapper").css("visibility", "visible");
                     video_ended_button_visible = true;
+                    $video.addClass("dimmed-background");
                     $skip_video_button.css("visibility", "hidden");
                     $watch_later_button.css("visibility", "hidden");
                     // Exit fullscreen to make the 'video-ended-button-wrapper' button visible.
