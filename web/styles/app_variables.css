@@ -195,7 +195,7 @@
         --search-box-height: 1.75em; /* 28px at 16px em */
     }
 
-    --search-pill-label-min-width: 2.1429em; /* 30px at 14px/em */
+    --search-pill-label-min-width: 2.5em; /* 35px at 14px/em */
 
     /*
     Since #navbar_alerts_wrapper can take variable height depending upon
