@@ -35,7 +35,7 @@ from zerver.lib.types import (
     RawSubscriptionDict,
     SubscriptionInfo,
     SubscriptionStreamDict,
-    UserGroupMembersDict,
+    UserGroupMembersDataDict,
 )
 from zerver.lib.user_groups import UserGroupMembershipDetails, get_recursive_membership_groups
 from zerver.models import Realm, Stream, Subscription, UserProfile
@@ -147,7 +147,7 @@ def build_unsubscribed_sub_from_stream_dict(
 def build_stream_api_dict(
     raw_stream_dict: RawStreamDict,
     recent_traffic: dict[int, int] | None,
-    setting_groups_dict: dict[int, int | UserGroupMembersDict],
+    setting_groups_dict: dict[int, int | UserGroupMembersDataDict],
 ) -> APIStreamDict:
     # Add a few computed fields not directly from the data models.
     if recent_traffic is not None:
@@ -277,7 +277,7 @@ def build_stream_dict_for_sub(
 def build_stream_dict_for_never_sub(
     raw_stream_dict: RawStreamDict,
     recent_traffic: dict[int, int] | None,
-    setting_groups_dict: dict[int, int | UserGroupMembersDict],
+    setting_groups_dict: dict[int, int | UserGroupMembersDataDict],
 ) -> NeverSubscribedStreamDict:
     is_archived = raw_stream_dict["deactivated"]
     creator_id = raw_stream_dict["creator_id"]

@@ -20,7 +20,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
     GroupPermissionSetting,
     ServerSupportedPermissionSettings,
-    UserGroupMembersDict,
+    UserGroupMembersDataDict,
 )
 from zerver.models import (
     GroupGroupMembership,
@@ -38,8 +38,8 @@ from zerver.models.realm_audit_logs import AuditLogEventType
 
 @dataclass
 class GroupSettingChangeRequest:
-    new: int | UserGroupMembersDict
-    old: int | UserGroupMembersDict | None = None
+    new: int | UserGroupMembersDataDict
+    old: int | UserGroupMembersDataDict | None = None
 
 
 class UserGroupDict(TypedDict):
@@ -51,12 +51,12 @@ class UserGroupDict(TypedDict):
     creator_id: int | None
     date_created: int | None
     is_system_group: bool
-    can_add_members_group: int | UserGroupMembersDict
-    can_join_group: int | UserGroupMembersDict
-    can_leave_group: int | UserGroupMembersDict
-    can_manage_group: int | UserGroupMembersDict
-    can_mention_group: int | UserGroupMembersDict
-    can_remove_members_group: int | UserGroupMembersDict
+    can_add_members_group: int | UserGroupMembersDataDict
+    can_join_group: int | UserGroupMembersDataDict
+    can_leave_group: int | UserGroupMembersDataDict
+    can_manage_group: int | UserGroupMembersDataDict
+    can_mention_group: int | UserGroupMembersDataDict
+    can_remove_members_group: int | UserGroupMembersDataDict
     deactivated: bool
 
 
@@ -456,12 +456,12 @@ def update_or_create_user_group_for_setting(
 
 
 def access_user_group_api_value_for_setting(
-    setting_user_group: int | UserGroupMembersDict,
+    setting_user_group: int | UserGroupMembersDataDict,
     user_profile: UserProfile,
     *,
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
-) -> NamedUserGroup | UserGroupMembersDict:
+) -> NamedUserGroup | UserGroupMembersDataDict:
     if isinstance(setting_user_group, int):
         named_user_group = get_user_group_by_id_in_realm(
             setting_user_group, user_profile.realm, for_read=False, for_setting=True
@@ -474,14 +474,14 @@ def access_user_group_api_value_for_setting(
     if permission_configuration.require_system_group:
         raise SystemGroupRequiredError(setting_name)
 
-    return UserGroupMembersDict(
+    return UserGroupMembersDataDict(
         direct_members=setting_user_group.direct_members,
         direct_subgroups=setting_user_group.direct_subgroups,
     )
 
 
 def access_user_group_for_setting(
-    setting_user_group: int | UserGroupMembersDict,
+    setting_user_group: int | UserGroupMembersDataDict,
     user_profile: UserProfile,
     *,
     setting_name: str,
@@ -533,11 +533,11 @@ def check_user_group_name(group_name: str) -> str:
 
 def get_group_setting_value_for_api(
     setting_value_group: UserGroup,
-) -> int | UserGroupMembersDict:
+) -> int | UserGroupMembersDataDict:
     if hasattr(setting_value_group, "named_user_group"):
         return setting_value_group.id
 
-    return UserGroupMembersDict(
+    return UserGroupMembersDataDict(
         direct_members=[
             member.id for member in setting_value_group.direct_members.filter(is_active=True)
         ],
@@ -548,8 +548,8 @@ def get_group_setting_value_for_api(
 def get_setting_value_for_user_group_object(
     setting_group_id: int,
     named_user_group_ids: set[int],
-    members_dict: dict[int, UserGroupMembersDict],
-) -> int | UserGroupMembersDict:
+    members_dict: dict[int, UserGroupMembersDataDict],
+) -> int | UserGroupMembersDataDict:
     if setting_group_id in named_user_group_ids:
         return setting_group_id
 
@@ -558,8 +558,8 @@ def get_setting_value_for_user_group_object(
 
 def get_group_setting_value_for_register_api(
     setting_group_id: int,
-    realm_setting_anonymous_group_membership: dict[int, UserGroupMembersDict],
-) -> int | UserGroupMembersDict:
+    realm_setting_anonymous_group_membership: dict[int, UserGroupMembersDataDict],
+) -> int | UserGroupMembersDataDict:
     if setting_group_id not in realm_setting_anonymous_group_membership:
         # realm_setting_anonymous_group_membership is defined to contain
         # the membership of all non-named UserGroup used for realm settings.
@@ -569,7 +569,7 @@ def get_group_setting_value_for_register_api(
     return realm_setting_anonymous_group_membership[setting_group_id]
 
 
-def get_members_and_subgroups_of_groups(group_ids: set[int]) -> dict[int, UserGroupMembersDict]:
+def get_members_and_subgroups_of_groups(group_ids: set[int]) -> dict[int, UserGroupMembersDataDict]:
     user_members = (
         UserGroupMembership.objects.filter(user_group_id__in=group_ids)
         .exclude(user_profile__is_active=False)
@@ -587,9 +587,11 @@ def get_members_and_subgroups_of_groups(group_ids: set[int]) -> dict[int, UserGr
         .values_list("member_type", "supergroup_id", "subgroup_id")
     )
 
-    group_members_dict: dict[int, UserGroupMembersDict] = dict()
+    group_members_dict: dict[int, UserGroupMembersDataDict] = dict()
     for group_id in group_ids:
-        group_members_dict[group_id] = UserGroupMembersDict(direct_members=[], direct_subgroups=[])
+        group_members_dict[group_id] = UserGroupMembersDataDict(
+            direct_members=[], direct_subgroups=[]
+        )
 
     all_members = user_members.union(group_subgroups)
     for member_type, group_id, member_id in all_members:
@@ -606,7 +608,7 @@ def get_members_and_subgroups_of_groups(group_ids: set[int]) -> dict[int, UserGr
 class RealmUserGroupsData:
     api_groups: list[UserGroupDict]
     system_groups_name_dict: dict[int, str]
-    realm_setting_anonymous_group_membership: dict[int, UserGroupMembersDict]
+    realm_setting_anonymous_group_membership: dict[int, UserGroupMembersDataDict]
 
 
 def user_groups_in_realm_serialized(
@@ -1095,9 +1097,9 @@ def get_server_supported_permission_settings() -> ServerSupportedPermissionSetti
 
 
 def parse_group_setting_value(
-    setting_value: int | UserGroupMembersDict,
+    setting_value: int | UserGroupMembersDataDict,
     nobody_group: NamedUserGroup,
-) -> int | UserGroupMembersDict:
+) -> int | UserGroupMembersDataDict:
     if isinstance(setting_value, int):
         return setting_value
 
@@ -1111,14 +1113,14 @@ def parse_group_setting_value(
 
 
 def are_both_group_setting_values_equal(
-    first_setting_value: int | UserGroupMembersDict,
-    second_setting_value: int | UserGroupMembersDict,
+    first_setting_value: int | UserGroupMembersDataDict,
+    second_setting_value: int | UserGroupMembersDataDict,
 ) -> bool:
     if isinstance(first_setting_value, int) and isinstance(second_setting_value, int):
         return first_setting_value == second_setting_value
 
-    if isinstance(first_setting_value, UserGroupMembersDict) and isinstance(
-        second_setting_value, UserGroupMembersDict
+    if isinstance(first_setting_value, UserGroupMembersDataDict) and isinstance(
+        second_setting_value, UserGroupMembersDataDict
     ):
         return set(first_setting_value.direct_members) == set(
             second_setting_value.direct_members
@@ -1130,9 +1132,9 @@ def are_both_group_setting_values_equal(
 
 
 def validate_group_setting_value_change(
-    current_setting_api_value: int | UserGroupMembersDict,
-    new_setting_value: int | UserGroupMembersDict,
-    expected_current_setting_value: int | UserGroupMembersDict | None,
+    current_setting_api_value: int | UserGroupMembersDataDict,
+    new_setting_value: int | UserGroupMembersDataDict,
+    expected_current_setting_value: int | UserGroupMembersDataDict | None,
 ) -> bool:
     if expected_current_setting_value is not None and not are_both_group_setting_values_equal(
         expected_current_setting_value,
@@ -1147,7 +1149,7 @@ def validate_group_setting_value_change(
 
 
 def get_group_setting_value_for_audit_log_data(
-    setting_value: int | UserGroupMembersDict,
+    setting_value: int | UserGroupMembersDataDict,
 ) -> int | dict[str, list[int]]:
     if isinstance(setting_value, int):
         return setting_value
