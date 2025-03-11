@@ -37,7 +37,7 @@ from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import UserGroupMembersData
+from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
 from zerver.lib.user_groups import (
     get_direct_user_groups,
     get_recursive_group_members,
@@ -165,7 +165,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[9]["members"], [])
         self.assertEqual(
             user_groups[9]["can_manage_group"],
-            UserGroupMembersData(direct_members=[11], direct_subgroups=[]),
+            UserGroupMembersDict(direct_members=[11], direct_subgroups=[]),
         )
         self.assertEqual(user_groups[9]["can_mention_group"], everyone_group.id)
         self.assertFalse(user_groups[0]["deactivated"])
@@ -198,17 +198,17 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[10]["description"], "")
         self.assertEqual(user_groups[10]["members"], [othello.id])
 
-        assert isinstance(user_groups[10]["can_manage_group"], UserGroupMembersData)
-        self.assertEqual(user_groups[10]["can_manage_group"].direct_members, [othello.id])
+        assert not isinstance(user_groups[10]["can_manage_group"], int)
+        self.assertEqual(user_groups[10]["can_manage_group"]["direct_members"], [othello.id])
         self.assertCountEqual(
-            user_groups[10]["can_manage_group"].direct_subgroups,
+            user_groups[10]["can_manage_group"]["direct_subgroups"],
             [admins_system_group.id, hamletcharacters_group.id],
         )
 
-        assert isinstance(user_groups[10]["can_mention_group"], UserGroupMembersData)
-        self.assertEqual(user_groups[10]["can_mention_group"].direct_members, [othello.id])
+        assert not isinstance(user_groups[10]["can_mention_group"], int)
+        self.assertEqual(user_groups[10]["can_mention_group"]["direct_members"], [othello.id])
         self.assertCountEqual(
-            user_groups[10]["can_mention_group"].direct_subgroups,
+            user_groups[10]["can_mention_group"]["direct_subgroups"],
             [admins_system_group.id, hamletcharacters_group.id],
         )
         self.assertFalse(user_groups[0]["deactivated"])
@@ -266,7 +266,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertIn(realm.can_create_public_channel_group_id, anonymous_group_membership)
         self.assertEqual(
             anonymous_group_membership[realm.can_create_public_channel_group_id],
-            UserGroupMembersData(
+            UserGroupMembersDict(
                 direct_members=[cordelia.id], direct_subgroups=[owners_system_group.id]
             ),
         )

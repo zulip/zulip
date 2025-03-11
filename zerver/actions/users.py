@@ -41,7 +41,10 @@ from zerver.lib.streams import (
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_counts import realm_user_count_by_role
-from zerver.lib.user_groups import get_system_user_group_for_user
+from zerver.lib.user_groups import (
+    convert_to_user_group_members_dict,
+    get_system_user_group_for_user,
+)
 from zerver.lib.users import (
     get_active_bots_owned_by_user,
     get_user_ids_who_can_access_user,
@@ -295,7 +298,7 @@ def send_group_update_event_for_anonymous_group_setting(
                 type="user_group",
                 op="update",
                 group_id=named_group.id,
-                data={setting_name: new_setting_value},
+                data={setting_name: convert_to_user_group_members_dict(new_setting_value)},
             )
             send_event_on_commit(realm, event, notify_user_ids)
             return
@@ -318,7 +321,7 @@ def send_realm_update_event_for_anonymous_group_setting(
                 type="realm",
                 op="update_dict",
                 property="default",
-                data={setting_name: new_setting_value},
+                data={setting_name: convert_to_user_group_members_dict(new_setting_value)},
             )
             send_event_on_commit(realm, event, notify_user_ids)
             return

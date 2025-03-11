@@ -28,6 +28,7 @@ from zerver.lib.types import UserGroupMembersData
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import (
+    convert_to_user_group_members_dict,
     get_group_setting_value_for_api,
     get_group_setting_value_for_audit_log_data,
 )
@@ -212,7 +213,7 @@ def do_change_realm_permission_group_setting(
         type="realm",
         op="update_dict",
         property="default",
-        data={setting_name: new_setting_api_value},
+        data={setting_name: convert_to_user_group_members_dict(new_setting_api_value)},
     )
 
     send_event_on_commit(realm, event, active_user_ids(realm.id))

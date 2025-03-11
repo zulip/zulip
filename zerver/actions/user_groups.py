@@ -9,8 +9,9 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import UserGroupMembersData
+from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
 from zerver.lib.user_groups import (
+    convert_to_user_group_members_dict,
     get_group_setting_value_for_api,
     get_group_setting_value_for_audit_log_data,
     get_role_based_system_groups_dict,
@@ -178,8 +179,8 @@ def do_send_create_user_group_event(
 
     setting_values = {}
     for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
-        setting_values[setting_name] = get_group_setting_value_for_api(
-            getattr(user_group, setting_name)
+        setting_values[setting_name] = convert_to_user_group_members_dict(
+            get_group_setting_value_for_api(getattr(user_group, setting_name))
         )
 
     event = dict(
@@ -226,7 +227,7 @@ def check_add_user_group(
 
 
 def do_send_user_group_update_event(
-    user_group: NamedUserGroup, data: dict[str, str | int | UserGroupMembersData]
+    user_group: NamedUserGroup, data: dict[str, str | int | UserGroupMembersDict]
 ) -> None:
     event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
     if "name" in data:
@@ -515,7 +516,7 @@ def do_change_user_group_permission_setting(
         },
     )
 
-    event_data_dict: dict[str, str | int | UserGroupMembersData] = {
-        setting_name: new_setting_api_value
+    event_data_dict: dict[str, str | int | UserGroupMembersDict] = {
+        setting_name: convert_to_user_group_members_dict(new_setting_api_value)
     }
     do_send_user_group_update_event(user_group, event_data_dict)

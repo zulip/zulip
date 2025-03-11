@@ -51,6 +51,7 @@ from zerver.lib.streams import (
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info, get_subscribers_query
 from zerver.lib.types import APISubscriptionDict, UserGroupMembersData
 from zerver.lib.user_groups import (
+    convert_to_user_group_members_dict,
     get_group_setting_value_for_api,
     get_group_setting_value_for_audit_log_data,
     update_or_create_user_group_for_setting,
@@ -1679,7 +1680,7 @@ def do_change_stream_group_based_setting(
         op="update",
         type="stream",
         property=setting_name,
-        value=new_setting_api_value,
+        value=convert_to_user_group_members_dict(new_setting_api_value),
         stream_id=stream.id,
         name=stream.name,
     )

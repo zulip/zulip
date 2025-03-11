@@ -21,6 +21,7 @@ from zerver.lib.types import (
     GroupPermissionSetting,
     ServerSupportedPermissionSettings,
     UserGroupMembersData,
+    UserGroupMembersDict,
 )
 from zerver.models import (
     GroupGroupMembership,
@@ -51,12 +52,12 @@ class UserGroupDict(TypedDict):
     creator_id: int | None
     date_created: int | None
     is_system_group: bool
-    can_add_members_group: int | UserGroupMembersData
-    can_join_group: int | UserGroupMembersData
-    can_leave_group: int | UserGroupMembersData
-    can_manage_group: int | UserGroupMembersData
-    can_mention_group: int | UserGroupMembersData
-    can_remove_members_group: int | UserGroupMembersData
+    can_add_members_group: int | UserGroupMembersDict
+    can_join_group: int | UserGroupMembersDict
+    can_leave_group: int | UserGroupMembersDict
+    can_manage_group: int | UserGroupMembersDict
+    can_mention_group: int | UserGroupMembersDict
+    can_remove_members_group: int | UserGroupMembersDict
     deactivated: bool
 
 
@@ -548,31 +549,49 @@ def get_group_setting_value_for_api(
     )
 
 
+def convert_to_user_group_members_dict(
+    value: int | UserGroupMembersData,
+) -> int | UserGroupMembersDict:
+    if isinstance(value, UserGroupMembersData):
+        return UserGroupMembersDict(
+            direct_members=value.direct_members, direct_subgroups=value.direct_subgroups
+        )
+    return value
+
+
 def get_setting_value_for_user_group_object(
     setting_group_id: int,
     named_user_group_ids: set[int],
     members_dict: dict[int, UserGroupMembersData],
-) -> int | UserGroupMembersData:
+) -> int | UserGroupMembersDict:
     if setting_group_id in named_user_group_ids:
         return setting_group_id
 
-    return members_dict[setting_group_id]
+    return UserGroupMembersDict(
+        direct_members=members_dict[setting_group_id].direct_members,
+        direct_subgroups=members_dict[setting_group_id].direct_subgroups,
+    )
 
 
 def get_group_setting_value_for_register_api(
     setting_group_id: int,
     anonymous_group_membership: dict[int, UserGroupMembersData],
-) -> int | UserGroupMembersData:
+) -> int | UserGroupMembersDict:
     if setting_group_id not in anonymous_group_membership:
         # anonymous_group_membership is defined to contain the
         # membership of all non-named UserGroup used for realm settings.
         # Thus, any group ID not present in it must be a named group.
         return setting_group_id
 
-    return anonymous_group_membership[setting_group_id]
+    return UserGroupMembersDict(
+        direct_members=anonymous_group_membership[setting_group_id].direct_members,
+        direct_subgroups=anonymous_group_membership[setting_group_id].direct_subgroups,
+    )
 
 
-def get_members_and_subgroups_of_groups(group_ids: set[int]) -> dict[int, UserGroupMembersData]:
+def get_members_and_subgroups_of_groups(
+    group_ids: set[int],
+) -> dict[int, UserGroupMembersData]:
     user_members = (
         UserGroupMembership.objects.filter(user_group_id__in=group_ids)
         .exclude(user_profile__is_active=False)
@@ -618,7 +637,7 @@ def get_members_and_subgroups_of_groups(group_ids: set[int]) -> dict[int, UserGr
 class RealmUserGroupsData:
     api_groups: list[UserGroupDict]
     system_groups_name_dict: dict[int, str]
-    anonymous_group_membership: dict[int, UserGroupMembersData]
+    anonymous_group_membership: dict[int, UserGroupMembersDict]
 
 
 def user_groups_in_realm_serialized(
@@ -709,10 +728,13 @@ def user_groups_in_realm_serialized(
         if user_group.is_system_group:
             system_groups_name_dict[user_group.id] = user_group.name
 
-    anonymous_group_membership = {}
+    anonymous_group_membership: dict[int, UserGroupMembersDict] = {}
     for group_id in anonymous_group_ids:
         if group_id not in realm_group_ids:
-            anonymous_group_membership[group_id] = group_members_dict[group_id]
+            anonymous_group_membership[group_id] = UserGroupMembersDict(
+                direct_members=group_members_dict[group_id].direct_members,
+                direct_subgroups=group_members_dict[group_id].direct_subgroups,
+            )
 
     return RealmUserGroupsData(
         api_groups=sorted(group_dicts.values(), key=lambda group_dict: group_dict["id"]),

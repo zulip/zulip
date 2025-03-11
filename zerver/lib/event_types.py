@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from pydantic import AfterValidator, BaseModel
 
-from zerver.lib.types import UserGroupMembersData
+from zerver.lib.types import UserGroupMembersDict
 
 
 def check_url(val: str) -> str:
@@ -508,28 +508,28 @@ class GroupSettingUpdateDataCore(BaseModel):
 
 class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     # TODO: fix types to avoid optional fields
-    create_multiuse_invite_group: int | UserGroupMembersData | None = None
-    can_access_all_users_group: int | UserGroupMembersData | None = None
-    can_add_custom_emoji_group: int | UserGroupMembersData | None = None
-    can_add_subscribers_group: int | UserGroupMembersData | None = None
-    can_create_bots_group: int | UserGroupMembersData | None = None
-    can_create_groups: int | UserGroupMembersData | None = None
-    can_create_public_channel_group: int | UserGroupMembersData | None = None
-    can_create_private_channel_group: int | UserGroupMembersData | None = None
-    can_create_web_public_channel_group: int | UserGroupMembersData | None = None
-    can_create_write_only_bots_group: int | UserGroupMembersData | None = None
-    can_delete_any_message_group: int | UserGroupMembersData | None = None
-    can_delete_own_message_group: int | UserGroupMembersData | None = None
-    can_invite_users_group: int | UserGroupMembersData | None = None
-    can_manage_all_groups: int | UserGroupMembersData | None = None
-    can_manage_billing_group: int | UserGroupMembersData | None = None
-    can_mention_many_users_group: int | UserGroupMembersData | None = None
-    can_move_messages_between_channels_group: int | UserGroupMembersData | None = None
-    can_move_messages_between_topics_group: int | UserGroupMembersData | None = None
-    can_resolve_topics_group: int | UserGroupMembersData | None = None
-    can_summarize_topics_group: int | UserGroupMembersData | None = None
-    direct_message_initiator_group: int | UserGroupMembersData | None = None
-    direct_message_permission_group: int | UserGroupMembersData | None = None
+    create_multiuse_invite_group: int | UserGroupMembersDict | None = None
+    can_access_all_users_group: int | UserGroupMembersDict | None = None
+    can_add_custom_emoji_group: int | UserGroupMembersDict | None = None
+    can_add_subscribers_group: int | UserGroupMembersDict | None = None
+    can_create_bots_group: int | UserGroupMembersDict | None = None
+    can_create_groups: int | UserGroupMembersDict | None = None
+    can_create_public_channel_group: int | UserGroupMembersDict | None = None
+    can_create_private_channel_group: int | UserGroupMembersDict | None = None
+    can_create_web_public_channel_group: int | UserGroupMembersDict | None = None
+    can_create_write_only_bots_group: int | UserGroupMembersDict | None = None
+    can_delete_any_message_group: int | UserGroupMembersDict | None = None
+    can_delete_own_message_group: int | UserGroupMembersDict | None = None
+    can_invite_users_group: int | UserGroupMembersDict | None = None
+    can_manage_all_groups: int | UserGroupMembersDict | None = None
+    can_manage_billing_group: int | UserGroupMembersDict | None = None
+    can_mention_many_users_group: int | UserGroupMembersDict | None = None
+    can_move_messages_between_channels_group: int | UserGroupMembersDict | None = None
+    can_move_messages_between_topics_group: int | UserGroupMembersDict | None = None
+    can_resolve_topics_group: int | UserGroupMembersDict | None = None
+    can_summarize_topics_group: int | UserGroupMembersDict | None = None
+    direct_message_initiator_group: int | UserGroupMembersDict | None = None
+    direct_message_permission_group: int | UserGroupMembersDict | None = None
 
 
 class PlanTypeData(BaseModel):
@@ -757,9 +757,9 @@ class EventScheduledMessagesUpdate(BaseEvent):
 
 class BasicStreamFields(BaseModel):
     is_archived: bool
-    can_administer_channel_group: int | UserGroupMembersData
-    can_remove_subscribers_group: int | UserGroupMembersData
-    can_send_message_group: int | UserGroupMembersData
+    can_administer_channel_group: int | UserGroupMembersDict
+    can_remove_subscribers_group: int | UserGroupMembersDict
+    can_send_message_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
     description: str
@@ -796,7 +796,7 @@ class EventStreamUpdateCore(BaseEvent):
     type: Literal["stream"]
     op: Literal["update"]
     property: str
-    value: bool | int | str | UserGroupMembersData | Literal[None]
+    value: bool | int | str | UserGroupMembersDict | Literal[None]
     name: str
     stream_id: int
 
@@ -819,9 +819,9 @@ class EventSubmessage(BaseEvent):
 
 class SingleSubscription(BaseModel):
     is_archived: bool
-    can_administer_channel_group: int | UserGroupMembersData
-    can_remove_subscribers_group: int | UserGroupMembersData
-    can_send_message_group: int | UserGroupMembersData
+    can_administer_channel_group: int | UserGroupMembersDict
+    can_remove_subscribers_group: int | UserGroupMembersDict
+    can_send_message_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
     description: str
@@ -1052,12 +1052,12 @@ class Group(BaseModel):
     direct_subgroup_ids: list[int]
     description: str
     is_system_group: bool
-    can_add_members_group: int | UserGroupMembersData
-    can_join_group: int | UserGroupMembersData
-    can_leave_group: int | UserGroupMembersData
-    can_manage_group: int | UserGroupMembersData
-    can_mention_group: int | UserGroupMembersData
-    can_remove_members_group: int | UserGroupMembersData
+    can_add_members_group: int | UserGroupMembersDict
+    can_join_group: int | UserGroupMembersDict
+    can_leave_group: int | UserGroupMembersDict
+    can_manage_group: int | UserGroupMembersDict
+    can_mention_group: int | UserGroupMembersDict
+    can_remove_members_group: int | UserGroupMembersDict
     deactivated: bool
 
 
@@ -1109,12 +1109,12 @@ class UserGroupData(UserGroupDataCore):
     # TODO: fix types to avoid optional fields
     name: str | None = None
     description: str | None = None
-    can_add_members_group: int | UserGroupMembersData | None = None
-    can_join_group: int | UserGroupMembersData | None = None
-    can_leave_group: int | UserGroupMembersData | None = None
-    can_manage_group: int | UserGroupMembersData | None = None
-    can_mention_group: int | UserGroupMembersData | None = None
-    can_remove_members_group: int | UserGroupMembersData | None = None
+    can_add_members_group: int | UserGroupMembersDict | None = None
+    can_join_group: int | UserGroupMembersDict | None = None
+    can_leave_group: int | UserGroupMembersDict | None = None
+    can_manage_group: int | UserGroupMembersDict | None = None
+    can_mention_group: int | UserGroupMembersDict | None = None
+    can_remove_members_group: int | UserGroupMembersDict | None = None
     deactivated: bool | None = None
 
 
