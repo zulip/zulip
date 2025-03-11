@@ -1264,7 +1264,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 #multiuse_invite_link {
-    width: 370px;
+    width: 100%;
     text-overflow: ellipsis;
     white-space: nowrap;
     display: inline-block;
