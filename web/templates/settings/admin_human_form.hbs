@@ -28,9 +28,9 @@
     </form>
     <div class="input-group {{#if hide_deactivate_button}}hide{{/if}}">
         {{#if is_active}}
-        {{> ../components/action_button custom_classes="deactivate_user_button" type="quiet" intent="danger" label=(t "Deactivate user") aria-label=(t "Deactivate user") }}
+        {{> ../components/action_button custom_classes="deactivate_user_button" attention="quiet" intent="danger" label=(t "Deactivate user") aria-label=(t "Deactivate user") }}
         {{else}}
-        {{> ../components/action_button custom_classes="reactivate_user_button" type="quiet" intent="success" label=(t "Reactivate user") aria-label=(t "Reactivate user") }}
+        {{> ../components/action_button custom_classes="reactivate_user_button" attention="quiet" intent="success" label=(t "Reactivate user") aria-label=(t "Reactivate user") }}
         {{/if}}
     </div>
 </div>
