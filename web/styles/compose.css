@@ -1455,16 +1455,14 @@ textarea.new_message_textarea {
         flex-direction: column-reverse;
     }
 
-    &.disabled-message-send-controls {
-        & button {
-            cursor: default;
-            opacity: 0.5;
-        }
-    }
-
     .compose-button-disabled {
         pointer-events: none;
     }
+}
+
+#compose-send-button.disabled-message-send-controls {
+    cursor: default;
+    opacity: 0.5;
 }
 
 .drag {

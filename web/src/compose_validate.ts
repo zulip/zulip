@@ -104,7 +104,7 @@ export function set_recipient_disallowed(status: boolean): void {
 
 export function update_send_button_status(): void {
     const recipient_type = compose_state.get_message_type();
-    $(".message-send-controls").toggleClass(
+    $("#compose-send-button").toggleClass(
         "disabled-message-send-controls",
         upload_in_progress ||
             no_channel_selected ||

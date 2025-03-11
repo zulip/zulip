@@ -154,7 +154,7 @@ test("show_error_message", ({mock_template}) => {
     $("#compose-send-button").prop("disabled", true);
 
     upload.show_error_message(upload.compose_config, "Error message");
-    assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
+    assert.ok(!$("#compose-send-button").hasClass("disabled-message-send-controls"));
     assert.ok(banner_shown);
 
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
@@ -198,9 +198,9 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
         assert.equal(config.mode, "compose");
     });
     const config = upload.compose_config;
-    $(".message-send-controls").removeClass("disabled-message-send-controls");
+    $("#compose-send-button").removeClass("disabled-message-send-controls");
     await upload.upload_files(uppy, config, []);
-    assert.ok(!$(".message-send-controls").hasClass("disabled-message-send-controls"));
+    assert.ok(!$("#compose-send-button").hasClass("disabled-message-send-controls"));
 
     let banner_shown = false;
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
@@ -239,7 +239,7 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
     $("#compose .undo_markdown_preview").on("click", () => {
         markdown_preview_hide_button_clicked = true;
     });
-    $(".message-send-controls").removeClass("disabled-message-send-controls");
+    $("#compose-send-button").removeClass("disabled-message-send-controls");
     $("#compose_banners .upload_banner").remove();
     $("#compose .undo_markdown_preview").show();
 
@@ -250,7 +250,7 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
     });
     override(compose_state, "get_message_type", () => "stream");
     await upload.upload_files(uppy, config, files);
-    assert.ok($(".message-send-controls").hasClass("disabled-message-send-controls"));
+    assert.ok($("#compose-send-button").hasClass("disabled-message-send-controls"));
     assert.ok(banner_shown);
     assert.ok(compose_ui_insert_syntax_and_focus_called);
     assert.ok(compose_ui_autosize_textarea_called);

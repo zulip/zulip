@@ -146,7 +146,7 @@ function clear_box(): void {
         "disabled-on-hover",
     );
     // Reset send button status.
-    $(".message-send-controls").removeClass("disabled-message-send-controls");
+    $("#compose-send-button").removeClass("disabled-message-send-controls");
 }
 
 let autosize_callback_opts: ComposeActionsStartOpts;

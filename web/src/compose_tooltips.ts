@@ -209,7 +209,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#compose-send-button",
+        target: "#compose-send-button:not(.disabled-message-send-controls)",
         delay: EXTRA_LONG_HOVER_DELAY,
         // By default, tippyjs uses a trigger value of "mouseenter focus",
         // but by specifying "mouseenter", this will prevent showing the
@@ -217,23 +217,32 @@ export function initialize(): void {
         trigger: "mouseenter",
         appendTo: () => document.body,
         onShow(instance) {
-            // Don't show send-area tooltips if the popover is displayed or if the send button is disabled.
+            // Don't show send-area tooltips if the popover is displayed.
             if (popover_menus.is_scheduled_messages_popover_displayed()) {
                 return false;
             }
-
-            if ($(".message-send-controls").hasClass("disabled-message-send-controls")) {
-                instance.setContent(
-                    compose_recipient.get_posting_policy_error_message() ||
-                        compose_validate.get_disabled_send_tooltip(),
-                );
-                return undefined;
-            } else if (user_settings.enter_sends) {
+            if (user_settings.enter_sends) {
                 instance.setContent(parse_html($("#send-enter-tooltip-template").html()));
             } else {
                 instance.setContent(parse_html($("#send-ctrl-enter-tooltip-template").html()));
             }
             return undefined;
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#compose-send-button.disabled-message-send-controls",
+        // 350px at 14px/1em
+        maxWidth: "25em",
+        onShow(instance) {
+            instance.setContent(
+                compose_recipient.get_posting_policy_error_message() ||
+                    compose_validate.get_disabled_send_tooltip(),
+            );
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
         },
     });
 
