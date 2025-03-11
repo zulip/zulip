@@ -717,8 +717,11 @@
 .message_edit_save {
     /* Because the save button is inside this container,
        we set the height here so the container stretches
-       with the flexbox. */
-    height: 100%;
+       with the flexbox. However, we also want to match
+       this to the height of the compose box's Send button,
+       so we specify a matching 2em height here
+       (32px at 16px/1em) */
+    height: 2em;
     /* Match Save button's basic colors to
        the compose box Send button. */
     color: var(--color-compose-send-button-icon-color);
