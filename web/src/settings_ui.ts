@@ -20,7 +20,7 @@ export type RequestOpts = {
 export function display_checkmark($elem: JQuery): void {
     const $check_mark = $("<img>");
     $check_mark.attr("src", checkbox_image);
-    $check_mark.css("width", "13px");
+    $check_mark.addClass("settings-save-checkmark");
     $elem.prepend($check_mark);
 }
 
