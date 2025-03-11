@@ -1013,6 +1013,19 @@ export function is_current_user_only_owner(): boolean {
     return true;
 }
 
+export function is_user_only_owner(user: User): boolean {
+    if (!user.is_owner) {
+        return false;
+    }
+
+    for (const person of active_user_dict.values()) {
+        if (person.is_owner && !person.is_bot && person.user_id !== user.user_id) {
+            return false;
+        }
+    }
+    return true;
+}
+
 export function filter_all_persons(pred: (person: User) => boolean): User[] {
     const ret = [];
     for (const person of people_by_user_id_dict.values()) {

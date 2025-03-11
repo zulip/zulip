@@ -740,6 +740,20 @@ test_people("set_custom_profile_field_data", () => {
     assert.ok(!(field.id in person.profile_data));
 });
 
+test_people("is_user_only_owner", ({override}) => {
+    const user = people.get_by_email(me.email);
+    user.is_owner = false;
+    override(user, "is_owner", false);
+    assert.ok(!people.is_user_only_owner(user));
+
+    user.is_owner = true;
+    override(user, "is_owner", true);
+    assert.ok(people.is_user_only_owner(user));
+
+    people.add_active_user(realm_owner);
+    assert.ok(!people.is_user_only_owner(user));
+});
+
 test_people("is_current_user_only_owner", ({override}) => {
     const person = people.get_by_email(me.email);
     person.is_owner = false;

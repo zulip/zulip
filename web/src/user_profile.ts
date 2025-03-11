@@ -1134,6 +1134,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         return;
     }
 
+    const is_user_only_owner = people.is_user_only_owner(person);
     const html_body = render_admin_human_form({
         user_id,
         email: person.delivery_email,
@@ -1141,6 +1142,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: person.is_owner && !current_user.is_owner,
         is_active,
+        is_user_only_owner,
     });
 
     $container.append($(html_body));

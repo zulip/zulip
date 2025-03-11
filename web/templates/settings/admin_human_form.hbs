@@ -28,7 +28,7 @@
     </form>
     <div class="input-group">
         {{#if is_active}}
-        {{> ../components/action_button custom_classes="deactivate_user_button" type="quiet" intent="danger" label=(t "Deactivate user") aria-label=(t "Deactivate user") }}
+        <div id="deactivate_user_account_container" class="inline-block {{#if is_user_only_owner}}disabled_setting_tooltip{{/if}}">{{> ../components/action_button custom_classes="deactivate_user_button" type="quiet" intent="danger" label=(t "Deactivate user") aria-label=(t "Deactivate user") disabled=is_user_only_owner}}</div>
         {{else}}
         {{> ../components/action_button custom_classes="reactivate_user_button" type="quiet" intent="success" label=(t "Reactivate user") aria-label=(t "Reactivate user") }}
         {{/if}}

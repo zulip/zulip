@@ -389,6 +389,18 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: "#deactivate_user_account_container.disabled_setting_tooltip",
+        content: $t({
+            defaultMessage:
+                "Because this is the only organization owner, you cannot deactivate this account.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: "#deactivate_realm_button_container.disabled_setting_tooltip",
         content: $t({
             defaultMessage: "Only organization owners may deactivate an organization.",
