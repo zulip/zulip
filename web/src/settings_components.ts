@@ -1556,25 +1556,25 @@ export function set_group_setting_widget_value(
     pill_widget: GroupSettingPillContainer,
     property_value: GroupSettingValue,
 ): void {
-    pill_widget.clear();
+    pill_widget.clear(true);
 
     if (typeof property_value === "number") {
         const user_group = user_groups.get_user_group_from_id(property_value);
         if (user_group.name === "role:nobody") {
             return;
         }
-        user_group_pill.append_user_group(user_group, pill_widget);
+        user_group_pill.append_user_group(user_group, pill_widget, false);
     } else {
         for (const setting_sub_group_id of property_value.direct_subgroups) {
             const user_group = user_groups.get_user_group_from_id(setting_sub_group_id);
             if (user_group.name === "role:nobody") {
                 continue;
             }
-            user_group_pill.append_user_group(user_group, pill_widget);
+            user_group_pill.append_user_group(user_group, pill_widget, false);
         }
         for (const setting_user_id of property_value.direct_members) {
             const user = people.get_user_by_id_assert_valid(setting_user_id);
-            user_pill.append_user(user, pill_widget);
+            user_pill.append_user(user, pill_widget, false);
         }
     }
 }
