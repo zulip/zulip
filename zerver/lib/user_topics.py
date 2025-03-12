@@ -66,7 +66,7 @@ def get_user_topics(
 
 def get_topic_mutes(
     user_profile: UserProfile, include_deactivated: bool = False
-) -> list[tuple[str, str, int]]:
+) -> list[list[str | int]]:
     user_topics = get_user_topics(
         user_profile=user_profile,
         include_deactivated=include_deactivated,
@@ -75,7 +75,7 @@ def get_topic_mutes(
     )
 
     return [
-        (user_topic["stream__name"], user_topic["topic_name"], user_topic["last_updated"])
+        [user_topic["stream__name"], user_topic["topic_name"], user_topic["last_updated"]]
         for user_topic in user_topics
     ]
 

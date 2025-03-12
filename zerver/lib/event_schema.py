@@ -171,7 +171,6 @@ check_draft_update = make_checker(EventDraftsUpdate)
 check_heartbeat = make_checker(EventHeartbeat)
 check_invites_changed = make_checker(EventInvitesChanged)
 check_message = make_checker(EventMessage)
-check_muted_topics = make_checker(EventMutedTopics)
 check_muted_users = make_checker(EventMutedUsers)
 check_onboarding_steps = make_checker(EventOnboardingSteps)
 check_reaction_add = make_checker(EventReactionAdd)
@@ -233,6 +232,7 @@ check_web_reload_client_event = make_checker(EventWebReloadClient)
 
 _check_delete_message = make_checker(EventDeleteMessage)
 _check_has_zoom_token = make_checker(EventHasZoomToken)
+_check_muted_topics = make_checker(EventMutedTopics)
 _check_presence = make_checker(EventPresence)
 _check_realm_bot_add = make_checker(EventRealmBotAdd)
 _check_realm_bot_update = make_checker(EventRealmBotUpdate)
@@ -303,6 +303,18 @@ def check_has_zoom_token(
 ) -> None:
     _check_has_zoom_token(var_name, event)
     assert event["value"] == value
+
+
+def check_muted_topics(
+    var_name: str,
+    event: dict[str, object],
+) -> None:
+    _check_muted_topics(var_name, event)
+    muted_topics = event["muted_topics"]
+    assert isinstance(muted_topics, list)
+    for muted_topic in muted_topics:
+        muted_topic_tuple = tuple(muted_topic)
+        assert list(map(type, muted_topic_tuple)) == [str, str, int]
 
 
 def check_presence(
