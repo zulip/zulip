@@ -2,7 +2,6 @@ import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
-import {page_params} from "./page_params.ts";
 import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import type {GroupPermissionSetting, GroupSettingValue} from "./state_data.ts";
@@ -101,7 +100,7 @@ export function get_realm_user_groups_for_setting(
             return user_group;
         });
 
-    if (!page_params.development_environment || group_setting_config.require_system_group) {
+    if (group_setting_config.require_system_group) {
         return system_user_groups;
     }
 
