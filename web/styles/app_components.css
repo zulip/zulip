@@ -989,7 +989,7 @@ input.settings_text_input {
     /* We do not need to pull up lock icons in dropdowns
        so we reset their margin-top to the original value
        for a dropdown's .zulip-icon */
-    margin-top: 2px !important;
+    margin-top: 0 !important;
 }
 
 /* This includes css needed to display messages in an overlay. */

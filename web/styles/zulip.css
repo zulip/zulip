@@ -2171,10 +2171,11 @@ body:not(.spectator-view) {
 
     &.compose_select_recipient-dropdown-list-container {
         .dropdown-list .dropdown-list-item-common-styles {
-            /* We align items to center for the sake of the
-               compose_select_recipient dropdown, which has
-               icons not present in other dropdowns. */
-            align-items: center;
+            /* We align items to the baseline for the sake of
+               the compose_select_recipient dropdown, which has
+               icons not present in other dropdowns. We also want
+               to hold the icon to the first baseline. */
+            align-items: first baseline;
         }
     }
 
@@ -2194,9 +2195,13 @@ body:not(.spectator-view) {
             regardless of the height. */
             width: 0.93em;
             padding-right: 5px;
-            /* Override the [data-tippy-root]
-            style in `tooltips.css`. */
-            top: 0;
+            /* Override the [data-tippy-root] style in
+               `tooltips.css`.
+               Because we are manually holding icon
+               alignment to the first/only line of a
+               channel, we make this adjustment here,
+               calculated by 4.5px / (0.93 * 20px) */
+            top: 0.2419em;
         }
 
         .dropdown-list-delete {
