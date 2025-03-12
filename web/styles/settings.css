@@ -946,10 +946,6 @@ input[type="checkbox"] {
             padding: 4px;
         }
 
-        .sea-green {
-            color: hsl(177deg 70% 46%);
-        }
-
         .blue {
             color: hsl(203deg 77% 56%);
         }
