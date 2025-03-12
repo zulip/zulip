@@ -581,6 +581,7 @@ INTEGRATIONS: dict[str, Integration] = {
         "github-actions", ["continuous-integration"], display_name="GitHub Actions"
     ),
     "hubot": Integration("hubot", ["meta-integration", "bots"]),
+    "jenkins": Integration("jenkins", ["continuous-integration"]),
     "jitsi": Integration("jitsi", ["communication"], display_name="Jitsi Meet"),
     "mastodon": Integration("mastodon", ["communication"]),
     "notion": Integration("notion", ["productivity"]),
@@ -600,7 +601,6 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
     PythonAPIIntegration(
         "irc", ["communication"], display_name="IRC", directory_name="bridge_with_irc"
     ),
-    PythonAPIIntegration("jenkins", ["continuous-integration"]),
     PythonAPIIntegration(
         "jira-plugin",
         ["project-management"],
