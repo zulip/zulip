@@ -33,7 +33,7 @@ gear_info = {
         "/#organization/organization-profile",
     ],
     "group-settings": [
-        '<i class="zulip-icon zulip-icon-user-cog"></i> Group settings',
+        '<i class="zulip-icon zulip-icon-user-group-cog"></i> Group settings',
         "/#groups/your",
     ],
     "stats": ['<i class="zulip-icon zulip-icon-bar-chart"></i> Usage statistics', "/stats"],
@@ -146,7 +146,7 @@ group_all_instructions = """
 1. Click on the **gear** (<i class="zulip-icon zulip-icon-gear"></i>) icon in
    the upper right corner of the web or desktop app.
 
-1. Select <i class="zulip-icon zulip-icon-user-cog"></i> **Group settings**.
+1. Select <i class="zulip-icon zulip-icon-user-group-cog"></i> **Group settings**.
 
 1. Click {item} in the upper left.
 """
