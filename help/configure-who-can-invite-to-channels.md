@@ -1,15 +1,23 @@
 # Configure who can subscribe other users to channels
 
-## Configure who can subscribe others to channels in general
+You can configure who can subscribe other users to channels. If you have
+permission to subscribe users [to a specific
+channel](#configure-who-can-subscribe-anyone-to-a-specific-channel), you can
+always do so, whether or not you're subscribed yourself.
 
-Subscribing someone to a channel requires having content access to that channel.
-All [members](/help/user-roles) of an organization can access content in [public
-channels](/help/channel-permissions).
-
-For [private channels](/help/channel-permissions), content access must be
-granted explicitly. Users have content access if:
+There is also a [general
+permission](#configure-who-can-subscribe-others-to-channels-in-general), which
+allows subscribing others to all [public
+channels](/help/channel-permissions#public-channels). For [private
+channels](/help/channel-permissions#private-channels), you additionally need to
+have content access to the channel in order to use this permission. Users have
+content access if:
 
 {!content-access-definition.md!}
+
+[Guests](/help/guest-users) are never permitted to subscribe others.
+
+## Configure who can subscribe others to channels in general
 
 {!admin-only.md!}
 
