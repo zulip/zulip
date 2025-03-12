@@ -27,7 +27,7 @@ desktop apps.
 {tab|via-right-sidebar}
 
 1. If the [user list](/help/user-list) in the right sidebar is hidden, click the
-   **user list** (<i class="zulip-icon zulip-icon-triple-users"></i> ) icon in
+   **user list** (<i class="zulip-icon zulip-icon-user-list"></i> ) icon in
    the upper right to show it.
 
 1. Click on any user to view your 1:1 DM conversation.
