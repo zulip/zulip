@@ -337,6 +337,10 @@ export function snapshot_message(): LocalStorageDraft | undefined {
     };
 }
 
+export function rewire_restore_message(value: typeof restore_message): void {
+    restore_message = value;
+}
+
 type ComposeArguments =
     | {
           type: "stream";
@@ -350,7 +354,7 @@ type ComposeArguments =
           content: string;
       };
 
-export function restore_message(draft: LocalStorageDraft): ComposeArguments {
+export let restore_message = (draft: LocalStorageDraft): ComposeArguments => {
     // This is kinda the inverse of snapshot_message, and
     // we are essentially making a deep copy of the draft,
     // being explicit about which fields we send to the compose
@@ -374,7 +378,7 @@ export function restore_message(draft: LocalStorageDraft): ComposeArguments {
         private_message_recipient: sorted_recipient_emails.join(","),
         content: draft.content,
     };
-}
+};
 
 function draft_notify(): void {
     // Display a tooltip to notify the user about the saved draft.

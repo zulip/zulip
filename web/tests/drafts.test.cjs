@@ -15,6 +15,8 @@ const people = zrequire("people");
 const compose_state = zrequire("compose_state");
 const compose_recipient = zrequire("compose_recipient");
 const sub_store = zrequire("sub_store");
+const message_view = zrequire("message_view");
+const compose_actions = zrequire("compose_actions");
 const stream_data = zrequire("stream_data");
 const {initialize_user_settings} = zrequire("user_settings");
 const {set_realm} = zrequire("state_data");
@@ -47,6 +49,7 @@ mock_esm("../src/markdown", {
 });
 mock_esm("../src/overlays", {
     open_overlay: noop,
+    close_overlay: noop,
 });
 
 const tippy_sel = ".top_left_drafts .unread_count";
@@ -799,4 +802,166 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
     drafts_overlay_ui.launch();
+});
+
+test("restore draft", ({override, override_rewire}) => {
+    function feb12() {
+        return new Date(1549958107000);
+    }
+
+    function date(offset) {
+        return feb12().setDate(offset);
+    }
+
+    const draft_id = "id1";
+
+    const stream_draft = {
+        topic: "topic",
+        type: "stream",
+        content: "Test stream message",
+        stream_id: 30,
+        updatedAt: feb12().getTime(),
+        is_sending_saving: false,
+        drafts_version: 1,
+    };
+
+    const pm_draft = {
+        private_message_recipient: "aaron@zulip.com",
+        reply_to: "aaron@zulip.com",
+        type: "private",
+        content: "Test direct message",
+        updatedAt: date(-1),
+        is_sending_saving: false,
+        drafts_version: 1,
+    };
+
+    let draft_index = 0;
+    override(drafts.draft_model, "getDraft", (id) => {
+        assert.equal(id, draft_id);
+        const result = draft_index === 0 ? stream_draft : pm_draft;
+        draft_index += 1;
+        return result;
+    });
+
+    override_rewire(drafts, "restore_message", (draft) => {
+        if (draft.type === "stream") {
+            return {
+                type: "stream",
+                stream_id: draft.stream_id,
+                topic: draft.topic,
+                content: draft.content,
+            };
+        }
+        return {
+            type: "private",
+            private_message_recipient: draft.private_message_recipient,
+            content: draft.content,
+        };
+    });
+
+    let message_view_called = 0;
+    override_rewire(message_view, "show", (filters, options) => {
+        message_view_called += 1;
+        if (message_view_called === 1) {
+            assert.deepEqual(
+                filters,
+                [
+                    {operator: "channel", operand: "30"},
+                    {operator: "topic", operand: "topic"},
+                ],
+                "message_view.show should be called with the correct filters for stream draft",
+            );
+        } else if (message_view_called === 2) {
+            assert.deepEqual(
+                filters,
+                [{operator: "dm", operand: "aaron@zulip.com"}],
+                "message_view.show should be called with the correct filters for private draft",
+            );
+        }
+        assert.deepEqual(options, {trigger: "restore draft"});
+    });
+
+    let compose_actions_called = 0;
+    override_rewire(compose_actions, "start", (args) => {
+        compose_actions_called += 1;
+        if (compose_actions_called === 1) {
+            assert.deepEqual(
+                args,
+                {
+                    type: "stream",
+                    stream_id: 30,
+                    topic: "topic",
+                    content: "Test stream message",
+                    message_type: "stream",
+                    draft_id: "id1",
+                },
+                "compose_actions.start should be called with the correct arguments for stream draft",
+            );
+        } else if (compose_actions_called === 2) {
+            assert.deepEqual(
+                args,
+                {
+                    type: "private",
+                    private_message_recipient: "aaron@zulip.com",
+                    content: "Test direct message",
+                    message_type: "private",
+                    draft_id: "id1",
+                },
+                "compose_actions.start should be called with the correct arguments for private draft",
+            );
+        }
+    });
+
+    drafts_overlay_ui.restore_draft(draft_id);
+    drafts_overlay_ui.restore_draft(draft_id);
+
+    assert.equal(message_view_called, 2);
+    assert.equal(compose_actions_called, 2);
+});
+
+test("remove draft", ({override, override_rewire}) => {
+    function feb12() {
+        return new Date(1549958107000);
+    }
+    const draft_id = "id1";
+    const stream_draft = {
+        topic: "topic",
+        type: "stream",
+        content: "Test stream message",
+        stream_id: 30,
+        updatedAt: feb12().getTime(),
+        is_sending_saving: false,
+        drafts_version: 1,
+    };
+
+    const draft_model = drafts.draft_model;
+    const ls = localstorage();
+    const data = {
+        [draft_id]: stream_draft,
+    };
+    ls.set("drafts", data);
+    assert.deepEqual(draft_model.get(), data);
+
+    const $draft_row = $.create(".overlay-message-row");
+    $draft_row.data("draft-id", draft_id);
+
+    override(drafts.draft_model, "deleteDraft", () => {
+        data[draft_id] = undefined;
+        ls.set("drafts", data);
+    });
+
+    $draft_row.remove = () => {
+        $draft_row.removeAttr("data-draft-id");
+    };
+
+    let update_rendered_drafts_called = false;
+    override_rewire(drafts_overlay_ui, "update_rendered_drafts", () => {
+        update_rendered_drafts_called = true;
+    });
+
+    drafts_overlay_ui.remove_draft($draft_row);
+
+    assert.ok(update_rendered_drafts_called);
+    assert.equal($draft_row.attr("data-draft-id"), undefined);
+    assert.equal(drafts.draft_model.getDraft(draft_id), false);
 });
