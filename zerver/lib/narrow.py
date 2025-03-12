@@ -26,6 +26,7 @@ from sqlalchemy.sql import (
     or_,
     select,
     table,
+    true,
     union_all,
 )
 from sqlalchemy.sql.selectable import SelectBase
@@ -386,7 +387,7 @@ class NarrowBuilder:
             )
             if conditions:
                 return query.where(maybe_negate(and_(*conditions)))
-            return query  # nocoverage
+            return query.where(maybe_negate(true()))
         elif operand == "all":
             return query
 
