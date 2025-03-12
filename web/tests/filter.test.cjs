@@ -1405,8 +1405,8 @@ test("parse", () => {
     let string;
     let terms;
 
-    function _test() {
-        const result = Filter.parse(string);
+    function _test(for_pills = false) {
+        const result = Filter.parse(string, for_pills);
         assert_same_terms(result, terms);
     }
 
@@ -1443,6 +1443,14 @@ test("parse", () => {
     string = "sender:leo+test@zulip.com";
     terms = [{operator: "sender", operand: "leo+test@zulip.com"}];
     _test();
+
+    string = "sender:me";
+    terms = [{operator: "sender", operand: `${me.email}`}];
+    _test(true);
+
+    string = "-sender:me";
+    terms = [{operator: "sender", operand: `${me.email}`, negated: true}];
+    _test(true);
 
     string = "https://www.google.com";
     terms = [{operator: "search", operand: "https://www.google.com"}];
@@ -1964,6 +1972,7 @@ test("is_valid_search_term", () => {
         ["topic:GhostTown", true],
         ["dm-including:alice@example.com", true],
         ["sender:ghost@zulip.com", false],
+        ["sender:me", true],
         ["dm:alice@example.com,ghost@example.com", false],
         ["dm:alice@example.com,joe@example.com", true],
     ];

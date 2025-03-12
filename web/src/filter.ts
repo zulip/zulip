@@ -453,7 +453,7 @@ export class Filter {
     }
 
     // Parse a string into a list of terms (see below).
-    static parse(str: string): NarrowTerm[] {
+    static parse(str: string, for_pills = false): NarrowTerm[] {
         const terms: NarrowTerm[] = [];
         let search_term: string[] = [];
         let negated;
@@ -509,6 +509,14 @@ export class Filter {
                     if (sub) {
                         operand = sub.stream_id.toString();
                     }
+                }
+
+                if (
+                    for_pills &&
+                    operator === "sender" &&
+                    operand.toString().toLowerCase() === "me"
+                ) {
+                    operand = people.my_current_email();
                 }
 
                 // We use Filter.operator_to_prefix() to check if the
@@ -575,6 +583,9 @@ export class Filter {
             case "pm-with":
             case "dm-including":
             case "pm-including":
+                if (term.operand === "me") {
+                    return true;
+                }
                 return term.operand
                     .split(",")
                     .every((email) => people.get_by_email(email) !== undefined);
