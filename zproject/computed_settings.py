@@ -682,6 +682,8 @@ default_template_engine_settings.update(
         os.path.join(DEPLOY_ROOT, "zerver", "webhooks"),
         # The python-zulip-api:zulip_bots package templates
         os.path.join("static" if DEBUG else STATIC_ROOT, "generated", "bots"),
+        # The python-zulip-api:integrations package templates
+        os.path.join("static" if DEBUG else STATIC_ROOT, "generated", "integrations"),
     ],
     APP_DIRS=True,
 )

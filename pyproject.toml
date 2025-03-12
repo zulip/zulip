@@ -388,6 +388,7 @@ module = [
     "fakeldap.*",
     "firebase_admin.*",
     "gitlint.*",
+    "integrations.*",
     "jsonref.*",
     "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368
     "onelogin.*",

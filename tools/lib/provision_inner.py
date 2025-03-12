@@ -31,7 +31,10 @@ from scripts.lib.zulip_tools import (
     run_as_root,
     write_new_digest,
 )
-from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
+from tools.setup.generate_bots_integrations_static_files import (
+    generate_pythonapi_integrations_static_files,
+    generate_zulip_bots_static_files,
+)
 from version import PROVISION_VERSION
 
 VENV_PATH = os.path.join(ZULIP_PATH, ".venv")
@@ -270,8 +273,9 @@ def main(options: argparse.Namespace) -> int:
     # packages.
     run(["tools/setup/emoji/build_emoji"])
 
-    # copy over static files from the zulip_bots package
+    # copy over static files from the zulip_bots and integrations packages
     generate_zulip_bots_static_files()
+    generate_pythonapi_integrations_static_files()
 
     if options.is_force or need_to_run_build_pygments_data():
         run(["tools/setup/build_pygments_data"])
