@@ -14,7 +14,7 @@ export function message_unhover(): void {
     if ($current_message_hover === undefined) {
         return;
     }
-    $current_message_hover.find("span.edit_content").empty();
+    $current_message_hover.find(".edit_content").empty();
     $current_message_hover = undefined;
 }
 
