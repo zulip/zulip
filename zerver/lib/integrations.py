@@ -190,6 +190,8 @@ class BotIntegration(Integration):
 
 
 class PythonAPIIntegration(Integration):
+    DEFAULT_DOC_PATH = "{directory_name}/doc.md"
+
     def __init__(
         self,
         name: str,
@@ -203,6 +205,15 @@ class PythonAPIIntegration(Integration):
         stream_name: str | None = None,
         legacy: bool = False,
     ) -> None:
+        if directory_name is None:
+            directory_name = name
+        self.directory_name = directory_name
+
+        # Assign before super(), to use self.directory_name instead of self.name
+        if doc is None:
+            doc = self.DEFAULT_DOC_PATH.format(directory_name=self.directory_name)
+        self.doc = doc
+
         super().__init__(
             name,
             categories,
@@ -214,10 +225,6 @@ class PythonAPIIntegration(Integration):
             stream_name=stream_name,
             legacy=legacy,
         )
-
-        if directory_name is None:
-            directory_name = name
-        self.directory_name = directory_name
 
 
 class WebhookIntegration(Integration):
