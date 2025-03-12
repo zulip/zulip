@@ -262,10 +262,18 @@ export function add_sub_to_table(sub: StreamSubscription): void {
     const html = render_browse_streams_list_item(setting_sub);
     const $new_row = $(html);
 
-    if (stream_create.get_name() === sub.name) {
-        scroll_util.get_content_element($(".streams-list")).prepend($new_row);
-        scroll_util.reset_scrollbar($(".streams-list"));
+    if (stream_settings_components.filter_includes_channel(sub)) {
+        if (stream_create.get_name() === sub.name) {
+            scroll_util.get_content_element($(".streams-list")).prepend($new_row);
+            scroll_util.reset_scrollbar($(".streams-list"));
+        } else {
+            scroll_util.get_content_element($(".streams-list")).append($new_row);
+        }
     } else {
+        $new_row.addClass("notdisplayed");
+        // It does not matter whether we append or prepend the row here as
+        // row is not visible. It will only be visible after the filter is
+        // changed and its position will be decided by the usual sort order.
         scroll_util.get_content_element($(".streams-list")).append($new_row);
     }
 
@@ -969,21 +977,15 @@ export function change_state(
         switch_to_stream_row(stream_id);
 
         const sub = stream_data.get_sub_by_id(stream_id);
-        if (sub) {
+        if (sub && !stream_settings_components.filter_includes_channel(sub)) {
             const FILTERS = stream_settings_data.FILTERS;
-            const filter_value = stream_settings_components.get_filter_dropdown_value();
-            const should_update_filter =
-                (filter_value === FILTERS.NON_ARCHIVED_CHANNELS && sub.is_archived) ||
-                (filter_value === FILTERS.ARCHIVED_CHANNELS && !sub.is_archived);
-            if (should_update_filter) {
-                let selected_filter;
-                if (sub.is_archived) {
-                    selected_filter = FILTERS.ARCHIVED_CHANNELS;
-                } else {
-                    selected_filter = FILTERS.NON_ARCHIVED_CHANNELS;
-                }
-                stream_settings_components.set_filter_dropdown_value(selected_filter);
+            let selected_filter;
+            if (sub.is_archived) {
+                selected_filter = FILTERS.ARCHIVED_CHANNELS;
+            } else {
+                selected_filter = FILTERS.NON_ARCHIVED_CHANNELS;
             }
+            stream_settings_components.set_filter_dropdown_value(selected_filter);
         }
         return;
     }
