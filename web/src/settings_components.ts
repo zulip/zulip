@@ -914,8 +914,8 @@ export function get_group_setting_widget_value(
     }
 
     return {
-        direct_subgroups,
-        direct_members,
+        direct_subgroups: direct_subgroups.sort(),
+        direct_members: direct_members.sort(),
     };
 }
 
