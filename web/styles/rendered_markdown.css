@@ -788,7 +788,8 @@
         unicode-bidi: embed;
         direction: ltr;
         white-space: pre-wrap;
-        padding: 1px 2px;
+        /* 1px at 14px/1em */
+        padding: 0.0714em 2px;
         color: var(--color-markdown-code-text);
         background-color: var(--color-markdown-code-background);
         border-radius: 3px;
