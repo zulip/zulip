@@ -16,6 +16,7 @@ import * as peer_data from "./peer_data.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 
@@ -284,4 +285,16 @@ export function set_filter_dropdown_value(value: string): void {
 
 export function set_filters_for_tests(filter_widget: DropdownWidget): void {
     filter_dropdown_widget = filter_widget;
+}
+
+export function filter_includes_channel(sub: StreamSubscription): boolean {
+    const filter_value = get_filter_dropdown_value();
+    const FILTERS = stream_settings_data.FILTERS;
+    if (
+        (filter_value === FILTERS.NON_ARCHIVED_CHANNELS && sub.is_archived) ||
+        (filter_value === FILTERS.ARCHIVED_CHANNELS && !sub.is_archived)
+    ) {
+        return false;
+    }
+    return true;
 }

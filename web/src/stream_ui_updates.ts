@@ -17,6 +17,7 @@ import * as settings_org from "./settings_org.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_edit_toggler from "./stream_edit_toggler.ts";
+import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
 import type {SettingsSubscription} from "./stream_settings_data.ts";
 import * as sub_store from "./sub_store.ts";
@@ -419,7 +420,9 @@ export function update_stream_row_in_settings_tab(sub: StreamSubscription): void
             (is_subscribed_stream_tab_active() && sub.subscribed) ||
             (is_not_subscribed_stream_tab_active() && !sub.subscribed)
         ) {
-            $row.removeClass("notdisplayed");
+            if (stream_settings_components.filter_includes_channel(sub)) {
+                $row.removeClass("notdisplayed");
+            }
         } else if (sub.invite_only || current_user.is_guest) {
             $row.addClass("notdisplayed");
         }
