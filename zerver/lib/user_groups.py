@@ -539,9 +539,12 @@ def get_group_setting_value_for_api(
 
     return UserGroupMembersDict(
         direct_members=[
-            member.id for member in setting_value_group.direct_members.filter(is_active=True)
+            member.id
+            for member in setting_value_group.direct_members.filter(is_active=True).order_by("id")
         ],
-        direct_subgroups=[subgroup.id for subgroup in setting_value_group.direct_subgroups.all()],
+        direct_subgroups=[
+            subgroup.id for subgroup in setting_value_group.direct_subgroups.all().order_by("id")
+        ],
     )
 
 
@@ -599,7 +602,16 @@ def get_members_and_subgroups_of_groups(group_ids: set[int]) -> dict[int, UserGr
         else:
             members_dict.direct_subgroups.append(member_id)
 
-    return group_members_dict
+    results_dict = dict()
+    for group_id in group_ids:
+        results_dict[group_id] = UserGroupMembersDict(
+            # Because we fetched these together with the union query
+            # above, we need to sort them here rather than using an
+            # `order_by` clause.
+            direct_members=sorted(group_members_dict[group_id].direct_members),
+            direct_subgroups=sorted(group_members_dict[group_id].direct_subgroups),
+        )
+    return results_dict
 
 
 @dataclass
