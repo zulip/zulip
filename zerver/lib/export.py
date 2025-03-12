@@ -1391,9 +1391,17 @@ def custom_fetch_scheduled_messages(response: TableData, context: Context) -> No
     response["zerver_scheduledmessage"] = rows
 
 
+PRESERVED_AUDIT_LOG_EVENT_TYPES = [
+    AuditLogEventType.SUBSCRIPTION_CREATED,
+    AuditLogEventType.SUBSCRIPTION_ACTIVATED,
+    AuditLogEventType.SUBSCRIPTION_DEACTIVATED,
+]
+
+
 def custom_fetch_realm_audit_logs_for_realm(response: TableData, context: Context) -> None:
     """
-    Simple custom fetch function to fix up .acting_user for some RealmAuditLog objects.
+    Simple custom fetch function to fix up .acting_user for some RealmAuditLog objects
+    and limit what objects are fetched when doing export with consent.
 
     Certain RealmAuditLog objects have an acting_user that is in a different .realm, due to
     the possibility of server administrators (typically with the .is_staff permission) taking
@@ -1403,6 +1411,8 @@ def custom_fetch_realm_audit_logs_for_realm(response: TableData, context: Contex
     to None.
     """
     realm = context["realm"]
+    export_type = context["export_type"]
+    consenting_user_ids = context["exportable_user_ids"]
 
     query = RealmAuditLog.objects.filter(realm=realm).select_related("acting_user")
     realmauditlog_objects = list(query)
@@ -1410,7 +1420,20 @@ def custom_fetch_realm_audit_logs_for_realm(response: TableData, context: Contex
         if realmauditlog.acting_user is not None and realmauditlog.acting_user.realm_id != realm.id:
             realmauditlog.acting_user = None
 
-    rows = make_raw(realmauditlog_objects)
+    # We want to drop all RealmAuditLog objects where modified_user is not a consenting
+    # user, except those of event_type in PRESERVED_AUDIT_LOG_EVENT_TYPES.
+    realmauditlog_objects_for_export = []
+    for realmauditlog in realmauditlog_objects:
+        if (
+            export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT
+            or (realmauditlog.event_type in PRESERVED_AUDIT_LOG_EVENT_TYPES)
+            or (realmauditlog.modified_user_id is None)
+            or (realmauditlog.modified_user_id in consenting_user_ids)
+        ):
+            realmauditlog_objects_for_export.append(realmauditlog)
+            continue
+
+    rows = make_raw(realmauditlog_objects_for_export)
 
     response["zerver_realmauditlog"] = rows
 
