@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import TypedDict
 
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Q, QuerySet, Value
+from django.db.models import Exists, OuterRef, Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
@@ -26,6 +26,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import APIStreamDict, UserGroupMembersDict
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
+    get_members_and_subgroups_of_groups,
     get_recursive_membership_groups,
     get_role_based_system_groups_dict,
     get_root_id_annotated_recursive_subgroups_for_groups,
@@ -33,7 +34,6 @@ from zerver.lib.user_groups import (
 )
 from zerver.models import (
     DefaultStreamGroup,
-    GroupGroupMembership,
     Message,
     NamedUserGroup,
     Realm,
@@ -1640,46 +1640,19 @@ def get_setting_values_for_group_settings(
     user_groups = UserGroup.objects.filter(id__in=group_ids).select_related("named_user_group")
 
     setting_groups_dict: dict[int, int | UserGroupMembersDict] = dict()
-    anonymous_group_ids = []
+    anonymous_group_ids = set()
     for group in user_groups:
         if hasattr(group, "named_user_group"):
             setting_groups_dict[group.id] = group.id
         else:
-            anonymous_group_ids.append(group.id)
+            anonymous_group_ids.add(group.id)
 
     if len(anonymous_group_ids) == 0:
         return setting_groups_dict
 
-    user_members = (
-        UserGroupMembership.objects.filter(user_group_id__in=anonymous_group_ids)
-        .annotate(
-            member_type=Value("user"),
-        )
-        .values_list("member_type", "user_group_id", "user_profile_id")
-    )
-
-    group_subgroups = (
-        GroupGroupMembership.objects.filter(supergroup_id__in=anonymous_group_ids)
-        .annotate(
-            member_type=Value("group"),
-        )
-        .values_list("member_type", "supergroup_id", "subgroup_id")
-    )
-
-    all_members = user_members.union(group_subgroups)
-    for member_type, group_id, member_id in all_members:
-        if group_id not in setting_groups_dict:
-            setting_groups_dict[group_id] = UserGroupMembersDict(
-                direct_members=[],
-                direct_subgroups=[],
-            )
-
-        anonymous_group_dict = setting_groups_dict[group_id]
-        assert isinstance(anonymous_group_dict, UserGroupMembersDict)
-        if member_type == "user":
-            anonymous_group_dict.direct_members.append(member_id)
-        else:
-            anonymous_group_dict.direct_subgroups.append(member_id)
+    group_members_dict = get_members_and_subgroups_of_groups(anonymous_group_ids)
+    for group_id in anonymous_group_ids:
+        setting_groups_dict[group_id] = group_members_dict[group_id]
 
     return setting_groups_dict
 
