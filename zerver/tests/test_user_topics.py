@@ -38,8 +38,8 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
         stream.deactivated = True
         stream.save()
 
-        self.assertNotIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
-        self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user, True))
+        self.assertNotIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
+        self.assertIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user, True))
 
     def test_user_ids_muting_topic(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -106,7 +106,7 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
                 result = self.api_patch(user, url, data)
                 self.assert_json_success(result)
 
-            self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
+            self.assertIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
             self.assertTrue(
                 topic_has_visibility_policy(
                     user, stream.id, "verona3", UserTopic.VisibilityPolicy.MUTED
@@ -160,12 +160,12 @@ class MutedTopicsTestsDeprecated(ZulipTestCase):
                 visibility_policy=UserTopic.VisibilityPolicy.MUTED,
                 last_updated=datetime(2020, 1, 1, tzinfo=timezone.utc),
             )
-            self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
+            self.assertIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
 
             result = self.api_patch(user, url, data)
 
             self.assert_json_success(result)
-            self.assertNotIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
+            self.assertNotIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
             self.assertFalse(
                 topic_has_visibility_policy(
                     user, stream.id, "verona3", UserTopic.VisibilityPolicy.MUTED
@@ -269,8 +269,8 @@ class MutedTopicsTests(ZulipTestCase):
         stream.deactivated = True
         stream.save()
 
-        self.assertNotIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
-        self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user, True))
+        self.assertNotIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user))
+        self.assertIn([stream.name, "Verona3", mock_date_muted], get_topic_mutes(user, True))
 
     def test_user_ids_muting_topic(self) -> None:
         hamlet = self.example_user("hamlet")

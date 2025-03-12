@@ -23,7 +23,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import APIStreamDict, UserGroupMembersDict
+from zerver.lib.types import APIStreamDict, UserGroupMembersDataDict, UserGroupMembersTypedDict
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
     get_recursive_membership_groups,
@@ -145,7 +145,7 @@ def send_stream_creation_event(
     stream: Stream,
     user_ids: list[int],
     recent_traffic: dict[int, int] | None = None,
-    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDataDict] | None = None,
 ) -> None:
     event = dict(
         type="stream",
@@ -262,7 +262,7 @@ def create_stream_if_needed(
     can_remove_subscribers_group: UserGroup | None = None,
     can_subscribe_group: UserGroup | None = None,
     acting_user: UserProfile | None = None,
-    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDataDict] | None = None,
 ) -> tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
@@ -355,7 +355,7 @@ def create_streams_if_needed(
     realm: Realm,
     stream_dicts: list[StreamDict],
     acting_user: UserProfile | None = None,
-    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDataDict] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
@@ -1288,7 +1288,7 @@ def list_to_streams(
     autocreate: bool = False,
     unsubscribing_others: bool = False,
     is_default_stream: bool = False,
-    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDataDict] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
@@ -1443,10 +1443,20 @@ def get_stream_post_policy_value_based_on_group_setting(setting_group: UserGroup
     return Stream.STREAM_POST_POLICY_EVERYONE
 
 
+def convert_to_user_group_members_typed_dict(
+    value: int | UserGroupMembersDataDict,
+) -> int | UserGroupMembersTypedDict:
+    if isinstance(value, UserGroupMembersDataDict):
+        return UserGroupMembersTypedDict(
+            direct_members=value.direct_members, direct_subgroups=value.direct_subgroups
+        )
+    return value
+
+
 def stream_to_dict(
     stream: Stream,
     recent_traffic: dict[int, int] | None = None,
-    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None,
+    setting_groups_dict: dict[int, int | UserGroupMembersDataDict] | None = None,
 ) -> APIStreamDict:
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
@@ -1462,11 +1472,21 @@ def stream_to_dict(
         stream_weekly_traffic = None
 
     assert setting_groups_dict is not None
-    can_add_subscribers_group = setting_groups_dict[stream.can_add_subscribers_group_id]
-    can_administer_channel_group = setting_groups_dict[stream.can_administer_channel_group_id]
-    can_send_message_group = setting_groups_dict[stream.can_send_message_group_id]
-    can_remove_subscribers_group = setting_groups_dict[stream.can_remove_subscribers_group_id]
-    can_subscribe_group = setting_groups_dict[stream.can_subscribe_group_id]
+    can_add_subscribers_group = convert_to_user_group_members_typed_dict(
+        setting_groups_dict[stream.can_add_subscribers_group_id]
+    )
+    can_administer_channel_group = convert_to_user_group_members_typed_dict(
+        setting_groups_dict[stream.can_administer_channel_group_id]
+    )
+    can_send_message_group = convert_to_user_group_members_typed_dict(
+        setting_groups_dict[stream.can_send_message_group_id]
+    )
+    can_remove_subscribers_group = convert_to_user_group_members_typed_dict(
+        setting_groups_dict[stream.can_remove_subscribers_group_id]
+    )
+    can_subscribe_group = convert_to_user_group_members_typed_dict(
+        setting_groups_dict[stream.can_subscribe_group_id]
+    )
 
     stream_post_policy = get_stream_post_policy_value_based_on_group_setting(
         stream.can_send_message_group
@@ -1625,7 +1645,7 @@ def get_streams_for_user(
 
 def get_group_setting_value_dict_for_streams(
     streams: list[Stream],
-) -> dict[int, int | UserGroupMembersDict]:
+) -> dict[int, int | UserGroupMembersDataDict]:
     setting_group_ids = set()
     for stream in streams:
         for setting_name in Stream.stream_permission_group_settings:
@@ -1636,10 +1656,10 @@ def get_group_setting_value_dict_for_streams(
 
 def get_setting_values_for_group_settings(
     group_ids: list[int],
-) -> dict[int, int | UserGroupMembersDict]:
+) -> dict[int, int | UserGroupMembersDataDict]:
     user_groups = UserGroup.objects.filter(id__in=group_ids).select_related("named_user_group")
 
-    setting_groups_dict: dict[int, int | UserGroupMembersDict] = dict()
+    setting_groups_dict: dict[int, int | UserGroupMembersDataDict] = dict()
     anonymous_group_ids = []
     for group in user_groups:
         if hasattr(group, "named_user_group"):
@@ -1669,13 +1689,13 @@ def get_setting_values_for_group_settings(
     all_members = user_members.union(group_subgroups)
     for member_type, group_id, member_id in all_members:
         if group_id not in setting_groups_dict:
-            setting_groups_dict[group_id] = UserGroupMembersDict(
+            setting_groups_dict[group_id] = UserGroupMembersDataDict(
                 direct_members=[],
                 direct_subgroups=[],
             )
 
         anonymous_group_dict = setting_groups_dict[group_id]
-        assert isinstance(anonymous_group_dict, UserGroupMembersDict)
+        assert isinstance(anonymous_group_dict, UserGroupMembersDataDict)
         if member_type == "user":
             anonymous_group_dict.direct_members.append(member_id)
         else:
