@@ -645,12 +645,13 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream_id of event.stream_ids) {
-                        const was_subscribed = sub_store.get(stream_id).subscribed;
+                        const sub = sub_store.get(stream_id);
+                        const is_subscribed = sub.subscribed;
                         const is_narrowed_to_stream = narrow_state.narrowed_to_stream_id(stream_id);
                         stream_data.delete_sub(stream_id);
-                        stream_settings_ui.remove_stream(stream_id);
+                        stream_settings_ui.update_settings_for_archived(sub);
                         message_view_header.maybe_rerender_title_area_for_stream(stream_id);
-                        if (was_subscribed) {
+                        if (is_subscribed) {
                             stream_list.remove_sidebar_row(stream_id);
                             if (stream_id === compose_state.selected_recipient_id) {
                                 compose_state.set_selected_recipient_id("");

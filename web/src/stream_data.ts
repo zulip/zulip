@@ -139,10 +139,6 @@ export function rename_sub(sub: StreamSubscription, new_name: string): void {
 }
 
 export function subscribe_myself(sub: StreamSubscription): void {
-    if (sub.is_archived) {
-        blueslip.warn("Can't subscribe to an archived stream.");
-        return;
-    }
     const user_id = people.my_current_user_id();
     peer_data.add_subscriber(sub.stream_id, user_id);
     sub.subscribed = true;
