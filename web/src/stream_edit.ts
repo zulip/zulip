@@ -350,18 +350,11 @@ function stream_setting_changed(elem: HTMLInputElement): void {
     );
 }
 
-export function archive_stream(
-    stream_id: number,
-    $alert_element: JQuery,
-    $stream_row: JQuery,
-): void {
+export function archive_stream(stream_id: number, $alert_element: JQuery): void {
     channel.del({
         url: "/json/streams/" + stream_id,
         error(xhr) {
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $alert_element);
-        },
-        success() {
-            $stream_row.remove();
         },
     });
 }
@@ -713,8 +706,7 @@ export function initialize(): void {
 
         function do_archive_stream(): void {
             const stream_id = Number($(".dialog_submit_button").attr("data-stream-id"));
-            const $row = $(".stream-row.active");
-            archive_stream(stream_id, $(".stream_change_property_info"), $row);
+            archive_stream(stream_id, $(".stream_change_property_info"));
         }
 
         const stream_id = get_stream_id(this);

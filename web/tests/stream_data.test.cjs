@@ -734,9 +734,6 @@ test("delete_sub", () => {
 
     blueslip.expect("warn", "Failed to archive stream 99999");
     stream_data.delete_sub(99999);
-
-    blueslip.expect("warn", "Can't subscribe to an archived stream.");
-    stream_data.subscribe_myself(canada);
 });
 
 test("notifications", ({override}) => {

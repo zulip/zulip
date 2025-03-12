@@ -142,7 +142,7 @@ export function initialize_cant_subscribe_popover(): void {
 }
 
 export function set_up_right_panel_section(sub: StreamSubscription): void {
-    if (sub.subscribed) {
+    if (sub.subscribed && !sub.is_archived) {
         stream_edit_toggler.toggler.enable_tab("personal");
         stream_edit_toggler.toggler.goto(stream_edit_toggler.select_tab);
     } else {
@@ -374,6 +374,7 @@ export function update_stream_privacy_icon_in_settings(sub: StreamSubscription):
                 invite_only: sub.invite_only,
                 color: sub.color,
                 is_web_public: sub.is_web_public,
+                is_archived: sub.is_archived,
             }),
         ),
     );
