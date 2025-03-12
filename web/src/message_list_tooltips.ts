@@ -232,9 +232,14 @@ export function initialize(): void {
             if (tippy_content !== undefined) {
                 instance.setContent(tippy_content);
             } else {
-                const $template = $(`#${CSS.escape($elem.attr("data-tooltip-template-id")!)}`);
+                const template_id = $elem.attr("data-tooltip-template-id");
+                if (template_id === undefined) {
+                    return false;
+                }
+                const $template = $(`#${CSS.escape(template_id)}`);
                 instance.setContent(parse_html($template.html()));
             }
+            return undefined;
         },
         onHidden(instance) {
             instance.destroy();
