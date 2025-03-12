@@ -230,7 +230,7 @@ class EventMessage(BaseEvent):
 
 class EventMutedTopics(BaseEvent):
     type: Literal["muted_topics"]
-    muted_topics: list[tuple[str, str, int]]
+    muted_topics: list[list[str | int]]
 
 
 class MutedUser(BaseModel):
