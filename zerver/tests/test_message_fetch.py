@@ -5268,6 +5268,10 @@ class MessageIsTest(ZulipTestCase):
         is_unmuted_narrow = orjson.dumps(
             [dict(operator="is", operand="muted", negated=True)]
         ).decode()
+        in_home_narrow = orjson.dumps([dict(operator="in", operand="home")]).decode()
+        notin_home_narrow = orjson.dumps(
+            [dict(operator="in", operand="home", negated=True)]
+        ).decode()
 
         # Have another user generate a message in a topic that isn't muted by the user.
         msg_id = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="hey")
@@ -5283,6 +5287,18 @@ class MessageIsTest(ZulipTestCase):
         )
         messages = self.assert_json_success(result)["messages"]
         self.assert_length(messages, 1)
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=in_home_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=notin_home_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 0)
 
         stream_id = self.get_stream_id("Denmark", self.example_user("hamlet").realm)
 
@@ -5307,6 +5323,18 @@ class MessageIsTest(ZulipTestCase):
         messages = self.assert_json_success(result)["messages"]
         self.assert_length(messages, 0)
 
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=in_home_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 0)
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=notin_home_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
         # We could do more tests, but test_exclude_muting_conditions
         # covers that code path pretty well.
 
