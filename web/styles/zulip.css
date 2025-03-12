@@ -953,6 +953,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
     gap: 5px;
     margin: 0;
     padding-right: 5px;
+    position: relative;
 }
 
 .inline_topic_edit {
@@ -977,6 +978,25 @@ div.focused-message-list.is-conversation-view .recipient_row {
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
+
+    &.empty-topic-display::placeholder {
+        color: inherit;
+    }
+}
+
+.inline-topic-edit-placeholder {
+    position: absolute;
+    left: 5px;
+    max-width: 65%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.inline-topic-edit-placeholder-visible {
+    visibility: visible;
 }
 
 .topic_edit_save {

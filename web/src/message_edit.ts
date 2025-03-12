@@ -477,6 +477,15 @@ function handle_inline_topic_edit_change(this: HTMLInputElement): void {
         // the error. So, we re-enable the save button and remove the tooltip.
         ui_util.enable_element_and_remove_tooltip($topic_edit_save_button);
     }
+
+    if (!realm.realm_mandatory_topics) {
+        const $topic_not_mandatory_placeholder = $(".inline-topic-edit-placeholder");
+        if ($inline_topic_edit_input.val() === "") {
+            $topic_not_mandatory_placeholder.addClass("inline-topic-edit-placeholder-visible");
+        } else {
+            $topic_not_mandatory_placeholder.removeClass("inline-topic-edit-placeholder-visible");
+        }
+    }
 }
 
 function timer_text(seconds_left: number): string {
@@ -935,7 +944,6 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     const $form = $(
         render_topic_edit_form({
             max_topic_length: realm.max_topic_length,
-            realm_mandatory_topics: realm.realm_mandatory_topics,
             empty_string_topic_display_name: util.get_final_topic_display_name(""),
         }),
     );
@@ -957,6 +965,32 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     $form.on("keydown", handle_inline_topic_edit_keydown);
 
     $inline_topic_edit_input.on("input", handle_inline_topic_edit_change);
+
+    if (!realm.realm_mandatory_topics) {
+        const $topic_not_mandatory_placeholder = $(".inline-topic-edit-placeholder");
+
+        if (topic === "") {
+            $topic_not_mandatory_placeholder.addClass("inline-topic-edit-placeholder-visible");
+        }
+
+        $inline_topic_edit_input.on("blur", () => {
+            if ($inline_topic_edit_input.val() === "") {
+                $topic_not_mandatory_placeholder.removeClass(
+                    "inline-topic-edit-placeholder-visible",
+                );
+                $inline_topic_edit_input.attr("placeholder", util.get_final_topic_display_name(""));
+                $inline_topic_edit_input.addClass("empty-topic-display");
+            }
+        });
+
+        $inline_topic_edit_input.on("focus", () => {
+            if ($inline_topic_edit_input.val() === "") {
+                $inline_topic_edit_input.attr("placeholder", "");
+                $inline_topic_edit_input.removeClass("empty-topic-display");
+                $topic_not_mandatory_placeholder.addClass("inline-topic-edit-placeholder-visible");
+            }
+        });
+    }
 }
 
 export function end_inline_topic_edit($row: JQuery): void {
