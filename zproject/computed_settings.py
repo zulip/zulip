@@ -680,6 +680,10 @@ default_template_engine_settings.update(
         os.path.join(DEPLOY_ROOT, "templates"),
         # The webhook integration templates
         os.path.join(DEPLOY_ROOT, "zerver", "webhooks"),
+        # The python-zulip-api:integrations package templates
+        # Keep above the zulip_bots templates to override bots with the same names
+        # (e.g., the Jira plugin doc and the Jira bot both use "jira/doc.md").
+        os.path.join("static" if DEBUG else STATIC_ROOT, "generated", "integrations"),
         # The python-zulip-api:zulip_bots package templates
         os.path.join("static" if DEBUG else STATIC_ROOT, "generated", "bots"),
     ],

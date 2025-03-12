@@ -11,7 +11,31 @@ from scripts.lib.setup_path import setup_path
 
 setup_path()
 
+import integrations
 from zulip_bots.lib import get_bots_directory_path
+
+
+def generate_pythonapi_integrations_static_files() -> None:
+    integrations_dir = "static/generated/integrations"
+    if os.path.isdir(integrations_dir):
+        # delete old static files, they could be outdated
+        shutil.rmtree(integrations_dir)
+    os.makedirs(integrations_dir, exist_ok=True)
+
+    package_integrations_dir = os.path.dirname(os.path.abspath(integrations.__file__))
+
+    def copy_integrations_data(integration_names: list[str]) -> None:
+        # The integration name as used in zulip/python-zulip-api.
+        for name in integration_names:
+            src_dir = os.path.join(package_integrations_dir, name)
+            dst_dir = os.path.join(integrations_dir, name)
+            doc_path = os.path.join(src_dir, "doc.md")
+
+            if os.path.isfile(doc_path):
+                os.makedirs(dst_dir, exist_ok=True)
+                shutil.copyfile(doc_path, os.path.join(dst_dir, "doc.md"))
+
+    copy_integrations_data(os.listdir(package_integrations_dir))
 
 
 def generate_zulip_bots_static_files() -> None:
@@ -49,4 +73,5 @@ def generate_zulip_bots_static_files() -> None:
 
 
 if __name__ == "__main__":
+    generate_pythonapi_integrations_static_files()
     generate_zulip_bots_static_files()
