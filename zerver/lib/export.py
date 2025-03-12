@@ -25,10 +25,12 @@ from urllib.parse import urlsplit
 import orjson
 from django.apps import apps
 from django.conf import settings
+from django.db import connection
 from django.db.models import Exists, Model, OuterRef, Q
 from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
 from django.utils.timezone import now as timezone_now
+from psycopg2 import sql
 
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
@@ -2707,11 +2709,38 @@ def get_analytics_config() -> Config:
 
 
 def get_consented_user_ids(realm: Realm) -> set[int]:
-    return set(
-        UserProfile.objects.filter(
-            realm=realm, is_active=True, is_bot=False, allow_private_data_export=True
-        ).values_list("id", flat=True)
-    )
+    # A UserProfile is consenting to private data export if either:
+    # 1) It is an active, human account and enabled allow_private_data_export.
+    # 2) It is an active, bot account with allow_private_data_export toggled on.
+    # 3) It is a bot whose owner is (1).
+    # Note: A bot of type (3) can be inactive - it's fine because (1) ensures
+    # the owner has not been deactivated.
+
+    query = sql.SQL("""
+        WITH consenting_humans AS (
+            SELECT id
+            FROM zerver_userprofile
+            WHERE allow_private_data_export
+              AND is_active
+              AND NOT is_bot
+              AND realm_id = {realm_id}
+        )
+        SELECT id
+        FROM zerver_userprofile
+        WHERE
+            (id IN (SELECT id FROM consenting_humans))
+            OR (allow_private_data_export AND is_active AND is_bot AND realm_id = {realm_id})
+            OR (
+                bot_owner_id IN (SELECT id FROM consenting_humans)
+                AND is_bot
+                AND realm_id = {realm_id}
+            )
+    """).format(realm_id=sql.Literal(realm.id))
+
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+    return {row[0] for row in rows}
 
 
 def export_realm_wrapper(
