@@ -22,9 +22,6 @@ Permissions for moving messages between channels can be configured separately.
 
 ## Configure who can edit topics
 
-!!! tip ""
-    Anyone can add a topic to messages sent without a topic.
-
 {start_tabs}
 
 {settings_tab|organization-permissions}
