@@ -6,7 +6,7 @@
 # events; it also uses the OpenAPI tools to validate our documentation.
 import copy
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import timedelta
 from enum import Enum
@@ -2539,6 +2539,32 @@ class NormalActionsTest(BaseAction):
                 )
             check_realm_update("events[0]", events[0], "moderation_request_channel_id")
 
+    def do_test_change_role(
+        self,
+        current_role: int,
+        new_role: int,
+        validators: list[Callable[[str, dict[str, object]], None]],
+    ) -> None:
+        # We accept one less validator since `check_realm_user_update`
+        # has a different shape of arguments and that check will always
+        # be required.
+        num_events = len(validators) + 1
+        do_change_user_role(self.user_profile, current_role, acting_user=None)
+
+        with self.verify_action(num_events=num_events) as events:
+            do_change_user_role(self.user_profile, new_role, acting_user=None)
+        check_realm_user_update("events[0]", events[0], "role")
+        self.assertEqual(events[0]["person"]["role"], new_role)
+
+        for i, validator in enumerate(validators):
+            # We accept one less validator since `check_realm_user_update`
+            # has a different shape of arguments and that check will always
+            # be required.
+            validator(f"events[{i + 1}]", events[i + 1])
+
+        # Revert the role back to it's original state.
+        do_change_user_role(self.user_profile, current_role, acting_user=None)
+
     def test_change_is_admin(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
@@ -2547,32 +2573,30 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-
         self.make_stream("Test private stream", invite_only=True)
         self.subscribe(self.example_user("othello"), "Test private stream")
 
-        for role in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_MEMBER]:
-            if role == UserProfile.ROLE_REALM_ADMINISTRATOR:
-                num_events = 6
-            else:
-                num_events = 5
-
-            with self.verify_action(num_events=num_events) as events:
-                do_change_user_role(self.user_profile, role, acting_user=None)
-            check_realm_user_update("events[0]", events[0], "role")
-            self.assertEqual(events[0]["person"]["role"], role)
-
-            check_user_group_remove_members("events[1]", events[1])
-            check_user_group_add_members("events[2]", events[2])
-
-            if role == UserProfile.ROLE_REALM_ADMINISTRATOR:
-                check_user_group_remove_members("events[3]", events[3])
-                check_stream_create("events[4]", events[4])
-                check_subscription_peer_add("events[5]", events[5])
-            else:
-                check_user_group_add_members("events[3]", events[3])
-                check_stream_delete("events[4]", events[4])
+        self.do_test_change_role(
+            UserProfile.ROLE_MEMBER,
+            UserProfile.ROLE_REALM_ADMINISTRATOR,
+            [
+                check_user_group_remove_members,
+                check_user_group_add_members,
+                check_user_group_remove_members,
+                check_stream_create,
+                check_subscription_peer_add,
+            ],
+        )
+        self.do_test_change_role(
+            UserProfile.ROLE_REALM_ADMINISTRATOR,
+            UserProfile.ROLE_MEMBER,
+            [
+                check_user_group_remove_members,
+                check_user_group_add_members,
+                check_user_group_add_members,
+                check_stream_delete,
+            ],
+        )
 
     def test_change_is_owner(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
@@ -2587,26 +2611,27 @@ class NormalActionsTest(BaseAction):
         self.make_stream("Test private stream", invite_only=True)
         self.subscribe(self.example_user("othello"), "Test private stream")
 
-        for role in [UserProfile.ROLE_REALM_OWNER, UserProfile.ROLE_MEMBER]:
-            if role == UserProfile.ROLE_REALM_OWNER:
-                num_events = 6
-            else:
-                num_events = 5
-            with self.verify_action(num_events=num_events) as events:
-                do_change_user_role(self.user_profile, role, acting_user=None)
-            check_realm_user_update("events[0]", events[0], "role")
-            self.assertEqual(events[0]["person"]["role"], role)
-
-            check_user_group_remove_members("events[1]", events[1])
-            check_user_group_add_members("events[2]", events[2])
-
-            if role == UserProfile.ROLE_REALM_OWNER:
-                check_user_group_remove_members("events[3]", events[3])
-                check_stream_create("events[4]", events[4])
-                check_subscription_peer_add("events[5]", events[5])
-            else:
-                check_user_group_add_members("events[3]", events[3])
-                check_stream_delete("events[4]", events[4])
+        self.do_test_change_role(
+            UserProfile.ROLE_MEMBER,
+            UserProfile.ROLE_REALM_OWNER,
+            [
+                check_user_group_remove_members,
+                check_user_group_add_members,
+                check_user_group_remove_members,
+                check_stream_create,
+                check_subscription_peer_add,
+            ],
+        )
+        self.do_test_change_role(
+            UserProfile.ROLE_REALM_OWNER,
+            UserProfile.ROLE_MEMBER,
+            [
+                check_user_group_remove_members,
+                check_user_group_add_members,
+                check_user_group_add_members,
+                check_stream_delete,
+            ],
+        )
 
     def test_change_is_moderator(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
@@ -2616,20 +2641,24 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        for role in [UserProfile.ROLE_MODERATOR, UserProfile.ROLE_MEMBER]:
-            with self.verify_action(num_events=4) as events:
-                do_change_user_role(self.user_profile, role, acting_user=None)
-            check_realm_user_update("events[0]", events[0], "role")
-            self.assertEqual(events[0]["person"]["role"], role)
-
-            check_user_group_remove_members("events[1]", events[1])
-            check_user_group_add_members("events[2]", events[2])
-
-            if role == UserProfile.ROLE_MODERATOR:
-                check_user_group_remove_members("events[3]", events[3])
-            else:
-                check_user_group_add_members("events[3]", events[3])
+        self.do_test_change_role(
+            UserProfile.ROLE_MEMBER,
+            UserProfile.ROLE_MODERATOR,
+            [
+                check_user_group_remove_members,
+                check_user_group_add_members,
+                check_user_group_remove_members,
+            ],
+        )
+        self.do_test_change_role(
+            UserProfile.ROLE_MODERATOR,
+            UserProfile.ROLE_MEMBER,
+            [
+                check_user_group_remove_members,
+                check_user_group_add_members,
+                check_user_group_add_members,
+            ],
+        )
 
     def test_change_is_guest(self) -> None:
         stream = Stream.objects.get(name="Denmark")
@@ -2642,36 +2671,36 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        for role in [UserProfile.ROLE_GUEST, UserProfile.ROLE_MEMBER]:
-            if role == UserProfile.ROLE_MEMBER:
-                # When changing role from guest to member, peer_add events are also sent
-                # to make sure the subscribers info is provided to the clients for the
-                # streams added by stream creation event.
-                num_events = 7
-            else:
-                num_events = 5
-            with self.verify_action(num_events=num_events) as events:
-                do_change_user_role(self.user_profile, role, acting_user=None)
-            check_realm_user_update("events[0]", events[0], "role")
-            self.assertEqual(events[0]["person"]["role"], role)
-
-            check_user_group_remove_members("events[1]", events[1])
-            check_user_group_add_members("events[2]", events[2])
-
-            if role == UserProfile.ROLE_GUEST:
-                check_user_group_remove_members("events[3]", events[3])
-                check_stream_delete("events[4]", events[4])
-            else:
-                check_user_group_add_members("events[3]", events[3])
-                check_stream_create("events[4]", events[4])
-                check_subscription_peer_add("events[5]", events[5])
-                check_subscription_peer_add("events[6]", events[6])
+        self.do_test_change_role(
+            UserProfile.ROLE_MEMBER,
+            UserProfile.ROLE_GUEST,
+            [
+                check_user_group_remove_members,
+                check_user_group_add_members,
+                check_user_group_remove_members,
+                check_stream_delete,
+            ],
+        )
+        self.do_test_change_role(
+            UserProfile.ROLE_GUEST,
+            UserProfile.ROLE_MEMBER,
+            [
+                check_user_group_remove_members,
+                check_user_group_add_members,
+                check_user_group_add_members,
+                check_stream_create,
+                check_subscription_peer_add,
+                check_subscription_peer_add,
+            ],
+        )
 
     def test_change_user_role_for_restricted_users(self) -> None:
         self.set_up_db_for_testing_user_access()
         self.user_profile = self.example_user("polonius")
 
+        # Technically, we can use `do_test_change_role` here also, but
+        # this implementation will be more succinct and easier to
+        # read than using `do_test_change_role` here.
         for role in [
             UserProfile.ROLE_REALM_OWNER,
             UserProfile.ROLE_REALM_ADMINISTRATOR,
