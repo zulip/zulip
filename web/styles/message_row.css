@@ -816,6 +816,10 @@ of the base style defined for a read-only textarea in dark mode. */
     width: 40px;
     height: 5px;
 
+    /* Avoid this animation element blocking clicks on .edit-notifications
+       to display the message's edit history. */
+    pointer-events: none;
+
     .y-animated-dot {
         width: 4px;
         height: 4px;
