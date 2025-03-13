@@ -35,8 +35,8 @@ export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list
 let should_redraw_active_users_list = false;
 let should_redraw_deactivated_users_list = false;
 let presence_data_fetched = false;
-let active_users_role_dropdown: dropdown_widget.DropdownWidget;
-let deactivated_users_role_dropdown: dropdown_widget.DropdownWidget;
+let active_users_role_dropdown: dropdown_widget.DropdownWidget | undefined;
+let deactivated_users_role_dropdown: dropdown_widget.DropdownWidget | undefined;
 
 type UserSettingsSection = {
     dropdown_widget_name: string;
@@ -114,7 +114,7 @@ export function allow_sorting_deactivated_users_list_by_email(): boolean {
     return deactivated_humans_with_visible_email.length > 0;
 }
 
-export function update_view_on_deactivate(user_id: number): void {
+export function update_view_on_deactivate(user_id: number, is_bot: boolean): void {
     const $row = get_user_info_row(user_id);
     if ($row.length === 0) {
         return;
@@ -129,14 +129,19 @@ export function update_view_on_deactivate(user_id: number): void {
     $row.removeClass("active-user");
     $row.addClass("deactivated_user");
 
-    should_redraw_active_users_list = true;
-    should_redraw_deactivated_users_list = true;
-
-    active_users_role_dropdown.render(active_section.filters.role_code);
-    deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
+    if (!is_bot) {
+        should_redraw_active_users_list = true;
+        should_redraw_deactivated_users_list = true;
+        if (active_users_role_dropdown) {
+            active_users_role_dropdown.render(active_section.filters.role_code);
+        }
+        if (deactivated_users_role_dropdown) {
+            deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
+        }
+    }
 }
 
-export function update_view_on_reactivate(user_id: number): void {
+export function update_view_on_reactivate(user_id: number, is_bot: boolean): void {
     const $row = get_user_info_row(user_id);
     if ($row.length === 0) {
         return;
@@ -150,11 +155,16 @@ export function update_view_on_reactivate(user_id: number): void {
     $row.removeClass("deactivated_user");
     $row.addClass("active-user");
 
-    should_redraw_active_users_list = true;
-    should_redraw_deactivated_users_list = true;
-
-    active_users_role_dropdown.render(active_section.filters.role_code);
-    deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
+    if (!is_bot) {
+        should_redraw_active_users_list = true;
+        should_redraw_deactivated_users_list = true;
+        if (active_users_role_dropdown) {
+            active_users_role_dropdown.render(active_section.filters.role_code);
+        }
+        if (deactivated_users_role_dropdown) {
+            deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
+        }
+    }
 }
 
 function add_value_to_filters(
