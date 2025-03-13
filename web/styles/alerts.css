@@ -72,6 +72,7 @@
     .stacktrace {
         @extend .alert-display, .alert-animations;
 
+        pointer-events: auto;
         font-size: 1rem;
         color: hsl(0deg 80% 40%);
 
