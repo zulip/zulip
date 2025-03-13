@@ -239,6 +239,7 @@
 * [Restrict message editing](/help/restrict-message-editing-and-deletion)
 * [Restrict message edit history access](/help/restrict-message-edit-history-access)
 * [Restrict moving messages](/help/restrict-moving-messages)
+* [Restrict resolving topics](/help/restrict-resolving-topics)
 * [Restrict name and email changes](/help/restrict-name-and-email-changes)
 * [Restrict profile picture changes](/help/restrict-profile-picture-changes)
 * [Restrict permissions of new members](/help/restrict-permissions-of-new-members)
