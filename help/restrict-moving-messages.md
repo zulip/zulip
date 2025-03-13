@@ -12,7 +12,6 @@ recommended because:
 
 - It allows the community to keep conversations organized, even if some members
   are still learning how to use topics effectively.
-- It lets users [resolve topics](/help/resolve-a-topic).
 - It makes it possible to fix a typo in the topic of a message you just sent.
 
 You can let users edit topics without a time limit, or prohibit topic editing on
@@ -88,5 +87,6 @@ Permissions for moving messages between channels can be configured separately.
 * [Move content to another topic](/help/move-content-to-another-topic)
 * [Move content to another channel](/help/move-content-to-another-channel)
 * [Restrict message editing and deletion](/help/restrict-message-editing-and-deletion)
+* [Restrict resolving topics](/help/restrict-resolving-topics)
 * [Restrict message edit history access](/help/restrict-message-edit-history-access)
 * [User roles](/help/user-roles)
