@@ -56,6 +56,10 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     color_picker_popover: null,
 };
 
+// Font size in em for popover derived from popover font size being
+// 15px at base font size of 14px.
+export const POPOVER_FONT_SIZE_IN_EM = 1.0714;
+
 /* Keyboard UI functions */
 export function popover_items_handle_keyboard(key: string, $items?: JQuery): void {
     if (!$items) {

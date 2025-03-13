@@ -119,6 +119,14 @@ export function initialize(): void {
                 const data: Record<string, number> = {};
                 data[changed_property] = new_setting_value;
                 information_density.enable_or_disable_control_buttons($popper);
+
+                if (changed_property === "web_font_size_px") {
+                    // We do not want to display the arrow once font size is changed
+                    // because popover will be detached from the user avatar as we
+                    // do not change the font size in popover.
+                    $("#personal-menu-dropdown").closest(".tippy-box").find(".tippy-arrow").hide();
+                }
+
                 void channel.patch({
                     url: "/json/settings",
                     data,
@@ -140,15 +148,17 @@ export function initialize(): void {
                 e.preventDefault();
             });
 
-            const resizeObserver = new ResizeObserver(() => {
-                requestAnimationFrame(() => {
-                    void instance.popperInstance?.update();
-                });
-            });
-            resizeObserver.observe(document.querySelector("#personal-menu-dropdown")!);
-
             information_density.enable_or_disable_control_buttons($popper);
             void instance.popperInstance?.update();
+
+            // We do not want font size of the popover to change when changing
+            // font size using the buttons in popover, so that the buttons do
+            // not shift.
+            const font_size =
+                popover_menus.POPOVER_FONT_SIZE_IN_EM * user_settings.web_font_size_px;
+            $("#personal-menu-dropdown")
+                .closest(".tippy-box")
+                .css("font-size", font_size + "px");
         },
         onShow(instance) {
             const args = popover_menus_data.get_personal_menu_content_context();
