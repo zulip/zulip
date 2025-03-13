@@ -201,18 +201,19 @@ export const update_person = function update(person: UserUpdate): void {
     }
 
     if ("is_active" in person) {
+        const is_bot_user = person_obj.is_bot;
         if (person.is_active) {
             people.add_active_user(person_obj);
-            settings_users.update_view_on_reactivate(person.user_id);
+            settings_users.update_view_on_reactivate(person.user_id, is_bot_user);
         } else {
             people.deactivate(person_obj);
             stream_events.remove_deactivated_user_from_all_streams(person.user_id);
             user_group_edit.remove_deactivated_user_from_all_groups(person.user_id);
-            settings_users.update_view_on_deactivate(person.user_id);
+            settings_users.update_view_on_deactivate(person.user_id, is_bot_user);
         }
         buddy_list.insert_or_move([person.user_id]);
         settings_account.maybe_update_deactivate_account_button();
-        if (people.is_valid_bot_user(person.user_id)) {
+        if (is_bot_user) {
             settings_users.update_bot_data(person.user_id);
         } else if (!person.is_active) {
             // A human user deactivated, update 'Export permissions' table.
