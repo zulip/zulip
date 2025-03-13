@@ -38,7 +38,7 @@ from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     can_access_stream_metadata_user_ids,
     check_basic_stream_access,
-    get_group_setting_value_dict_for_streams,
+    get_anonymous_group_membership_dict_for_streams,
     get_stream_permission_policy_name,
     get_stream_post_policy_value_based_on_group_setting,
     get_user_ids_with_metadata_access_via_permission_groups,
@@ -270,8 +270,10 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
     recent_traffic = get_streams_traffic({stream.id}, realm)
 
     notify_user_ids = list(can_access_stream_metadata_user_ids(stream))
-    setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
-    send_stream_creation_event(realm, stream, notify_user_ids, recent_traffic, setting_groups_dict)
+    anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
+    send_stream_creation_event(
+        realm, stream, notify_user_ids, recent_traffic, anonymous_group_membership
+    )
 
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
     with override_language(stream.realm.default_language):
@@ -392,7 +394,7 @@ def send_subscription_add_events(
             stream_subscribers_dict[stream.id] = subscribers
 
     streams = [sub_info.stream for sub_info in sub_info_list]
-    setting_groups_dict = get_group_setting_value_dict_for_streams(streams)
+    anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(streams)
 
     for user_id, sub_infos in info_by_user.items():
         sub_dicts: list[APISubscriptionDict] = []
@@ -400,7 +402,7 @@ def send_subscription_add_events(
             stream = sub_info.stream
             stream_subscribers = stream_subscribers_dict[stream.id]
             subscription = sub_info.sub
-            stream_dict = stream_to_dict(stream, recent_traffic, setting_groups_dict)
+            stream_dict = stream_to_dict(stream, recent_traffic, anonymous_group_membership)
             # This is verbose as we cannot unpack existing TypedDict
             # to initialize another TypedDict while making mypy happy.
             # https://github.com/python/mypy/issues/5382
@@ -499,7 +501,7 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
     recent_traffic = get_streams_traffic(stream_ids, realm)
 
     streams = [stream_dict[stream_id] for stream_id in stream_ids]
-    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None
+    anonymous_group_membership: dict[int, UserGroupMembersDict] | None = None
 
     for stream_id, stream_users_ids in altered_user_dict.items():
         stream = stream_dict[stream_id]
@@ -526,11 +528,13 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
             notify_user_ids = list(stream_users_ids & altered_guests)
 
         if notify_user_ids:
-            if setting_groups_dict is None:
-                setting_groups_dict = get_group_setting_value_dict_for_streams(streams)
+            if anonymous_group_membership is None:
+                anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(
+                    streams
+                )
 
             send_stream_creation_event(
-                realm, stream, notify_user_ids, recent_traffic, setting_groups_dict
+                realm, stream, notify_user_ids, recent_traffic, anonymous_group_membership
             )
 
 
@@ -1289,9 +1293,13 @@ def do_change_stream_permission(
         )
 
         recent_traffic = get_streams_traffic({stream.id}, realm)
-        setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
+        anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
         send_stream_creation_event(
-            realm, stream, list(notify_stream_creation_ids), recent_traffic, setting_groups_dict
+            realm,
+            stream,
+            list(notify_stream_creation_ids),
+            recent_traffic,
+            anonymous_group_membership,
         )
 
         # Add subscribers info to the stream object. We need to send peer_add
@@ -1687,13 +1695,13 @@ def do_change_stream_group_based_setting(
 
         if len(user_ids_gaining_metadata_access) > 0:
             recent_traffic = get_streams_traffic({stream.id}, stream.realm)
-            setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
+            anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
             send_stream_creation_event(
                 stream.realm,
                 stream,
                 list(user_ids_gaining_metadata_access),
                 recent_traffic,
-                setting_groups_dict,
+                anonymous_group_membership,
             )
         if len(user_ids_losing_metadata_access) > 0:
             send_stream_deletion_event(stream.realm, user_ids_losing_metadata_access, [stream])
