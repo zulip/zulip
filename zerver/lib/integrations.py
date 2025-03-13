@@ -607,6 +607,7 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
         logo="images/integrations/logos/jira.svg",
         secondary_line_text="(locally installed)",
         display_name="Jira",
+        directory_name="jira",
         stream_name="jira",
         legacy=True,
     ),
