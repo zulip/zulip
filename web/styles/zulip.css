@@ -958,9 +958,6 @@ div.focused-message-list.is-conversation-view .recipient_row {
 
 .inline_topic_edit {
     flex: 1;
-    /* Set the max width of the inline topic edit input to the realm's
-       max_topic_length (60 chars) + 5 chars extra for some cushion. */
-    max-width: 65ch;
     line-height: 1.2142em;
     padding: 0 5px;
     color: hsl(0deg 0% 33%);
