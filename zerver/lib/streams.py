@@ -1511,10 +1511,11 @@ def stream_to_dict(
     )
 
 
-def get_web_public_streams(realm: Realm) -> list[APIStreamDict]:  # nocoverage
+def get_web_public_streams(
+    realm: Realm, anonymous_group_membership: dict[int, UserGroupMembersDict]
+) -> list[APIStreamDict]:  # nocoverage
     query = get_web_public_streams_queryset(realm)
     streams = query.only(*Stream.API_FIELDS)
-    anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(list(streams))
     stream_dicts = [stream_to_dict(stream, None, anonymous_group_membership) for stream in streams]
     return stream_dicts
 
@@ -1666,6 +1667,7 @@ def do_get_streams(
     include_default: bool = False,
     include_owner_subscribed: bool = False,
     include_can_access_content: bool = False,
+    anonymous_group_membership: dict[int, UserGroupMembersDict] | None = None,
 ) -> list[APIStreamDict]:
     # This function is only used by API clients now.
 
@@ -1683,7 +1685,8 @@ def do_get_streams(
     stream_ids = {stream.id for stream in streams}
     recent_traffic = get_streams_traffic(stream_ids, user_profile.realm)
 
-    anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(streams)
+    if anonymous_group_membership is None:
+        anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(streams)
 
     stream_dicts = sorted(
         (stream_to_dict(stream, recent_traffic, anonymous_group_membership) for stream in streams),

@@ -243,13 +243,8 @@ class UserGroupTestCase(ZulipTestCase):
         do_change_realm_permission_group_setting(
             realm, "can_create_public_channel_group", setting_group, acting_user=None
         )
-        realm_setting_group_ids = {
-            realm.create_multiuse_invite_group_id,
-            realm.can_create_public_channel_group_id,
-        }
-
         realm_user_groups = user_groups_in_realm_serialized(
-            realm, include_deactivated_groups=False, realm_setting_group_ids=realm_setting_group_ids
+            realm, include_deactivated_groups=False, fetch_anonymous_group_membership=True
         )
         named_user_groups = realm_user_groups.api_groups
         self.assert_length(named_user_groups, 11)
@@ -267,17 +262,15 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(system_groups_dict[admins_system_group.id], SystemGroups.ADMINISTRATORS)
         self.assertEqual(system_groups_dict[everyone_group.id], SystemGroups.EVERYONE)
 
-        realm_setting_anonymous_group_membership = (
-            realm_user_groups.realm_setting_anonymous_group_membership
-        )
+        anonymous_group_membership = realm_user_groups.anonymous_group_membership
+        self.assertIn(realm.can_create_public_channel_group_id, anonymous_group_membership)
         self.assertEqual(
-            realm_setting_anonymous_group_membership,
-            {
-                realm.can_create_public_channel_group_id: UserGroupMembersDict(
-                    direct_members=[cordelia.id], direct_subgroups=[owners_system_group.id]
-                )
-            },
+            anonymous_group_membership[realm.can_create_public_channel_group_id],
+            UserGroupMembersDict(
+                direct_members=[cordelia.id], direct_subgroups=[owners_system_group.id]
+            ),
         )
+        self.assertNotIn(realm.create_multiuse_invite_group_id, anonymous_group_membership)
 
     def test_get_direct_user_groups(self) -> None:
         othello = self.example_user("othello")
