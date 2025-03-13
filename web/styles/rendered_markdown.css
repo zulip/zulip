@@ -50,13 +50,6 @@
         border-top: 1px solid hsl(0deg 0% 87%);
         /* Override Bootstrap with doubled interelement space */
         margin: calc(var(--markdown-interelement-space-px) * 2) 0;
-
-        &:first-child {
-            /* When a horizontal rule opens a message, or any other
-               area in the message area (e.g., spoilers), there
-               should be no space above the rule. */
-            margin-top: 0;
-        }
     }
 
     /* Headings */
@@ -443,6 +436,10 @@
         border: solid 1px transparent;
         transition: background 0.3s ease;
         background: hsl(0deg 0% 0% / 3%);
+
+        &:first-child {
+            margin-top: var(--markdown-interelement-space-px);
+        }
 
         &:hover {
             background: hsl(0deg 0% 0% / 15%);

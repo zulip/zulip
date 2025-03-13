@@ -150,11 +150,6 @@
 
     .message_content {
         grid-area: message;
-        /*
-        Space between two single line messages is kept in
-        lockstep with adjacent Markdown elements.
-        */
-        padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
         color: var(--color-text-message-default);
         /* We explicitly set line-height here so that
            the message area is not beholden to the legacy
@@ -375,6 +370,7 @@
         }
 
         .message_content {
+            padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
             /* Pull message content up closer to sender to
                let the text baseline sit adjacent the bottom
                of the avatar. We also need to account for the
