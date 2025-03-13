@@ -54,6 +54,30 @@ message you're composing.
 
 {end_tabs}
 
+## Edit a saved snippet
+
+{start_tabs}
+
+{!start-composing.md!}
+
+1. Click the **Add saved snippet** (<i class="zulip-icon
+   zulip-icon-message-square-text"></i>) icon at the bottom of the compose box to
+   open the saved snippets menu.
+
+1. Hover over the saved snippet you'd like to edit, and click the **Edit
+   snippet** (<i class="zulip-icon zulip-icon-edit"></i>) icon on the right.
+
+1. Edit the **Title** and **Content** as desired.
+
+1. Click **Save**.
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>Ctrl</kbd> + <kbd>'</kbd> to open the saved
+    snippets menu.
+
+{end_tabs}
+
 ## Delete a saved snippet
 
 {start_tabs}
