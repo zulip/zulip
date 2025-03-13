@@ -2169,16 +2169,6 @@ body:not(.spectator-view) {
         white-space: normal;
     }
 
-    &.compose_select_recipient-dropdown-list-container {
-        .dropdown-list .dropdown-list-item-common-styles {
-            /* We align items to the baseline for the sake of
-               the compose_select_recipient dropdown, which has
-               icons not present in other dropdowns. We also want
-               to hold the icon to the first baseline. */
-            align-items: first baseline;
-        }
-    }
-
     .dropdown-list .dropdown-list-item-common-styles {
         position: relative;
         display: flex;
