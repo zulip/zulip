@@ -344,7 +344,6 @@ export async function build_move_topic_to_stream_popover(
     const args: {
         topic_name: string;
         empty_string_topic_display_name: string;
-        realm_mandatory_topics: boolean;
         current_stream_id: number;
         notify_new_thread: boolean;
         notify_old_thread: boolean;
@@ -357,7 +356,6 @@ export async function build_move_topic_to_stream_popover(
     } = {
         topic_name,
         empty_string_topic_display_name,
-        realm_mandatory_topics: realm.realm_mandatory_topics,
         current_stream_id,
         stream,
         notify_new_thread: message_edit.notify_new_thread_default,
@@ -758,6 +756,21 @@ export async function build_move_topic_to_stream_popover(
         $("#move_messages_count").text(message_text);
     }
 
+    function update_topic_input_placeholder_visibility(topic_input_value: string): void {
+        if (!realm.realm_mandatory_topics) {
+            const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
+            if (topic_input_value === "") {
+                $topic_not_mandatory_placeholder.addClass(
+                    "move-topic-new-topic-placeholder-visible",
+                );
+            } else {
+                $topic_not_mandatory_placeholder.removeClass(
+                    "move-topic-new-topic-placeholder-visible",
+                );
+            }
+        }
+    }
+
     function move_topic_post_render(): void {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
         $("#move_topic_modal .move_topic_warning_container").hide();
@@ -769,6 +782,36 @@ export async function build_move_topic_to_stream_popover(
             false,
         );
 
+        if (!realm.realm_mandatory_topics) {
+            const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
+
+            if (topic_name === "") {
+                $topic_not_mandatory_placeholder.addClass(
+                    "move-topic-new-topic-placeholder-visible",
+                );
+            }
+
+            $topic_input.on("focus", () => {
+                if ($topic_input.val() === "") {
+                    $topic_input.attr("placeholder", "");
+                    $topic_input.removeClass("empty-topic-display");
+                    $topic_not_mandatory_placeholder.addClass(
+                        "move-topic-new-topic-placeholder-visible",
+                    );
+                }
+
+                $topic_input.one("blur", () => {
+                    if ($topic_input.val() === "") {
+                        $topic_not_mandatory_placeholder.removeClass(
+                            "move-topic-new-topic-placeholder-visible",
+                        );
+                        $topic_input.attr("placeholder", empty_string_topic_display_name);
+                        $topic_input.addClass("empty-topic-display");
+                    }
+                });
+            });
+        }
+
         if (only_topic_edit) {
             // Set select_stream_id to current_stream_id since we user is not allowed
             // to edit stream in topic-edit only UI.
@@ -776,6 +819,9 @@ export async function build_move_topic_to_stream_popover(
             $topic_input.on("input", () => {
                 update_submit_button_disabled_state(select_stream_id);
                 maybe_show_topic_already_exists_warning();
+                const topic_input_value = $topic_input.val();
+                assert(topic_input_value !== undefined);
+                update_topic_input_placeholder_visibility(topic_input_value);
             });
             return;
         }
@@ -809,6 +855,9 @@ export async function build_move_topic_to_stream_popover(
         $topic_input.on("input", () => {
             update_submit_button_disabled_state(current_stream_id);
             maybe_show_topic_already_exists_warning();
+            const topic_input_value = $topic_input.val();
+            assert(topic_input_value !== undefined);
+            update_topic_input_placeholder_visibility(topic_input_value);
         });
 
         // Update position of topic typeahead because showing/hiding the
