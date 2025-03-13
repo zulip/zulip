@@ -45,7 +45,7 @@
                 </button>
             </span>
             {{#if is_active}}
-            <span {{#if (and is_bot cannot_deactivate)}}class="tippy-zulip-tooltip"{{/if}} {{#if (and is_bot cannot_deactivate)}}data-tippy-content="{{t 'This bot cannot be deactivated.'}}"{{/if}}>
+            <span {{#if cannot_deactivate}}class="tippy-zulip-tooltip"{{/if}} {{#if (and is_bot cannot_deactivate)}}data-tippy-content="{{t 'This bot cannot be deactivated.'}}"{{else if cannot_deactivate}}data-tippy-content="{{t 'This user cannot be deactivated.'}}"{{/if}}>
                 <button class="button rounded small button-danger deactivate {{#if is_bot}}deactivate-bot-tooltip{{else}}deactivate-user-tooltip{{/if}}" {{#if cannot_deactivate}}disabled="disabled"{{/if}}>
                     <i class="fa fa-user-times" aria-hidden="true"></i>
                 </button>
