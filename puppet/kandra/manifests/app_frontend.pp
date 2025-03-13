@@ -60,13 +60,13 @@ class kandra::app_frontend {
     notify  => Service['nginx'],
   }
 
-  # Serve /static/onboarding-video/
-  file { '/etc/nginx/zulip-include/app.d/onboarding-video.conf':
+  # Serve /static/navigation-tour-video/
+  file { '/etc/nginx/zulip-include/app.d/navigation-tour-video.conf':
     require => File['/etc/nginx/zulip-include/app.d'],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/kandra/nginx/zulip-include-app.d/onboarding-video.conf',
+    source  => 'puppet:///modules/kandra/nginx/zulip-include-app.d/navigation-tour-video.conf',
     notify  => Service['nginx'],
   }
 
