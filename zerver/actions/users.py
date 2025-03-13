@@ -549,7 +549,7 @@ def send_stream_events_for_role_update(
 ) -> None:
     current_accessible_streams = get_streams_for_user(
         user_profile,
-        include_all=user_profile.is_realm_admin,
+        include_all=True,
         include_web_public=True,
     )
 
@@ -623,7 +623,7 @@ def do_change_user_role(
     previously_accessible_streams = get_streams_for_user(
         user_profile,
         include_web_public=True,
-        include_all=user_profile.is_realm_admin,
+        include_all=True,
     )
 
     user_profile.role = value
