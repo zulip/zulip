@@ -566,7 +566,12 @@ export const state_data_schema = z
             })),
     )
     .and(current_user_schema.transform((current_user) => ({current_user})))
-    .and(realm_schema.transform((realm) => ({realm})));
+    .and(realm_schema.transform((realm) => ({realm})))
+    .and(
+        z
+            .object({max_subs_for_notification: z.number()})
+            .transform((max_subs_for_notification) => max_subs_for_notification),
+    );
 
 export type StateData = z.infer<typeof state_data_schema>;
 

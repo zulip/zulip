@@ -56,8 +56,8 @@ type InputPillStore<ItemType> = {
     get_display_value_from_item: InputPillCreateOptions<ItemType>["get_display_value_from_item"];
     generate_pill_html: InputPillCreateOptions<ItemType>["generate_pill_html"];
     on_pill_exit: InputPillCreateOptions<ItemType>["on_pill_exit"];
-    onPillCreate?: () => void;
-    onPillRemove?: (pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void;
+    onPillCreate: (() => void)[];
+    onPillRemove: ((pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void)[];
     createPillonPaste?: () => void;
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
@@ -107,6 +107,8 @@ export function create<ItemType extends {type: string}>(
         generate_pill_html: opts.generate_pill_html,
         on_pill_exit: opts.on_pill_exit,
         show_outline_on_invalid_input: opts.show_outline_on_invalid_input ?? false,
+        onPillCreate: [],
+        onPillRemove: [],
     };
 
     // a dictionary of internal functions. Some of these are exposed as well,
@@ -184,7 +186,9 @@ export function create<ItemType extends {type: string}>(
             this.clear_text();
 
             if (!quiet && store.onPillCreate !== undefined) {
-                store.onPillCreate();
+                for (const f of store.onPillCreate) {
+                    f();
+                }
             }
         },
 
@@ -223,8 +227,8 @@ export function create<ItemType extends {type: string}>(
                 }
                 store.pills[idx]!.$element.remove();
                 const pill = util.the(store.pills.splice(idx, 1));
-                if (store.onPillRemove !== undefined) {
-                    store.onPillRemove(pill, trigger);
+                for (const f of store.onPillRemove) {
+                    f(pill, trigger);
                 }
 
                 // This is needed to run the "change" event handler registered in
@@ -248,8 +252,10 @@ export function create<ItemType extends {type: string}>(
 
             if (pill && !pill.disabled) {
                 pill.$element.remove();
-                if (!quiet && store.onPillRemove !== undefined) {
-                    store.onPillRemove(pill, trigger);
+                if (!quiet) {
+                    for (const f of store.onPillRemove) {
+                        f(pill, trigger);
+                    }
                 }
             }
         },
@@ -494,11 +500,11 @@ export function create<ItemType extends {type: string}>(
         removePill: funcs.removePill.bind(funcs),
 
         onPillCreate(callback) {
-            store.onPillCreate = callback;
+            store.onPillCreate.push(callback);
         },
 
         onPillRemove(callback) {
-            store.onPillRemove = callback;
+            store.onPillRemove.push(callback);
         },
 
         onTextInputHook(callback) {

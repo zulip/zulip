@@ -30,6 +30,8 @@ import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_groups from "./user_groups.ts";
 import * as user_sort from "./user_sort.ts";
 
+export let max_subs_for_notification = 2;
+
 const remove_user_id_api_response_schema = z.object({
     removed: z.array(z.string()),
     not_removed: z.array(z.string()),
@@ -99,6 +101,23 @@ function show_stream_subscription_request_result({
     }
 }
 
+export function update_notification_choice_checkbox(added_user_count: number): void {
+    const $send_notification_checkbox = $(".send_notification_to_new_subscribers");
+    const $send_notification_container = $(".send_notification_to_new_subscribers_container");
+    if (added_user_count > max_subs_for_notification) {
+        $send_notification_checkbox.prop("checked", false);
+        $send_notification_checkbox.prop("disabled", true);
+        $send_notification_container.addClass("disabled");
+    } else {
+        $send_notification_checkbox.prop("disabled", false);
+        $send_notification_container.removeClass("disabled");
+    }
+}
+
+function stream_edit_update_notification_choice(user_pill_ids: number[]): void {
+    update_notification_choice_checkbox(user_pill_ids.length);
+}
+
 export function enable_subscriber_management({
     sub,
     $parent_container,
@@ -120,6 +139,8 @@ export function enable_subscriber_management({
     pill_widget = add_subscribers_pill.create({
         $pill_container,
         get_potential_subscribers,
+        onPillCreateAction: stream_edit_update_notification_choice,
+        onPillRemoveAction: stream_edit_update_notification_choice,
         get_user_groups: user_groups.get_all_realm_user_groups,
     });
 
@@ -266,7 +287,13 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
         });
     }
 
-    subscriber_api.add_user_ids_to_stream(user_ids, sub, invite_success, invite_failure);
+    subscriber_api.add_user_ids_to_stream(
+        user_ids,
+        sub,
+        $("#send_notification_to_new_subscribers").is(":checked"),
+        invite_success,
+        invite_failure,
+    );
 }
 
 function remove_subscriber({
@@ -456,7 +483,7 @@ export function rerender_subscribers_list(sub: sub_store.StreamSubscription): vo
     });
 }
 
-export function initialize(): void {
+export function initialize(max_subs: number): void {
     add_subscribers_pill.set_up_handlers({
         get_pill_widget: () => pill_widget,
         $parent_container: $("#channels_overlay_container"),
@@ -478,4 +505,5 @@ export function initialize(): void {
             remove_subscriber({stream_id, target_user_id, $list_entry});
         },
     );
+    max_subs_for_notification = max_subs;
 }
