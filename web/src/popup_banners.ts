@@ -103,7 +103,17 @@ export function open_connection_error_popup_banner(opts: {
         e.preventDefault();
         e.stopPropagation();
 
-        buttons.show_button_loading_indicator($(this));
+        const $button = $(this);
+
+        // If the loading indicator is already being shown, this logic
+        // allows us to visually indicate that the retry sequence was
+        // executed again by showing the loading indicator on click.
+        $button.removeClass("button-hide-loading-indicator-on-hover");
+        $button.one("mouseleave", () => {
+            $button.addClass("button-hide-loading-indicator-on-hover");
+        });
+
+        buttons.show_button_loading_indicator($button);
         opts.on_retry_callback();
     });
 }

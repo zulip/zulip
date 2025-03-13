@@ -7,8 +7,7 @@ export function show_button_loading_indicator($button: JQuery): void {
     if ($button.find(".button-loading-indicator").length > 0) {
         return;
     }
-    // First, we disable the button and hide its contents.
-    $button.prop("disabled", true);
+    // First, we hide the current content of the button.
     $button.find(".zulip-icon").css("visibility", "hidden");
     $button.find(".action-button-label").css("visibility", "hidden");
     // Next, we create a loading indicator with a unique id.
