@@ -920,6 +920,11 @@ h4.user_group_setting_subsection_title {
         height: var(--settings-overlay-header-button-height);
     }
 
+    .send_notification_to_new_subscribers_container.disabled {
+        color: hsl(0deg 0% 80%);
+        cursor: not-allowed;
+    }
+
     #user-group-creation,
     #stream-creation {
         overflow: auto;

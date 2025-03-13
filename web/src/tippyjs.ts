@@ -13,6 +13,7 @@ import * as information_density from "./information_density.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_edit_subscribers from "./stream_edit_subscribers.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -744,6 +745,28 @@ export function initialize(): void {
                     render_information_density_update_button_tooltip(tooltip_context),
                 ),
             );
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".send_notification_to_new_subscribers_container.disabled",
+        trigger: "mouseenter",
+        placement: "top",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const content = $t(
+                {
+                    defaultMessage:
+                        "Notification message cannot be sent when adding more than {max_users} users.",
+                },
+                {
+                    max_users: stream_edit_subscribers.max_subs_for_notification,
+                },
+            );
+            instance.setContent(content);
         },
         onHidden(instance) {
             instance.destroy();
