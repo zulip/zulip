@@ -304,7 +304,8 @@ export class DropdownWidget {
                             return render_dropdown_list({
                                 item: {
                                     ...item,
-                                    is_item_selected: item.unique_id === selected_item_unique_id,
+                                    is_current_user_setting:
+                                        item.unique_id === selected_item_unique_id,
                                 },
                             });
                         },
