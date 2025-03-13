@@ -1454,7 +1454,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 ct.get_or_set_token_for_testing("hamletcharacters");
                 actual_value = options.highlighter_html(hamletcharacters);
                 expected_value =
-                    '    <i class="typeahead-image zulip-icon zulip-icon-triple-users no-presence-circle" aria-hidden="true"></i>\n' +
+                    '    <i class="typeahead-image zulip-icon zulip-icon-user-group no-presence-circle" aria-hidden="true"></i>\n' +
                     '<div class="typeahead-text-container">\n' +
                     '    <strong class="typeahead-strong-section">hamletcharacters</strong>    <span class="autocomplete_secondary">Characters of Hamlet</span>' +
                     "</div>\n";

@@ -197,7 +197,7 @@
 
     text-align: center;
 
-    &.zulip-icon-triple-users {
+    &.zulip-icon-user-group {
         font-size: 1.3571em; /* 19px at 14px em */
     }
 
