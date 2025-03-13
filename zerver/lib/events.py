@@ -49,7 +49,10 @@ from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.sounds import get_available_notification_sounds
-from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
+from zerver.lib.stream_subscription import (
+    get_active_subscriptions_for_stream_id,
+    handle_stream_notifications_compatibility,
+)
 from zerver.lib.streams import do_get_streams, get_web_public_streams
 from zerver.lib.subscription_info import (
     build_unsubscribed_sub_from_stream_dict,
@@ -1251,7 +1254,11 @@ def apply_event(
             for stream in event["streams"]:
                 stream_data = copy.deepcopy(stream)
                 if include_subscribers:
-                    stream_data["subscribers"] = []
+                    stream_data["subscribers"] = list(
+                        get_active_subscriptions_for_stream_id(
+                            stream["stream_id"], include_deactivated_users=False
+                        ).values_list("user_profile_id", flat=True)
+                    )
 
                 # Here we need to query the database to check whether the
                 # user was previously subscribed. If they were, we need to
@@ -1274,7 +1281,7 @@ def apply_event(
                         user_profile, unsubscribed_stream_sub[0], stream_data
                     )
                     if include_subscribers:
-                        unsubscribed_stream_dict["subscribers"] = []
+                        unsubscribed_stream_dict["subscribers"] = stream_data["subscribers"]
                     state["unsubscribed"].append(unsubscribed_stream_dict)
                 else:
                     assert len(unsubscribed_stream_sub) == 0
