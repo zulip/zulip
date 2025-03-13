@@ -2573,9 +2573,20 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        self.make_stream("Test private stream", invite_only=True)
-        self.subscribe(self.example_user("othello"), "Test private stream")
+        self.make_stream("private_stream_1", invite_only=True)
+        self.subscribe(self.example_user("othello"), "private_stream_1")
 
+        private_stream_2 = self.make_stream("private_stream_2", invite_only=True)
+        do_change_stream_group_based_setting(
+            private_stream_2,
+            "can_administer_channel_group",
+            UserGroupMembersDict(direct_members=[self.user_profile.id], direct_subgroups=[]),
+            acting_user=self.user_profile,
+        )
+
+        # There should only be one stream create event here for
+        # `private_stream_1` since user already had access to
+        # `private_stream_2` via `can_administer_channel_group.`
         self.do_test_change_role(
             UserProfile.ROLE_MEMBER,
             UserProfile.ROLE_REALM_ADMINISTRATOR,
@@ -2587,6 +2598,9 @@ class NormalActionsTest(BaseAction):
                 check_subscription_peer_add,
             ],
         )
+        # There should only be one stream delete event here for
+        # `private_stream_1` since user already had access to
+        # `private_stream_2` via `can_administer_channel_group.`
         self.do_test_change_role(
             UserProfile.ROLE_REALM_ADMINISTRATOR,
             UserProfile.ROLE_MEMBER,
@@ -2608,9 +2622,20 @@ class NormalActionsTest(BaseAction):
 
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
 
-        self.make_stream("Test private stream", invite_only=True)
-        self.subscribe(self.example_user("othello"), "Test private stream")
+        self.make_stream("private_stream_1", invite_only=True)
+        self.subscribe(self.example_user("othello"), "private_stream_1")
 
+        private_stream_2 = self.make_stream("private_stream_2", invite_only=True)
+        do_change_stream_group_based_setting(
+            private_stream_2,
+            "can_administer_channel_group",
+            UserGroupMembersDict(direct_members=[self.user_profile.id], direct_subgroups=[]),
+            acting_user=self.user_profile,
+        )
+
+        # There should only be one stream create event here for
+        # `private_stream_1` since user already had access to
+        # `private_stream_2` via `can_administer_channel_group.`
         self.do_test_change_role(
             UserProfile.ROLE_MEMBER,
             UserProfile.ROLE_REALM_OWNER,
@@ -2622,6 +2647,9 @@ class NormalActionsTest(BaseAction):
                 check_subscription_peer_add,
             ],
         )
+        # There should only be one stream delete event here for
+        # `private_stream_1` since user already had access to
+        # `private_stream_2` via `can_administer_channel_group.`
         self.do_test_change_role(
             UserProfile.ROLE_REALM_OWNER,
             UserProfile.ROLE_MEMBER,
