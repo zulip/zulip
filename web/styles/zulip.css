@@ -2249,7 +2249,7 @@ body:not(.spectator-view) {
             background-color: transparent;
         }
 
-        &.active {
+        &.current_user_setting {
             background-color: var(--background-color-active-dropdown-item);
             outline: none;
         }
