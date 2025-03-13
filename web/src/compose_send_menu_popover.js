@@ -8,6 +8,7 @@ import render_send_later_modal_options from "../templates/send_later_modal_optio
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose from "./compose.js";
+import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
@@ -111,6 +112,7 @@ export function open_send_later_menu() {
             // When shown, we should give the modal focus to correctly handle keyboard events.
             const $send_later_modal_overlay = $("#send_later_modal .modal__overlay");
             $send_later_modal_overlay.trigger("focus");
+            compose_recipient.check_hide_go_to_conversation_button_intro_tooltip();
         },
         on_hide() {
             clearInterval(interval);
