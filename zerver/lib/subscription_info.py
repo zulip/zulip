@@ -19,8 +19,7 @@ from zerver.lib.stream_subscription import (
 )
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.streams import (
-    get_group_setting_value_dict_for_streams,
-    get_setting_values_for_group_settings,
+    get_anonymous_group_membership_dict_for_streams,
     get_stream_post_policy_value_based_on_group_setting,
     get_users_dict_with_metadata_access_to_streams_via_permission_groups,
     get_web_public_streams_queryset,
@@ -37,8 +36,13 @@ from zerver.lib.types import (
     SubscriptionStreamDict,
     UserGroupMembersDict,
 )
-from zerver.lib.user_groups import UserGroupMembershipDetails, get_recursive_membership_groups
-from zerver.models import Realm, Stream, Subscription, UserProfile
+from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
+    get_group_setting_value_for_register_api,
+    get_members_and_subgroups_of_groups,
+    get_recursive_membership_groups,
+)
+from zerver.models import Realm, Stream, Subscription, UserGroup, UserProfile
 from zerver.models.streams import get_all_streams
 
 
@@ -53,16 +57,26 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
 
     subscribed = []
     streams = get_web_public_streams_queryset(realm)
-    setting_groups_dict = get_group_setting_value_dict_for_streams(list(streams))
+    anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(list(streams))
 
     for stream in streams:
         # Add Stream fields.
         is_archived = stream.deactivated
-        can_add_subscribers_group = setting_groups_dict[stream.can_add_subscribers_group_id]
-        can_administer_channel_group = setting_groups_dict[stream.can_administer_channel_group_id]
-        can_send_message_group = setting_groups_dict[stream.can_send_message_group_id]
-        can_remove_subscribers_group = setting_groups_dict[stream.can_remove_subscribers_group_id]
-        can_subscribe_group = setting_groups_dict[stream.can_subscribe_group_id]
+        can_add_subscribers_group = get_group_setting_value_for_register_api(
+            stream.can_add_subscribers_group_id, anonymous_group_membership
+        )
+        can_administer_channel_group = get_group_setting_value_for_register_api(
+            stream.can_administer_channel_group_id, anonymous_group_membership
+        )
+        can_send_message_group = get_group_setting_value_for_register_api(
+            stream.can_send_message_group_id, anonymous_group_membership
+        )
+        can_remove_subscribers_group = get_group_setting_value_for_register_api(
+            stream.can_remove_subscribers_group_id, anonymous_group_membership
+        )
+        can_subscribe_group = get_group_setting_value_for_register_api(
+            stream.can_subscribe_group_id, anonymous_group_membership
+        )
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
         description = stream.description
@@ -147,7 +161,7 @@ def build_unsubscribed_sub_from_stream_dict(
 def build_stream_api_dict(
     raw_stream_dict: RawStreamDict,
     recent_traffic: dict[int, int] | None,
-    setting_groups_dict: dict[int, int | UserGroupMembersDict],
+    anonymous_group_membership: dict[int, UserGroupMembersDict],
 ) -> APIStreamDict:
     # Add a few computed fields not directly from the data models.
     if recent_traffic is not None:
@@ -162,15 +176,21 @@ def build_stream_api_dict(
     # migration.
     is_announcement_only = raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
 
-    can_add_subscribers_group = setting_groups_dict[raw_stream_dict["can_add_subscribers_group_id"]]
-    can_administer_channel_group = setting_groups_dict[
-        raw_stream_dict["can_administer_channel_group_id"]
-    ]
-    can_send_message_group = setting_groups_dict[raw_stream_dict["can_send_message_group_id"]]
-    can_remove_subscribers_group = setting_groups_dict[
-        raw_stream_dict["can_remove_subscribers_group_id"]
-    ]
-    can_subscribe_group = setting_groups_dict[raw_stream_dict["can_subscribe_group_id"]]
+    can_add_subscribers_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_add_subscribers_group_id"], anonymous_group_membership
+    )
+    can_administer_channel_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_administer_channel_group_id"], anonymous_group_membership
+    )
+    can_send_message_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_send_message_group_id"], anonymous_group_membership
+    )
+    can_remove_subscribers_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_remove_subscribers_group_id"], anonymous_group_membership
+    )
+    can_subscribe_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_subscribe_group_id"], anonymous_group_membership
+    )
 
     return APIStreamDict(
         is_archived=raw_stream_dict["deactivated"],
@@ -277,7 +297,7 @@ def build_stream_dict_for_sub(
 def build_stream_dict_for_never_sub(
     raw_stream_dict: RawStreamDict,
     recent_traffic: dict[int, int] | None,
-    setting_groups_dict: dict[int, int | UserGroupMembersDict],
+    anonymous_group_membership: dict[int, UserGroupMembersDict],
 ) -> NeverSubscribedStreamDict:
     is_archived = raw_stream_dict["deactivated"]
     creator_id = raw_stream_dict["creator_id"]
@@ -301,17 +321,21 @@ def build_stream_dict_for_never_sub(
     else:
         stream_weekly_traffic = None
 
-    can_add_subscribers_group_value = setting_groups_dict[
-        raw_stream_dict["can_add_subscribers_group_id"]
-    ]
-    can_administer_channel_group_value = setting_groups_dict[
-        raw_stream_dict["can_administer_channel_group_id"]
-    ]
-    can_send_message_group_value = setting_groups_dict[raw_stream_dict["can_send_message_group_id"]]
-    can_remove_subscribers_group_value = setting_groups_dict[
-        raw_stream_dict["can_remove_subscribers_group_id"]
-    ]
-    can_subscribe_group_value = setting_groups_dict[raw_stream_dict["can_subscribe_group_id"]]
+    can_add_subscribers_group_value = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_add_subscribers_group_id"], anonymous_group_membership
+    )
+    can_administer_channel_group_value = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_administer_channel_group_id"], anonymous_group_membership
+    )
+    can_send_message_group_value = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_send_message_group_id"], anonymous_group_membership
+    )
+    can_remove_subscribers_group_value = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_remove_subscribers_group_id"], anonymous_group_membership
+    )
+    can_subscribe_group_value = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_subscribe_group_id"], anonymous_group_membership
+    )
 
     # Backwards-compatibility addition of removed field.
     is_announcement_only = raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
@@ -654,8 +678,10 @@ def gather_subscriptions_helper(
     for stream_dict in all_stream_dicts:
         for setting_name in Stream.stream_permission_group_settings:
             setting_group_ids.add(stream_dict[setting_name + "_id"])
-
-    setting_groups_dict = get_setting_values_for_group_settings(list(setting_group_ids))
+    anonymous_group_ids = UserGroup.objects.filter(
+        id__in=setting_group_ids, named_user_group=None
+    ).values_list("id", flat=True)
+    anonymous_group_membership = get_members_and_subgroups_of_groups(set(anonymous_group_ids))
 
     sub_dicts_query: Iterable[RawSubscriptionDict] = (
         get_stream_subscriptions_for_user(user_profile)
@@ -703,7 +729,7 @@ def gather_subscriptions_helper(
         sub_unsub_stream_ids.add(stream_id)
         raw_stream_dict = all_streams_map[stream_id]
         stream_api_dict = build_stream_api_dict(
-            raw_stream_dict, recent_traffic, setting_groups_dict
+            raw_stream_dict, recent_traffic, anonymous_group_membership
         )
         stream_dict = build_stream_dict_for_sub(
             user=user_profile,
@@ -764,7 +790,7 @@ def gather_subscriptions_helper(
             slim_stream_dict = build_stream_dict_for_never_sub(
                 raw_stream_dict=raw_stream_dict,
                 recent_traffic=recent_traffic,
-                setting_groups_dict=setting_groups_dict,
+                anonymous_group_membership=anonymous_group_membership,
             )
 
             never_subscribed.append(slim_stream_dict)

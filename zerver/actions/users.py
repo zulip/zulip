@@ -33,7 +33,7 @@ from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.soft_deactivation import queue_soft_reactivation
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
-    get_group_setting_value_dict_for_streams,
+    get_anonymous_group_membership_dict_for_streams,
     get_streams_for_user,
     send_stream_deletion_event,
     stream_to_dict,
@@ -566,13 +566,15 @@ def send_stream_events_for_role_update(
             if stream.id in now_accessible_stream_ids
         ]
 
-        setting_groups_dict = get_group_setting_value_dict_for_streams(now_accessible_streams)
+        anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(
+            now_accessible_streams
+        )
 
         event = dict(
             type="stream",
             op="create",
             streams=[
-                stream_to_dict(stream, recent_traffic, setting_groups_dict)
+                stream_to_dict(stream, recent_traffic, anonymous_group_membership)
                 for stream in now_accessible_streams
             ],
         )
