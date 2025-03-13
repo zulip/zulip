@@ -561,15 +561,15 @@ def get_setting_value_for_user_group_object(
 
 def get_group_setting_value_for_register_api(
     setting_group_id: int,
-    realm_setting_anonymous_group_membership: dict[int, UserGroupMembersDict],
+    anonymous_group_membership: dict[int, UserGroupMembersDict],
 ) -> int | UserGroupMembersDict:
-    if setting_group_id not in realm_setting_anonymous_group_membership:
-        # realm_setting_anonymous_group_membership is defined to contain
-        # the membership of all non-named UserGroup used for realm settings.
+    if setting_group_id not in anonymous_group_membership:
+        # anonymous_group_membership is defined to contain the
+        # membership of all non-named UserGroup used for realm settings.
         # Thus, any group ID not present in it must be a named group.
         return setting_group_id
 
-    return realm_setting_anonymous_group_membership[setting_group_id]
+    return anonymous_group_membership[setting_group_id]
 
 
 def get_members_and_subgroups_of_groups(group_ids: set[int]) -> dict[int, UserGroupMembersDict]:
@@ -618,35 +618,46 @@ def get_members_and_subgroups_of_groups(group_ids: set[int]) -> dict[int, UserGr
 class RealmUserGroupsData:
     api_groups: list[UserGroupDict]
     system_groups_name_dict: dict[int, str]
-    realm_setting_anonymous_group_membership: dict[int, UserGroupMembersDict]
+    anonymous_group_membership: dict[int, UserGroupMembersDict]
 
 
 def user_groups_in_realm_serialized(
     realm: Realm,
     *,
     include_deactivated_groups: bool,
-    realm_setting_group_ids: set[int] | None = None,
+    fetch_anonymous_group_membership: bool = False,
 ) -> RealmUserGroupsData:
     """This function is used in do_events_register code path so this code
     should be performant.  We need to do 2 database queries because
     Django's ORM doesn't properly support the left join between
     UserGroup and UserGroupMembership that we need.
     """
-    realm_groups = NamedUserGroup.objects.filter(realm=realm)
-
-    if not include_deactivated_groups:
-        realm_groups = realm_groups.filter(deactivated=False)
+    anonymous_group_ids: set[int] = set()
+    if not fetch_anonymous_group_membership:
+        realm_groups = NamedUserGroup.objects.filter(realm=realm)
+        if not include_deactivated_groups:
+            realm_groups = realm_groups.filter(deactivated=False)
+    else:
+        groups = UserGroup.objects.filter(realm=realm).select_related("named_user_group")
+        realm_groups = []
+        for group in groups:
+            if hasattr(group, "named_user_group"):
+                named_group = group.named_user_group
+                if not include_deactivated_groups and named_group.deactivated:
+                    continue
+                realm_groups.append(named_group)
+            else:
+                anonymous_group_ids.add(group.id)
 
     realm_group_ids = {group.id for group in realm_groups}
+
     group_settings_ids: set[int] = set()
-    for group in realm_groups:
-        for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
-            group_settings_ids.add(getattr(group, setting_name + "_id"))
+    if not fetch_anonymous_group_membership:
+        for group in realm_groups:
+            for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
+                group_settings_ids.add(getattr(group, setting_name + "_id"))
 
-    if realm_setting_group_ids is None:
-        realm_setting_group_ids = set()
-
-    group_ids_to_fetch_members = set(realm_group_ids | group_settings_ids | realm_setting_group_ids)
+    group_ids_to_fetch_members = set(realm_group_ids | group_settings_ids | anonymous_group_ids)
 
     group_members_dict = get_members_and_subgroups_of_groups(group_ids_to_fetch_members)
 
@@ -698,15 +709,15 @@ def user_groups_in_realm_serialized(
         if user_group.is_system_group:
             system_groups_name_dict[user_group.id] = user_group.name
 
-    realm_setting_anonymous_group_membership = {}
-    for group_id in realm_setting_group_ids:
+    anonymous_group_membership = {}
+    for group_id in anonymous_group_ids:
         if group_id not in realm_group_ids:
-            realm_setting_anonymous_group_membership[group_id] = group_members_dict[group_id]
+            anonymous_group_membership[group_id] = group_members_dict[group_id]
 
     return RealmUserGroupsData(
         api_groups=sorted(group_dicts.values(), key=lambda group_dict: group_dict["id"]),
         system_groups_name_dict=system_groups_name_dict,
-        realm_setting_anonymous_group_membership=realm_setting_anonymous_group_membership,
+        anonymous_group_membership=anonymous_group_membership,
     )
 
 

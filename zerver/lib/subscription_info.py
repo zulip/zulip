@@ -19,7 +19,6 @@ from zerver.lib.stream_subscription import (
 )
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.streams import (
-    get_anonymous_group_membership_dict_for_streams,
     get_stream_post_policy_value_based_on_group_setting,
     get_users_dict_with_metadata_access_to_streams_via_permission_groups,
     get_web_public_streams_queryset,
@@ -46,7 +45,9 @@ from zerver.models import Realm, Stream, Subscription, UserGroup, UserProfile
 from zerver.models.streams import get_all_streams
 
 
-def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
+def get_web_public_subs(
+    realm: Realm, anonymous_group_membership: dict[int, UserGroupMembersDict]
+) -> SubscriptionInfo:
     color_idx = 0
 
     def get_next_color() -> str:
@@ -57,7 +58,6 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
 
     subscribed = []
     streams = get_web_public_streams_queryset(realm)
-    anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(list(streams))
 
     for stream in streams:
         # Add Stream fields.
@@ -649,6 +649,7 @@ def gather_subscriptions_helper(
     user_profile: UserProfile,
     include_subscribers: bool = True,
     include_archived_channels: bool = False,
+    anonymous_group_membership: dict[int, UserGroupMembersDict] | None = None,
 ) -> SubscriptionInfo:
     realm = user_profile.realm
     all_streams = get_all_streams(
@@ -674,14 +675,15 @@ def gather_subscriptions_helper(
         )
         all_streams_map[stream.id]["stream_post_policy"] = stream_post_policy
 
-    setting_group_ids = set()
-    for stream_dict in all_stream_dicts:
-        for setting_name in Stream.stream_permission_group_settings:
-            setting_group_ids.add(stream_dict[setting_name + "_id"])
-    anonymous_group_ids = UserGroup.objects.filter(
-        id__in=setting_group_ids, named_user_group=None
-    ).values_list("id", flat=True)
-    anonymous_group_membership = get_members_and_subgroups_of_groups(set(anonymous_group_ids))
+    if anonymous_group_membership is None:
+        setting_group_ids = set()
+        for stream_dict in all_stream_dicts:
+            for setting_name in Stream.stream_permission_group_settings:
+                setting_group_ids.add(stream_dict[setting_name + "_id"])
+        anonymous_group_ids = UserGroup.objects.filter(
+            id__in=setting_group_ids, named_user_group=None
+        ).values_list("id", flat=True)
+        anonymous_group_membership = get_members_and_subgroups_of_groups(set(anonymous_group_ids))
 
     sub_dicts_query: Iterable[RawSubscriptionDict] = (
         get_stream_subscriptions_for_user(user_profile)

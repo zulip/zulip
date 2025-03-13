@@ -225,12 +225,12 @@ def fetch_initial_state_data(
             get_recursive_membership_groups(settings_user).values_list("id", flat=True)
         )
 
-    if want("realm_user_groups") or want("realm"):
-        realm_setting_group_ids = {
-            getattr(realm, setting_name + "_id")
-            for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
-        }
-
+    if (
+        want("realm_user_groups")
+        or want("realm")
+        or (want("stream") and include_streams)
+        or want("subscription")
+    ):
         # Optimizing opportunity: This fetches more data than
         # we strictly need when "realm_user_groups" is not in
         # fetch_event_types; we need the membership of the
@@ -240,7 +240,7 @@ def fetch_initial_state_data(
         realm_groups_data = user_groups_in_realm_serialized(
             realm,
             include_deactivated_groups=include_deactivated_groups,
-            realm_setting_group_ids=realm_setting_group_ids,
+            fetch_anonymous_group_membership=True,
         )
 
     if want("alert_words"):
@@ -373,7 +373,7 @@ def fetch_initial_state_data(
         for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             setting_group_id = getattr(realm, setting_name + "_id")
             state["realm_" + setting_name] = get_group_setting_value_for_register_api(
-                setting_group_id, realm_groups_data.realm_setting_anonymous_group_membership
+                setting_group_id, realm_groups_data.anonymous_group_membership
             )
 
         state["realm_create_public_stream_policy"] = (
@@ -741,9 +741,10 @@ def fetch_initial_state_data(
                 user_profile,
                 include_subscribers=include_subscribers,
                 include_archived_channels=archived_channels,
+                anonymous_group_membership=realm_groups_data.anonymous_group_membership,
             )
         else:
-            sub_info = get_web_public_subs(realm)
+            sub_info = get_web_public_subs(realm, realm_groups_data.anonymous_group_membership)
 
         state["subscriptions"] = sub_info.subscriptions
         state["unsubscribed"] = sub_info.unsubscribed
@@ -777,13 +778,16 @@ def fetch_initial_state_data(
                 user_profile,
                 include_web_public=True,
                 include_all=user_profile.is_realm_admin,
+                anonymous_group_membership=realm_groups_data.anonymous_group_membership,
             )
         else:
             # TODO: This line isn't used by the web app because it
             # gets these data via the `subscriptions` key; it will
             # be used when the mobile apps support logged-out
             # access.
-            state["streams"] = get_web_public_streams(realm)  # nocoverage
+            state["streams"] = get_web_public_streams(
+                realm, realm_groups_data.anonymous_group_membership
+            )  # nocoverage
     if want("default_streams"):
         if settings_user.is_guest:
             # Guest users and logged-out users don't have access to
