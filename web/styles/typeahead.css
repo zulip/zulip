@@ -203,12 +203,13 @@
 
     &.no-presence-circle {
         /* 0.6875 * var(--base-font-size) is the width of presence
-        circle, 2px is right margin of the presence circle and
-        0.3571 * var(--base-font-size-px) is gap between the presence
-        circle and avatar. Cannot directly use 0.6875em or 0.3571em
-        since font-size for triple users icon is different from the
+        circle, no margin (-2px left margin + 2px right margin = 0px)
+        of the presence circle and 0.3571 * var(--base-font-size-px)
+        is gap between the presence circle and avatar.
+        Cannot directly use 0.6875em or 0.3571em
+        since font-size for user group icon is different from the
         font size used to calculate presence circle width and gap. */
-        margin-left: calc((0.6875 + 0.3571) * var(--base-font-size-px) + 2px);
+        margin-left: calc((0.6875 + 0.3571) * var(--base-font-size-px));
     }
 }
 
