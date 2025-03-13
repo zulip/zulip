@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 368**
+
+* [`GET /events`](/api/get-events): An event with `type: "saved_snippet"`
+  and `op: "update"` is sent to the current user when a saved snippet is edited.
+* [`PATCH /saved_snippets/{saved_snippet_id}`](/api/edit-saved-snippet):
+  Added a new endpoint for editing a saved snippet.
+
 **Feature level 367**
 
 * [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events):

@@ -2194,11 +2194,21 @@ body:not(.spectator-view) {
             top: 0.2419em;
         }
 
-        .dropdown-list-delete {
+        .dropdown-list-delete,
+        .dropdown-list-edit {
             position: absolute;
             top: 0;
             right: 5px;
             visibility: hidden;
+        }
+
+        .dropdown-list-edit {
+            color: var(--color-text-neutral-icon-button);
+            right: 30px;
+
+            &:hover {
+                color: var(--color-text-neutral-icon-button-hover);
+            }
         }
 
         &:focus,
@@ -2208,7 +2218,8 @@ body:not(.spectator-view) {
             background-color: var(--background-color-active-dropdown-item);
             outline: none;
 
-            .dropdown-list-delete {
+            .dropdown-list-delete,
+            .dropdown-list-edit {
                 visibility: visible;
             }
         }

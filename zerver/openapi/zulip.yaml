@@ -5510,6 +5510,41 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event containing details of the edited saved snippet.
+
+                                Clients should update the existing saved snippet with the
+                                ID provided in the `saved_snippet` object.
+
+                                **Changes**: New in Zulip 10.0 (feature level 368).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - saved_snippets
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                saved_snippet:
+                                  $ref: "#/components/schemas/SavedSnippet"
+                              example:
+                                {
+                                  "type": "saved_snippets",
+                                  "op": "update",
+                                  "saved_snippet":
+                                    {
+                                      "id": 1,
+                                      "title": "Example",
+                                      "content": "Welcome to the organization.",
+                                      "date_created": 1681662420,
+                                    },
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event containing the ID of a deleted saved snippet.
 
                                 **Changes**: New in Zulip 10.0 (feature level 297).
@@ -6398,6 +6433,78 @@ paths:
                       A typical failed JSON response for when either title or content is
                       empty:
   /saved_snippets/{saved_snippet_id}:
+    patch:
+      operationId: edit-saved-snippet
+      tags: ["drafts"]
+      summary: Edit a saved snippet
+      description: |
+        Edit a saved snippet for the current user.
+
+        **Changes**: New in Zulip 10.0 (feature level 368).
+      parameters:
+        - name: saved_snippet_id
+          in: path
+          schema:
+            type: integer
+          description: |
+            The ID of the saved snippet to edit.
+          required: true
+          example: 3
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: |
+                    The title of the saved snippet.
+                  example: Welcome message
+                content:
+                  type: string
+                  description: |
+                    The content of the saved snippet in text/markdown format.
+
+                    Clients should insert this content into a message when using
+                    a saved snippet.
+                  example: Welcome to the organization.
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "No new data is supplied",
+                        "result": "error",
+                      }
+                    description: |
+                      A typical failed JSON response for when neither title nor content is
+                      provided in the request:
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when no saved snippet exists
+                      with the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Saved snippet does not exist.",
+                      }
     delete:
       operationId: delete-saved-snippet
       tags: ["drafts"]

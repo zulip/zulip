@@ -577,11 +577,15 @@ export function dispatch_normal_event(event) {
         case "saved_snippets":
             switch (event.op) {
                 case "add":
-                    saved_snippets.add_saved_snippet(event.saved_snippet);
+                    saved_snippets.update_saved_snippet_dict(event.saved_snippet);
                     saved_snippets_ui.rerender_dropdown_widget();
                     break;
                 case "remove":
                     saved_snippets.remove_saved_snippet(event.saved_snippet_id);
+                    saved_snippets_ui.rerender_dropdown_widget();
+                    break;
+                case "update":
+                    saved_snippets.update_saved_snippet_dict(event.saved_snippet);
                     saved_snippets_ui.rerender_dropdown_widget();
                     break;
             }

@@ -688,6 +688,16 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".saved_snippets-dropdown-list-container .dropdown-list-edit",
+        content: $t({defaultMessage: "Edit snippet"}),
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".generate-channel-email-button-container.disabled_setting_tooltip",
         content: $t({defaultMessage: "You do not have permission to post in this channel."}),
         appendTo: () => document.body,

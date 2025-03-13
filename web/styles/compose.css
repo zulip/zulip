@@ -1706,7 +1706,8 @@ textarea.new_message_textarea {
     }
 }
 
-#add-new-saved-snippet-modal {
+#add-new-saved-snippet-modal,
+#edit-saved-snippet-modal {
     & .saved-snippet-title {
         width: 97%;
         margin-bottom: 20px;

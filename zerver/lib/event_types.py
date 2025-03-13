@@ -710,6 +710,12 @@ class EventSavedSnippetsAdd(BaseEvent):
     saved_snippet: SavedSnippetFields
 
 
+class EventSavedSnippetsUpdate(BaseEvent):
+    type: Literal["saved_snippets"]
+    op: Literal["update"]
+    saved_snippet: SavedSnippetFields
+
+
 class EventSavedSnippetsRemove(BaseEvent):
     type: Literal["saved_snippets"]
     op: Literal["remove"]

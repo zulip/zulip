@@ -194,7 +194,7 @@ run_test("saved_snippets", ({override}) => {
     override(saved_snippets_ui, "rerender_dropdown_widget", noop);
     {
         const stub = make_stub();
-        override(saved_snippets, "add_saved_snippet", stub.f);
+        override(saved_snippets, "update_saved_snippet_dict", stub.f);
 
         dispatch(add_event);
         assert.equal(stub.num_calls, 1);
@@ -209,6 +209,16 @@ run_test("saved_snippets", ({override}) => {
         dispatch(remove_event);
         assert.equal(stub.num_calls, 1);
         assert_same(stub.get_args("event").event, remove_event.saved_snippet_id);
+    }
+
+    const update_event = event_fixtures.saved_snippets__update;
+    {
+        const stub = make_stub();
+        override(saved_snippets, "update_saved_snippet_dict", stub.f);
+
+        dispatch(update_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, update_event.saved_snippet);
     }
 });
 

@@ -666,6 +666,17 @@ exports.fixtures = {
         saved_snippet_id: 1,
     },
 
+    saved_snippets__update: {
+        type: "saved_snippets",
+        op: "update",
+        saved_snippet: {
+            id: 1,
+            title: "Example 2",
+            content: "Welcome to the organization.",
+            date_created: 1681662420,
+        },
+    },
+
     scheduled_messages__add: {
         type: "scheduled_messages",
         op: "add",

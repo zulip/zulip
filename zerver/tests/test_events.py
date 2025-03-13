@@ -92,7 +92,11 @@ from zerver.actions.realm_settings import (
     do_set_realm_user_default_setting,
     do_set_realm_zulip_update_announcements_stream,
 )
-from zerver.actions.saved_snippets import do_create_saved_snippet, do_delete_saved_snippet
+from zerver.actions.saved_snippets import (
+    do_create_saved_snippet,
+    do_delete_saved_snippet,
+    do_edit_saved_snippet,
+)
 from zerver.actions.scheduled_messages import (
     check_schedule_message,
     delete_scheduled_message,
@@ -186,6 +190,7 @@ from zerver.lib.event_schema import (
     check_realm_user_update,
     check_saved_snippets_add,
     check_saved_snippets_remove,
+    check_saved_snippets_update,
     check_scheduled_message_add,
     check_scheduled_message_remove,
     check_scheduled_message_update,
@@ -1767,6 +1772,10 @@ class NormalActionsTest(BaseAction):
         saved_snippet_id = (
             SavedSnippet.objects.filter(user_profile=self.user_profile).order_by("id")[0].id
         )
+        with self.verify_action() as events:
+            do_edit_saved_snippet(saved_snippet_id, "Example", None, self.user_profile)
+        check_saved_snippets_update("events[0]", events[0])
+
         with self.verify_action() as events:
             do_delete_saved_snippet(saved_snippet_id, self.user_profile)
         check_saved_snippets_remove("events[0]", events[0])
