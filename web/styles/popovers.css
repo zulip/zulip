@@ -314,7 +314,7 @@ ul.popover-group-menu-member-list {
 }
 
 .popover-group-menu-member {
-    .zulip-icon-triple-users {
+    .zulip-icon-user-group {
         color: var(--color-icon-purple);
     }
 }
