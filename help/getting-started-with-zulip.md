@@ -6,7 +6,7 @@ check out our [guide for moving to Zulip](/help/moving-to-zulip).
 
 You can learn where to find everything you need to get started with this
 [2-minute video
-tour](https://static.zulipchat.com/static/onboarding-video/zulip-10.mp4).
+tour](https://static.zulipchat.com/static/navigation-tour-video/zulip-10.mp4).
 Mastering Zulip can take a bit of time, but once you get the hang of
 it, you'll never want to use a different team chat app!
 
