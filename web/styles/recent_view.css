@@ -532,9 +532,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* To accommodate zulip-icon-triple-users icon */
-            width: 14px;
-            height: 14px;
 
             .zulip-icon.conversation-partners-icon,
             .zulip-icon.zulip-icon-bot {
