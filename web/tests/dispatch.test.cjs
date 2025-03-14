@@ -567,7 +567,7 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_default_code_block_language, "javascript");
 
     let update_called = false;
-    stream_settings_ui.update_stream_privacy_choices = (property) => {
+    stream_ui_updates.update_stream_privacy_choices = (property) => {
         assert_same(property, "can_create_web_public_channel_group");
         update_called = true;
     };
@@ -577,7 +577,7 @@ run_test("realm settings", ({override}) => {
     assert_same(update_called, true);
 
     let update_stream_privacy_choices_called = false;
-    stream_settings_ui.update_stream_privacy_choices = (property) => {
+    stream_ui_updates.update_stream_privacy_choices = (property) => {
         assert_same(property, "can_create_public_channel_group");
         update_stream_privacy_choices_called = true;
     };
