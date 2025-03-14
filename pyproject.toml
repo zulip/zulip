@@ -508,6 +508,9 @@ ignore = [
     "TC003", # Move standard library import into a type-checking block
 ]
 
+[tool.ruff.lint.flake8-bandit]
+allowed-markup-calls = ["lxml.html.tostring"]
+
 [tool.ruff.lint.flake8-gettext]
 extend-function-names = ["gettext_lazy"]
 
