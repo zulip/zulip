@@ -57,32 +57,32 @@ export const user_update_schema = z.object({user_id: z.number()}).and(
 
 type UserUpdate = z.output<typeof user_update_schema>;
 
-export const update_person = function update(person: UserUpdate): void {
-    const user = people.maybe_get_user_by_id(person.user_id);
+export const update_person = function update(event: UserUpdate): void {
+    const user = people.maybe_get_user_by_id(event.user_id);
 
     if (!user) {
-        blueslip.error("Got update_person event for unexpected user", {user_id: person.user_id});
+        blueslip.error("Got update_person event for unexpected user", {user_id: event.user_id});
         return;
     }
 
-    if ("new_email" in person) {
-        const user_id = person.user_id;
-        const new_email = person.new_email;
+    if ("new_email" in event) {
+        const user_id = event.user_id;
+        const new_email = event.new_email;
 
         people.update_email(user_id, new_email);
         narrow_state.update_email(user_id, new_email);
         compose_state.update_email(user_id, new_email);
 
-        if (people.is_my_user_id(person.user_id)) {
+        if (people.is_my_user_id(event.user_id)) {
             current_user.email = new_email;
         }
     }
 
-    if ("delivery_email" in person) {
-        const delivery_email = person.delivery_email;
+    if ("delivery_email" in event) {
+        const delivery_email = event.delivery_email;
         user.delivery_email = delivery_email;
-        user_profile.update_profile_modal_ui(user, person);
-        if (people.is_my_user_id(person.user_id)) {
+        user_profile.update_profile_modal_ui(user, event);
+        if (people.is_my_user_id(event.user_id)) {
             assert(delivery_email !== null);
             settings_account.update_email(delivery_email);
             current_user.delivery_email = delivery_email;
@@ -90,38 +90,37 @@ export const update_person = function update(person: UserUpdate): void {
         }
     }
 
-    if ("full_name" in person) {
-        people.set_full_name(user, person.full_name);
+    if ("full_name" in event) {
+        people.set_full_name(user, event.full_name);
 
-        settings_users.update_user_data(person.user_id, person);
+        settings_users.update_user_data(event.user_id, event);
         activity_ui.redraw();
-        message_live_update.update_user_full_name(person.user_id, person.full_name);
+        message_live_update.update_user_full_name(event.user_id, event.full_name);
         pm_list.update_private_messages();
-        user_profile.update_profile_modal_ui(user, person);
-        if (people.is_my_user_id(person.user_id)) {
-            current_user.full_name = person.full_name;
-            settings_account.update_full_name(person.full_name);
+        user_profile.update_profile_modal_ui(user, event);
+        if (people.is_my_user_id(event.user_id)) {
+            current_user.full_name = event.full_name;
+            settings_account.update_full_name(event.full_name);
         }
     }
 
-    if ("role" in person) {
-        user.role = person.role;
-        user.is_owner = person.role === settings_config.user_role_values.owner.code;
-        user.is_admin =
-            person.role === settings_config.user_role_values.admin.code || user.is_owner;
-        user.is_guest = person.role === settings_config.user_role_values.guest.code;
-        user.is_moderator = person.role === settings_config.user_role_values.moderator.code;
-        settings_users.update_user_data(person.user_id, person);
-        user_profile.update_profile_modal_ui(user, person);
+    if ("role" in event) {
+        user.role = event.role;
+        user.is_owner = event.role === settings_config.user_role_values.owner.code;
+        user.is_admin = event.role === settings_config.user_role_values.admin.code || user.is_owner;
+        user.is_guest = event.role === settings_config.user_role_values.guest.code;
+        user.is_moderator = event.role === settings_config.user_role_values.moderator.code;
+        settings_users.update_user_data(event.user_id, event);
+        user_profile.update_profile_modal_ui(user, event);
 
-        if (people.is_my_user_id(person.user_id) && current_user.is_owner !== user.is_owner) {
+        if (people.is_my_user_id(event.user_id) && current_user.is_owner !== user.is_owner) {
             current_user.is_owner = user.is_owner;
             settings_org.maybe_disable_widgets();
             settings_org.enable_or_disable_group_permission_settings();
             settings.update_lock_icon_in_sidebar();
         }
 
-        if (people.is_my_user_id(person.user_id) && current_user.is_admin !== user.is_admin) {
+        if (people.is_my_user_id(event.user_id) && current_user.is_admin !== user.is_admin) {
             current_user.is_admin = user.is_admin;
             settings_linkifiers.maybe_disable_widgets();
             settings_org.maybe_disable_widgets();
@@ -134,38 +133,38 @@ export const update_person = function update(person: UserUpdate): void {
         }
 
         if (
-            people.is_my_user_id(person.user_id) &&
+            people.is_my_user_id(event.user_id) &&
             current_user.is_moderator !== user.is_moderator
         ) {
             current_user.is_moderator = user.is_moderator;
         }
     }
 
-    if ("avatar_url" in person) {
-        const url = person.avatar_url;
+    if ("avatar_url" in event) {
+        const url = event.avatar_url;
         user.avatar_url = url;
-        user.avatar_version = person.avatar_version;
+        user.avatar_version = event.avatar_version;
 
-        if (people.is_my_user_id(person.user_id)) {
-            current_user.avatar_source = person.avatar_source;
+        if (people.is_my_user_id(event.user_id)) {
+            current_user.avatar_source = event.avatar_source;
             current_user.avatar_url = url;
-            current_user.avatar_url_medium = person.avatar_url_medium;
-            $("#user-avatar-upload-widget .image-block").attr("src", person.avatar_url_medium);
-            $("#personal-menu .header-button-avatar").attr("src", `${person.avatar_url_medium}`);
+            current_user.avatar_url_medium = event.avatar_url_medium;
+            $("#user-avatar-upload-widget .image-block").attr("src", event.avatar_url_medium);
+            $("#personal-menu .header-button-avatar").attr("src", `${event.avatar_url_medium}`);
         }
 
-        message_live_update.update_avatar(user.user_id, person.avatar_url);
-        user_profile.update_profile_modal_ui(user, person);
+        message_live_update.update_avatar(user.user_id, event.avatar_url);
+        user_profile.update_profile_modal_ui(user, event);
     }
 
-    if ("custom_profile_field" in person) {
-        people.set_custom_profile_field_data(person.user_id, person.custom_profile_field);
+    if ("custom_profile_field" in event) {
+        people.set_custom_profile_field_data(event.user_id, event.custom_profile_field);
         user_profile.update_user_custom_profile_fields(user);
-        if (person.user_id === people.my_current_user_id()) {
+        if (event.user_id === people.my_current_user_id()) {
             navbar_alerts.maybe_toggle_empty_required_profile_fields_banner();
 
-            const field_id = person.custom_profile_field.id;
-            const field_value = people.get_custom_profile_data(person.user_id, field_id)?.value;
+            const field_id = event.custom_profile_field.id;
+            const field_value = people.get_custom_profile_data(event.user_id, field_id)?.value;
             const is_field_required = realm.custom_profile_fields?.find(
                 (f) => field_id === f.id,
             )?.required;
@@ -190,34 +189,34 @@ export const update_person = function update(person: UserUpdate): void {
         }
     }
 
-    if ("timezone" in person) {
-        user.timezone = person.timezone;
+    if ("timezone" in event) {
+        user.timezone = event.timezone;
     }
 
-    if ("bot_owner_id" in person) {
+    if ("bot_owner_id" in event) {
         assert(user.is_bot);
-        user.bot_owner_id = person.bot_owner_id;
-        user_profile.update_profile_modal_ui(user, person);
+        user.bot_owner_id = event.bot_owner_id;
+        user_profile.update_profile_modal_ui(user, event);
     }
 
-    if ("is_active" in person) {
+    if ("is_active" in event) {
         const is_bot_user = user.is_bot;
-        if (person.is_active) {
+        if (event.is_active) {
             people.add_active_user(user);
-            settings_users.update_view_on_reactivate(person.user_id, is_bot_user);
+            settings_users.update_view_on_reactivate(event.user_id, is_bot_user);
         } else {
             people.deactivate(user);
-            stream_events.remove_deactivated_user_from_all_streams(person.user_id);
-            user_group_edit.remove_deactivated_user_from_all_groups(person.user_id);
-            settings_users.update_view_on_deactivate(person.user_id, is_bot_user);
+            stream_events.remove_deactivated_user_from_all_streams(event.user_id);
+            user_group_edit.remove_deactivated_user_from_all_groups(event.user_id);
+            settings_users.update_view_on_deactivate(event.user_id, is_bot_user);
         }
-        buddy_list.insert_or_move([person.user_id]);
+        buddy_list.insert_or_move([event.user_id]);
         settings_account.maybe_update_deactivate_account_button();
         if (is_bot_user) {
-            settings_users.update_bot_data(person.user_id);
-        } else if (!person.is_active) {
+            settings_users.update_bot_data(event.user_id);
+        } else if (!event.is_active) {
             // A human user deactivated, update 'Export permissions' table.
-            settings_exports.remove_export_consent_data_and_redraw(person.user_id);
+            settings_exports.remove_export_consent_data_and_redraw(event.user_id);
         }
     }
 };
