@@ -211,6 +211,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
 
     const filters_dropdown_widget = {
         render: function render() {},
+        value: () => "",
     };
     stream_settings_ui.set_filters_for_tests(filters_dropdown_widget);
 
