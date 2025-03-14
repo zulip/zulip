@@ -5,6 +5,9 @@ import type {Banner} from "./banners.ts";
 import * as buttons from "./buttons.ts";
 import {$t} from "./i18n.ts";
 
+let retry_connection_interval: ReturnType<typeof setInterval> | undefined;
+let original_retry_delay_secs = 0;
+
 function fade_out_popup_banner($banner: JQuery): void {
     $banner.addClass("fade-out");
     // The delay is the same as the animation duration for fade-out.
@@ -13,11 +16,25 @@ function fade_out_popup_banner($banner: JQuery): void {
     }, 300);
 }
 
-const CONNECTION_ERROR_POPUP_BANNER: Banner = {
+const get_connection_error_label = (retry_delay_secs: number): string => {
+    if (original_retry_delay_secs < 5) {
+        // When the retry delay is less than 5 seconds, we don't show the retry
+        // delay time in the banner, and instead just show "Retrying soon…" to
+        // constant flickering of the banner label for very short times.
+        return $t({defaultMessage: "Unable to connect to Zulip. Retrying soon…"});
+    }
+    return $t(
+        {
+            defaultMessage:
+                "Unable to connect to Zulip. {retry_delay_secs, plural, one {Trying again in {retry_delay_secs} second…} other {Trying again in {retry_delay_secs} seconds…}}",
+        },
+        {retry_delay_secs},
+    );
+};
+
+const connection_error_popup_banner = (retry_seconds: number): Banner => ({
     intent: "danger",
-    label: $t({
-        defaultMessage: "Unable to connect to Zulip. Retrying soon…",
-    }),
+    label: get_connection_error_label(retry_seconds),
     buttons: [
         {
             attention: "quiet",
@@ -27,6 +44,29 @@ const CONNECTION_ERROR_POPUP_BANNER: Banner = {
     ],
     close_button: true,
     custom_classes: "connection-error-banner popup-banner",
+});
+
+const update_connection_error_banner = ($banner: JQuery, retry_delay_secs: number): void => {
+    original_retry_delay_secs = retry_delay_secs;
+    if (retry_connection_interval !== undefined) {
+        clearInterval(retry_connection_interval);
+    }
+    const $banner_label = $banner.find(".banner-label");
+    retry_connection_interval = setInterval(() => {
+        retry_delay_secs -= 1;
+        if (retry_delay_secs <= 0) {
+            // When the retry delay is over, stop the retry interval.
+            clearInterval(retry_connection_interval);
+            return;
+        }
+        if (retry_delay_secs <= 1) {
+            // One second before the retry, show the loading indicator to
+            // visually indicate that the retry sequence is being executed.
+            const $retry_connection_button = $banner.find(".retry-connection");
+            buttons.show_button_loading_indicator($retry_connection_button);
+        }
+        $banner_label.text(get_connection_error_label(retry_delay_secs));
+    }, 1000);
 };
 
 // Show user a banner with a button to allow user to navigate
@@ -74,13 +114,23 @@ export function close_found_missing_unreads_banner(): void {
 }
 
 export function open_connection_error_popup_banner(opts: {
+    caller: "server_events" | "message_fetch";
+    retry_delay_secs: number;
     on_retry_callback: () => void;
-    is_get_events_error?: boolean;
 }): void {
+    opts.retry_delay_secs = Math.round(opts.retry_delay_secs);
     // If the banner is already open, don't open it again, and instead remove
     // the loading indicator on the retry button, if it was being shown.
-    const $banner = $("#popup_banners_wrapper").find(".connection-error-banner");
+    let $banner = $("#popup_banners_wrapper").find(".connection-error-banner");
     if ($banner.length > 0) {
+        if ($banner.attr("data-caller") !== opts.caller) {
+            // Only the original caller should be able to modify the banner.
+            // This prevents the interference between the server errors from
+            // get_events in web/src/server_events.js and the one from
+            // load_messages in web/src/message_fetch.ts.
+            return;
+        }
+        update_connection_error_banner($banner, opts.retry_delay_secs);
         const $retry_connection_button = $banner.find(".retry-connection");
         if ($retry_connection_button.find(".button-loading-indicator").length > 0) {
             // Add some delay before hiding the loading indicator, to visually
@@ -91,17 +141,29 @@ export function open_connection_error_popup_banner(opts: {
         }
         return;
     }
-    // Prevent the interference between the server errors from
-    // get_events in web/src/server_events.js and the one from
-    // load_messages in web/src/message_fetch.ts.
-    if (opts.is_get_events_error) {
-        CONNECTION_ERROR_POPUP_BANNER.custom_classes += " get-events-error";
+
+    banners.append(
+        connection_error_popup_banner(opts.retry_delay_secs),
+        $("#popup_banners_wrapper"),
+    );
+
+    $banner = $("#popup_banners_wrapper").find(".connection-error-banner");
+    if (opts.caller === "server_events") {
+        $banner.attr("data-caller", "server_events");
+    } else if (opts.caller === "message_fetch") {
+        $banner.attr("data-caller", "message_fetch");
     }
-    banners.append(CONNECTION_ERROR_POPUP_BANNER, $("#popup_banners_wrapper"));
+
+    update_connection_error_banner($banner, opts.retry_delay_secs);
 
     $("#popup_banners_wrapper").on("click", ".retry-connection", function (this: HTMLElement, e) {
         e.preventDefault();
         e.stopPropagation();
+
+        const $banner = $(this).closest(".banner");
+        $banner
+            .find(".banner-label")
+            .text($t({defaultMessage: "Unable to connect to Zulip. Retrying now…"}));
 
         const $button = $(this);
 
@@ -118,13 +180,19 @@ export function open_connection_error_popup_banner(opts: {
     });
 }
 
-export function close_connection_error_popup_banner(check_if_get_events_error = false): void {
+export function close_connection_error_popup_banner(
+    caller: "server_events" | "message_fetch",
+): void {
     const $banner = $("#popup_banners_wrapper").find(".connection-error-banner");
     if ($banner.length === 0) {
         return;
     }
-    if (check_if_get_events_error && $banner.hasClass("get-events-error")) {
+    if ($banner.attr("data-caller") !== caller) {
+        // Only the original caller should be able to modify the banner.
         return;
+    }
+    if (retry_connection_interval !== undefined) {
+        clearInterval(retry_connection_interval);
     }
     fade_out_popup_banner($banner);
 }

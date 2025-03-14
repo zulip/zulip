@@ -371,6 +371,11 @@ export function get_parameters_for_message_fetch_api(
     return data;
 }
 
+// We keep track of the load messages timeout at a module level
+// to prevent multiple load messages requests from the error codepath
+// from stacking up by cancelling the previous timeout.
+let load_messages_timeout: ReturnType<typeof setTimeout> | undefined;
+
 export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
     const data = get_parameters_for_message_fetch_api(opts);
     let update_loading_indicator =
@@ -393,7 +398,10 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         url: "/json/messages",
         data,
         success(raw_data) {
-            popup_banners.close_connection_error_popup_banner(true);
+            if (load_messages_timeout !== undefined) {
+                clearTimeout(load_messages_timeout);
+            }
+            popup_banners.close_connection_error_popup_banner("message_fetch");
             const data = response_schema.parse(raw_data);
             get_messages_success(data, opts);
         },
@@ -402,7 +410,10 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 // We successfully reached the server, so hide the
                 // connection error notice, even if the request failed
                 // for other reasons.
-                popup_banners.close_connection_error_popup_banner(true);
+                if (load_messages_timeout !== undefined) {
+                    clearTimeout(load_messages_timeout);
+                }
+                popup_banners.close_connection_error_popup_banner("message_fetch");
             }
 
             if (
@@ -442,14 +453,16 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 return;
             }
 
+            const delay_secs = util.get_retry_backoff_seconds(xhr, attempt, true);
             popup_banners.open_connection_error_popup_banner({
+                caller: "message_fetch",
+                retry_delay_secs: delay_secs,
                 on_retry_callback() {
                     load_messages(opts, attempt + 1);
                 },
             });
 
-            const delay_secs = util.get_retry_backoff_seconds(xhr, attempt, true);
-            setTimeout(() => {
+            load_messages_timeout = setTimeout(() => {
                 load_messages(opts, attempt + 1);
             }, delay_secs * 1000);
         },

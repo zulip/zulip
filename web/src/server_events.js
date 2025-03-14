@@ -192,7 +192,7 @@ function get_events({dont_block = false} = {}) {
             try {
                 get_events_xhr = undefined;
                 get_events_failures = 0;
-                popup_banners.close_connection_error_popup_banner();
+                popup_banners.close_connection_error_popup_banner("server_events");
 
                 get_events_success(data.events);
             } catch (error) {
@@ -201,6 +201,7 @@ function get_events({dont_block = false} = {}) {
             get_events_timeout = setTimeout(get_events, 0);
         },
         error(xhr, error_type) {
+            const retry_delay_secs = util.get_retry_backoff_seconds(xhr, get_events_failures);
             try {
                 get_events_xhr = undefined;
                 // If we're old enough that our message queue has been
@@ -220,26 +221,24 @@ function get_events({dont_block = false} = {}) {
                 } else if (error_type === "timeout") {
                     // Retry indefinitely on timeout.
                     get_events_failures = 0;
-                    popup_banners.close_connection_error_popup_banner();
+                    popup_banners.close_connection_error_popup_banner("server_events");
                 } else {
                     get_events_failures += 1;
                 }
 
                 if (get_events_failures >= 8) {
                     popup_banners.open_connection_error_popup_banner({
+                        caller: "server_events",
+                        retry_delay_secs,
                         on_retry_callback() {
                             restart_get_events({dont_block: true});
                         },
-                        is_get_events_error: true,
                     });
-                } else {
-                    popup_banners.close_connection_error_popup_banner();
                 }
             } catch (error) {
                 blueslip.error("Failed to handle get_events error", undefined, error);
             }
 
-            const retry_delay_secs = util.get_retry_backoff_seconds(xhr, get_events_failures);
             get_events_timeout = setTimeout(get_events, retry_delay_secs * 1000);
         },
     });
