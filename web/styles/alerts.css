@@ -37,6 +37,22 @@
 }
 
 /* alert box component changes */
+
+/* We preserve the flexbox styles here for the .alert-box
+   in the portico; otherwise, we move them into the inner
+   .banner-wrapper to preserve the correct stacking of
+   alerts and banner display. */
+.alert-box:not(.app-alert-box),
+.app-alert-box .banner-wrapper {
+    display: flex;
+    /* Using column-reverse flex direction enables a stack-like
+       behavior where the most recent alert is always on top. */
+    flex-direction: column-reverse;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
 .alert-box {
     /* We define this variable in web/styles/app_variables.css,
        but we need to redefine it here since this is shared
@@ -51,13 +67,6 @@
     /* Offset to account for the top padding + 5px from the top. */
     top: calc(5px + (-1 * var(--popup-banner-translate-y-distance)));
     left: 0;
-    display: flex;
-    /* Using column-reverse flex direction enables a stack-like
-       behavior where the most recent alert is always on top. */
-    flex-direction: column-reverse;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
     width: 100%;
     z-index: 220;
     max-height: 100%;
