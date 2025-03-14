@@ -6,7 +6,6 @@ import assert from "minimalistic-assert";
 
 import * as message_lists from "./message_lists.ts";
 import * as rows from "./rows.ts";
-import * as util from "./util.ts";
 
 function find_boundary_tr(
     $initial_tr: JQuery,
@@ -108,35 +107,6 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
     }
 }
 
-function insert_and_select_div($div: JQuery, selection: Selection): void {
-    $div.css({
-        position: "absolute",
-        left: "-99999px",
-        // Color and background is made according to "light theme"
-        // exclusively here because when copying the content
-        // into, say, Gmail compose box, the styles come along.
-        // This is done to avoid copying the content with dark
-        // background when using the app in dark theme.
-        // We can avoid other custom styles since they are wrapped
-        // inside another parent such as `.message_content`.
-        color: "#333",
-        background: "#FFF",
-    }).attr("id", "copytempdiv");
-    $("body").append($div);
-    selection.selectAllChildren(util.the($div));
-}
-
-function restore_original_selection(ranges: Range[]): void {
-    // Should be called inside a setTimeout(..., 0).
-    const selection = window.getSelection();
-    assert(selection !== null);
-    selection.removeAllRanges();
-
-    for (const range of ranges) {
-        selection.addRange(range);
-    }
-}
-
 // We want to grab the closest katex span up the tree
 // in cases where we can resolve the selected katex expression
 // from a math block into an inline expression.
@@ -199,7 +169,7 @@ function improve_katex_selection_range(selection: Selection): void {
     }
 }
 
-export function copy_handler(): boolean {
+export function copy_handler(ev: ClipboardEvent): boolean {
     // This is the main handler for copying message content via
     // `Ctrl+C` in Zulip (note that this is totally independent of the
     // "select region" copy behavior on Linux; that is handled
@@ -220,7 +190,6 @@ export function copy_handler(): boolean {
     improve_katex_selection_range(selection);
 
     const analysis = analyze_selection(selection);
-    const ranges = analysis.ranges;
     const start_id = analysis.start_id;
     const end_id = analysis.end_id;
     const skip_same_td_check = analysis.skip_same_td_check;
@@ -245,7 +214,22 @@ export function copy_handler(): boolean {
 
     if (!skip_same_td_check && start_id === end_id) {
         // Check whether the selection both starts and ends in the
-        // same message.  If so, Let the browser handle this.
+        // same message. If it does, use the current selection
+        // without needing to consider the complex copy div
+        // construction logic that follows.
+        const div = document.createElement("div");
+        if (selection.rangeCount !== 0) {
+            div.append(selection.getRangeAt(0).cloneContents());
+            const html_content = div.innerHTML.trim();
+            const plain_text = selection.toString().trim();
+            ev.clipboardData?.setData("text/html", html_content);
+            ev.clipboardData?.setData("text/plain", plain_text);
+            div.remove();
+            return true;
+        }
+        // Ideally, this will never happen.
+        // If it does, we let the browser handle it.
+        div.remove();
         return false;
     }
 
@@ -263,12 +247,12 @@ export function copy_handler(): boolean {
 
     // Select div so that the browser will copy it
     // instead of copying the original selection
-    insert_and_select_div($div, selection);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    document.execCommand("copy");
-    setTimeout(() => {
-        restore_original_selection(ranges);
 
+    const html_content = $div.html().trim();
+    const plain_text = $div.text().trim();
+    ev.clipboardData?.setData("text/html", html_content);
+    ev.clipboardData?.setData("text/plain", plain_text);
+    setTimeout(() => {
         $div.remove();
     }, 0);
 
@@ -393,4 +377,12 @@ function get_end_tr_from_endc($endc: JQuery<Node>): JQuery {
     }
 
     return $endc.parents(".selectable_row").first();
+}
+
+export function initialize(): void {
+    document.addEventListener("copy", (ev) => {
+        if (copy_handler(ev)) {
+            ev.preventDefault();
+        }
+    });
 }
