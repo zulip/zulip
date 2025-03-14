@@ -117,7 +117,9 @@ export function fetch_and_render_message_history(message: Message): void {
     const move_history_only =
         realm.realm_message_edit_history_visibility_policy ===
         message_edit_history_visibility_policy_values.moves_only.code;
-    $("#message-edit-history-overlay-container").html(render_message_history_overlay());
+    $("#message-edit-history-overlay-container").html(
+        render_message_history_overlay({move_history_only}),
+    );
     open_overlay();
     show_loading_indicator();
     void channel.get({
