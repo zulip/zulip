@@ -78,17 +78,20 @@ directory=/home/zulip/deployments/current/
 <% if @queues_multiprocess %>
 <% @queues.each do |queue| -%>
 [program:zulip_events_<%= queue %>]
-<% if queue == "missedmessage_mobile_notifications" and @mobile_notification_shards > 1 -%>
-process_name=zulip_events_<%= queue %>_shard%(process_num)s
+<%-
+  numprocs = 1
+  term = "worker"
+  if queue == "missedmessage_mobile_notifications"
+    numprocs = @mobile_notification_shards
+    term = "shard"
+  elsif @worker_counts.has_key?(queue)
+    numprocs = @worker_counts[queue]
+  end -%>
+<%- if numprocs > 1 -%>
+process_name=zulip_events_<%= queue %>_<%= term %>%(process_num)s
 command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %> --skip-checks --worker_num %(process_num)s
-stdout_logfile=/var/log/zulip/events_<%= queue %>_shard%(process_num)s.log         ; stdout log path, NONE for none; default AUTO
-numprocs=<%= @mobile_notification_shards %>
-numprocs_start=1
-<% elsif queue == "thumbnail" and @thumbnail_workers > 1 -%>
-process_name=zulip_events_<%= queue %>_worker%(process_num)s
-command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %> --skip-checks --worker_num %(process_num)s
-stdout_logfile=/var/log/zulip/events_<%= queue %>_worker%(process_num)s.log         ; stdout log path, NONE for none; default AUTO
-numprocs=<%= @thumbnail_workers %>
+stdout_logfile=/var/log/zulip/events_<%= queue %>_<%= term %>%(process_num)s.log         ; stdout log path, NONE for none; default AUTO
+numprocs=<%= numprocs %>
 numprocs_start=1
 <% else -%>
 command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %> --skip-checks

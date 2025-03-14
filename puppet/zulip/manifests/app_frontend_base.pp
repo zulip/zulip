@@ -176,7 +176,11 @@ class zulip::app_frontend_base {
 
   # Not the different naming scheme for sharded workers, where each gets its own queue,
   # vs when multiple workers service the same queue.
-  $thumbnail_workers = Integer(zulipconf('application_server', 'thumbnail_workers', 1))
+  $worker_counts = Hash(zulipconf_keys('application_server').filter |$key| {
+    $key =~ /_workers$/
+  }.map |$key| {
+    [regsubst($key, '_workers$', ''), Integer(zulipconf('application_server', $key, 1))]
+  })
   $mobile_notification_shards = Integer(zulipconf('application_server', 'mobile_notification_shards', 1))
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
 
