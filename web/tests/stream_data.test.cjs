@@ -1801,3 +1801,32 @@ run_test("can_toggle_subscription", ({override}) => {
     social.can_subscribe_group = me_group.id;
     assert.equal(stream_data.can_toggle_subscription(social), true);
 });
+
+run_test("can_archive_stream", ({override}) => {
+    const social = {
+        subscribed: false,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: false,
+        can_add_subscribers_group: me_group.id,
+        can_administer_channel_group: nobody_group.id,
+        can_subscribe_group: me_group.id,
+    };
+    override(current_user, "user_id", me.user_id);
+
+    override(current_user, "is_admin", true);
+    social.is_archived = true;
+    assert.equal(stream_data.can_archive_stream(social), false);
+
+    social.is_archived = false;
+    assert.equal(stream_data.can_archive_stream(social), true);
+
+    override(current_user, "is_admin", false);
+    assert.equal(stream_data.can_archive_stream(social), false);
+
+    social.can_administer_channel_group = me_group.id;
+    assert.equal(stream_data.can_archive_stream(social), true);
+});
