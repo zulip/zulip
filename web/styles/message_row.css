@@ -700,6 +700,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    /* 28px at 16px/1em, per Vlad's spec. */
+    height: 1.75em;
+    /* 65px at 16px/1em, which is the width of
+       the Cancel button. */
+    min-width: 4.0625em;
     padding: 0 10px;
     border-radius: 4px;
     border: 0;
@@ -707,13 +712,6 @@
 }
 
 .message_edit_save {
-    /* Because the save button is inside this container,
-       we set the height here so the container stretches
-       with the flexbox. However, we also want to match
-       this to the height of the compose box's Send button,
-       so we specify a matching 2em height here
-       (32px at 16px/1em) */
-    height: 2em;
     /* Match Save button's basic colors to
        the compose box Send button. */
     color: var(--color-text-brand-primary-action-button);
