@@ -545,9 +545,6 @@ h4.user_group_setting_subsection_title {
 
             & a {
                 color: inherit;
-                display: flex;
-                align-items: center;
-                gap: 0.2381em; /* 5px at 21px/em */
 
                 &:hover {
                     color: inherit;
@@ -567,15 +564,25 @@ h4.user_group_setting_subsection_title {
             .user-group-info-title {
                 display: none;
                 font-size: 1.5em; /* 21px at 14px/em */
-                line-height: 1;
+                line-height: 1.25;
                 font-weight: 600;
                 word-break: break-all;
+                line-clamp: 2;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                margin: 20px 10px 0;
+
+                &.showing-info-title {
+                    display: -webkit-box;
+                }
 
                 .large-icon {
-                    display: flex;
+                    display: inline-block;
+                    margin-left: 5px;
 
                     .zulip-icon {
-                        font-size: 0.9524em; /* 20px at 21px/em */
+                        font-size: 0.75em; /* 18px at 24px/em */
                     }
                 }
             }

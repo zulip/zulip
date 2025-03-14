@@ -803,7 +803,7 @@ function setup_page(callback: () => void): void {
         }
 
         // show the "Stream settings" header by default.
-        $(".display-type #stream_settings_title").show();
+        $(".display-type #stream_settings_title").addClass("showing-info-title");
     }
 
     function populate_and_fill(): void {
