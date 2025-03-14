@@ -28,6 +28,7 @@ import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
 type EditHistoryEntry = {
+    initial_entry_for_move_history: boolean;
     edited_at_time: string;
     edited_by_notice: string;
     timestamp: number; // require to set data-message-id for overlay message row
@@ -113,6 +114,9 @@ function hide_loading_indicator(): void {
 }
 
 export function fetch_and_render_message_history(message: Message): void {
+    const move_history_only =
+        realm.realm_message_edit_history_visibility_policy ===
+        message_edit_history_visibility_policy_values.moves_only.code;
     $("#message-edit-history-overlay-container").html(render_message_history_overlay());
     open_overlay();
     show_loading_indicator();
@@ -149,10 +153,19 @@ export function fetch_and_render_message_history(message: Message): void {
                 let stream_changed;
                 let prev_stream;
                 let prev_stream_id;
+                let initial_entry_for_move_history = false;
 
                 if (index === 0) {
                     edited_by_notice = $t({defaultMessage: "Posted by {full_name}"}, {full_name});
-                    body_to_render = msg.rendered_content;
+                    if (move_history_only) {
+                        // If message history is limited to moves only, then we
+                        // display the original topic and channel for the message.
+                        initial_entry_for_move_history = true;
+                        new_topic_display_name = util.get_final_topic_display_name(msg.topic);
+                    } else {
+                        // Otherwise, we display the original message content.
+                        body_to_render = msg.rendered_content;
+                    }
                 } else if (msg.prev_topic !== undefined && msg.prev_content) {
                     edited_by_notice = $t({defaultMessage: "Edited by {full_name}"}, {full_name});
                     body_to_render = msg.content_html_diff;
@@ -195,6 +208,7 @@ export function fetch_and_render_message_history(message: Message): void {
                     body_to_render = msg.content_html_diff;
                 }
                 const item: EditHistoryEntry = {
+                    initial_entry_for_move_history,
                     edited_at_time,
                     edited_by_notice,
                     timestamp: msg.timestamp,
@@ -228,6 +242,7 @@ export function fetch_and_render_message_history(message: Message): void {
             // entries in reverse chronological order.
             if (message.is_stream) {
                 // Start with the message's current location.
+                let stream_display_name: string = get_display_stream_name(message.stream_id);
                 let stream_color: string = get_color(message.stream_id);
                 let recipient_bar_color: string = get_recipient_bar_color(stream_color);
                 for (const edit_history_entry of content_edit_history.toReversed()) {
@@ -238,9 +253,17 @@ export function fetch_and_render_message_history(message: Message): void {
                         // prior to this event, the message must have been in
                         // edit_history_event.prev_stream_id; fetch its color.
                         assert(edit_history_entry.prev_stream_id !== undefined);
+                        stream_display_name = get_display_stream_name(
+                            edit_history_entry.prev_stream_id,
+                        );
                         stream_color = get_color(edit_history_entry.prev_stream_id);
                         recipient_bar_color = get_recipient_bar_color(stream_color);
                     }
+                }
+                if (move_history_only) {
+                    // If message history is limited to moves only, then we
+                    // display the original topic and channel for the message.
+                    content_edit_history[0]!.new_stream = stream_display_name;
                 }
             }
             const rendered_list_html = render_message_edit_history({
