@@ -2508,8 +2508,7 @@ linkifier_data: dict[int, list[LinkifierDict]] = {}
 
 def make_md_engine(linkifiers_key: int, email_gateway: bool) -> None:
     md_engine_key = (linkifiers_key, email_gateway)
-    if md_engine_key in md_engines:
-        del md_engines[md_engine_key]
+    md_engines.pop(md_engine_key, None)
 
     linkifiers = linkifier_data[linkifiers_key]
     md_engines[md_engine_key] = ZulipMarkdown(
