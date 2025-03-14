@@ -50,7 +50,6 @@ import type {StreamSubscription} from "./sub_store.ts";
 import * as util from "./util.ts";
 import * as views_util from "./views_util.ts";
 
-let archived_status_dropdown_filter: string;
 let filters_dropdown_widget: dropdown_widget.DropdownWidget;
 
 export function is_sub_already_present(sub: StreamSubscription): boolean {
@@ -390,7 +389,7 @@ export function update_settings_for_unsubscribed(slim_sub: StreamSubscription): 
 }
 
 function triage_stream(left_panel_params: LeftPanelParams, sub: StreamSubscription): string {
-    const current_channel_visibility_filter = archived_status_dropdown_filter;
+    const current_channel_visibility_filter = filters_dropdown_widget.value();
     const channel_visibility_filters = stream_settings_data.FILTERS;
     if (
         current_channel_visibility_filter === channel_visibility_filters.NON_ARCHIVED_CHANNELS &&
@@ -510,7 +509,7 @@ export function update_empty_left_panel_message(): void {
     const has_search_query =
         $<HTMLInputElement>("#stream_filter input[type='text']").val()!.trim() !== "";
     const has_filter =
-        archived_status_dropdown_filter !== stream_settings_data.FILTERS.ALL_CHANNELS;
+        filters_dropdown_widget.value() !== stream_settings_data.FILTERS.ALL_CHANNELS;
 
     // Both search queries and filters can lead to all channels being hidden.
     if (all_channels_hidden && (has_search_query || (has_filter && has_streams))) {
@@ -702,22 +701,19 @@ function filter_click_handler(
 
     const filter_id = $(event.currentTarget).attr("data-unique-id");
     assert(filter_id !== undefined);
-    // We don't support multiple filters, so we clear existing and add the new filter.
-    archived_status_dropdown_filter = filter_id;
     redraw_left_panel();
     dropdown.hide();
     widget.render();
 }
 
 function set_up_dropdown_widget(): void {
-    archived_status_dropdown_filter = stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS;
     filters_dropdown_widget = new dropdown_widget.DropdownWidget({
         ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
         get_options: filters_dropdown_options,
         widget_name: "stream_settings_filter",
         item_click_callback: filter_click_handler,
         $events_container: $("#stream_filter"),
-        default_id: archived_status_dropdown_filter,
+        default_id: stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
     });
     filters_dropdown_widget.setup();
 }
@@ -838,11 +834,11 @@ function setup_page(callback: () => void): void {
         const rendered = render_stream_settings_overlay(template_data);
         $("#channels_overlay_container").append($(rendered));
 
+        set_up_dropdown_widget();
         render_left_panel_superset();
         initialize_components();
         redraw_left_panel();
         stream_create.set_up_handlers();
-        set_up_dropdown_widget();
 
         const throttled_redraw_left_panel = _.throttle(redraw_left_panel, 50);
         $("#stream_filter input[type='text']").on("input", () => {
@@ -968,16 +964,17 @@ export function change_state(
         if (sub) {
             const FILTERS = stream_settings_data.FILTERS;
             const should_update_filter =
-                (archived_status_dropdown_filter === FILTERS.NON_ARCHIVED_CHANNELS &&
+                (filters_dropdown_widget.value() === FILTERS.NON_ARCHIVED_CHANNELS &&
                     sub.is_archived) ||
-                (archived_status_dropdown_filter === FILTERS.ARCHIVED_CHANNELS && !sub.is_archived);
+                (filters_dropdown_widget.value() === FILTERS.ARCHIVED_CHANNELS && !sub.is_archived);
             if (should_update_filter) {
+                let selected_filter;
                 if (sub.is_archived) {
-                    archived_status_dropdown_filter = FILTERS.ARCHIVED_CHANNELS;
+                    selected_filter = FILTERS.ARCHIVED_CHANNELS;
                 } else {
-                    archived_status_dropdown_filter = FILTERS.NON_ARCHIVED_CHANNELS;
+                    selected_filter = FILTERS.NON_ARCHIVED_CHANNELS;
                 }
-                filters_dropdown_widget.render(archived_status_dropdown_filter);
+                filters_dropdown_widget.render(selected_filter);
             }
         }
         return;
