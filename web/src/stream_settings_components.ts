@@ -7,6 +7,7 @@ import render_selected_stream_title from "../templates/stream_settings/selected_
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
+import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
@@ -17,6 +18,8 @@ import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
+
+export let filter_dropdown_widget: DropdownWidget;
 
 export function set_right_panel_title(sub: StreamSubscription): void {
     let title_icon_color = "#333333";
@@ -265,4 +268,20 @@ export function sub_or_unsub(
     } else {
         ajaxSubscribe(sub.name, sub.color, $stream_row);
     }
+}
+
+export function set_filter_dropdown_widget(widget: DropdownWidget): void {
+    filter_dropdown_widget = widget;
+}
+
+export function get_filter_dropdown_value(): string {
+    return z.string().parse(filter_dropdown_widget.value());
+}
+
+export function set_filter_dropdown_value(value: string): void {
+    filter_dropdown_widget.render(value);
+}
+
+export function set_filters_for_tests(filter_widget: DropdownWidget): void {
+    filter_dropdown_widget = filter_widget;
 }

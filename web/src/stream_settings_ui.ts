@@ -50,8 +50,6 @@ import type {StreamSubscription} from "./sub_store.ts";
 import * as util from "./util.ts";
 import * as views_util from "./views_util.ts";
 
-let filters_dropdown_widget: dropdown_widget.DropdownWidget;
-
 export function is_sub_already_present(sub: StreamSubscription): boolean {
     return stream_ui_updates.row_for_stream_id(sub.stream_id).length > 0;
 }
@@ -389,7 +387,8 @@ export function update_settings_for_unsubscribed(slim_sub: StreamSubscription): 
 }
 
 function triage_stream(left_panel_params: LeftPanelParams, sub: StreamSubscription): string {
-    const current_channel_visibility_filter = filters_dropdown_widget.value();
+    const current_channel_visibility_filter =
+        stream_settings_components.get_filter_dropdown_value();
     const channel_visibility_filters = stream_settings_data.FILTERS;
     if (
         current_channel_visibility_filter === channel_visibility_filters.NON_ARCHIVED_CHANNELS &&
@@ -509,7 +508,8 @@ export function update_empty_left_panel_message(): void {
     const has_search_query =
         $<HTMLInputElement>("#stream_filter input[type='text']").val()!.trim() !== "";
     const has_filter =
-        filters_dropdown_widget.value() !== stream_settings_data.FILTERS.ALL_CHANNELS;
+        stream_settings_components.get_filter_dropdown_value() !==
+        stream_settings_data.FILTERS.ALL_CHANNELS;
 
     // Both search queries and filters can lead to all channels being hidden.
     if (all_channels_hidden && (has_search_query || (has_filter && has_streams))) {
@@ -687,10 +687,6 @@ function filters_dropdown_options(current_value: string | number | undefined): {
     ];
 }
 
-export function set_filters_for_tests(filter_widget: dropdown_widget.DropdownWidget): void {
-    filters_dropdown_widget = filter_widget;
-}
-
 function filter_click_handler(
     event: JQuery.TriggeredEvent,
     dropdown: tippy.Instance,
@@ -707,7 +703,7 @@ function filter_click_handler(
 }
 
 function set_up_dropdown_widget(): void {
-    filters_dropdown_widget = new dropdown_widget.DropdownWidget({
+    const widget: dropdown_widget.DropdownWidget = new dropdown_widget.DropdownWidget({
         ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
         get_options: filters_dropdown_options,
         widget_name: "stream_settings_filter",
@@ -715,7 +711,8 @@ function set_up_dropdown_widget(): void {
         $events_container: $("#stream_filter"),
         default_id: stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
     });
-    filters_dropdown_widget.setup();
+    widget.setup();
+    stream_settings_components.set_filter_dropdown_widget(widget);
 }
 
 function setup_page(callback: () => void): void {
@@ -963,10 +960,10 @@ export function change_state(
         const sub = stream_data.get_sub_by_id(stream_id);
         if (sub) {
             const FILTERS = stream_settings_data.FILTERS;
+            const filter_value = stream_settings_components.get_filter_dropdown_value();
             const should_update_filter =
-                (filters_dropdown_widget.value() === FILTERS.NON_ARCHIVED_CHANNELS &&
-                    sub.is_archived) ||
-                (filters_dropdown_widget.value() === FILTERS.ARCHIVED_CHANNELS && !sub.is_archived);
+                (filter_value === FILTERS.NON_ARCHIVED_CHANNELS && sub.is_archived) ||
+                (filter_value === FILTERS.ARCHIVED_CHANNELS && !sub.is_archived);
             if (should_update_filter) {
                 let selected_filter;
                 if (sub.is_archived) {
@@ -974,7 +971,7 @@ export function change_state(
                 } else {
                     selected_filter = FILTERS.NON_ARCHIVED_CHANNELS;
                 }
-                filters_dropdown_widget.render(selected_filter);
+                stream_settings_components.set_filter_dropdown_value(selected_filter);
             }
         }
         return;
