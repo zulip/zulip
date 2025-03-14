@@ -2192,10 +2192,14 @@ body:not(.spectator-view) {
         color: var(--color-dropdown-item);
         padding: 3px 10px 3px 8px;
         font-weight: 400;
-        line-height: var(--base-line-height-unitless);
         white-space: normal;
+        /* Keep the line-height stable, instead of using the
+           user-set line-height, so that the icon is always
+           vertically centered properly. */
+        line-height: 1.214;
 
         .stream-privacy-type-icon {
+            line-height: 1.214;
             font-size: 0.93em;
             /* We set only the width so that flexbox
             can do its work to properly center,
@@ -2206,9 +2210,9 @@ body:not(.spectator-view) {
                `tooltips.css`.
                Because we are manually holding icon
                alignment to the first/only line of a
-               channel, we make this adjustment here,
-               calculated by 4.5px / (0.93 * 20px) */
-            top: 0.2419em;
+               channel, we make this adjustment here.
+               Calculated by eye to look good at 12px-20px. */
+            top: 0.05em;
         }
 
         .dropdown-list-delete,
