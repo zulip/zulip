@@ -713,18 +713,13 @@ test("sort_recipients pm counts", () => {
         "zman@test.net",
     ]);
 
-    /* istanbul ignore next */
-    function compare() {
-        throw new Error("We do not expect to need a tiebreaker here.");
-    }
-
     // get some line coverage
     assert.equal(
-        th.compare_people_for_relevance(b_user_1_item, b_user_3_item, compare, linux_sub.stream_id),
+        th.compare_people_for_relevance(b_user_1_item, b_user_3_item, linux_sub.stream_id, ""),
         1,
     );
     assert.equal(
-        th.compare_people_for_relevance(b_user_3_item, b_user_1_item, compare, linux_sub.stream_id),
+        th.compare_people_for_relevance(b_user_3_item, b_user_1_item, linux_sub.stream_id, ""),
         -1,
     );
 });
@@ -1160,8 +1155,8 @@ test("compare_language", () => {
 
 // TODO: This is incomplete for testing this function, and
 // should be filled out more. This case was added for codecov.
-test("compare_by_pms", () => {
-    assert.equal(th.compare_by_pms(a_user, a_user), 0);
+test("compare_users_for_pms", () => {
+    assert.equal(th.compare_users_for_pms(a_user, a_user), 0);
 });
 
 test("sort_group_setting_options", ({override_rewire}) => {

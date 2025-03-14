@@ -138,7 +138,7 @@ function compare_by_direct_message_group(
         if (diff !== 0) {
             return diff;
         }
-        return typeahead_helper.compare_by_pms(person1, person2);
+        return typeahead_helper.compare_users_for_pms(person1, person2);
     };
 }
 
@@ -329,7 +329,7 @@ function make_people_getter(last: NarrowTerm): () => User[] {
         }
 
         persons = people.get_people_for_search_bar(query);
-        persons.sort(typeahead_helper.compare_by_pms);
+        persons.sort(typeahead_helper.compare_users_for_pms);
         return persons;
     };
 }

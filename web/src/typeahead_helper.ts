@@ -240,7 +240,7 @@ export function sorter<T>(query: string, objs: T[], get_item: (x: T) => string):
     return [...results.matches, ...results.rest];
 }
 
-export function compare_by_pms(user_a: User, user_b: User): number {
+export function compare_users_by_interaction(user_a: User, user_b: User): number {
     const count_a = people.get_recipient_count(user_a);
     const count_b = people.get_recipient_count(user_b);
 
@@ -273,66 +273,97 @@ export function compare_by_pms(user_a: User, user_b: User): number {
     return 1;
 }
 
+export function compare_users_for_streams(
+    user_a: User,
+    user_b: User,
+    current_stream_id: number,
+    current_topic: string,
+): number {
+    // Now handle actual people users.
+    // give preference to subscribed users first
+
+    // If the client does not yet have complete subscriber data,
+    // "unknown" and "not subscribed" are both represented as false here.
+    const a_is_sub = stream_data.is_user_subscribed(current_stream_id, user_a.user_id);
+    const b_is_sub = stream_data.is_user_subscribed(current_stream_id, user_b.user_id);
+
+    if (a_is_sub && !b_is_sub) {
+        return -1;
+    } else if (!a_is_sub && b_is_sub) {
+        return 1;
+    }
+
+    const preference = recent_senders.compare_by_recency(
+        user_a,
+        user_b,
+        current_stream_id,
+        current_topic,
+    );
+
+    if (preference !== 0) {
+        return preference;
+    }
+
+    return compare_users_by_interaction(user_a, user_b);
+}
+
+export function compare_users_for_pms(user_a: User, user_b: User): number {
+    return compare_users_by_interaction(user_a, user_b);
+}
+
+export function compare_user_wildcard(): number {
+    // Assumption for convenience: Assuming that the user is user_a and wildcard is b.
+    // If the other way around is true, just change the sign (multiplying with -1)
+
+    // If message type is private, wildcards are put at the bottom
+    const message_type = compose_state.get_message_type();
+    if (message_type === "private") {
+        return -1;
+    }
+
+    return 1;
+}
+
 export function compare_people_for_relevance(
     person_a: UserOrMentionPillData | UserPillData,
     person_b: UserOrMentionPillData | UserPillData,
-    compare_by_current_conversation?: (user_a: User, user_b: User) => number,
     current_stream_id?: number,
+    current_topic?: string,
 ): number {
     // give preference to "all", "everyone" or "stream"
-    if (compose_state.get_message_type() !== "private") {
-        if (person_a.type === "broadcast") {
-            if (person_b.type === "broadcast") {
-                return person_a.user.idx - person_b.user.idx;
+    const view_is_stream = current_stream_id !== undefined && current_topic !== undefined;
+    // Fetch subscriber data if we don't have it yet, but don't wait for it.
+    // It's fine to use partial data for now, and hopefully on subsequent
+    // keystrokes, we'll have the full data to show more subscribers at the
+    // top of the list.
+    //
+    // (We will usually have it, since entering a channel triggers a fetch.)
+    if (view_is_stream && !peer_data.has_full_subscriber_data(current_stream_id)) {
+        void peer_data.maybe_fetch_stream_subscribers(current_stream_id);
+    }
+    if (person_a.type === "user") {
+        if (person_b.type === "user") {
+            // Both a and b are users
+            if (view_is_stream) {
+                return compare_users_for_streams(
+                    person_a.user,
+                    person_b.user,
+                    current_stream_id,
+                    current_topic,
+                );
             }
-            return -1;
-        } else if (person_b.type === "broadcast") {
-            return 1;
+            return compare_users_for_pms(person_a.user, person_b.user);
         }
-    } else {
-        if (person_a.type === "broadcast") {
-            if (person_b.type === "broadcast") {
-                return person_a.user.idx - person_b.user.idx;
-            }
-            return 1;
-        } else if (person_b.type === "broadcast") {
-            return -1;
-        }
+        // a: user, b: wildcard
+        return compare_user_wildcard();
+    }
+    if (person_b.type === "user") {
+        // a: wildcard, b: user
+        return -compare_user_wildcard();
     }
 
-    // Now handle actual people users.
-    // give preference to subscribed users first
-    if (current_stream_id !== undefined) {
-        // Fetch subscriber data if we don't have it yet, but don't wait for it.
-        // It's fine to use partial data for now, and hopefully on subsequent
-        // keystrokes, we'll have the full data to show more subscribers at the
-        // top of the list.
-        //
-        // (We will usually have it, since entering a channel triggers a fetch.)
-        if (!peer_data.has_full_subscriber_data(current_stream_id)) {
-            void peer_data.maybe_fetch_stream_subscribers(current_stream_id);
-        }
-
-        // If the client does not yet have complete subscriber data,
-        // "unknown" and "not subscribed" are both represented as false here.
-        const a_is_sub = stream_data.is_user_subscribed(current_stream_id, person_a.user.user_id);
-        const b_is_sub = stream_data.is_user_subscribed(current_stream_id, person_b.user.user_id);
-
-        if (a_is_sub && !b_is_sub) {
-            return -1;
-        } else if (!a_is_sub && b_is_sub) {
-            return 1;
-        }
-    }
-
-    if (compare_by_current_conversation !== undefined) {
-        const preference = compare_by_current_conversation(person_a.user, person_b.user);
-        if (preference !== 0) {
-            return preference;
-        }
-    }
-
-    return compare_by_pms(person_a.user, person_b.user);
+    // Both a and b are wildcards
+    return person_a.user.idx - person_b.user.idx;
 }
 
 export function sort_people_for_relevance<UserType extends UserOrMentionPillData | UserPillData>(
@@ -344,23 +375,15 @@ export function sort_people_for_relevance<UserType extends UserOrMentionPillData
     const current_stream =
         current_stream_id !== undefined ? stream_data.get_sub_by_id(current_stream_id) : undefined;
     if (current_stream === undefined) {
+        // Viewing PM conversations
         objs.sort((person_a, person_b) => compare_people_for_relevance(person_a, person_b));
     } else {
         assert(current_stream_id !== undefined);
         assert(current_topic !== undefined);
+
+        // Viewing Stream messages
         objs.sort((person_a, person_b) =>
-            compare_people_for_relevance(
-                person_a,
-                person_b,
-                (user_a, user_b) =>
-                    recent_senders.compare_by_recency(
-                        user_a,
-                        user_b,
-                        current_stream_id,
-                        current_topic,
-                    ),
-                current_stream_id,
-            ),
+            compare_people_for_relevance(person_a, person_b, current_stream_id, current_topic),
         );
     }
 
