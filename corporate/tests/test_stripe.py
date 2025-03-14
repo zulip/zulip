@@ -659,8 +659,7 @@ class StripeTestCase(ZulipTestCase):
 
         params.update(kwargs)
         for key in del_args:
-            if key in params:
-                del params[key]
+            params.pop(key, None)
 
         if talk_to_stripe:
             [last_event] = iter(stripe.Event.list(limit=1))
