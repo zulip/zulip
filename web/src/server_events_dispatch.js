@@ -287,7 +287,7 @@ export function dispatch_normal_event(event) {
                         }
 
                         if (event.property === "enable_spectator_access") {
-                            stream_settings_ui.update_stream_privacy_choices(
+                            stream_ui_updates.update_stream_privacy_choices(
                                 "can_create_web_public_channel_group",
                             );
                         }
@@ -347,7 +347,7 @@ export function dispatch_normal_event(event) {
                                     key === "can_create_private_channel_group" ||
                                     key === "can_create_web_public_channel_group"
                                 ) {
-                                    stream_settings_ui.update_stream_privacy_choices(key);
+                                    stream_ui_updates.update_stream_privacy_choices(key);
                                 }
 
                                 if (

@@ -1120,32 +1120,6 @@ export function open_create_stream(): void {
     browser_history.update("#channels/new");
 }
 
-export function update_stream_privacy_choices(policy: string): void {
-    if (!overlays.streams_open()) {
-        return;
-    }
-    const stream_edit_panel_opened = $("#stream_permission_settings").is(":visible");
-    const stream_creation_form_opened = $("#stream-creation").is(":visible");
-
-    if (!stream_edit_panel_opened && !stream_creation_form_opened) {
-        return;
-    }
-    let $container = $("#stream-creation");
-    if (stream_edit_panel_opened) {
-        $container = $("#stream_permission_settings");
-    }
-
-    if (policy === "can_create_private_channel_group") {
-        stream_ui_updates.update_private_stream_privacy_option_state($container);
-    }
-    if (policy === "can_create_public_channel_group") {
-        stream_settings_components.update_public_stream_privacy_option_state($container);
-    }
-    if (policy === "can_create_web_public_channel_group") {
-        stream_ui_updates.update_web_public_stream_privacy_option_state($container);
-    }
-}
-
 export function initialize(): void {
     $("#channels_overlay_container").on("click", ".create_stream_button", (e) => {
         e.preventDefault();

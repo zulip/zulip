@@ -12,11 +12,9 @@ import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
-import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import * as stream_ui_updates from "./stream_ui_updates.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 
@@ -267,19 +265,4 @@ export function sub_or_unsub(
     } else {
         ajaxSubscribe(sub.name, sub.color, $stream_row);
     }
-}
-
-export function update_public_stream_privacy_option_state($container: JQuery): void {
-    const $public_stream_elem = $container.find(
-        `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.public.code)}']`,
-    );
-    $public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
-}
-
-export function hide_or_disable_stream_privacy_options_if_required($container: JQuery): void {
-    stream_ui_updates.update_web_public_stream_privacy_option_state($container);
-
-    update_public_stream_privacy_option_state($container);
-
-    stream_ui_updates.update_private_stream_privacy_option_state($container);
 }

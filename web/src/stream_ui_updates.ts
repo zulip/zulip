@@ -9,6 +9,7 @@ import render_stream_settings_tip from "../templates/stream_settings/stream_sett
 
 import * as hash_parser from "./hash_parser.ts";
 import {$t} from "./i18n.ts";
+import * as overlays from "./overlays.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -515,5 +516,46 @@ export function enable_or_disable_add_subscribers_elements(
         if (enable_elem) {
             $add_subscribers_button.css("pointer-events", "");
         }
+    }
+}
+
+export function update_public_stream_privacy_option_state($container: JQuery): void {
+    const $public_stream_elem = $container.find(
+        `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.public.code)}']`,
+    );
+    $public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
+}
+
+export function hide_or_disable_stream_privacy_options_if_required($container: JQuery): void {
+    update_web_public_stream_privacy_option_state($container);
+
+    update_public_stream_privacy_option_state($container);
+
+    update_private_stream_privacy_option_state($container);
+}
+
+export function update_stream_privacy_choices(policy: string): void {
+    if (!overlays.streams_open()) {
+        return;
+    }
+    const stream_edit_panel_opened = $("#stream_permission_settings").is(":visible");
+    const stream_creation_form_opened = $("#stream-creation").is(":visible");
+
+    if (!stream_edit_panel_opened && !stream_creation_form_opened) {
+        return;
+    }
+    let $container = $("#stream-creation");
+    if (stream_edit_panel_opened) {
+        $container = $("#stream_permission_settings");
+    }
+
+    if (policy === "can_create_private_channel_group") {
+        update_private_stream_privacy_option_state($container);
+    }
+    if (policy === "can_create_public_channel_group") {
+        update_public_stream_privacy_option_state($container);
+    }
+    if (policy === "can_create_web_public_channel_group") {
+        update_web_public_stream_privacy_option_state($container);
     }
 }
