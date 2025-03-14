@@ -39,14 +39,6 @@ export function close($banner: JQuery): void {
     $banner.remove();
 }
 
-export function fade_out_popup_banner($banner: JQuery): void {
-    $banner.addClass("fade-out");
-    // The delay is the same as the animation duration for fade-out.
-    setTimeout(() => {
-        close($banner);
-    }, 300);
-}
-
 export function initialize(): void {
     $("body").on("click", ".banner .banner-close-action", function (this: HTMLElement, e) {
         e.preventDefault();

@@ -5,6 +5,14 @@ import type {Banner} from "./banners.ts";
 import * as buttons from "./buttons.ts";
 import {$t} from "./i18n.ts";
 
+function fade_out_popup_banner($banner: JQuery): void {
+    $banner.addClass("fade-out");
+    // The delay is the same as the animation duration for fade-out.
+    setTimeout(() => {
+        banners.close($banner);
+    }, 300);
+}
+
 const CONNECTION_ERROR_POPUP_BANNER: Banner = {
     intent: "danger",
     label: $t({
@@ -50,7 +58,7 @@ export function open_found_missing_unreads_banner(on_jump_to_first_unread: () =>
             e.stopPropagation();
 
             const $banner = $(this).closest(".banner");
-            banners.fade_out_popup_banner($banner);
+            fade_out_popup_banner($banner);
             on_jump_to_first_unread();
         },
     );
@@ -58,7 +66,7 @@ export function open_found_missing_unreads_banner(on_jump_to_first_unread: () =>
 
 export function close_found_missing_unreads_banner(): void {
     const $banner = $("#popup_banners_wrapper").find(".found-missing-unreads");
-    banners.fade_out_popup_banner($banner);
+    fade_out_popup_banner($banner);
 }
 
 export function open_connection_error_popup_banner(opts: {
@@ -104,7 +112,7 @@ export function close_connection_error_popup_banner(check_if_get_events_error = 
     if (check_if_get_events_error && $banner.hasClass("get-events-error")) {
         return;
     }
-    banners.fade_out_popup_banner($banner);
+    fade_out_popup_banner($banner);
 }
 
 export function initialize(): void {
@@ -117,11 +125,7 @@ export function initialize(): void {
             e.preventDefault();
             e.stopPropagation();
             const $banner = $(this).closest(".banner");
-            $banner.addClass("fade-out");
-            // The delay is the same as the animation duration for fade-out.
-            setTimeout(() => {
-                banners.close($banner);
-            }, 300);
+            fade_out_popup_banner($banner);
         },
     );
 }
