@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as loading from "./loading.ts";
 
+let loading_indicator_count = 0;
 export function show_button_loading_indicator($button: JQuery): void {
     // If the button already has a loading indicator, do nothing.
     if ($button.find(".button-loading-indicator").length > 0) {
@@ -14,7 +15,8 @@ export function show_button_loading_indicator($button: JQuery): void {
     // The unique id is required for the `filter` element in the loader SVG,
     // to prevent the loading indicator from being hidden due to duplicate ids.
     // Reference commit: 995d073dbfd8f22a2ef50c1320e3b1492fd28649
-    const loading_indicator_unique_id = `button-loading-indicator-${Date.now()}`;
+    const loading_indicator_unique_id = `button-loading-indicator-${loading_indicator_count}`;
+    loading_indicator_count += 1;
     const $button_loading_indicator = $("<span>")
         .attr("id", loading_indicator_unique_id)
         .addClass("button-loading-indicator");
