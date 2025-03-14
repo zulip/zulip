@@ -2710,18 +2710,15 @@ def get_analytics_config() -> Config:
 
 def get_consented_user_ids(realm: Realm) -> set[int]:
     # A UserProfile is consenting to private data export if either:
-    # 1) It is an active, human account and enabled allow_private_data_export.
-    # 2) It is an active, bot account with allow_private_data_export toggled on.
+    # 1) It is a human account and enabled allow_private_data_export.
+    # 2) It is a bot account with allow_private_data_export toggled on.
     # 3) It is a bot whose owner is (1).
-    # Note: A bot of type (3) can be inactive - it's fine because (1) ensures
-    # the owner has not been deactivated.
 
     query = sql.SQL("""
         WITH consenting_humans AS (
             SELECT id
             FROM zerver_userprofile
             WHERE allow_private_data_export
-              AND is_active
               AND NOT is_bot
               AND realm_id = {realm_id}
         )
@@ -2729,7 +2726,7 @@ def get_consented_user_ids(realm: Realm) -> set[int]:
         FROM zerver_userprofile
         WHERE
             (id IN (SELECT id FROM consenting_humans))
-            OR (allow_private_data_export AND is_active AND is_bot AND realm_id = {realm_id})
+            OR (allow_private_data_export AND is_bot AND realm_id = {realm_id})
             OR (
                 bot_owner_id IN (SELECT id FROM consenting_humans)
                 AND is_bot
