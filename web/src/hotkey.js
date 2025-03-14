@@ -1229,7 +1229,9 @@ export function process_hotkey(e, hotkey) {
             }
 
             const canonical_name = emoji.get_emoji_name(first_reaction.emoji_code);
-            reactions.toggle_emoji_reaction(msg, canonical_name);
+            // `canonical_name` will be `undefined` for custom emoji, so we can default
+            // to the `emoji_name`.
+            reactions.toggle_emoji_reaction(msg, canonical_name ?? first_reaction.emoji_name);
             return true;
         }
         case "toggle_topic_visibility_policy":
