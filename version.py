@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 368
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (319, 0)  # bumped 2025-02-26 to upgrade JavaScript dependencies
+PROVISION_VERSION = (319, 1)  # bumped 2025-03-14 to upgrade uv
