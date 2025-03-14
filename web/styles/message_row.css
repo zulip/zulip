@@ -914,6 +914,11 @@ of the base style defined for a read-only textarea in dark mode. */
     margin-bottom: 10px;
     cursor: default;
 
+    .edit-form {
+        /* Override Bootstrap. */
+        margin-bottom: 0;
+    }
+
     .edit-controls {
         margin-left: 0;
         margin-top: 0;
