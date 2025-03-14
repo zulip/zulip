@@ -4,13 +4,12 @@ import re
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import TypeVar
 
 import pyvips
 from bs4 import BeautifulSoup
 from bs4.formatter import EntitySubstitution, HTMLFormatter
 from django.utils.translation import gettext as _
-from typing_extensions import override
+from typing_extensions import Self, override
 
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.mime_types import INLINE_MIME_TYPES
@@ -29,8 +28,6 @@ IMAGE_MAX_ANIMATED_PIXELS = IMAGE_BOMB_TOTAL_PIXELS / 3
 
 # Reject emoji which, after resizing, have stills larger than this
 MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024  # 128 kb
-
-T = TypeVar("T", bound="BaseThumbnailFormat")
 
 
 @dataclass(frozen=True)
@@ -52,7 +49,7 @@ class BaseThumbnailFormat:
         return f"{self.max_width}x{self.max_height}{animated}.{self.extension}"
 
     @classmethod
-    def from_string(cls: type[T], format_string: str) -> T | None:
+    def from_string(cls, format_string: str) -> Self | None:
         format_parts = re.match(r"(\d+)x(\d+)(-anim)?\.(\w+)$", format_string)
         if format_parts is None:
             return None
