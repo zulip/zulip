@@ -16,10 +16,6 @@
     &.private-message {
         background-color: var(--color-background-private-message-content);
 
-        .date_row {
-            background-color: var(--color-background-private-message-content);
-        }
-
         .data-container::after {
             background: linear-gradient(
                 0deg,
