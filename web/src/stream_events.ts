@@ -104,6 +104,9 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             sub,
             group_setting_value_schema.parse(value),
         );
+        if (property === "can_subscribe_group" || property === "can_add_subscribers_group") {
+            stream_settings_ui.update_subscription_elements(sub);
+        }
         user_group_edit.update_stream_setting_in_permissions_panel(
             stream_permission_group_settings_schema.parse(property),
             group_setting_value_schema.parse(value),
@@ -259,7 +262,7 @@ export function mark_subscribed(
         }
     }
 
-    if (narrow_state.is_for_stream_id(sub.stream_id)) {
+    if (narrow_state.narrowed_to_stream_id(sub.stream_id)) {
         assert(message_lists.current !== undefined);
         message_lists.current.update_trailing_bookend(true);
         activity_ui.build_user_sidebar();
@@ -287,7 +290,7 @@ export function mark_unsubscribed(sub: StreamSubscription): void {
         return;
     }
 
-    if (narrow_state.is_for_stream_id(sub.stream_id)) {
+    if (narrow_state.narrowed_to_stream_id(sub.stream_id)) {
         // Update UI components if we just unsubscribed from the
         // currently viewed stream.
         assert(message_lists.current !== undefined);

@@ -47,11 +47,15 @@ import * as narrow_title from "./narrow_title.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
+import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui.ts";
-import {web_mark_read_on_scroll_policy_values} from "./settings_config.ts";
+import {
+    message_edit_history_visibility_policy_values,
+    web_mark_read_on_scroll_policy_values,
+} from "./settings_config.ts";
 import * as spectators from "./spectators.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import {realm} from "./state_data.ts";
@@ -75,6 +79,7 @@ const fetch_message_response_schema = z.object({
 export function reset_ui_state(opts: {trigger?: string}): void {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
+    popup_banners.close_found_missing_unreads_banner();
     narrow_banner.hide_empty_narrow_message();
     message_feed_top_notices.hide_top_of_narrow_notices();
     message_feed_loading.hide_indicators();
@@ -131,6 +136,7 @@ type TargetMessageIdInfo = {
     target_id: number | undefined;
     final_select_id: number | undefined;
     local_select_id: number | undefined;
+    first_unread_msg_id_pending_server_verification: number | undefined;
 };
 
 function create_and_update_message_list(
@@ -360,6 +366,7 @@ export function get_id_info(): TargetMessageIdInfo {
         target_id: undefined,
         final_select_id: undefined,
         local_select_id: undefined,
+        first_unread_msg_id_pending_server_verification: undefined,
     };
 }
 
@@ -441,7 +448,8 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         // policy?
         !is_combined_feed_global_view &&
         raw_terms.some(
-            (raw_term) => !hash_parser.allowed_web_public_narrows.includes(raw_term.operator),
+            (raw_term) =>
+                !hash_parser.is_an_allowed_web_public_narrow(raw_term.operator, raw_term.operand),
         )
     ) {
         spectators.login_to_access();
@@ -540,7 +548,9 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
 
                 if (
                     !narrow_matches_target_message &&
-                    (narrow_exists_in_edit_history || !realm.realm_allow_edit_history)
+                    (narrow_exists_in_edit_history ||
+                        realm.realm_message_edit_history_visibility_policy ===
+                            message_edit_history_visibility_policy_values.never.code)
                 ) {
                     const adjusted_terms = Filter.adjusted_terms_if_moved(
                         raw_terms,
@@ -607,10 +617,6 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         } else if (coming_from_inbox) {
             inbox_ui.hide();
         }
-
-        // Open tooltips are only interesting for current narrow,
-        // so hide them when activating a new one.
-        $(".tooltip").hide();
 
         blueslip.debug("Narrowed", {
             operators: terms.map((e) => e.operator),
@@ -774,6 +780,69 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
             select_opts,
             then_select_offset,
         );
+        if (id_info.first_unread_msg_id_pending_server_verification) {
+            const params = message_fetch.get_parameters_for_message_fetch_api({
+                anchor: "first_unread",
+                num_before: 0,
+                num_after: 0,
+                cont() {
+                    // Success callback is sufficient to do what we need to do
+                    // here, we don't need another post fetch callback.
+                },
+                msg_list_data: msg_list.data,
+            });
+            void channel.get({
+                url: "/json/messages",
+                data: params,
+                success(raw_data) {
+                    // If we switched narrow, there is nothing to do.
+                    if (
+                        msg_list.id !== message_lists.current?.id ||
+                        !id_info.first_unread_msg_id_pending_server_verification
+                    ) {
+                        return;
+                    }
+                    const data = message_fetch.response_schema.parse(raw_data);
+                    const first_unread_message_id = data.anchor;
+                    const current_selected_id = msg_list.selected_id();
+                    if (
+                        first_unread_message_id <
+                        id_info.first_unread_msg_id_pending_server_verification
+                    ) {
+                        // We convert the current narrow into a `near` narrow so that
+                        // user doesn't accidentally mark msgs read which they haven't seen.
+                        const terms = [
+                            ...msg_list.data.filter.terms(),
+                            {
+                                operator: "near",
+                                operand: current_selected_id.toString(),
+                            },
+                        ];
+                        const opts = {
+                            trigger: "old_unreads_missing",
+                        };
+                        show(terms, opts);
+
+                        const on_jump_to_first_unread = (): void => {
+                            // This is a no-op if the user has already switched narrow.
+                            if (msg_list.id !== message_lists.current?.id) {
+                                return;
+                            }
+
+                            show(
+                                message_lists.current.data.filter
+                                    .terms()
+                                    .filter((term) => term.operator !== "near"),
+                                {then_select_id: first_unread_message_id},
+                            );
+                        };
+                        // Show user a banner with a button to allow user to navigate
+                        // to the first unread if required.
+                        popup_banners.open_found_missing_unreads_banner(on_jump_to_first_unread);
+                    }
+                },
+            });
+        }
 
         const post_span_context = {
             name: "post-narrow busy time",
@@ -1003,6 +1072,13 @@ export function maybe_add_local_messages(opts: {
         // need to look at unread here.
         id_info.final_select_id = min_defined(id_info.target_id, unread_info.msg_id);
         assert(id_info.final_select_id !== undefined);
+
+        // We found a message id to select from the unread data available
+        // locally but if we didn't have the complete unread data locally
+        // cached, we need to check from server if it is the first unread.
+        if (unread.old_unreads_missing) {
+            id_info.first_unread_msg_id_pending_server_verification = unread_info.msg_id;
+        }
 
         if (!load_local_messages(msg_data, superset_data)) {
             // We don't have the message we want to select locally,
@@ -1373,7 +1449,7 @@ export function to_compose_target(): void {
         // grey-out the message view instead of narrowing to an empty view.
         const terms = [{operator: "channel", operand: stream_id.toString()}];
         const topic = compose_state.topic();
-        if (topic !== "") {
+        if (topic !== "" || !realm.realm_mandatory_topics) {
             terms.push({operator: "topic", operand: topic});
         }
         show(terms, opts);

@@ -8,8 +8,10 @@
   pertaining to the marketing team, `#help/<team name>` for
   `<team name>`'s internal support channel, etc.
 
-* Add handy links to channel descriptions with Markdown formatting: `[link
-  text](URL)`.
+* You can [pin reference information](/help/pin-information), such as important
+  messages or topics, and external references, in the
+  [description](/help/view-channel-information#view-channel-description) for a
+  channel.
 
 * For open source projects or other volunteer organizations, consider
   adding default channels like `#announce` for announcements, `#new

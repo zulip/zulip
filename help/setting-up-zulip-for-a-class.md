@@ -162,7 +162,7 @@ how to assign roles and permissions for a class.
   (Recommended: Admins only)
 - Set [who can create channels](/help/configure-who-can-create-channels).
   (Recommended: Admins for public channels; Admins, moderators and members for private channels)
-- Set [who can subscribe users to channels](/help/configure-who-can-invite-to-channels).
+- Set [who can subscribe other users to channels](/help/configure-who-can-invite-to-channels).
   (Recommended: Admins and moderators)
 - Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: (default) Members for small classes;
@@ -193,7 +193,7 @@ how to assign roles and permissions for a class.
 - Set [who can create channels](/help/configure-who-can-create-channels).
   (Recommended: Admins and moderators for public channels;
    Admins, moderators and members for private channels)
-- Set [who can subscribe users to channels](/help/configure-who-can-invite-to-channels).
+- Set [who can subscribe other users to channels](/help/configure-who-can-invite-to-channels).
   (Recommended: Admins and moderators)
 - Set [who can edit the topic of any message](/help/restrict-moving-messages).
   (Recommended: Admins and moderators)

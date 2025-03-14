@@ -82,7 +82,6 @@ export const user_schema = z
         is_admin: z.boolean(),
         is_guest: z.boolean(),
         is_moderator: z.boolean().optional(),
-        is_billing_admin: z.boolean().optional(),
         role: z.number(),
         timezone: z.string().optional(),
         avatar_url: z.string().nullish(),
@@ -175,6 +174,10 @@ export const presence_schema = z.object({
     idle_timestamp: z.number().optional(),
 });
 
+export const realm_billing_schema = z.object({
+    has_pending_sponsorship_request: z.boolean(),
+});
+
 export const saved_snippet_schema = z.object({
     id: z.number(),
     title: z.string(),
@@ -217,7 +220,6 @@ const current_user_schema = z.object({
     full_name: z.string(),
     has_zoom_token: z.boolean(),
     is_admin: z.boolean(),
-    is_billing_admin: z.boolean(),
     is_guest: z.boolean(),
     is_moderator: z.boolean(),
     is_owner: z.boolean(),
@@ -275,7 +277,6 @@ export const realm_schema = z.object({
     password_min_guesses: z.number(),
     password_min_length: z.number(),
     password_max_length: z.number(),
-    realm_allow_edit_history: z.boolean(),
     realm_allow_message_editing: z.boolean(),
     realm_authentication_methods: z.record(
         z.object({
@@ -306,9 +307,11 @@ export const realm_schema = z.object({
     realm_can_delete_own_message_group: group_setting_value_schema,
     realm_can_invite_users_group: group_setting_value_schema,
     realm_can_manage_all_groups: group_setting_value_schema,
+    realm_can_manage_billing_group: group_setting_value_schema,
     realm_can_mention_many_users_group: group_setting_value_schema,
     realm_can_move_messages_between_channels_group: group_setting_value_schema,
     realm_can_move_messages_between_topics_group: group_setting_value_schema,
+    realm_can_resolve_topics_group: group_setting_value_schema,
     realm_can_summarize_topics_group: group_setting_value_schema,
     realm_create_multiuse_invite_group: group_setting_value_schema,
     realm_date_created: z.number(),
@@ -375,6 +378,7 @@ export const realm_schema = z.object({
     realm_message_content_allowed_in_email_notifications: z.boolean(),
     realm_message_content_edit_limit_seconds: z.number().nullable(),
     realm_message_content_delete_limit_seconds: z.number().nullable(),
+    realm_message_edit_history_visibility_policy: z.enum(["all", "moves", "none"]),
     realm_message_retention_days: z.number(),
     realm_move_messages_between_streams_limit_seconds: z.number().nullable(),
     realm_move_messages_within_stream_limit_seconds: z.number().nullable(),
@@ -434,6 +438,11 @@ export const state_data_schema = z
     .object({alert_words: z.array(z.string())})
     .transform((alert_words) => ({alert_words}))
     .and(z.object({realm_emoji: realm_emoji_map_schema}).transform((emoji) => ({emoji})))
+    .and(
+        z
+            .object({realm_billing: realm_billing_schema})
+            .transform((realm_billing) => ({realm_billing})),
+    )
     .and(z.object({realm_bots: z.array(server_add_bot_schema)}).transform((bot) => ({bot})))
     .and(
         z
@@ -547,8 +556,14 @@ export const state_data_schema = z
     .and(z.object({max_message_id: z.number()}).transform((local_message) => ({local_message})))
     .and(
         z
-            .object({onboarding_steps: z.array(onboarding_step_schema)})
-            .transform((onboarding_steps) => ({onboarding_steps})),
+            .object({
+                onboarding_steps: z.array(onboarding_step_schema),
+                navigation_tour_video_url: z.nullable(z.string()),
+            })
+            .transform(({onboarding_steps, navigation_tour_video_url}) => ({
+                onboarding_steps: {onboarding_steps},
+                navigation_tour_video_url,
+            })),
     )
     .and(current_user_schema.transform((current_user) => ({current_user})))
     .and(realm_schema.transform((realm) => ({realm})));
@@ -557,9 +572,11 @@ export type StateData = z.infer<typeof state_data_schema>;
 
 export type CurrentUser = StateData["current_user"];
 export type Realm = StateData["realm"];
+export type RealmBilling = StateData["realm_billing"]["realm_billing"];
 
 export let current_user: CurrentUser;
 export let realm: Realm;
+export let realm_billing: RealmBilling;
 
 export function set_current_user(initial_current_user: CurrentUser): void {
     current_user = initial_current_user;
@@ -567,4 +584,8 @@ export function set_current_user(initial_current_user: CurrentUser): void {
 
 export function set_realm(initial_realm: Realm): void {
     realm = initial_realm;
+}
+
+export function set_realm_billing(params: StateData["realm_billing"]): void {
+    realm_billing = params.realm_billing;
 }

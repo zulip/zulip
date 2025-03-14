@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_navbar_personal_menu_popover from "../templates/popovers/navbar/navbar_personal_menu_popover.hbs";
 
 import * as channel from "./channel.ts";
+import * as information_density from "./information_density.ts";
 import * as message_view from "./message_view.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -105,7 +106,59 @@ export function initialize(): void {
                 popovers.hide_all();
                 e.preventDefault();
             });
+
+            $popper.on("click", ".info-density-controls button", function (this: HTMLElement, e) {
+                const changed_property =
+                    information_density.information_density_properties_schema.parse(
+                        $(this).closest(".button-group").attr("data-property"),
+                    );
+                const new_setting_value = information_density.update_information_density_settings(
+                    $(this),
+                    changed_property,
+                );
+                const data: Record<string, number> = {};
+                data[changed_property] = new_setting_value;
+                information_density.enable_or_disable_control_buttons($popper);
+
+                if (changed_property === "web_font_size_px") {
+                    // We do not want to display the arrow once font size is changed
+                    // because popover will be detached from the user avatar as we
+                    // do not change the font size in popover.
+                    $("#personal-menu-dropdown").closest(".tippy-box").find(".tippy-arrow").hide();
+                }
+
+                void channel.patch({
+                    url: "/json/settings",
+                    data,
+                    // We don't declare success or error
+                    // handlers. We've already locally echoed the
+                    // change, and the thinking for this component is
+                    // that right answer for error handling is to do
+                    // nothing. For the offline case, just letting you
+                    // adjust the font size locally is great, and it's
+                    // not obvious what good error handling is here
+                    // for the server being down other than "try again
+                    // later", which might as well be your next
+                    // session.
+                    //
+                    // This strategy also avoids unpleasant races
+                    // involving the button being clicked several
+                    // times in quick succession.
+                });
+                e.preventDefault();
+            });
+
+            information_density.enable_or_disable_control_buttons($popper);
             void instance.popperInstance?.update();
+
+            // We do not want font size of the popover to change when changing
+            // font size using the buttons in popover, so that the buttons do
+            // not shift.
+            const font_size =
+                popover_menus.POPOVER_FONT_SIZE_IN_EM * user_settings.web_font_size_px;
+            $("#personal-menu-dropdown")
+                .closest(".tippy-box")
+                .css("font-size", font_size + "px");
         },
         onShow(instance) {
             const args = popover_menus_data.get_personal_menu_content_context();

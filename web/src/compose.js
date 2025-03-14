@@ -58,15 +58,19 @@ export function show_preview_area() {
     $("#compose").addClass("preview_mode");
     $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", -1);
 
-    const $compose_textarea = $("textarea#compose-textarea");
-    const content = $compose_textarea.val();
-
     $("#compose .markdown_preview").hide();
     $("#compose .undo_markdown_preview").show();
     $("#compose .undo_markdown_preview").trigger("focus");
 
+    render_preview_area();
+}
+
+export function render_preview_area() {
+    const $compose_textarea = $("textarea#compose-textarea");
+    const content = $compose_textarea.val();
     const $preview_message_area = $("#compose .preview_message_area");
     compose_ui.render_and_show_preview(
+        $("#compose"),
         $("#compose .markdown_preview_spinner"),
         $("#compose .preview_content"),
         content,
@@ -132,7 +136,9 @@ export function clear_compose_box() {
     compose_banner.clear_uploads();
     compose_ui.hide_compose_spinner();
     scheduled_messages.reset_selected_schedule_timestamp();
-    $(".compose_control_button_container:has(.add-poll)").removeClass("disabled-on-hover");
+    $(".compose_control_button_container:has(.needs-empty-compose)").removeClass(
+        "disabled-on-hover",
+    );
 }
 
 export function send_message_success(request, data) {

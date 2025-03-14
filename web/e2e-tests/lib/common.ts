@@ -318,7 +318,7 @@ export async function assert_compose_box_content(
     expected_value: string,
 ): Promise<void> {
     const compose_box_element = await page.waitForSelector("textarea#compose-textarea");
-    assert(compose_box_element !== null);
+    assert.ok(compose_box_element !== null);
     const compose_box_content = await page.evaluate(
         (element) => element.value,
         compose_box_element,
@@ -408,7 +408,7 @@ export async function select_stream_in_compose_via_dropdown(
     const stream_to_select = `.dropdown-list-container .list-item[data-name="${stream_name}"]`;
     await page.waitForSelector(stream_to_select, {visible: true});
     await page.click(stream_to_select);
-    assert((await page.$(".dropdown-list-container")) === null);
+    assert.ok((await page.$(".dropdown-list-container")) === null);
 }
 
 // Wait for any previous send to finish, then send a message.
@@ -757,6 +757,6 @@ export async function get_current_msg_list_id(
         );
     }
     last_current_msg_list_id = await page.evaluate(() => zulip_test.current_msg_list?.id);
-    assert(last_current_msg_list_id !== undefined);
+    assert.ok(last_current_msg_list_id !== undefined);
     return last_current_msg_list_id;
 }

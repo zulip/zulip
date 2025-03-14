@@ -7,6 +7,7 @@ import render_settings_organization_settings_tip from "../templates/settings/org
 import * as bot_data from "./bot_data.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
 import {$t, get_language_name, language_list} from "./i18n.ts";
+import * as information_density from "./information_density.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
@@ -31,7 +32,6 @@ const admin_settings_label = {
         defaultMessage: "Advertise organization in the Zulip communities directory",
     }),
     // Organization settings
-    realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
     realm_mandatory_topics: $t({defaultMessage: "Require topics in channel messages"}),
     realm_new_stream_announcements_stream: $t({defaultMessage: "New channel announcements"}),
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
@@ -161,7 +161,8 @@ export function build_page(): void {
                 "realm_message_content_delete_limit_seconds",
             ),
         realm_message_retention_days: realm.realm_message_retention_days,
-        realm_allow_edit_history: realm.realm_allow_edit_history,
+        realm_message_edit_history_visibility_policy:
+            realm.realm_message_edit_history_visibility_policy,
         realm_allow_message_editing: realm.realm_allow_message_editing,
         language_list,
         realm_default_language_name: get_language_name(realm.realm_default_language),
@@ -200,6 +201,8 @@ export function build_page(): void {
         email_address_visibility_values: settings_config.email_address_visibility_values,
         waiting_period_threshold_dropdown_values:
             settings_config.waiting_period_threshold_dropdown_values,
+        message_edit_history_visibility_policy_values:
+            settings_config.message_edit_history_visibility_policy_values,
         can_create_multiuse_invite: settings_data.user_can_create_multiuse_invite(),
         can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
         realm_invite_required: realm.realm_invite_required,
@@ -256,7 +259,13 @@ export function build_page(): void {
         ...get_realm_level_notification_settings(),
         group_setting_labels: settings_config.all_group_setting_labels.realm,
         server_can_summarize_topics: realm.server_can_summarize_topics,
-        is_plan_self_hosted: realm.realm_plan_type === 1,
+        is_plan_self_hosted:
+            realm.realm_plan_type === settings_config.realm_plan_types.self_hosted.code,
+        has_billing_access: settings_data.user_has_billing_access(),
+        web_line_height_percent_display_value:
+            information_density.get_string_display_value_for_line_height(
+                realm_user_settings_defaults.web_line_height_percent,
+            ),
     };
 
     const rendered_admin_tab = render_admin_tab(options);
@@ -274,15 +283,22 @@ export function build_page(): void {
 
     $("#id_realm_digest_weekday").val(realm.realm_digest_weekday);
 
-    const is_plan_plus = realm.realm_plan_type === 10;
-    const is_plan_self_hosted = realm.realm_plan_type === 1;
+    const is_plan_plus = realm.realm_plan_type === settings_config.realm_plan_types.plus.code;
+    const is_plan_self_hosted =
+        realm.realm_plan_type === settings_config.realm_plan_types.self_hosted.code;
     if (current_user.is_admin && !(is_plan_plus || is_plan_self_hosted)) {
         $("#realm_can_access_all_users_group_widget").prop("disabled", true);
-        const opts = {
-            content: $t({
+
+        const opts: {content?: string} = {};
+        if (settings_data.user_has_billing_access()) {
+            opts.content = $t({
                 defaultMessage: "This feature is available on Zulip Cloud Plus. Upgrade to access.",
-            }),
-        };
+            });
+        } else {
+            opts.content = $t({
+                defaultMessage: "This feature is available on Zulip Cloud Plus.",
+            });
+        }
 
         tippy.default(the($("#realm_can_access_all_users_group_widget_container")), opts);
     }

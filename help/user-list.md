@@ -25,7 +25,7 @@ user list styles. To avoid distraction, you can
 {tab|desktop-web}
 
 1. If the user list is hidden, click the **user list** (<i class="zulip-icon
-   zulip-icon-triple-users"></i> ) icon in the upper right to show it.
+   zulip-icon-user-list"></i> ) icon in the upper right to show it.
 
 1. Type the name of the user you are looking for in the **Filter users** box at
    the top of the right sidebar.
@@ -44,7 +44,7 @@ user list styles. To avoid distraction, you can
 {tab|via-right-sidebar}
 
 1. If the user list is hidden, click the **user list** (<i class="zulip-icon
-   zulip-icon-triple-users"></i> ) icon in the upper right to show it.
+   zulip-icon-user-list"></i> ) icon in the upper right to show it.
 
 1. Click the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>)
    to the right of the **Filter users** box.
@@ -65,7 +65,7 @@ user list styles. To avoid distraction, you can
 
 {tab|desktop-web}
 
-1. Click the **user list** (<i class="zulip-icon zulip-icon-triple-users"></i>
+1. Click the **user list** (<i class="zulip-icon zulip-icon-user-list"></i>
 ) icon in the upper right.
 
 !!! keyboard_tip ""
@@ -77,7 +77,8 @@ user list styles. To avoid distraction, you can
 
 ## Related articles
 
-- [View someone's profile](/help/view-someones-profile)
-- [Status and availability](/help/status-and-availability)
-- [Searching for messages](/help/search-for-messages)
-- [Find administrators](/help/find-administrators)
+* [Introduction to users](/help/introduction-to-users)
+* [View someone's profile](/help/view-someones-profile)
+* [Status and availability](/help/status-and-availability)
+* [Searching for messages](/help/search-for-messages)
+* [Find administrators](/help/find-administrators)

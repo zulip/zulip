@@ -248,7 +248,7 @@ user(s) following the conversation, [depending on their
 settings](/help/follow-a-topic#follow-topics-where-you-are-mentioned).
 
 Silent mentions of users or groups have none of those side effects,
-but nonetheless uniquently identify the user or group
+but nonetheless uniquely identify the user or group
 identified. (There's no such thing as a silent wildcard mention).
 
 Permissions for mentioning users work as follows:

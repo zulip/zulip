@@ -131,7 +131,6 @@ class TestFullStack(ZulipTestCase):
                 full_name=cordelia.full_name,
                 is_active=True,
                 is_admin=False,
-                is_billing_admin=False,
                 is_bot=False,
                 is_guest=False,
                 is_owner=False,
@@ -214,7 +213,7 @@ class TestFullStack(ZulipTestCase):
 
         # Verify error handling when the user already exists.
         result = self.client_post("/json/users", valid_params)
-        self.assert_json_error(result, "Email 'romeo@zulip.net' already in use", 400)
+        self.assert_json_error(result, "Email is already in use.", 400)
 
     def test_tornado_redirects(self) -> None:
         # Let's poke a bit at Zulip's event system.
@@ -419,7 +418,7 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
             )
 
             # info_log.output is a list of all the log messages captured.
-            self.assertEqual(info_log.output, [expected_log_line] * 18)
+            self.assertEqual(info_log.output, [expected_log_line] * 20)
 
             # Now, lets actually go the URL the above call redirects to, i.e., /emails/
             result = self.client_get(result["Location"])

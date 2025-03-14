@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 from django.http import HttpRequest
@@ -6,6 +7,11 @@ from typing_extensions import override
 
 
 class ZulipExceptionReporterFilter(SafeExceptionReporterFilter):
+    # Add _SALT to the standard list
+    hidden_settings = re.compile(
+        r"API|TOKEN|KEY|SECRET|PASS|SIGNATURE|HTTP_COOKIE|_SALT", flags=re.IGNORECASE
+    )
+
     @override
     def get_post_parameters(self, request: HttpRequest | None) -> dict[str, Any]:
         post_data = SafeExceptionReporterFilter.get_post_parameters(self, request)

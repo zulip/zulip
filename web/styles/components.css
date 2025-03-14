@@ -101,13 +101,6 @@ i.zulip-icon.zulip-icon-bot {
     color: var(--color-icon-bot);
 }
 
-.tippy-content {
-    /* Set the default font size for tooltips. Popovers override this with
-       a rule looking at the data-theme.
-     */
-    font-size: 12px;
-}
-
 /* Hide the somewhat buggy browser show password feature in IE, Edge,
    since it duplicates our own "show password" widget. */
 input::-ms-reveal {

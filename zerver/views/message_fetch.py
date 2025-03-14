@@ -305,7 +305,7 @@ def get_messages_backend(
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
             allow_empty_topic_name=allow_empty_topic_name,
-            allow_edit_history=realm.allow_edit_history,
+            message_edit_history_visibility_policy=realm.message_edit_history_visibility_policy,
             user_profile=user_profile,
             realm=realm,
         )

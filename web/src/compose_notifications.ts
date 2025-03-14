@@ -27,6 +27,7 @@ export function notify_unmute(muted_narrow: string, stream_id: number, topic_nam
             muted_narrow,
             stream_id,
             topic_name,
+            is_empty_string_topic: topic_name === "",
             classname: compose_banner.CLASSNAMES.unmute_topic_notification,
             banner_type: "",
             button_text: $t({defaultMessage: "Unmute topic"}),
@@ -43,6 +44,7 @@ type MessageRecipient =
     | {
           message_type: "channel";
           channel_name: string;
+          topic_name: string;
           topic_display_name: string;
           is_empty_string_topic: boolean;
       }
@@ -90,6 +92,8 @@ export function notify_automatic_new_visibility_policy(
             classname: compose_banner.CLASSNAMES.automatic_new_visibility_policy,
             link_msg_id: data.id,
             channel_name: message_recipient.channel_name,
+            // The base compose_banner.hbs expects a data-topic-name.
+            topic_name: message_recipient.topic_name,
             topic_display_name: message_recipient.topic_display_name,
             is_empty_string_topic: message_recipient.is_empty_string_topic,
             narrow_url,
@@ -109,11 +113,15 @@ function get_message_recipient(message: Message): MessageRecipient {
         const channel_message_recipient: MessageRecipient = {
             message_type: "channel",
             channel_name: stream_data.get_stream_name_from_id(message.stream_id),
+            topic_name: message.topic,
             topic_display_name: util.get_final_topic_display_name(message.topic),
             is_empty_string_topic: message.topic === "",
         };
         return channel_message_recipient;
     }
+
+    // Only the stream format uses a string for this.
+    assert(typeof message.display_recipient !== "string");
     const direct_message_recipient: MessageRecipient = {
         message_type: "direct",
         recipient_text: "",
@@ -125,7 +133,10 @@ function get_message_recipient(message: Message): MessageRecipient {
         );
         return direct_message_recipient;
     }
-    if (people.is_current_user(message.reply_to)) {
+    if (
+        message.display_recipient.length === 1 &&
+        people.is_my_user_id(util.the(message.display_recipient).id)
+    ) {
         direct_message_recipient.recipient_text = $t({
             defaultMessage: "direct messages with yourself",
         });
@@ -317,7 +328,7 @@ function get_above_composebox_narrow_url(message: Message): string {
 // the message_lists.current (!can_apply_locally; a.k.a. "a search").
 export function notify_messages_outside_current_search(messages: Message[]): void {
     for (const message of messages) {
-        if (!people.is_current_user(message.sender_email)) {
+        if (!people.is_my_user_id(message.sender_id)) {
             continue;
         }
         const above_composebox_narrow_url = get_above_composebox_narrow_url(message);

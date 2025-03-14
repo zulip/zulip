@@ -11,6 +11,7 @@ import {$t} from "./i18n.ts";
 import * as message_parser from "./message_parser.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
+import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
@@ -119,16 +120,15 @@ function zephyr_topic_name_match(message: Message & {type: "stream"}, operand: s
 
 function message_in_home(message: Message): boolean {
     // The home view contains messages not sent to muted channels,
-    // with additional logic for unmuted topics, mentions, and
+    // with additional logic for unmuted topics and
     // single-channel windows.
     if (message.type === "private") {
         return true;
     }
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
     if (
-        message.mentioned ||
-        (page_params.narrow_stream !== undefined &&
-            stream_name.toLowerCase() === page_params.narrow_stream.toLowerCase())
+        page_params.narrow_stream !== undefined &&
+        stream_name.toLowerCase() === page_params.narrow_stream.toLowerCase()
     ) {
         return true;
     }
@@ -171,6 +171,8 @@ function message_matches_search_term(message: Message, operator: string, operand
                         message.type === "stream" &&
                         user_topics.is_topic_followed(message.stream_id, message.topic)
                     );
+                case "muted":
+                    return !message_in_home(message);
                 default:
                     return false; // is:whatever returns false
             }
@@ -451,7 +453,7 @@ export class Filter {
     }
 
     // Parse a string into a list of terms (see below).
-    static parse(str: string): NarrowTerm[] {
+    static parse(str: string, for_pills = false): NarrowTerm[] {
         const terms: NarrowTerm[] = [];
         let search_term: string[] = [];
         let negated;
@@ -509,6 +511,14 @@ export class Filter {
                     }
                 }
 
+                if (
+                    for_pills &&
+                    operator === "sender" &&
+                    operand.toString().toLowerCase() === "me"
+                ) {
+                    operand = people.my_current_email();
+                }
+
                 // We use Filter.operator_to_prefix() to check if the
                 // operator is known.  If it is not known, then we treat
                 // it as a search for the given string (which may contain
@@ -550,6 +560,7 @@ export class Filter {
                     "unread",
                     "resolved",
                     "followed",
+                    "muted",
                 ].includes(term.operand);
             case "in":
                 return ["home", "all"].includes(term.operand);
@@ -572,6 +583,9 @@ export class Filter {
             case "pm-with":
             case "dm-including":
             case "pm-including":
+                if (term.operand === "me") {
+                    return true;
+                }
                 return term.operand
                     .split(",")
                     .every((email) => people.get_by_email(email) !== undefined);
@@ -646,6 +660,7 @@ export class Filter {
             "is-unread",
             "is-resolved",
             "is-followed",
+            "is-muted",
             "has-link",
             "has-image",
             "has-attachment",
@@ -750,6 +765,20 @@ export class Filter {
             const operand = term.operand;
             const canonicalized_operator = Filter.canonicalize_operator(term.operator);
             if (canonicalized_operator === "is") {
+                // Some operands have their own negative words, like
+                // unresolved, rather than the default "exclude " prefix.
+                const custom_negated_operand_phrases: Record<string, string> = {
+                    resolved: "unresolved",
+                };
+                const negated_phrase = custom_negated_operand_phrases[operand];
+                if (term.negated && negated_phrase !== undefined) {
+                    return {
+                        type: "is_operator",
+                        verb: "",
+                        operand: negated_phrase,
+                    };
+                }
+
                 const verb = term.negated ? "exclude " : "";
                 return {
                     type: "is_operator",
@@ -851,7 +880,7 @@ export class Filter {
             if (term.operand === undefined) {
                 return false;
             }
-            if (!hash_parser.allowed_web_public_narrows.includes(term.operator)) {
+            if (!hash_parser.is_an_allowed_web_public_narrow(term.operator, term.operand)) {
                 return false;
             }
         }
@@ -1043,7 +1072,12 @@ export class Filter {
 
     is_in_home(): boolean {
         // Combined feed view
-        return this._terms.length === 1 && this.has_operand("in", "home");
+        return (
+            // The `-is:muted` term is an alias for `in:home`. The `in:home` term will
+            // be removed in the future.
+            this._terms.length === 1 &&
+            (this.has_operand("in", "home") || this.has_negated_operand("is", "muted"))
+        );
     }
 
     has_exactly_channel_topic_operators(): boolean {
@@ -1089,6 +1123,8 @@ export class Filter {
             "not-is-resolved",
             "is-followed",
             "not-is-followed",
+            "is-muted",
+            "not-is-muted",
             "in-home",
             "in-all",
             "channels-public",
@@ -1160,6 +1196,10 @@ export class Filter {
         }
 
         if (_.isEqual(term_types, ["in-home"])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ["not-is-muted"])) {
             return true;
         }
 
@@ -1310,6 +1350,10 @@ export class Filter {
                     icon = "question-circle-o";
                     break;
                 }
+                if (sub.is_archived) {
+                    zulip_icon = "archive";
+                    break;
+                }
                 if (sub.invite_only) {
                     zulip_icon = "lock";
                     break;
@@ -1375,7 +1419,13 @@ export class Filter {
                 if (!person) {
                     return email;
                 }
+                if (muted_users.is_user_muted(person.user_id)) {
+                    if (people.should_add_guest_user_indicator(person.user_id)) {
+                        return $t({defaultMessage: "Muted user (guest)"});
+                    }
 
+                    return $t({defaultMessage: "Muted user"});
+                }
                 if (people.should_add_guest_user_indicator(person.user_id)) {
                     return $t({defaultMessage: "{name} (guest)"}, {name: person.full_name});
                 }
@@ -1422,7 +1472,7 @@ export class Filter {
                 case "is-dm":
                     return $t({defaultMessage: "Direct message feed"});
                 case "is-resolved":
-                    return $t({defaultMessage: "Topics marked as resolved"});
+                    return $t({defaultMessage: "Resolved topics"});
                 case "is-followed":
                     return $t({defaultMessage: "Followed topics"});
                 // These cases return false for is_common_narrow, and therefore are not
@@ -1722,6 +1772,13 @@ export class Filter {
         return false;
     }
 
+    may_contain_multiple_conversations(): boolean {
+        return !(
+            (this.has_operator("channel") && this.has_operator("topic")) ||
+            this.has_operator("dm")
+        );
+    }
+
     excludes_muted_topics(): boolean {
         return (
             // not narrowed to a topic
@@ -1731,7 +1788,11 @@ export class Filter {
             // not narrowed to dms
             !(this.has_operator("dm") || this.has_operand("is", "dm")) &&
             // not narrowed to starred messages
-            !this.has_operand("is", "starred")
+            !this.has_operand("is", "starred") &&
+            // not narrowed to negated home messages
+            !this.has_negated_operand("in", "home") &&
+            // not narrowed to muted topics messages
+            !this.has_operand("is", "muted")
         );
     }
 

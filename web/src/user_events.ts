@@ -49,7 +49,6 @@ export const user_update_schema = z.object({user_id: z.number()}).and(
         z.object({delivery_email: z.nullable(z.string())}),
         z.object({new_email: z.string()}),
         z.object({full_name: z.string()}),
-        z.object({is_billing_admin: z.boolean()}),
         z.object({role: z.number()}),
         z.object({email: z.string(), timezone: z.string()}),
         z.object({is_active: z.boolean()}),
@@ -142,13 +141,6 @@ export const update_person = function update(person: UserUpdate): void {
         }
     }
 
-    if ("is_billing_admin" in person) {
-        person_obj.is_billing_admin = person.is_billing_admin;
-        if (people.is_my_user_id(person.user_id)) {
-            current_user.is_billing_admin = person_obj.is_billing_admin;
-        }
-    }
-
     if ("avatar_url" in person) {
         const url = person.avatar_url;
         person_obj.avatar_url = url;
@@ -217,8 +209,8 @@ export const update_person = function update(person: UserUpdate): void {
             stream_events.remove_deactivated_user_from_all_streams(person.user_id);
             user_group_edit.remove_deactivated_user_from_all_groups(person.user_id);
             settings_users.update_view_on_deactivate(person.user_id);
-            buddy_list.maybe_remove_user_id({user_id: person.user_id});
         }
+        buddy_list.insert_or_move([person.user_id]);
         settings_account.maybe_update_deactivate_account_button();
         if (people.is_valid_bot_user(person.user_id)) {
             settings_users.update_bot_data(person.user_id);

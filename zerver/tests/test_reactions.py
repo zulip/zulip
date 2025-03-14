@@ -5,7 +5,12 @@ import orjson
 from typing_extensions import override
 
 from zerver.actions.reactions import notify_reaction_update
-from zerver.actions.streams import do_change_stream_permission
+from zerver.actions.streams import (
+    do_change_stream_group_based_setting,
+    do_change_stream_permission,
+    do_deactivate_stream,
+)
+from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.emoji import get_emoji_data
 from zerver.lib.exceptions import JsonableError
@@ -14,6 +19,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import zulip_reaction_info
 from zerver.models import Message, Reaction, RealmEmoji, UserMessage
 from zerver.models.realms import get_realm
+from zerver.models.streams import Subscription
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -402,6 +408,55 @@ class ReactionTest(ZulipTestCase):
         emoji.save(update_fields=["deactivated"])
         result = self.api_delete(sender, "/api/v1/messages/1/reactions", reaction_info)
         self.assert_json_success(result)
+
+    def test_adding_reaction_to_archived_channel(self) -> None:
+        """
+        Should not be able to remove reaction from a message in an
+        archived channel.
+        """
+        sender = self.example_user("hamlet")
+
+        emoji = RealmEmoji.objects.get(name="green_tick")
+
+        reaction_info = {
+            "emoji_name": "green_tick",
+            "emoji_code": str(emoji.id),
+            "reaction_type": "realm_emoji",
+        }
+
+        stream_name = "Saxony"
+        stream = self.subscribe(self.example_user("cordelia"), stream_name)
+        message_id = self.send_stream_message(self.example_user("cordelia"), stream_name)
+        do_deactivate_stream(stream, acting_user=sender)
+
+        result = self.api_post(sender, f"/api/v1/messages/{message_id}/reactions", reaction_info)
+        self.assert_json_error(result, "Invalid message(s)")
+
+    def test_remove_existing_reaction_from_archived_channel(self) -> None:
+        """
+        Should not be able to remove reaction from a message in an
+        archived channel.
+        """
+        sender = self.example_user("hamlet")
+
+        emoji = RealmEmoji.objects.get(name="green_tick")
+
+        reaction_info = {
+            "emoji_name": "green_tick",
+            "emoji_code": str(emoji.id),
+            "reaction_type": "realm_emoji",
+        }
+
+        stream_name = "Saxony"
+        stream = self.subscribe(self.example_user("cordelia"), stream_name)
+        message_id = self.send_stream_message(self.example_user("cordelia"), stream_name)
+
+        result = self.api_post(sender, f"/api/v1/messages/{message_id}/reactions", reaction_info)
+        self.assert_json_success(result)
+
+        do_deactivate_stream(stream, acting_user=sender)
+        result = self.api_delete(sender, f"/api/v1/messages/{message_id}/reactions", reaction_info)
+        self.assert_json_error(result, "Invalid message(s)")
 
 
 class ReactionEventTest(ZulipTestCase):
@@ -864,10 +919,15 @@ class DefaultEmojiReactionTests(EmojiReactionBase):
         Reacting with valid emoji on a historical message succeeds.
         """
         stream_name = "Saxony"
-        self.subscribe(self.example_user("cordelia"), stream_name)
+        stream = self.subscribe(self.example_user("cordelia"), stream_name)
         message_id = self.send_stream_message(self.example_user("cordelia"), stream_name)
 
         user_profile = self.example_user("hamlet")
+        is_user_profile_a_subscriber = Subscription.objects.filter(
+            user_profile=user_profile,
+            recipient__type_id=stream.id,
+        ).exists()
+        self.assertEqual(is_user_profile_a_subscriber, False)
 
         # Verify that hamlet did not receive the message.
         self.assertFalse(
@@ -891,6 +951,58 @@ class DefaultEmojiReactionTests(EmojiReactionBase):
         self.assertTrue(user_message.flags.historical)
         self.assertTrue(user_message.flags.read)
         self.assertFalse(user_message.flags.starred)
+
+    def test_react_unsubscribed_private_stream(self) -> None:
+        """
+        Test reacting with valid emoji on a private stream.
+        """
+        stream_name = "new_private_stream"
+        user_profile = self.example_user("hamlet")
+        stream = self.make_stream(stream_name, user_profile.realm, invite_only=True)
+        self.subscribe(user_profile, stream_name)
+        message_id = self.send_stream_message(user_profile, stream_name)
+
+        # Have hamlet react to the message
+        reaction_info = {
+            "reaction_type": "unicode_emoji",
+            "emoji_name": "hamburger",
+            "emoji_code": "1f354",
+        }
+
+        result = self.api_post(
+            user_profile, f"/api/v1/messages/{message_id}/reactions", reaction_info
+        )
+        self.assert_json_success(result)
+
+        # Unsubscribed user without content access should not be able
+        # to react
+        reaction_info = {
+            "reaction_type": "unicode_emoji",
+            "emoji_name": "smile",
+        }
+        self.unsubscribe(user_profile, stream_name)
+        result = self.api_post(
+            user_profile, f"/api/v1/messages/{message_id}/reactions", reaction_info
+        )
+        self.assert_json_error(result, "Invalid message(s)")
+
+        # Unsubscribed user with content access should be able to react
+        user_profile_group = check_add_user_group(
+            user_profile.realm,
+            "prospero_group",
+            [user_profile],
+            acting_user=user_profile,
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_add_subscribers_group",
+            user_profile_group,
+            acting_user=user_profile,
+        )
+        result = self.api_post(
+            user_profile, f"/api/v1/messages/{message_id}/reactions", reaction_info
+        )
+        self.assert_json_success(result)
 
 
 class ZulipExtraEmojiReactionTest(EmojiReactionBase):

@@ -67,7 +67,7 @@ type InputPillStore<ItemType> = {
 // These are the functions that are exposed to other modules.
 export type InputPillContainer<ItemType> = {
     appendValue: (text: string) => void;
-    appendValidatedData: (item: ItemType, disabled?: boolean) => void;
+    appendValidatedData: (item: ItemType, disabled?: boolean, quiet?: boolean) => void;
     getByElement: (element: HTMLElement) => InputPill<ItemType> | undefined;
     items: () => ItemType[];
     removePill: (
@@ -155,7 +155,7 @@ export function create<ItemType extends {type: string}>(
 
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
-        appendValidatedData(item: ItemType, disabled = false) {
+        appendValidatedData(item: ItemType, disabled = false, quiet = false) {
             let pill_html;
             if (store.generate_pill_html !== undefined) {
                 pill_html = store.generate_pill_html(item, disabled);
@@ -183,7 +183,7 @@ export function create<ItemType extends {type: string}>(
             // manually clear it here.
             this.clear_text();
 
-            if (store.onPillCreate !== undefined) {
+            if (!quiet && store.onPillCreate !== undefined) {
                 store.onPillCreate();
             }
         },
@@ -332,8 +332,8 @@ export function create<ItemType extends {type: string}>(
                     if (ret) {
                         // clear the input.
                         funcs.clear(this);
-                        e.stopPropagation();
                     }
+                    e.stopPropagation();
                 }
 
                 return;

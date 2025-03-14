@@ -9,19 +9,20 @@ A user's profile displays key information about the user.
 {tab|desktop-web}
 
 - Their name.
+- Their [availability](/help/status-and-availability#availability).
+- Their profile picture.
 - Their email address, if you [have
   permission](/help/configure-email-visibility) to view it.
 - Their user ID.
 - Their [role](/help/user-roles) in the organization.
 - The date they joined the organization.
 - Their current [local time](/help/change-your-timezone).
-- Their [availability](/help/status-and-availability#availability).
 - Any [custom profile fields](/help/custom-profile-fields) they've filled out.
 
 Additional tabs showing:
 
-- The channel that the user is subscribed to. Note that the list is limited to
-  channel for which you have [permission to see all
+- The channels that the user is subscribed to. Note that the list is limited to
+  channels for which you have [permission to see all
   subscribers](/help/channel-permissions).
 - The [user groups](/help/user-groups) to which they belong.
 
@@ -73,6 +74,7 @@ Additional tabs showing:
 
 ## Related articles
 
+* [Introduction to users](/help/introduction-to-users)
 * [Edit your profile](/help/edit-your-profile)
 * [Custom profile fields](/help/custom-profile-fields)
 * [User cards](/help/user-cards)

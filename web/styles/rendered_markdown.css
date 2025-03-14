@@ -50,13 +50,6 @@
         border-top: 1px solid hsl(0deg 0% 87%);
         /* Override Bootstrap with doubled interelement space */
         margin: calc(var(--markdown-interelement-space-px) * 2) 0;
-
-        &:first-child {
-            /* When a horizontal rule opens a message, or any other
-               area in the message area (e.g., spoilers), there
-               should be no space above the rule. */
-            margin-top: 0;
-        }
     }
 
     /* Headings */
@@ -421,7 +414,7 @@
            subtle).
 
            We prevent this by setting a fixed height for inline
-           previews. 100px is chosen because we don't want images to
+           previews. 8em is chosen because we don't want images to
            overwhelm conversation in message feeds, as it does in chat
            tools that show images at half-screen height or larger.
 
@@ -430,8 +423,8 @@
            that either use a scrollable region or set a fixed width
            for images so that the browser statically knows whether
            it'll need to overflow. We choose fixed width here. */
-        height: 100px;
-        width: 150px;
+        height: 8em;
+        width: 12em;
 
         /* Inline image containers also need an inline-block display in order
            to implement the desired grid layout. */
@@ -443,6 +436,10 @@
         border: solid 1px transparent;
         transition: background 0.3s ease;
         background: hsl(0deg 0% 0% / 3%);
+
+        &:first-child {
+            margin-top: var(--markdown-interelement-space-px);
+        }
 
         &:hover {
             background: hsl(0deg 0% 0% / 15%);
@@ -593,6 +590,14 @@
         cursor: pointer;
     }
 
+    .youtube-video img {
+        /* We do this for the sake of increasing
+           the size of older YouTube thumbnail
+           previews, but there are no ill effects
+           on newer preview images. */
+        object-fit: contain;
+    }
+
     &.rtl .twitter-image img,
     &.rtl .message_inline_image img,
     &.rtl .message_inline_ref img {
@@ -606,27 +611,37 @@
     }
 
     .message_inline_video,
-    .message_inline_animated_image_still {
+    .message_inline_animated_image_still,
+    .youtube-video a[data-id] {
         &:hover {
             &::after {
                 transform: scale(1);
-                transition: transform 0.2s;
             }
         }
 
         &::after {
             content: "";
             background-image: url("../images/play_button.svg");
-            display: block;
-            width: 32px;
-            height: 32px;
+            background-position: center center;
+            background-repeat: no-repeat;
+            /* 32px at 14px/1em */
+            background-size: 2.2857em;
             position: absolute;
-            /* video width (100px) / 2 - icon width (32px) / 2 */
-            top: 34px;
-            /* video height (150px) / 2 - icon height (32px) / 2 */
-            left: 59px;
+            /* Match the width to the background size. */
+            width: 2.2857em;
+            height: 2.2857em;
+            /* Center according to those widths; at present,
+               thumbnails are 8em tall and 12em wide. So,
+               2.2857em / 2 = 1.1429em as the center of the
+               play button. We subtract that value from half
+               the height (8em/2) to get the `top:` value,
+               and then subtract the same from half the width
+               (12em/2) to get the `left:` value. */
+            top: 2.8571em;
+            left: 4.8571em;
             border-radius: 100%;
             transform: scale(0.8);
+            transition: transform 0.2s;
         }
 
         & video {
@@ -635,20 +650,6 @@
             height: 100%;
             width: 100%;
         }
-    }
-
-    .youtube-video .fa-play::before,
-    .embed-video .fa-play::before {
-        position: absolute;
-        margin: var(--margin-top, 32px) 0 0 var(--margin-left, 45px);
-        padding: 5px 8px 5px 10px;
-        font-size: 12px;
-        border-radius: 4px;
-        background-color: hsl(0deg 0% 0%);
-        color: hsl(0deg 0% 100%);
-        opacity: 0.7;
-        top: 0;
-        left: 0;
     }
 
     .message_embed {
@@ -784,7 +785,8 @@
         unicode-bidi: embed;
         direction: ltr;
         white-space: pre-wrap;
-        padding: 1px 2px;
+        /* 1px at 14px/1em */
+        padding: 0.0714em 2px;
         color: var(--color-markdown-code-text);
         background-color: var(--color-markdown-code-background);
         border-radius: 3px;

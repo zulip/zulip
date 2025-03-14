@@ -2,12 +2,16 @@
 
 const assert = require("node:assert/strict");
 
+const {get_final_topic_display_name} = require("../src/util.ts");
+
 const {mock_banners} = require("./lib/compose_banner.cjs");
+const example_settings = require("./lib/example_settings.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 let autosize_called;
+const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
 
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
 const compose_ui = mock_esm("../src/compose_ui", {
@@ -22,13 +26,12 @@ const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
     warn_if_topic_resolved: noop,
     stream_wildcard_mention_allowed: () => true,
+    warn_if_mentioning_unsubscribed_group: noop,
+    initialize: noop,
 });
 const input_pill = mock_esm("../src/input_pill");
 const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
-});
-mock_esm("../src/settings_data", {
-    user_can_access_all_other_users: () => true,
 });
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
 
@@ -61,7 +64,7 @@ const {initialize_user_settings} = zrequire("user_settings");
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = {realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME};
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
@@ -268,43 +271,6 @@ const light_command = {
 };
 const light_command_item = slash_item(light_command);
 
-const sweden_stream = stream_item({
-    name: "Sweden",
-    description: "Cold, mountains and home decor.",
-    stream_id: 1,
-    subscribed: true,
-});
-const denmark_stream = stream_item({
-    name: "Denmark",
-    description: "Vikings and boats, in a serene and cold weather.",
-    stream_id: 2,
-    subscribed: true,
-});
-const netherland_stream = stream_item({
-    name: "The Netherlands",
-    description: "The Netherlands, city of dream.",
-    stream_id: 3,
-    subscribed: false,
-});
-const mobile_stream = stream_item({
-    name: "Mobile",
-    description: "Mobile development",
-    stream_id: 4,
-    subscribed: false,
-});
-const mobile_team_stream = stream_item({
-    name: "Mobile team",
-    description: "Mobile development team",
-    stream_id: 5,
-    subscribed: true,
-});
-
-stream_data.add_sub(sweden_stream);
-stream_data.add_sub(denmark_stream);
-stream_data.add_sub(netherland_stream);
-stream_data.add_sub(mobile_stream);
-stream_data.add_sub(mobile_team_stream);
-
 const name_to_codepoint = {};
 for (const [key, val] of emojis_by_name.entries()) {
     name_to_codepoint[key] = val.emoji_code;
@@ -347,6 +313,7 @@ const ali = {
     user_id: 98,
     full_name: "Ali",
     is_moderator: false,
+    is_bot: false,
 };
 const ali_item = user_item(ali);
 
@@ -355,6 +322,7 @@ const alice = {
     user_id: 99,
     full_name: "Alice",
     is_moderator: false,
+    is_bot: false,
 };
 const alice_item = user_item(alice);
 
@@ -363,6 +331,7 @@ const hamlet = {
     user_id: 100,
     full_name: "King Hamlet",
     is_moderator: false,
+    is_bot: false,
 };
 const hamlet_item = user_item(hamlet);
 
@@ -372,6 +341,7 @@ const othello = {
     full_name: "Othello, the Moor of Venice",
     is_moderator: false,
     delivery_email: null,
+    is_bot: false,
 };
 const othello_item = user_item(othello);
 
@@ -380,6 +350,7 @@ const cordelia = {
     user_id: 102,
     full_name: "Cordelia, Lear's daughter",
     is_moderator: false,
+    is_bot: false,
 };
 const cordelia_item = user_item(cordelia);
 
@@ -388,6 +359,7 @@ const deactivated_user = {
     user_id: 103,
     full_name: "Deactivated User",
     is_moderator: false,
+    is_bot: false,
 };
 const deactivated_user_item = user_item(deactivated_user);
 
@@ -396,6 +368,7 @@ const lear = {
     user_id: 104,
     full_name: "King Lear",
     is_moderator: false,
+    is_bot: false,
 };
 const lear_item = user_item(lear);
 
@@ -404,6 +377,7 @@ const twin1 = {
     is_moderator: false,
     user_id: 105,
     email: "twin1@zulip.com",
+    is_bot: false,
 };
 const twin1_item = user_item(twin1);
 
@@ -412,6 +386,7 @@ const twin2 = {
     is_moderator: false,
     user_id: 106,
     email: "twin2@zulip.com",
+    is_bot: false,
 };
 const twin2_item = user_item(twin2);
 
@@ -420,6 +395,7 @@ const gael = {
     is_moderator: false,
     user_id: 107,
     email: "twin3@zulip.com",
+    is_bot: false,
 };
 const gael_item = user_item(gael);
 
@@ -428,6 +404,7 @@ const hal = {
     is_moderator: false,
     user_id: 108,
     email: "hal@zulip.com",
+    is_bot: false,
 };
 const hal_item = user_item(hal);
 
@@ -436,8 +413,29 @@ const harry = {
     is_moderator: false,
     user_id: 109,
     email: "harry@zulip.com",
+    is_bot: false,
 };
 const harry_item = user_item(harry);
+
+const welcome_bot = {
+    full_name: "Welcome Bot",
+    is_bot: true,
+    is_system_bot: true,
+    user_id: 110,
+    email: "welcome-bot@zulip.com",
+};
+
+const welcome_bot_item = user_item(welcome_bot);
+
+const notification_bot = {
+    full_name: "Notification Bot",
+    is_bot: true,
+    is_system_bot: true,
+    user_id: 111,
+    email: "notification-bot@zulip.com",
+};
+
+const notification_bot_item = user_item(notification_bot);
 
 const hamletcharacters = user_group_item({
     name: "hamletcharacters",
@@ -529,7 +527,7 @@ const admins = user_group_item({
 });
 
 const members = user_group_item({
-    name: "Members",
+    name: "role:members",
     id: 6,
     creator_id: null,
     date_created: 1596710000,
@@ -545,6 +543,67 @@ const members = user_group_item({
     can_remove_members_group: 2,
     deactivated: false,
 });
+
+const sweden_stream = stream_item({
+    name: "Sweden",
+    description: "Cold, mountains and home decor.",
+    stream_id: 1,
+    subscribed: true,
+    can_administer_channel_group: support.id,
+    can_add_subscribers_group: support.id,
+    can_subscribe_group: support.id,
+});
+const denmark_stream = stream_item({
+    name: "Denmark",
+    description: "Vikings and boats, in a serene and cold weather.",
+    stream_id: 2,
+    subscribed: true,
+    can_administer_channel_group: support.id,
+    can_add_subscribers_group: support.id,
+    can_subscribe_group: support.id,
+});
+const netherland_stream = stream_item({
+    name: "The Netherlands",
+    description: "The Netherlands, city of dream.",
+    stream_id: 3,
+    subscribed: false,
+    can_administer_channel_group: support.id,
+    can_add_subscribers_group: support.id,
+    can_subscribe_group: support.id,
+});
+const mobile_stream = stream_item({
+    name: "Mobile",
+    description: "Mobile development",
+    stream_id: 4,
+    subscribed: false,
+    can_administer_channel_group: support.id,
+    can_add_subscribers_group: support.id,
+    can_subscribe_group: support.id,
+});
+const mobile_team_stream = stream_item({
+    name: "Mobile team",
+    description: "Mobile development team",
+    stream_id: 5,
+    subscribed: true,
+    can_administer_channel_group: support.id,
+    can_add_subscribers_group: support.id,
+    can_subscribe_group: support.id,
+});
+const broken_link_stream = stream_item({
+    name: "A* Algorithm",
+    description: "A `*` in the stream name produces a broken #**stream>topic** link",
+    stream_id: 6,
+    subscribed: true,
+    can_administer_channel_group: support.id,
+    can_add_subscribers_group: support.id,
+});
+
+stream_data.add_sub(sweden_stream);
+stream_data.add_sub(denmark_stream);
+stream_data.add_sub(netherland_stream);
+stream_data.add_sub(mobile_stream);
+stream_data.add_sub(mobile_team_stream);
+stream_data.add_sub(broken_link_stream);
 
 const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,
@@ -573,6 +632,12 @@ function test(label, f) {
     run_test(label, (helpers) => {
         people.init();
         user_groups.init();
+        helpers.override(
+            realm,
+            "server_supported_permission_settings",
+            example_settings.server_supported_permission_settings,
+        );
+        helpers.override(realm, "realm_can_access_all_users_group", members.id);
 
         people.add_active_user(ali);
         people.add_active_user(alice);
@@ -586,6 +651,8 @@ function test(label, f) {
         people.add_active_user(hal);
         people.add_active_user(harry);
         people.add_active_user(deactivated_user);
+        people.add_cross_realm_user(welcome_bot);
+        people.add_cross_realm_user(notification_bot);
         people.deactivate(deactivated_user);
         people.initialize_current_user(hamlet.user_id);
 
@@ -824,7 +891,7 @@ test("content_typeahead_selected", ({override}) => {
     ct.get_or_set_completing_for_tests("stream");
     let warned_for_stream_link = false;
     override(compose_validate, "warn_if_private_stream_is_linked", (linked_stream) => {
-        assert.equal(linked_stream, sweden_stream);
+        assert.ok(linked_stream === sweden_stream || linked_stream === broken_link_stream);
         warned_for_stream_link = true;
     });
 
@@ -846,6 +913,18 @@ test("content_typeahead_selected", ({override}) => {
     expected_value = "#**Sweden>";
     assert.equal(actual_value, expected_value);
 
+    query = "#**A* al";
+    ct.get_or_set_token_for_testing("A* al");
+    actual_value = ct.content_typeahead_selected(broken_link_stream, query, input_element);
+    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A*-Algorithm)>";
+    assert.equal(actual_value, expected_value);
+
+    query = "#>";
+    ct.get_or_set_token_for_testing("#");
+    actual_value = ct.content_typeahead_selected(broken_link_stream, query, input_element);
+    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A*-Algorithm)>";
+    assert.equal(actual_value, expected_value);
+
     // topic_list
     ct.get_or_set_completing_for_tests("topic_list");
 
@@ -854,7 +933,12 @@ test("content_typeahead_selected", ({override}) => {
     actual_value = ct.content_typeahead_selected(
         {
             topic: "testing",
+            topic_display_name: "testing",
             type: "topic_list",
+            used_syntax_prefix: "#**",
+            stream_data: {
+                name: "Sweden",
+            },
         },
         query,
         input_element,
@@ -867,7 +951,31 @@ test("content_typeahead_selected", ({override}) => {
     actual_value = ct.content_typeahead_selected(
         {
             topic: "testing",
+            topic_display_name: "testing",
             type: "topic_list",
+            used_syntax_prefix: "#**",
+            stream_data: {
+                name: "Sweden",
+            },
+        },
+        query,
+        input_element,
+    );
+    expected_value = "Hello #**Sweden>testing** ";
+    assert.equal(actual_value, expected_value);
+
+    // shortcut syntax for topic_list
+    compose_state.set_stream_id(sweden_stream.stream_id);
+    query = "Hello #>";
+    ct.get_or_set_token_for_testing("");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "testing",
+            type: "topic_list",
+            used_syntax_prefix: "#>",
+            stream_data: {
+                name: "Sweden",
+            },
         },
         query,
         input_element,
@@ -880,8 +988,13 @@ test("content_typeahead_selected", ({override}) => {
     actual_value = ct.content_typeahead_selected(
         {
             topic: "Sweden",
+            topic_display_name: "Sweden",
             type: "topic_list",
+            used_syntax_prefix: "#**",
             is_channel_link: false,
+            stream_data: {
+                name: "Sweden",
+            },
         },
         query,
         input_element,
@@ -889,18 +1002,81 @@ test("content_typeahead_selected", ({override}) => {
     expected_value = "Hello #**Sweden>Sweden** ";
     assert.equal(actual_value, expected_value);
 
+    query = "Hello #**Sweden>general";
+    ct.get_or_set_token_for_testing("");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "",
+            topic_display_name: get_final_topic_display_name(""),
+            type: "topic_list",
+            used_syntax_prefix: "#**",
+            is_channel_link: false,
+            stream_data: {
+                name: "Sweden",
+            },
+        },
+        query,
+        input_element,
+    );
+    expected_value = `Hello #**Sweden>** `;
+    assert.equal(actual_value, expected_value);
+
     ct.get_or_set_token_for_testing("");
     actual_value = ct.content_typeahead_selected(
         {
             topic: "Sweden",
+            topic_display_name: "Sweden",
             type: "topic_list",
+            used_syntax_prefix: "#**",
             is_channel_link: true,
+            stream_data: {
+                name: "Sweden",
+            },
         },
         query,
         input_element,
     );
     expected_value = "Hello #**Sweden** ";
     assert.equal(actual_value, expected_value);
+
+    compose_state.set_stream_id(broken_link_stream.stream_id);
+    query = "Hello #>";
+    ct.get_or_set_token_for_testing("");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "",
+            type: "topic_list",
+            used_syntax_prefix: "#>",
+            is_channel_link: true,
+            stream_data: {
+                name: "A* Algorithm",
+            },
+        },
+        query,
+        input_element,
+    );
+    expected_value = "Hello [#A&#42; Algorithm](#narrow/channel/6-A*-Algorithm) ";
+    assert.equal(actual_value, expected_value);
+
+    query = "Hello #**A* Algorithm>";
+    ct.get_or_set_token_for_testing("");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "fast",
+            topic_display_name: "fast",
+            type: "topic_list",
+            used_syntax_prefix: "#**",
+            is_channel_link: false,
+            stream_data: {
+                name: "A* Algorithm",
+            },
+        },
+        query,
+        input_element,
+    );
+    expected_value = "Hello [#A&#42; Algorithm > fast](#narrow/channel/6-A*-Algorithm/topic/fast) ";
+    assert.equal(actual_value, expected_value);
+
     // syntax
     ct.get_or_set_completing_for_tests("syntax");
 
@@ -955,7 +1131,15 @@ function sorted_names_from(subs) {
     return subs.map((sub) => sub.name).sort();
 }
 
-const sweden_topics_to_show = ["<&>", "even more ice", "furniture", "ice", "kronor", "more ice"];
+const sweden_topics_to_show = [
+    "<&>",
+    "even more ice",
+    "furniture",
+    "ice",
+    "kronor",
+    "more ice",
+    "",
+];
 
 test("initialize", ({override, override_rewire, mock_template}) => {
     mock_banners();
@@ -975,7 +1159,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         },
     }));
     compose_pm_pill.initialize({
-        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+        on_pill_create_or_remove: compose_recipient.update_compose_area_placeholder_text,
     });
 
     let expected_value;
@@ -1094,6 +1278,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     call_center,
                     admins,
                     members,
+                    welcome_bot_item,
                 ];
                 assert.deepEqual(actual_value, expected_value);
 
@@ -1269,7 +1454,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 ct.get_or_set_token_for_testing("hamletcharacters");
                 actual_value = options.highlighter_html(hamletcharacters);
                 expected_value =
-                    '    <i class="typeahead-image zulip-icon zulip-icon-triple-users no-presence-circle" aria-hidden="true"></i>\n' +
+                    '    <i class="typeahead-image zulip-icon zulip-icon-user-group no-presence-circle" aria-hidden="true"></i>\n' +
                     '<div class="typeahead-text-container">\n' +
                     '    <strong class="typeahead-strong-section">hamletcharacters</strong>    <span class="autocomplete_secondary">Characters of Hamlet</span>' +
                     "</div>\n";
@@ -1625,7 +1810,12 @@ test("begins_typeahead", ({override, override_rewire}) => {
     ]);
 
     const mention_all = broadcast_item(ct.broadcast_mentions()[0]);
-    const users_and_all_mention = [...sorted_user_list, mention_all];
+    const users_and_all_mention = [
+        ...sorted_user_list,
+        mention_all,
+        notification_bot_item,
+        welcome_bot_item,
+    ];
     const users_and_user_groups = [
         ...sorted_user_list,
         // alphabetical
@@ -1634,6 +1824,8 @@ test("begins_typeahead", ({override, override_rewire}) => {
         call_center, // "folks working in support",
         admins,
         members,
+        notification_bot_item,
+        welcome_bot_item,
     ];
     const mention_everyone = broadcast_item(ct.broadcast_mentions()[1]);
     function mentions_with_silent_marker(mentions, is_silent) {
@@ -1642,8 +1834,6 @@ test("begins_typeahead", ({override, override_rewire}) => {
             is_silent,
         }));
     }
-    assert_typeahead_equals("@", mentions_with_silent_marker(users_and_all_mention, false));
-    // The user we're testing for is only allowed to do silent mentions of groups
     assert_typeahead_equals("@", mentions_with_silent_marker(users_and_all_mention, false));
     // The user we're testing for is only allowed to do silent mentions of groups
     assert_typeahead_equals("@_", mentions_with_silent_marker(users_and_user_groups, true));
@@ -1655,15 +1845,37 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("@_**", mentions_with_silent_marker(users_and_user_groups, true));
     assert_typeahead_equals(
         "test @**o",
-        mentions_with_silent_marker([othello_item, cordelia_item, mention_everyone], false),
+        mentions_with_silent_marker(
+            [
+                othello_item,
+                cordelia_item,
+                mention_everyone,
+                notification_bot_item,
+                welcome_bot_item,
+            ],
+            false,
+        ),
     );
     assert_typeahead_equals(
         "test @_**o",
-        mentions_with_silent_marker([othello_item, cordelia_item, admins], true),
+
+        mentions_with_silent_marker(
+            [othello_item, cordelia_item, admins, members, notification_bot_item, welcome_bot_item],
+            true,
+        ),
     );
     assert_typeahead_equals(
         "test @*o",
-        mentions_with_silent_marker([othello_item, cordelia_item, mention_everyone], false),
+        mentions_with_silent_marker(
+            [
+                othello_item,
+                cordelia_item,
+                mention_everyone,
+                notification_bot_item,
+                welcome_bot_item,
+            ],
+            false,
+        ),
     );
     assert_typeahead_equals(
         "test @_*k",
@@ -1709,6 +1921,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 twin1_item,
                 twin2_item,
                 othello_item,
+                notification_bot_item,
             ],
             false,
         ),
@@ -1727,6 +1940,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 twin2_item,
                 othello_item,
                 admins,
+                notification_bot_item,
             ],
             true,
         ),
@@ -1744,6 +1958,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 hamlet_item,
                 othello_item,
                 mention_all,
+                welcome_bot_item,
             ],
             false,
         ),
@@ -1762,6 +1977,8 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 othello_item,
                 hamletcharacters,
                 call_center,
+                members,
+                welcome_bot_item,
             ],
             true,
         ),
@@ -1774,11 +1991,23 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals(" @_zuli", []);
     assert_typeahead_equals(
         "test @o",
-        mentions_with_silent_marker([othello_item, cordelia_item, mention_everyone], false),
+        mentions_with_silent_marker(
+            [
+                othello_item,
+                cordelia_item,
+                mention_everyone,
+                notification_bot_item,
+                welcome_bot_item,
+            ],
+            false,
+        ),
     );
     assert_typeahead_equals(
         "test @_o",
-        mentions_with_silent_marker([othello_item, cordelia_item, admins], true),
+        mentions_with_silent_marker(
+            [othello_item, cordelia_item, admins, members, notification_bot_item, welcome_bot_item],
+            true,
+        ),
     );
     assert_typeahead_equals("test @z", []);
     assert_typeahead_equals("test @_z", []);
@@ -1919,25 +2148,39 @@ test("begins_typeahead", ({override, override_rewire}) => {
     ];
     assert_typeahead_equals("#**stream**>", topic_jump);
     assert_typeahead_equals("#**stream** >", topic_jump);
+    assert_typeahead_equals("[#A&#42; Algorithm](#narrow/channel/6-A*-Algorithm) >", topic_jump);
     assert_typeahead_equals("#**Sweden>some topic** >", []); // Already completed a topic.
 
     // topic_list
     // includes "more ice"
-    function typed_topics(topics) {
-        const matches_list = topics.map((topic) => ({
-            is_channel_link: false,
+    function typed_topics(stream, topics) {
+        const matches_list = topics.map((topic, index) => ({
+            is_channel_link: topic === stream && index === 0,
             stream_data: {
                 ...stream_data.get_sub_by_name("Sweden"),
                 rendered_description: "",
             },
             topic,
+            is_empty_string_topic: topic === "",
+            topic_display_name: get_final_topic_display_name(topic),
             type: "topic_list",
+            used_syntax_prefix: "#**",
         }));
         return matches_list;
     }
-    assert_typeahead_equals("#**Sweden>more ice", typed_topics(["more ice", "even more ice"]));
-    assert_typeahead_equals("#**Sweden>totally new topic", typed_topics(["totally new topic"]));
-    assert_typeahead_equals("#**Sweden>\n\nmore ice", typed_topics([]));
+    assert_typeahead_equals(
+        "#**Sweden>more ice",
+        typed_topics("Sweden", ["more ice", "even more ice"]),
+    );
+    assert_typeahead_equals(
+        "#**Sweden>",
+        typed_topics("Sweden", ["Sweden", ...sweden_topics_to_show]),
+    );
+    assert_typeahead_equals(
+        "#**Sweden>totally new topic",
+        typed_topics("Sweden", ["totally new topic"]),
+    );
+    assert_typeahead_equals("#**Sweden>\n\nmore ice", typed_topics("Sweden", []));
 
     // time_jump
     const time_jump = [
@@ -1999,7 +2242,12 @@ test("tokenizing", () => {
 
     // The following cases are kinda judgment calls...
     // max scanning limit is 40 characters until chars like @, # , / are found
-    assert.equal(ct.tokenize_compose_str("foo @toomanycharactersistooridiculoustocomplete"), "");
+    assert.equal(
+        ct.tokenize_compose_str(
+            "foo @toomanycharactersistooridiculoustoautocompletethatitexceedsalllimitsusingthewildessequenceofstringsforthispurpose",
+        ),
+        "",
+    );
     assert.equal(ct.tokenize_compose_str("foo #bar@foo"), "#bar@foo");
 });
 
@@ -2267,6 +2515,7 @@ test("typeahead_results", ({override}) => {
         not_silent(othello_item),
         not_silent(hamletcharacters),
         not_silent(call_center),
+        not_silent(welcome_bot_item),
     ]);
 
     // Verify we suggest both 'the first matching stream wildcard' and
@@ -2278,6 +2527,8 @@ test("typeahead_results", ({override}) => {
         not_silent(mention_everyone),
         not_silent(mention_topic),
         not_silent(cordelia_item),
+        not_silent(notification_bot_item),
+        not_silent(welcome_bot_item),
     ]);
 
     // Autocomplete by slash commands.

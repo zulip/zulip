@@ -826,12 +826,6 @@ def get_user_groups(client: Client) -> int:
     return leadership_user_group["id"]
 
 
-def test_user_not_authorized_error(nonadmin_client: Client) -> None:
-    result = nonadmin_client.get_streams(include_all_active=True)
-    assert_error_response(result)
-    validate_against_openapi_schema(result, "/rest-error-handling", "post", "400")
-
-
 @openapi_test_function("/streams/{stream_id}/members:get")
 def get_subscribers(client: Client) -> None:
     user_ids = [11, 25]
@@ -1158,7 +1152,7 @@ def create_saved_snippet(client: Client) -> None:
 
 
 @openapi_test_function("/saved_snippets:get")
-def get_saved_snippets(client: Client) -> None:
+def get_saved_snippets(client: Client) -> int:
     # {code_example|start}
     # Get all the saved snippets.
     result = client.call_endpoint(
@@ -1169,12 +1163,26 @@ def get_saved_snippets(client: Client) -> None:
     assert_success_response(result)
     validate_against_openapi_schema(result, "/saved_snippets", "get", "200")
 
+    return result["saved_snippets"][0]["id"]
+
+
+@openapi_test_function("/saved_snippets/{saved_snippet_id}:patch")
+def edit_saved_snippet(client: Client, saved_snippet_id: int) -> None:
+    # {code_example|start}
+    # Edit a saved snippet.
+    request = {"title": "New welcome message", "content": "Welcome to Zulip!"}
+    result = client.call_endpoint(
+        request=request,
+        url=f"/saved_snippets/{saved_snippet_id}",
+        method="PATCH",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/saved_snippets/{saved_snippet_id}", "patch", "200")
+
 
 @openapi_test_function("/saved_snippets/{saved_snippet_id}:delete")
-def delete_saved_snippet(client: Client) -> None:
-    saved_snippet_id = client.call_endpoint(url="/saved_snippets", method="GET")["saved_snippets"][
-        0
-    ]["id"]
+def delete_saved_snippet(client: Client, saved_snippet_id: int) -> None:
     # {code_example|start}
     # Delete a saved snippet.
     result = client.call_endpoint(
@@ -1614,43 +1622,35 @@ def set_typing_status(client: Client) -> None:
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
 
-@openapi_test_function("/message_edit_typing:post")
-def set_message_edit_typing_status(client: Client) -> None:
-    message = {"type": "stream", "to": "Verona", "topic": "test_topic", "content": "test content"}
-    response = client.send_message(message)
-    message_id = response["id"]
+@openapi_test_function("/messages/{message_id}/typing:post")
+def set_message_edit_typing_status(client: Client, message_id: int) -> None:
     # {code_example|start}
-    # The user has started typing while editing a message
+    # The user has started typing while editing a message.
     request = {
         "op": "start",
-        "message_id": message_id,
     }
     result = client.call_endpoint(
-        "message_edit_typing",
+        f"/messages/{message_id}/typing",
         method="POST",
         request=request,
     )
     # {code_example|end}
     assert_success_response(result)
-    validate_against_openapi_schema(result, "/message_edit_typing", "post", "200")
+    validate_against_openapi_schema(result, f"/messages/{message_id}/typing", "post", "200")
 
-    message = {"type": "stream", "to": "Verona", "topic": "test_topic", "content": "test content"}
-    response = client.send_message(message)
-    message_id = response["id"]
     # {code_example|start}
     # The user has stopped typing while editing a message.
     request = {
         "op": "stop",
-        "message_id": message_id,
     }
     result = client.call_endpoint(
-        "message_edit_typing",
+        f"/messages/{message_id}/typing",
         method="POST",
         request=request,
     )
     # {code_example|end}
     assert_success_response(result)
-    validate_against_openapi_schema(result, "/message_edit_typing", "post", "200")
+    validate_against_openapi_schema(result, "/messages/{message_id}/typing", "post", "200")
 
 
 @openapi_test_function("/realm/emoji/{emoji_name}:post")
@@ -1800,7 +1800,7 @@ def test_invalid_stream_error(client: Client) -> None:
 def test_messages(client: Client, nonadmin_client: Client) -> None:
     render_message(client)
     message_id = send_message(client)
-    set_message_edit_typing_status(client)
+    set_message_edit_typing_status(client, message_id)
     add_reaction(client, message_id)
     remove_reaction(client, message_id)
     update_message(client, message_id)
@@ -1854,8 +1854,13 @@ def test_users(client: Client, owner_client: Client) -> None:
     get_alert_words(client)
     add_alert_words(client)
     create_saved_snippet(client)
-    get_saved_snippets(client)
-    delete_saved_snippet(client)
+    # Calling this again to pass the curl examples tests as the
+    # `delete-saved-snippet` endpoint is called before `edit-saved-snippet`
+    # causing "Saved snippet does not exist." error.
+    create_saved_snippet(client)
+    saved_snippet_id = get_saved_snippets(client)
+    edit_saved_snippet(client, saved_snippet_id)
+    delete_saved_snippet(client, saved_snippet_id)
     remove_alert_words(client)
     add_apns_token(client)
     remove_apns_token(client)
@@ -1881,7 +1886,6 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     add_default_stream(client)
     remove_default_stream(client)
 
-    test_user_not_authorized_error(nonadmin_client)
     test_authorization_errors_fatal(client, nonadmin_client)
 
 

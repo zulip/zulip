@@ -1,4 +1,5 @@
 .action-button {
+    position: relative;
     display: flex;
     gap: 0.75ch;
     justify-content: center;
@@ -17,14 +18,14 @@
     border: none;
     cursor: pointer;
     clip-path: inset(-1px);
-    transition: none 0.05s ease-in;
+    transition: 0.05s ease-in;
     transition-property: background-color, clip-path;
 
     &:hover {
         background-color: var(
             --color-background-neutral-quiet-action-button-hover
         );
-        transition: none 0.1s ease-out;
+        transition: 0.1s ease-out;
         transition-property: background-color, clip-path;
     }
 
@@ -45,6 +46,12 @@
         outline: 1px solid var(--color-outline-focus) !important;
         outline-offset: 2px;
         clip-path: inset(-3px);
+    }
+
+    &:disabled {
+        cursor: default;
+        pointer-events: none;
+        opacity: 0.5;
     }
 }
 
@@ -375,6 +382,7 @@
 .icon-button {
     /* This class should always be used with an icon-button-* class
        defining the color scheme of the button, defined below. */
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -386,11 +394,11 @@
     border: none;
     border-radius: 4px;
     clip-path: inset(-1px);
-    transition: none 0.05s ease-in;
+    transition: 0.05s ease-in;
     transition-property: background-color, clip-path;
 
     &:hover {
-        transition: none 0.1s ease-out;
+        transition: 0.1s ease-out;
         transition-property: background-color, clip-path;
     }
 
@@ -408,6 +416,12 @@
         outline: 1px solid var(--color-outline-focus) !important;
         outline-offset: 2px;
         clip-path: inset(-3px);
+    }
+
+    &:disabled {
+        cursor: default;
+        pointer-events: none;
+        opacity: 0.5;
     }
 }
 
@@ -569,6 +583,27 @@
             background-color: var(
                 --color-background-danger-icon-button-square-active
             );
+        }
+    }
+}
+
+.button-loading-indicator {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .loading_indicator_spinner {
+        /* Override standard values defined
+           in web/styles/app_components.css */
+        height: 100%;
+        width: unset;
+        aspect-ratio: 1;
+
+        & path {
+            /* Set the loading indicator color
+               to the font color of the button. */
+            fill: currentcolor;
         }
     }
 }

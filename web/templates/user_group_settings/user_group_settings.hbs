@@ -10,21 +10,24 @@
                 {{/if}}
             </button>
         </div>
+        {{#unless group.deactivated}}
         <button class="button small rounded button-danger deactivate deactivate-group-button tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Deactivate group'}}" type="button"> <i class="zulip-icon zulip-icon-user-group-x" aria-hidden="true"></i></button>
+        {{/unless}}
     </div>
 </div>
 <div class="user_group_settings_wrapper" data-group-id="{{group.id}}">
     <div class="inner-box">
 
         <div class="group_general_settings group_setting_section" data-group-section="general">
+            <div class="group-banner"></div>
             <div class="group-header">
                 <div class="group-name-wrapper">
-                    <span class="group-name" title="{{group_name}}">{{group_name}}</span>
+                    <span class="group-name" title="{{group.name}}">{{group.name}}</span>
                 </div>
                 <div class="group_change_property_info alert-notification"></div>
                 <div class="button-group">
                     <button id="open_group_info_modal" class="button rounded small button-warning tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Change group info' }}">
-                        <i class="fa fa-pencil" aria-hidden="true"></i>
+                        <i class="zulip-icon zulip-icon-user-group-edit" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>

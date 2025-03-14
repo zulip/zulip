@@ -6,11 +6,11 @@ import $ from "jquery";
 import * as tippy from "tippy.js";
 
 import * as blueslip from "./blueslip.ts";
-import {media_breakpoints_num} from "./css_variables.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
 import * as popovers from "./popovers.ts";
+import * as ui_util from "./ui_util.ts";
 import * as util from "./util.ts";
 
 type PopoverName =
@@ -55,6 +55,10 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     stream_actions_popover: null,
     color_picker_popover: null,
 };
+
+// Font size in em for popover derived from popover font size being
+// 15px at base font size of 14px.
+export const POPOVER_FONT_SIZE_IN_EM = 1.0714;
 
 /* Keyboard UI functions */
 export function popover_items_handle_keyboard(key: string, $items?: JQuery): void {
@@ -336,7 +340,10 @@ function get_props_for_popover_centering(
     return {
         arrow: false,
         getReferenceClientRect: () => new DOMRect(0, 0, 0, 0),
-        placement: "top",
+        // Since we are resetting the reference to (0,0) in DOM the placement here doesn't matter
+        // Using "bottom" placement as it works well with Popper's positioning system
+        // when the popover exceeds window height
+        placement: "bottom",
         popperOptions: {
             modifiers: [
                 {
@@ -403,7 +410,8 @@ export function toggle_popover_menu(
     options?: {
         show_as_overlay_on_mobile: boolean;
         show_as_overlay_always: boolean;
-        show_as_overlay_if_reference_hidden_at_trigger?: boolean;
+        // Only works for elements which are in message feed.
+        message_feed_overlay_detection?: boolean;
     },
 ): tippy.Instance {
     const instance = target._tippy;
@@ -418,10 +426,15 @@ export function toggle_popover_menu(
     // popover centered on the screen as an overlay.
     let show_as_overlay =
         (options?.show_as_overlay_on_mobile === true &&
-            window.innerWidth <= media_breakpoints_num.md) ||
+            ui_util.matches_viewport_state("lt_md_min")) ||
         options?.show_as_overlay_always === true;
-    // Show the popover as over if the reference element is hidden.
-    if (!show_as_overlay && options?.show_as_overlay_if_reference_hidden_at_trigger) {
+
+    // Show the popover as overlay if the reference element is hidden in message feed.
+    if (
+        !show_as_overlay &&
+        options?.message_feed_overlay_detection &&
+        $(target).parents("#message_feed_container").length === 1
+    ) {
         const target_props = $(target).get_offset_to_window();
         const viewport_info = message_viewport.message_viewport_info();
         if (
@@ -431,6 +444,7 @@ export function toggle_popover_menu(
             show_as_overlay = true;
         }
     }
+
     if (show_as_overlay) {
         mobile_popover_props = {
             ...get_props_for_popover_centering(popover_props),

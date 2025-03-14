@@ -34,6 +34,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_set_realm_authentication_methods,
 )
+from zerver.actions.saved_snippets import do_create_saved_snippet
 from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.user_activity import do_update_user_activity_interval
 from zerver.actions.user_settings import do_change_user_setting
@@ -594,47 +595,59 @@ class RealmImportExportTest(ExportFile):
     def test_export_realm_with_exportable_user_ids(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
 
-        cordelia = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
-        user_ids = {cordelia.id, hamlet.id}
+        polonius = self.example_user("polonius")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
 
-        pm_a_msg_id = self.send_personal_message(
-            self.example_user("AARON"), self.example_user("othello")
-        )
-        pm_b_msg_id = self.send_personal_message(
-            self.example_user("cordelia"), self.example_user("iago")
-        )
-        pm_c_msg_id = self.send_personal_message(
-            self.example_user("hamlet"), self.example_user("othello")
-        )
-        pm_d_msg_id = self.send_personal_message(
-            self.example_user("iago"), self.example_user("hamlet")
+        do_change_user_setting(cordelia, "allow_private_data_export", True, acting_user=cordelia)
+        do_change_user_setting(hamlet, "allow_private_data_export", True, acting_user=hamlet)
+        exportable_user_ids = {cordelia.id, hamlet.id}
+
+        pm_a_msg_id = self.send_personal_message(polonius, othello)
+        pm_b_msg_id = self.send_personal_message(cordelia, iago)
+        pm_c_msg_id = self.send_personal_message(hamlet, othello)
+        pm_d_msg_id = self.send_personal_message(iago, hamlet)
+
+        self.export_realm_and_create_auditlog(
+            realm,
+            export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
+            exportable_user_ids=exportable_user_ids,
         )
 
-        self.export_realm_and_create_auditlog(realm, exportable_user_ids=user_ids)
+        realm_data = read_json("realm.json")
 
-        data = read_json("realm.json")
-
-        exported_user_emails = self.get_set(data["zerver_userprofile"], "delivery_email")
-        self.assertIn(self.example_email("iago"), exported_user_emails)
-        self.assertIn(self.example_email("hamlet"), exported_user_emails)
+        exported_user_emails = self.get_set(realm_data["zerver_userprofile"], "delivery_email")
+        self.assertIn(cordelia.delivery_email, exported_user_emails)
+        self.assertIn(hamlet.delivery_email, exported_user_emails)
         self.assertNotIn("default-bot@zulip.com", exported_user_emails)
-        self.assertNotIn(self.example_email("cordelia"), exported_user_emails)
+        self.assertNotIn(iago.delivery_email, exported_user_emails)
+        self.assertNotIn(polonius.delivery_email, exported_user_emails)
 
-        dummy_user_emails = self.get_set(data["zerver_userprofile_mirrordummy"], "delivery_email")
-        self.assertIn(self.example_email("cordelia"), dummy_user_emails)
-        self.assertIn(self.example_email("othello"), dummy_user_emails)
+        dummy_user_emails = self.get_set(
+            realm_data["zerver_userprofile_mirrordummy"], "delivery_email"
+        )
+        self.assertIn(iago.delivery_email, dummy_user_emails)
+        self.assertIn(othello.delivery_email, dummy_user_emails)
+        self.assertIn(polonius.delivery_email, dummy_user_emails)
         self.assertIn("default-bot@zulip.com", dummy_user_emails)
-        self.assertNotIn(self.example_email("iago"), dummy_user_emails)
-        self.assertNotIn(self.example_email("hamlet"), dummy_user_emails)
+        self.assertNotIn(cordelia.delivery_email, dummy_user_emails)
+        self.assertNotIn(hamlet.delivery_email, dummy_user_emails)
 
-        data = read_json("messages-000001.json")
+        message_data = read_json("messages-000001.json")
 
-        exported_message_ids = self.get_set(data["zerver_message"], "id")
+        exported_message_ids = self.get_set(message_data["zerver_message"], "id")
         self.assertNotIn(pm_a_msg_id, exported_message_ids)
         self.assertIn(pm_b_msg_id, exported_message_ids)
         self.assertIn(pm_c_msg_id, exported_message_ids)
         self.assertIn(pm_d_msg_id, exported_message_ids)
+
+        personal_recipient_type_ids = (
+            r["type_id"] for r in realm_data["zerver_recipient"] if r["type"] == Recipient.PERSONAL
+        )
+        for user_profile_id in [cordelia.id, hamlet.id, iago.id, othello.id, polonius.id]:
+            self.assertIn(user_profile_id, personal_recipient_type_ids)
 
     def test_export_realm_with_member_consent(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
@@ -895,6 +908,12 @@ class RealmImportExportTest(ExportFile):
 
         # Deactivate a user to ensure such a case is covered.
         do_deactivate_user(self.example_user("aaron"), acting_user=None)
+        # Turn another user into a mirror dummy
+        prospero = self.example_user("prospero")
+        prospero_email = prospero.delivery_email
+        do_deactivate_user(prospero, acting_user=None)
+        prospero.is_mirror_dummy = True
+        prospero.save()
 
         # Change some authentication_methods so that some are enabled and some disabled
         # for this to be properly tested, as opposed to some special case
@@ -958,6 +977,7 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(reaction.emoji_code, str(realm_emoji.id))
 
         # data to test import of onboaring step
+        OnboardingStep.objects.filter(user=sample_user).delete()
         OnboardingStep.objects.create(
             user=sample_user,
             onboarding_step="intro_inbox_view_modal",
@@ -1298,6 +1318,9 @@ class RealmImportExportTest(ExportFile):
             imported_message_with_thumbnail.rendered_content, expected_rendered_preview
         )
 
+        imported_prospero_user = get_user_by_delivery_email(prospero_email, imported_realm)
+        self.assertIsNotNone(imported_prospero_user.recipient)
+
     def test_import_message_edit_history(self) -> None:
         realm = get_realm("zulip")
         iago = self.example_user("iago")
@@ -1620,7 +1643,9 @@ class RealmImportExportTest(ExportFile):
         def get_usermessages_user(r: Realm) -> set[str]:
             messages = get_stream_messages(r).order_by("content")
             usermessage = UserMessage.objects.filter(message=messages[0])
-            usermessage_user = {um.user_profile.email for um in usermessage}
+            usermessage_user = {
+                um.user_profile.email for um in usermessage if not um.user_profile.is_mirror_dummy
+            }
             return usermessage_user
 
         # tests to make sure that various data-*-ids in rendered_content
@@ -2463,6 +2488,15 @@ class SingleUserExportTest(ExportFile):
                     message=smile_message_id,
                 ),
             )
+
+        # We violate alphabetical order here but this creates a RealmAuditLog entry and we want the stream
+        # subscription event which will occur next to be the last RealmAuditLog entry.
+        do_create_saved_snippet("snippet title", "snippet content", cordelia)
+
+        @checker
+        def zerver_savedsnippet(records: list[Record]) -> None:
+            self.assertEqual(records[-1]["title"], "snippet title")
+            self.assertEqual(records[-1]["content"], "snippet content")
 
         self.subscribe(cordelia, "Scotland")
 

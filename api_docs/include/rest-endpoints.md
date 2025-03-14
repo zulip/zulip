@@ -34,6 +34,7 @@
 * [Delete a draft](/api/delete-draft)
 * [Get all saved snippets](/api/get-saved-snippets)
 * [Create a saved snippet](/api/create-saved-snippet)
+* [Edit a saved snippet](/api/edit-saved-snippet)
 * [Delete a saved snippet](/api/delete-saved-snippet)
 
 #### Channels

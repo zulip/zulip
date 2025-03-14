@@ -21,10 +21,13 @@
                 </div>
                 <div class="input-append stream_name_search_section" id="stream_filter">
                     <input type="text" name="stream_name" id="search_stream_name" class="filter_text_input" autocomplete="off"
-                      placeholder="{{t 'Filter channels' }}" value=""/>
+                      placeholder="{{t 'Filter' }}" value=""/>
                     <button type="button" class="clear_search_button" id="clear_search_stream_name">
                         <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
                     </button>
+                    <div class="stream_settings_filter_container {{#unless realm_has_archived_channels}}hide_filter{{/unless}}">
+                        {{> ../dropdown_widget widget_name="stream_settings_filter"}}
+                    </div>
                 </div>
                 <div class="no-streams-to-show">
                     <div class="subscribed_streams_tab_empty_text">

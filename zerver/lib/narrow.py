@@ -26,6 +26,7 @@ from sqlalchemy.sql import (
     or_,
     select,
     table,
+    true,
     union_all,
 )
 from sqlalchemy.sql.selectable import SelectBase
@@ -161,6 +162,10 @@ def is_spectator_compatible(narrow: Iterable[NarrowParameter]) -> bool:
     ]
     for element in narrow:
         operator = element.operator
+        operand = element.operand
+
+        if operator == "is" and operand == "resolved":
+            continue
         if operator not in supported_operators:
             return False
     return True
@@ -382,14 +387,18 @@ class NarrowBuilder:
             )
             if conditions:
                 return query.where(maybe_negate(and_(*conditions)))
-            return query  # nocoverage
+            return query.where(maybe_negate(true()))
         elif operand == "all":
             return query
 
         raise BadNarrowOperatorError("unknown 'in' operand " + operand)
 
     def by_is(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        # This operator class does not support is_web_public_query.
+        # Only `resolved` operand of this class supports is_web_public_query.
+        if operand == "resolved":
+            cond = get_resolved_topic_condition_sa()
+            return query.where(maybe_negate(cond))
+
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
@@ -421,12 +430,22 @@ class NarrowBuilder:
         elif operand == "alerted":
             cond = column("flags", Integer).op("&")(UserMessage.flags.has_alert_word.mask) != 0
             return query.where(maybe_negate(cond))
-        elif operand == "resolved":
-            cond = get_resolved_topic_condition_sa()
-            return query.where(maybe_negate(cond))
         elif operand == "followed":
             cond = get_followed_topic_condition_sa(self.user_profile.id)
             return query.where(maybe_negate(cond))
+        elif operand == "muted":
+            # TODO: If we also have a channel operator, this could be
+            # a lot more efficient if limited to only those muting
+            # rules that appear in such channels.
+            conditions = exclude_muting_conditions(
+                self.user_profile, [NarrowParameter(operator="is", operand="muted")]
+            )
+            if conditions:
+                return query.where(maybe_negate(not_(and_(*conditions))))
+
+            # This is the case where no channels or topics were muted.
+            return query.where(maybe_negate(false()))
+
         raise BadNarrowOperatorError("unknown 'is' operand " + operand)
 
     _alphanum = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -965,7 +984,7 @@ def update_narrow_terms_containing_with_operator(
 
     if maybe_user_profile.is_authenticated:
         try:
-            message = access_message(maybe_user_profile, message_id)
+            message = access_message(maybe_user_profile, message_id, is_modifying_message=False)
         except JsonableError:
             can_user_access_target_message = False
     else:

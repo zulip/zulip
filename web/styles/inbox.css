@@ -64,14 +64,14 @@
                 font-size: 1.1428em; /* 16px at 14px em */
                 color: var(--color-icons-inbox);
                 opacity: 0.4;
-                transition: none 140ms;
+                transition: 140ms;
                 transition-property: background-color, opacity, transform;
                 /* 5px at 16px font-size at 14px em */
                 padding: 0.3125em;
                 margin: 0;
                 position: relative;
-                /* Width of the button, 27px at 16px font-size at 14px em */
-                right: 1.6875em;
+                /* Give 2px space to right at 16px font-size */
+                right: 0.125em;
 
                 &:focus {
                     outline: none;
@@ -94,10 +94,13 @@
         }
 
         #inbox-search {
+            /* Give space for 30px cross icon at 16px font-size */
+            margin-right: -1.875em;
+            flex-grow: 1;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
-            width: var(--width-inbox-search);
+            max-width: var(--width-inbox-search);
             height: var(--height-inbox-search);
             /* top/bottom default 1px padding / 14px em */
             /* left padding 30px / 14px em */
@@ -584,6 +587,12 @@
     padding: 5px 10px;
     display: flex;
     flex-direction: column;
+    /* For columnar flex items, we need
+       to make set alignment to the start
+       of the flex container. This pushes
+       back against non-columnar flexboxes
+       that require centered alignment. */
+    align-items: flex-start;
 }
 
 .recent-view-filter-dropdown-list-container .dropdown-list-item-name,

@@ -12,9 +12,11 @@
                 </div>
             </a>
         {{else if user_list_style.WITH_AVATAR}}
-            <div class="user-profile-picture avatar-preload-background">
-                <img loading="lazy" src="{{profile_picture}}"/>
-                <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
+            <div class="user-profile-picture-container">
+                <div class="user-profile-picture avatar-preload-background">
+                    <img loading="lazy" src="{{profile_picture}}"/>
+                    <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
+                </div>
             </div>
             <a class="user-presence-link" href="{{href}}">
                 <div class="user-name-and-status-wrapper">

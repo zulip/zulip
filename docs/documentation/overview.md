@@ -71,11 +71,10 @@ and looking at the content on the GitHub web UI, since GitHub renders
 Markdown, though that won't be as faithful as the `make html`
 approach or the preview build.
 
-When editing dependencies for the Zulip documentation, you should edit
-`requirements/docs.in` and then run `tools/update-locked-requirements`
-which updates docs.txt file (which is used by ReadTheDocs to build the
-Zulip developer documentation, without installing all of Zulip's
-dependencies).
+We manage Python requirements for the documentation build in the `docs` uv
+[group](https://docs.astral.sh/uv/concepts/projects/dependencies/#dependency-groups),
+which is used by our ReadTheDocs build configuration in
+[`.readthedocs.yaml`](https://docs.readthedocs.com/platform/stable/config-file/v2.html).
 
 ## Core website documentation
 

@@ -1204,7 +1204,7 @@ def do_send_messages(
                 user_ids_without_access_to_sender = user_ids_receiving_event - set(
                     user_ids_who_can_access_sender
                 )
-                event["user_ids_without_access_to_sender"] = user_ids_without_access_to_sender
+                event["user_ids_without_access_to_sender"] = list(user_ids_without_access_to_sender)
 
         if send_request.local_id is not None:
             event["local_id"] = send_request.local_id
@@ -1456,7 +1456,7 @@ def send_rate_limited_pm_notification_to_bot_owner(
         return
 
     # We warn the user once every 5 minutes to avoid a flood of
-    # direct messages on a misconfigured integration, re-using the
+    # direct messages on a misconfigured integration, reusing the
     # UserProfile.last_reminder field, which is not used for bots.
     last_reminder = sender.last_reminder
     waitperiod = timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)

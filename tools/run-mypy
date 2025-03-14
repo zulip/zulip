@@ -34,17 +34,9 @@ args = parser.parse_args()
 assert_provisioning_status_ok(args.skip_provision_check)
 
 if args.use_daemon:
-    command_name = "dmypy"
+    mypy_command = "dmypy"
 else:
-    command_name = "mypy"
-
-# Use zulip-py3-venv's mypy if it's available.
-VENV_DIR = "/srv/zulip-py3-venv"
-MYPY_VENV_PATH = os.path.join(VENV_DIR, "bin", command_name)
-if os.path.exists(MYPY_VENV_PATH):
-    mypy_command = MYPY_VENV_PATH
-else:
-    mypy_command = command_name
+    mypy_command = "mypy"
 
 if args.version:
     print("mypy command:", mypy_command)

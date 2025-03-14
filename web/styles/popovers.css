@@ -80,9 +80,7 @@
     border: 1px solid var(--color-border-popover-menu);
     border-radius: 6px;
     box-shadow: var(--box-shadow-popover-menu);
-    /* Popover menus should scale no smaller than 15px,
-       but scale up with the base font-size. */
-    font-size: max(15px, var(--base-font-size-px));
+    font-size: 1.0714em; /* 15px at 14px em */
 
     > .tippy-content {
         padding: 0;
@@ -316,7 +314,7 @@ ul.popover-group-menu-member-list {
 }
 
 .popover-group-menu-member {
-    .zulip-icon-triple-users {
+    .zulip-icon-user-group {
         color: var(--color-icon-purple);
     }
 }
@@ -544,7 +542,8 @@ ul.popover-group-menu-member-list {
         }
 
         .stream-privacy {
-            display: inline-block;
+            display: flex;
+            align-items: center;
         }
 
         .filter-icon i {
@@ -590,6 +589,9 @@ ul.popover-group-menu-member-list {
             text-overflow: ellipsis;
             overflow: hidden;
             margin-bottom: 0;
+            /* Override default modal input width, since that overflows.
+               This is 185px (the default "width: unset" width) at 14px/em */
+            width: 13.2142em;
         }
 
         .group-search:placeholder-shown + #clear_groups_search,
@@ -634,17 +636,21 @@ ul.popover-group-menu-member-list {
                 & td {
                     padding: 4px 0;
 
-                    &:first-of-type {
-                        padding-left: 10px;
-                    }
-
-                    &:last-of-type {
-                        padding-right: 10px;
-                    }
-
                     &.remove_subscription,
                     &.remove_member {
                         text-align: right;
+                        padding-right: 10px;
+                    }
+
+                    &.user-profile-channel-row,
+                    &.user-profile-group-row {
+                        text-align: left;
+                        padding-left: 10px;
+
+                        & .user-profile-channel-container {
+                            display: flex;
+                            gap: 3px;
+                        }
                     }
                 }
             }
@@ -887,9 +893,8 @@ ul.popover-group-menu-member-list {
     }
 
     #move_messages_count {
-        margin-top: -20px;
-        font-style: italic;
-        opacity: 0.7;
+        /* Disabled pending fixes to the logic. */
+        display: none;
     }
 
     .topic_stream_edit_header {
@@ -989,13 +994,13 @@ ul.popover-group-menu-member-list {
     .popover-menu-user-avatar-container {
         position: relative;
         flex-shrink: 0;
-        width: 64px;
-        height: 64px;
+        width: var(--length-user-popover-menu-avatar);
+        height: var(--length-user-popover-menu-avatar);
     }
 
     .popover-menu-user-avatar {
-        width: 64px;
-        height: 64px;
+        width: var(--length-user-popover-menu-avatar);
+        height: var(--length-user-popover-menu-avatar);
         border-radius: 4px;
         background-size: cover;
         background-position: center;
@@ -1005,13 +1010,19 @@ ul.popover-group-menu-member-list {
         position: absolute;
         /* Presence dot does not scale, because
            the avatar itself does not scale. */
-        font-size: 8px;
+        font-size: var(--length-user-status-circle-popover-menu);
         line-height: 1;
         right: -1px;
         bottom: -1px;
         background-color: var(--color-background-popover-menu);
         border: solid 1px var(--color-background-popover-menu);
         border-radius: 50%;
+
+        &.deactivated-user-icon {
+            font-size: 0.8em;
+            background-color: var(--color-background-popover-menu);
+            padding: 1px;
+        }
     }
 
     .popover-menu-user-info {
@@ -1093,8 +1104,6 @@ ul.popover-group-menu-member-list {
         position: absolute;
         top: unset;
         left: unset;
-        /* Presence dot does not scale, because
-           the avatar itself does not scale. */
         font-size: var(--length-user-status-circle);
         line-height: 1;
         right: -1px;
@@ -1266,6 +1275,17 @@ ul.popover-group-menu-member-list {
         position: relative;
         top: -1px;
     }
+
+    .info-density-controls {
+        display: flex;
+        padding: 0.125em 0.625em;
+        gap: 0.5em;
+
+        .zulip-icon {
+            width: 0.933em;
+            height: 0.933em;
+        }
+    }
 }
 
 #help-menu-dropdown,
@@ -1435,6 +1455,21 @@ ul.popover-group-menu-member-list {
         .org-version a {
             color: var(--color-gear-menu-blue-text);
         }
+    }
+
+    .theme-switcher {
+        /* Left and right margins are set to match the alignment with
+        other items in the menu. Other elements have space of 0.6666em
+        on both sides, but they have font size set to 1em and theme
+        switcher has font size set to 1.0666em. So, we need space of
+        0.6666/1.0666 em on each side. */
+        margin: 0 0.625em;
+    }
+
+    .info-density-controls {
+        /* Left and right paddings are set to match the alignment with
+        other items in the menu. */
+        padding: 0.4em 0.6666em 0.25em;
     }
 }
 

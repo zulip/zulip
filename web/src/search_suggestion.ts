@@ -589,12 +589,29 @@ function get_special_filter_suggestions(
     // Negating suggestions on is_search_operand_negated is required for
     // suggesting negated terms.
     if (last.negated === true || is_search_operand_negated) {
-        suggestions = suggestions.map((suggestion) => ({
-            search_string: "-" + suggestion.search_string,
-            description_html: "exclude " + suggestion.description_html,
-            incompatible_patterns: suggestion.incompatible_patterns,
-            is_people: false,
-        }));
+        suggestions = suggestions
+            .map((suggestion) => {
+                // If the search_string is "is:resolved", we want to suggest "Unresolved topics"
+                // instead of "Exclude resolved topics".
+                if (suggestion.search_string === "is:resolved") {
+                    return {
+                        ...suggestion,
+                        search_string: "-" + suggestion.search_string,
+                        description_html: "unresolved topics",
+                    };
+                } else if (suggestion.search_string === "-is:resolved") {
+                    return null;
+                }
+                return {
+                    ...suggestion,
+                    search_string: "-" + suggestion.search_string,
+                    description_html: "exclude " + suggestion.description_html,
+                };
+            })
+            .filter(
+                (suggestion): suggestion is SuggestionAndIncompatiblePatterns =>
+                    suggestion !== null,
+            );
     }
 
     const last_string = Filter.unparse([last]).toLowerCase();
@@ -653,71 +670,123 @@ function get_channels_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]):
     return get_special_filter_suggestions(last, terms, suggestions);
 }
 function get_is_filter_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
-    const suggestions: SuggestionAndIncompatiblePatterns[] = [
-        {
-            search_string: "is:dm",
-            description_html: "direct messages",
-            is_people: false,
-            incompatible_patterns: [
-                {operator: "is", operand: "dm"},
-                {operator: "is", operand: "resolved"},
-                {operator: "channel"},
-                {operator: "dm"},
-                {operator: "in"},
-                {operator: "topic"},
-            ],
-        },
-        {
-            search_string: "is:starred",
-            description_html: "starred messages",
-            is_people: false,
-            incompatible_patterns: [{operator: "is", operand: "starred"}],
-        },
-        {
-            search_string: "is:mentioned",
-            description_html: "@-mentions",
-            is_people: false,
-            incompatible_patterns: [{operator: "is", operand: "mentioned"}],
-        },
-        {
-            search_string: "is:followed",
-            description_html: "followed topics",
-            is_people: false,
-            incompatible_patterns: [
-                {operator: "is", operand: "followed"},
-                {operator: "is", operand: "dm"},
-                {operator: "dm"},
-                {operator: "dm-including"},
-            ],
-        },
-        {
-            search_string: "is:alerted",
-            description_html: "alerted messages",
-            is_people: false,
-            incompatible_patterns: [{operator: "is", operand: "alerted"}],
-        },
-        {
-            search_string: "is:unread",
-            description_html: "unread messages",
-            is_people: false,
-            incompatible_patterns: [{operator: "is", operand: "unread"}],
-        },
-        {
-            search_string: "is:resolved",
-            description_html: "topics marked as resolved",
-            is_people: false,
-            incompatible_patterns: [
-                {operator: "is", operand: "resolved"},
-                {operator: "is", operand: "dm"},
-                {operator: "dm"},
-                {operator: "dm-including"},
-            ],
-        },
-    ];
+    let suggestions: SuggestionAndIncompatiblePatterns[];
+    if (page_params.is_spectator) {
+        suggestions = [
+            {
+                search_string: "is:resolved",
+                description_html: "resolved topics",
+                is_people: false,
+                incompatible_patterns: [
+                    {operator: "is", operand: "resolved"},
+                    {operator: "is", operand: "dm"},
+                    {operator: "dm"},
+                    {operator: "dm-including"},
+                ],
+            },
+            {
+                search_string: "-is:resolved",
+                description_html: "unresolved topics",
+                is_people: false,
+                incompatible_patterns: [
+                    {operator: "is", operand: "resolved"},
+                    {operator: "is", operand: "dm"},
+                    {operator: "dm"},
+                    {operator: "dm-including"},
+                ],
+            },
+        ];
+    } else {
+        suggestions = [
+            {
+                search_string: "is:dm",
+                description_html: "direct messages",
+                is_people: false,
+                incompatible_patterns: [
+                    {operator: "is", operand: "dm"},
+                    {operator: "is", operand: "resolved"},
+                    {operator: "channel"},
+                    {operator: "dm"},
+                    {operator: "in"},
+                    {operator: "topic"},
+                ],
+            },
+            {
+                search_string: "is:starred",
+                description_html: "starred messages",
+                is_people: false,
+                incompatible_patterns: [{operator: "is", operand: "starred"}],
+            },
+            {
+                search_string: "is:mentioned",
+                description_html: "@-mentions",
+                is_people: false,
+                incompatible_patterns: [{operator: "is", operand: "mentioned"}],
+            },
+            {
+                search_string: "is:followed",
+                description_html: "followed topics",
+                is_people: false,
+                incompatible_patterns: [
+                    {operator: "is", operand: "followed"},
+                    {operator: "is", operand: "dm"},
+                    {operator: "dm"},
+                    {operator: "dm-including"},
+                ],
+            },
+            {
+                search_string: "is:alerted",
+                description_html: "alerted messages",
+                is_people: false,
+                incompatible_patterns: [{operator: "is", operand: "alerted"}],
+            },
+            {
+                search_string: "is:unread",
+                description_html: "unread messages",
+                is_people: false,
+                incompatible_patterns: [{operator: "is", operand: "unread"}],
+            },
+            {
+                search_string: "is:muted",
+                description_html: "muted messages",
+                is_people: false,
+                incompatible_patterns: [
+                    {operator: "is", operand: "muted"},
+                    {operator: "in", operand: "home"},
+                ],
+            },
+            {
+                search_string: "is:resolved",
+                description_html: "resolved topics",
+                is_people: false,
+                incompatible_patterns: [
+                    {operator: "is", operand: "resolved"},
+                    {operator: "is", operand: "dm"},
+                    {operator: "dm"},
+                    {operator: "dm-including"},
+                ],
+            },
+            {
+                search_string: "-is:resolved",
+                description_html: "unresolved topics",
+                is_people: false,
+                incompatible_patterns: [
+                    {operator: "is", operand: "resolved"},
+                    {operator: "is", operand: "dm"},
+                    {operator: "dm"},
+                    {operator: "dm-including"},
+                ],
+            },
+        ];
+    }
     const special_filtered_suggestions = get_special_filter_suggestions(last, terms, suggestions);
     // Suggest "is:dm" to anyone with "is:private" in their muscle memory
     const other_suggestions = [];
-    if (last.operator === "is" && common.phrase_match(last.operand, "private")) {
+    if (
+        last.operator === "is" &&
+        common.phrase_match(last.operand, "private") &&
+        !page_params.is_spectator
+    ) {
         const is_dm = format_as_suggestion([
             {operator: last.operator, operand: "dm", negated: last.negated},
         ]);
@@ -1077,6 +1146,7 @@ export function get_search_result(
 
     if (page_params.is_spectator) {
         filterers = [
+            get_is_filter_suggestions,
             get_channel_suggestions,
             get_people("sender"),
             get_people("from"),

@@ -82,7 +82,6 @@ class UserBaseSettings(models.Model):
     WEB_FONT_SIZE_PX_DEFAULT = 16
     WEB_LINE_HEIGHT_PERCENT_COMPACT = 122
     WEB_LINE_HEIGHT_PERCENT_DEFAULT = 140
-    dense_mode = models.BooleanField(default=False)
     web_font_size_px = models.PositiveSmallIntegerField(default=WEB_FONT_SIZE_PX_DEFAULT)
     web_line_height_percent = models.PositiveSmallIntegerField(
         default=WEB_LINE_HEIGHT_PERCENT_DEFAULT
@@ -307,7 +306,6 @@ class UserBaseSettings(models.Model):
         default_language=str,
         web_home_view=str,
         demote_inactive_streams=int,
-        dense_mode=bool,
         emojiset=str,
         enable_drafts_synchronization=bool,
         enter_sends=bool,
@@ -503,8 +501,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     #
     # See also `long_term_idle`.
     is_active = models.BooleanField(default=True, db_index=True)
-
-    is_billing_admin = models.BooleanField(default=False, db_index=True)
 
     is_bot = models.BooleanField(default=False, db_index=True)
     bot_type = models.PositiveSmallIntegerField(null=True, db_index=True)
@@ -750,7 +746,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def has_billing_access(self) -> bool:
-        return self.is_realm_owner or self.is_billing_admin
+        return self.has_permission("can_manage_billing_group")
 
     @property
     def is_realm_owner(self) -> bool:
@@ -868,6 +864,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     def can_move_messages_to_another_topic(self) -> bool:
         return self.has_permission("can_move_messages_between_topics_group")
+
+    def can_resolve_topic(self) -> bool:
+        return self.has_permission("can_resolve_topics_group")
 
     def can_add_custom_emoji(self) -> bool:
         return self.has_permission("can_add_custom_emoji_group")

@@ -19,6 +19,7 @@ from zerver.lib.message import (
     access_message_and_usermessage,
     access_web_public_message,
     messages_for_ids,
+    visible_edit_history_for_message,
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
@@ -27,6 +28,7 @@ from zerver.lib.topic import maybe_rename_empty_topic_to_general_chat
 from zerver.lib.typed_endpoint import OptionalTopic, PathOnly, typed_endpoint
 from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent
 from zerver.models import Message, UserProfile
+from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
 
 
 def fill_edit_history_entries(
@@ -109,9 +111,15 @@ def get_message_edit_history(
     message_id: PathOnly[NonNegativeInt],
     allow_empty_topic_name: Json[bool] = False,
 ) -> HttpResponse:
-    if not user_profile.realm.allow_edit_history:
+    user_realm_message_edit_history_visibility_policy = (
+        user_profile.realm.message_edit_history_visibility_policy
+    )
+    if (
+        user_realm_message_edit_history_visibility_policy
+        == MessageEditHistoryVisibilityPolicyEnum.none.value
+    ):
         raise JsonableError(_("Message edit history is disabled in this organization"))
-    message = access_message(user_profile, message_id)
+    message = access_message(user_profile, message_id, is_modifying_message=False)
 
     # Extract the message edit history from the message
     if message.edit_history is not None:
@@ -123,7 +131,14 @@ def get_message_edit_history(
     message_edit_history = fill_edit_history_entries(
         raw_edit_history, message, allow_empty_topic_name
     )
-    return json_success(request, data={"message_history": list(reversed(message_edit_history))})
+
+    visible_message_edit_history = visible_edit_history_for_message(
+        user_realm_message_edit_history_visibility_policy, message_edit_history
+    )
+
+    return json_success(
+        request, data={"message_history": list(reversed(visible_message_edit_history))}
+    )
 
 
 @typed_endpoint
@@ -190,7 +205,7 @@ def delete_message_backend(
     # concurrently are serialized properly with deleting the message; this prevents a deadlock
     # that would otherwise happen because of the other transaction holding a lock on the `Message`
     # row.
-    message = access_message(user_profile, message_id, lock_message=True)
+    message = access_message(user_profile, message_id, lock_message=True, is_modifying_message=True)
     validate_can_delete_message(user_profile, message)
     try:
         do_delete_messages(user_profile.realm, [message], acting_user=user_profile)
@@ -213,18 +228,22 @@ def json_fetch_raw_message(
         message = access_web_public_message(realm, message_id)
         user_profile = None
     else:
-        (message, user_message) = access_message_and_usermessage(maybe_user_profile, message_id)
+        (message, user_message) = access_message_and_usermessage(
+            maybe_user_profile, message_id, is_modifying_message=False
+        )
         user_profile = maybe_user_profile
 
     flags = ["read"]
     if not maybe_user_profile.is_authenticated:
-        allow_edit_history = realm.allow_edit_history
+        message_edit_history_visibility_policy = realm.message_edit_history_visibility_policy
     else:
         if user_message:
             flags = user_message.flags_list()
         else:
             flags = ["read", "historical"]
-        allow_edit_history = maybe_user_profile.realm.allow_edit_history
+        message_edit_history_visibility_policy = (
+            maybe_user_profile.realm.message_edit_history_visibility_policy
+        )
 
     # Security note: It's important that we call this only with a
     # message already fetched via `access_message` type methods,
@@ -235,7 +254,7 @@ def json_fetch_raw_message(
         search_fields={},
         apply_markdown=apply_markdown,
         client_gravatar=True,
-        allow_edit_history=allow_edit_history,
+        message_edit_history_visibility_policy=message_edit_history_visibility_policy,
         allow_empty_topic_name=allow_empty_topic_name,
         user_profile=user_profile,
         realm=message.realm,

@@ -16,6 +16,8 @@ class zulip::app_frontend_base {
   }
   zulip::safepackage {
     [
+      # For `manage.py compilemessages` when upgrading from Git.
+      'gettext',
       # For Slack import.
       'unzip',
       # Ensures `/etc/ldap/ldap.conf` exists; the default
@@ -151,6 +153,7 @@ class zulip::app_frontend_base {
     'embed_links',
     'embedded_bots',
     'email_senders',
+    'deferred_email_senders',
     'missedmessage_emails',
     'missedmessage_mobile_notifications',
     'outgoing_webhooks',

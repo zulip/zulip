@@ -1,6 +1,8 @@
+import contextlib
 import hashlib
 import logging
 import os
+import re
 import smtplib
 from collections.abc import Callable, Mapping
 from contextlib import suppress
@@ -32,6 +34,7 @@ from django.utils.translation import override as override_language
 
 from confirmation.models import generate_key
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.queue import queue_event_on_commit
 from zerver.models import Realm, ScheduledEmail, UserProfile
 from zerver.models.scheduled_jobs import EMAIL_TYPES
 from zerver.models.users import get_user_profile_by_id
@@ -40,6 +43,7 @@ from zproject.email_backends import EmailLogBackEnd, get_forward_address
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
 
+EMAIL_DATE_FORMAT = "%a, %d %b %Y %H:%M:%S %z"
 MAX_CONNECTION_TRIES = 3
 
 ## Logging setup ##
@@ -91,6 +95,7 @@ def build_email(
     from_address: str | None = None,
     reply_to_email: str | None = None,
     language: str | None = None,
+    date: str | None = None,
     context: Mapping[str, Any] = {},
     realm: Realm | None = None,
 ) -> EmailMultiAlternatives:
@@ -120,6 +125,14 @@ def build_email(
     # came out of Microsoft Outlook and friends, but seems reasonably
     # commonly-recognized.
     extra_headers = {"X-Auto-Response-Suppress": "All"}
+
+    if date is None:
+        # Messages enqueued via the `email_senders` queue provide a
+        # Date header of when they were enqueued; Django would also
+        # add a default-now header if we left this off, but doing so
+        # ourselves here explicitly makes it slightly more consistent.
+        date = timezone_now().strftime(EMAIL_DATE_FORMAT)
+    extra_headers["Date"] = date
 
     if realm is not None:
         # formaddr is meant for formatting (display_name, email_address) pair for headers like "To",
@@ -252,6 +265,7 @@ def send_email(
     from_address: str | None = None,
     reply_to_email: str | None = None,
     language: str | None = None,
+    date: str | None = None,
     context: Mapping[str, Any] = {},
     realm: Realm | None = None,
     connection: BaseEmailBackend | None = None,
@@ -266,6 +280,7 @@ def send_email(
         from_address=from_address,
         reply_to_email=reply_to_email,
         language=language,
+        date=date,
         context=context,
         realm=realm,
     )
@@ -378,6 +393,14 @@ def send_future_email(
         )
         # For logging the email
 
+    if delay == timedelta(0):
+        # Immediately queue, rather than go through the ScheduledEmail table
+        queue_event_on_commit(
+            "deferred_email_senders",
+            {**email_fields, "to_user_ids": to_user_ids, "to_emails": to_emails},
+        )
+        return
+
     assert (to_user_ids is None) ^ (to_emails is None)
     with transaction.atomic(savepoint=False):
         email = ScheduledEmail.objects.create(
@@ -423,7 +446,7 @@ def send_email_to_admins(
     )
 
 
-def send_email_to_billing_admins_and_realm_owners(
+def send_email_to_users_with_billing_access_and_realm_owners(
     template_prefix: str,
     realm: Realm,
     from_name: str | None = None,
@@ -433,7 +456,9 @@ def send_email_to_billing_admins_and_realm_owners(
 ) -> None:
     send_email(
         template_prefix,
-        to_user_ids=[user.id for user in realm.get_human_billing_admin_and_realm_owner_users()],
+        to_user_ids=[
+            user.id for user in realm.get_human_users_with_billing_access_and_realm_owner_users()
+        ],
         from_name=from_name,
         from_address=from_address,
         language=language,
@@ -485,7 +510,7 @@ def handle_send_email_format_changes(job: dict[str, Any]) -> None:
         del job["to_user_id"]
 
 
-def deliver_scheduled_emails(email: ScheduledEmail) -> None:
+def queue_scheduled_emails(email: ScheduledEmail) -> None:
     data = orjson.loads(email.data)
     user_ids = list(email.users.values_list("id", flat=True))
     if not user_ids and not email.address:
@@ -503,8 +528,7 @@ def deliver_scheduled_emails(email: ScheduledEmail) -> None:
         data["to_user_ids"] = user_ids
     if email.address is not None:
         data["to_emails"] = [email.address]
-    handle_send_email_format_changes(data)
-    send_email(**data)
+    queue_event_on_commit("deferred_email_senders", data)
     email.delete()
 
 
@@ -686,4 +710,21 @@ def log_email_config_errors() -> None:
         logger.error(
             "An SMTP username was set (EMAIL_HOST_USER), but password is unset (EMAIL_HOST_PASSWORD).  "
             "To disable SMTP authentication, set EMAIL_HOST_USER to an empty string."
+        )
+
+
+def maybe_remove_from_suppression_list(email: str) -> None:
+    if settings.EMAIL_HOST is None:
+        return
+
+    maybe_aws = re.match(r"^email-smtp(?:-fips)?\.([^.]+)\.amazonaws\.com$", settings.EMAIL_HOST)
+    if maybe_aws is None:
+        return
+
+    import boto3
+    import botocore
+
+    with contextlib.suppress(botocore.exceptions.ClientError):
+        boto3.client("sesv2", region_name=maybe_aws[1]).delete_suppressed_destination(
+            EmailAddress=email
         )

@@ -28,6 +28,12 @@ export type SettingsSubscription = StreamSubscription & {
     subscriber_count: number;
 };
 
+export const FILTERS = {
+    ALL_CHANNELS: "all_channels",
+    NON_ARCHIVED_CHANNELS: "non_archived_channels",
+    ARCHIVED_CHANNELS: "archived_channels",
+};
+
 export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscription {
     return {
         ...sub,
@@ -66,7 +72,7 @@ function get_subs_for_settings(subs: StreamSubscription[]): SettingsSubscription
     // delegating, so that we can more efficiently compute subscriber counts
     // (in bulk).  If that plan appears to have been aborted, feel free to
     // inline this.
-    return subs.filter((sub) => !sub.is_archived).map((sub) => get_sub_for_settings(sub));
+    return subs.map((sub) => get_sub_for_settings(sub));
 }
 
 export function get_updated_unsorted_subs(): SettingsSubscription[] {
@@ -89,7 +95,7 @@ export function get_unmatched_streams_for_notification_settings(): ({
     invite_only: boolean;
     is_web_public: boolean;
 })[] {
-    const subscribed_rows = stream_data.subscribed_subs();
+    const subscribed_rows = stream_data.subscribed_subs().filter((sub) => !sub.is_archived);
     subscribed_rows.sort((a, b) => util.strcmp(a.name, b.name));
 
     const notification_settings = [];
@@ -151,7 +157,9 @@ export function get_streams_for_settings_page(): SettingsSubscription[] {
     }
     subscribed_rows.sort(by_name);
     unsubscribed_rows.sort(by_name);
-    const all_subs = [...unsubscribed_rows, ...subscribed_rows];
+    const all_subs = [...unsubscribed_rows, ...subscribed_rows].filter(
+        (stream) => !stream.is_archived,
+    );
 
     return get_subs_for_settings(all_subs);
 }

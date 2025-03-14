@@ -101,21 +101,6 @@ run_test("create_item", () => {
     test_create_item("role:everyone", [], everyone_pill);
 });
 
-run_test("display_value", () => {
-    assert.deepEqual(
-        user_group_pill.display_pill(admins),
-        "translated HTML: " + admins.name + ": " + admins.members.length + " users",
-    );
-    assert.deepEqual(
-        user_group_pill.display_pill(testers),
-        "translated HTML: " + testers.name + ": " + testers.members.length + " users",
-    );
-    assert.deepEqual(
-        user_group_pill.display_pill(everyone),
-        "translated HTML: translated: Everyone: 5 users",
-    );
-});
-
 run_test("get_stream_id", () => {
     assert.equal(user_group_pill.get_group_name_from_item(admins_pill), admins.name);
 });
@@ -164,4 +149,19 @@ run_test("append_user_group", () => {
     };
     user_group_pill.append_user_group(group, widget);
     assert.deepEqual(items, [admins_pill, testers_pill]);
+});
+
+run_test("generate_pill_html", () => {
+    assert.deepEqual(
+        user_group_pill.generate_pill_html(testers_pill),
+        "<div class='pill 'data-user-group-id=\"102\" tabindex=0>\n" +
+            '    <span class="pill-label">\n' +
+            '        <span class="pill-value">\n' +
+            "            Testers\n" +
+            '        </span>&nbsp;<span class="group-members-count">(4)</span></span>\n' +
+            '    <div class="exit">\n' +
+            '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n' +
+            "    </div>\n" +
+            "</div>\n",
+    );
 });

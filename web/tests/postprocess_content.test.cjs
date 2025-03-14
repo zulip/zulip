@@ -24,6 +24,11 @@ run_test("postprocess_content", () => {
                 '<div class="message_inline_image">' +
                 '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" title="inline image">upload</a> ' +
                 '<a role="button">button</a> ' +
+                "</div>" +
+                '<div class="youtube-video message_inline_image">' +
+                '<a class="" href="https://www.youtube.com/watch?v=tyKJueEk0XM">' +
+                '<img src="https://i.ytimg.com/vi/tyKJueEk0XM/default.jpg">' +
+                "</a>" +
                 "</div>",
         ),
         '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
@@ -34,6 +39,11 @@ run_test("postprocess_content", () => {
             '<div class="message_inline_image">' +
             '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" target="_blank" rel="noopener noreferrer" aria-label="inline image">upload</a> ' +
             '<a role="button">button</a> ' +
+            "</div>" +
+            '<div class="youtube-video message_inline_image">' +
+            '<a class="" href="https://www.youtube.com/watch?v=tyKJueEk0XM" target="_blank" rel="noopener noreferrer">' +
+            '<img src="https://i.ytimg.com/vi/tyKJueEk0XM/mqdefault.jpg" loading="lazy">' +
+            "</a>" +
             "</div>",
     );
 });
@@ -150,5 +160,19 @@ run_test("message_inline_animated_image_still", ({override}) => {
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy">' +
             "</a>" +
             "</div>",
+    );
+
+    // Broken/invalid source URLs in image previews should be
+    // dropped. Inspired by a real message found in chat.zulip.org
+    // history.
+    assert.equal(
+        postprocess_content(
+            '<div class="message_inline_image">' +
+                '<a href="https://zulip.%20[Click%20to%20join%20video%20call](https://meeting.example.com/abcd1234)%20example.com/user_uploads/2/ab/abcd1234/image.png" target="_blank" title="image.png">' +
+                '<img src="https://zulip.%20[Click%20to%20join%20video%20call](https://meeting.example.com/abcd1234)%20example.com/user_uploads/2/ab/abcd1234/image.png">' +
+                "</a>" +
+                "</div>",
+        ),
+        "",
     );
 });

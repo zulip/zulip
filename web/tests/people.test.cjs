@@ -123,7 +123,6 @@ const realm_admin = {
     is_admin: true,
     is_guest: false,
     is_moderator: false,
-    is_billing_admin: true,
     is_bot: false,
     role: 200,
 };
@@ -136,7 +135,6 @@ const guest = {
     is_admin: false,
     is_guest: true,
     is_moderator: false,
-    is_billing_admin: false,
     is_bot: false,
     role: 600,
 };
@@ -149,7 +147,6 @@ const realm_owner = {
     is_admin: true,
     is_guest: false,
     is_moderator: false,
-    is_billing_admin: false,
     is_bot: false,
     role: 100,
 };
@@ -170,7 +167,6 @@ const moderator = {
     is_owner: false,
     is_admin: false,
     is_guest: false,
-    is_billing_admin: false,
     is_moderator: true,
     is_bot: false,
     role: 300,
@@ -522,11 +518,11 @@ test_people("pm_lookup_key", () => {
 test_people("get_recipients", () => {
     people.add_active_user(isaac);
     people.add_active_user(linus);
-    assert.equal(people.get_recipients("30"), "Me Myself");
-    assert.equal(people.get_recipients("30,32"), "Isaac Newton");
+    assert.deepEqual(people.get_recipients("30"), ["Me Myself"]);
+    assert.deepEqual(people.get_recipients("30,32"), ["Isaac Newton"]);
 
     muted_users.add_muted_user(304);
-    assert.equal(people.get_recipients("304,32"), "Isaac Newton, translated: Muted user");
+    assert.deepEqual(people.get_recipients("304,32"), ["Isaac Newton", "translated: Muted user"]);
 });
 
 test_people("get_full_name", () => {
@@ -1108,6 +1104,18 @@ test_people("message_methods", () => {
 
     message = {sender_id: undefined};
     assert.equal(people.sender_is_guest(message), false);
+
+    // Test sender_is_deactivated
+    people.deactivate(maria);
+
+    message = {sender_id: maria.user_id};
+    assert.equal(people.sender_is_deactivated(message), true);
+
+    message = {sender_id: charles.user_id};
+    assert.equal(people.sender_is_deactivated(message), false);
+
+    message = {sender_id: undefined};
+    assert.equal(people.sender_is_deactivated(message), false);
 });
 
 test_people("extract_people_from_message", () => {

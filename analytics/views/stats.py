@@ -185,7 +185,6 @@ def get_chart_data_for_stream(
     stream, ignored_sub = access_stream_by_id(
         user_profile,
         stream_id,
-        require_active=True,
         require_content_access=False,
     )
 

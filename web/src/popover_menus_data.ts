@@ -19,7 +19,7 @@ import * as settings_config from "./settings_config.ts";
 import type {ColorSchemeValues} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as starred_messages from "./starred_messages.ts";
-import {current_user, realm} from "./state_data.ts";
+import {current_user, realm, realm_billing} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import {num_unread_for_topic} from "./unread.ts";
@@ -51,6 +51,7 @@ type TopicPopoverContext = {
     stream_name: string;
     stream_id: number;
     stream_muted: boolean;
+    stream_archived: boolean;
     topic_display_name: string;
     is_empty_string_topic: boolean;
     topic_unmuted: boolean;
@@ -59,6 +60,7 @@ type TopicPopoverContext = {
     is_topic_empty: boolean;
     can_move_topic: boolean;
     can_rename_topic: boolean;
+    can_resolve_topic: boolean;
     is_realm_admin: boolean;
     topic_is_resolved: boolean;
     has_starred_messages: boolean;
@@ -96,6 +98,8 @@ type PersonalMenuContext = {
     status_emoji_info: UserStatusEmojiInfo | undefined;
     user_color_scheme: number;
     color_scheme_values: ColorSchemeValues;
+    web_font_size_px: number;
+    web_line_height_percent: number;
 };
 
 type GearMenuContext = {
@@ -130,6 +134,14 @@ type GearMenuContext = {
     user_has_billing_access: boolean;
     user_color_scheme: number;
     color_scheme_values: ColorSchemeValues;
+    web_font_size_px: number;
+    web_line_height_percent: number;
+};
+
+type BillingInfo = {
+    show_billing: boolean;
+    show_remote_billing: boolean;
+    show_plans: boolean;
 };
 
 export function get_actions_popover_content_context(message_id: number): ActionPopoverContext {
@@ -250,8 +262,11 @@ export function get_topic_popover_content_context({
     const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     const has_unread_messages = num_unread_for_topic(sub.stream_id, topic_name) > 0;
-    const can_move_topic = settings_data.user_can_move_messages_between_streams();
-    const can_rename_topic = settings_data.user_can_move_messages_to_another_topic();
+    const can_move_topic =
+        !sub.is_archived && settings_data.user_can_move_messages_between_streams();
+    const can_rename_topic =
+        !sub.is_archived && settings_data.user_can_move_messages_to_another_topic();
+    const can_resolve_topic = !sub.is_archived && settings_data.user_can_resolve_topic();
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
     const is_spectator = page_params.is_spectator;
@@ -260,6 +275,7 @@ export function get_topic_popover_content_context({
         stream_name: sub.name,
         stream_id: sub.stream_id,
         stream_muted: sub.is_muted,
+        stream_archived: sub.is_archived,
         topic_display_name: util.get_final_topic_display_name(topic_name),
         is_empty_string_topic: topic_name === "",
         topic_unmuted,
@@ -267,6 +283,7 @@ export function get_topic_popover_content_context({
         is_topic_empty,
         can_move_topic,
         can_rename_topic,
+        can_resolve_topic,
         is_moderator: current_user.is_moderator,
         is_realm_admin: current_user.is_admin,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
@@ -327,29 +344,60 @@ export function get_personal_menu_content_context(): PersonalMenuContext {
         // user color scheme
         user_color_scheme: user_settings.color_scheme,
         color_scheme_values: settings_config.color_scheme_values,
+
+        // info density values
+        web_font_size_px: user_settings.web_font_size_px,
+        web_line_height_percent: user_settings.web_line_height_percent,
     };
 }
 
-export function get_gear_menu_content_context(): GearMenuContext {
-    const user_has_billing_access = current_user.is_billing_admin || current_user.is_owner;
-    const is_plan_standard = realm.realm_plan_type === 3;
-    const is_plan_plus = realm.realm_plan_type === 10;
+function get_billing_info(): BillingInfo {
+    const billing_info = {
+        show_remote_billing: false,
+        show_billing: false,
+        show_plans: false,
+    };
+    if (!settings_data.user_has_billing_access()) {
+        return billing_info;
+    }
+
+    const is_plan_standard =
+        realm.realm_plan_type === settings_config.realm_plan_types.standard.code;
+    const is_plan_plus = realm.realm_plan_type === settings_config.realm_plan_types.plus.code;
     const is_org_on_paid_plan = is_plan_standard || is_plan_plus;
+
+    billing_info.show_remote_billing = !page_params.corporate_enabled;
+    billing_info.show_plans = !realm.zulip_plan_is_not_limited;
+    billing_info.show_billing = is_org_on_paid_plan;
+
+    return billing_info;
+}
+
+export function get_gear_menu_content_context(): GearMenuContext {
+    const user_has_billing_access = settings_data.user_has_billing_access();
+    const is_plan_standard =
+        realm.realm_plan_type === settings_config.realm_plan_types.standard.code;
+    const is_plan_plus = realm.realm_plan_type === settings_config.realm_plan_types.plus.code;
+    const is_org_on_paid_plan = is_plan_standard || is_plan_plus;
+    const billing_info = get_billing_info();
     return {
         realm_name: realm.realm_name,
         realm_url: new URL(realm.realm_url).hostname,
         is_owner: current_user.is_owner,
         is_admin: current_user.is_admin,
         is_spectator: page_params.is_spectator,
-        is_self_hosted: realm.realm_plan_type === 1,
+        is_self_hosted: realm.realm_plan_type === settings_config.realm_plan_types.self_hosted.code,
         is_development_environment: page_params.development_environment,
-        is_plan_limited: realm.realm_plan_type === 2,
+        is_plan_limited: realm.realm_plan_type === settings_config.realm_plan_types.limited.code,
         is_plan_standard,
-        is_plan_standard_sponsored_for_free: realm.realm_plan_type === 4,
+        is_plan_standard_sponsored_for_free:
+            realm.realm_plan_type === settings_config.realm_plan_types.standard_free.code,
         is_plan_plus,
         is_org_on_paid_plan,
-        is_business_org: realm.realm_org_type === 10,
-        is_education_org: realm.realm_org_type === 30 || realm.realm_org_type === 35,
+        is_business_org: realm.realm_org_type === settings_config.all_org_type_values.business.code,
+        is_education_org:
+            realm.realm_org_type === settings_config.all_org_type_values.education_nonprofit.code ||
+            realm.realm_org_type === settings_config.all_org_type_values.education.code,
         standard_plan_name: "Zulip Cloud Standard",
         server_needs_upgrade: realm.server_needs_upgrade,
         version_display_string: gear_menu_util.version_display_string(),
@@ -359,15 +407,18 @@ export function get_gear_menu_content_context(): GearMenuContext {
         is_guest: current_user.is_guest,
         login_link: page_params.development_environment ? "/devlogin/" : "/login/",
         promote_sponsoring_zulip: page_params.promote_sponsoring_zulip,
-        show_billing: page_params.show_billing,
-        show_remote_billing: page_params.show_remote_billing,
-        show_plans: page_params.show_plans,
+        show_billing: billing_info.show_billing,
+        show_remote_billing: billing_info.show_remote_billing,
+        show_plans: billing_info.show_plans,
         show_webathena: page_params.show_webathena,
-        sponsorship_pending: page_params.sponsorship_pending,
+        sponsorship_pending: realm_billing.has_pending_sponsorship_request,
         user_has_billing_access,
         // user color scheme
         user_color_scheme: user_settings.color_scheme,
         color_scheme_values: settings_config.color_scheme_values,
+        // information density settings
+        web_font_size_px: user_settings.web_font_size_px,
+        web_line_height_percent: user_settings.web_line_height_percent,
     };
 }
 

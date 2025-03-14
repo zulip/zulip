@@ -410,6 +410,10 @@ paths:
                                   description: |
                                     Object containing the changed details of the user.
                                     It has multiple forms depending on the value changed.
+
+                                    **Changes**: Removed `is_billing_admin` field in Zulip 10.0
+                                    (feature level 363), as it was replaced by the
+                                    `can_manage_billing_group` realm setting.
                                   oneOf:
                                     - type: object
                                       description: |
@@ -505,21 +509,6 @@ paths:
                                             - 300
                                             - 400
                                             - 600
-                                    - type: object
-                                      additionalProperties: false
-                                      description: |
-                                        When billing role of a user changes.
-                                      properties:
-                                        user_id:
-                                          type: integer
-                                          description: |
-                                            The ID of the user affected by this change.
-                                        is_billing_admin:
-                                          type: boolean
-                                          description: |
-                                            A boolean specifying whether the user is now a billing administrator.
-
-                                            **Changes**: New in Zulip 5.0 (feature level 73).
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -718,6 +707,7 @@ paths:
                                         "stream_weekly_traffic": null,
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
+                                        "can_subscribe_group": 2,
                                         "subscribers": [10],
                                       },
                                     ],
@@ -1019,9 +1009,10 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to a user's clients when the user completes the
-                                OAuth flow for the [Zoom integration](/help/start-a-call). Clients need
-                                to know whether initiating Zoom OAuth is required before creating a Zoom call.
+                                Event sent to a user's clients when the user completes the OAuth flow
+                                for the [Zoom integration](/help/configure-call-provider). Clients need
+                                to know whether initiating Zoom OAuth is required before creating a Zoom
+                                call.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1116,7 +1107,6 @@ paths:
                                       "is_admin": false,
                                       "is_owner": false,
                                       "is_guest": false,
-                                      "is_billing_admin": false,
                                       "role": 400,
                                       "is_bot": false,
                                       "full_name": "full name",
@@ -1355,6 +1345,7 @@ paths:
                                         "is_announcement_only": false,
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
+                                        "can_subscribe_group": 2,
                                         "stream_weekly_traffic": null,
                                       },
                                     ],
@@ -2973,7 +2964,12 @@ paths:
                                 sender_id:
                                   type: integer
                                   description: |
-                                    The ID of the user who sent the message.
+                                    The ID of the user who is typing the edit of the
+                                    message.
+
+                                    Clients should be careful to display this user as the person who
+                                    is typing, not that of the sender of the message, in case a
+                                    collaborative editing feature be might be added in the future.
                                 message_id:
                                   type: integer
                                   description: |
@@ -4576,11 +4572,6 @@ paths:
                                     irrespective of which of these settings were changed. Now, a separate event
                                     is sent for each changed setting.
                                   properties:
-                                    allow_edit_history:
-                                      type: boolean
-                                      description: |
-                                        Whether this organization is configured to allow users to access
-                                        [message edit history](/help/view-a-messages-edit-history).
                                     allow_message_editing:
                                       type: boolean
                                       description: |
@@ -4791,6 +4782,17 @@ paths:
                                             In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
                                             `edit_topic_policy` enum.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_resolve_topics_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to [resolve topics](/help/resolve-a-topic)
+                                            in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 367). Previously, permission to
+                                            resolve topics was controlled by the more general
+                                            can_move_messages_between_topics_group permission for moving messages.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_manage_all_groups:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -4816,6 +4818,16 @@ paths:
                                               create and edit user groups.
 
                                             [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                                    can_manage_billing_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who have permission to manage plans and billing in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 363). Previously, only owners
+                                            and users with `is_billing_admin` property set to `true` were allowed to
+                                            manage plans and billing.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_summarize_topics_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -5060,6 +5072,19 @@ paths:
 
                                         **Changes**: Before Zulip 6.0 (feature level 138), no limit was
                                         represented using the special value `0`.
+                                    message_edit_history_visibility_policy:
+                                      type: string
+                                      description: |
+                                        Which type of message edit history is configured to allow users to
+                                        access [message edit history](/help/view-a-messages-edit-history).
+
+                                        - "all" = All edit history is visible.
+                                        - "moves" = Only moves are visible.
+                                        - "none" = No edit history is visible.
+
+                                        **Changes**: New in Zulip 10.0 (feature level 358), replacing the previous
+                                        `allow_edit_history` boolean setting; `true` corresponds to `all`,
+                                        and `false` to `none`.
                                     moderation_request_channel_id:
                                       type: integer
                                       description: |
@@ -5254,7 +5279,7 @@ paths:
                                     video_chat_provider:
                                       type: integer
                                       description: |
-                                        The configured [video call provider](/help/start-a-call) for the
+                                        The configured [video call provider](/help/configure-call-provider) for the
                                         organization.
 
                                         - 0 = None
@@ -5474,6 +5499,41 @@ paths:
                                 {
                                   "type": "saved_snippets",
                                   "op": "add",
+                                  "saved_snippet":
+                                    {
+                                      "id": 1,
+                                      "title": "Example",
+                                      "content": "Welcome to the organization.",
+                                      "date_created": 1681662420,
+                                    },
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event containing details of the edited saved snippet.
+
+                                Clients should update the existing saved snippet with the
+                                ID provided in the `saved_snippet` object.
+
+                                **Changes**: New in Zulip 10.0 (feature level 368).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - saved_snippets
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                saved_snippet:
+                                  $ref: "#/components/schemas/SavedSnippet"
+                              example:
+                                {
+                                  "type": "saved_snippets",
+                                  "op": "update",
                                   "saved_snippet":
                                     {
                                       "id": 1,
@@ -6373,6 +6433,78 @@ paths:
                       A typical failed JSON response for when either title or content is
                       empty:
   /saved_snippets/{saved_snippet_id}:
+    patch:
+      operationId: edit-saved-snippet
+      tags: ["drafts"]
+      summary: Edit a saved snippet
+      description: |
+        Edit a saved snippet for the current user.
+
+        **Changes**: New in Zulip 10.0 (feature level 368).
+      parameters:
+        - name: saved_snippet_id
+          in: path
+          schema:
+            type: integer
+          description: |
+            The ID of the saved snippet to edit.
+          required: true
+          example: 3
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: |
+                    The title of the saved snippet.
+                  example: Welcome message
+                content:
+                  type: string
+                  description: |
+                    The content of the saved snippet in text/markdown format.
+
+                    Clients should insert this content into a message when using
+                    a saved snippet.
+                  example: Welcome to the organization.
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "No new data is supplied",
+                        "result": "error",
+                      }
+                    description: |
+                      A typical failed JSON response for when neither title nor content is
+                      provided in the request:
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when no saved snippet exists
+                      with the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Saved snippet does not exist.",
+                      }
     delete:
       operationId: delete-saved-snippet
       tags: ["drafts"]
@@ -7202,6 +7334,7 @@ paths:
                                 id: {}
                                 is_me_message: {}
                                 last_edit_timestamp: {}
+                                last_moved_timestamp: {}
                                 reactions: {}
                                 recipient_id: {}
                                 sender_email: {}
@@ -7893,8 +8026,26 @@ paths:
                           type: integer
                         description: |
                           An array with the IDs of the modified messages.
+                      ignored_because_not_subscribed_channels:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          Only present if the flag is `read` and the operation is `remove`.
+
+                          Zulip has an invariant that all unread messages must be in channels
+                          the user is subscribed to. This field will contain a list of the
+                          channels whose messages were skipped to mark as unread because the
+                          user is not subscribed to them.
+
+                          **Changes**: New in Zulip 10.0 (feature level 355).
                     example:
-                      {"msg": "", "messages": [4, 18, 15], "result": "success"}
+                      {
+                        "msg": "",
+                        "messages": [4, 18, 15],
+                        "ignored_because_not_subscribed_channels": [12, 13, 9],
+                        "result": "success",
+                      }
   /messages/flags/narrow:
     post:
       operationId: update-message-flags-for-narrow
@@ -8089,6 +8240,19 @@ paths:
                           bulk update to decide whether to issue
                           another request anchored at
                           `last_processed_id`).
+                      ignored_because_not_subscribed_channels:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          Only present if the flag is `read` and the operation is `remove`.
+
+                          Zulip has an invariant that all unread messages must be in channels
+                          the user is subscribed to. This field will contain a list of the
+                          channels whose messages were skipped to mark as unread because the
+                          user is not subscribed to them.
+
+                          **Changes**: New in Zulip 10.0 (feature level 355).
                     example:
                       {
                         "result": "success",
@@ -8099,6 +8263,7 @@ paths:
                         "last_processed_id": 55,
                         "found_oldest": false,
                         "found_newest": true,
+                        "ignored_because_not_subscribed_channels": [12, 13, 9],
                       }
   /messages/render:
     post:
@@ -8537,6 +8702,7 @@ paths:
                               id: {}
                               is_me_message: {}
                               last_edit_timestamp: {}
+                              last_moved_timestamp: {}
                               reactions: {}
                               recipient_id: {}
                               sender_email: {}
@@ -8647,6 +8813,7 @@ paths:
         linked documentation on when users are allowed to update messages are:
 
         - `allow_message_editing`
+        - `can_resolve_topics_group`
         - `can_move_messages_between_channels_group`
         - `can_move_messages_between_topics_group`
         - `message_content_edit_limit_seconds`
@@ -8658,7 +8825,12 @@ paths:
         of the [`realm op: update_dict`](/api/get-events#realm-update_dict)
         event in [`GET /events`](/api/get-events).
 
-        **Changes**: In Zulip 10.0 (feature level 316), `edit_topic_policy`
+        **Changes**: Prior to Zulip 10.0 (feature level 367), the permission for
+        resolving a topic was managed by `can_move_messages_between_topics_group`.
+        As of this feature level, users belonging to the `can_resolve_topics_group`
+        will have the permission to [resolve topics](/help/resolve-a-topic) in the organization.
+
+        In Zulip 10.0 (feature level 316), `edit_topic_policy`
         was removed and replaced by `can_move_messages_between_topics_group`
         realm setting.
 
@@ -8845,11 +9017,13 @@ paths:
                           if they wish to delete the uploaded files returned in this response,
                           which might otherwise remain visible only in message edit history.
 
-                          Note that [access to message edit
-                          history](/help/disable-message-edit-history) is configurable; this detail
-                          may be important in presenting the question clearly to users.
+                          Note that [access to message edit history][edit-history-access]
+                          is configurable; this detail may be important in presenting the
+                          question clearly to users.
 
                           New in Zulip 10.0 (feature level 285).
+
+                          [edit-history-access]: /help/restrict-message-edit-history-access
                         items:
                           $ref: "#/components/schemas/Attachment"
                     example:
@@ -9234,7 +9408,6 @@ paths:
                               "delivery_email": null,
                               "is_admin": false,
                               "is_owner": false,
-                              "is_billing_admin": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
                               "bot_type": null,
@@ -9279,7 +9452,6 @@ paths:
                               "timezone": "",
                               "is_admin": false,
                               "is_owner": false,
-                              "is_billing_admin": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "is_active": true,
@@ -9297,7 +9469,6 @@ paths:
                               "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
                               "is_admin": false,
                               "is_owner": false,
-                              "is_billing_admin": false,
                               "role": 400,
                               "user_id": 23,
                               "bot_type": 1,
@@ -9386,7 +9557,7 @@ paths:
                   - example:
                       {
                         "code": "BAD_REQUEST",
-                        "msg": "Email 'newbie@zulip.com' already in use",
+                        "msg": "Email is already in use.",
                         "result": "error",
                       }
                     description: |
@@ -9563,6 +9734,9 @@ paths:
       tags: ["users"]
       description: |
         Get basic data about the user/bot that requests this endpoint.
+
+        **Changes**: Removed `is_billing_admin` field in Zulip 10.0 (feature level 363), as it was
+        replaced by the `can_manage_billing_group` realm setting.
       responses:
         "200":
           description: Success
@@ -9614,14 +9788,6 @@ paths:
                           an organization owner.
 
                           **Changes**: New in Zulip 3.0 (feature level 8).
-                        example: false
-                      is_billing_admin:
-                        type: boolean
-                        description: |
-                          A boolean indicating if the requesting user is
-                          a billing administrator.
-
-                          **Changes**: New in Zulip 5.0 (feature level 73).
                         example: false
                       role:
                         type: integer
@@ -9715,7 +9881,6 @@ paths:
                         "is_owner": false,
                         "role": 200,
                         "is_guest": false,
-                        "is_billing_admin": false,
                         "is_bot": false,
                         "is_active": true,
                         "timezone": "",
@@ -10610,12 +10775,19 @@ paths:
         created. The initial [channel settings](/api/update-stream) will be determined
         by the optional parameters, like `invite_only`, detailed below.
 
-        Note that the ability to subscribe oneself and/or other users to a specified
-        channel depends on the [channel's type: private, public, or
-        web-public](/help/channel-permissions).
+        Note that the ability to subscribe oneself and/or other users
+        to a specified channel depends on the [channel's permissions
+        settings](/help/channel-permissions).
 
-        **Changes**: Before Zulip 10.0 (feature level 349), a user cannot
-        subscribe other users to a private channel without being subscribed
+        **Changes**: Before Zulip 10.0 (feature level 362),
+        subscriptions in archived channels could not be modified.
+
+        Before Zulip 10.0 (feature level 357), the
+        `can_subscribe_group` permission, which allows members of the
+        group to subscribe themselves to the channel, did not exist.
+
+        Before Zulip 10.0 (feature level 349), a user cannot subscribe
+        other users to a private channel without being subscribed
         to that channel themselves. Now, If a user is part of
         `can_add_subscribers_group`, they can subscribe themselves or other
         users to a private channel without being subscribed to that channel.
@@ -10766,6 +10938,8 @@ paths:
                   $ref: "#/components/schemas/CanAdministerChannelGroup"
                 can_send_message_group:
                   $ref: "#/components/schemas/CanSendMessageGroup"
+                can_subscribe_group:
+                  $ref: "#/components/schemas/CanSubscribeGroup"
               required:
                 - subscriptions
             encoding:
@@ -10792,6 +10966,8 @@ paths:
               can_administer_channel_group:
                 contentType: application/json
               can_send_message_group:
+                contentType: application/json
+              can_subscribe_group:
                 contentType: application/json
       responses:
         "200":
@@ -10875,6 +11051,9 @@ paths:
       tags: ["channels"]
       description: |
         Update which channels you are subscribed to.
+
+        **Changes**: Before Zulip 10.0 (feature level 362),
+        subscriptions in archived channels could not be modified.
       requestBody:
         required: false
         content:
@@ -11009,13 +11188,16 @@ paths:
           by the [`can_remove_subscribers_group`][can-remove-parameter]
           for the channel.
 
-        **Changes**: Before Zulip 8.0 (feature level 208), if a user
-        specified by the [`principals`][principals-param] parameter was
-        a deactivated user, or did not exist, then an HTTP status code
-        of 403 was returned with `code: "UNAUTHORIZED_PRINCIPAL"` in the
-        error response. As of this feature level, an HTTP status code of
-        400 is returned with `code: "BAD_REQUEST"` in the error response
-        for these cases.
+        **Changes**: Before Zulip 10.0 (feature level 362),
+        subscriptions in archived channels could not be modified.
+
+        Before Zulip 8.0 (feature level 208), if a user specified by
+        the [`principals`][principals-param] parameter was a
+        deactivated user, or did not exist, then an HTTP status code
+        of 403 was returned with `code: "UNAUTHORIZED_PRINCIPAL"` in
+        the error response. As of this feature level, an HTTP status
+        code of 400 is returned with `code: "BAD_REQUEST"` in the
+        error response for these cases.
 
         Before Zulip 8.0 (feature level 197),
         the `can_remove_subscribers_group` setting
@@ -12187,8 +12369,12 @@ paths:
         Note that this endpoint cannot, at present, be used to modify
         settings for existing users in any way.
 
-        **Changes**: New in Zulip 5.0 (feature level 96). If any parameters
-        sent in the request are not supported by this endpoint, an
+        **Changes**: Removed `dense_mode` setting in Zulip 10.0 (feature level 364)
+        as we now have `web_font_size_px` and `web_line_height_percent`
+        settings for more control.
+
+        New in Zulip 5.0 (feature level 96). If any parameters sent in the
+        request are not supported by this endpoint, an
         [`ignored_parameters_unsupported`][ignored-parameters] array will
         be returned in the JSON success response.
 
@@ -12208,12 +12394,6 @@ paths:
             schema:
               type: object
               properties:
-                dense_mode:
-                  description: |
-                    This setting has no effect at present. It is reserved for use in controlling
-                    the default font size in Zulip.
-                  type: boolean
-                  example: true
                 starred_message_counts:
                   description: |
                     Whether clients should display the [number of starred
@@ -12731,8 +12911,6 @@ paths:
                   type: boolean
                   example: true
             encoding:
-              dense_mode:
-                contentType: application/json
               starred_message_counts:
                 contentType: application/json
               receives_typing_notifications:
@@ -13071,7 +13249,6 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
-                            "is_billing_admin": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
@@ -13206,7 +13383,6 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
-                            "is_billing_admin": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
@@ -14382,7 +14558,11 @@ paths:
         works, avoids clients needing to worry about large classes of
         potentially messy races, etc.
 
-        **Changes**: Before Zulip 7.0 (feature level 183), the
+        **Changes**: Removed `dense_mode` setting in Zulip 10.0 (feature level 364)
+        as we now have `web_font_size_px` and `web_line_height_percent`
+        settings for more control.
+
+        Before Zulip 7.0 (feature level 183), the
         `realm_community_topic_editing_limit_seconds` property
         was returned by the response. It was removed because it
         had not been in use since the realm setting
@@ -14787,6 +14967,16 @@ paths:
                           exist as all onboarding steps were implicitly hotspots.
                         items:
                           $ref: "#/components/schemas/OnboardingStep"
+                      navigation_tour_video_url:
+                        type: string
+                        nullable: true
+                        description: |
+                          Present if `onboarding_steps` is present in `fetch_event_types`.
+
+                          URL of the navigation tour video to display to new users during
+                          onboarding. If `null`, the onboarding video experience is disabled.
+
+                          **Changes**: New in Zulip 10.0 (feature level 369).
                       max_message_id:
                         type: integer
                         deprecated: true
@@ -15342,6 +15532,7 @@ paths:
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
                                 can_send_message_group: {}
+                                can_subscribe_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -15374,7 +15565,11 @@ paths:
                           Important for clients containing UI where one can browse channels to subscribe
                           to.
 
-                          **Changes**: Prior to Zulip 10.0 (feature level 349), if a user was
+                          **Changes**: Before Zulip 10.0 (feature level 362), archived channels did
+                          not appear in this list, even if the `archived_channels` [client
+                          capability][client-capabilities] was declared by the client.
+
+                          Prior to Zulip 10.0 (feature level 349), if a user was
                           in `can_administer_channel_group` of a channel that they never
                           subscribed to, but not an organization administrator, the channel
                           in question would not be part of this array.
@@ -15607,8 +15802,12 @@ paths:
 
                           A dictionary containing the user's personal settings.
 
-                          **Changes**: New in Zulip 5.0 (feature level 89). Previously,
-                          these settings appeared in the top-level object, where they are
+                          **Changes**: Removed `dense_mode` setting in Zulip 10.0
+                          (feature level 364) as we now have `web_font_size_px` and
+                          `web_line_height_percent` settings for more control.
+
+                          New in Zulip 5.0 (feature level 89). Previously, these
+                          settings appeared in the top-level object, where they are
                           available for clients without the `user_settings_object` client
                           capability for backwards-compatibility.
                         additionalProperties: false
@@ -15617,11 +15816,6 @@ paths:
                             type: boolean
                             description: |
                               Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
-                          dense_mode:
-                            type: boolean
-                            description: |
-                              This setting has no effect at present. It is reserved for use in controlling
-                              the default font size in Zulip.
                           web_mark_read_on_scroll_policy:
                             type: integer
                             description: |
@@ -16134,9 +16328,10 @@ paths:
                         description: |
                           Present if `video_calls` is present in `fetch_event_types`.
 
-                          A boolean which signifies whether the user has a zoom token and has thus completed
-                          OAuth flow for the [Zoom integration](/help/start-a-call). Clients need
-                          to know whether initiating Zoom OAuth is required before creating a Zoom call.
+                          A boolean which signifies whether the user has a Zoom token and has thus
+                          completed OAuth flow for the [Zoom integration](/help/configure-call-provider).
+                          Clients need to know whether initiating Zoom OAuth is required before
+                          creating a Zoom call.
                       giphy_api_key:
                         type: string
                         description: |
@@ -16571,25 +16766,6 @@ paths:
                           client capability and access the `user_settings` object instead.
 
                           [capabilities]: /api/register-queue#parameter-client_capabilities
-                      dense_mode:
-                        deprecated: true
-                        type: boolean
-                        description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
-                          and only for clients that did not include `user_settings_object` in
-                          their [`client_capabilities`][capabilities] when registering the event queue.
-
-                          Whether the user has switched on dense mode. Dense mode is an experimental
-                          feature that is only available in development environments.
-
-                          See [PATCH /settings](/api/update-settings) for details on
-                          the meaning of this setting.
-
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
-                          connecting to newer servers should declare the `user_settings_object`
-                          client capability and access the `user_settings` object instead.
-
-                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       emojiset:
                         deprecated: true
                         type: string
@@ -16852,13 +17028,35 @@ paths:
                               type: string
                               description: |
                                 The text describing the emoji set.
+                      realm_message_edit_history_visibility_policy:
+                        type: string
+                        description: |
+                          What typesof message edit history are accessible to users via
+                          [message edit history](/help/view-a-messages-edit-history).
+
+                          - "all" = All edit history is visible.
+                          - "moves" = Only moves are visible.
+                          - "none" = No edit history is visible.
+
+                          **Changes**: New in Zulip 10.0 (feature level 358), replacing the previous
+                          `allow_edit_history` boolean setting; `true` corresponds to `all`,
+                          and `false` to `none`.
                       realm_allow_edit_history:
+                        deprecated: true
                         type: boolean
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether this organization is configured to allow users to access
                           [message edit history](/help/view-a-messages-edit-history).
+
+                          The value of `realm_allow_edit_history` is set as `false` if the
+                          `realm_message_edit_history_visibility_policy` is configured as "None"
+                          and `true` if it is configured as "Moves only" or "All".
+
+                          **Changes**: Deprecated in Zulip 10.0 (feature level 358) and will be
+                          removed in the future, as it is an inaccurate version
+                          `realm_message_edit_history_visibility_policy`, which replaces this field.
                       realm_can_add_custom_emoji_group:
                         allOf:
                           - description: |
@@ -17035,6 +17233,16 @@ paths:
                                 create and edit user groups.
 
                               [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                      realm_can_manage_billing_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who have permission to manage plans and billing in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 363). Previously, only owners
+                              and users with `is_billing_admin` property set to `true` were allowed to
+                              manage plans and billing.
                       realm_can_create_public_channel_group:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
@@ -17073,6 +17281,17 @@ paths:
                               **Changes**: New in Zulip 10.0 (feature level 280). Previously
                               `realm_create_web_public_stream_policy` field used to control
                               the permission to create web-public channels.
+                      realm_can_resolve_topics_group:
+                        allOf:
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to [resolve topics](/help/resolve-a-topic)
+                              in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 367). Previously, permission
+                              to resolve topics was controlled by the more general
+                              `can_move_messages_between_topics_group permission for moving messages`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_create_public_stream_policy:
                         type: integer
                         deprecated: true
@@ -17377,7 +17596,7 @@ paths:
                       realm_video_chat_provider:
                         type: integer
                         description: |
-                          The configured [video call provider](/help/start-a-call) for the
+                          The configured [video call provider](/help/configure-call-provider) for the
                           organization.
 
                           - 0 = None
@@ -17701,13 +17920,12 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Dictionary where each entry describes a supported
-                          [video call provider](/help/start-a-call)
-                          that is configured on this server and could be selected by an
-                          organization administrator.
+                          Dictionary where each entry describes a supported [video call
+                          provider](/help/configure-call-provider) that is configured on this
+                          server and could be selected by an organization administrator.
 
-                          Useful for administrative settings UI that allows changing the
-                          realm setting `video_chat_provider`.
+                          Useful for administrative settings UI that allows changing the realm
+                          setting `video_chat_provider`.
                         additionalProperties:
                           description: |
                             `{provider_name}`: Dictionary containing the details of the
@@ -18187,6 +18405,23 @@ paths:
                           **Changes**: New in Zulip 5.0 (feature level 74). Previously,
                           this was hardcoded to 90 seconds, and clients should use that as a fallback
                           value when interacting with servers where this field is not present.
+                      realm_billing:
+                        type: object
+                        additionalProperties: false
+                        description: |
+                          Present if `realm_billing` is present in `fetch_event_types`.
+
+                          A dictionary containing billing information of the organization.
+
+                          **Changes**: New in Zulip 10.0 (feature level 363).
+                        properties:
+                          has_pending_sponsorship_request:
+                            type: boolean
+                            description: |
+                              Whether there is a pending sponsorship request for the organization. Note that
+                              this field will always be `false` if the user is not in `can_manage_billing_group`.
+
+                              **Changes**: New in Zulip 10.0 (feature level 363).
                       realm_moderation_request_channel_id:
                         type: integer
                         description: |
@@ -18285,11 +18520,6 @@ paths:
                               `realm_default_twenty_four_hour_time` in
                               the top-level response object (only when `realm` was
                               present in `fetch_event_types`).
-                          dense_mode:
-                            type: boolean
-                            description: |
-                              This setting has no effect at present. It is reserved for use in
-                              controlling the default font size in Zulip.
                           web_mark_read_on_scroll_policy:
                             type: integer
                             description: |
@@ -18884,14 +19114,6 @@ paths:
                           Whether the current user is an [organization owner](/api/roles-and-permissions).
 
                           **Changes**: New in Zulip 3.0 (feature level 11).
-                      is_billing_admin:
-                        type: boolean
-                        description: |
-                          Present if `realm_user` is present in `fetch_event_types`.
-
-                          Whether the current user is a billing administrator.
-
-                          **Changes**: New in Zulip 5.0 (feature level 73).
                       is_moderator:
                         type: boolean
                         description: |
@@ -18958,7 +19180,6 @@ paths:
                                 is_owner: {}
                                 is_admin: {}
                                 is_guest: {}
-                                is_billing_admin: {}
                                 is_bot: {}
                                 # Referenced schema properties are rendered before any
                                 # non-referenced properties in the API documentation, so
@@ -19356,11 +19577,15 @@ paths:
       description: |
         This endpoint is used to edit the current user's settings.
 
-        **Changes**: Prior to Zulip 5.0 (feature level 80), this
-        endpoint only supported the `full_name`, `email`,
-        `old_password`, and `new_password` parameters. Notification
-        settings were managed by `PATCH /settings/notifications`, and
-        all other settings by `PATCH /settings/display`.
+        **Changes**: Removed `dense_mode` setting in Zulip 10.0
+        (feature level 364) as we now have `web_font_size_px` and
+        `web_line_height_percent` settings for more control.
+
+        Prior to Zulip 5.0 (feature level 80), this endpoint only
+        supported the `full_name`, `email`, `old_password`, and
+        `new_password` parameters. Notification settings were
+        managed by `PATCH /settings/notifications`, and all other
+        settings by `PATCH /settings/display`.
 
         The feature level 80 migration to merge these endpoints did not
         change how request parameters are encoded. However, it did change
@@ -19430,15 +19655,6 @@ paths:
                 twenty_four_hour_time:
                   description: |
                     Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
-
-                    **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
-                    the `PATCH /settings/display` endpoint.
-                  type: boolean
-                  example: true
-                dense_mode:
-                  description: |
-                    This setting has no effect at present. It is reserved for use in controlling
-                    the default font size in Zulip.
 
                     **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
                     the `PATCH /settings/display` endpoint.
@@ -20098,8 +20314,6 @@ paths:
             encoding:
               twenty_four_hour_time:
                 contentType: application/json
-              dense_mode:
-                contentType: application/json
               web_mark_read_on_scroll_policy:
                 contentType: application/json
               web_channel_default_view:
@@ -20308,8 +20522,31 @@ paths:
         - name: include_all_active
           in: query
           description: |
-            Include all active channels. The user must have administrative privileges
-            to use this parameter.
+            Deprecated parameter to include all channels. The user must
+            have administrative privileges to use this parameter.
+
+            **Changes**: Deprecated in Zulip 10.0 (feature level
+            356). Clients interacting with newer servers should use
+            the equivalent `include_all` parameter, which does not
+            incorrectly hint that this parameter, and not
+            `exclude_archived`, controls whether archived channels
+            appear in the response.
+          schema:
+            type: boolean
+            default: false
+          deprecated: true
+          example: true
+        - name: include_all
+          in: query
+          description: |
+            Include all channels that the user has metadata access to.
+
+            For organization administrators, this will be all channels
+            in the organization, since organization administrators
+            implicitly have metadata access to all channels.
+
+            **Changes**: New in Zulip 10.0 (feature level 356). On older
+            versions, use `include_all_active`, which this replaces.
           schema:
             type: boolean
             default: false
@@ -20327,6 +20564,16 @@ paths:
           description: |
             If the user is a bot, include all channels that the bot's owner is
             subscribed to.
+          schema:
+            type: boolean
+            default: false
+          example: true
+        - name: include_can_access_content
+          in: query
+          description: |
+            Include all the channels that the user has content access to.
+
+            **Changes**: New in Zulip 10.0 (feature level 356).
           schema:
             type: boolean
             default: false
@@ -20375,6 +20622,7 @@ paths:
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
                                 can_send_message_group: {}
+                                can_subscribe_group: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -20416,6 +20664,7 @@ paths:
                                 - first_message_id
                                 - is_announcement_only
                                 - can_remove_subscribers_group
+                                - can_subscribe_group
                                 - stream_weekly_traffic
                                 - is_recently_active
                     example:
@@ -20427,6 +20676,7 @@ paths:
                             {
                               "can_add_subscribers_group": 10,
                               "can_remove_subscribers_group": 10,
+                              "can_subscribe_group": 10,
                               "creator_id": null,
                               "date_created": 1691057093,
                               "description": "A private channel",
@@ -20448,6 +20698,7 @@ paths:
                             {
                               "can_add_subscribers_group": 9,
                               "can_remove_subscribers_group": 9,
+                              "can_subscribe_group": 10,
                               "creator_id": 12,
                               "date_created": 1691057093,
                               "description": "A default public channel",
@@ -20468,23 +20719,6 @@ paths:
                             },
                           ],
                       }
-        "400":
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "User not authorized for this query",
-                        "result": "error",
-                      }
-                    description: |
-                      An example JSON response for when the user is not authorized to use the
-                      `include_all_active` parameter (i.e. because they are not an organization
-                      administrator):
   /streams/{stream_id}:
     get:
       operationId: get-stream-by-id
@@ -20534,6 +20768,7 @@ paths:
                             "stream_post_policy": 1,
                             "can_add_subscribers_group": 2,
                             "can_remove_subscribers_group": 2,
+                            "can_subscribe_group": 2,
                             "stream_weekly_traffic": null,
                           },
                       }
@@ -20585,7 +20820,10 @@ paths:
         [private channel's permissions](/help/channel-permissions#private-channels)
         depends on them being subscribed to the channel.
 
-        **Changes**: Removed `stream_post_policy` and `is_announcement_only`
+        **Changes**: Before Zulip 10.0 (feature level 362), channel privacy could not be
+        edited for archived channels.
+
+        Removed `stream_post_policy` and `is_announcement_only`
         parameters in Zulip 10.0 (feature level 333), as permission to post
         in the channel is now controlled by `can_send_message_group`.
       x-curl-examples-parameters:
@@ -20725,7 +20963,7 @@ paths:
                         to administer the channel in order to modify this setting.
 
                         **Changes**: Prior to Zulip 10.0 (feature level 349), channel administrators
-                        could not unsubscribe other users if they were not an orgnization
+                        could not unsubscribe other users if they were not an organization
                         administrator or part of `can_remove_subscribers_group`. Realm administrators
                         were not allowed to unsubscribe other users from a private channel if they
                         were not subscribed to that channel.
@@ -20796,6 +21034,32 @@ paths:
                         }
 
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_subscribe_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to subscribe themselves to this channel
+                        expressed as an [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        Everyone, excluding guests, can subscribe to any public channel
+                        irrespective of this setting.
+
+                        Users in this group can subscribe to a private channel as well.
+
+                        Note that a user must [have content access](/help/channel-permissions)
+                        to a channel and permission to administer the channel in order to
+                        modify this setting.
+
+                        **Changes**: New in Zulip 10.0 (feature level 357).
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
+
             encoding:
               is_private:
                 contentType: application/json
@@ -20812,6 +21076,8 @@ paths:
               can_administer_channel_group:
                 contentType: application/json
               can_send_message_group:
+                contentType: application/json
+              can_subscribe_group:
                 contentType: application/json
       responses:
         "200":
@@ -21198,7 +21464,7 @@ paths:
                     description: |
                       An example JSON error response when the user composes a channel message
                       and `stream_id` is not specified:
-  /message_edit_typing:
+  /messages/{message_id}/typing:
     post:
       operationId: set-typing-status-for-message-edit
       summary: Set "typing" status for message editing
@@ -21207,10 +21473,25 @@ paths:
         Notify other users whether the current user is editing a message.
 
         Typing notifications for editing messages follow the same protocol as
-        [set-typing-status](/api/set-typing-status), see that endpoint for details.
+        [set-typing-status](/api/set-typing-status), see that endpoint for
+        details.
 
-        **Changes**: New in Zulip 10.0 (feature level 351). Previously,
-        typing notifications were not available when editing messages.
+        **Changes**: Before Zulip 10.0 (feature level 361), the endpoint was
+        named `/message_edit_typing` with `message_id` a required parameter in
+        the request body. Clients are recommended to start using sending these
+        typing notifications starting from this feature level.
+
+        New in Zulip 10.0 (feature level 351). Previously, typing notifications were
+        not available when editing messages.
+      parameters:
+        - name: message_id
+          in: path
+          description: |
+            The target message's ID.
+          schema:
+            type: integer
+          example: 47
+          required: true
       requestBody:
         required: true
         content:
@@ -21226,14 +21507,8 @@ paths:
                     - start
                     - stop
                   example: start
-                message_id:
-                  description: |
-                    Describes the message id of the message being edited.
-                  type: integer
-                  example: 47
               required:
                 - op
-                - message_id
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -22328,6 +22603,7 @@ paths:
                           id: {}
                           is_me_message: {}
                           last_edit_timestamp: {}
+                          last_moved_timestamp: {}
                           reactions: {}
                           recipient_id: {}
                           sender_email: {}
@@ -22557,6 +22833,7 @@ components:
             can_remove_subscribers_group: {}
             can_administer_channel_group: {}
             can_send_message_group: {}
+            can_subscribe_group: {}
             stream_weekly_traffic:
               type: integer
               nullable: true
@@ -22590,6 +22867,7 @@ components:
             - is_announcement_only
             - can_remove_subscribers_group
             - stream_weekly_traffic
+            - can_subscribe_group
     BasicChannelBase:
       type: object
       description: |
@@ -22744,6 +23022,8 @@ components:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
         can_send_message_group:
           $ref: "#/components/schemas/CanSendMessageGroup"
+        can_subscribe_group:
+          $ref: "#/components/schemas/CanSubscribeGroup"
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -23808,6 +24088,8 @@ components:
           $ref: "#/components/schemas/CanAdministerChannelGroup"
         can_send_message_group:
           $ref: "#/components/schemas/CanSendMessageGroup"
+        can_subscribe_group:
+          $ref: "#/components/schemas/CanSubscribeGroup"
         is_archived:
           type: boolean
           description: |
@@ -23980,6 +24262,7 @@ components:
             id: {}
             is_me_message: {}
             last_edit_timestamp: {}
+            last_moved_timestamp: {}
             reactions: {}
             recipient_id: {}
             sender_email: {}
@@ -24139,8 +24422,9 @@ components:
             ordered chronologically from most recent to least recent
             edit.
 
-            Not present if the message has never been edited or if the realm has
-            [disabled viewing of message edit history][disable-edit-history].
+            Not present if the message has never been edited or moved,
+            or if [viewing message edit history][edit-history-access]
+            is not allowed in the organization.
 
             Every object will contain `user_id` and `timestamp`.
 
@@ -24150,7 +24434,7 @@ components:
             only the topic was edited, only `prev_topic` and `topic`
             will be present in addition to `user_id` and `timestamp`.
 
-            [disable-edit-history]: /help/disable-message-edit-history
+            [edit-history-access]: /help/restrict-message-edit-history-access
 
             **Changes**: In Zulip 10.0 (feature level 284), removed the
             `prev_rendered_content_version` field as it is an internal
@@ -24169,10 +24453,32 @@ components:
         last_edit_timestamp:
           type: integer
           description: |
-            The UNIX timestamp for when the message was last edited,
-            in UTC seconds.
+            The UNIX timestamp for when the message's content was last edited, in
+            UTC seconds.
 
-            Not present if the message has never been edited.
+            Not present if the message's content has never been edited.
+
+            Clients should use this field, rather than parsing the `edit_history`
+            array, to display an indicator that the message has been edited.
+
+            **Changes**: Prior to Zulip 10.0 (feature level 365), this was the
+            time when the message was last edited or moved.
+        last_moved_timestamp:
+          type: integer
+          description: |
+            The UNIX timestamp for when the message was last moved to a different
+            channel or topic, in UTC seconds.
+
+            Not present if the message has never been moved, or if the only topic
+            moves for the message are [resolving or unresolving](/help/resolve-a-topic)
+            the message's topic.
+
+            Clients should use this field, rather than parsing the `edit_history`
+            array, to display an indicator that the message has been moved.
+
+            **Changes**: New in Zulip 10.0 (feature level 365). Previously,
+            parsing the `edit_history` array was required in order to correctly
+            display moved message indicators.
         reactions:
           type: array
           description: |
@@ -24656,7 +24962,6 @@ components:
             is_owner: {}
             is_admin: {}
             is_guest: {}
-            is_billing_admin: {}
             is_bot: {}
             bot_type:
               nullable: true
@@ -24672,6 +24977,9 @@ components:
       type: object
       description: |
         A dictionary containing basic data on a given Zulip user.
+
+        **Changes**: Removed `is_billing_admin` field in Zulip 10.0 (feature level 363), as it was
+        replaced by the `can_manage_billing_group` realm setting.
       properties:
         user_id:
           type: integer
@@ -24725,12 +25033,6 @@ components:
           type: boolean
           description: |
             A boolean specifying whether the user is a guest user.
-        is_billing_admin:
-          type: boolean
-          description: |
-            A boolean specifying whether the user is a billing administrator.
-
-            **Changes**: New in Zulip 5.0 (feature level 73).
         is_bot:
           type: boolean
           description: |
@@ -25541,6 +25843,25 @@ components:
             **Changes**: New in Zulip 10.0 (feature level 333). Previously
             `stream_post_policy` field used to control the permission to
             post in the channel.
+
+            [setting-values]: /api/group-setting-values
+    CanSubscribeGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to subscribe themselves to this channel.
+
+            Everyone, excluding guests, can subscribe to any public channel
+            irrespective of this setting.
+
+            Users in this group can subscribe to a private channel as well.
+
+            Note that a user must [have content access](/help/channel-permissions)
+            to a channel and permission to administer the channel in order to
+            modify this setting.
+
+            **Changes**: New in Zulip 10.0 (feature level 357).
 
             [setting-values]: /api/group-setting-values
     LinkifierPattern:

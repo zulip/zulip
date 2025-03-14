@@ -46,12 +46,35 @@
         </div>
         <div class="settings-sticky-footer">
             <div class="settings-sticky-footer-left">
-                <button id="user_group_go_to_configure_settings" class="button small sea-green rounded hide">{{t "Back to settings" }}</button>
+                {{> ../components/action_button
+                  label=(t "Back to settings")
+                  custom_classes="hide"
+                  attention="quiet"
+                  intent="brand"
+                  id="user_group_go_to_configure_settings"
+                  }}
             </div>
             <div class="settings-sticky-footer-right">
-                <button class="create_user_group_cancel button small white rounded" data-dismiss="modal">{{t "Cancel" }}</button>
-                <button class="finalize_create_user_group button small sea-green rounded hide" type="submit">{{t "Create" }}</button>
-                <button id="user_group_go_to_members" class="button small sea-green rounded">{{t "Continue to add members" }}</button>
+                {{> ../components/action_button
+                  label=(t "Cancel")
+                  custom_classes="create_user_group_cancel inline-block"
+                  attention="quiet"
+                  intent="neutral"
+                  }}
+                {{> ../components/action_button
+                  label=(t "Create")
+                  custom_classes="finalize_create_user_group hide"
+                  attention="quiet"
+                  intent="brand"
+                  type="submit"
+                  }}
+                {{> ../components/action_button
+                  label=(t "Continue to add members")
+                  id="user_group_go_to_members"
+                  custom_classes="inline-block"
+                  attention="quiet"
+                  intent="brand"
+                  }}
             </div>
         </div>
     </form>

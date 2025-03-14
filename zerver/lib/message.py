@@ -27,15 +27,24 @@ from zerver.lib.stream_subscription import (
     get_subscribed_stream_recipient_ids_for_user,
     num_subscribers_for_stream_id,
 )
-from zerver.lib.streams import can_access_stream_history, get_web_public_streams_queryset
+from zerver.lib.streams import (
+    can_access_stream_history,
+    get_web_public_streams_queryset,
+    is_user_in_groups_granting_content_access,
+)
 from zerver.lib.topic import (
     MESSAGE__TOPIC,
+    RESOLVED_TOPIC_PREFIX,
     TOPIC_NAME,
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
 )
-from zerver.lib.types import UserDisplayRecipient
-from zerver.lib.user_groups import user_has_permission_for_group_setting
+from zerver.lib.types import FormattedEditHistoryEvent, UserDisplayRecipient
+from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
+    get_recursive_membership_groups,
+    user_has_permission_for_group_setting,
+)
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
@@ -52,6 +61,7 @@ from zerver.models import (
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
 from zerver.models.messages import get_usermessage_by_message_id
+from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
 from zerver.models.users import is_cross_realm_bot_email
 
 
@@ -206,8 +216,63 @@ def normalize_body_for_import(body: str) -> str:
     return truncate_content(body, settings.MAX_MESSAGE_LENGTH, "\n[message truncated]")
 
 
+TOPIC_TRUNCATION_MESSAGE = "..."
+
+
 def truncate_topic(topic_name: str) -> str:
-    return truncate_content(topic_name, MAX_TOPIC_NAME_LENGTH, "...")
+    return truncate_content(topic_name, MAX_TOPIC_NAME_LENGTH, TOPIC_TRUNCATION_MESSAGE)
+
+
+def visible_edit_history_for_message(
+    message_edit_history_visibility_policy: int,
+    edit_history: list[FormattedEditHistoryEvent],
+) -> list[FormattedEditHistoryEvent]:
+    # Makes sure that we send message edit history to clients
+    # in realms as per `message_edit_history_visibility_policy`.
+    if message_edit_history_visibility_policy == MessageEditHistoryVisibilityPolicyEnum.all.value:
+        return edit_history
+
+    visible_edit_history: list[FormattedEditHistoryEvent] = []
+    for edit_history_event in edit_history:
+        if "prev_content" in edit_history_event:
+            if "prev_topic" in edit_history_event:
+                del edit_history_event["prev_content"]
+                del edit_history_event["prev_rendered_content"]
+                del edit_history_event["content_html_diff"]
+            else:
+                continue
+        visible_edit_history.append(edit_history_event)
+
+    return visible_edit_history
+
+
+# This is similar to what we do in build_message_edit_request in
+# zerver/actions/message_edit.py, but since we don't have the
+# pre-truncation topic name in the message edit history object,
+# the logic for the topic resolved case is different here.
+def topic_resolve_toggled(topic: str, prev_topic: str) -> bool:
+    resolved_prefix_len = len(RESOLVED_TOPIC_PREFIX)
+    truncation_len = len(TOPIC_TRUNCATION_MESSAGE)
+    # Topic unresolved
+    if prev_topic.startswith(RESOLVED_TOPIC_PREFIX) and not topic.startswith(RESOLVED_TOPIC_PREFIX):
+        return prev_topic[resolved_prefix_len:] == topic
+
+    # Topic resolved
+    if topic.startswith(RESOLVED_TOPIC_PREFIX) and not prev_topic.startswith(RESOLVED_TOPIC_PREFIX):
+        if len(prev_topic) <= MAX_TOPIC_NAME_LENGTH - resolved_prefix_len:
+            # When the topic was resolved, it was not truncated,
+            # so we remove the resolved prefix and compare.
+            return topic[resolved_prefix_len:] == prev_topic
+        if topic.endswith(TOPIC_TRUNCATION_MESSAGE):
+            # When the topic was resolved, it was likely truncated,
+            # so we confirm the previous topic starts with the topic
+            # without the resolved prefix and truncation message.
+            topic_without_resolved_prefix_and_truncation_message = topic[
+                resolved_prefix_len:-truncation_len
+            ]
+            return prev_topic.startswith(topic_without_resolved_prefix_and_truncation_message)
+
+    return False
 
 
 def messages_for_ids(
@@ -217,7 +282,7 @@ def messages_for_ids(
     apply_markdown: bool,
     client_gravatar: bool,
     allow_empty_topic_name: bool,
-    allow_edit_history: bool,
+    message_edit_history_visibility_policy: int,
     user_profile: UserProfile | None,
     realm: Realm,
 ) -> list[dict[str, Any]]:
@@ -251,10 +316,41 @@ def messages_for_ids(
         msg_dict.update(flags=flags)
         if message_id in search_fields:
             msg_dict.update(search_fields[message_id])
-        # Make sure that we never send message edit history to clients
-        # in realms with allow_edit_history disabled.
-        if "edit_history" in msg_dict and not allow_edit_history:
-            del msg_dict["edit_history"]
+        if "edit_history" in msg_dict:
+            # In addition to computing last_moved_timestamp, we recompute
+            # last_edit_timestamp, because the logic powering the database
+            # field updates it on moves as well, and we'd like to show the
+            # correct value for messages that had only been moved.
+            last_moved_timestamp = 0
+            last_edit_timestamp = 0
+            for item in msg_dict["edit_history"]:
+                if "prev_stream" in item:
+                    last_moved_timestamp = max(last_moved_timestamp, item["timestamp"])
+                elif "prev_topic" in item and not topic_resolve_toggled(
+                    item["topic"], item["prev_topic"]
+                ):
+                    last_moved_timestamp = max(last_moved_timestamp, item["timestamp"])
+                if "prev_content" in item:
+                    last_edit_timestamp = max(last_edit_timestamp, item["timestamp"])
+            if last_moved_timestamp != 0:
+                msg_dict["last_moved_timestamp"] = last_moved_timestamp
+            if last_edit_timestamp != 0:
+                msg_dict["last_edit_timestamp"] = last_edit_timestamp
+            else:
+                # Remove it if it was already present.
+                msg_dict.pop("last_edit_timestamp", None)
+
+            if (
+                message_edit_history_visibility_policy
+                == MessageEditHistoryVisibilityPolicyEnum.none.value
+            ):
+                del msg_dict["edit_history"]
+            else:
+                visible_edit_history = visible_edit_history_for_message(
+                    message_edit_history_visibility_policy, msg_dict["edit_history"]
+                )
+                msg_dict["edit_history"] = visible_edit_history
+
         msg_dict["can_access_sender"] = msg_dict["sender_id"] not in inaccessible_sender_ids
         message_list.append(msg_dict)
 
@@ -274,6 +370,8 @@ def access_message(
     user_profile: UserProfile,
     message_id: int,
     lock_message: bool = False,
+    *,
+    is_modifying_message: bool,
 ) -> Message:
     """You can access a message by ID in our APIs that either:
     (1) You received or have previously accessed via starring
@@ -304,7 +402,14 @@ def access_message(
         user_profile=user_profile, message_id=message_id
     ).exists()
 
-    if has_message_access(user_profile, message, has_user_message=has_user_message):
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    if has_message_access(
+        user_profile,
+        message,
+        has_user_message=has_user_message,
+        user_group_membership_details=user_group_membership_details,
+        is_modifying_message=is_modifying_message,
+    ):
         return message
     raise JsonableError(_("Invalid message(s)"))
 
@@ -313,6 +418,8 @@ def access_message_and_usermessage(
     user_profile: UserProfile,
     message_id: int,
     lock_message: bool = False,
+    *,
+    is_modifying_message: bool,
 ) -> tuple[Message, UserMessage | None]:
     """As access_message, but also returns the usermessage, if any."""
     try:
@@ -328,7 +435,14 @@ def access_message_and_usermessage(
     user_message = get_usermessage_by_message_id(user_profile, message_id)
     has_user_message = lambda: user_message is not None
 
-    if has_message_access(user_profile, message, has_user_message=has_user_message):
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    if has_message_access(
+        user_profile,
+        message,
+        has_user_message=has_user_message,
+        user_group_membership_details=user_group_membership_details,
+        is_modifying_message=is_modifying_message,
+    ):
         return (message, user_message)
     raise JsonableError(_("Invalid message(s)"))
 
@@ -375,6 +489,50 @@ def access_web_public_message(
     return message
 
 
+def has_channel_content_access_helper(
+    stream: Stream,
+    user_profile: UserProfile,
+    user_group_membership_details: UserGroupMembershipDetails,
+    *,
+    is_subscribed: bool | None,
+) -> bool:
+    """
+    Checks whether a user has content access to a channel specifically
+    via being subscribed or group membership.
+
+    Does not consider the implicit permissions associated with web-public
+    or public channels; callers are responsible for that.
+    """
+    if is_subscribed is None:
+        assert stream.recipient_id is not None
+        is_user_subscribed = Subscription.objects.filter(
+            user_profile=user_profile, active=True, recipient_id=stream.recipient_id
+        ).exists()
+    else:
+        is_user_subscribed = is_subscribed
+
+    if is_user_subscribed:
+        return True
+
+    if user_profile.is_guest:
+        # All existing groups granting content access have allow_everyone_group=False.
+        #
+        # TODO: is_user_in_groups_granting_content_access needs to
+        # accept at least `is_guest`, and maybe just the user, when we
+        # have groups granting content access with
+        # allow_everyone_group=True.
+        return False
+
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
+
+    return is_user_in_groups_granting_content_access(
+        stream, user_group_membership_details.user_recursive_group_ids
+    )
+
+
 def has_message_access(
     user_profile: UserProfile,
     message: Message,
@@ -382,6 +540,8 @@ def has_message_access(
     has_user_message: Callable[[], bool],
     stream: Stream | None = None,
     is_subscribed: bool | None = None,
+    user_group_membership_details: UserGroupMembershipDetails,
+    is_modifying_message: bool,
 ) -> bool:
     """
     Returns whether a user has access to a given message.
@@ -404,17 +564,9 @@ def has_message_access(
         # You can't access public stream messages in other realms
         return False
 
-    if stream.deactivated:
+    if is_modifying_message and stream.deactivated:
         # You can't access messages in deactivated streams
         return False
-
-    def is_subscribed_helper() -> bool:
-        if is_subscribed is not None:
-            return is_subscribed
-
-        return Subscription.objects.filter(
-            user_profile=user_profile, active=True, recipient=message.recipient
-        ).exists()
 
     if stream.is_public() and user_profile.can_access_public_streams():
         return True
@@ -424,10 +576,14 @@ def has_message_access(
         # (1) Have directly received the message.
         # AND
         # (2) Be subscribed to the stream.
-        return has_user_message() and is_subscribed_helper()
+        return has_user_message() and has_channel_content_access_helper(
+            stream, user_profile, user_group_membership_details, is_subscribed=is_subscribed
+        )
 
     # is_history_public_to_subscribers, so check if you're subscribed
-    return is_subscribed_helper()
+    return has_channel_content_access_helper(
+        stream, user_profile, user_group_membership_details, is_subscribed=is_subscribed
+    )
 
 
 def event_recipient_ids_for_action_on_messages(
@@ -515,6 +671,7 @@ def bulk_access_messages(
     messages: Collection[Message] | QuerySet[Message],
     *,
     stream: Stream | None = None,
+    is_modifying_message: bool,
 ) -> list[Message]:
     """This function does the full has_message_access check for each
     message.  If stream is provided, it is used to avoid unnecessary
@@ -546,6 +703,7 @@ def bulk_access_messages(
 
     subscribed_recipient_ids = set(get_subscribed_stream_recipient_ids_for_user(user_profile))
 
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
     for message in messages:
         is_subscribed = message.recipient_id in subscribed_recipient_ids
         if has_message_access(
@@ -554,6 +712,8 @@ def bulk_access_messages(
             has_user_message=partial(lambda m: m.id in user_message_set, message),
             stream=streams.get(message.recipient_id) if stream is None else stream,
             is_subscribed=is_subscribed,
+            user_group_membership_details=user_group_membership_details,
+            is_modifying_message=False,
         ):
             filtered_messages.append(message)
     return filtered_messages
@@ -577,9 +737,12 @@ def bulk_access_stream_messages_query(
     if stream.is_public() and user_profile.can_access_public_streams():
         return messages
 
-    if not Subscription.objects.filter(
-        user_profile=user_profile, active=True, recipient=stream.recipient
-    ).exists():
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    has_content_access = has_channel_content_access_helper(
+        stream, user_profile, user_group_membership_details, is_subscribed=None
+    )
+
+    if not has_content_access:
         return Message.objects.none()
     if not stream.is_history_public_to_subscribers():
         messages = messages.alias(

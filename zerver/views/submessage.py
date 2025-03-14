@@ -26,7 +26,7 @@ def process_submessage(
     msg_type: str,
     content: str,
 ) -> HttpResponse:
-    message = access_message(user_profile, message_id, lock_message=True)
+    message = access_message(user_profile, message_id, lock_message=True, is_modifying_message=True)
 
     verify_submessage_sender(
         message_id=message.id,

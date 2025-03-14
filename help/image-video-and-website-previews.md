@@ -41,7 +41,8 @@ viewer](/help/view-images-and-videos).
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings**, toggle **Show previews of uploaded and linked images and videos**.
+1. Under **Message feeed settings**, toggle **Show previews of uploaded and
+   linked images and videos**.
 
 {!save-changes.md!}
 
@@ -55,7 +56,7 @@ viewer](/help/view-images-and-videos).
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings**, toggle **Show previews of linked websites**.
+1. Under **Message feed settings**, toggle **Show previews of linked websites**.
 
 {!save-changes.md!}
 

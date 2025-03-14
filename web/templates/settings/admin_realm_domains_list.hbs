@@ -8,6 +8,13 @@
             <span class="rendered-checkbox"></span>
         </label>
     </td>
-    <td><button class="button button-danger small rounded delete_realm_domain">{{t "Remove" }}</button></td>
+    <td>
+        {{> ../components/action_button
+          label=(t "Remove")
+          custom_classes="delete_realm_domain"
+          attention="quiet"
+          intent="danger"
+          }}
+    </td>
 </tr>
 {{/with}}

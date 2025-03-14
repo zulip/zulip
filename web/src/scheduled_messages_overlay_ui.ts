@@ -114,7 +114,8 @@ function format(
                 is_empty_string_topic: msg.topic === "",
             };
         } else {
-            const recipients = people.get_recipients(msg.to.join(","));
+            const user_ids_string = msg.to.join(",");
+            const recipients = people.format_recipients(user_ids_string, "long");
             msg_render_context = {
                 ...msg,
                 is_stream: false as const,

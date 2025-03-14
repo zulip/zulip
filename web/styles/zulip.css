@@ -39,9 +39,65 @@ body {
     .header-main,
     .app .app-main,
     #compose-container {
-        /* 1417px at 14px/1em; (14px * 20.5em) - 12px + 880 + 250px = 1417px */
-        max-width: 100.3571em;
-        max-width: calc(var(--left-sidebar-max-width) + 62.8571em + 250px);
+        max-width: calc(
+            var(--left-sidebar-max-width) + var(--message-area-max-width) +
+                var(--right-sidebar-max-width)
+        );
+    }
+
+    /* When sidebars are manually hidden, we set the max-width
+       for the layout to a different maximum width. This keeps
+       the message area predictably readable. */
+    &.hide-left-sidebar:not(.fluid_layout_width) {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: calc(
+                var(--message-area-max-width) + var(--right-sidebar-max-width)
+            );
+
+            /* When we're less than the xl_min breakpoint, we instead
+               constrain to just the message area's max-width, since
+               the right column will be hidden below that point. */
+            @container header-container (width < $cq_xl_min) {
+                max-width: var(--message-area-max-width);
+            }
+
+            @container app (width < $cq_xl_min) {
+                max-width: var(--message-area-max-width);
+            }
+        }
+    }
+
+    /* Fallback media query. */
+    @media (width < $xl_min) {
+        &.without-container-query-support.hide-left-sidebar:not(
+                .fluid_layout_width
+            ) {
+            .header-main,
+            .app .app-main,
+            #compose-container {
+                max-width: var(--message-area-max-width);
+            }
+        }
+    }
+
+    &.hide-right-sidebar:not(.fluid_layout_width) {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: calc(
+                var(--left-sidebar-max-width) + var(--message-area-max-width)
+            );
+        }
+    }
+
+    &.hide-left-sidebar.hide-right-sidebar:not(.fluid_layout_width) {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: var(--message-area-max-width);
+        }
     }
 
     &.fluid_layout_width {
@@ -140,7 +196,6 @@ p.n-margin {
 .all-messages-search-caution {
     border-radius: 4px;
     display: none;
-    font-size: 16px;
     margin: 0 auto 12px;
     padding: 5px;
     /* Difference should be 16px to accommodate the icon. */
@@ -233,6 +288,12 @@ p.n-margin {
     border-radius: 5px;
     box-shadow: 0 0 30px hsl(0deg 0% 0% / 25%);
     z-index: 110;
+
+    @container app (width < $cq_md_min) {
+        width: calc(90% - 30px);
+        left: 5%;
+        top: 5%;
+    }
 
     &.show-feedback-container {
         display: block;
@@ -328,6 +389,10 @@ body.has-overlay-scrollbar {
     white-space: pre;
 }
 
+.white-space-nowrap {
+    white-space: nowrap;
+}
+
 /* Set flex display on login buttons only in the
    spectator view. We want them to display none
    otherwise. */
@@ -338,7 +403,7 @@ body.has-overlay-scrollbar {
 /* This applies to column-left both in navbar and app. */
 .column-right {
     width: var(--right-sidebar-width);
-    max-width: var(--right-sidebar-width);
+    max-width: var(--right-sidebar-max-width);
     position: absolute;
     right: 0;
     top: 0;
@@ -362,6 +427,8 @@ body.has-overlay-scrollbar {
            the same height and their boxes sit on the
            same invisible line. */
         margin-top: -1px;
+        /* Prevent collisions with the search box. */
+        margin-left: 15px;
 
         & a {
             font-size: calc(16em / 14);
@@ -431,12 +498,6 @@ body.has-overlay-scrollbar {
                 );
             }
         }
-
-        .divider {
-            color: hsl(0deg 0% 88%);
-            font-size: 20px;
-            line-height: 1;
-        }
     }
 
     .spectator_narrow_login_button {
@@ -477,6 +538,19 @@ body.has-overlay-scrollbar {
     top: 0;
 }
 
+.app-main .column-right.expanded,
+.app-main .column-left.expanded {
+    /* We share a baseline z-index to make
+       sure overlays respect the .topmost-overlay
+       below. */
+    z-index: 10;
+}
+
+.app-main .column-right.expanded.topmost-overlay,
+.app-main .column-left.expanded.topmost-overlay {
+    z-index: 15;
+}
+
 #message_feed_container,
 .app-main .column-left .left-sidebar,
 .app-main .column-right .right-sidebar {
@@ -488,6 +562,15 @@ body.has-overlay-scrollbar {
 .app-main {
     height: 100%;
     min-height: 100%;
+
+    &::after {
+        /* We use `content` values to determine
+           viewport state from JavaScript; this
+           hides the values without disrupting
+           the document flow. */
+        position: absolute;
+        display: none;
+    }
 
     .column-left .left-sidebar,
     .column-right .right-sidebar {
@@ -501,13 +584,56 @@ body.has-overlay-scrollbar {
     }
 
     .column-right .right-sidebar {
-        padding-left: 5px;
-        width: 240px;
+        padding-left: var(--right-sidebar-left-spacing);
+        width: var(--right-sidebar-width);
     }
 
     .column-middle {
         min-height: 100%;
         /* We need `overflow-y: visible` for sticky headers to work. */
+    }
+}
+
+/* We test for spec-aligned container query support
+   using these styles. */
+.container-query-test {
+    /* Keep the test div from rendering. */
+    visibility: hidden;
+    /* Establish a container. */
+    container: test-container / inline-size;
+    /* Establish a positioning context that
+       conforming browsers will ignore. */
+    position: relative;
+    top: 100px;
+
+    .container-query-test-child {
+        /* Non-spec aligned browsers will keep
+           this element to the top of the containing
+           <div>; spec-aligned browsers move it to the
+           top of the viewport. We check for this in
+           information_density.ts */
+        position: fixed;
+        top: 0;
+    }
+}
+
+.with-container-query-support {
+    /* With spec-aligned container support, we
+       can establish em-aware containers to
+       query as needed.
+       Note that container queries can only
+       act on children of the container, so
+       at least for now, we include separate
+       queries for #header-container in the
+       navbar as well as .app-main in capable
+       browsers.
+    */
+    #header-container {
+        container: header-container / inline-size;
+    }
+
+    .app {
+        container: app / inline-size;
     }
 }
 
@@ -643,42 +769,6 @@ strong {
     white-space: nowrap;
 }
 
-.tooltip {
-    &.in {
-        font-size: 12px;
-        line-height: 1.3;
-
-        opacity: 1;
-
-        &.left {
-            margin-left: -12px;
-            margin-top: 3px;
-        }
-    }
-
-    .tooltip-inner {
-        background-color: hsl(0deg 0% 7% / 80%);
-        padding: 3px 5px;
-    }
-
-    /*
-    Since hover and click are activated together on touchscreen
-    devices, the hover state persists until the next click, creating
-    awkward UI where the tooltip sticks around forever :(.
-
-    To resolve this, we just hide the tooltip for touch-events on
-    touch-enabled devices resolving the above problem.  This means
-    that tooltips will never appear on touchscreen devices, but that's
-    probably a reasonable tradeoff here.
-
-    Source: https://drafts.csswg.org/mediaqueries-4/#mf-interaction
-    */
-
-    @media (hover: none) {
-        visibility: hidden !important;
-    }
-}
-
 .buddy_list_tooltip_content {
     text-align: left;
     word-wrap: break-word;
@@ -724,7 +814,7 @@ strong {
 
 .messagebox-content .slow-send-spinner {
     display: block;
-    font-size: 12px;
+    font-size: 0.8571em; /* 12px at 14px/em */
     text-align: right;
     opacity: 0.8;
     color: var(--color-text-default);
@@ -847,8 +937,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
 
 .topic_edit {
     display: none;
-    line-height: 22px;
-    visibility: visible;
+    flex-grow: 1;
 
     .alert {
         display: inline-block;
@@ -858,68 +947,60 @@ div.focused-message-list.is-conversation-view .recipient_row {
     }
 }
 
+.topic_edit_form {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    padding-right: 5px;
+    position: relative;
+}
+
 .inline_topic_edit {
-    margin-bottom: 5px;
-    width: 206px;
+    flex: 1;
+    line-height: 1.2142em;
+    padding: 0 5px;
+    color: hsl(0deg 0% 33%);
+    border-radius: 4px;
+    border: 1px solid hsl(0deg 0% 80%);
 
-    &.header-v {
-        height: 18px;
-        display: inline-block;
-        padding: 0 3px;
-        vertical-align: baseline;
-        line-height: 0px;
-        box-shadow: none;
-        color: hsl(0deg 0% 33%);
-        border-radius: 4px;
-        border: 1px solid hsl(0deg 0% 80%);
-        transition:
-            border-color linear 0.2s,
-            box-shadow linear 0.2s;
+    transition:
+        border-color linear 0.2s,
+        box-shadow linear 0.2s;
 
-        &:focus {
-            border-color: hsl(206deg 80% 62% / 80%);
-            outline: 0;
-            box-shadow:
-                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
-                0 0 8px hsl(206deg 80% 62% / 60%);
-        }
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+
+    &.empty-topic-display::placeholder {
+        color: inherit;
     }
 }
 
-.inline_topic_edit:focus {
-    outline: none;
+.inline-topic-edit-placeholder {
+    position: absolute;
+    left: 5px;
+    max-width: 65%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    visibility: hidden;
 }
 
-.message_length_controller {
-    .message_length_toggle {
-        width: 100%;
-        height: 1.714em; /* 24px / 14px em */
-        margin-bottom: var(--message-box-markdown-aligned-vertical-space);
-        color: var(--color-text-show-more-less-button);
-        background-color: var(--color-show-more-less-button-background);
-        border-radius: 4px;
-        border: none;
-        outline: none;
-        font-variant: all-small-caps;
-
-        &:hover {
-            background-color: var(
-                --color-show-more-less-button-background-hover
-            );
-        }
-
-        &:active {
-            background-color: var(
-                --color-show-more-less-button-background-active
-            );
-            scale: 0.98;
-        }
-    }
+.inline-topic-edit-placeholder-visible {
+    visibility: visible;
 }
 
-.bookend {
-    margin-top: 10px;
-    background-color: transparent;
+.topic_edit_save {
+    border-color: light-dark(hsla(0deg 0% 0% / 10%), hsla(0deg 0% 0% / 60%));
+    border-width: 1px;
+    border-style: solid;
+    background-clip: padding-box;
 }
 
 .information-settings .user-profile-picture,
@@ -930,7 +1011,6 @@ div.focused-message-list.is-conversation-view .recipient_row {
        this preserves the dimensions and rounded corners
        on the image itself. */
     line-height: 1;
-    margin-right: 11px;
     vertical-align: top;
     border-radius: 4px;
     overflow: hidden;
@@ -949,15 +1029,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
 .user_sidebar_entry.with_avatar .user-profile-picture {
     width: var(--right-sidebar-avatar-width);
     height: var(--right-sidebar-avatar-height);
-}
-
-.home-error-bar {
-    margin-top: 5px;
-    display: none;
-
-    .alert {
-        margin-bottom: auto;
-    }
+    margin-right: var(--right-sidebar-avatar-right-margin);
 }
 
 .streamname {
@@ -996,6 +1068,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
     text-decoration: none;
     color: var(--color-navbar-icon);
     display: flex;
+    position: relative;
     align-items: center;
     justify-content: center;
     width: var(--header-height);
@@ -1033,15 +1106,26 @@ div.focused-message-list.is-conversation-view .recipient_row {
 .left-sidebar-toggle-unreadcount {
     position: absolute;
     display: none;
-    height: 6px;
-    width: 6px;
+    /* 6px at 16px/1em */
+    height: 0.375em;
+    width: 0.375em;
     background-color: var(--color-navbar-icon);
-    top: 10px;
-    right: 9px;
-    border: 2px solid var(--color-background-navbar);
-    border-radius: 6px;
+
+    /* 2px at 16px/1em */
+    border: 0.125em solid var(--color-background-navbar);
+    /* 6px at 16px/1em */
+    border-radius: 0.375em;
     padding: 0;
-    font-size: 0;
+
+    /* At 16px/1em, the toggle icon is 20px on a side, which is
+       half the width of its container (40px on a side). To
+       place the 10px-wide unread counter correctly, then, we
+       set it to 25% of the right of the container, or 10px,
+       and likewise 25% down from the top of the container,
+       also 10px. */
+
+    top: 25%;
+    right: 25%;
 }
 
 nav {
@@ -1059,7 +1143,7 @@ nav {
         .nav-logo {
             display: inline-block;
             height: 1.25em; /* 20px at 16px em */
-            max-width: 12.5em; /* 200px at 16px em */
+            max-width: var(--realm-logo-max-width);
 
             @media (height < $short_navbar_cutoff_height) {
                 height: 0.9375em; /* 15px at 16px em */
@@ -1067,8 +1151,18 @@ nav {
         }
 
         .left-sidebar-toggle-button .left-sidebar-toggle-unreadcount {
-            top: 10px;
-            left: 21px;
+            /* The toggle icon is half the width of its container
+            and is at the center of the container.
+            So, the left width starts from left 25% of the container
+            and ends till 75% of the container's width.
+            Similarly, vertically, the dot is starts at the top 25% of
+            the container's height and ends at 75% of the total height
+
+            So, the top right corner of the icon is at 25% from top and
+            75% from the right. This is the location where we place the
+            unread indicator dot. */
+            top: 25%;
+            right: 25%;
         }
     }
 
@@ -1152,47 +1246,25 @@ nav {
     text-align: center;
 }
 
-.small_square_button {
-    padding: 0;
-    border: none;
-    font-size: 12px;
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    margin-bottom: 3px;
-
-    &:focus {
-        outline: none;
-    }
-
-    &.small_square_x {
-        background-color: hsl(0deg 0% 100%);
-        color: hsl(0deg 0% 47%);
-
-        &:hover {
-            color: hsl(0deg 0% 18%);
-        }
-    }
-}
-
-div.topic_edit_spinner {
-    display: inline-block;
-    width: 18px;
-    height: 18px;
-    margin-top: -1px;
-    padding: 2px;
-    vertical-align: middle;
-}
-
+div.topic_edit_spinner,
 div.toggle_resolve_topic_spinner {
-    margin-top: -12px;
-    padding-left: 9px;
+    display: flex;
+    align-items: center;
+    width: 1.2em; /* 18px at 15px/em  (from font size set in .message-header-contents) */
+    height: 1.2em; /* 18px at 15px/em */
+}
+
+.on_hover_topic_unresolve,
+.on_hover_topic_resolve {
+    /* Matches the width set in `show_toggle_resolve_topic_spinner`,
+       to ensure spinner and resolve icon are the same width */
+    width: 1em;
 }
 
 div.topic_edit_spinner .loading_indicator_spinner,
 div.toggle_resolve_topic_spinner .loading_indicator_spinner {
-    width: 14px;
-    height: 14px;
+    width: 0.9333em; /* 14px at 15px/em  (from font size set in .message-header-contents) */
+    height: 0.9333em; /* 14px at 15px/em */
 
     & path {
         fill: var(--color-recipient-bar-controls-spinner);
@@ -1209,7 +1281,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 #multiuse_invite_link {
-    width: 370px;
+    width: 100%;
     text-overflow: ellipsis;
     white-space: nowrap;
     display: inline-block;
@@ -1266,6 +1338,10 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 
 .empty-feed-notice-description {
     font-size: 1.1em;
+
+    .search-query-word {
+        word-wrap: break-word;
+    }
 }
 
 .message-fade,
@@ -1324,14 +1400,17 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     opacity: 0.6;
 
     & i {
-        font-size: 10px;
+        font-size: 0.7143em; /* 10px at 14px / em */
+        /* TODO: Don't use relative positioning here. */
         position: relative;
-        top: 1px;
-        margin-left: 2px;
+        top: 0.1em; /* 1px at 10px / em */
+        margin-left: 0.2em; /* 2px at 10px / em */
     }
 
     .zulip-icon.zulip-icon-lock {
-        font-size: 12px;
+        font-size: 0.8571em; /* 12px at 14px / em */
+        top: 0.0833em; /* 1px at 12px / em */
+        margin-left: 0.1667em; /* 2px at 12px / em */
     }
 }
 
@@ -1375,16 +1454,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     margin-right: -50%;
 }
 
-#topic_edit_form {
-    display: inline-block;
-    margin: 0;
-    height: 22px;
-    padding-left: 20px;
-    padding-right: 3px;
-    line-height: 22px;
-    margin-left: -15px;
-}
-
 .screen {
     position: absolute;
     left: 0;
@@ -1423,7 +1492,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     .flatpickr-confirm {
         color: hsl(0deg 0% 100%);
         background-color: hsl(213deg 90% 65%);
-        font-size: 18px;
+        font-size: var(--flatpickr-confirm-button-font-size);
         font-weight: 600;
     }
 
@@ -1482,38 +1551,40 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
-    .default-sidebar-behaviour {
-        &.spectator-view.default-sidebar-behaviour {
-            #navbar-middle {
-                /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
-                margin-right: calc(var(--header-height) * 3 + 10px);
-            }
-
-            #help-menu,
-            #gear-menu {
-                position: relative;
-                right: var(--header-height);
-            }
+    .spectator-view {
+        #navbar-middle {
+            /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: calc(var(--header-height) * 3 + 10px);
         }
 
-        &.spectator-view #top_navbar .column-right .spectator_login_buttons {
+        #help-menu,
+        #gear-menu {
+            position: relative;
+            right: var(--header-height);
+        }
+
+        #top_navbar .column-right .spectator_login_buttons {
             display: none;
         }
+    }
 
-        .header-main .column-right {
-            /* For a diminutive right column in the navbar,
-               allow the width to be that of the flexing
-               button elements. */
-            width: auto;
-        }
+    .header-main .column-right {
+        /* For a diminutive right column in the navbar,
+           allow the width to be that of the flexing
+           button elements. */
+        width: auto;
     }
 }
 
 %hide-right-sidebar {
-    .app-main .column-right {
+    .column-right {
         display: none;
 
         &.expanded {
+            /* In the extended state, we open the sidebar
+               to its maximum possible size (otherwise, it
+               would be unnecessarily too narrow). */
+            --right-sidebar-width: var(--right-sidebar-max-width);
             display: block;
             position: absolute;
             float: none;
@@ -1527,9 +1598,8 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
             .right-sidebar {
                 box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
                 border-left: 1px solid var(--color-border-sidebar);
-                padding-right: 15px;
-                padding-left: 15px;
                 height: 100%;
+                width: var(--right-sidebar-width);
                 right: 0;
                 background-color: var(--color-background);
             }
@@ -1537,20 +1607,18 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     }
 }
 
-#realm-navbar-icon-logo {
-    display: none;
-    width: 20px;
-    height: 20px;
-}
-
 .hide-right-sidebar {
-    @extend %hide-right-sidebar;
+    .app-main {
+        @extend %hide-right-sidebar;
+    }
 
-    &.fluid_layout_width {
-        #compose-content,
-        .app-main .column-middle {
-            margin-right: 7px;
-        }
+    #navbar-middle {
+        margin-right: var(--right-column-collapsed-sidebar-width);
+    }
+
+    #compose-content,
+    .app-main .column-middle {
+        margin-right: 7px;
     }
 }
 
@@ -1558,8 +1626,30 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     visibility: hidden;
 }
 
+.left-sidebar-toggle-button .zulip-icon-panel-left {
+    display: none;
+}
+
+.column-middle.expanded {
+    .left-sidebar-toggle-button .zulip-icon-panel-left {
+        display: none;
+    }
+
+    .left-sidebar-toggle-button .zulip-icon-panel-left-dashed {
+        display: block;
+    }
+}
+
 %hide-left-sidebar {
-    .app-main .column-left {
+    .left-sidebar-toggle-button .zulip-icon-panel-left {
+        display: block;
+    }
+
+    .left-sidebar-toggle-button .zulip-icon-panel-left-dashed {
+        display: none;
+    }
+
+    .column-left {
         display: none;
 
         &.expanded {
@@ -1586,12 +1676,48 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 .hide-left-sidebar {
-    @extend %hide-left-sidebar;
+    .app-main {
+        @extend %hide-left-sidebar;
+    }
 
-    &.fluid_layout_width {
+    #compose-content,
+    .app-main .column-middle {
+        margin-left: 7px;
+    }
+
+    @container header-container (width > $cq_md_min) {
+        #navbar-middle {
+            margin-left: var(--middle-column-left-margin-fluid-layout);
+        }
+    }
+
+    @container header-container (width < $cq_xl_min) {
+        #top_navbar .column-left {
+            width: auto;
+        }
+    }
+
+    @container header-container (width < $cq_md_min) {
+        #navbar-middle {
+            margin-left: 0;
+        }
+    }
+
+    @container app (width < $cq_xl_min) {
         #compose-content,
         .app-main .column-middle {
             margin-left: 7px;
+        }
+    }
+}
+
+/* Media-query fallback for the cinched-up logo presentation. */
+@media (width > $md_min) {
+    .without-container-query-support {
+        &.hide-left-sidebar {
+            #navbar-middle {
+                margin-left: var(--middle-column-left-margin-fluid-layout);
+            }
         }
     }
 }
@@ -1604,12 +1730,116 @@ body:not(.hide-left-sidebar) {
     }
 }
 
-@media (width < $xl_min) {
-    .default-sidebar-behaviour {
+body:not(.spectator-view) {
+    /* The large Log In button for spectators makes this rule
+       inappropriate for that view. */
+    @container header-container (width < $cq_xl_min) {
+        #navbar-middle {
+            /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
+            margin-right: var(--right-column-collapsed-sidebar-width);
+        }
+    }
+}
+
+/* We have some regrettable but temporarily necessary code duplication
+   in the queries that follow.
+
+   In browsers that support spec-aligned, em-aware container queries,
+   we query on the app-main container. That enables breakpoints that
+   look best at a chose base font size.
+
+   However, in browsers that lag the spec, we fall back to the original
+   media queries. The layout will not look as good as it could, but
+   essential scrolling behavior will be maintained. */
+
+@container app (width < $cq_xl_min) {
+    .app-main {
         @extend %hide-right-sidebar;
 
-        .app-main .column-middle {
+        .column-middle {
             margin-right: 7px;
+        }
+    }
+
+    #typing_notifications,
+    #scheduled_message_indicator,
+    #compose-content {
+        margin-right: 7px;
+    }
+}
+
+@container header-container (width < $cq_md_min) {
+    .header-main .column-left {
+        display: none;
+    }
+
+    #navbar-middle {
+        margin-left: 0;
+    }
+
+    #streamlist-toggle {
+        display: block;
+    }
+
+    .top-navbar-container {
+        /* The --header-height variable is used to make
+        the squared toggle area, so we offset it
+        accordingly. */
+        margin-left: var(--header-height);
+    }
+}
+
+@container app (width < $cq_md_min) {
+    .app-main {
+        @extend %hide-left-sidebar;
+
+        .column-middle {
+            margin-left: 7px;
+            margin-right: 7px;
+        }
+
+        .column-middle .column-middle-inner {
+            margin-left: 0;
+            margin-right: 0;
+        }
+    }
+
+    #typing_notifications,
+    #scheduled_message_indicator,
+    #compose-content {
+        margin-left: 7px;
+    }
+}
+
+@container app (width <= $cq_ml_min) {
+    .column-right.expanded,
+    .column-left.expanded {
+        width: 100vw;
+        max-width: 100%;
+    }
+
+    .app-main .column-right.expanded .right-sidebar,
+    .app-main .column-left.expanded .left-sidebar {
+        width: 100vw;
+        max-width: 100%;
+    }
+}
+
+@container header-container (width <= $cq_sm_min) {
+    .narrow_description {
+        display: none;
+    }
+}
+
+/* Begin fallback media queries. */
+@media (width < $xl_min) {
+    .without-container-query-support {
+        .app-main {
+            @extend %hide-right-sidebar;
+
+            .column-middle {
+                margin-right: 7px;
+            }
         }
 
         #navbar-middle {
@@ -1622,52 +1852,42 @@ body:not(.hide-left-sidebar) {
         #compose-content {
             margin-right: 7px;
         }
-    }
 
-    .hide-left-sidebar {
-        #compose-content,
-        .app-main .column-middle {
-            margin-left: 7px;
-        }
+        .hide-left-sidebar {
+            #compose-content,
+            .app-main .column-middle {
+                margin-left: 7px;
+            }
 
-        #realm-navbar-icon-logo {
-            display: inline-block;
-        }
-
-        #realm-navbar-wide-logo {
-            display: none;
-        }
-
-        #top_navbar .column-left {
-            width: auto;
-        }
-
-        #navbar-middle {
-            margin-left: var(--left-sidebar-width-with-realm-icon-logo);
+            #top_navbar .column-left {
+                width: auto;
+            }
         }
     }
 }
 
 @media (width < $md_min) {
-    .default-sidebar-behaviour {
-        @extend %hide-left-sidebar;
+    .without-container-query-support {
+        .app-main {
+            @extend %hide-left-sidebar;
+
+            .column-middle {
+                margin-left: 7px;
+                margin-right: 7px;
+            }
+
+            .column-middle .column-middle-inner {
+                margin-left: 0;
+                margin-right: 0;
+            }
+        }
 
         .header-main .column-left {
             display: none;
         }
 
-        .app-main .column-middle {
-            margin-left: 7px;
-            margin-right: 7px;
-        }
-
         #navbar-middle {
             margin-left: 0;
-        }
-
-        .app-main .column-middle .column-middle-inner {
-            margin-left: 0;
-            margin-right: 0;
         }
 
         #streamlist-toggle {
@@ -1691,6 +1911,81 @@ body:not(.hide-left-sidebar) {
         }
     }
 }
+
+@media (width <= $ml_min) {
+    .without-container-query-support {
+        .column-right.expanded,
+        .column-left.expanded {
+            width: 100vw;
+            max-width: 100%;
+        }
+
+        .app-main .column-right.expanded .right-sidebar,
+        .app-main .column-left.expanded .left-sidebar {
+            width: 100vw;
+            max-width: 100%;
+        }
+    }
+}
+
+@media (width <= $sm_min) {
+    .without-container-query-support {
+        .narrow_description {
+            display: none;
+        }
+    }
+}
+
+/* End fallback media queries. */
+
+/* Begin viewport state queries. */
+
+/* We sometimes need the state of the viewport in JavaScript;
+   by setting values on `content:`, we can query instead for
+   those, independent of whether it's a container or media query
+   responsible for layout. See for example `sidebar_ui.ts`.
+
+   These queries for greater than or equal to should be ordered
+   smallest to largest. */
+
+/* Adjustments for smaller viewports are critical
+   regardless of info-density settings, so we
+   don't include a container-query check here. */
+@media (width < $md_min) {
+    .app-main::after {
+        content: "lt_md_min";
+    }
+}
+
+@container app (width >= $cq_md_min) {
+    .app-main::after {
+        content: "gte_md_min";
+    }
+}
+
+@media (width >= $md_min) {
+    .without-container-query-support {
+        .app-main::after {
+            content: "gte_md_min";
+        }
+    }
+}
+
+@container app (width >= $cq_xl_min) {
+    .app-main::after {
+        content: "gte_md_min gte_xl_min";
+    }
+}
+
+@media (width >= $xl_min) {
+    .without-container-query-support {
+        .app-main::after {
+            content: "gte_md_min gte_xl_min";
+        }
+    }
+}
+
+/* End viewport state queries. */
 
 @media (height < $short_navbar_cutoff_height) {
     .app-main .column-right.expanded .right-sidebar,
@@ -1753,6 +2048,9 @@ body:not(.hide-left-sidebar) {
     }
 }
 
+/* As these adjustments are properly the province of
+   the viewport, we do not present these mm_min queries
+   in a corresponding container query block. */
 @media (width < $mm_min) {
     html {
         overflow-x: hidden;
@@ -1790,8 +2088,8 @@ body:not(.hide-left-sidebar) {
     }
 
     #scroll-to-bottom-button-clickable-area {
-        width: 60px;
-        height: 60px;
+        width: 3.75em; /* 60px at 16px em */
+        height: 3.75em; /* 60px at 16px em */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1803,26 +2101,20 @@ body:not(.hide-left-sidebar) {
 
         #scroll-to-bottom-button {
             text-align: center;
-            width: 40px;
-            height: 40px;
+            width: 2.5em; /* 40px at 16px em */
+            height: 2.5em; /* 40px at 16px em */
             background: hsl(240deg 96% 68% / 50%);
             border-radius: 50%;
+            display: flex;
+            align-items: center;
 
             & .scroll-to-bottom-icon {
                 color: hsl(0deg 0% 100%);
                 margin: 0 auto;
-                font-size: 21px;
-                position: relative;
-                top: 8px;
+                font-size: 1.3125em; /* 21px at 16px em */
             }
         }
     }
-}
-
-.tooltip_right_arrow {
-    position: relative;
-    top: -1px;
-    font-weight: 600;
 }
 
 .spectator_login_for_image_button {
@@ -1893,6 +2185,62 @@ body:not(.hide-left-sidebar) {
         line-height: 20px;
         white-space: normal;
     }
+
+    .dropdown-list .dropdown-list-item-common-styles {
+        position: relative;
+        display: flex;
+        color: var(--color-dropdown-item);
+        padding: 3px 10px 3px 8px;
+        font-weight: 400;
+        line-height: var(--base-line-height-unitless);
+        white-space: normal;
+
+        .stream-privacy-type-icon {
+            font-size: 0.93em;
+            /* We set only the width so that flexbox
+            can do its work to properly center,
+            regardless of the height. */
+            width: 0.93em;
+            padding-right: 5px;
+            /* Override the [data-tippy-root] style in
+               `tooltips.css`.
+               Because we are manually holding icon
+               alignment to the first/only line of a
+               channel, we make this adjustment here,
+               calculated by 4.5px / (0.93 * 20px) */
+            top: 0.2419em;
+        }
+
+        .dropdown-list-delete,
+        .dropdown-list-edit {
+            position: absolute;
+            top: 0;
+            right: 5px;
+            visibility: hidden;
+        }
+
+        .dropdown-list-edit {
+            color: var(--color-text-neutral-icon-button);
+            right: 30px;
+
+            &:hover {
+                color: var(--color-text-neutral-icon-button-hover);
+            }
+        }
+
+        &:focus,
+        &:hover {
+            color: var(--color-dropdown-item);
+            text-decoration: none;
+            background-color: var(--background-color-active-dropdown-item);
+            outline: none;
+
+            .dropdown-list-delete,
+            .dropdown-list-edit {
+                visibility: visible;
+            }
+        }
+    }
 }
 
 .dropdown-list-container .list-item {
@@ -1904,48 +2252,19 @@ body:not(.hide-left-sidebar) {
     }
 }
 
-.dropdown-list-container .dropdown-list .dropdown-list-item-common-styles {
-    display: flex;
-    color: var(--color-dropdown-item);
-    padding: 3px 10px 3px 8px;
-    gap: 4px;
-    font-weight: 400;
-    line-height: var(--base-line-height-unitless);
-    white-space: normal;
-
-    .stream-privacy-type-icon {
-        font-size: 0.93em;
-        width: 0.93em;
-        height: 0.93em;
-        padding-right: 2px;
-    }
-
-    .zulip-icon {
-        margin-top: 2px;
-    }
-
-    .dropdown-list-delete {
-        visibility: hidden;
-        float: right;
-        margin-right: 5px;
-        cursor: pointer;
-        /* hsl(359deg 93% 39%) corresponds to var(--red-550) */
-        color: color-mix(in oklch, hsl(359deg 93% 39%) 70%, transparent);
-
-        &:hover {
-            color: hsl(359deg 93% 39%);
+.inbox-filter-dropdown-list-container,
+.recent-view-filter-dropdown-list-container {
+    .list-item {
+        &:focus {
+            border-radius: 4px;
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: -1px;
+            background-color: transparent;
         }
-    }
 
-    &:focus,
-    &:hover {
-        color: var(--color-dropdown-item);
-        text-decoration: none;
-        background-color: var(--background-color-active-dropdown-item);
-        outline: none;
-
-        .dropdown-list-delete {
-            visibility: visible;
+        &.active {
+            background-color: var(--background-color-active-dropdown-item);
+            outline: none;
         }
     }
 }
@@ -1977,9 +2296,6 @@ body:not(.hide-left-sidebar) {
 
 .header-main .column-right {
     display: flex;
-    /* Make the top navbar right column its full width,
-       less 7px of space on the left and right. */
-    width: calc(var(--right-sidebar-width) - 7px - 7px);
     justify-content: flex-end;
     align-items: center;
 
@@ -2034,6 +2350,13 @@ body:not(.hide-left-sidebar) {
     }
 }
 
+.left-sidebar-toggle-button {
+    .zulip-icon-panel-left,
+    .zulip-icon-panel-left-dashed {
+        font-size: 1.25em; /* 20px at 16px em */
+    }
+}
+
 #personal-menu {
     .header-button-avatar {
         width: 1.5em; /* 24px at 16px em */
@@ -2048,4 +2371,24 @@ body:not(.hide-left-sidebar) {
 .empty-topic-display,
 .empty-topic-placeholder-display::placeholder {
     font-style: italic;
+}
+
+.popover-menu-user-avatar-container.deactivated,
+.inline_profile_picture.deactivated {
+    position: relative;
+
+    > img {
+        opacity: 0.5;
+    }
+
+    .deactivated-user-icon {
+        background-color: var(--color-background);
+        color: var(--color-user-circle-deactivated);
+        padding: 2px;
+        font-size: 0.8em;
+        position: absolute;
+        border-radius: 10px;
+        bottom: -2px;
+        right: -2px;
+    }
 }

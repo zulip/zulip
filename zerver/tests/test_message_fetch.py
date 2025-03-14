@@ -42,7 +42,7 @@ from zerver.lib.narrow import (
     ok_to_include_history,
     post_process_limited_query,
 )
-from zerver.lib.narrow_helpers import NarrowTerm
+from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
 from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
@@ -292,6 +292,16 @@ class NarrowBuilderTest(ZulipTestCase):
             term,
             "NOT (EXISTS (SELECT 1 \nFROM zerver_usertopic \nWHERE zerver_usertopic.user_profile_id = %(param_1)s AND zerver_usertopic.visibility_policy = %(param_2)s AND upper(zerver_usertopic.topic_name) = upper(zerver_message.subject) AND zerver_usertopic.recipient_id = zerver_message.recipient_id))",
         )
+
+    def test_add_term_using_is_operator_for_muted_topics(self) -> None:
+        mute_channel(self.realm, self.user_profile, "Verona")
+        term = NarrowParameter(operator="is", operand="muted", negated=False)
+        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
+
+    def test_add_term_using_is_operator_for_negated_muted_topics(self) -> None:
+        mute_channel(self.realm, self.user_profile, "Verona")
+        term = NarrowParameter(operator="is", operand="muted", negated=True)
+        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
 
     def test_add_term_using_non_supported_operator_should_raise_error(self) -> None:
         term = NarrowParameter(operator="is", operand="non_supported")
@@ -755,7 +765,9 @@ class NarrowBuilderTest(ZulipTestCase):
 
 class NarrowLibraryTest(ZulipTestCase):
     def test_build_narrow_predicate(self) -> None:
-        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="channel", operand="devel")])
+        narrow_predicate = build_narrow_predicate(
+            [NeverNegatedNarrowTerm(operator="channel", operand="devel")]
+        )
 
         self.assertTrue(
             narrow_predicate(
@@ -779,7 +791,9 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="topic", operand="bark")])
+        narrow_predicate = build_narrow_predicate(
+            [NeverNegatedNarrowTerm(operator="topic", operand="bark")]
+        )
 
         self.assertTrue(
             narrow_predicate(
@@ -817,8 +831,8 @@ class NarrowLibraryTest(ZulipTestCase):
 
         narrow_predicate = build_narrow_predicate(
             [
-                NarrowTerm(operator="channel", operand="devel"),
-                NarrowTerm(operator="topic", operand="python"),
+                NeverNegatedNarrowTerm(operator="channel", operand="devel"),
+                NeverNegatedNarrowTerm(operator="topic", operand="python"),
             ]
         )
 
@@ -851,7 +865,7 @@ class NarrowLibraryTest(ZulipTestCase):
         ###
 
         narrow_predicate = build_narrow_predicate(
-            [NarrowTerm(operator="sender", operand="hamlet@zulip.com")]
+            [NeverNegatedNarrowTerm(operator="sender", operand="hamlet@zulip.com")]
         )
 
         self.assertTrue(
@@ -870,7 +884,9 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="dm")])
+        narrow_predicate = build_narrow_predicate(
+            [NeverNegatedNarrowTerm(operator="is", operand="dm")]
+        )
 
         self.assertTrue(
             narrow_predicate(
@@ -888,7 +904,9 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="private")])
+        narrow_predicate = build_narrow_predicate(
+            [NeverNegatedNarrowTerm(operator="is", operand="private")]
+        )
 
         self.assertTrue(
             narrow_predicate(
@@ -906,7 +924,9 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="starred")])
+        narrow_predicate = build_narrow_predicate(
+            [NeverNegatedNarrowTerm(operator="is", operand="starred")]
+        )
 
         self.assertTrue(
             narrow_predicate(
@@ -924,7 +944,9 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="alerted")])
+        narrow_predicate = build_narrow_predicate(
+            [NeverNegatedNarrowTerm(operator="is", operand="alerted")]
+        )
 
         self.assertTrue(
             narrow_predicate(
@@ -942,7 +964,9 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="mentioned")])
+        narrow_predicate = build_narrow_predicate(
+            [NeverNegatedNarrowTerm(operator="is", operand="mentioned")]
+        )
 
         self.assertTrue(
             narrow_predicate(
@@ -960,7 +984,9 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="unread")])
+        narrow_predicate = build_narrow_predicate(
+            [NeverNegatedNarrowTerm(operator="is", operand="unread")]
+        )
 
         self.assertTrue(
             narrow_predicate(
@@ -978,7 +1004,9 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="resolved")])
+        narrow_predicate = build_narrow_predicate(
+            [NeverNegatedNarrowTerm(operator="is", operand="resolved")]
+        )
 
         self.assertTrue(
             narrow_predicate(
@@ -1002,12 +1030,22 @@ class NarrowLibraryTest(ZulipTestCase):
 
     def test_build_narrow_predicate_invalid(self) -> None:
         with self.assertRaises(JsonableError):
-            build_narrow_predicate([NarrowTerm(operator="invalid_operator", operand="operand")])
+            build_narrow_predicate(
+                [NeverNegatedNarrowTerm(operator="invalid_operator", operand="operand")]
+            )
         with self.assertRaises(JsonableError):
-            build_narrow_predicate([NarrowTerm(operator="is", operand="followed")])
+            build_narrow_predicate([NeverNegatedNarrowTerm(operator="is", operand="followed")])
 
     def test_is_spectator_compatible(self) -> None:
         self.assertTrue(is_spectator_compatible([]))
+        self.assertTrue(
+            is_spectator_compatible([NarrowParameter(operator="is", operand="resolved")])
+        )
+        self.assertTrue(
+            is_spectator_compatible(
+                [NarrowParameter(operator="is", operand="resolved", negated=True)]
+            )
+        )
         self.assertTrue(
             is_spectator_compatible([NarrowParameter(operator="has", operand="attachment")])
         )
@@ -3582,13 +3620,29 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_get_messages_for_resolved_topics(self) -> None:
         self.login("cordelia")
         cordelia = self.example_user("cordelia")
+        self.subscribe(cordelia, "Rome")
 
-        self.send_stream_message(cordelia, "Verona", "whatever1")
+        self.send_stream_message(cordelia, "Rome", "whatever1")
         resolved_topic_name = RESOLVED_TOPIC_PREFIX + "foo"
-        anchor = self.send_stream_message(cordelia, "Verona", "whatever2", resolved_topic_name)
-        self.send_stream_message(cordelia, "Verona", "whatever3")
+        anchor = self.send_stream_message(cordelia, "Rome", "whatever2", resolved_topic_name)
+        self.send_stream_message(cordelia, "Rome", "whatever3")
 
-        narrow = [dict(operator="is", operand="resolved")]
+        narrow = [
+            dict(operator="is", operand="resolved"),
+            dict(operator="channels", operand="public"),
+        ]
+        result = self.get_and_check_messages(
+            dict(narrow=orjson.dumps(narrow).decode(), anchor=anchor, num_before=0, num_after=0)
+        )
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], anchor)
+
+        # "is:resolved" filter can be used by spectators as well.
+        self.logout()
+        narrow = [
+            dict(operator="is", operand="resolved"),
+            dict(operator="channels", operand="web-public"),
+        ]
         result = self.get_and_check_messages(
             dict(narrow=orjson.dumps(narrow).decode(), anchor=anchor, num_before=0, num_after=0)
         )
@@ -5207,6 +5261,82 @@ class MessageIsTest(ZulipTestCase):
         )
         messages = self.assert_json_success(result)["messages"]
         self.assert_length(messages, 1)
+
+    def test_message_is_muted(self) -> None:
+        self.login("iago")
+        is_muted_narrow = orjson.dumps([dict(operator="is", operand="muted")]).decode()
+        is_unmuted_narrow = orjson.dumps(
+            [dict(operator="is", operand="muted", negated=True)]
+        ).decode()
+        in_home_narrow = orjson.dumps([dict(operator="in", operand="home")]).decode()
+        notin_home_narrow = orjson.dumps(
+            [dict(operator="in", operand="home", negated=True)]
+        ).decode()
+
+        # Have another user generate a message in a topic that isn't muted by the user.
+        msg_id = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="hey")
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=is_muted_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 0)
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=is_unmuted_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=in_home_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=notin_home_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 0)
+
+        stream_id = self.get_stream_id("Denmark", self.example_user("hamlet").realm)
+
+        # Mute the topic.
+        payload = {
+            "stream_id": stream_id,
+            "topic": "hey",
+            "visibility_policy": int(UserTopic.VisibilityPolicy.MUTED),
+        }
+        self.client_post("/json/user_topics", payload)
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=is_muted_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
+
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=is_unmuted_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 0)
+
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=in_home_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 0)
+        result = self.client_get(
+            "/json/messages",
+            dict(narrow=notin_home_narrow, anchor=msg_id, num_before=0, num_after=0),
+        )
+        messages = self.assert_json_success(result)["messages"]
+        self.assert_length(messages, 1)
+        # We could do more tests, but test_exclude_muting_conditions
+        # covers that code path pretty well.
 
 
 class MessageVisibilityTest(ZulipTestCase):

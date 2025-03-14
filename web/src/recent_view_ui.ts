@@ -11,6 +11,7 @@ import render_recent_view_row from "../templates/recent_view_row.hbs";
 import render_recent_view_body from "../templates/recent_view_table.hbs";
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
+import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
@@ -76,7 +77,7 @@ export let $current_focus_elem: JQuery | "table" = "table";
 // If user clicks a topic in Recent Conversations, then
 // we store that topic here so that we can restore focus
 // to that topic when user revisits.
-let last_visited_topic = "";
+let last_visited_topic: string | undefined;
 let row_focus = 0;
 // Start focus on the topic column, so Down+Enter works to visit a topic.
 let col_focus = 1;
@@ -410,7 +411,7 @@ export function revive_current_focus(): boolean {
 
     if (is_table_focused()) {
         assert(topics_widget !== undefined);
-        if (last_visited_topic) {
+        if (last_visited_topic !== undefined) {
             // If the only message in the topic was deleted,
             // then the topic will not be in Recent Conversations data.
             if (recent_view_data.conversations.get(last_visited_topic) !== undefined) {
@@ -425,7 +426,7 @@ export function revive_current_focus(): boolean {
                     row_focus = last_visited_topic_index;
                 }
             }
-            last_visited_topic = "";
+            last_visited_topic = undefined;
         }
         set_table_focus(row_focus, col_focus);
         return true;
@@ -616,6 +617,7 @@ type ConversationContext = {
           stream_url: string;
           invite_only: boolean;
           is_web_public: boolean;
+          is_archived: boolean;
           topic: string;
           topic_display_name: string;
           is_empty_string_topic: boolean;
@@ -655,6 +657,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const stream_url = hash_util.by_stream_url(stream_id);
         const invite_only = stream_info.invite_only;
         const is_web_public = stream_info.is_web_public;
+        const is_archived = stream_info.is_archived;
         // Topic info
         const topic = last_msg.topic;
         const topic_display_name = util.get_final_topic_display_name(topic);
@@ -684,6 +687,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
             stream_url,
             invite_only,
             is_web_public,
+            is_archived,
             topic,
             topic_display_name,
             is_empty_string_topic,
@@ -718,12 +722,13 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         let user_circle_class;
         if (!is_group) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
+            const is_deactivated = !people.is_active_user_for_popover(user_id);
             const user = people.get_by_user_id(user_id);
             if (user.is_bot) {
                 // We display the bot icon rather than a user circle for bots.
                 is_bot = true;
             } else {
-                user_circle_class = buddy_data.get_user_circle_class(user_id);
+                user_circle_class = buddy_data.get_user_circle_class(user_id, is_deactivated);
             }
         }
 
@@ -952,7 +957,7 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     topics_widget.filter_and_sort();
     // Iterate in the order of which the rows should be present so that
     // we are not inserting rows without any rows being present around them.
-    for (const topic_data of topics_widget.get_current_list()) {
+    for (const topic_data of topics_widget.get_rendered_list()) {
         const msg = message_store.get(topic_data.last_msg_id);
         assert(msg !== undefined);
         const topic_key = recent_view_util.get_key_from_message(msg);
@@ -1379,6 +1384,30 @@ export function complete_rerender(): void {
     setup_dropdown_filters_widget();
 }
 
+export function update_recent_view_rendered_time(): void {
+    if (activity.client_is_active || !recent_view_util.is_visible() || !topics_widget) {
+        return;
+    }
+
+    // Since we render relative time in recent view, it needs to be
+    // updated otherwise it will show stale time. But, we don't want
+    // to update it every minute due to performance reasons. So, we
+    // only update it when the user comes back from idle which has
+    // maximum chance of user seeing incorrect rendered time.
+    for (const conversation_data of topics_widget.get_rendered_list()) {
+        const last_msg = message_store.get(conversation_data.last_msg_id);
+        assert(last_msg !== undefined);
+        const time = new Date(last_msg.timestamp * 1000);
+        const updated_time = timerender.relative_time_string_from_date(time);
+        const $row = get_topic_row(conversation_data);
+        const rendered_time = $row.find(".recent_topic_timestamp").text().trim();
+        if (updated_time === rendered_time) {
+            continue;
+        }
+        $row.find(".recent_topic_timestamp a").text(updated_time);
+    }
+}
+
 export function show(): void {
     // We remove event handler before hiding, so they need to
     // be attached again, checking for topics_widget to be defined
@@ -1471,7 +1500,7 @@ export function focus_clicked_element(
     row_focus = topic_row_index;
 
     if (col === COLUMNS.topic) {
-        last_visited_topic = topic_key ?? "";
+        last_visited_topic = topic_key ?? undefined;
     }
     // Set compose_closed_ui reply button text.  The rest of the table
     // focus logic should be a noop.
@@ -1958,4 +1987,5 @@ export function initialize({
             revive_current_focus();
         }
     });
+    $(window).on("focus", update_recent_view_rendered_time);
 }

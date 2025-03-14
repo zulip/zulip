@@ -175,6 +175,10 @@ test("user_circle, level", ({override}) => {
     set_presence(fred.user_id, undefined);
     assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user-circle-offline");
     assert.equal(buddy_data.level(fred.user_id), 3);
+
+    set_presence(fred.user_id, undefined);
+    assert.equal(buddy_data.get_user_circle_class(fred.user_id, true), "user-circle-deactivated");
+    assert.equal(buddy_data.level(fred.user_id), 3);
 });
 
 test("title_data", ({override}) => {
@@ -185,7 +189,7 @@ test("title_data", ({override}) => {
     let is_group = true;
     const user_ids_string = "9999,1000";
     let expected_group_data = {
-        first_line: "Human Selma, Old User",
+        first_line: "Human Selma and Old User",
         second_line: "",
         third_line: "",
     };
@@ -403,6 +407,7 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
         alice.user_id,
         fred.user_id,
         jill.user_id,
+        me.user_id,
     ]);
 
     override_rewire(narrow_state, "stream_id", () => stream_id);
@@ -424,7 +429,7 @@ test("get_conversation_participants", ({override_rewire}) => {
 
     const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
     stream_data.add_sub(rome_sub);
-    peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id]);
+    peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id, me.user_id]);
 
     const filter = new Filter([
         {operator: "channel", operand: rome_sub.channel_id},
@@ -491,18 +496,18 @@ test("compare_function", () => {
     peer_data.set_subscribers(stream_id, []);
     assert.equal(
         second_user_shown_higher,
-        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set(), new Set()),
+        buddy_data.compare_function(fred.user_id, alice.user_id, stream_id, new Set(), new Set()),
     );
 
     // Fred is higher because they're in the narrow and Alice isn't.
     peer_data.set_subscribers(stream_id, [fred.user_id]);
     assert.equal(
         first_user_shown_higher,
-        buddy_data.compare_function(fred.user_id, alice.user_id, sub, new Set(), new Set()),
+        buddy_data.compare_function(fred.user_id, alice.user_id, stream_id, new Set(), new Set()),
     );
     assert.equal(
         second_user_shown_higher,
-        buddy_data.compare_function(alice.user_id, fred.user_id, sub, new Set(), new Set()),
+        buddy_data.compare_function(alice.user_id, fred.user_id, stream_id, new Set(), new Set()),
     );
 
     // Fred is higher because they're in the DM conversation and Alice isn't.
@@ -591,6 +596,12 @@ test("user_last_seen_time_status", ({override}) => {
 
     set_presence(selma.user_id, "idle");
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Idle");
+
+    presence.presence_info.set(old_user.user_id, {last_active: undefined});
+    const missing_callback = (user_id) => {
+        assert.equal(user_id, old_user.user_id);
+    };
+    assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id, missing_callback), "");
 });
 
 test("get_items_for_users", ({override}) => {

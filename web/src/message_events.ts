@@ -3,6 +3,8 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
+import * as resolved_topic from "../shared/src/resolved_topic.ts";
+
 import * as activity from "./activity.ts";
 import * as alert_words from "./alert_words.ts";
 import * as channel from "./channel.ts";
@@ -32,6 +34,7 @@ import * as recent_senders from "./recent_senders.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import type {UpdateMessageEvent} from "./server_event_types.ts";
+import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
@@ -223,7 +226,7 @@ export let update_views_filtered_on_message_property = (
                     // can be used to update other message lists and
                     // cached message data structures as well.
                 },
-                // eslint-disable-next-line no-loop-func
+                // eslint-disable-next-line @typescript-eslint/no-loop-func
                 success(data) {
                     const parsed_data = z
                         .object({
@@ -374,6 +377,16 @@ export function insert_new_messages(
     return messages;
 }
 
+function topic_resolve_toggled(new_topic: string, original_topic: string): boolean {
+    if (resolved_topic.is_resolved(new_topic) && new_topic.slice(2) === original_topic) {
+        return true;
+    }
+    if (resolved_topic.is_resolved(original_topic) && original_topic.slice(2) === new_topic) {
+        return true;
+    }
+    return false;
+}
+
 export function update_messages(events: UpdateMessageEvent[]): void {
     const messages_to_rerender: Message[] = [];
     let changed_narrow = false;
@@ -419,7 +432,10 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             // edits have edit_history logged for both before any
             // potential narrowing as part of the topic edit loop.
             if (event.orig_content !== undefined) {
-                if (realm.realm_allow_edit_history) {
+                if (
+                    realm.realm_message_edit_history_visibility_policy ===
+                    message_edit_history_visibility_policy_values.always.code
+                ) {
                     // Note that we do this for topic edits separately, below.
                     // If an event changed both content and topic, we'll generate
                     // two client-side events, which is probably good for display.
@@ -543,7 +559,10 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             }
 
             for (const moved_message of event_messages) {
-                if (realm.realm_allow_edit_history) {
+                if (
+                    realm.realm_message_edit_history_visibility_policy !==
+                    message_edit_history_visibility_policy_values.never.code
+                ) {
                     /* Simulate the format of server-generated edit
                      * history events. This logic ensures that all
                      * messages that were moved are displayed as such
@@ -575,7 +594,15 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                         ...moved_message.edit_history,
                     ];
                 }
-                moved_message.last_edit_timestamp = event.edit_timestamp;
+
+                if (stream_changed) {
+                    moved_message.last_moved_timestamp = event.edit_timestamp;
+                } else if (topic_edited) {
+                    assert(new_topic !== undefined);
+                    if (!topic_resolve_toggled(new_topic, orig_topic)) {
+                        moved_message.last_moved_timestamp = event.edit_timestamp;
+                    }
+                }
 
                 // Update the unread counts; again, this must be called
                 // before we modify the topic field on the message.
@@ -746,7 +773,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             // flag is used to indicated update_message events that are
             // triggered by server latency optimizations, not user
             // interactions; these should not generate edit history updates.
-            if (!event.rendering_only) {
+            if (!event.rendering_only && any_message_content_edited) {
                 anchor_message.last_edit_timestamp = event.edit_timestamp;
             }
 

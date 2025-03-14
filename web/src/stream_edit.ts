@@ -30,6 +30,7 @@ import {postprocess_content} from "./postprocess_content.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
 import type {CurrentUser} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -269,6 +270,7 @@ export function show_settings_for(node: HTMLElement): void {
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
         can_access_stream_email: stream_data.can_access_stream_email(sub),
         group_setting_labels: settings_config.all_group_setting_labels.stream,
+        has_billing_access: settings_data.user_has_billing_access(),
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
@@ -286,7 +288,7 @@ export function show_settings_for(node: HTMLElement): void {
     settings_org.set_message_retention_setting_dropdown(sub);
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     setup_group_setting_widgets(slim_sub);
-    stream_ui_updates.update_can_add_subscribers_group_label($edit_container);
+    stream_ui_updates.update_can_subscribe_group_label($edit_container);
 
     $("#channels_overlay_container").on(
         "click",
@@ -348,18 +350,11 @@ function stream_setting_changed(elem: HTMLInputElement): void {
     );
 }
 
-export function archive_stream(
-    stream_id: number,
-    $alert_element: JQuery,
-    $stream_row: JQuery,
-): void {
+export function archive_stream(stream_id: number, $alert_element: JQuery): void {
     channel.del({
         url: "/json/streams/" + stream_id,
         error(xhr) {
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $alert_element);
-        },
-        success() {
-            $stream_row.remove();
         },
     });
 }
@@ -505,6 +500,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         post_render: generate_email_modal_post_render,
         on_click: generate_email_address,
         close_on_submit: false,
+        always_visible_scrollbar: true,
     });
     $("#show-sender").prop("checked", true);
 
@@ -710,8 +706,7 @@ export function initialize(): void {
 
         function do_archive_stream(): void {
             const stream_id = Number($(".dialog_submit_button").attr("data-stream-id"));
-            const $row = $(".stream-row.active");
-            archive_stream(stream_id, $(".stream_change_property_info"), $row);
+            archive_stream(stream_id, $(".stream_change_property_info"));
         }
 
         const stream_id = get_stream_id(this);
@@ -804,19 +799,16 @@ export function initialize(): void {
             );
             if (sub && $subsection.attr("id") === "stream_permission_settings") {
                 stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
+                const $edit_container = stream_settings_containers.get_edit_container(sub);
+                stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
             return true;
         },
     );
 
-    // This takes care of both stream create and edit.
-    $("#channels_overlay_container").on("change", ".stream-privacy-values input", () => {
-        stream_ui_updates.update_can_add_subscribers_group_label($("#channels_overlay_container"));
-    });
-
     $("#channels_overlay_container").on(
         "click",
-        ".subsection-header .subsection-changes-save button",
+        ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
         function (this: HTMLElement, e) {
             e.preventDefault();
             e.stopPropagation();
@@ -871,6 +863,8 @@ export function initialize(): void {
             settings_org.discard_stream_settings_subsection_changes($subsection, sub);
             if ($subsection.attr("id") === "stream_permission_settings") {
                 stream_ui_updates.update_default_stream_and_stream_privacy_state($subsection);
+                const $edit_container = stream_settings_containers.get_edit_container(sub);
+                stream_ui_updates.update_can_subscribe_group_label($edit_container);
             }
         },
     );

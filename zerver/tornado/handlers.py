@@ -132,10 +132,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         # Django's WSGIHandler.__call__ before the call to
         # `get_response()`.
         set_script_prefix(get_script_name(environ))
-        await sync_to_async(
-            lambda: signals.request_started.send(sender=type(self.django_handler)),
-            thread_sensitive=True,
-        )()
+        await signals.request_started.asend(sender=type(self.django_handler))
         self._request = WSGIRequest(environ)
 
         # We do the import during runtime to avoid cyclic dependency

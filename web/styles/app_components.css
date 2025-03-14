@@ -362,7 +362,7 @@ div.overlay {
     opacity: 0;
     visibility: hidden;
 
-    transition: none 0.2s ease-in;
+    transition: 0.2s ease-in;
     transition-property: opacity, visibility;
     overflow: hidden;
 
@@ -686,7 +686,7 @@ input.settings_text_input {
 
 .animated-purple-button {
     color: hsl(0deg 0% 100%);
-    transition: none 80ms linear;
+    transition: 80ms linear;
     transition-property: background-color, box-shadow;
     box-shadow: none;
     /* This color just passes WCAG AA */
@@ -737,7 +737,7 @@ input.settings_text_input {
             transition: color 0.2s ease;
         }
 
-        transition: none 0.2s ease;
+        transition: 0.2s ease;
         transition-property: background-color, color;
     }
 
@@ -775,16 +775,10 @@ input.settings_text_input {
         background-color: hsl(0deg 0% 100%);
         word-break: normal;
 
-        &[data-sort] {
-            padding-right: var(--table-header-sortable-column-padding-right);
-        }
-
         &.active::after,
         &[data-sort]:hover::after {
             content: " \f0d8";
             white-space: pre;
-            display: inline-block;
-            position: absolute;
             padding-top: 3px;
             font: normal normal normal 12px/1 FontAwesome;
             font-size: inherit;
@@ -889,7 +883,7 @@ input.settings_text_input {
     .save-discard-widget-button {
         border-radius: 5px;
         border: 1px solid hsl(0deg 0% 80%);
-        padding: 3px 14px 4px 11px;
+        padding: 0.2143em 1em 0.2857em 0.7857em; /* 3px 14px 4px 11px at 14px/em */
         text-decoration: none;
         color: hsl(0deg 0% 47%);
         min-width: 80px;
@@ -925,6 +919,7 @@ input.settings_text_input {
             &.saving {
                 background-color: hsl(156deg 14% 40%);
                 border-color: hsl(156deg 14% 40%);
+                display: flex;
             }
         }
 
@@ -941,8 +936,8 @@ input.settings_text_input {
                 }
 
                 .save-discard-widget-button-loading {
-                    display: inline-block;
-                    margin-right: 2px;
+                    display: block;
+                    margin-right: 0.5em; /* 7px at 14px/em */
                 }
             }
         }
@@ -968,6 +963,7 @@ input.settings_text_input {
     width: 12px;
 
     &.zulip-icon-globe,
+    &.zulip-icon-archive,
     &.zulip-icon-hashtag {
         font-size: 0.75em;
     }
@@ -993,7 +989,7 @@ input.settings_text_input {
     /* We do not need to pull up lock icons in dropdowns
        so we reset their margin-top to the original value
        for a dropdown's .zulip-icon */
-    margin-top: 2px !important;
+    margin-top: 0 !important;
 }
 
 /* This includes css needed to display messages in an overlay. */
@@ -1117,6 +1113,10 @@ input.settings_text_input {
             [data-tippy-root] {
                 width: max-content;
                 word-wrap: unset;
+            }
+
+            .copy-overlay-message {
+                font-size: 1.2em;
             }
 
             .restore-overlay-message {
@@ -1402,5 +1402,98 @@ input.settings_text_input {
     &:focus {
         background-color: var(--background-color-active-dropdown-item);
         outline: none;
+    }
+}
+
+/* Styling for invalid inputs */
+input.invalid-input {
+    /* The use of !important is necessary here to override
+       border-color specified for text input elements in
+       dark_theme.css which has a higher specificity. */
+    border-color: var(--color-invalid-input-border) !important;
+
+    &:focus {
+        box-shadow: var(--color-invalid-input-box-shadow);
+    }
+}
+
+/* This is a utility class for line clamping. */
+.line-clamp {
+    /* Despite the below prefixed properties being deprecated,
+       the co-dependency of these three properties is a fully
+       specified behavior and will continue to be supported.
+       Reference: https://developer.mozilla.org/en-US/docs/Web/CSS/line-clamp */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    /* The value of --line-clamp-value is not defined globally and instead
+       inherits the value from another class or the parent element. If it
+       is not defined, it defaults to 2. */
+    -webkit-line-clamp: var(--line-clamp-value, 2);
+    /* Also define the standard property 'line-clamp' for compatibility,
+       for when the vendor prefix "-webkit-" is no longer required. */
+    line-clamp: var(--line-clamp-value, 2);
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.info-density-controls {
+    .button-group {
+        border-radius: 5px;
+        border: 1px solid var(--color-info-density-control-border);
+        width: 100%;
+        display: grid;
+        grid-auto-flow: column;
+
+        .info-density-button-container {
+            display: inline-flex;
+            flex-direction: column;
+
+            &:first-of-type {
+                .info-density-button {
+                    border-top-left-radius: 5px;
+                    border-bottom-left-radius: 5px;
+                }
+            }
+
+            &:last-of-type {
+                .info-density-button {
+                    border-top-right-radius: 5px;
+                    border-bottom-right-radius: 5px;
+                }
+            }
+        }
+
+        .info-density-button {
+            border: none;
+            background-color: var(--color-background-popover);
+            padding: 0.25em 0.4375em;
+            display: inline-flex;
+            align-items: center;
+            vertical-align: unset;
+            justify-content: center;
+            margin: 0;
+
+            &:hover:not(:disabled) {
+                background-color: var(
+                    --color-info-density-button-hover-background
+                );
+            }
+
+            &:focus {
+                outline: none;
+            }
+
+            &:disabled {
+                cursor: default;
+                opacity: 0.4;
+            }
+
+            .zulip-icon {
+                display: flex;
+                align-items: center;
+                color: var(--color-info-denisty-button-icon);
+                opacity: 0.7;
+            }
+        }
     }
 }

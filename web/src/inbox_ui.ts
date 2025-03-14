@@ -110,6 +110,7 @@ const stream_context_properties: (keyof StreamContext)[] = [
 type TopicContext = {
     is_topic: boolean;
     stream_id: number;
+    stream_archived: boolean;
     topic_name: string;
     topic_display_name: string;
     is_empty_string_topic: boolean;
@@ -128,6 +129,7 @@ type TopicContext = {
 const topic_context_properties: (keyof TopicContext)[] = [
     "is_topic",
     "stream_id",
+    "stream_archived",
     "topic_name",
     "topic_display_name",
     "is_empty_string_topic",
@@ -298,15 +300,19 @@ function format_dm(
     let user_circle_class: string | false | undefined;
     let is_bot = false;
     if (recipient_ids.length === 1 && recipient_ids[0] !== undefined) {
-        is_bot = people.get_by_user_id(recipient_ids[0]).is_bot;
-        user_circle_class = is_bot ? false : buddy_data.get_user_circle_class(recipient_ids[0]);
+        const user_id = recipient_ids[0];
+        const is_deactivated = !people.is_active_user_for_popover(user_id);
+        is_bot = people.get_by_user_id(user_id).is_bot;
+        user_circle_class = is_bot
+            ? false
+            : buddy_data.get_user_circle_class(recipient_ids[0], is_deactivated);
     }
     const has_unread_mention = unread.num_unread_mentions_for_user_ids_strings(user_ids_string) > 0;
 
     const context = {
         conversation_key: user_ids_string,
         is_direct: true,
-        rendered_dm_with: util.format_array_as_list(rendered_dm_with, "long", "conjunction"),
+        rendered_dm_with: util.format_array_as_list_with_conjuction(rendered_dm_with, "long"),
         is_group: recipient_ids.length > 1,
         user_circle_class,
         is_bot,
@@ -405,11 +411,18 @@ function update_stream_data(
 ): void {
     const stream_topics_data = new Map<string, TopicContext>();
     const stream_data = format_stream(stream_id);
+    const stream_archived = stream_data.is_archived;
     let stream_post_filter_unread_count = 0;
     for (const [topic, {topic_count, latest_msg_id}] of topic_dict) {
         const topic_key = get_topic_key(stream_id, topic);
         if (topic_count) {
-            const topic_data = format_topic(stream_id, topic, topic_count, latest_msg_id);
+            const topic_data = format_topic(
+                stream_id,
+                stream_archived,
+                topic,
+                topic_count,
+                latest_msg_id,
+            );
             stream_topics_data.set(topic_key, topic_data);
             if (!topic_data.is_hidden) {
                 stream_post_filter_unread_count += topic_data.unread_count;
@@ -437,6 +450,7 @@ function rerender_stream_inbox_header_if_needed(
 
 function format_topic(
     stream_id: number,
+    stream_archived: boolean,
     topic: string,
     topic_unread_count: number,
     latest_msg_id: number,
@@ -444,6 +458,7 @@ function format_topic(
     const context = {
         is_topic: true,
         stream_id,
+        stream_archived,
         topic_name: topic,
         topic_display_name: util.get_final_topic_display_name(topic),
         is_empty_string_topic: topic === "",
@@ -742,7 +757,7 @@ function row_in_search_results(keyword: string, text: string): boolean {
 
 function filter_should_hide_dm_row({dm_key}: {dm_key: string}): boolean {
     const recipients_string = people.get_recipients(dm_key);
-    const text = recipients_string.toLowerCase();
+    const text = recipients_string.join(",").toLowerCase();
 
     if (!row_in_search_results(search_keyword, text)) {
         return true;
@@ -1303,12 +1318,14 @@ export function update(): void {
 
             const topic_keys_to_insert: string[] = [];
             const new_stream_data = format_stream(stream_id);
+            const stream_archived = new_stream_data.is_archived;
             for (const [topic, {topic_count, latest_msg_id}] of topic_dict) {
                 const topic_key = get_topic_key(stream_id, topic);
                 if (topic_count) {
                     const old_topic_data = stream_topics_data.get(topic_key);
                     const new_topic_data = format_topic(
                         stream_id,
+                        stream_archived,
                         topic,
                         topic_count,
                         latest_msg_id,
@@ -1602,7 +1619,7 @@ export function initialize(): void {
         }
         const stream_id = Number($elt.attr("data-stream-id"));
         const topic = $elt.attr("data-topic-name");
-        if (topic) {
+        if (topic !== undefined) {
             unread_ops.mark_topic_as_read(stream_id, topic);
         } else {
             unread_ops.mark_stream_as_read(stream_id);

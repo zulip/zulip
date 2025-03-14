@@ -45,7 +45,7 @@ this configure or disable GIPHY integration entirely:
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings**, select a rating from **Maximum rating of GIFs**.
+1. Under **Compose settings**, select a rating for **GIPHY integration**.
 
 {!save-changes.md!}
 

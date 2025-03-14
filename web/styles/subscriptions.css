@@ -26,7 +26,7 @@
     align-items: center;
     font-family: "Source Code Pro", monospace;
     padding: 10px;
-    font-size: 0.85rem;
+    font-size: 0.85em; /* 13.6px at 16px/em (previously 0.85rem) */
     background-color: hsl(0deg 0% 98%);
     border: 1px solid hsl(0deg 0% 87%);
     border-radius: 4px;
@@ -40,8 +40,8 @@
     white-space: normal;
 }
 
-.copy-email-address {
-    font-size: 16px;
+.stream-email .copy-email-address {
+    font-size: 1.1765em; /* 16px at 13.6px/em */
 }
 
 .sub_setting_checkbox {
@@ -276,12 +276,6 @@ h4.user_group_setting_subsection_title {
     margin: 0;
 }
 
-#subscriptions h1 {
-    font-size: 25px;
-    font-weight: 300;
-    padding-top: 40px;
-}
-
 .subscriptions-container .subscriptions-header .fa-chevron-left,
 .user-groups-container .user-groups-header .fa-chevron-left {
     position: relative;
@@ -294,7 +288,7 @@ h4.user_group_setting_subsection_title {
 
     cursor: pointer;
 
-    transition: none 0.3s ease;
+    transition: 0.3s ease;
     transition-property: opacity, transform;
 }
 
@@ -383,6 +377,10 @@ h4.user_group_setting_subsection_title {
                 When we redesign this area we should make this less brittle. */
                 height: calc(100% - 5.4em - 40px);
             }
+
+            #stream_settings {
+                height: calc(100% - 5em);
+            }
         }
     }
 }
@@ -419,6 +417,10 @@ h4.user_group_setting_subsection_title {
 
             .streams-list {
                 height: calc(100% - 5.4em - 40px);
+            }
+
+            #stream_settings {
+                height: calc(100% - 5em);
             }
         }
     }
@@ -559,6 +561,10 @@ h4.user_group_setting_subsection_title {
             margin: 0 auto 10px;
         }
 
+        .main-view-banner.group_deactivated {
+            margin-bottom: 10px;
+        }
+
         .display-type {
             height: var(--settings-overlay-subheader-height);
             display: flex;
@@ -569,6 +575,9 @@ h4.user_group_setting_subsection_title {
 
             & a {
                 color: inherit;
+                display: flex;
+                align-items: center;
+                gap: 0.2381em; /* 5px at 21px/em */
 
                 &:hover {
                     color: inherit;
@@ -587,23 +596,17 @@ h4.user_group_setting_subsection_title {
             .stream-info-title,
             .user-group-info-title {
                 display: none;
-                font-size: 1.5em;
+                font-size: 1.5em; /* 21px at 14px/em */
                 line-height: 1;
                 font-weight: 600;
                 word-break: break-all;
 
                 .large-icon {
-                    display: inline-block;
+                    display: flex;
 
                     .zulip-icon {
-                        font-size: 20px;
-                        position: relative;
-                        top: 3px;
+                        font-size: 0.9524em; /* 20px at 21px/em */
                     }
-                }
-
-                .zulip-icon-globe {
-                    font-size: 15px;
                 }
             }
         }
@@ -642,8 +645,28 @@ h4.user_group_setting_subsection_title {
 .group_name_search_section {
     padding: 8px 10px;
     display: grid;
-    grid-template: "search-input clear-search" auto / minmax(0, 1fr) 30px;
+    grid-template:
+        "search-input clear-search dropdown-widget" auto / minmax(0, 1fr)
+        30px;
     border-bottom: 1px solid var(--color-border-modal-bar);
+}
+
+#stream_settings_filter_widget {
+    margin-left: 10px;
+    gap: 3px;
+    width: auto;
+}
+
+.stream_settings_filter_container.hide_filter {
+    display: none;
+}
+
+#user_group_visibility_settings_widget {
+    grid-area: more-options-button;
+    margin-left: 10px;
+    display: flex;
+    gap: 3px;
+    width: auto;
 }
 
 .user-groups-list,
@@ -657,6 +680,36 @@ h4.user_group_setting_subsection_title {
     When we redesign this area we should make this less brittle. */
     height: calc(100% - 3.4em - 40px);
     width: 100%;
+}
+
+.left .group-name .fa-ban,
+.right .group-name .fa-ban {
+    font-size: 0.8em;
+    opacity: 0.6;
+}
+
+.deactivated-user-group-icon-right {
+    margin-left: 3px;
+    opacity: 0.6;
+}
+
+.left .group-name,
+.right .group-name {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.user-groups-list.hide-deactived-user-groups .deactivated-group {
+    display: none;
+}
+
+.user-groups-list.hide-active-user-groups .group-row:not(.deactivated-group) {
+    display: none;
+}
+
+.user_group_visibility_settings-dropdown-list-container .dropdown-list-wrapper {
+    min-width: 11em;
 }
 
 #search_group_name:placeholder-shown + #clear_search_group_name {
@@ -1006,8 +1059,12 @@ h4.user_group_setting_subsection_title {
         margin-left: 15px;
 
         .tab-container {
+            .tab-switcher {
+                margin: 0;
+            }
+
             .ind-tab {
-                padding: 3px 4px;
+                padding: 0 4px;
                 min-width: 80px;
                 width: auto;
                 display: flex;
@@ -1018,6 +1075,8 @@ h4.user_group_setting_subsection_title {
             padding-top: 5px;
             margin-left: auto;
             margin-right: 18px;
+            height: var(--settings-overlay-header-button-height);
+            display: flex;
 
             .subscribe-button,
             .join_leave_button,
@@ -1025,6 +1084,11 @@ h4.user_group_setting_subsection_title {
             .deactivate {
                 margin-right: 3px;
                 text-decoration: none;
+                padding: 0 10px;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                box-sizing: border-box;
             }
 
             .deactivate {
@@ -1033,11 +1097,6 @@ h4.user_group_setting_subsection_title {
                 .icon-container {
                     display: flex;
                 }
-            }
-
-            /* We need this rule to center the user-group-x icon better */
-            .deactivate-group-button {
-                padding: 8px 10px 4px;
             }
         }
     }
@@ -1071,6 +1130,13 @@ h4.user_group_setting_subsection_title {
             }
         }
 
+        #open_group_info_modal {
+            display: flex;
+            align-items: center;
+            padding: 7px 10px;
+            font-size: 1.1em;
+        }
+
         .button-group {
             margin-left: auto;
 
@@ -1098,9 +1164,7 @@ h4.user_group_setting_subsection_title {
             }
 
             .zulip-icon {
-                font-size: 18px;
-                position: relative;
-                top: 1px;
+                font-size: 1.2857em; /* 18px at 14px/em */
             }
         }
 
@@ -1360,6 +1424,30 @@ div.settings-radio-input-parent {
     margin: -6px 0 -6px -10px;
 }
 
+#deactivation-confirm-modal {
+    .alert {
+        padding-right: 14px;
+    }
+
+    .cannot-deactivate-group-banner {
+        border: none;
+        margin: 0;
+
+        .banner-text {
+            margin: 0;
+            padding-right: 4px;
+        }
+
+        .permissions-button {
+            text-wrap: nowrap;
+
+            &:focus {
+                outline: 0;
+            }
+        }
+    }
+}
+
 @media (width < $lg_min) {
     .user-groups-container,
     .subscriptions-container {
@@ -1446,12 +1534,6 @@ div.settings-radio-input-parent {
         }
     }
 
-    #groups_overlay {
-        .display-type {
-            display: none;
-        }
-    }
-
     #subscription_overlay,
     #groups_overlay {
         .user-groups-container,
@@ -1504,25 +1586,6 @@ div.settings-radio-input-parent {
 
             &.hide {
                 display: none;
-            }
-        }
-    }
-}
-
-@media (width <= 500px) {
-    #groups_overlay,
-    #subscription_overlay {
-        .groups_settings_header,
-        .stream_settings_header {
-            display: block;
-            text-align: center;
-            margin-left: 0;
-
-            .tab-container {
-                .ind-tab {
-                    min-width: 85px;
-                    width: auto;
-                }
             }
         }
     }

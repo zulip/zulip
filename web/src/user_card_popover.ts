@@ -21,7 +21,7 @@ import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {is_overlay_hash} from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import {user_can_send_direct_message} from "./message_util.ts";
 import * as message_view from "./message_view.ts";
@@ -32,6 +32,7 @@ import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {hide_all} from "./popovers.ts";
+import * as presence from "./presence.ts";
 import * as rows from "./rows.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
@@ -237,6 +238,56 @@ type UserCardPopoverData = {
     bot_owner?: User;
 };
 
+export let fetch_presence_for_popover = (user_id: number): void => {
+    if (page_params.is_spectator) {
+        return;
+    }
+
+    if (!people.is_active_user_for_popover(user_id) || people.get_by_user_id(user_id).is_bot) {
+        return;
+    }
+
+    const url = `json/users/${user_id}/presence`;
+    const selector_to_update = `#user_card_popover .popover-menu-list[data-user-id="${CSS.escape(user_id.toString())}"] .user-last-seen-time`;
+    channel.get({
+        url,
+        success(data: unknown) {
+            const parsed_data = presence.user_last_seen_response_schema.safeParse(data);
+
+            if (!parsed_data.success) {
+                blueslip.error("Failed to parse presence API response");
+                return;
+            }
+
+            const response = parsed_data.data;
+
+            if (response.result === "success" && response.presence) {
+                const {aggregated} = response.presence;
+                presence.presence_info.set(user_id, {
+                    status: aggregated.status,
+                    last_active: aggregated.timestamp,
+                });
+
+                // Update the user's last seen time in the user card
+                // popover once we have their presence information, if
+                // we still have that user card still open.
+                $(selector_to_update).text(buddy_data.user_last_seen_time_status(user_id));
+            }
+        },
+        error(xhr: JQuery.jqXHR) {
+            // Fallback logic for users who haven't generated any
+            // presence data. We want to show the normal "Not active
+            // in last year" text.
+            blueslip.error(channel.xhr_error_message("Error fetching presence", xhr));
+            $(selector_to_update).text(buddy_data.user_last_seen_time_status(user_id));
+        },
+    });
+};
+
+export function rewire_fetch_presence_for_popover(value: (user_id: number) => string): void {
+    fetch_presence_for_popover = value;
+}
+
 function get_user_card_popover_data(
     user: User,
     has_message_context: boolean,
@@ -283,6 +334,10 @@ function get_user_card_popover_data(
     const can_send_private_message =
         user_can_send_direct_message(user_id_string) && is_active && !is_me;
 
+    const user_last_seen_time_status =
+        buddy_data.user_last_seen_time_status(user.user_id, fetch_presence_for_popover) ||
+        $t({defaultMessage: "Loading…"});
+
     const args: UserCardPopoverData = {
         invisible_mode,
         can_send_private_message,
@@ -299,7 +354,7 @@ function get_user_card_popover_data(
         user_email: user.delivery_email,
         user_full_name: user.full_name,
         user_id: user.user_id,
-        user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
+        user_last_seen_time_status,
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         status_content_available: Boolean(status_text ?? status_emoji_info),

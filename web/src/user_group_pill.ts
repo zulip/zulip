@@ -1,7 +1,8 @@
 import assert from "minimalistic-assert";
 
+import render_input_pill from "../templates/input_pill.hbs";
+
 import * as group_permission_settings from "./group_permission_settings.ts";
-import {$t_html} from "./i18n.ts";
 import type {InputPillContainer} from "./input_pill.ts";
 import * as people from "./people.ts";
 import type {
@@ -25,15 +26,15 @@ export type UserGroupPillData = UserGroup & {
     is_silent?: boolean;
 };
 
-export function display_pill(group: UserGroup): string {
+export function generate_pill_html(item: UserGroupPill): string {
+    const group = user_groups.get_user_group_from_id(item.group_id);
     const group_members = get_group_members(group);
-    return $t_html(
-        {defaultMessage: "{group_name}: {group_size, plural, one {# user} other {# users}}"},
-        {
-            group_name: user_groups.get_display_group_name(group.name),
-            group_size: group_members.length,
-        },
-    );
+    return render_input_pill({
+        display_value: user_groups.get_display_group_name(group.name),
+        group_id: item.group_id,
+        show_group_members_count: true,
+        group_members_count: group_members.length,
+    });
 }
 
 export function create_item_from_group_name(
@@ -85,12 +86,17 @@ function get_group_members(user_group: UserGroup): number[] {
 export function append_user_group(
     group: UserGroup,
     pill_widget: CombinedPillContainer | GroupSettingPillContainer | UserGroupPillWidget,
+    execute_oncreate_callback = true,
 ): void {
-    pill_widget.appendValidatedData({
-        type: "user_group",
-        group_id: group.id,
-        group_name: group.name,
-    });
+    pill_widget.appendValidatedData(
+        {
+            type: "user_group",
+            group_id: group.id,
+            group_name: group.name,
+        },
+        false,
+        !execute_oncreate_callback,
+    );
     pill_widget.clear_text();
 }
 

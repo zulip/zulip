@@ -53,7 +53,7 @@ server as follows:
 
    [update-settings-docs]: ../production/upgrade.md#updating-settingspy-inline-documentation
 
-1. [Restart your Zulip server](settings.md#making-changes) so that
+1. [Restart your Zulip server](settings.md#changing-server-settings) so that
    your configuration changes take effect.
 
 1. Run the registration command. If you installed Zulip directly on the server
@@ -104,6 +104,20 @@ can conveniently access plan management from the Zulip app. See [help center
 documentation](https://zulip.com/help/self-hosted-billing) for detailed
 instructions.
 
+#### Configure who can manage plans and billing
+
+::::{tab-set}
+
+:::{tab-item} Zulip Server 10.0+
+
+Follow [these
+instructions](https://zulip.com/help/self-hosted-billing#configure-who-can-manage-plans-and-billing)
+to configure who can manage plans and billing.
+
+:::
+
+:::{tab-item} Older versions
+
 You can add billing administrators using the `change_user_role` [management
 command][management-commands], passing [the organization's
 `string_id`][accessing-string-id], and the email address of the Zulip user who
@@ -119,6 +133,10 @@ option:
 ```
 /home/zulip/deployments/current/manage.py change_user_role --revoke -r '' username@example.com is_billing_admin
 ```
+
+:::
+
+::::
 
 [management-commands]: ../production/management-commands.md
 [accessing-string-id]: https://zulip.readthedocs.io/en/stable/production/management-commands.html#accessing-an-organization-s-string-id
@@ -411,7 +429,7 @@ registration.
    `ZULIP_SERVICE_PUSH_NOTIFICATIONS = True` line
    in your `/etc/zulip/settings.py` file (i.e., add `# ` at the
    start of the line), and [restart your Zulip
-   server](settings.md#making-changes).
+   server](settings.md#changing-server-settings).
 
 If you ever need to reactivate your server's registration, [contact Zulip
 support](https://zulip.com/help/contact-support).
@@ -421,7 +439,7 @@ support](https://zulip.com/help/contact-support).
 You can temporarily stop using the Mobile Push Notification Service. Comment out
 the `PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'` line in your
 `/etc/zulip/settings.py` file (i.e., add `# ` at the start of the line), and
-[restart your Zulip server](settings.md#making-changes). This approach makes it
+[restart your Zulip server](settings.md#changing-server-settings). This approach makes it
 easy to start using the service again by uncommenting the same line.
 
 ## Sending push notifications directly from your server

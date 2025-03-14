@@ -1,4 +1,3 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
@@ -6,12 +5,15 @@ import {z} from "zod";
 
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_inline_stream_or_topic_reference from "../templates/inline_stream_or_topic_reference.hbs";
+import render_topic_already_exists_warning_banner from "../templates/modal_banner/topic_already_exists_warning_banner.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
 import render_left_sidebar_stream_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_stream_actions_popover.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as browser_history from "./browser_history.ts";
+import * as clipboard_handler from "./clipboard_handler.ts";
+import * as compose_banner from "./compose_banner.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
@@ -32,9 +34,11 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
+import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -102,11 +106,15 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
     const show_go_to_channel_feed =
         user_settings.web_channel_default_view !==
         web_channel_default_view_values.channel_feed.code;
+    const stream_unread = unread.unread_count_info_for_stream(stream_id);
+    const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
+    const has_unread_messages = stream_unread_count > 0;
     const content = render_left_sidebar_stream_actions_popover({
         stream: {
             ...sub_store.get(stream_id),
             url: browser_history.get_full_url(stream_hash),
         },
+        has_unread_messages,
         show_go_to_channel_feed,
     });
 
@@ -175,6 +183,14 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 e.stopPropagation();
             });
 
+            // Mark all messages in stream as unread
+            $popper.on("click", ".mark_stream_as_unread", (e) => {
+                const sub = stream_popover_sub(e);
+                hide_stream_popover(instance);
+                unread_ops.mark_stream_as_unread(sub.stream_id);
+                e.stopPropagation();
+            });
+
             // Mute/unmute
             $popper.on("click", ".toggle_stream_muted", (e) => {
                 const sub = stream_popover_sub(e);
@@ -195,8 +211,9 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 e.stopPropagation();
             });
 
-            new ClipboardJS(util.the($popper.find(".copy_stream_link"))).on("success", () => {
-                popover_menus.hide_current_popover_if_visible(instance);
+            $popper.on("click", ".copy_stream_link", (e) => {
+                assert(e.currentTarget instanceof HTMLElement);
+                clipboard_handler.popover_copy_link_to_clipboard(instance, $(e.currentTarget));
             });
         },
         onHidden(instance) {
@@ -336,6 +353,7 @@ export async function build_move_topic_to_stream_popover(
         disable_topic_input?: boolean;
         message_placement?: "first" | "intermediate" | "last";
         stream: sub_store.StreamSubscription | undefined;
+        max_topic_length: number;
     } = {
         topic_name,
         empty_string_topic_display_name,
@@ -346,6 +364,7 @@ export async function build_move_topic_to_stream_popover(
         notify_old_thread: message_edit.notify_old_thread_default,
         from_message_actions_popover: message !== undefined,
         only_topic_edit,
+        max_topic_length: realm.max_topic_length,
     };
 
     // When the modal is opened for moving the whole topic from left sidebar,
@@ -590,6 +609,57 @@ export async function build_move_topic_to_stream_popover(
         );
     }
 
+    function show_topic_already_exists_warning(): boolean {
+        // Don't show warning if the submit button is disabled.
+        if ($("#move_topic_modal .dialog_submit_button").expectOne().prop("disabled")) {
+            return false;
+        }
+        // Don't show warning if we are only moving one message.
+        if ($("#move_topic_modal select.message_edit_topic_propagate").val() === "change_one") {
+            return false;
+        }
+        const {new_topic_name} = get_params_from_form();
+        assert(new_topic_name !== undefined);
+        // Don't show warning for empty topic as the user is probably
+        // about to type a new topic name. Note that if topics are
+        // mandatory, then the submit button is disabled, which returns
+        // early above.
+        if (new_topic_name === "" || new_topic_name === "(no topic)") {
+            return false;
+        }
+        let stream_id: number;
+        if (stream_widget_value === undefined) {
+            // Set stream_id to current_stream_id since the user is not
+            // allowed to edit the stream in topic-edit only UI.
+            stream_id = current_stream_id;
+        } else {
+            stream_id = stream_widget_value;
+        }
+        const stream_topics = stream_topic_history
+            .get_recent_topic_names(stream_id)
+            .map((topic) => topic.toLowerCase());
+        if (stream_topics.includes(new_topic_name.trim().toLowerCase())) {
+            return true;
+        }
+        return false;
+    }
+
+    function maybe_show_topic_already_exists_warning(): void {
+        const $move_topic_warning_container = $("#move_topic_modal .move_topic_warning_container");
+        if (show_topic_already_exists_warning()) {
+            $move_topic_warning_container.html(
+                render_topic_already_exists_warning_banner({
+                    banner_type: compose_banner.WARNING,
+                    hide_close_button: true,
+                    classname: "topic_already_exists_warning",
+                }),
+            );
+            $move_topic_warning_container.show();
+        } else {
+            $move_topic_warning_container.hide();
+        }
+    }
+
     function render_selected_stream(): void {
         assert(stream_widget_value !== undefined);
         const stream = stream_data.get_sub_by_id(stream_widget_value);
@@ -610,6 +680,7 @@ export async function build_move_topic_to_stream_popover(
         update_submit_button_disabled_state(stream_widget_value);
         set_stream_topic_typeahead();
         render_selected_stream();
+        maybe_show_topic_already_exists_warning();
 
         dropdown.hide();
         event.preventDefault();
@@ -689,6 +760,7 @@ export async function build_move_topic_to_stream_popover(
 
     function move_topic_post_render(): void {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
+        $("#move_topic_modal .move_topic_warning_container").hide();
 
         const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
         move_topic_to_stream_topic_typeahead = composebox_typeahead.initialize_topic_edit_typeahead(
@@ -703,6 +775,7 @@ export async function build_move_topic_to_stream_popover(
             const select_stream_id = current_stream_id;
             $topic_input.on("input", () => {
                 update_submit_button_disabled_state(select_stream_id);
+                maybe_show_topic_already_exists_warning();
             });
             return;
         }
@@ -733,9 +806,22 @@ export async function build_move_topic_to_stream_popover(
 
         render_selected_stream();
         $("#move_topic_to_stream_widget").prop("disabled", disable_stream_input);
-        $("#move_topic_modal .move_messages_edit_topic").on("input", () => {
+        $topic_input.on("input", () => {
             update_submit_button_disabled_state(current_stream_id);
+            maybe_show_topic_already_exists_warning();
         });
+
+        // Update position of topic typeahead because showing/hiding the
+        // "topic already exists" warning changes the size of the modal.
+        const update_topic_typeahead_position = new ResizeObserver((_entries) => {
+            requestAnimationFrame(() => {
+                $topic_input.trigger(new $.Event("typeahead.refreshPosition"));
+            });
+        });
+        const move_topic_form = document.querySelector("#move_topic_form");
+        if (move_topic_form) {
+            update_topic_typeahead_position.observe(move_topic_form);
+        }
 
         if (!args.from_message_actions_popover) {
             update_move_messages_count_text("change_all");
@@ -760,6 +846,7 @@ export async function build_move_topic_to_stream_popover(
             $("#message_move_select_options").on("change", function () {
                 selected_option = String($(this).val());
                 last_propagate_mode_for_conversation.set(conversation_key, selected_option);
+                maybe_show_topic_already_exists_warning();
                 update_move_messages_count_text(selected_option, message?.id);
             });
         }

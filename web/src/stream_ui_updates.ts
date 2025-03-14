@@ -3,12 +3,13 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
-import render_stream_can_add_subscribers_group_label from "../templates/stream_settings/stream_can_add_subscribers_group_label.hbs";
+import render_stream_can_subscribe_group_label from "../templates/stream_settings/stream_can_subscribe_group_label.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
 import * as hash_parser from "./hash_parser.ts";
 import {$t} from "./i18n.ts";
+import * as overlays from "./overlays.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -16,6 +17,7 @@ import * as settings_org from "./settings_org.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_edit_toggler from "./stream_edit_toggler.ts";
+import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
 import type {SettingsSubscription} from "./stream_settings_data.ts";
 import * as sub_store from "./sub_store.ts";
@@ -141,7 +143,7 @@ export function initialize_cant_subscribe_popover(): void {
 }
 
 export function set_up_right_panel_section(sub: StreamSubscription): void {
-    if (sub.subscribed) {
+    if (sub.subscribed && !sub.is_archived) {
         stream_edit_toggler.toggler.enable_tab("personal");
         stream_edit_toggler.toggler.goto(stream_edit_toggler.select_tab);
     } else {
@@ -258,15 +260,13 @@ export function update_default_stream_and_stream_privacy_state($container: JQuer
     update_private_stream_privacy_option_state($container, is_default_stream);
 }
 
-export function update_can_add_subscribers_group_label($container: JQuery): void {
+export function update_can_subscribe_group_label($container: JQuery): void {
     const privacy_type = $container.find("input[type=radio][name=privacy]:checked").val();
     const is_invite_only =
         privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
 
-    const $can_add_subscribers_group_label = $("#group_setting_label_can_add_subscribers_group");
-    $can_add_subscribers_group_label.html(
-        render_stream_can_add_subscribers_group_label({is_invite_only}),
-    );
+    const $can_subscribe_group_label = $container.find(".can_subscribe_group_label");
+    $can_subscribe_group_label.html(render_stream_can_subscribe_group_label({is_invite_only}));
 }
 
 export function enable_or_disable_permission_settings_in_edit_panel(
@@ -369,12 +369,13 @@ export function update_stream_privacy_icon_in_settings(sub: StreamSubscription):
 
     const $stream_settings = stream_settings_containers.get_edit_container(sub);
 
-    $stream_settings.find(".general_settings .large-icon").replaceWith(
+    $stream_settings.find(".stream_section[data-stream-section='general'] .large-icon").replaceWith(
         $(
             render_stream_privacy_icon({
                 invite_only: sub.invite_only,
                 color: sub.color,
                 is_web_public: sub.is_web_public,
+                is_archived: sub.is_archived,
             }),
         ),
     );
@@ -419,7 +420,9 @@ export function update_stream_row_in_settings_tab(sub: StreamSubscription): void
             (is_subscribed_stream_tab_active() && sub.subscribed) ||
             (is_not_subscribed_stream_tab_active() && !sub.subscribed)
         ) {
-            $row.removeClass("notdisplayed");
+            if (stream_settings_components.filter_includes_channel(sub)) {
+                $row.removeClass("notdisplayed");
+            }
         } else if (sub.invite_only || current_user.is_guest) {
             $row.addClass("notdisplayed");
         }
@@ -512,12 +515,51 @@ export function enable_or_disable_add_subscribers_elements(
                 .addClass("add_subscribers_disabled");
         }
     } else {
-        const $add_subscribers_button = $container_elem
-            .find('button[name="add_subscriber"]')
-            .expectOne();
+        const $add_subscribers_button = $container_elem.find(".add-subscriber-button").expectOne();
         $add_subscribers_button.prop("disabled", !enable_elem);
         if (enable_elem) {
             $add_subscribers_button.css("pointer-events", "");
         }
+    }
+}
+
+export function update_public_stream_privacy_option_state($container: JQuery): void {
+    const $public_stream_elem = $container.find(
+        `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.public.code)}']`,
+    );
+    $public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
+}
+
+export function hide_or_disable_stream_privacy_options_if_required($container: JQuery): void {
+    update_web_public_stream_privacy_option_state($container);
+
+    update_public_stream_privacy_option_state($container);
+
+    update_private_stream_privacy_option_state($container);
+}
+
+export function update_stream_privacy_choices(policy: string): void {
+    if (!overlays.streams_open()) {
+        return;
+    }
+    const stream_edit_panel_opened = $("#stream_permission_settings").is(":visible");
+    const stream_creation_form_opened = $("#stream-creation").is(":visible");
+
+    if (!stream_edit_panel_opened && !stream_creation_form_opened) {
+        return;
+    }
+    let $container = $("#stream-creation");
+    if (stream_edit_panel_opened) {
+        $container = $("#stream_permission_settings");
+    }
+
+    if (policy === "can_create_private_channel_group") {
+        update_private_stream_privacy_option_state($container);
+    }
+    if (policy === "can_create_public_channel_group") {
+        update_public_stream_privacy_option_state($container);
+    }
+    if (policy === "can_create_web_public_channel_group") {
+        update_web_public_stream_privacy_option_state($container);
     }
 }

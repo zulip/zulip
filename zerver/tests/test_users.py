@@ -26,7 +26,6 @@ from zerver.actions.users import (
     do_change_can_change_user_emails,
     do_change_can_create_users,
     do_change_can_forge_sender,
-    do_change_is_billing_admin,
     do_change_user_role,
     do_deactivate_user,
     do_delete_user,
@@ -37,11 +36,7 @@ from zerver.lib.bulk_create import create_users
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.send_email import (
-    clear_scheduled_emails,
-    deliver_scheduled_emails,
-    send_future_email,
-)
+from zerver.lib.send_email import clear_scheduled_emails, queue_scheduled_emails, send_future_email
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -968,22 +963,6 @@ class PermissionTest(ZulipTestCase):
         }
         self.assertEqual(last_realm_audit_log.extra_data, expected_extra_data)
 
-        do_change_is_billing_admin(desdemona, True)
-
-        last_realm_audit_log = RealmAuditLog.objects.last()
-        assert last_realm_audit_log is not None
-
-        self.assertEqual(
-            last_realm_audit_log.event_type, AuditLogEventType.USER_SPECIAL_PERMISSION_CHANGED
-        )
-        self.assertEqual(last_realm_audit_log.modified_user, desdemona)
-        expected_extra_data = {
-            "property": "is_billing_admin",
-            RealmAuditLog.OLD_VALUE: False,
-            RealmAuditLog.NEW_VALUE: True,
-        }
-        self.assertEqual(last_realm_audit_log.extra_data, expected_extra_data)
-
 
 class QueryCountTest(ZulipTestCase):
     def test_create_user_with_multiple_streams(self) -> None:
@@ -1021,8 +1000,8 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(87),
-            self.assert_memcached_count(19),
+            self.assert_database_query_count(86),
+            self.assert_memcached_count(20),
             self.capture_send_event_calls(expected_num_events=10) as events,
         ):
             fred = do_create_user(
@@ -1340,7 +1319,7 @@ class AdminCreateUserTest(ZulipTestCase):
 
         # we can't create the same user twice.
         result = self.client_post("/json/users", valid_params)
-        self.assert_json_error(result, "Email 'romeo@zulip.net' already in use")
+        self.assert_json_error(result, "Email is already in use.")
 
         # Don't allow user to sign up with disposable email.
         realm.emails_restricted_to_domains = False
@@ -1687,7 +1666,6 @@ class UserProfileTest(ZulipTestCase):
                 bot_type=1,
                 is_active=True,
                 is_admin=False,
-                is_billing_admin=False,
                 is_bot=True,
                 is_guest=False,
                 is_owner=False,
@@ -2155,7 +2133,8 @@ class ActivateTest(ZulipTestCase):
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         email = ScheduledEmail.objects.all().first()
-        deliver_scheduled_emails(assert_is_not_none(email))
+        with self.captureOnCommitCallbacks(execute=True):
+            queue_scheduled_emails(assert_is_not_none(email))
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
@@ -2186,8 +2165,11 @@ class ActivateTest(ZulipTestCase):
 
         email_id = email.id
         scheduled_at = email.scheduled_timestamp
-        with self.assertLogs("zulip.send_email", level="INFO") as info_log:
-            deliver_scheduled_emails(email)
+        with (
+            self.assertLogs("zulip.send_email", level="INFO") as info_log,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            queue_scheduled_emails(email)
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)

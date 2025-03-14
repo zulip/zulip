@@ -23,6 +23,7 @@ const dom = new JSDOM("", {url: "http://zulip.zulipdev.com/"});
 global.DOMParser = dom.window.DOMParser;
 global.HTMLAnchorElement = dom.window.HTMLAnchorElement;
 global.HTMLElement = dom.window.HTMLElement;
+global.HTMLImageElement = dom.window.HTMLImageElement;
 global.Window = dom.window.Window;
 Object.defineProperty(global, "navigator", {
     value: {

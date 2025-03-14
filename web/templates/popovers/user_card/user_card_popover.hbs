@@ -1,9 +1,12 @@
 <div class="popover-menu user-card-popover-actions no-auto-hide-right-sidebar-overlay" id="user_card_popover" data-simplebar data-simplebar-tab-index="-1">
     <div class="popover-menu-user-header">
-        <div class="popover-menu-user-avatar-container">
+        <div class="popover-menu-user-avatar-container {{#if (not is_active)}}deactivated{{/if}}">
             <img class="popover-menu-user-avatar{{#if user_is_guest}} guest-avatar{{/if}}" src="{{user_avatar}}" />
             {{#if (and is_active (not is_bot))}}
                 <div class="popover-menu-user-presence user-circle zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} hidden-for-spectators" data-presence-indicator-user-id="{{user_id}}"></div>
+            {{/if}}
+            {{#if (not is_active)}}
+                <span class="popover-menu-user-presence conversation-partners-icon fa fa-ban fa-lg deactivated-user-icon user_circle"></span>
             {{/if}}
         </div>
         <div class="popover-menu-user-info">
@@ -97,7 +100,7 @@
             {{#unless is_bot}}
                 <li role="none" class="popover-menu-list-item text-item hidden-for-spectators">
                     <i class="popover-menu-icon zulip-icon zulip-icon-past-time" aria-hidden="true"></i>
-                    <span class="popover-menu-label">{{user_last_seen_time_status}}</span>
+                    <span class="popover-menu-label user-last-seen-time">{{user_last_seen_time_status}}</span>
                 </li>
             {{/unless}}
             {{#if user_time}}

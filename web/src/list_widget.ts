@@ -11,6 +11,7 @@ type SortingFunction<T> = (a: T, b: T) => number;
 
 type ListWidgetMeta<Key, Item = Key> = {
     sorting_function: SortingFunction<Item> | null;
+    applied_sorting_functions: [SortingFunction<Item>, boolean][]; // This is used to keep track of the sorting functions applied.
     sorting_functions: Map<string, SortingFunction<Item>>;
     filter_value: string;
     offset: number;
@@ -62,6 +63,7 @@ type BaseListWidget = {
 
 export type ListWidget<Key, Item = Key> = BaseListWidget & {
     get_current_list: () => Item[];
+    get_rendered_list: () => Item[];
     filter_and_sort: () => void;
     retain_selected_items: () => void;
     all_rendered: () => boolean;
@@ -279,6 +281,7 @@ export function create<Key, Item = Key>(
 
     const meta: ListWidgetMeta<Key, Item> = {
         sorting_function: null,
+        applied_sorting_functions: [],
         sorting_functions: new Map(),
         offset: 0,
         list,
@@ -294,15 +297,34 @@ export function create<Key, Item = Key>(
             return meta.filtered_list;
         },
 
+        get_rendered_list() {
+            return meta.filtered_list.slice(0, meta.offset);
+        },
+
         filter_and_sort() {
             meta.filtered_list = get_filtered_items(meta.filter_value, meta.list, opts);
 
             if (meta.sorting_function) {
-                meta.filtered_list.sort(meta.sorting_function);
-            }
+                // If the sorting function is already applied, remove it to avoid duplicate sorting.
+                const existing_sorting_function_index = meta.applied_sorting_functions.findIndex(
+                    ([sorting_function, _]) => sorting_function === meta.sorting_function,
+                );
+                if (existing_sorting_function_index !== -1) {
+                    meta.applied_sorting_functions.splice(existing_sorting_function_index, 1);
+                }
 
-            if (meta.reverse_mode) {
-                meta.filtered_list.reverse();
+                meta.applied_sorting_functions.push([meta.sorting_function, meta.reverse_mode]);
+                meta.filtered_list.sort((a, b) => {
+                    for (let i = meta.applied_sorting_functions.length - 1; i >= 0; i -= 1) {
+                        const sorting_function = meta.applied_sorting_functions[i]![0];
+                        const is_reverse = meta.applied_sorting_functions[i]![1];
+                        const result = sorting_function(a, b);
+                        if (result !== 0) {
+                            return is_reverse ? -result : result;
+                        }
+                    }
+                    return 0;
+                });
             }
         },
 

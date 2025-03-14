@@ -259,7 +259,7 @@ After running the above command, you should see something similar to:
 Using `manage.py` from within the Zulip development environment:
 
 ```console
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip$
+(zulip-server) vagrant@vagrant:/srv/zulip$
 ./manage.py send_webhook_fixture_message \
     --fixture=zerver/webhooks/helloworld/fixtures/hello.json \
     '--url=http://localhost:9991/api/v1/external/helloworld?api_key=<api_key>'
@@ -402,7 +402,7 @@ Once you have written some tests, you can run just these new tests from within
 the Zulip development environment with this command:
 
 ```console
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip$
+(zulip-server) vagrant@vagrant:/srv/zulip$
 ./tools/test-backend zerver/webhooks/helloworld
 ```
 
@@ -444,14 +444,14 @@ Learn how Zulip integrations work with this simple Hello World example!
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-integration-url.md!}
+1. {!generate-webhook-url-basic.md!}
 
 1.  To trigger a notification using this example webhook, you can use
     `send_webhook_fixture_message` from a [Zulip development
     environment](https://zulip.readthedocs.io/en/latest/development/overview.html):
 
     ```
-        (zulip-py3-venv) vagrant@vagrant:/srv/zulip$
+        (zulip-server) vagrant@vagrant:/srv/zulip$
         ./manage.py send_webhook_fixture_message \
         > --fixture=zerver/tests/fixtures/helloworld/hello.json \
         > '--url=http://localhost:9991/api/v1/external/helloworld?api_key=abcdefgh&stream=stream%20name;'

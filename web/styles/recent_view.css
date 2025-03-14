@@ -60,9 +60,19 @@
             }
         }
 
-        &.change_visibility_policy .visibility-status-icon:hover::before {
+        &.change_visibility_policy
+            .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
             /* Show vertical ellipsis when user hovers over visibility indicator icon. */
-            content: "\f155";
+            background-image: url("../shared/icons/more-vertical.svg");
+            background-repeat: no-repeat;
+            background-position: left bottom;
+            background-size: contain;
+            width: var(--base-font-size-px);
+            height: var(--base-font-size-px);
+
+            &::before {
+                content: "";
+            }
         }
 
         &.change_visibility_policy .recent-view-row-topic-menu {
@@ -137,10 +147,6 @@
     .table_fix_head table th {
         padding: 8px;
         text-align: left;
-
-        &[data-sort] {
-            padding-right: var(--table-header-sortable-column-padding-right);
-        }
     }
 
     #recent_view_filter_buttons {
@@ -390,8 +396,6 @@
         &[data-sort]:hover::after {
             content: " \f0d8";
             white-space: pre;
-            display: inline-block;
-            position: absolute;
             padding-top: 3px;
             font: normal normal normal 12px/1 FontAwesome;
             font-size: inherit;
@@ -425,11 +429,13 @@
     }
 
     .recent-view-topic-header {
-        width: 35%;
+        width: 33%;
     }
 
     .recent-view-unread-header {
-        width: 5%;
+        width: 7%;
+        /* 64px at 20px/1em */
+        min-width: 3.2em;
 
         .zulip-icon-unread {
             position: relative;
@@ -511,7 +517,7 @@
 
         .recent_topic_actions {
             margin-right: 5px;
-            font-size: 15px;
+            font-size: 1.0714em; /* 15px at 14px / em */
         }
     }
 
@@ -526,9 +532,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* To accommodate zulip-icon-triple-users icon */
-            width: 14px;
-            height: 14px;
 
             .zulip-icon.conversation-partners-icon,
             .zulip-icon.zulip-icon-bot {

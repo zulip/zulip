@@ -41,16 +41,19 @@ from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
     access_user_group_for_setting,
     get_group_setting_value_for_api,
+    get_system_user_group_by_name,
     parse_group_setting_value,
     validate_group_setting_value_change,
 )
 from zerver.lib.validator import check_capped_url, check_string
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
-from zerver.models.realms import DigestWeekdayEnum, OrgTypeEnum
-from zerver.views.user_settings import (
-    check_information_density_setting_values,
-    check_settings_values,
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import (
+    DigestWeekdayEnum,
+    MessageEditHistoryVisibilityPolicyEnum,
+    OrgTypeEnum,
 )
+from zerver.views.user_settings import check_settings_values
 
 
 def parse_jitsi_server_url(value: str, special_values_map: Mapping[str, str | None]) -> str | None:
@@ -75,6 +78,17 @@ def check_jitsi_url(value: str) -> str:
         return validator(var_name, value)
     except ValidationError:
         raise JsonableError(_("{var_name} is not an allowed_type").format(var_name=var_name))
+
+
+def parse_message_edit_history_visibility_policy(
+    policy_name: str,
+) -> MessageEditHistoryVisibilityPolicyEnum:
+    try:
+        return MessageEditHistoryVisibilityPolicyEnum[policy_name]
+    except KeyError:
+        raise JsonableError(
+            _("Invalid {var_name}").format(var_name="message_edit_history_visibility_policy")
+        )
 
 
 @require_realm_admin
@@ -110,7 +124,9 @@ def update_realm(
     message_content_edit_limit_seconds_raw: Annotated[
         Json[int | str] | None, ApiParamConfig("message_content_edit_limit_seconds")
     ] = None,
-    allow_edit_history: Json[bool] | None = None,
+    message_edit_history_visibility_policy: Annotated[
+        str | None, AfterValidator(lambda val: parse_message_edit_history_visibility_policy(val))
+    ] = None,
     default_language: str | None = None,
     waiting_period_threshold: Json[NonNegativeInt] | None = None,
     authentication_methods: Json[dict[str, Any]] | None = None,
@@ -134,9 +150,11 @@ def update_realm(
     can_create_write_only_bots_group: Json[GroupSettingChangeRequest] | None = None,
     can_invite_users_group: Json[GroupSettingChangeRequest] | None = None,
     can_manage_all_groups: Json[GroupSettingChangeRequest] | None = None,
+    can_manage_billing_group: Json[GroupSettingChangeRequest] | None = None,
     can_mention_many_users_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_between_channels_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_between_topics_group: Json[GroupSettingChangeRequest] | None = None,
+    can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
     can_summarize_topics_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_initiator_group: Json[GroupSettingChangeRequest] | None = None,
     direct_message_permission_group: Json[GroupSettingChangeRequest] | None = None,
@@ -222,6 +240,7 @@ def update_realm(
         or can_create_groups is not None
         or can_invite_users_group is not None
         or can_manage_all_groups is not None
+        or can_manage_billing_group is not None
     ) and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequiredError
 
@@ -352,6 +371,7 @@ def update_realm(
             else:
                 data[k] = v
 
+    nobody_group = get_system_user_group_by_name(SystemGroups.NOBODY, user_profile.realm_id)
     for setting_name, permission_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
         expected_current_setting_value = None
         assert setting_name in req_group_setting_vars
@@ -359,10 +379,12 @@ def update_realm(
             continue
 
         setting_value = req_group_setting_vars[setting_name]
-        new_setting_value = parse_group_setting_value(setting_value.new)
+        new_setting_value = parse_group_setting_value(setting_value.new, nobody_group)
 
         if setting_value.old is not None:
-            expected_current_setting_value = parse_group_setting_value(setting_value.old)
+            expected_current_setting_value = parse_group_setting_value(
+                setting_value.old, nobody_group
+            )
 
         current_value = getattr(realm, setting_name)
         current_setting_api_value = get_group_setting_value_for_api(current_value)
@@ -565,7 +587,6 @@ def update_realm_user_settings_defaults(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    dense_mode: Json[bool] | None = None,
     web_mark_read_on_scroll_policy: Json[
         Annotated[
             int,
@@ -680,15 +701,6 @@ def update_realm_user_settings_defaults(
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)
 
     realm_user_default = RealmUserDefault.objects.get(realm=user_profile.realm)
-
-    if (
-        dense_mode is not None
-        or web_font_size_px is not None
-        or web_line_height_percent is not None
-    ):
-        check_information_density_setting_values(
-            realm_user_default, dense_mode, web_font_size_px, web_line_height_percent
-        )
 
     request_settings = {k: v for k, v in locals().items() if k in RealmUserDefault.property_types}
     for k, v in request_settings.items():

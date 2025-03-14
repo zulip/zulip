@@ -135,6 +135,7 @@ class Stream(models.Model):
     can_send_message_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
+    can_subscribe_group = models.ForeignKey(UserGroup, on_delete=models.RESTRICT, related_name="+")
 
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "show all topics" for a
@@ -175,10 +176,18 @@ class Stream(models.Model):
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
         ),
+        "can_subscribe_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.NOBODY,
+        ),
     }
 
     stream_permission_group_settings_requiring_content_access = [
         "can_add_subscribers_group",
+        "can_subscribe_group",
     ]
     assert set(stream_permission_group_settings_requiring_content_access).issubset(
         stream_permission_group_settings.keys()
@@ -187,6 +196,7 @@ class Stream(models.Model):
     stream_permission_group_settings_granting_metadata_access = [
         "can_add_subscribers_group",
         "can_administer_channel_group",
+        "can_subscribe_group",
     ]
     assert set(stream_permission_group_settings_granting_metadata_access).issubset(
         stream_permission_group_settings.keys()
@@ -234,6 +244,7 @@ class Stream(models.Model):
         "can_administer_channel_group_id",
         "can_send_message_group_id",
         "can_remove_subscribers_group_id",
+        "can_subscribe_group_id",
         "is_recently_active",
     ]
 
@@ -302,7 +313,7 @@ def bulk_get_streams(realm: Realm, stream_names: set[str]) -> dict[str, Any]:
             "upper(zerver_stream.name::text) IN (SELECT upper(name) FROM unnest(%s) AS name)"
         )
         return (
-            get_active_streams(realm)
+            get_all_streams(realm, include_archived_channels=True)
             .select_related("can_send_message_group", "can_send_message_group__named_user_group")
             .extra(where=[where_clause], params=(list(stream_names),))  # noqa: S610
         )

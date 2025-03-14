@@ -6,6 +6,7 @@ const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
+const {page_params} = require("./lib/zpage_params.cjs");
 
 let $window_stub;
 set_global("to_$", () => $window_stub);
@@ -23,6 +24,9 @@ const recent_view_ui = mock_esm("../src/recent_view_ui");
 const settings = mock_esm("../src/settings");
 mock_esm("../src/settings_data", {
     user_can_create_public_streams: () => true,
+});
+const spectators = mock_esm("../src/spectators", {
+    login_to_access() {},
 });
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const ui_util = mock_esm("../src/ui_util");
@@ -210,6 +214,7 @@ function test_helper({override, override_rewire, change_tab}) {
     stub(stream_settings_ui, "launch");
     stub(ui_util, "blur_active_element");
     stub(ui_report, "error");
+    stub(spectators, "login_to_access");
 
     if (change_tab) {
         override_rewire(message_view, "show", (terms) => {
@@ -321,6 +326,28 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     ]);
     terms = helper.get_narrow_terms();
     assert.equal(terms.length, 0);
+
+    page_params.is_spectator = true;
+
+    window.location.hash = "#narrow/is/resolved/has/reaction";
+    helper.clear_events();
+    $window_stub.trigger("hashchange");
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
+        "message_view.show",
+    ]);
+    terms = helper.get_narrow_terms();
+    assert.equal(terms.length, 2);
+
+    // Test a narrow that spectators are not permitted to access.
+    window.location.hash = "#narrow/is/resolved/is/unread";
+
+    helper.clear_events();
+    $window_stub.trigger("hashchange");
+    helper.assert_events([[spectators, "login_to_access"]]);
+
+    page_params.is_spectator = false;
 
     // Test an invalid narrow hash
     window.location.hash = "#narrow/foo.foo";
@@ -443,4 +470,11 @@ run_test("update_hash_to_match_filter", ({override, override_rewire}) => {
     message_view.update_hash_to_match_filter(new Filter(terms));
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
     assert.equal(url_pushed, "http://zulip.zulipdev.com/#narrow/is/starred");
+
+    terms = [{operator: "-is", operand: "starred"}];
+
+    helper.clear_events();
+    message_view.update_hash_to_match_filter(new Filter(terms));
+    helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
+    assert.equal(url_pushed, "http://zulip.zulipdev.com/#narrow/-is/starred");
 });

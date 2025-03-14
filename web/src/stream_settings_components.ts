@@ -7,17 +7,20 @@ import render_selected_stream_title from "../templates/stream_settings/selected_
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
+import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
-import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
-import * as stream_ui_updates from "./stream_ui_updates.ts";
+import * as stream_data from "./stream_data.ts";
+import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
+
+export let filter_dropdown_widget: DropdownWidget;
 
 export function set_right_panel_title(sub: StreamSubscription): void {
     let title_icon_color = "#333333";
@@ -255,7 +258,10 @@ export function sub_or_unsub(
 ): void {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
-        if (sub.invite_only || current_user.is_guest) {
+        if (
+            (sub.invite_only && !stream_data.has_content_access_via_group_permissions(sub)) ||
+            current_user.is_guest
+        ) {
             unsubscribe_from_private_stream(sub);
             return;
         }
@@ -265,17 +271,30 @@ export function sub_or_unsub(
     }
 }
 
-export function update_public_stream_privacy_option_state($container: JQuery): void {
-    const $public_stream_elem = $container.find(
-        `input[value='${CSS.escape(settings_config.stream_privacy_policy_values.public.code)}']`,
-    );
-    $public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
+export function set_filter_dropdown_widget(widget: DropdownWidget): void {
+    filter_dropdown_widget = widget;
 }
 
-export function hide_or_disable_stream_privacy_options_if_required($container: JQuery): void {
-    stream_ui_updates.update_web_public_stream_privacy_option_state($container);
+export function get_filter_dropdown_value(): string {
+    return z.string().parse(filter_dropdown_widget.value());
+}
 
-    update_public_stream_privacy_option_state($container);
+export function set_filter_dropdown_value(value: string): void {
+    filter_dropdown_widget.render(value);
+}
 
-    stream_ui_updates.update_private_stream_privacy_option_state($container);
+export function set_filters_for_tests(filter_widget: DropdownWidget): void {
+    filter_dropdown_widget = filter_widget;
+}
+
+export function filter_includes_channel(sub: StreamSubscription): boolean {
+    const filter_value = get_filter_dropdown_value();
+    const FILTERS = stream_settings_data.FILTERS;
+    if (
+        (filter_value === FILTERS.NON_ARCHIVED_CHANNELS && sub.is_archived) ||
+        (filter_value === FILTERS.ARCHIVED_CHANNELS && !sub.is_archived)
+    ) {
+        return false;
+    }
+    return true;
 }

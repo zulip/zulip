@@ -3,7 +3,6 @@ import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
 import {FoldDict} from "./fold_dict.ts";
-import {$t} from "./i18n.ts";
 import type {UserGroupUpdateEvent} from "./server_event_types.ts";
 import * as settings_config from "./settings_config.ts";
 import type {GroupPermissionSetting, GroupSettingValue, StateData} from "./state_data.ts";
@@ -138,6 +137,13 @@ export function update(event: UserGroupUpdateEvent, group: UserGroup): void {
 
 export function get_user_group_from_name(name: string): UserGroup | undefined {
     return user_group_name_dict.get(name);
+}
+
+export function realm_has_deactivated_user_groups(): boolean {
+    const realm_user_groups = get_realm_user_groups(true);
+    const deactivated_group_count = realm_user_groups.filter((group) => group.deactivated).length;
+
+    return deactivated_group_count > 0;
 }
 
 export function get_realm_user_groups(include_deactivated = false): UserGroup[] {
@@ -299,8 +305,11 @@ export function is_setting_group_empty(setting_group: GroupSettingValue): boolea
     return true;
 }
 
-export function get_user_groups_of_user(user_id: number): UserGroup[] {
-    const user_groups_realm = get_realm_user_groups();
+export function get_user_groups_of_user(
+    user_id: number,
+    include_deactivated_groups = false,
+): UserGroup[] {
+    const user_groups_realm = get_realm_user_groups(include_deactivated_groups);
     const groups_of_user = user_groups_realm.filter((group) => is_user_in_group(group.id, user_id));
     return groups_of_user;
 }
@@ -556,17 +565,6 @@ export function is_user_in_setting_group(
         }
     }
     return false;
-}
-
-export function get_display_name_for_system_group_option(
-    setting_name: string,
-    name: string,
-): string {
-    // We use a special label for the "Nobody" system group for clarity.
-    if (setting_name === "direct_message_permission_group" && name === "Nobody") {
-        return $t({defaultMessage: "Direct messages disabled"});
-    }
-    return name;
 }
 
 export function check_system_user_group_allowed_for_setting(

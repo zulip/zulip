@@ -13,12 +13,6 @@ import * as group_permission_settings from "./group_permission_settings.ts";
 import type {AssignedGroupPermission, GroupGroupSettingName} from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t} from "./i18n.ts";
-import {
-    LEGACY_FONT_SIZE_PX,
-    LEGACY_LINE_HEIGHT_PERCENT,
-    NON_COMPACT_MODE_FONT_SIZE_PX,
-    NON_COMPACT_MODE_LINE_HEIGHT_PERCENT,
-} from "./information_density.ts";
 import * as people from "./people.ts";
 import {
     realm_default_settings_schema,
@@ -243,6 +237,7 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 
 export const simple_dropdown_realm_settings_schema = realm_schema.pick({
     realm_org_type: true,
+    realm_message_edit_history_visibility_policy: true,
 });
 export type SimpleDropdownRealmSettings = z.infer<typeof simple_dropdown_realm_settings_schema>;
 
@@ -691,6 +686,9 @@ export let get_input_element_value = (
             assert(pill_widget !== null);
             return get_group_setting_widget_value(pill_widget);
         }
+        case "info-density-setting":
+            assert(input_elem instanceof HTMLInputElement);
+            return Number.parseInt($(input_elem).val()!, 10);
         default:
             return undefined;
     }
@@ -811,9 +809,11 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_delete_own_message_group":
         case "realm_can_invite_users_group":
         case "realm_can_manage_all_groups":
+        case "realm_can_manage_billing_group":
         case "realm_can_mention_many_users_group":
         case "realm_can_move_messages_between_channels_group":
         case "realm_can_move_messages_between_topics_group":
+        case "realm_can_resolve_topics_group":
         case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
@@ -915,8 +915,8 @@ export function get_group_setting_widget_value(
     }
 
     return {
-        direct_subgroups,
-        direct_members,
+        direct_subgroups: direct_subgroups.sort(),
+        direct_members: direct_members.sort(),
     };
 }
 
@@ -974,6 +974,11 @@ export function check_realm_default_settings_property_changed(elem: HTMLElement)
         case "email_notifications_batching_period_seconds":
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_time_limit_setting_value($(elem), false);
+            break;
+        case "web_font_size_px":
+        case "web_line_height_percent":
+            assert(elem instanceof HTMLInputElement);
+            proposed_val = Number.parseInt($(elem).val()!, 10);
             break;
         default:
             if (current_val !== undefined) {
@@ -1060,12 +1065,14 @@ export function populate_data_for_realm_settings_request(
                     "can_create_web_public_channel_group",
                     "can_create_write_only_bots_group",
                     "can_manage_all_groups",
+                    "can_manage_billing_group",
                     "can_delete_any_message_group",
                     "can_delete_own_message_group",
                     "can_invite_users_group",
                     "can_mention_many_users_group",
                     "can_move_messages_between_channels_group",
                     "can_move_messages_between_topics_group",
+                    "can_resolve_topics_group",
                     "can_summarize_topics_group",
                     "create_multiuse_invite_group",
                     "direct_message_initiator_group",
@@ -1189,15 +1196,6 @@ export function populate_data_for_default_realm_settings_request(
                 const property_name: string = extract_property_name($input_elem, true);
                 assert(typeof input_value !== "object");
                 data[property_name] = input_value;
-
-                if (property_name === "dense_mode") {
-                    data.web_font_size_px = input_value
-                        ? LEGACY_FONT_SIZE_PX
-                        : NON_COMPACT_MODE_FONT_SIZE_PX;
-                    data.web_line_height_percent = input_value
-                        ? LEGACY_LINE_HEIGHT_PERCENT
-                        : NON_COMPACT_MODE_LINE_HEIGHT_PERCENT;
-                }
             }
         }
     }
@@ -1431,7 +1429,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
     if (time_limit_settings.length > 0) {
         disable_save_button =
             should_disable_save_button_for_time_limit_settings(time_limit_settings);
-    } else if ($subsection_elem.attr("id") === "org-other-settings") {
+    } else if ($subsection_elem.attr("id") === "org-compose-settings") {
         disable_save_button = should_disable_save_button_for_jitsi_server_url_setting();
         const $button_wrapper = $subsection_elem.find<tippy.PopperElement>(
             ".subsection-changes-save",
@@ -1535,9 +1533,11 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["realm_can_delete_own_message_group", null],
     ["realm_can_invite_users_group", null],
     ["realm_can_manage_all_groups", null],
+    ["realm_can_manage_billing_group", null],
     ["realm_can_mention_many_users_group", null],
     ["realm_can_move_messages_between_channels_group", null],
     ["realm_can_move_messages_between_topics_group", null],
+    ["realm_can_resolve_topics_group", null],
     ["realm_can_summarize_topics_group", null],
     ["realm_create_multiuse_invite_group", null],
     ["realm_direct_message_initiator_group", null],
@@ -1559,25 +1559,25 @@ export function set_group_setting_widget_value(
     pill_widget: GroupSettingPillContainer,
     property_value: GroupSettingValue,
 ): void {
-    pill_widget.clear();
+    pill_widget.clear(true);
 
     if (typeof property_value === "number") {
         const user_group = user_groups.get_user_group_from_id(property_value);
         if (user_group.name === "role:nobody") {
             return;
         }
-        user_group_pill.append_user_group(user_group, pill_widget);
+        user_group_pill.append_user_group(user_group, pill_widget, false);
     } else {
         for (const setting_sub_group_id of property_value.direct_subgroups) {
             const user_group = user_groups.get_user_group_from_id(setting_sub_group_id);
             if (user_group.name === "role:nobody") {
                 continue;
             }
-            user_group_pill.append_user_group(user_group, pill_widget);
+            user_group_pill.append_user_group(user_group, pill_widget, false);
         }
         for (const setting_user_id of property_value.direct_members) {
             const user = people.get_user_by_id_assert_valid(setting_user_id);
-            user_pill.append_user(user, pill_widget);
+            user_pill.append_user(user, pill_widget, false);
         }
     }
 }

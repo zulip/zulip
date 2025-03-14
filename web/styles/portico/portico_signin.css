@@ -424,7 +424,7 @@ html {
         border: none;
         border-radius: 4px;
 
-        transition: none 0.3s ease;
+        transition: 0.3s ease;
         transition-property: background-color, outline;
 
         &:hover {
@@ -568,8 +568,9 @@ html {
 
             margin-top: 1px;
 
-            transition: none 0.3s ease;
-            transition-property: color, font-size, font-weight, transform; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+            transition: 0.3s ease;
+            transition-property:
+                color, font-size, font-weight, transform; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
         }
 
         &.moving-label {

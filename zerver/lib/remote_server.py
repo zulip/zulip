@@ -387,13 +387,17 @@ def should_send_analytics_data() -> bool:  # nocoverage
     return settings.ANALYTICS_DATA_UPLOAD_LEVEL > AnalyticsDataUploadLevel.NONE
 
 
-def send_server_data_to_push_bouncer(consider_usage_statistics: bool = True) -> None:
+def send_server_data_to_push_bouncer(
+    consider_usage_statistics: bool = True, raise_on_error: bool = False
+) -> None:
     logger = logging.getLogger("zulip.analytics")
     # first, check what's latest
     try:
         result = send_to_push_bouncer("GET", "server/analytics/status", {})
     except (JsonableError, orjson.JSONDecodeError) as e:
         maybe_mark_pushes_disabled(e, logger)
+        if raise_on_error:  # nocoverage
+            raise
         return
 
     # Gather only entries with IDs greater than the last ID received by the push bouncer.
@@ -452,6 +456,8 @@ def send_server_data_to_push_bouncer(consider_usage_statistics: bool = True) -> 
             "POST", "server/analytics", request.model_dump(round_trip=True)
         )
     except (JsonableError, orjson.JSONDecodeError) as e:
+        if raise_on_error:  # nocoverage
+            raise
         maybe_mark_pushes_disabled(e, logger)
         return
 

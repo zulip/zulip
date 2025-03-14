@@ -25,6 +25,20 @@ import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
+function open_navbar_banner_and_resize(banner: AlertBanner): void {
+    banners.open(banner, $("#navbar_alerts_wrapper"));
+    // Opening navbar banners requires a resize event to
+    // recalculate the navbar-fixed-container height.
+    $(window).trigger("resize");
+}
+
+function close_navbar_banner_and_resize($banner: JQuery): void {
+    banners.close($banner);
+    // Closing navbar banners requires a resize event to
+    // recalculate the navbar-fixed-container height.
+    $(window).trigger("resize");
+}
+
 export function should_show_desktop_notifications_banner(ls: LocalStorage): boolean {
     // if the user said to never show banner on this computer again, it will
     // be stored as `true` so we want to negate that.
@@ -97,9 +111,9 @@ export function maybe_toggle_empty_required_profile_fields_banner(): void {
         }))
         .find((f) => f.required && !f.value);
     if (empty_required_profile_fields_exist) {
-        banners.open(PROFILE_MISSING_REQUIRED_FIELDS_BANNER, $("#navbar_alerts_wrapper"));
+        open_navbar_banner_and_resize(PROFILE_MISSING_REQUIRED_FIELDS_BANNER);
     } else if ($banner && $banner.attr("data-process") === "profile-missing-required-fields") {
-        banners.close($banner);
+        close_navbar_banner_and_resize($banner);
     }
 }
 
@@ -144,7 +158,7 @@ export function is_organization_profile_incomplete(): boolean {
 export function toggle_organization_profile_incomplete_banner(): void {
     const $banner = $("#navbar_alerts_wrapper").find(".banner");
     if ($banner && $banner.attr("data-process") === "organization-profile-incomplete") {
-        banners.close($banner);
+        close_navbar_banner_and_resize($banner);
         return;
     }
     if (
@@ -154,7 +168,7 @@ export function toggle_organization_profile_incomplete_banner(): void {
         // Note that this will be a noop unless we'd already displayed
         // the notice in this session.  This seems OK, given that
         // this is meant to be a one-time task for administrators.
-        banners.open(ORGANIZATION_PROFILE_INCOMPLETE_BANNER, $("#navbar_alerts_wrapper"));
+        open_navbar_banner_and_resize(ORGANIZATION_PROFILE_INCOMPLETE_BANNER);
     }
 }
 
@@ -185,17 +199,17 @@ const DESKTOP_NOTIFICATIONS_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            type: "primary",
+            attention: "primary",
             label: $t({defaultMessage: "Enable notifications"}),
             custom_classes: "request-desktop-notifications",
         },
         {
-            type: "quiet",
+            attention: "quiet",
             label: $t({defaultMessage: "Customize notifications"}),
             custom_classes: "customize-desktop-notifications",
         },
         {
-            type: "borderless",
+            attention: "borderless",
             label: $t({defaultMessage: "Never ask on this computer"}),
             custom_classes: "reject-desktop-notifications",
         },
@@ -213,7 +227,7 @@ const CONFIGURE_OUTGOING_MAIL_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            type: "quiet",
+            attention: "quiet",
             label: $t({defaultMessage: "Configuration instructions"}),
             custom_classes: "configure-outgoing-mail-instructions",
         },
@@ -231,7 +245,7 @@ const INSECURE_DESKTOP_APP_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            type: "quiet",
+            attention: "quiet",
             label: $t({defaultMessage: "Download the latest version"}),
             custom_classes: "download-latest-zulip-version",
         },
@@ -246,7 +260,7 @@ const PROFILE_MISSING_REQUIRED_FIELDS_BANNER: AlertBanner = {
     label: $t({defaultMessage: "Your profile is missing required fields."}),
     buttons: [
         {
-            type: "quiet",
+            attention: "quiet",
             label: $t({defaultMessage: "Edit your profile"}),
             custom_classes: "edit-profile-required-fields",
         },
@@ -264,7 +278,7 @@ const ORGANIZATION_PROFILE_INCOMPLETE_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            type: "quiet",
+            attention: "quiet",
             label: $t({
                 defaultMessage: "Edit profile",
             }),
@@ -283,12 +297,12 @@ const SERVER_NEEDS_UPGRADE_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            type: "quiet",
+            attention: "quiet",
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "server-upgrade-learn-more",
         },
         {
-            type: "borderless",
+            attention: "borderless",
             label: $t({defaultMessage: "Dismiss for a week"}),
             custom_classes: "server-upgrade-nag-dismiss",
         },
@@ -328,12 +342,12 @@ const bankruptcy_banner = (): AlertBanner => {
         label,
         buttons: [
             {
-                type: "quiet",
+                attention: "quiet",
                 label: $t({defaultMessage: "Yes, please!"}),
                 custom_classes: "accept-bankruptcy",
             },
             {
-                type: "borderless",
+                attention: "borderless",
                 label: $t({defaultMessage: "No, I'll catch up."}),
                 custom_classes: "banner-close-action",
             },
@@ -385,12 +399,12 @@ const time_zone_update_offer_banner = (): AlertBanner => {
         ),
         buttons: [
             {
-                type: "quiet",
+                attention: "quiet",
                 label: $t({defaultMessage: "Yes, please!"}),
                 custom_classes: "accept-update-time-zone",
             },
             {
-                type: "borderless",
+                attention: "borderless",
                 label: $t({defaultMessage: "No, don't ask again."}),
                 custom_classes: "decline-time-zone-update",
             },
@@ -404,33 +418,49 @@ export function initialize(): void {
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
     if (realm.demo_organization_scheduled_deletion_date) {
-        banners.open(demo_organization_deadline_banner(), $("#navbar_alerts_wrapper"));
+        open_navbar_banner_and_resize(demo_organization_deadline_banner());
     } else if (page_params.insecure_desktop_app) {
-        banners.open(INSECURE_DESKTOP_APP_BANNER, $("#navbar_alerts_wrapper"));
+        open_navbar_banner_and_resize(INSECURE_DESKTOP_APP_BANNER);
     } else if (should_offer_to_update_timezone()) {
-        banners.open(time_zone_update_offer_banner(), $("#navbar_alerts_wrapper"));
+        open_navbar_banner_and_resize(time_zone_update_offer_banner());
     } else if (realm.server_needs_upgrade) {
         if (should_show_server_upgrade_banner(ls)) {
-            banners.open(SERVER_NEEDS_UPGRADE_BANNER, $("#navbar_alerts_wrapper"));
+            open_navbar_banner_and_resize(SERVER_NEEDS_UPGRADE_BANNER);
         }
     } else if (page_params.warn_no_email === true && current_user.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
-        banners.open(CONFIGURE_OUTGOING_MAIL_BANNER, $("#navbar_alerts_wrapper"));
+        open_navbar_banner_and_resize(CONFIGURE_OUTGOING_MAIL_BANNER);
     } else if (should_show_desktop_notifications_banner(ls)) {
-        banners.open(DESKTOP_NOTIFICATIONS_BANNER, $("#navbar_alerts_wrapper"));
+        open_navbar_banner_and_resize(DESKTOP_NOTIFICATIONS_BANNER);
     } else if (should_show_bankruptcy_banner()) {
-        banners.open(bankruptcy_banner(), $("#navbar_alerts_wrapper"));
+        open_navbar_banner_and_resize(bankruptcy_banner());
     } else if (
         is_organization_profile_incomplete() &&
         should_show_organization_profile_incomplete_banner(realm.realm_date_created)
     ) {
-        banners.open(ORGANIZATION_PROFILE_INCOMPLETE_BANNER, $("#navbar_alerts_wrapper"));
+        open_navbar_banner_and_resize(ORGANIZATION_PROFILE_INCOMPLETE_BANNER);
     } else {
         maybe_toggle_empty_required_profile_fields_banner();
     }
 
     // Configure click handlers.
+
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".banner-close-action",
+        function (this: HTMLElement, e) {
+            // Override the banner close event listener in web/src/banners.ts,
+            // to trigger a window resize event which is necessary to
+            // recalculate the navbar-fixed-container height.
+            e.preventDefault();
+            e.stopPropagation();
+            const $banner = $(this).closest(".banner");
+            banners.close($banner);
+            $(window).trigger("resize");
+        },
+    );
+
     $("#navbar_alerts_wrapper").on(
         "click",
         ".request-desktop-notifications",
@@ -440,7 +470,7 @@ export function initialize(): void {
                 const permission =
                     await desktop_notifications.request_desktop_notifications_permission();
                 if (permission === "granted" || permission === "denied") {
-                    banners.close($banner);
+                    close_navbar_banner_and_resize($banner);
                 }
             })();
         },
@@ -455,7 +485,7 @@ export function initialize(): void {
         ".reject-desktop-notifications",
         function (this: HTMLElement) {
             const $banner = $(this).closest(".banner");
-            banners.close($banner);
+            close_navbar_banner_and_resize($banner);
             ls.set("dontAskForNotifications", true);
         },
     );
@@ -466,7 +496,7 @@ export function initialize(): void {
         const $banner = $(this).closest(".banner");
         unread_ops.mark_all_as_read();
         setTimeout(() => {
-            banners.close($banner);
+            close_navbar_banner_and_resize($banner);
         }, 2000);
     });
 
@@ -503,7 +533,7 @@ export function initialize(): void {
         ".server-upgrade-nag-dismiss",
         function (this: HTMLElement) {
             const $banner = $(this).closest(".banner");
-            banners.close($banner);
+            close_navbar_banner_and_resize($banner);
             set_last_upgrade_nag_dismissal_time(ls);
         },
     );
@@ -517,7 +547,7 @@ export function initialize(): void {
                 url: "/json/settings",
                 data: {timezone: browser_time_zone},
                 success() {
-                    banners.close($banner);
+                    close_navbar_banner_and_resize($banner);
                     feedback_widget.show({
                         title_text: $t({defaultMessage: "Time zone updated"}),
                         populate($container) {
@@ -556,7 +586,7 @@ export function initialize(): void {
                 url: "/json/settings",
                 data: {web_suggest_update_timezone: false},
                 success() {
-                    banners.close($banner);
+                    close_navbar_banner_and_resize($banner);
                     feedback_widget.show({
                         title_text: $t({defaultMessage: "Setting updated"}),
                         populate($container) {
@@ -603,47 +633,41 @@ export function initialize(): void {
             onMount(instance) {
                 const $popper = $(instance.popper);
                 $popper.on("click", ".desktop-notifications", () => {
-                    banners.open(DESKTOP_NOTIFICATIONS_BANNER, $("#navbar_alerts_wrapper"));
+                    open_navbar_banner_and_resize(DESKTOP_NOTIFICATIONS_BANNER);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
                 $popper.on("click", ".configure-outgoing-mail", () => {
-                    banners.open(CONFIGURE_OUTGOING_MAIL_BANNER, $("#navbar_alerts_wrapper"));
+                    open_navbar_banner_and_resize(CONFIGURE_OUTGOING_MAIL_BANNER);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
                 $popper.on("click", ".insecure-desktop-app", () => {
-                    banners.open(INSECURE_DESKTOP_APP_BANNER, $("#navbar_alerts_wrapper"));
+                    open_navbar_banner_and_resize(INSECURE_DESKTOP_APP_BANNER);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
                 $popper.on("click", ".profile-missing-required-fields", () => {
-                    banners.open(
-                        PROFILE_MISSING_REQUIRED_FIELDS_BANNER,
-                        $("#navbar_alerts_wrapper"),
-                    );
+                    open_navbar_banner_and_resize(PROFILE_MISSING_REQUIRED_FIELDS_BANNER);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
                 $popper.on("click", ".organization-profile-incomplete", () => {
-                    banners.open(
-                        ORGANIZATION_PROFILE_INCOMPLETE_BANNER,
-                        $("#navbar_alerts_wrapper"),
-                    );
+                    open_navbar_banner_and_resize(ORGANIZATION_PROFILE_INCOMPLETE_BANNER);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
                 $popper.on("click", ".server-needs-upgrade", () => {
-                    banners.open(SERVER_NEEDS_UPGRADE_BANNER, $("#navbar_alerts_wrapper"));
+                    open_navbar_banner_and_resize(SERVER_NEEDS_UPGRADE_BANNER);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
                 $popper.on("click", ".bankruptcy", () => {
-                    banners.open(bankruptcy_banner(), $("#navbar_alerts_wrapper"));
+                    open_navbar_banner_and_resize(bankruptcy_banner());
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
                 $popper.on("click", ".demo-organization-deadline", () => {
                     realm.demo_organization_scheduled_deletion_date =
                         new Date("2025-01-30T10:00:00.000Z").getTime() / 1000;
-                    banners.open(demo_organization_deadline_banner(), $("#navbar_alerts_wrapper"));
+                    open_navbar_banner_and_resize(demo_organization_deadline_banner());
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
                 $popper.on("click", ".time_zone_update_offer", () => {
-                    banners.open(time_zone_update_offer_banner(), $("#navbar_alerts_wrapper"));
+                    open_navbar_banner_and_resize(time_zone_update_offer_banner());
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
             },

@@ -43,8 +43,8 @@
             cursor: pointer;
 
             .selected-emoji {
-                width: 20px;
-                height: 20px;
+                width: 1.25em; /* 20px at 16px/em */
+                height: 1.25em; /* 20px at 16px/em */
                 cursor: pointer;
             }
 
@@ -52,7 +52,7 @@
             & img.selected-emoji,
             .smiley-icon {
                 text-align: center;
-                min-width: 20px;
+                min-width: 1.25em; /* 20px at 16px/em */
             }
 
             .smiley-icon {
@@ -78,14 +78,14 @@
             display: flex;
             align-items: center;
             width: 100%;
-            margin-bottom: 7px;
+            padding: 3.5px 0;
             line-height: 1em;
 
             .status-emoji {
                 /* Size and align status emoji to match
                    the top line of the modal. */
-                height: 20px;
-                width: 20px;
+                height: 1.25em; /* 20px at 16px/em */
+                width: 1.25em; /* 20px at 16px/em */
                 margin: 0 7px;
             }
         }

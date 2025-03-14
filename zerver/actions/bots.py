@@ -2,8 +2,6 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_user import created_bot_event
-from zerver.actions.streams import bulk_remove_subscriptions
-from zerver.lib.streams import get_subscribed_private_streams_for_user
 from zerver.models import RealmAuditLog, Stream, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids, bot_owner_user_ids
@@ -71,34 +69,6 @@ def send_bot_owner_update_events(
     send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
 
-def remove_bot_from_inaccessible_private_streams(
-    user_profile: UserProfile, *, acting_user: UserProfile | None
-) -> None:
-    assert user_profile.bot_owner is not None
-
-    new_owner_subscribed_private_streams = get_subscribed_private_streams_for_user(
-        user_profile.bot_owner
-    )
-    new_owner_subscribed_private_stream_ids = [
-        stream.id for stream in new_owner_subscribed_private_streams
-    ]
-
-    bot_subscribed_private_streams = get_subscribed_private_streams_for_user(user_profile)
-    bot_subscribed_private_stream_ids = [stream.id for stream in bot_subscribed_private_streams]
-
-    stream_ids_to_unsubscribe = set(bot_subscribed_private_stream_ids) - set(
-        new_owner_subscribed_private_stream_ids
-    )
-    unsubscribed_streams = [
-        stream
-        for stream in bot_subscribed_private_streams
-        if stream.id in stream_ids_to_unsubscribe
-    ]
-    bulk_remove_subscriptions(
-        user_profile.realm, [user_profile], unsubscribed_streams, acting_user=acting_user
-    )
-
-
 @transaction.atomic(durable=True)
 def do_change_bot_owner(
     user_profile: UserProfile, bot_owner: UserProfile, acting_user: UserProfile | None
@@ -116,8 +86,6 @@ def do_change_bot_owner(
     )
 
     send_bot_owner_update_events(user_profile, bot_owner, previous_owner)
-
-    remove_bot_from_inaccessible_private_streams(user_profile, acting_user=acting_user)
 
 
 @transaction.atomic(durable=True)

@@ -38,10 +38,12 @@ exports.clear_buddy_list = (buddy_list) => {
 exports.stub_buddy_list_elements = () => {
     // Set to an empty list since we're not testing CSS.
     $("#buddy-list-users-matching-view").children = () => [];
-    $("#buddy-list-other-users").children = () => [];
     $("#buddy-list-users-matching-view .empty-list-message").length = 0;
     $("#buddy-list-other-users .empty-list-message").length = 0;
     $("#buddy-list-other-users-container .view-all-users-link").length = 0;
     $("#buddy-list-users-matching-view-container .view-all-subscribers-link").remove = noop;
     $("#buddy-list-other-users-container .view-all-users-link").remove = noop;
+    $(`#buddy-list-users-matching-view .empty-list-message`).remove = noop;
+    $(`#buddy-list-other-users .empty-list-message`).remove = noop;
+    $(`#buddy-list-participants .empty-list-message`).remove = noop;
 };

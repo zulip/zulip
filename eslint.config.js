@@ -11,7 +11,7 @@ import tseslint from "typescript-eslint";
 
 const compat = new FlatCompat({baseDirectory: import.meta.dirname});
 
-export default [
+export default tseslint.config(
     {
         files: ["tools/check-openapi"],
     },
@@ -26,15 +26,19 @@ export default [
             "var",
             "web/generated",
             "web/third",
-            "zulip-current-venv",
-            "zulip-py3-venv",
         ],
     },
     js.configs.recommended,
     importPlugin.flatConfigs.recommended,
-    ...compat.extends("plugin:no-jquery/recommended", "plugin:no-jquery/deprecated"),
-    unicorn.configs["flat/recommended"],
+    compat.extends("plugin:no-jquery/recommended", "plugin:no-jquery/deprecated"),
+    unicorn.configs.recommended,
     prettier,
+    tseslint.configs.strictTypeChecked,
+    tseslint.configs.stylisticTypeChecked,
+    {
+        files: ["**/*.cts", "**/*.mts", "**/*.ts"],
+        extends: [importPlugin.flatConfigs.typescript],
+    },
     {
         plugins: {
             formatjs,
@@ -45,7 +49,12 @@ export default [
         },
         languageOptions: {
             ecmaVersion: "latest",
+            globals: {
+                JQuery: "readonly",
+            },
             parserOptions: {
+                projectService: true,
+                tsConfigRootDir: import.meta.dirname,
                 warnOnUnsupportedTypeScriptVersion: false,
             },
         },
@@ -53,17 +62,44 @@ export default [
             formatjs: {
                 additionalFunctionNames: ["$t", "$t_html"],
             },
+            "import/resolver": {
+                node: {
+                    extensions: [".ts", ".d.ts", ".js"],
+                },
+            },
             "no-jquery": {
                 collectionReturningPlugins: {expectOne: "always"},
                 variablePattern: "^\\$(?!t$|t_html$).",
             },
         },
         rules: {
+            "@typescript-eslint/consistent-return": "error",
+            "@typescript-eslint/consistent-type-assertions": ["error", {assertionStyle: "never"}],
+            "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+            "@typescript-eslint/consistent-type-imports": "error",
+            "@typescript-eslint/explicit-function-return-type": ["error", {allowExpressions: true}],
+            "@typescript-eslint/member-ordering": "error",
+            "@typescript-eslint/method-signature-style": "error",
+            "@typescript-eslint/no-loop-func": "error",
+            "@typescript-eslint/no-misused-spread": "off",
+            "@typescript-eslint/no-non-null-assertion": "off",
+            "@typescript-eslint/no-unnecessary-condition": "off",
+            "@typescript-eslint/no-unnecessary-qualifier": "error",
+            "@typescript-eslint/no-unused-vars": [
+                "error",
+                {args: "all", argsIgnorePattern: "^_", ignoreRestSiblings: true},
+            ],
+            "@typescript-eslint/no-use-before-define": [
+                "error",
+                {functions: false, variables: false},
+            ],
+            "@typescript-eslint/parameter-properties": "error",
+            "@typescript-eslint/promise-function-async": "error",
+            "@typescript-eslint/restrict-plus-operands": ["error", {}],
+            "@typescript-eslint/restrict-template-expressions": ["error", {}],
             "array-callback-return": "error",
             "arrow-body-style": "error",
-            "consistent-return": "error",
             curly: "error",
-            "dot-notation": "error",
             eqeqeq: "error",
             "formatjs/enforce-default-message": ["error", "literal"],
             "formatjs/enforce-placeholders": [
@@ -85,7 +121,6 @@ export default [
             "lines-around-directive": "error",
             "new-cap": "error",
             "no-alert": "error",
-            "no-array-constructor": "error",
             "no-bitwise": "error",
             "no-caller": "error",
             "no-constant-condition": ["error", {checkLoops: false}],
@@ -93,13 +128,11 @@ export default [
             "no-else-return": "error",
             "no-eval": "error",
             "no-implicit-coercion": "error",
-            "no-implied-eval": "error",
             "no-jquery/no-append-html": "error",
             "no-jquery/no-constructor-attributes": "error",
             "no-jquery/no-parse-html-literal": "error",
             "no-label-var": "error",
             "no-labels": "error",
-            "no-loop-func": "error",
             "no-multi-str": "error",
             "no-new-func": "error",
             "no-new-wrappers": "error",
@@ -111,17 +144,10 @@ export default [
             "no-return-assign": "error",
             "no-script-url": "error",
             "no-self-compare": "error",
-            "no-throw-literal": "error",
+            "no-undef": "error",
             "no-undef-init": "error",
             "no-unneeded-ternary": ["error", {defaultAssignment: false}],
-            "no-unused-expressions": "error",
-            "no-unused-vars": [
-                "error",
-                {args: "all", argsIgnorePattern: "^_", ignoreRestSiblings: true},
-            ],
-            "no-use-before-define": ["error", {functions: false, variables: false}],
             "no-useless-concat": "error",
-            "no-useless-constructor": "error",
             "no-var": "error",
             "object-shorthand": ["error", "always", {avoidExplicitReturnArrows: true}],
             "one-var": ["error", "never"],
@@ -150,6 +176,18 @@ export default [
         },
     },
     {
+        ignores: ["**/*.cts", "**/*.mts", "**/*.ts"],
+        extends: [tseslint.configs.disableTypeChecked],
+        rules: {
+            "@typescript-eslint/explicit-function-return-type": "off",
+            "@typescript-eslint/no-require-imports": "off",
+            "consistent-return": "error",
+            "dot-notation": "error",
+            "no-implied-eval": "error",
+            "no-throw-literal": "error",
+        },
+    },
+    {
         files: ["**/*.cjs"],
         languageOptions: {
             sourceType: "commonjs",
@@ -158,7 +196,10 @@ export default [
     {
         files: ["web/tests/**"],
         rules: {
+            "@typescript-eslint/no-empty-function": "off",
+            "@typescript-eslint/no-extraneous-class": "off",
             "no-jquery/no-selector-prop": "off",
+            "no-redeclare": "off",
         },
     },
     {
@@ -169,59 +210,6 @@ export default [
             },
         },
     },
-    ...[
-        ...tseslint.configs.strictTypeChecked,
-        ...tseslint.configs.stylisticTypeChecked,
-        importPlugin.flatConfigs.typescript,
-    ].map((config) => ({
-        ...config,
-        files: ["**/*.cts", "**/*.mts", "**/*.ts"],
-    })),
-    {
-        files: ["**/*.cts", "**/*.mts", "**/*.ts"],
-        languageOptions: {
-            globals: {
-                JQuery: "readonly",
-            },
-            parserOptions: {
-                projectService: true,
-                tsConfigRootDir: import.meta.dirname,
-            },
-        },
-        settings: {
-            "import/resolver": {
-                node: {
-                    extensions: [".ts", ".d.ts", ".js"],
-                },
-            },
-        },
-        rules: {
-            "no-use-before-define": "off",
-            "@typescript-eslint/consistent-type-assertions": ["error", {assertionStyle: "never"}],
-            "@typescript-eslint/consistent-type-definitions": ["error", "type"],
-            "@typescript-eslint/consistent-type-imports": "error",
-            "@typescript-eslint/explicit-function-return-type": ["error", {allowExpressions: true}],
-            "@typescript-eslint/member-ordering": "error",
-            "@typescript-eslint/method-signature-style": "error",
-            "@typescript-eslint/no-misused-spread": "off",
-            "@typescript-eslint/no-non-null-assertion": "off",
-            "@typescript-eslint/no-unnecessary-condition": "off",
-            "@typescript-eslint/no-unnecessary-qualifier": "error",
-            "@typescript-eslint/no-unused-vars": [
-                "error",
-                {args: "all", argsIgnorePattern: "^_", ignoreRestSiblings: true},
-            ],
-            "@typescript-eslint/no-use-before-define": [
-                "error",
-                {functions: false, variables: false},
-            ],
-            "@typescript-eslint/parameter-properties": "error",
-            "@typescript-eslint/promise-function-async": "error",
-            "@typescript-eslint/restrict-plus-operands": ["error", {}],
-            "@typescript-eslint/restrict-template-expressions": ["error", {}],
-            "no-undef": "error",
-        },
-    },
     {
         files: ["**/*.d.ts"],
         rules: {
@@ -229,7 +217,6 @@ export default [
         },
     },
     {
-        files: ["**"],
         ignores: ["web/shared/**", "web/src/**"],
         languageOptions: {
             globals: globals.node,
@@ -303,4 +290,4 @@ export default [
             "unicorn/prefer-string-replace-all": "off",
         },
     },
-];
+);

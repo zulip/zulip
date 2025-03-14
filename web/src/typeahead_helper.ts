@@ -20,6 +20,7 @@ import type {PseudoMentionUser, User} from "./people.ts";
 import * as pm_conversations from "./pm_conversations.ts";
 import * as pygments_data from "./pygments_data.ts";
 import * as recent_senders from "./recent_senders.ts";
+import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamPill, StreamPillData} from "./stream_pill.ts";
@@ -108,13 +109,13 @@ export let render_typeahead_item = (args: {
     is_user_group?: boolean;
     stream?: StreamData;
     emoji_code?: string | undefined;
-    is_empty_string_topic?: boolean;
     topic_object?: TopicSuggestion;
     is_stream_topic?: boolean;
+    is_empty_string_topic?: boolean;
 }): string => {
     const has_image = args.img_src !== undefined;
     const has_status = args.status_emoji_info !== undefined;
-    const has_secondary = args.secondary !== undefined;
+    const has_secondary = args.secondary !== undefined && args.secondary !== null;
     const has_secondary_html = args.secondary_html !== undefined;
     const has_pronouns = args.pronouns !== undefined;
     return render_typeahead_list_item({
@@ -256,12 +257,6 @@ export function compare_by_pms(user_a: User, user_b: User): number {
     if (a_is_partner && !b_is_partner) {
         return -1;
     } else if (!a_is_partner && b_is_partner) {
-        return 1;
-    }
-
-    if (!user_a.is_bot && user_b.is_bot) {
-        return -1;
-    } else if (user_a.is_bot && !user_b.is_bot) {
         return 1;
     }
 
@@ -446,25 +441,15 @@ export function sort_languages(matches: LanguageSuggestion[], query: string): La
     }));
 }
 
-export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillData>({
-    users,
-    query,
-    current_stream_id,
-    current_topic,
-    groups = [],
-    max_num_items = MAX_ITEMS,
-}: {
-    users: UserType[];
-    query: string;
-    current_stream_id?: number | undefined;
-    current_topic?: string | undefined;
-    groups?: UserGroupPillData[];
-    max_num_items?: number | undefined;
-}): (UserType | UserGroupPillData)[] => {
-    function sort_relevance(items: UserType[]): UserType[] {
-        return sort_people_for_relevance(items, current_stream_id, current_topic);
-    }
-
+const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | UserPillData>(
+    users: UserType[],
+    query: string,
+    sort_relevance: (items: UserType[]) => UserType[],
+): {
+    best_users: () => UserType[];
+    ok_users: () => UserType[];
+    worst_users: () => UserType[];
+} => {
     const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
     const users_name_good_matches = [
         ...users_name_results.exact_matches,
@@ -484,8 +469,65 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
         ...email_results.begins_with_case_insensitive_matches,
     ];
     const email_okay_matches = [...email_results.word_boundary_matches];
+    const best_users = (): UserType[] => [
+        ...sort_relevance(users_name_good_matches),
+        ...sort_relevance(users_name_okay_matches),
+    ];
+    const ok_users = (): UserType[] => [
+        ...sort_relevance(email_good_matches),
+        ...sort_relevance(email_okay_matches),
+    ];
+    const worst_users = (): UserType[] => sort_relevance(email_results.no_matches);
+    return {best_users, ok_users, worst_users};
+};
 
-    const groups_results = typeahead.triage_raw(query, groups, (g) => g.name);
+export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillData>({
+    users,
+    query,
+    current_stream_id,
+    current_topic,
+    groups = [],
+    max_num_items = MAX_ITEMS,
+}: {
+    users: UserType[];
+    query: string;
+    current_stream_id?: number | undefined;
+    current_topic?: string | undefined;
+    groups?: UserGroupPillData[];
+    max_num_items?: number | undefined;
+}): (UserType | UserGroupPillData)[] => {
+    function sort_relevance(items: UserType[]): UserType[] {
+        return sort_people_for_relevance(items, current_stream_id, current_topic);
+    }
+
+    function is_bot(user: UserType): boolean {
+        // broadcasts are not bots by definition.
+        return user.type !== "broadcast" && user.user.is_bot;
+    }
+
+    const [bots, non_bots] = _.partition(users, is_bot);
+
+    const {best_users, ok_users, worst_users} = get_user_matches_with_quality(
+        non_bots,
+        query,
+        sort_relevance,
+    );
+
+    const {
+        best_users: best_bots,
+        ok_users: ok_bots,
+        worst_users: worst_bots,
+    } = get_user_matches_with_quality(bots, query, sort_relevance);
+
+    const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
+        if (g.name === "role:members") {
+            return [
+                user_groups.get_display_group_name(g.name),
+                settings_config.alternate_members_group_typeahead_matching_name,
+            ];
+        }
+        return [user_groups.get_display_group_name(g.name)];
+    });
     const groups_good_matches = [
         ...groups_results.exact_matches,
         ...groups_results.begins_with_case_sensitive_matches,
@@ -493,16 +535,7 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
     ];
     const groups_okay_matches = [...groups_results.word_boundary_matches];
 
-    const best_users = (): UserType[] => [
-        ...sort_relevance(users_name_good_matches),
-        ...sort_relevance(users_name_okay_matches),
-    ];
     const best_groups = (): UserGroupPillData[] => [...groups_good_matches, ...groups_okay_matches];
-    const ok_users = (): UserType[] => [
-        ...sort_relevance(email_good_matches),
-        ...sort_relevance(email_okay_matches),
-    ];
-    const worst_users = (): UserType[] => sort_relevance(email_results.no_matches);
     const worst_groups = (): UserGroupPillData[] => groups_results.no_matches;
 
     const getters: (
@@ -524,7 +557,15 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
             type: "groups",
         },
         {
+            getter: best_bots,
+            type: "users",
+        },
+        {
             getter: ok_users,
+            type: "users",
+        },
+        {
+            getter: ok_bots,
             type: "users",
         },
         {
@@ -534,6 +575,10 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
         {
             getter: worst_groups,
             type: "groups",
+        },
+        {
+            getter: worst_bots,
+            type: "users",
         },
     ];
 
@@ -683,9 +728,15 @@ export let sort_group_setting_options = ({
         users_name_results.no_matches,
         (p) => p.user.email,
     );
-    const groups_results = typeahead.triage_raw(query, groups, (g) =>
-        user_groups.get_display_group_name(g.name),
-    );
+    const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
+        if (g.name === "role:members") {
+            return [
+                user_groups.get_display_group_name(g.name),
+                settings_config.alternate_members_group_typeahead_matching_name,
+            ];
+        }
+        return [user_groups.get_display_group_name(g.name)];
+    });
 
     const exact_matches = sort_group_setting_items([
         ...groups_results.exact_matches,
@@ -887,6 +938,20 @@ export function query_matches_stream_name(query: string, stream: StreamPillData)
 }
 
 export function query_matches_group_name(query: string, user_group: UserGroupPillData): boolean {
+    if (user_group.name === "role:members") {
+        return (
+            typeahead.query_matches_string_in_order(
+                query,
+                user_groups.get_display_group_name(user_group.name),
+                "",
+            ) ||
+            typeahead.query_matches_string_in_order(
+                query,
+                settings_config.alternate_members_group_typeahead_matching_name,
+                "",
+            )
+        );
+    }
     return typeahead.query_matches_string_in_order(
         query,
         user_groups.get_display_group_name(user_group.name),

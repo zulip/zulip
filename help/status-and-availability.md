@@ -8,8 +8,7 @@ status might be "📅 In a meeting" or "🏠 Working remotely". To make it easy 
 notice, the status emoji is shown next to your name in the sidebars, message
 feed, and compose box.
 
-Your **availability** is a colored dot (like <span class="indicator green
-solid"></span>) that indicates if you're currently active on Zulip, idle,
+Your **availability** is a colored dot (like <span class="user-circle user-circle-active zulip-icon zulip-icon-user-circle-active"></span>) that indicates if you're currently active on Zulip, idle,
 or offline. You can also [go invisible](#invisible-mode) to appear offline
 to other users.
 
@@ -132,14 +131,14 @@ With the compact option, only status emoji are shown.
 
 There are three availability states:
 
-* **Active** (<span class="indicator green solid"></span>): Zulip is
+* **Active** (<span class="user-circle user-circle-active zulip-icon zulip-icon-user-circle-active"></span>): Zulip is
   open and in focus on web, desktop or mobile, or was in the last 140
   seconds.
 
-* **Idle** (<span class="indicator orange"></span>): Zulip is open on
+* **Idle** (<span class="user-circle user-circle-idle zulip-icon zulip-icon-user-circle-idle"></span>): Zulip is open on
   your computer (either desktop or web), but you are not active.
 
-* **Offline** (<span class="indicator grey"></span>): Zulip is not open
+* **Offline** (<span class="user-circle user-circle-offline zulip-icon zulip-icon-user-circle-offline"></span>): Zulip is not open
   on your computer, or you have turned on invisible mode.
 
 You can see when someone offline was last active by hovering over their

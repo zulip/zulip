@@ -182,6 +182,9 @@ export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
 }
 
 export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
+    // There's a Python copy of this function in `zerver/lib/url_decoding.py`
+    // called `parse_narrow_url`, the two should be kept roughly in sync.
+
     // This will throw an exception when passed an invalid hash
     // at the decodeHashComponent call, handle appropriately.
     let i;
@@ -253,18 +256,13 @@ export function validate_channels_settings_hash(hash: string): string {
         const stream_id = Number.parseInt(section, 10);
         const sub = sub_store.get(stream_id);
         // There are a few situations where we can't display stream settings:
-        // 1. This is a stream that's been archived. (sub.is_archived=true)
-        // 2. The stream ID is invalid. (sub=undefined)
-        // 3. The current user is a guest, and was unsubscribed from the stream
+        // 1. The stream ID is invalid. (sub=undefined)
+        // 2. The current user is a guest, and was unsubscribed from the stream
         //    stream in the current session. (In future sessions, the stream will
         //    not be in sub_store).
         //
-        // In all these cases we redirect the user to 'subscribed' tab.
-        if (
-            sub === undefined ||
-            sub.is_archived ||
-            (page_params.is_guest && !stream_data.is_subscribed(stream_id))
-        ) {
+        // In both cases we redirect the user to 'subscribed' tab.
+        if (sub === undefined || (page_params.is_guest && !stream_data.is_subscribed(stream_id))) {
             return channels_settings_section_url();
         }
 

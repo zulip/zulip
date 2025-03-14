@@ -4,6 +4,7 @@ import type * as tippy from "tippy.js";
 
 import render_add_saved_snippet_modal from "../templates/add_saved_snippet_modal.hbs";
 import render_confirm_delete_saved_snippet from "../templates/confirm_dialog/confirm_delete_saved_snippet.hbs";
+import render_edit_saved_snippet_modal from "../templates/edit_saved_snippet_modal.hbs";
 
 import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
@@ -25,9 +26,26 @@ function submit_create_saved_snippet_form(): void {
     const content = $<HTMLInputElement>("#add-new-saved-snippet-modal .saved-snippet-content")
         .val()
         ?.trim();
-    if (title && content) {
-        dialog_widget.submit_api_request(channel.post, "/json/saved_snippets", {title, content});
-    }
+
+    assert(title && content);
+
+    dialog_widget.submit_api_request(channel.post, "/json/saved_snippets", {title, content});
+}
+
+function submit_edit_saved_snippet_form(saved_snippet_id: number): void {
+    const title = $<HTMLInputElement>("#edit-saved-snippet-modal .saved-snippet-title")
+        .val()
+        ?.trim();
+    const content = $<HTMLInputElement>("#edit-saved-snippet-modal .saved-snippet-content")
+        .val()
+        ?.trim();
+
+    assert(title && content);
+
+    dialog_widget.submit_api_request(channel.patch, `/json/saved_snippets/${saved_snippet_id}`, {
+        title,
+        content,
+    });
 }
 
 function update_submit_button_state(): void {
@@ -47,6 +65,26 @@ function update_submit_button_state(): void {
 
 function saved_snippet_modal_post_render(): void {
     $("#add-new-saved-snippet-modal").on("input", "input,textarea", update_submit_button_state);
+}
+
+function saved_snippet_edit_modal_post_render(saved_snippet: saved_snippets.SavedSnippet): void {
+    $("#edit-saved-snippet-modal").on("input", "input,textarea", () => {
+        const title = $<HTMLInputElement>("#edit-saved-snippet-modal .saved-snippet-title")
+            .val()
+            ?.trim();
+        const content = $<HTMLInputElement>("#edit-saved-snippet-modal .saved-snippet-content")
+            .val()
+            ?.trim();
+        const $submit_button = $("#edit-saved-snippet-modal .dialog_submit_button");
+
+        $submit_button.prop("disabled", true);
+        if (title === saved_snippet.title && content === saved_snippet.content) {
+            return;
+        }
+        if (title && content) {
+            $submit_button.prop("disabled", false);
+        }
+    });
 }
 
 export function rerender_dropdown_widget(): void {
@@ -83,6 +121,38 @@ function item_click_callback(
                 const saved_snippet_id = $(event.currentTarget).attr("data-unique-id");
                 assert(saved_snippet_id !== undefined);
                 delete_saved_snippet(saved_snippet_id);
+            },
+        });
+        return;
+    }
+
+    if (
+        $(event.target).closest(".saved_snippets-dropdown-list-container .dropdown-list-edit")
+            .length > 0
+    ) {
+        const saved_snippet_id = $(event.currentTarget).attr("data-unique-id");
+        assert(saved_snippet_id !== undefined);
+
+        const saved_snippet = saved_snippets.get_saved_snippet_by_id(
+            Number.parseInt(saved_snippet_id, 10),
+        );
+        assert(saved_snippet !== undefined);
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Edit saved snippet"}),
+            html_body: render_edit_saved_snippet_modal({
+                title: saved_snippet.title,
+                content: saved_snippet.content,
+            }),
+            html_submit_button: $t_html({defaultMessage: "Save"}),
+            id: "edit-saved-snippet-modal",
+            form_id: "edit-saved-snippet-form",
+            update_submit_disabled_state_on_change: true,
+            on_click() {
+                submit_edit_saved_snippet_form(saved_snippet.id);
+            },
+            on_shown: () => $("#edit-saved-snippet-title").trigger("focus"),
+            post_render() {
+                saved_snippet_edit_modal_post_render(saved_snippet);
             },
         });
         return;

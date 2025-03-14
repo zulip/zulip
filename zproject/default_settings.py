@@ -708,3 +708,9 @@ TOPIC_SUMMARIZATION_PARAMETERS: dict[str, object] = {}
 INPUT_COST_PER_GIGATOKEN: int = 0
 OUTPUT_COST_PER_GIGATOKEN: int = 0
 MAX_PER_USER_MONTHLY_AI_COST: float | None = 0.5
+
+# URL of the navigation tour video displayed to new users.
+# Set it to None to disable it.
+NAVIGATION_TOUR_VIDEO_URL: str | None = (
+    "https://static.zulipchat.com/static/navigation-tour-video/zulip-10.mp4"
+)

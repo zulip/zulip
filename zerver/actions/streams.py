@@ -39,7 +39,6 @@ from zerver.lib.streams import (
     can_access_stream_metadata_user_ids,
     check_basic_stream_access,
     get_group_setting_value_dict_for_streams,
-    get_occupied_streams,
     get_stream_permission_policy_name,
     get_stream_post_policy_value_based_on_group_setting,
     get_user_ids_with_metadata_access_via_permission_groups,
@@ -50,10 +49,11 @@ from zerver.lib.streams import (
     stream_to_dict,
 )
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info, get_subscribers_query
-from zerver.lib.types import AnonymousSettingGroupDict, APISubscriptionDict
+from zerver.lib.types import APISubscriptionDict, UserGroupMembersDict
 from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
     get_group_setting_value_for_audit_log_data,
+    update_or_create_user_group_for_setting,
 )
 from zerver.lib.users import (
     get_subscribers_of_target_user_subscriptions,
@@ -71,10 +71,9 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
-    UserGroup,
     UserProfile,
 )
-from zerver.models.groups import NamedUserGroup, SystemGroups
+from zerver.models.groups import NamedUserGroup, SystemGroups, UserGroup
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm_by_id
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
@@ -425,6 +424,7 @@ def send_subscription_add_events(
                 can_administer_channel_group=stream_dict["can_administer_channel_group"],
                 can_send_message_group=stream_dict["can_send_message_group"],
                 can_remove_subscribers_group=stream_dict["can_remove_subscribers_group"],
+                can_subscribe_group=stream_dict["can_subscribe_group"],
                 creator_id=stream_dict["creator_id"],
                 date_created=stream_dict["date_created"],
                 description=stream_dict["description"],
@@ -499,7 +499,7 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
     recent_traffic = get_streams_traffic(stream_ids, realm)
 
     streams = [stream_dict[stream_id] for stream_id in stream_ids]
-    setting_groups_dict: dict[int, int | AnonymousSettingGroupDict] | None = None
+    setting_groups_dict: dict[int, int | UserGroupMembersDict] | None = None
 
     for stream_id, stream_users_ids in altered_user_dict.items():
         stream = stream_dict[stream_id]
@@ -1049,14 +1049,12 @@ def bulk_remove_subscriptions(
         return ([], not_subscribed)
 
     sub_ids_to_deactivate = [sub_info.sub.id for sub_info in subs_to_deactivate]
-    streams_to_unsubscribe = [sub_info.stream for sub_info in subs_to_deactivate]
     # We do all the database changes in a transaction to ensure
     # RealmAuditLog entries are atomically created when making changes.
     with transaction.atomic(savepoint=False):
         Subscription.objects.filter(
             id__in=sub_ids_to_deactivate,
         ).update(active=False)
-        occupied_streams_after = list(get_occupied_streams(realm))
 
         # Log subscription activities in RealmAuditLog
         event_time = timezone_now()
@@ -1085,14 +1083,6 @@ def bulk_remove_subscriptions(
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
         send_user_remove_events_on_removing_subscriptions(realm, altered_user_dict)
-
-    new_vacant_streams = set(streams_to_unsubscribe) - set(occupied_streams_after)
-    new_vacant_private_streams = [stream for stream in new_vacant_streams if stream.invite_only]
-
-    if new_vacant_private_streams:
-        # Deactivate any newly-vacant private streams
-        for stream in new_vacant_private_streams:
-            do_deactivate_stream(stream, acting_user=acting_user)
 
     return (
         removed_sub_tuples,
@@ -1358,7 +1348,7 @@ def do_change_stream_permission(
     )
 
 
-def get_users_string_with_permission(setting_value: int | AnonymousSettingGroupDict) -> str:
+def get_users_string_with_permission(setting_value: int | UserGroupMembersDict) -> str:
     if isinstance(setting_value, int):
         setting_group = NamedUserGroup.objects.get(id=setting_value)
         return silent_mention_syntax_for_user_group(setting_group)
@@ -1385,8 +1375,8 @@ def get_users_string_with_permission(setting_value: int | AnonymousSettingGroupD
 def send_stream_posting_permission_update_notification(
     stream: Stream,
     *,
-    old_setting_value: int | AnonymousSettingGroupDict,
-    new_setting_value: int | AnonymousSettingGroupDict,
+    old_setting_value: int | UserGroupMembersDict,
+    new_setting_value: int | UserGroupMembersDict,
     acting_user: UserProfile,
 ) -> None:
     sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
@@ -1629,15 +1619,12 @@ def do_change_stream_message_retention_days(
 def do_change_stream_group_based_setting(
     stream: Stream,
     setting_name: str,
-    user_group: UserGroup,
+    new_setting_value: NamedUserGroup | UserGroupMembersDict,
     *,
-    old_setting_api_value: int | AnonymousSettingGroupDict | None = None,
-    acting_user: UserProfile | None = None,
+    old_setting_api_value: int | UserGroupMembersDict | None = None,
+    acting_user: UserProfile,
 ) -> None:
     old_user_group = getattr(stream, setting_name)
-
-    setattr(stream, setting_name, user_group)
-    stream.save()
 
     if old_setting_api_value is None:
         # Most production callers will have computed this as part of
@@ -1645,8 +1632,25 @@ def do_change_stream_group_based_setting(
         # feels quite clumsy to have to pass it from unit tests, so we
         # compute it here if not provided by the caller.
         old_setting_api_value = get_group_setting_value_for_api(old_user_group)
-    new_setting_api_value = get_group_setting_value_for_api(user_group)
 
+    old_user_ids_with_metadata_access: set[int] = set()
+    if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
+        old_user_ids_with_metadata_access = can_access_stream_metadata_user_ids(stream)
+
+    if isinstance(new_setting_value, NamedUserGroup):
+        user_group: UserGroup = new_setting_value
+    else:
+        user_group = update_or_create_user_group_for_setting(
+            acting_user,
+            new_setting_value.direct_members,
+            new_setting_value.direct_subgroups,
+            old_user_group,
+        )
+
+    setattr(stream, setting_name, user_group)
+    stream.save()
+
+    new_setting_api_value = get_group_setting_value_for_api(user_group)
     RealmAuditLog.objects.create(
         realm=stream.realm,
         acting_user=acting_user,
@@ -1663,6 +1667,7 @@ def do_change_stream_group_based_setting(
             "property": setting_name,
         },
     )
+    current_user_ids_with_metadata_access = can_access_stream_metadata_user_ids(stream)
     event = dict(
         op="update",
         type="stream",
@@ -1671,7 +1676,27 @@ def do_change_stream_group_based_setting(
         stream_id=stream.id,
         name=stream.name,
     )
-    send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
+    send_event_on_commit(stream.realm, event, current_user_ids_with_metadata_access)
+    if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
+        user_ids_gaining_metadata_access = (
+            current_user_ids_with_metadata_access - old_user_ids_with_metadata_access
+        )
+        user_ids_losing_metadata_access = (
+            old_user_ids_with_metadata_access - current_user_ids_with_metadata_access
+        )
+
+        if len(user_ids_gaining_metadata_access) > 0:
+            recent_traffic = get_streams_traffic({stream.id}, stream.realm)
+            setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
+            send_stream_creation_event(
+                stream.realm,
+                stream,
+                list(user_ids_gaining_metadata_access),
+                recent_traffic,
+                setting_groups_dict,
+            )
+        if len(user_ids_losing_metadata_access) > 0:
+            send_stream_deletion_event(stream.realm, user_ids_losing_metadata_access, [stream])
 
     if setting_name == "can_send_message_group":
         old_stream_post_policy = get_stream_post_policy_value_based_on_group_setting(old_user_group)
@@ -1686,7 +1711,7 @@ def do_change_stream_group_based_setting(
                 stream_id=stream.id,
                 name=stream.name,
             )
-            send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
+            send_event_on_commit(stream.realm, event, current_user_ids_with_metadata_access)
 
             # Backwards-compatibility code: We removed the
             # is_announcement_only property in early 2020, but we send a
@@ -1700,7 +1725,7 @@ def do_change_stream_group_based_setting(
                 stream_id=stream.id,
                 name=stream.name,
             )
-            send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
+            send_event_on_commit(stream.realm, event, current_user_ids_with_metadata_access)
 
         assert acting_user is not None
         send_stream_posting_permission_update_notification(

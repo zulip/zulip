@@ -1,8 +1,10 @@
 import orjson
 
+from zerver.actions.streams import do_deactivate_stream, do_unarchive_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import DirectMessageGroup
 from zerver.models.recipients import get_direct_message_group_hash
+from zerver.models.streams import get_stream
 
 
 class TypingValidateOperatorTest(ZulipTestCase):
@@ -39,12 +41,13 @@ class TypingValidateOperatorTest(ZulipTestCase):
 
     def test_invalid_parameter_message_edit(self) -> None:
         sender = self.example_user("hamlet")
-
+        msg_id = self.send_stream_message(
+            sender, "Denmark", topic_name="editing", content="before edit"
+        )
         params = dict(
             op="foo",
-            message_id=7,
         )
-        result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+        result = self.api_post(sender, f"/api/v1/messages/{msg_id}/typing", params)
         self.assert_json_error(result, "Invalid op")
 
 
@@ -110,10 +113,9 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
         )
         result = self.api_post(
             sender,
-            "/api/v1/message_edit_typing",
+            f"/api/v1/messages/{msg_id}/typing",
             {
                 "op": "start",
-                "message_id": str(msg_id),
             },
         )
         self.assert_json_error(result, "You don't have permission to edit this message")
@@ -167,6 +169,49 @@ class TypingValidateStreamIdTopicMessageIdArgumentsTest(ZulipTestCase):
                 "type": "stream",
                 "op": "start",
                 "stream_id": str(stream_id),
+                "topic": topic_name,
+            },
+        )
+        self.assert_json_error(result, "Invalid channel ID")
+
+    def test_stream_is_archived(self) -> None:
+        sender = self.example_user("hamlet")
+        stream_name = self.get_streams(sender)[0]
+        stream = get_stream(stream_name, realm=sender.realm)
+        topic_name = "some topic"
+
+        result = self.api_post(
+            sender,
+            "/api/v1/typing",
+            {
+                "type": "stream",
+                "op": "start",
+                "stream_id": str(stream.id),
+                "topic": topic_name,
+            },
+        )
+        self.assert_json_success(result)
+
+        result = self.api_post(
+            sender,
+            "/api/v1/typing",
+            {
+                "type": "stream",
+                "op": "stop",
+                "stream_id": str(stream.id),
+                "topic": topic_name,
+            },
+        )
+        self.assert_json_success(result)
+
+        do_deactivate_stream(stream, acting_user=sender)
+        result = self.api_post(
+            sender,
+            "/api/v1/typing",
+            {
+                "type": "stream",
+                "op": "start",
+                "stream_id": str(stream.id),
                 "topic": topic_name,
             },
         )
@@ -524,7 +569,6 @@ class TypingHappyPathTestStreams(ZulipTestCase):
 
         params = dict(
             op="start",
-            message_id=msg_id,
         )
 
         with self.settings(MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS=5):
@@ -532,7 +576,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
                 self.assert_database_query_count(5),
                 self.capture_send_event_calls(expected_num_events=0) as events,
             ):
-                result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+                result = self.api_post(sender, f"/api/v1/messages/{msg_id}/typing", params)
             self.assert_json_success(result)
             self.assert_length(events, 0)
 
@@ -692,6 +736,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         aaron = self.example_user("aaron")
         iago = self.example_user("iago")
         channel_name = self.get_streams(sender)[0]
+        channel = get_stream(channel_name, sender.realm)
 
         for user in [aaron, iago]:
             self.subscribe(user, channel_name)
@@ -701,25 +746,33 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         )
         expected_user_ids = self.not_long_term_idle_subscriber_ids(channel_name, sender.realm)
 
-        params = dict(op="start", message_id=msg_id)
+        params = dict(op="start")
 
         # Test typing events sent when `send_stream_typing_notifications` set to `True`.
         self.assertTrue(sender.send_stream_typing_notifications)
 
         with self.capture_send_event_calls(expected_num_events=1) as events:
-            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+            result = self.api_post(sender, f"/api/v1/messages/{msg_id}/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
         self.assertEqual(orjson.loads(result.content)["msg"], "")
         event_user_ids = set(events[0]["users"])
         self.assertEqual(expected_user_ids, event_user_ids)
 
+        do_deactivate_stream(channel, acting_user=sender)
+        # No events should be sent if stream is deactivated.
+        with self.capture_send_event_calls(expected_num_events=0) as events:
+            result = self.api_post(sender, f"/api/v1/messages/{msg_id}/typing", params)
+        self.assert_json_error(result, "Invalid message(s)")
+        self.assertEqual(events, [])
+        do_unarchive_stream(channel, channel_name, acting_user=sender)
+
         sender.send_stream_typing_notifications = False
         sender.save()
 
         # No events should be sent now
         with self.capture_send_event_calls(expected_num_events=0) as events:
-            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+            result = self.api_post(sender, f"/api/v1/messages/{msg_id}/typing", params)
         self.assert_json_error(
             result, "User has disabled typing notifications for channel messages"
         )
@@ -732,7 +785,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         aaron.save()
 
         with self.capture_send_event_calls(expected_num_events=1) as events:
-            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+            result = self.api_post(sender, f"/api/v1/messages/{msg_id}/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
 
@@ -751,14 +804,13 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
 
         params = dict(
             op="start",
-            message_id=msg_id,
         )
 
         # Test typing events sent when `send_private_typing_notifications` set to `True`.
         self.assertTrue(sender.send_private_typing_notifications)
 
         with self.capture_send_event_calls(expected_num_events=1) as events:
-            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+            result = self.api_post(sender, f"/api/v1/messages/{msg_id}/typing", params)
 
         self.assert_json_success(result)
         self.assert_length(events, 1)
@@ -771,7 +823,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
 
         # No events should be sent now
         with self.capture_send_event_calls(expected_num_events=0) as events:
-            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+            result = self.api_post(sender, f"/api/v1/messages/{msg_id}/typing", params)
 
         self.assert_json_error(result, "User has disabled typing notifications for direct messages")
         self.assertEqual(events, [])
@@ -783,7 +835,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         recipient_user.save()
 
         with self.capture_send_event_calls(expected_num_events=1) as events:
-            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+            result = self.api_post(sender, f"/api/v1/messages/{msg_id}/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
 
@@ -804,12 +856,11 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
 
         params = dict(
             op="start",
-            message_id=str(msg_id),
         )
         # Test typing events sent when `send_private_typing_notifications` set to `True`.
         self.assertTrue(sender.send_private_typing_notifications)
         with self.capture_send_event_calls(expected_num_events=1) as events:
-            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+            result = self.api_post(sender, f"/api/v1/messages/{msg_id}/typing", params)
 
         self.assert_json_success(result)
         self.assert_length(events, 1)
@@ -822,7 +873,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
 
         # No events should be sent now
         with self.capture_send_event_calls(expected_num_events=0) as events:
-            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+            result = self.api_post(sender, f"/api/v1/messages/{msg_id}/typing", params)
 
         self.assert_json_error(result, "User has disabled typing notifications for direct messages")
         self.assertEqual(events, [])
@@ -837,7 +888,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         expected_recipient_ids = {hamlet.id, cordelia.id}
 
         with self.capture_send_event_calls(expected_num_events=1) as events:
-            result = self.api_post(sender, "/api/v1/message_edit_typing", params)
+            result = self.api_post(sender, f"/api/v1/messages/{msg_id}/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
         event_user_ids = set(events[0]["users"])

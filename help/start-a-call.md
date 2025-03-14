@@ -2,7 +2,8 @@
 
 Zulip makes it convenient to add a video or voice call link to any message,
 using the call provider (Jitsi, Zoom, etc.)
-[configured](#change-your-call-provider) by your organization's administrators.
+[configured](/help/configure-call-provider) by your organization's
+administrators.
 
 ## Start a video call
 
@@ -77,57 +78,6 @@ using the call provider (Jitsi, Zoom, etc.)
 
 {end_tabs}
 
-## Change your call provider
-
-{!admin-only.md!}
-
-By default, Zulip integrates with
-[Jitsi Meet](https://jitsi.org/jitsi-meet/), a fully-encrypted, 100% open
-source video conferencing solution. Organization administrators can also
-change the organization's call provider. The call providers
-supported by Zulip are:
-
-* [Jitsi Meet](/integrations/doc/jitsi)
-* [Zoom integration](/integrations/doc/zoom)
-* [BigBlueButton integration](/integrations/doc/big-blue-button)
-
-!!! tip ""
-
-    You can disable the video and voice call buttons for your organization
-    by setting the **call provider** to "None".
-
-### Change your organization's call provider
-
-{start_tabs}
-
-{settings_tab|organization-settings}
-
-1. Under **Other settings**, select the desired provider from the
-   **Call provider** dropdown.
-
-{!save-changes.md!}
-
-{end_tabs}
-
-### Use a self-hosted instance of Jitsi Meet
-
-Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
-as its default call provider. You can also use a self-hosted
-instance of Jitsi Meet.
-
-{start_tabs}
-
-{settings_tab|organization-settings}
-
-1. Under **Other settings**, select **Custom URL** from the
-   **Jitsi server URL** dropdown.
-
-1. Enter the URL of your self-hosted Jitsi Meet server.
-
-{!save-changes.md!}
-
-{end_tabs}
-
 ## Unlink your Zoom account from Zulip
 
 If you linked your Zoom account to Zulip, and no longer want it to be connected,
@@ -149,7 +99,8 @@ you can unlink it.
 
 ## Related articles
 
+* [Configure call provider](/help/configure-call-provider)
 * [Jitsi Meet integration](/integrations/doc/jitsi)
-* [Zoom integration integration](/integrations/doc/zoom)
+* [Zoom integration](/integrations/doc/zoom)
 * [BigBlueButton integration](/integrations/doc/big-blue-button)
 * [Insert a link](/help/insert-a-link)

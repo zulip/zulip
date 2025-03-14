@@ -194,7 +194,7 @@ run_test("saved_snippets", ({override}) => {
     override(saved_snippets_ui, "rerender_dropdown_widget", noop);
     {
         const stub = make_stub();
-        override(saved_snippets, "add_saved_snippet", stub.f);
+        override(saved_snippets, "update_saved_snippet_dict", stub.f);
 
         dispatch(add_event);
         assert.equal(stub.num_calls, 1);
@@ -209,6 +209,16 @@ run_test("saved_snippets", ({override}) => {
         dispatch(remove_event);
         assert.equal(stub.num_calls, 1);
         assert_same(stub.get_args("event").event, remove_event.saved_snippet_id);
+    }
+
+    const update_event = event_fixtures.saved_snippets__update;
+    {
+        const stub = make_stub();
+        override(saved_snippets, "update_saved_snippet_dict", stub.f);
+
+        dispatch(update_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, update_event.saved_snippet);
     }
 });
 
@@ -524,6 +534,9 @@ run_test("realm settings", ({override}) => {
     });
     assert_same(realm.realm_name, "new_realm_name");
 
+    event = event_fixtures.realm__update__mandatory_topics;
+    test_realm_boolean(event, "realm_mandatory_topics");
+
     event = event_fixtures.realm__update__org_type;
     dispatch(event);
     assert_same(realm.realm_org_type, 50);
@@ -554,7 +567,7 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_default_code_block_language, "javascript");
 
     let update_called = false;
-    stream_settings_ui.update_stream_privacy_choices = (property) => {
+    stream_ui_updates.update_stream_privacy_choices = (property) => {
         assert_same(property, "can_create_web_public_channel_group");
         update_called = true;
     };
@@ -564,7 +577,7 @@ run_test("realm settings", ({override}) => {
     assert_same(update_called, true);
 
     let update_stream_privacy_choices_called = false;
-    stream_settings_ui.update_stream_privacy_choices = (property) => {
+    stream_ui_updates.update_stream_privacy_choices = (property) => {
         assert_same(property, "can_create_public_channel_group");
         update_stream_privacy_choices_called = true;
     };
@@ -580,6 +593,7 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_can_create_public_channel_group", 1);
     override(realm, "realm_can_invite_users_group", 1);
     override(realm, "realm_can_move_messages_between_topics_group", 1);
+    override(realm, "realm_can_move_messages_between_topics_group", 5);
     override(realm, "realm_direct_message_permission_group", 1);
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
@@ -604,6 +618,7 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_can_create_public_channel_group, 3);
     assert_same(realm.realm_can_invite_users_group, 3);
     assert_same(realm.realm_can_move_messages_between_topics_group, 3);
+    assert_same(realm.realm_can_resolve_topics_group, 1);
     assert_same(realm.realm_direct_message_permission_group, 3);
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);
@@ -1037,28 +1052,17 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.web_channel_default_view, 1);
 
-    event = event_fixtures.user_settings__dense_mode;
-    override(user_settings, "dense_mode", false);
-    settings_preferences.user_settings_panel = {
-        container: "#user-preferences",
-    };
-    override(information_density, "set_base_typography_css_variables", noop);
-    toggled = [];
-    dispatch(event);
-    assert_same(user_settings.dense_mode, true);
-    assert_same(toggled, ["less-dense-mode", "more-dense-mode"]);
-
     event = event_fixtures.user_settings__web_font_size_px;
     override(user_settings, "web_font_size_px", 14);
-    override(information_density, "set_base_typography_css_variables", noop);
+    assert_same(event.value, 16);
     dispatch(event);
-    assert_same(user_settings.web_font_size_px, 16);
+    assert_same(user_settings.web_font_size_px, 14);
 
     event = event_fixtures.user_settings__web_line_height_percent;
-    override(user_settings, "web_font_size_px", 122);
-    override(information_density, "set_base_typography_css_variables", noop);
+    override(user_settings, "web_line_height_percent", 122);
+    assert_same(event.value, 130);
     dispatch(event);
-    assert_same(user_settings.web_line_height_percent, 130);
+    assert_same(user_settings.web_line_height_percent, 122);
 
     {
         const stub = make_stub();

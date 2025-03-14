@@ -28,7 +28,7 @@
     "total": 456
   },
   "da": {
-    "not_translated": 202,
+    "not_translated": 200,
     "total": 456
   },
   "de": {
@@ -84,7 +84,7 @@
     "total": 456
   },
   "ja": {
-    "not_translated": 108,
+    "not_translated": 84,
     "total": 456
   },
   "ko": {
@@ -160,7 +160,7 @@
     "total": 456
   },
   "uk": {
-    "not_translated": 229,
+    "not_translated": 211,
     "total": 456
   },
   "vi": {
@@ -168,7 +168,7 @@
     "total": 456
   },
   "zh_Hans": {
-    "not_translated": 1,
+    "not_translated": 0,
     "total": 456
   },
   "zh_TW": {

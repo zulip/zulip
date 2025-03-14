@@ -30,7 +30,8 @@ Standard hosting.
 
 {settings_tab|organization-settings}
 
-4. Under **Message retention**, configure **Message retention period**.
+1. Under **Message retention period**, configure **Message retention
+   period**.
 
 {!save-changes.md!}
 

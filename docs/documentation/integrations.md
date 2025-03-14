@@ -127,14 +127,6 @@ Here are a few common macros used to document Zulip's integrations:
   rendering, see **Step 4** of
   [the docs for Zulip's Codebase integration][codebase].
 
-- `{!git-append-branches.md!}` - This macro explains how to specify a list
-  of branches in the webhook URL to filter notifications in our Git-related
-  webhooks. For an example rendering, see the last paragraph of **Step 2**
-  in [the docs for Zulip's GitHub integration][github-integration].
-
-- `{!webhook-url.md!}` - Used internally by `{!generate-integration-url.md!}`
-  to generate the webhook URL.
-
 - `{!webhook-url-with-bot-email.md!}` - Used in certain non-webhook integrations
   to generate URLs of the form:
 

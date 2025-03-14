@@ -1,3 +1,5 @@
+import assert from "minimalistic-assert";
+
 import {$t} from "./i18n.ts";
 import * as thumbnail from "./thumbnail.ts";
 import {user_settings} from "./user_settings.ts";
@@ -50,6 +52,18 @@ export function postprocess_content(html: string): string {
             elt.setAttribute("rel", "noopener noreferrer");
         } else {
             elt.removeAttribute("target");
+        }
+
+        // Update older, smaller default.jpg YouTube preview images
+        // with higher-quality preview images (320px wide)
+        if (elt.parentElement?.classList.contains("youtube-video")) {
+            const img = elt.querySelector("img");
+            assert(img instanceof HTMLImageElement);
+            const img_src = img.src;
+            if (img_src.endsWith("/default.jpg")) {
+                const mq_src = img_src.replace(/\/default.jpg$/, "/mqdefault.jpg");
+                img.src = mq_src;
+            }
         }
 
         if (elt.parentElement?.classList.contains("message_inline_image")) {
@@ -108,7 +122,25 @@ export function postprocess_content(html: string): string {
         "div.message_inline_image > a > img",
     )) {
         inline_img.setAttribute("loading", "lazy");
-        if (inline_img.src.startsWith("/user_uploads/thumbnail/")) {
+        // We can't just check whether `inline_image.src` starts with
+        // `/user_uploads/thumbnail`, even though that's what the
+        // server writes in the markup, because Firefox will have
+        // already prepended the origin to the source of an image.
+        let image_url;
+        try {
+            image_url = new URL(inline_img.src, window.location.origin);
+        } catch {
+            // If the image source URL can't be parsed, likely due to
+            // some historical bug in the Markdown processor, just
+            // drop the invalid image element.
+            inline_img.closest("div.message_inline_image")!.remove();
+            continue;
+        }
+
+        if (
+            image_url.origin === window.location.origin &&
+            image_url.pathname.startsWith("/user_uploads/thumbnail/")
+        ) {
             let thumbnail_name = thumbnail.preferred_format.name;
             if (inline_img.dataset.animated === "true") {
                 if (

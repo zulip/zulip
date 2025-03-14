@@ -29,7 +29,13 @@ from zerver.lib.email_validation import (
 from zerver.lib.exceptions import InvitationError
 from zerver.lib.invites import notify_invites_changed
 from zerver.lib.queue import queue_event_on_commit
-from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails, send_future_email
+from zerver.lib.send_email import (
+    EMAIL_DATE_FORMAT,
+    FromAddress,
+    clear_scheduled_invitation_emails,
+    maybe_remove_from_suppression_list,
+    send_future_email,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -449,6 +455,7 @@ def do_send_user_invite_email(
     if confirmation is None:
         confirmation = prereg_user.confirmation.get()
 
+    maybe_remove_from_suppression_list(prereg_user.email)
     event = {
         "template_prefix": "zerver/emails/invitation",
         "to_emails": [prereg_user.email],
@@ -462,6 +469,7 @@ def do_send_user_invite_email(
             "corporate_enabled": settings.CORPORATE_ENABLED,
         },
         "realm_id": realm.id,
+        "date": event_time.strftime(EMAIL_DATE_FORMAT),
     }
     queue_event_on_commit("email_senders", event)
 

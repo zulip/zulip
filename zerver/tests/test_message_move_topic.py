@@ -19,9 +19,11 @@ from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
+from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, messages_for_topic
 from zerver.lib.types import StreamMessageEditRequest
 from zerver.lib.user_topics import (
@@ -431,7 +433,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(29):
+        with self.assert_database_query_count(31):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -461,7 +463,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         ]
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
-        with self.assert_database_query_count(34):
+        with self.assert_database_query_count(36):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -494,7 +496,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(31):
+        with self.assert_database_query_count(33):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -517,7 +519,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
-        with self.assert_database_query_count(24):
+        with self.assert_database_query_count(26):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,
@@ -1471,6 +1473,14 @@ class MessageMoveTopicTest(ZulipTestCase):
             f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
         )
 
+        message_fetch_result = self.client_get(
+            f"/json/messages/{msg_id}",
+        )
+        self.assert_json_success(message_fetch_result)
+        message_dict = orjson.loads(message_fetch_result.content)["message"]
+        self.assert_json_success(result)
+        self.assertNotIn("last_moved_timestamp", message_dict)
+
         # Note that we are removing the prefix from the already truncated topic,
         # so unresolved_topic_name will not be the same as the original topic_name
         unresolved_topic_name = new_topic_name.replace(RESOLVED_TOPIC_PREFIX, "")
@@ -1490,6 +1500,14 @@ class MessageMoveTopicTest(ZulipTestCase):
             f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as unresolved.",
         )
 
+        message_fetch_result = self.client_get(
+            f"/json/messages/{msg_id}",
+        )
+        self.assert_json_success(message_fetch_result)
+        message_dict = orjson.loads(message_fetch_result.content)["message"]
+        self.assert_json_success(result)
+        self.assertNotIn("last_moved_timestamp", message_dict)
+
     def test_notify_resolve_and_move_topic(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login("hamlet")
@@ -1498,16 +1516,22 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.subscribe(user_profile, stream.name)
 
         # Resolve a topic normally first
-        msg_id = self.send_stream_message(user_profile, stream.name, "foo", topic_name=topic_name)
+        time_zero = timezone_now().replace(microsecond=0)
+        with time_machine.travel(time_zero, tick=False):
+            msg_id = self.send_stream_message(
+                user_profile, stream.name, "foo", topic_name=topic_name
+            )
         resolved_topic_name = RESOLVED_TOPIC_PREFIX + topic_name
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "topic": resolved_topic_name,
-                "propagate_mode": "change_all",
-            },
-        )
-        self.assert_json_success(result)
+        first_message_move_time = time_zero + timedelta(seconds=2)
+        with time_machine.travel(first_message_move_time, tick=False):
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "topic": resolved_topic_name,
+                    "propagate_mode": "change_all",
+                },
+            )
+            self.assert_json_success(result)
 
         messages = get_topic_messages(user_profile, stream, resolved_topic_name)
         self.assert_length(messages, 2)
@@ -1516,15 +1540,25 @@ class MessageMoveTopicTest(ZulipTestCase):
             f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as resolved.",
         )
 
+        message_fetch_result = self.client_get(
+            f"/json/messages/{msg_id}",
+        )
+        self.assert_json_success(message_fetch_result)
+        message_dict = orjson.loads(message_fetch_result.content)["message"]
+        self.assert_json_success(result)
+        self.assertNotIn("last_moved_timestamp", message_dict)
+
         # Test unresolving a topic while moving it (✔ test -> bar)
         new_topic_name = "bar"
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "topic": new_topic_name,
-                "propagate_mode": "change_all",
-            },
-        )
+        second_message_move_time = time_zero + timedelta(seconds=4)
+        with time_machine.travel(second_message_move_time, tick=False):
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "topic": new_topic_name,
+                    "propagate_mode": "change_all",
+                },
+            )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, stream, new_topic_name)
         self.assert_length(messages, 3)
@@ -1533,21 +1567,45 @@ class MessageMoveTopicTest(ZulipTestCase):
             f"This topic was moved here from #**public stream>✔ test** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
 
+        message_fetch_result = self.client_get(
+            f"/json/messages/{msg_id}",
+        )
+        self.assert_json_success(message_fetch_result)
+        message_dict = orjson.loads(message_fetch_result.content)["message"]
+        self.assert_json_success(result)
+        self.assertEqual(
+            message_dict["last_moved_timestamp"],
+            datetime_to_timestamp(second_message_move_time),
+        )
+
         # Now test moving the topic while also resolving it (bar -> ✔ baz)
         new_resolved_topic_name = RESOLVED_TOPIC_PREFIX + "baz"
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "topic": new_resolved_topic_name,
-                "propagate_mode": "change_all",
-            },
-        )
+        third_message_move_time = time_zero + timedelta(seconds=6)
+        with time_machine.travel(third_message_move_time, tick=False):
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "topic": new_resolved_topic_name,
+                    "propagate_mode": "change_all",
+                },
+            )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, stream, new_resolved_topic_name)
         self.assert_length(messages, 4)
         self.assertEqual(
             messages[3].content,
             f"This topic was moved here from #**public stream>{new_topic_name}** by @_**{user_profile.full_name}|{user_profile.id}**.",
+        )
+
+        message_fetch_result = self.client_get(
+            f"/json/messages/{msg_id}",
+        )
+        self.assert_json_success(message_fetch_result)
+        message_dict = orjson.loads(message_fetch_result.content)["message"]
+        self.assert_json_success(result)
+        self.assertEqual(
+            message_dict["last_moved_timestamp"],
+            datetime_to_timestamp(third_message_move_time),
         )
 
     def test_mark_topic_as_resolved(self) -> None:
@@ -1844,3 +1902,184 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         result = self.resolve_topic_containing_message(hamlet, target_message_id=message_id)
         self.assert_json_error(result, "General chat cannot be marked as resolved")
+
+    def test_resolved_topic_permissions(self) -> None:
+        self.login("iago")
+        admin_user = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+
+        admin_user.default_language = "de"
+        admin_user.save()
+        stream = self.make_stream("new")
+        self.subscribe(admin_user, stream.name)
+        self.subscribe(hamlet, stream.name)
+
+        original_topic_name = "topic 1"
+        id1 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+
+        # Test resolving topics disabled by organization
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=admin_user.realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            admin_user.realm,
+            "can_resolve_topics_group",
+            nobody_group,
+            acting_user=None,
+        )
+
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id1,
+        )
+        self.assert_json_error(result, "You don't have permission to resolve topics.")
+
+        # Test restrict resolving topics to admins only.
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=admin_user.realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            admin_user.realm,
+            "can_resolve_topics_group",
+            admins_group,
+            acting_user=None,
+        )
+
+        result = self.resolve_topic_containing_message(
+            hamlet,
+            id1,
+        )
+        self.assert_json_error(result, "You don't have permission to resolve topics.")
+
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id1,
+        )
+        self.assert_json_success(result)
+
+        # Test restrict resolving topics to a user defined group.
+        original_topic_name = "topic 2"
+        id2 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+        leadership_group = check_add_user_group(
+            admin_user.realm, "leadership", [hamlet], acting_user=hamlet
+        )
+        do_change_realm_permission_group_setting(
+            admin_user.realm, "can_resolve_topics_group", leadership_group, acting_user=None
+        )
+
+        result = self.resolve_topic_containing_message(
+            othello,
+            id2,
+        )
+        self.assert_json_error(result, "You don't have permission to resolve topics.")
+
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id2,
+        )
+        self.assert_json_error(result, "You don't have permission to resolve topics.")
+
+        result = self.resolve_topic_containing_message(
+            hamlet,
+            id2,
+        )
+        self.assert_json_success(result)
+
+        # Test restrict topics to an anonymous group.
+        original_topic_name = "topic 3"
+        id3 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+        staff_group = check_add_user_group(
+            admin_user.realm, "Staff", [admin_user], acting_user=admin_user
+        )
+        anonymous_setting_group = self.create_or_update_anonymous_group_for_setting(
+            [cordelia], [staff_group]
+        )
+        do_change_realm_permission_group_setting(
+            admin_user.realm, "can_resolve_topics_group", anonymous_setting_group, acting_user=None
+        )
+
+        result = self.resolve_topic_containing_message(
+            othello,
+            id3,
+        )
+        self.assert_json_error(result, "You don't have permission to resolve topics.")
+
+        result = self.resolve_topic_containing_message(
+            cordelia,
+            id3,
+        )
+        self.assert_json_success(result)
+
+        id3 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id3,
+        )
+        self.assert_json_success(result)
+
+        # Test resolving topics when there is no permission to move topics.
+        do_change_realm_permission_group_setting(
+            admin_user.realm,
+            "can_move_messages_between_topics_group",
+            nobody_group,
+            acting_user=None,
+        )
+        original_topic_name = "topic 4"
+        id4 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+
+        # Do not allow if there is some change other than adding
+        # RESOLVED_TOPIC_PREFIX
+        self.login_user(admin_user)
+        result = self.client_patch(
+            "/json/messages/" + str(id4),
+            {
+                "topic": RESOLVED_TOPIC_PREFIX + "topic 45",
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_error(result, "You don't have permission to edit this message")
+
+        result = self.resolve_topic_containing_message(
+            admin_user,
+            id4,
+        )
+        self.assert_json_success(result)
+
+        # Test resolving topics when time limit for moving messages between
+        # topics has passed.
+        do_change_realm_permission_group_setting(
+            admin_user.realm,
+            "can_move_messages_between_topics_group",
+            anonymous_setting_group,
+            acting_user=None,
+        )
+        do_set_realm_property(
+            admin_user.realm, "move_messages_within_stream_limit_seconds", 3600, acting_user=None
+        )
+        original_topic_name = "topic 5"
+        id5 = self.send_stream_message(hamlet, stream.name, topic_name=original_topic_name)
+        message = Message.objects.get(id=id5)
+        message.date_sent -= timedelta(seconds=4000)
+        message.save()
+
+        # Do not allow if there is some change other than adding
+        # RESOLVED_TOPIC_PREFIX
+        self.login_user(cordelia)
+        result = self.client_patch(
+            "/json/messages/" + str(id5),
+            {
+                "topic": RESOLVED_TOPIC_PREFIX + "topic 56",
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_error(
+            result, "The time limit for editing this message's topic has passed."
+        )
+
+        result = self.resolve_topic_containing_message(
+            cordelia,
+            id5,
+        )
+        self.assert_json_success(result)

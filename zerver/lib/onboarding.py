@@ -85,10 +85,16 @@ I've kicked off some conversations to help you get started. You can find
 them in your [Inbox](/#inbox).
 """)
 
+        navigation_tour_video_string = _("""
+You can always come back to the [Welcome to Zulip video]({navigation_tour_video_url}) for a quick app overview.
+""").format(navigation_tour_video_url=settings.NAVIGATION_TOUR_VIDEO_URL)
+
         content = _("""
 Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
 
 {getting_started_text} {organization_setup_text}
+
+{navigation_tour_video_text}
 
 {demo_organization_text}
 
@@ -96,6 +102,7 @@ Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
             inform_about_tracked_onboarding_messages_text=inform_about_tracked_onboarding_messages_text,
             getting_started_text=getting_started_string,
             organization_setup_text=organization_setup_string,
+            navigation_tour_video_text=navigation_tour_video_string,
             demo_organization_text=demo_organization_warning_string,
         )
 
@@ -282,12 +289,13 @@ conversations with unread messages.
 """)
 
     content1_of_start_conversation_topic_name = _("""
-To kick off a new conversation, click **Start new conversation** below.
-The new conversation thread will be labeled with its own topic.
+To kick off a new conversation, pick a channel in the left sidebar, and click
+the `+` button next to its name.
 """)
 
     content2_of_start_conversation_topic_name = _("""
-For a good topic name, think about finishing the sentence: “Hey, can we chat about…?”
+Label your conversation with a topic. Think about finishing the sentence: “Hey,
+can we chat about…?”
 """)
 
     content3_of_start_conversation_topic_name = _("""

@@ -441,6 +441,14 @@ export function format_array_as_list(
     return list_formatter.format(array);
 }
 
+export function format_array_as_list_with_conjuction(
+    array: string[],
+    // long uses "and", narrow uses commas.
+    join_strategy: "long" | "narrow",
+): string {
+    return format_array_as_list(array, join_strategy, "conjunction");
+}
+
 export function format_array_as_list_with_highlighted_elements(
     array: string[],
     style: Intl.ListFormatStyle,
@@ -545,6 +553,17 @@ export function get_final_topic_display_name(topic_name: string): string {
         return realm.realm_empty_topic_display_name;
     }
     return topic_name;
+}
+
+export function is_topic_name_considered_empty(topic: string): boolean {
+    // NOTE: Use this check only when realm.realm_mandatory_topics is set to true.
+    topic = topic.trim();
+    // When the topic is mandatory in a realm via realm_mandatory_topics, the topic
+    // can't be an empty string, "(no topic)", or realm_empty_topic_display_name.
+    if (topic === "" || topic === "(no topic)" || topic === realm.realm_empty_topic_display_name) {
+        return true;
+    }
+    return false;
 }
 
 export function get_retry_backoff_seconds(

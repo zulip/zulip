@@ -24,7 +24,6 @@ import {user_settings} from "./user_settings.ts";
 function common_click_handlers(): void {
     $("body").on("click", ".set-home-view", (e) => {
         e.preventDefault();
-        e.preventDefault();
 
         const web_home_view = $(e.currentTarget).attr("data-view-code");
         const data = {web_home_view};

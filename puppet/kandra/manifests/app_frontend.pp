@@ -60,6 +60,16 @@ class kandra::app_frontend {
     notify  => Service['nginx'],
   }
 
+  # Serve /static/navigation-tour-video/
+  file { '/etc/nginx/zulip-include/app.d/navigation-tour-video.conf':
+    require => File['/etc/nginx/zulip-include/app.d'],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/kandra/nginx/zulip-include-app.d/navigation-tour-video.conf',
+    notify  => Service['nginx'],
+  }
+
   # Each server does its own fetching of contributor data, since
   # we don't have a way to synchronize that among several servers.
   zulip::cron { 'fetch-contributor-data':

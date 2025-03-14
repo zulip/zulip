@@ -33,7 +33,7 @@ export function process_new_message(raw_message: RawMessage, deliver_locally = f
         message_store.convert_raw_message_to_message_with_booleans(raw_message);
     people.extract_people_from_message(message_with_booleans);
 
-    const sent_by_me = people.is_current_user(message_with_booleans.sender_email);
+    const sent_by_me = people.is_my_user_id(message_with_booleans.sender_id);
     people.maybe_incr_recipient_count({...message_with_booleans, sent_by_me});
 
     let status_emoji_info;

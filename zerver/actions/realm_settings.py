@@ -2,6 +2,7 @@ import datetime
 import logging
 import zoneinfo
 from email.headerregistry import Address
+from enum import Enum
 from typing import Any, Literal
 
 from django.conf import settings
@@ -23,7 +24,7 @@ from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
 from zerver.lib.sessions import delete_realm_user_sessions
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.types import AnonymousSettingGroupDict
+from zerver.lib.types import UserGroupMembersDict
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import (
@@ -50,24 +51,33 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import get_default_max_invites_for_realm_plan_type, get_realm
+from zerver.models.realms import (
+    MessageEditHistoryVisibilityPolicyEnum,
+    get_default_max_invites_for_realm_plan_type,
+    get_realm,
+)
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 
 @transaction.atomic(savepoint=False)
 def do_set_realm_property(
-    realm: Realm, name: str, value: Any, *, acting_user: UserProfile | None
+    realm: Realm, name: str, raw_value: Any, *, acting_user: UserProfile | None
 ) -> None:
     """Takes in a realm object, the name of an attribute to update, the
     value to update and the user who initiated the update.
     """
     property_type = Realm.property_types[name]
-    assert isinstance(value, property_type), (
-        f"Cannot update {name}: {value} is not an instance of {property_type}"
+    assert isinstance(raw_value, property_type), (
+        f"Cannot update {name}: {raw_value} is not an instance of {property_type}"
     )
 
     old_value = getattr(realm, name)
+    if isinstance(raw_value, Enum):
+        value = raw_value.value
+    else:
+        value = raw_value
+
     if old_value == value:
         return
 
@@ -92,6 +102,13 @@ def do_set_realm_property(
             op="update_dict",
             property="default",
             data={name: value},
+        )
+    if name == "message_edit_history_visibility_policy":
+        event = dict(
+            type="realm",
+            op="update",
+            property=name,
+            value=MessageEditHistoryVisibilityPolicyEnum(value).name,
         )
 
     send_event_on_commit(realm, event, active_user_ids(realm.id))
@@ -162,7 +179,7 @@ def do_change_realm_permission_group_setting(
     realm: Realm,
     setting_name: str,
     user_group: UserGroup,
-    old_setting_api_value: int | AnonymousSettingGroupDict | None = None,
+    old_setting_api_value: int | UserGroupMembersDict | None = None,
     *,
     acting_user: UserProfile | None,
 ) -> None:

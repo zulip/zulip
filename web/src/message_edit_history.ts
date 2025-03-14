@@ -17,6 +17,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rows from "./rows.ts";
+import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as spectators from "./spectators.ts";
 import {realm} from "./state_data.ts";
 import {get_recipient_bar_color} from "./stream_color.ts";
@@ -24,6 +25,7 @@ import {get_color} from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
+import * as util from "./util.ts";
 
 type EditHistoryEntry = {
     edited_at_time: string;
@@ -33,8 +35,10 @@ type EditHistoryEntry = {
     recipient_bar_color: string | undefined;
     body_to_render: string | undefined;
     topic_edited: boolean | undefined;
-    prev_topic: string | undefined;
-    new_topic: string | undefined;
+    prev_topic_display_name: string | undefined;
+    new_topic_display_name: string | undefined;
+    is_empty_string_prev_topic: boolean | undefined;
+    is_empty_string_new_topic: boolean | undefined;
     stream_changed: boolean | undefined;
     prev_stream: string | undefined;
     prev_stream_id: number | undefined;
@@ -138,8 +142,10 @@ export function fetch_and_render_message_history(message: Message): void {
                 let edited_by_notice;
                 let body_to_render;
                 let topic_edited;
-                let prev_topic;
-                let new_topic;
+                let prev_topic_display_name;
+                let new_topic_display_name;
+                let is_empty_string_prev_topic;
+                let is_empty_string_new_topic;
                 let stream_changed;
                 let prev_stream;
                 let prev_stream_id;
@@ -151,13 +157,17 @@ export function fetch_and_render_message_history(message: Message): void {
                     edited_by_notice = $t({defaultMessage: "Edited by {full_name}"}, {full_name});
                     body_to_render = msg.content_html_diff;
                     topic_edited = true;
-                    prev_topic = msg.prev_topic;
-                    new_topic = msg.topic;
+                    prev_topic_display_name = util.get_final_topic_display_name(msg.prev_topic);
+                    new_topic_display_name = util.get_final_topic_display_name(msg.topic);
+                    is_empty_string_prev_topic = msg.prev_topic === "";
+                    is_empty_string_new_topic = msg.topic === "";
                 } else if (msg.prev_topic !== undefined && msg.prev_stream) {
                     edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
                     topic_edited = true;
-                    prev_topic = msg.prev_topic;
-                    new_topic = msg.topic;
+                    prev_topic_display_name = util.get_final_topic_display_name(msg.prev_topic);
+                    new_topic_display_name = util.get_final_topic_display_name(msg.topic);
+                    is_empty_string_prev_topic = msg.prev_topic === "";
+                    is_empty_string_new_topic = msg.topic === "";
                     stream_changed = true;
                     prev_stream_id = msg.prev_stream;
                     prev_stream = get_display_stream_name(msg.prev_stream);
@@ -167,8 +177,10 @@ export function fetch_and_render_message_history(message: Message): void {
                 } else if (msg.prev_topic !== undefined) {
                     edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
                     topic_edited = true;
-                    prev_topic = msg.prev_topic;
-                    new_topic = msg.topic;
+                    prev_topic_display_name = util.get_final_topic_display_name(msg.prev_topic);
+                    new_topic_display_name = util.get_final_topic_display_name(msg.topic);
+                    is_empty_string_prev_topic = msg.prev_topic === "";
+                    is_empty_string_new_topic = msg.topic === "";
                 } else if (msg.prev_stream) {
                     edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
                     stream_changed = true;
@@ -190,8 +202,10 @@ export function fetch_and_render_message_history(message: Message): void {
                     recipient_bar_color: undefined,
                     body_to_render,
                     topic_edited,
-                    prev_topic,
-                    new_topic,
+                    prev_topic_display_name,
+                    new_topic_display_name,
+                    is_empty_string_prev_topic,
+                    is_empty_string_new_topic,
                     stream_changed,
                     prev_stream,
                     prev_stream_id,
@@ -280,39 +294,55 @@ export function handle_keyboard_events(event_key: string): void {
 }
 
 export function initialize(): void {
-    $("body").on("mouseenter", ".message_edit_notice", (e) => {
-        if (realm.realm_allow_edit_history) {
+    $("body").on("mouseenter", ".message_edit_notice, .edit-notifications", (e) => {
+        if (
+            realm.realm_message_edit_history_visibility_policy !==
+            message_edit_history_visibility_policy_values.never.code
+        ) {
             $(e.currentTarget).addClass("message_edit_notice_hover");
         }
     });
 
-    $("body").on("mouseleave", ".message_edit_notice", (e) => {
-        if (realm.realm_allow_edit_history) {
+    $("body").on("mouseleave", ".message_edit_notice, .edit-notifications", (e) => {
+        if (
+            realm.realm_message_edit_history_visibility_policy !==
+            message_edit_history_visibility_policy_values.never.code
+        ) {
             $(e.currentTarget).removeClass("message_edit_notice_hover");
         }
     });
 
-    $("body").on("click", ".message_edit_notice", function (this: HTMLElement, e) {
-        e.stopPropagation();
-        e.preventDefault();
+    $("body").on(
+        "click",
+        ".message_edit_notice, .edit-notifications",
+        function (this: HTMLElement, e) {
+            e.stopPropagation();
+            e.preventDefault();
 
-        const message_id = rows.id($(this).closest(".message_row"));
-        assert(message_lists.current !== undefined);
-        const $row = message_lists.current.get_row(message_id);
-        const row_id = rows.id($row);
-        const message = message_lists.current.get(row_id);
-        assert(message !== undefined);
+            const message_id = rows.id($(this).closest(".message_row"));
+            assert(message_lists.current !== undefined);
+            const $row = message_lists.current.get_row(message_id);
+            const row_id = rows.id($row);
+            const message = message_lists.current.get(row_id);
+            assert(message !== undefined);
 
-        if (page_params.is_spectator) {
-            spectators.login_to_access();
-            return;
-        }
+            if (page_params.is_spectator) {
+                spectators.login_to_access();
+                return;
+            }
 
-        if (realm.realm_allow_edit_history) {
-            fetch_and_render_message_history(message);
-            $("#message-history-overlay .exit-sign").trigger("focus");
-        }
-    });
+            if (
+                realm.realm_message_edit_history_visibility_policy ===
+                    message_edit_history_visibility_policy_values.always.code ||
+                (realm.realm_message_edit_history_visibility_policy ===
+                    message_edit_history_visibility_policy_values.moves_only.code &&
+                    message.last_moved_timestamp !== undefined)
+            ) {
+                fetch_and_render_message_history(message);
+                $("#message-history-overlay .exit-sign").trigger("focus");
+            }
+        },
+    );
 
     $("body").on(
         "focus",

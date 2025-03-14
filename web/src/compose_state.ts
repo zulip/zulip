@@ -1,14 +1,15 @@
 import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill.ts";
-import {$t} from "./i18n.ts";
 import * as people from "./people.ts";
+import {realm} from "./state_data.ts";
 import * as sub_store from "./sub_store.ts";
 
 let message_type: "stream" | "private" | undefined;
 let recipient_edited_manually = false;
 let is_content_unedited_restored_draft = false;
 let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
+let preview_render_count = 0;
 
 // We use this variable to keep track of whether user has viewed the topic resolved
 // banner for the current compose session, for a narrow. This prevents the banner
@@ -65,6 +66,14 @@ export function set_recipient_guest_ids_for_dm_warning(guest_ids: number[]): voi
 
 export function get_recipient_guest_ids_for_dm_warning(): number[] {
     return recipient_guest_ids_for_dm_warning;
+}
+
+export function get_preview_render_count(): number {
+    return preview_render_count;
+}
+
+export function set_preview_render_count(count: number): void {
+    preview_render_count = count;
 }
 
 export function composing(): boolean {
@@ -140,10 +149,6 @@ export let topic = get_or_set("input#stream_message_recipient_topic");
 
 export function rewire_topic(value: typeof topic): void {
     topic = value;
-}
-
-export function empty_topic_placeholder(): string {
-    return $t({defaultMessage: "(no topic)"});
 }
 
 // We can't trim leading whitespace in `compose_textarea` because
@@ -236,7 +241,8 @@ export function has_savable_message_content(): boolean {
 
 export function has_full_recipient(): boolean {
     if (message_type === "stream") {
-        return stream_id() !== undefined && topic() !== "";
+        const has_topic = topic() !== "" || !realm.realm_mandatory_topics;
+        return stream_id() !== undefined && has_topic;
     }
     return private_message_recipient() !== "";
 }

@@ -7,3 +7,7 @@ Modify the parameters of the URL above, where `bot_email` is
 the bot's URL-encoded email address and `bot_api_key` is the
 bot's API key.  To URL-encode the email address, you just need
 to replace `@` in the bot's email address with `%40`.
+
+You can also limit the branches you receive notifications for by
+specifying them in a comma-separated list appended to the end of the
+URL, e.g., `&branches=main,development`.

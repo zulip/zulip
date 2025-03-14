@@ -1,8 +1,10 @@
 import os
 import warnings
+from datetime import datetime, timezone
 from unittest import mock
 
 import orjson
+import time_machine
 from django.conf import settings
 from typing_extensions import override
 
@@ -44,12 +46,19 @@ class MessagesSummaryTestCase(ZulipTestCase):
             self.user, self.channel_name, content=content, topic_name=self.topic_name
         )
 
+        # Tests fail on the last day of the month due to us capturing the credit usage for that day
+        # on the first of the next month, so we need to set the date to a different day.
+        not_last_day_of_any_month = datetime(2025, 2, 18, 1, tzinfo=timezone.utc)
+
+        self.mocked_time_patcher = time_machine.travel(not_last_day_of_any_month, tick=False)
+        self.mocked_time_patcher.start()
         if settings.GENERATE_LITELLM_FIXTURES:  # nocoverage
             self.patcher = mock.patch("litellm.completion", wraps=litellm.completion)
             self.mocked_completion = self.patcher.start()
 
     @override
     def tearDown(self) -> None:
+        self.mocked_time_patcher.stop()
         if settings.GENERATE_LITELLM_FIXTURES:  # nocoverage
             self.patcher.stop()
         super().tearDown()

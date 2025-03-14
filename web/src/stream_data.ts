@@ -22,7 +22,6 @@ import type {
     StreamSpecificNotificationSettings,
     StreamSubscription,
 } from "./sub_store.ts";
-import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
@@ -140,10 +139,6 @@ export function rename_sub(sub: StreamSubscription, new_name: string): void {
 }
 
 export function subscribe_myself(sub: StreamSubscription): void {
-    if (sub.is_archived) {
-        blueslip.warn("Can't subscribe to an archived stream.");
-        return;
-    }
     const user_id = people.my_current_user_id();
     peer_data.add_subscriber(sub.stream_id, user_id);
     sub.subscribed = true;
@@ -314,12 +309,13 @@ export function delete_sub(stream_id: number): void {
         return;
     }
     sub.is_archived = true;
-    stream_info.set_false(stream_id, sub);
 }
 
 export function get_non_default_stream_names(): {name: string; unique_id: number}[] {
     let subs = [...stream_info.values()];
-    subs = subs.filter((sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only);
+    subs = subs.filter(
+        (sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only && !sub.is_archived,
+    );
     const names = subs.map((sub) => ({
         name: sub.name,
         unique_id: sub.stream_id,
@@ -329,6 +325,10 @@ export function get_non_default_stream_names(): {name: string; unique_id: number
 
 export function get_unsorted_subs(): StreamSubscription[] {
     return [...stream_info.values()];
+}
+
+export function get_unsorted_subs_with_content_access(): StreamSubscription[] {
+    return [...stream_info.values()].filter((sub) => has_content_access(sub));
 }
 
 export function num_subscribed_subs(): number {
@@ -349,6 +349,10 @@ export function subscribed_streams(): string[] {
 
 export function subscribed_stream_ids(): number[] {
     return subscribed_subs().map((sub) => sub.stream_id);
+}
+
+export function get_archived_subs(): StreamSubscription[] {
+    return [...stream_info.values()].filter((sub) => sub.is_archived);
 }
 
 export function muted_stream_ids(): number[] {
@@ -506,22 +510,50 @@ export function has_metadata_access(sub: StreamSubscription): boolean {
         return true;
     }
 
-    // Users that can add other subscribers to a private channel
-    // have content access to that channel. Having content access
-    // should give them metadata access to that private channel even
-    // when unsubscribed.
-    const can_add_subscribers = user_groups.is_user_in_setting_group(
+    const can_add_subscribers = settings_data.user_has_permission_for_group_setting(
         sub.can_add_subscribers_group,
-        people.my_current_user_id(),
+        "can_add_subscribers_group",
+        "stream",
     );
     if (can_add_subscribers) {
+        return true;
+    }
+
+    const can_subscribe = settings_data.user_has_permission_for_group_setting(
+        sub.can_subscribe_group,
+        "can_subscribe_group",
+        "stream",
+    );
+    if (can_subscribe) {
         return true;
     }
 
     return false;
 }
 
-export function has_content_access(sub: StreamSubscription): boolean {
+export function has_content_access_via_group_permissions(sub: StreamSubscription): boolean {
+    const can_add_subscribers = settings_data.user_has_permission_for_group_setting(
+        sub.can_add_subscribers_group,
+        "can_add_subscribers_group",
+        "stream",
+    );
+    if (can_add_subscribers) {
+        return true;
+    }
+
+    const can_subscribe = settings_data.user_has_permission_for_group_setting(
+        sub.can_subscribe_group,
+        "can_subscribe_group",
+        "stream",
+    );
+    if (can_subscribe) {
+        return true;
+    }
+
+    return false;
+}
+
+export let has_content_access = (sub: StreamSubscription): boolean => {
     if (sub.is_web_public) {
         return true;
     }
@@ -543,14 +575,7 @@ export function has_content_access(sub: StreamSubscription): boolean {
         return false;
     }
 
-    // This is after the is_guest check, because this setting has
-    // allow_everyone_group=false.  TODO: Consider adding a
-    // is_user_in_setting_group wrapper abstraction that handles this detail automatically.
-    const can_add_subscribers = user_groups.is_user_in_setting_group(
-        sub.can_add_subscribers_group,
-        people.my_current_user_id(),
-    );
-    if (can_add_subscribers) {
+    if (has_content_access_via_group_permissions(sub)) {
         return true;
     }
 
@@ -563,6 +588,10 @@ export function has_content_access(sub: StreamSubscription): boolean {
     // content.
 
     return true;
+};
+
+export function rewire_has_content_access(value: typeof has_content_access): void {
+    has_content_access = value;
 }
 
 function can_administer_channel(sub: StreamSubscription): boolean {
@@ -574,25 +603,28 @@ function can_administer_channel(sub: StreamSubscription): boolean {
         return true;
     }
 
-    return user_groups.is_user_in_setting_group(
+    return settings_data.user_has_permission_for_group_setting(
         sub.can_administer_channel_group,
-        people.my_current_user_id(),
+        "can_administer_channel_group",
+        "stream",
     );
 }
 
 export function can_toggle_subscription(sub: StreamSubscription): boolean {
-    // You can always remove your subscription if you're subscribed.
-    //
-    // One can only join a stream if it is public (!invite_only) and
-    // your role is Member or above (!is_guest).
-    // Spectators cannot subscribe to any streams.
-    //
-    // Note that the correctness of this logic relies on the fact that
-    // one cannot be subscribed to a deactivated stream.
-    return (
-        (sub.subscribed || (!current_user.is_guest && !(sub.invite_only || sub.is_archived))) &&
-        !page_params.is_spectator
-    );
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    // Currently, you can always remove your subscription if you're subscribed.
+    if (sub.subscribed) {
+        return true;
+    }
+
+    if (has_content_access(sub)) {
+        return true;
+    }
+
+    return false;
 }
 
 export function get_current_user_and_their_bots_with_post_messages_permission(
@@ -624,7 +656,10 @@ export function can_access_topic_history(sub: StreamSubscription): boolean {
 }
 
 export function can_preview(sub: StreamSubscription): boolean {
-    return sub.subscribed || !sub.invite_only || sub.previously_subscribed;
+    if (!sub.history_public_to_subscribers) {
+        return false;
+    }
+    return has_content_access(sub);
 }
 
 export function can_change_permissions_requiring_content_access(sub: StreamSubscription): boolean {
@@ -660,9 +695,10 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
         return true;
     }
 
-    return user_groups.is_user_in_setting_group(
+    return settings_data.user_has_permission_for_group_setting(
         sub.can_add_subscribers_group,
-        people.my_current_user_id(),
+        "can_add_subscribers_group",
+        "stream",
     );
 }
 
@@ -698,9 +734,10 @@ export function can_unsubscribe_others(sub: StreamSubscription): boolean {
         return true;
     }
 
-    return user_groups.is_user_in_setting_group(
+    return settings_data.user_has_permission_for_group_setting(
         sub.can_remove_subscribers_group,
-        people.my_current_user_id(),
+        "can_remove_subscribers_group",
+        "stream",
     );
 }
 

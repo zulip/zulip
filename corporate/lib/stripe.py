@@ -49,7 +49,7 @@ from zerver.lib.logging_util import log_to_file
 from zerver.lib.send_email import (
     FromAddress,
     send_email,
-    send_email_to_billing_admins_and_realm_owners,
+    send_email_to_users_with_billing_access_and_realm_owners,
 )
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.url_encoding import append_url_query_string
@@ -1561,21 +1561,21 @@ class BillingSession(ABC):
         customer = self.get_customer()
         assert customer is not None
         current_plan = get_current_plan_by_customer(customer)
-        if current_plan is None:
-            fixed_price_offer = CustomerPlanOffer.objects.filter(
-                customer=customer, status=CustomerPlanOffer.CONFIGURED
+        if current_plan is not None and self.check_plan_tier_is_billable(current_plan.tier):
+            fixed_price_next_plan = CustomerPlan.objects.filter(
+                customer=customer,
+                status=CustomerPlan.NEVER_STARTED,
+                fixed_price__isnull=False,
             ).first()
-            assert fixed_price_offer is not None
-            fixed_price_offer.delete()
-            return "Fixed-price plan offer deleted"
-        fixed_price_next_plan = CustomerPlan.objects.filter(
-            customer=customer,
-            status=CustomerPlan.NEVER_STARTED,
-            fixed_price__isnull=False,
+            assert fixed_price_next_plan is not None
+            fixed_price_next_plan.delete()
+            return "Fixed-price scheduled plan deleted"
+        fixed_price_offer = CustomerPlanOffer.objects.filter(
+            customer=customer, status=CustomerPlanOffer.CONFIGURED
         ).first()
-        assert fixed_price_next_plan is not None
-        fixed_price_next_plan.delete()
-        return "Fixed-price scheduled plan deleted"
+        assert fixed_price_offer is not None
+        fixed_price_offer.delete()
+        return "Fixed-price plan offer deleted"
 
     def update_customer_sponsorship_status(self, sponsorship_pending: bool) -> str:
         customer = self.get_customer()
@@ -2250,7 +2250,7 @@ class BillingSession(ABC):
             return  # nocoverage
 
         min_licenses = self.min_licenses_for_plan(plan.tier)
-        if min_licenses > renewal_license_count:  # nocoverage
+        if min_licenses > renewal_license_count:
             # If we are renewing less licenses than the minimum required for the plan, we need to
             # adjust `license_at_next_renewal` for the customer.
             raise BillingError(
@@ -2891,7 +2891,9 @@ class BillingSession(ABC):
     ) -> int:
         customer = self.get_customer()
         if customer is not None and customer.minimum_licenses:
-            assert customer.monthly_discounted_price or customer.annual_discounted_price
+            # This could be either because the customer has a fixed
+            # monthly_discounted_price or annual_discounted_price, or
+            # because we wanted to override their minimum.
             return customer.minimum_licenses
 
         if tier == CustomerPlan.TIER_SELF_HOSTED_BASIC:
@@ -3405,7 +3407,7 @@ class BillingSession(ABC):
                 session.type == Session.CARD_UPDATE_FROM_BILLING_PAGE
                 and not self.has_billing_access()
             ):
-                raise JsonableError(_("Must be a billing administrator or an organization owner"))
+                raise JsonableError(_("Insufficient permission"))
             return {"session": session.to_dict()}
 
         stripe_invoice_id = event_status_request.stripe_invoice_id
@@ -3508,12 +3510,6 @@ class BillingSession(ABC):
 
             org_type = form.cleaned_data["organization_type"]
             self.save_org_type_from_request_sponsorship_session(org_type)
-
-            if request_context["realm_user"] is not None:
-                # TODO: Refactor to not create an import cycle.
-                from zerver.actions.users import do_change_is_billing_admin
-
-                do_change_is_billing_admin(request_context["realm_user"], True)
 
             org_type_display_name = get_org_type_display_name(org_type)
 
@@ -4093,10 +4089,6 @@ class RealmBillingSession(BillingSession):
             customer, created = Customer.objects.update_or_create(
                 realm=self.realm, defaults={"stripe_customer_id": stripe_customer_id}
             )
-            from zerver.actions.users import do_change_is_billing_admin
-
-            assert self.user is not None
-            do_change_is_billing_admin(self.user, True)
             return customer
         else:
             customer, created = Customer.objects.update_or_create(
@@ -4168,7 +4160,7 @@ class RealmBillingSession(BillingSession):
                 event_type=BillingSessionEventType.SPONSORSHIP_APPROVED, event_time=timezone_now()
             )
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, self.realm.id)
-        for user in self.realm.get_human_billing_admin_and_realm_owner_users():
+        for user in self.realm.get_human_users_with_billing_access_and_realm_owner_users():
             with override_language(user.default_language):
                 # Using variable to make life easier for translators if these details change.
                 message = _(
@@ -4183,7 +4175,7 @@ class RealmBillingSession(BillingSession):
                     end_link="](/help/linking-to-zulip-website)",
                 )
                 internal_send_private_message(notification_bot, user, message)
-        return f"Sponsorship approved for {self.billing_entity_display_name}; Emailed organization owners and billing admins."
+        return f"Sponsorship approved for {self.billing_entity_display_name}; Emailed organization owners and users with billing permission."
 
     @override
     def is_sponsored(self) -> bool:
@@ -5573,7 +5565,7 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
                 "upgrade_url": f"{realm.url}{reverse('upgrade_page')}",
                 "realm": realm,
             }
-            send_email_to_billing_admins_and_realm_owners(
+            send_email_to_users_with_billing_access_and_realm_owners(
                 "zerver/emails/realm_auto_downgraded",
                 realm,
                 from_name=FromAddress.security_email_from_name(language=realm.default_language),

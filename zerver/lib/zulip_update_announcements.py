@@ -274,6 +274,72 @@ DIRECT MESSAGES to [start a DM]({starting_a_new_direct_message_help_url}).
             quote_or_forward_help_url="/help/quote-or-forward-a-message",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=12,
+        message="""
+- When you [link to a topic]({link_from_anywhere_help_url}) in Zulip, that link
+  will now continue to work even when the topic is
+  [renamed]({rename_a_topic_help_url}), [moved to another
+  channel]({move_content_to_another_channel_help_url}), or
+  [resolved]({resolve_a_topic_help_url}).
+
+**Web and desktop updates**
+- You can now [save snippets]({saved_snippets_help_url}) of message content, and
+quickly insert them into the message you're composing.
+- [Drafts]({drafts_help_url}) are no longer removed after 30 days.
+""".format(
+            link_from_anywhere_help_url="/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere",
+            rename_a_topic_help_url="/help/rename-a-topic",
+            move_content_to_another_channel_help_url="/help/move-content-to-another-channel",
+            resolve_a_topic_help_url="/help/resolve-a-topic",
+            saved_snippets_help_url="/help/saved-snippets",
+            drafts_help_url="/help/view-and-edit-your-message-drafts",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=13,
+        message="""
+- Zulip channels have a new space for **chatting without a topic** (e.g., social
+  chatter or one-off requests). Channel messages sent without a topic (if
+  [allowed]({require_topics_url}) in your organization) now go to a special
+  *[“general chat”]({general_chat_url})* topic. Its name appears in italics, and
+  will be translated into [your language]({change_your_language_url}).
+- New channel permission settings let administrators **delegate channel
+  management** responsibilities. There are settings for [who can
+  administer]({who_can_administer_url}) each channel, and who can
+  [subscribe]({who_can_subscribe_url}) and
+  [unsubscribe]({who_can_unsubscribe_url}) other users. You can also
+  [give]({configure_who_can_subscribe_url}) users and
+  [groups]({user_groups_url}) permission to read and subscribe to a
+  [private channel]({private_channels_url}), just like everyone other
+  than guests can do with public channels.
+
+**Web and desktop updates**
+- When you copy a Zulip link and paste it anywhere that accepts HTML formatting
+  (e.g., your email, GitHub, docs, etc.), the link will be formatted as it would
+  be in Zulip (e.g., [#channel > topic]({link_to_a_message_or_conversation_url})).
+- To [link]({link_to_a_message_or_conversation_url}) to a topic in the channel
+  you're composing to, you can now just type `#>` followed by a few letters from
+  the topic name, and pick the desired topic from the autocomplete.
+- There's a new compose box button for creating a [collaborative to-do
+  list]({to_do_list_url}).
+- You’ll now see a [typing notification]({typing_notifications_url}) when
+  someone is editing a message, not just for composing new messages.
+""".format(
+            require_topics_url="/help/require-topics",
+            general_chat_url="/help/general-chat-topic",
+            typing_notifications_url="/help/typing-notifications",
+            to_do_list_url="/help/collaborative-to-do-lists",
+            link_to_a_message_or_conversation_url="/help/link-to-a-message-or-conversation",
+            change_your_language_url="/help/change-your-language",
+            configure_who_can_subscribe_url="/help/configure-who-can-subscribe",
+            who_can_administer_url="/help/configure-who-can-administer-a-channel",
+            who_can_subscribe_url="/help/configure-who-can-invite-to-channels",
+            who_can_unsubscribe_url="/help/configure-who-can-unsubscribe-others",
+            user_groups_url="/help/user-groups",
+            private_channels_url="/help/channel-permissions#private-channels",
+        ),
+    ),
 ]
 
 

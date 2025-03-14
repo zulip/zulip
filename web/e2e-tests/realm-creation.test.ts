@@ -36,7 +36,7 @@ async function realm_creation_tests(page: Page): Promise<void> {
 
     // Open the confirmation URL
     const page_content = await page.evaluate(() => document.querySelector("body")!.textContent);
-    assert(page_content !== null);
+    assert.ok(page_content !== null);
     const {confirmation_key} = z
         .object({confirmation_key: z.string()})
         .parse(JSON.parse(page_content));
@@ -77,6 +77,11 @@ async function realm_creation_tests(page: Page): Promise<void> {
     // Check if realm is created and user is logged in by checking if
     // element of id `lightbox_overlay` exists.
     await page.waitForSelector("#lightbox_overlay"); // if element doesn't exist,timeout error raises
+
+    // Check if the modal having the onboarding video has been displayed.
+    await common.wait_for_micromodal_to_open(page);
+    await page.click("#navigation-tour-video-modal .modal__close");
+    await common.wait_for_micromodal_to_close(page);
 
     // Updating common.realm_url because we are redirecting to it when logging out.
     common.set_realm_url(page.url());

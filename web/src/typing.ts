@@ -51,11 +51,10 @@ function send_message_edit_typing_notification_ajax(
     operation: "start" | "stop",
 ): void {
     const data = {
-        message_id: JSON.stringify(message_id),
         op: operation,
     };
     void channel.post({
-        url: "/json/message_edit_typing",
+        url: `/json/messages/${message_id}/typing`,
         data,
         error(xhr) {
             if (xhr.readyState !== 0) {
@@ -82,6 +81,10 @@ function send_stream_typing_notification(
     topic: string,
     operation: "start" | "stop",
 ): void {
+    const stream = stream_data.get_sub_by_id(stream_id)!;
+    if (!stream_data.can_post_messages_in_stream(stream)) {
+        return;
+    }
     const data = {
         type: "stream",
         stream_id: JSON.stringify(stream_id),

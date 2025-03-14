@@ -1,3 +1,9 @@
+.with-container-query-support {
+    #message-lists-container {
+        container: message-lists / inline-size;
+    }
+}
+
 .message_row {
     display: grid;
     /* Prevent the messagebox column from overflowing the 1fr
@@ -140,11 +146,6 @@
 
     .message_content {
         grid-area: message;
-        /*
-        Space between two single line messages is kept in
-        lockstep with adjacent Markdown elements.
-        */
-        padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
         color: var(--color-text-message-default);
         /* We explicitly set line-height here so that
            the message area is not beholden to the legacy
@@ -219,6 +220,31 @@
                same space around the toggle button as any other
                message-row content. */
             margin: 4px 0;
+        }
+    }
+
+    .message_length_toggle {
+        width: 100%;
+        height: 1.714em; /* 24px / 14px em */
+        margin-bottom: var(--message-box-markdown-aligned-vertical-space);
+        color: var(--color-text-show-more-less-button);
+        background-color: var(--color-show-more-less-button-background);
+        border-radius: 4px;
+        border: none;
+        outline: none;
+        font-variant: all-small-caps;
+
+        &:hover {
+            background-color: var(
+                --color-show-more-less-button-background-hover
+            );
+        }
+
+        &:active {
+            background-color: var(
+                --color-show-more-less-button-background-active
+            );
+            scale: 0.98;
         }
     }
 
@@ -340,6 +366,7 @@
         }
 
         .message_content {
+            padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
             /* Pull message content up closer to sender to
                let the text baseline sit adjacent the bottom
                of the avatar. We also need to account for the
@@ -443,11 +470,25 @@
     /* Ensure square icons for better centering. */
     line-height: 1;
 
-    @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
+    @container message-lists (width < $cq_sm_min) {
         /* This is intended to target the first message_controls child
            when there are 3 displayed. */
         .message_control_button:nth-last-child(3) {
             display: none;
+        }
+    }
+
+    /* Media-query fallback. Note that because we're treating
+       #message-lists-container as its own container, we can
+       express a much simpler query there. The more complex
+       conditions are necessary only for media queries. */
+    @media (width < $sm_min), ((width >= $md_min) and (width < $mc_min)) {
+        .without-container-query-support {
+            /* This is intended to target the first message_controls child
+            when there are 3 displayed. */
+            .message_control_button:nth-last-child(3) {
+                display: none;
+            }
         }
     }
 
@@ -459,7 +500,7 @@
     .message_control_button {
         opacity: 0;
         visibility: hidden;
-        transition: none 0.2s ease;
+        transition: 0.2s ease;
         transition-property: opacity, visibility;
         /* Allow buttons to grow to fill the available space,
            in concord with the column calculated for the
@@ -520,11 +561,6 @@
             &.star:focus-visible {
                 color: var(--color-message-star-action);
             }
-        }
-
-        .zulip-icon-more-vertical {
-            /* Increase visual prominence of the vdots. */
-            font-size: 21px;
         }
     }
 
@@ -657,13 +693,13 @@
 
 .message-actions-button {
     box-sizing: border-box;
+    align-self: stretch;
     /* Display the actions buttons as
        flex containers for positioning
        text and spinners. */
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 28px;
     padding: 0 10px;
     border-radius: 4px;
     border: 0;
@@ -671,14 +707,21 @@
 }
 
 .message_edit_save {
+    /* Because the save button is inside this container,
+       we set the height here so the container stretches
+       with the flexbox. However, we also want to match
+       this to the height of the compose box's Send button,
+       so we specify a matching 2em height here
+       (32px at 16px/1em) */
+    height: 2em;
     /* Match Save button's basic colors to
        the compose box Send button. */
-    color: var(--color-compose-send-button-icon-color);
-    background-color: var(--color-compose-send-button-background);
+    color: var(--color-text-brand-primary-action-button);
+    background-color: var(--color-background-brand-primary-action-button);
 
     &:hover {
         background-color: var(
-            --color-compose-send-button-background-interactive
+            --color-background-brand-primary-action-button-hover
         );
     }
 
@@ -768,6 +811,10 @@ of the base style defined for a read-only textarea in dark mode. */
     margin-left: 3px;
     width: 40px;
     height: 5px;
+
+    /* Avoid this animation element blocking clicks on .edit-notifications
+       to display the message's edit history. */
+    pointer-events: none;
 
     .y-animated-dot {
         width: 4px;
@@ -908,6 +955,21 @@ of the base style defined for a read-only textarea in dark mode. */
     cursor: default;
 }
 
+/* Placehold the control buttons, unless there's a failure. */
+.locally-echoed {
+    .messagebox:hover
+        .message_controls
+        .message_control_button:not(.failed_message_action) {
+        visibility: hidden;
+    }
+    /* The actual star icon is not added to the DOM when a
+       message is locally echoed, so we set the equivalent
+       width on its container. */
+    .star_container {
+        width: var(--message-box-icon-width);
+    }
+}
+
 .recipient_row {
     /* See https://stackoverflow.com/questions/2717480/css-selector-for-first-element-with-class/8539107#8539107
        for details on how this works */
@@ -943,4 +1005,18 @@ of the base style defined for a read-only textarea in dark mode. */
         /* Right padding matches time in message row and date in recipient row. */
         padding: 8px 6px 8px 4px;
     }
+}
+
+.bookend {
+    margin-top: 10px;
+    background-color: transparent;
+}
+
+/* Only show links on the trailing bookend. */
+.bookend-channel-settings-link {
+    display: none;
+}
+
+.trailing_bookend .bookend-channel-settings-link {
+    display: inline;
 }

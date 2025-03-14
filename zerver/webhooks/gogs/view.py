@@ -23,6 +23,7 @@ from zerver.lib.webhooks.git import (
     get_pull_request_event_message,
     get_push_commits_event_message,
     get_release_event_message,
+    is_branch_name_notifiable,
 )
 from zerver.models import UserProfile
 
@@ -199,7 +200,7 @@ def gogs_webhook_main(
     event = validate_extract_webhook_http_header(request, http_header_name, integration_name)
     if event == "push":
         branch = payload["ref"].tame(check_string).replace("refs/heads/", "")
-        if branches is not None and branch not in branches.split(","):
+        if not is_branch_name_notifiable(branch, branches):
             return json_success(request)
         body = format_push_event(payload)
         topic_name = TOPIC_WITH_BRANCH_TEMPLATE.format(

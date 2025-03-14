@@ -8,12 +8,14 @@ import render_navbar_gear_menu_popover from "../templates/popovers/navbar/navbar
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
+import * as information_density from "./information_density.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
 import * as popovers from "./popovers.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import * as theme from "./theme.ts";
 import {parse_html} from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 
 /*
 For various historical reasons there isn't one
@@ -185,6 +187,35 @@ export function initialize(): void {
                     theme.set_theme_for_spectator(theme_code);
                 });
             });
+
+            $popper.on("click", ".info-density-controls button", function (this: HTMLElement, e) {
+                const changed_property =
+                    information_density.information_density_properties_schema.parse(
+                        $(this).closest(".button-group").attr("data-property"),
+                    );
+                information_density.update_information_density_settings($(this), changed_property);
+                information_density.enable_or_disable_control_buttons($popper);
+
+                if (changed_property === "web_font_size_px") {
+                    // We do not want to display the arrow once font size is
+                    // changed because popover will be detached from the gear
+                    // icon as we do not change the font size in popover.
+                    $("#gear-menu-dropdown").closest(".tippy-box").find(".tippy-arrow").hide();
+                }
+
+                e.preventDefault();
+            });
+
+            information_density.enable_or_disable_control_buttons($popper);
+
+            // We do not want font size of the popover to change when changing
+            // font size using the buttons in popover, so that the buttons do
+            // not shift.
+            const font_size =
+                popover_menus.POPOVER_FONT_SIZE_IN_EM * user_settings.web_font_size_px;
+            $("#gear-menu-dropdown")
+                .closest(".tippy-box")
+                .css("font-size", font_size + "px");
         },
         onShow: render,
         onHidden(instance) {

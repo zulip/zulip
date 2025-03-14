@@ -57,7 +57,7 @@ VERBOSE_MESSAGE_ABOUT_HASH_TRANSITION = """
 def migration_paths() -> list[str]:
     return [
         *glob.glob("*/migrations/*.py"),
-        "requirements/dev.txt",
+        "uv.lock",
     ]
 
 

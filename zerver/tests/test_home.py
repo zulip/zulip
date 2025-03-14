@@ -16,11 +16,8 @@ from zerver.actions.create_user import do_create_user
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.users import change_user_is_active
 from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
-from zerver.lib.home import (
-    get_billing_info,
-    get_furthest_read_time,
-    promote_sponsoring_zulip_in_realm,
-)
+from zerver.lib.events import has_pending_sponsorship_request
+from zerver.lib.home import get_furthest_read_time, promote_sponsoring_zulip_in_realm
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -60,11 +57,7 @@ class HomeTest(ZulipTestCase):
         "presence_history_limit_days_for_web_app",
         "promote_sponsoring_zulip",
         "request_language",
-        "show_billing",
-        "show_plans",
-        "show_remote_billing",
         "show_webathena",
-        "sponsorship_pending",
         "state_data",
         "test_suite",
         "translation_data",
@@ -95,7 +88,6 @@ class HomeTest(ZulipTestCase):
         "giphy_rating_options",
         "has_zoom_token",
         "is_admin",
-        "is_billing_admin",
         "is_guest",
         "is_moderator",
         "is_owner",
@@ -112,6 +104,7 @@ class HomeTest(ZulipTestCase):
         "max_topic_length",
         "muted_topics",
         "muted_users",
+        "navigation_tour_video_url",
         "never_subscribed",
         "onboarding_steps",
         "password_min_guesses",
@@ -140,9 +133,11 @@ class HomeTest(ZulipTestCase):
         "realm_can_delete_own_message_group",
         "realm_can_invite_users_group",
         "realm_can_manage_all_groups",
+        "realm_can_manage_billing_group",
         "realm_can_mention_many_users_group",
         "realm_can_move_messages_between_channels_group",
         "realm_can_move_messages_between_topics_group",
+        "realm_can_resolve_topics_group",
         "realm_can_summarize_topics_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
@@ -188,6 +183,7 @@ class HomeTest(ZulipTestCase):
         "realm_message_content_allowed_in_email_notifications",
         "realm_message_content_delete_limit_seconds",
         "realm_message_content_edit_limit_seconds",
+        "realm_message_edit_history_visibility_policy",
         "realm_message_retention_days",
         "realm_move_messages_between_streams_limit_seconds",
         "realm_move_messages_within_stream_limit_seconds",
@@ -243,6 +239,7 @@ class HomeTest(ZulipTestCase):
         "server_typing_stopped_wait_period_milliseconds",
         "server_web_public_streams_enabled",
         "settings_send_digest_emails",
+        "realm_billing",
         "starred_messages",
         "stop_words",
         "subscriptions",
@@ -280,7 +277,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         with (
-            self.assert_database_query_count(56),
+            self.assert_database_query_count(54),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page(stream="Denmark")
@@ -378,11 +375,7 @@ class HomeTest(ZulipTestCase):
             "promote_sponsoring_zulip",
             "realm_rendered_description",
             "request_language",
-            "show_billing",
-            "show_plans",
-            "show_remote_billing",
             "show_webathena",
-            "sponsorship_pending",
             "state_data",
             "test_suite",
             "translation_data",
@@ -585,7 +578,7 @@ class HomeTest(ZulipTestCase):
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
         with (
-            self.assert_database_query_count(54),
+            self.assert_database_query_count(53),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page()
@@ -617,7 +610,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(51):
+        with self.assert_database_query_count(49):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.
@@ -947,7 +940,6 @@ class HomeTest(ZulipTestCase):
                         is_bot=True,
                         is_admin=False,
                         is_owner=False,
-                        is_billing_admin=False,
                         role=cross_realm_email_gateway_bot.role,
                         is_system_bot=True,
                         is_guest=False,
@@ -964,7 +956,6 @@ class HomeTest(ZulipTestCase):
                         is_bot=True,
                         is_admin=False,
                         is_owner=False,
-                        is_billing_admin=False,
                         role=cross_realm_notification_bot.role,
                         is_system_bot=True,
                         is_guest=False,
@@ -981,7 +972,6 @@ class HomeTest(ZulipTestCase):
                         is_bot=True,
                         is_admin=False,
                         is_owner=False,
-                        is_billing_admin=False,
                         role=cross_realm_welcome_bot.role,
                         is_system_bot=True,
                         is_guest=False,
@@ -1003,19 +993,14 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params["state_data"]["max_message_id"], -1)
 
     @activate_push_notification_service()
-    def test_get_billing_info(self) -> None:
+    def test_has_pending_sponsorship_request(self) -> None:
         user = self.example_user("desdemona")
-        user.role = UserProfile.ROLE_REALM_OWNER
-        user.save(update_fields=["role"])
-        # realm owner, but no CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
+        shiva = self.example_user("shiva")
+        # realm owner, but no CustomerPlan and realm plan_type SELF_HOSTED -> don't show any links
         with self.settings(CORPORATE_ENABLED=True):
-            billing_info = get_billing_info(user)
-        self.assertFalse(billing_info.show_billing)
-        self.assertFalse(billing_info.show_plans)
-        self.assertFalse(billing_info.sponsorship_pending)
-        self.assertFalse(billing_info.show_remote_billing)
+            sponsorship_pending = has_pending_sponsorship_request(user)
+        self.assertFalse(sponsorship_pending)
 
-        # realm owner, with inactive CustomerPlan and realm plan_type SELF_HOSTED -> show only billing link
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
         CustomerPlan.objects.create(
             customer=customer,
@@ -1025,142 +1010,28 @@ class HomeTest(ZulipTestCase):
             tier=CustomerPlan.TIER_CLOUD_STANDARD,
             status=CustomerPlan.ENDED,
         )
-        with self.settings(CORPORATE_ENABLED=True):
-            billing_info = get_billing_info(user)
-        self.assertTrue(billing_info.show_billing)
-        self.assertFalse(billing_info.show_plans)
-        self.assertFalse(billing_info.sponsorship_pending)
-        self.assertFalse(billing_info.show_remote_billing)
-
-        # realm owner, with inactive CustomerPlan and realm plan_type LIMITED -> show billing link and plans
-        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
-        with self.settings(CORPORATE_ENABLED=True):
-            billing_info = get_billing_info(user)
-        self.assertTrue(billing_info.show_billing)
-        self.assertTrue(billing_info.show_plans)
-        self.assertFalse(billing_info.sponsorship_pending)
-        self.assertFalse(billing_info.show_remote_billing)
-
-        # Always false without CORPORATE_ENABLED
-        with self.settings(CORPORATE_ENABLED=False):
-            billing_info = get_billing_info(user)
-        self.assertFalse(billing_info.show_billing)
-        self.assertFalse(billing_info.show_plans)
-        self.assertFalse(billing_info.sponsorship_pending)
-        # show_remote_billing is independent of CORPORATE_ENABLED
-        self.assertTrue(billing_info.show_remote_billing)
-
-        # Always false without a UserProfile
-        with self.settings(CORPORATE_ENABLED=True):
-            billing_info = get_billing_info(None)
-        self.assertFalse(billing_info.show_billing)
-        self.assertFalse(billing_info.show_plans)
-        self.assertFalse(billing_info.sponsorship_pending)
-        self.assertFalse(billing_info.show_remote_billing)
-
-        # realm admin, with CustomerPlan and realm plan_type LIMITED -> don't show any links
-        # Only billing admin and realm owner have access to billing.
-        user.role = UserProfile.ROLE_REALM_ADMINISTRATOR
-        user.save(update_fields=["role"])
-        with self.settings(CORPORATE_ENABLED=True):
-            billing_info = get_billing_info(user)
-        self.assertFalse(billing_info.show_billing)
-        self.assertFalse(billing_info.show_plans)
-        self.assertFalse(billing_info.sponsorship_pending)
-        self.assertFalse(billing_info.show_remote_billing)
-
-        # Self-hosted servers show remote billing, but not for a user without
-        # billing access permission.
-        with self.settings(CORPORATE_ENABLED=False):
-            billing_info = get_billing_info(user)
-        self.assertFalse(billing_info.show_remote_billing)
-
-        # billing admin, with CustomerPlan and realm plan_type STANDARD -> show only billing link
-        user.role = UserProfile.ROLE_MEMBER
-        user.is_billing_admin = True
-        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
-        user.save(update_fields=["role", "is_billing_admin"])
-        with self.settings(CORPORATE_ENABLED=True):
-            billing_info = get_billing_info(user)
-        self.assertTrue(billing_info.show_billing)
-        self.assertFalse(billing_info.show_plans)
-        self.assertFalse(billing_info.sponsorship_pending)
-        self.assertFalse(billing_info.show_remote_billing)
-
-        # Self-hosted servers show remote billing for billing admins.
-        with self.settings(CORPORATE_ENABLED=False):
-            billing_info = get_billing_info(user)
-        self.assertTrue(billing_info.show_remote_billing)
-
-        # billing admin, with CustomerPlan and realm plan_type PLUS -> show only billing link
-        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
-        user.save(update_fields=["role", "is_billing_admin"])
-        with self.settings(CORPORATE_ENABLED=True):
-            billing_info = get_billing_info(user)
-        self.assertTrue(billing_info.show_billing)
-        self.assertFalse(billing_info.show_plans)
-        self.assertFalse(billing_info.sponsorship_pending)
-        self.assertFalse(billing_info.show_remote_billing)
-
-        # member, with CustomerPlan and realm plan_type STANDARD -> neither billing link or plans
-        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
-        user.is_billing_admin = False
-        user.save(update_fields=["is_billing_admin"])
-        with self.settings(CORPORATE_ENABLED=True):
-            billing_info = get_billing_info(user)
-        self.assertFalse(billing_info.show_billing)
-        self.assertFalse(billing_info.show_plans)
-        self.assertFalse(billing_info.sponsorship_pending)
-        self.assertFalse(billing_info.show_remote_billing)
-
-        # guest, with CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
-        user.role = UserProfile.ROLE_GUEST
-        user.save(update_fields=["role"])
-        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
-        with self.settings(CORPORATE_ENABLED=True):
-            billing_info = get_billing_info(user)
-        self.assertFalse(billing_info.show_billing)
-        self.assertFalse(billing_info.show_plans)
-        self.assertFalse(billing_info.sponsorship_pending)
-        self.assertFalse(billing_info.show_remote_billing)
-
-        # billing admin, but no CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
-        user.role = UserProfile.ROLE_MEMBER
-        user.is_billing_admin = True
-        user.save(update_fields=["role", "is_billing_admin"])
-        CustomerPlan.objects.all().delete()
-        with self.settings(CORPORATE_ENABLED=True):
-            billing_info = get_billing_info(user)
-        self.assertFalse(billing_info.show_billing)
-        self.assertFalse(billing_info.show_plans)
-        self.assertFalse(billing_info.sponsorship_pending)
-        self.assertFalse(billing_info.show_remote_billing)
-
-        # billing admin, with sponsorship pending and realm plan_type SELF_HOSTED -> show only sponsorship pending link
+        # realm admin, with sponsorship pending and realm plan_type SELF_HOSTED -> show sponsorship pending link
         customer.sponsorship_pending = True
         customer.save(update_fields=["sponsorship_pending"])
         with self.settings(CORPORATE_ENABLED=True):
-            billing_info = get_billing_info(user)
-        self.assertFalse(billing_info.show_billing)
-        self.assertFalse(billing_info.show_plans)
-        self.assertTrue(billing_info.sponsorship_pending)
-        self.assertFalse(billing_info.show_remote_billing)
+            sponsorship_pending = has_pending_sponsorship_request(user)
+        self.assertTrue(sponsorship_pending)
 
-        # billing admin, no customer object and realm plan_type SELF_HOSTED -> no links
-        customer.delete()
+        # Always false without CORPORATE_ENABLED
+        with self.settings(CORPORATE_ENABLED=False):
+            sponsorship_pending = has_pending_sponsorship_request(user)
+        self.assertFalse(sponsorship_pending)
+
+        # Always false without a UserProfile
         with self.settings(CORPORATE_ENABLED=True):
-            billing_info = get_billing_info(user)
-        self.assertFalse(billing_info.show_billing)
-        self.assertFalse(billing_info.show_plans)
-        self.assertFalse(billing_info.sponsorship_pending)
-        self.assertFalse(billing_info.show_remote_billing)
+            sponsorship_pending = has_pending_sponsorship_request(None)
+        self.assertFalse(sponsorship_pending)
 
-        # If the server doesn't have the push bouncer configured,
-        # remote billing should be shown anyway, as the billing endpoint
-        # is supposed show a useful error page.
-        with self.settings(ZULIP_SERVICE_PUSH_NOTIFICATIONS=False, CORPORATE_ENABLED=False):
-            billing_info = get_billing_info(user)
-        self.assertTrue(billing_info.show_remote_billing)
+        # realm moderator, with CustomerPlan and realm plan_type LIMITED -> don't show any links
+        # Only realm admin and realm owner have access to billing.
+        with self.settings(CORPORATE_ENABLED=True):
+            sponsorship_pending = has_pending_sponsorship_request(shiva)
+        self.assertFalse(sponsorship_pending)
 
     def test_promote_sponsoring_zulip_in_realm(self) -> None:
         realm = get_realm("zulip")

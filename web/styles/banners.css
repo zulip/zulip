@@ -145,3 +145,55 @@
     color: var(--color-text-danger-banner);
     border-color: var(--color-border-danger-banner);
 }
+
+@keyframes popup-banner-fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(
+            calc(-1 * var(--popup-banner-translate-y-distance))
+        );
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes popup-banner-fadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(
+            calc(-1 * var(--popup-banner-translate-y-distance))
+        );
+    }
+}
+
+.popup-banner-animations {
+    animation-name: popup-banner-fadeIn;
+    animation-duration: 0.3s;
+    animation-fill-mode: forwards;
+
+    &.fade-out {
+        animation-name: popup-banner-fadeOut;
+    }
+}
+
+.popup-banner {
+    @extend .popup-banner-animations;
+
+    pointer-events: auto;
+    max-width: 900px;
+    width: 100%;
+
+    /* Here the container width == viewport width,
+       so we can work with the media breakpoints. */
+    @container banner (width < $lg_min) {
+        max-width: 90%;
+    }
+}

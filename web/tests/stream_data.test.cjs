@@ -102,6 +102,11 @@ const me_group = {
     direct_subgroup_ids: new Set([]),
 };
 
+function initialize_and_override_current_user(user_id, override) {
+    people.initialize_current_user(user_id);
+    override(current_user, "user_id", user_id);
+}
+
 function test(label, f) {
     run_test(label, (helpers) => {
         helpers.override(current_user, "is_admin", false);
@@ -109,7 +114,7 @@ function test(label, f) {
         helpers.override(current_user, "is_guest", false);
         people.init();
         people.add_active_user(me);
-        people.initialize_current_user(me.user_id);
+        initialize_and_override_current_user(me.user_id, helpers.override);
         stream_data.clear_subscriptions();
         user_groups.initialize({
             realm_user_groups: [
@@ -335,6 +340,7 @@ test("get_streams_for_user", ({override}) => {
         can_remove_subscribers_group: admins_group.id,
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     const social = {
         color: "red",
@@ -346,6 +352,7 @@ test("get_streams_for_user", ({override}) => {
         can_remove_subscribers_group: admins_group.id,
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     const test = {
         color: "yellow",
@@ -356,6 +363,7 @@ test("get_streams_for_user", ({override}) => {
         can_remove_subscribers_group: admins_group.id,
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     const world = {
         color: "blue",
@@ -367,6 +375,7 @@ test("get_streams_for_user", ({override}) => {
         can_remove_subscribers_group: admins_group.id,
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     const errors = {
         color: "green",
@@ -378,6 +387,7 @@ test("get_streams_for_user", ({override}) => {
         can_remove_subscribers_group: admins_group.id,
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     const subs = [denmark, social, test, world, errors];
     for (const sub of subs) {
@@ -466,6 +476,7 @@ test("admin_options", ({override}) => {
             can_remove_subscribers_group: admins_group.id,
             can_administer_channel_group,
             can_add_subscribers_group: admins_group.id,
+            can_subscribe_group: admins_group.id,
             date_created: 1691057093,
             creator_id: null,
         };
@@ -534,7 +545,7 @@ test("admin_options", ({override}) => {
 
     // Test with can_administer_channel_group set to moderators.
     override(current_user, "is_admin", false);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     sub = make_sub(moderators_group.id);
     assert.ok(!is_realm_admin(sub));
     assert.ok(can_change_stream_permissions_requiring_metadata_access(sub));
@@ -569,6 +580,7 @@ test("stream_settings", ({override}) => {
         can_remove_subscribers_group: admins_group.id,
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -582,6 +594,7 @@ test("stream_settings", ({override}) => {
         can_remove_subscribers_group: admins_group.id,
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -597,8 +610,10 @@ test("stream_settings", ({override}) => {
         can_remove_subscribers_group: admins_group.id,
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        is_archived: true,
     };
     stream_data.add_sub(cinnamon);
     stream_data.add_sub(amber);
@@ -606,8 +621,8 @@ test("stream_settings", ({override}) => {
 
     let sub_rows = stream_settings_data.get_streams_for_settings_page();
     assert.equal(sub_rows[0].color, "blue");
-    assert.equal(sub_rows[1].color, "amber");
-    assert.equal(sub_rows[2].color, "cinnamon");
+    /* Archived channel "ambed" is skipped, since it is archived. */
+    assert.equal(sub_rows[1].color, "cinnamon");
 
     sub_rows = stream_data.get_streams_for_admin();
     assert.equal(sub_rows[0].name, "a");
@@ -702,6 +717,7 @@ test("delete_sub", () => {
 
     stream_data.add_sub(canada);
     const num_subscribed_subs = stream_data.num_subscribed_subs();
+    const archived_subs = stream_data.get_archived_subs();
 
     assert.ok(stream_data.is_subscribed(canada.stream_id));
     assert.equal(stream_data.get_sub("Canada").stream_id, canada.stream_id);
@@ -713,13 +729,11 @@ test("delete_sub", () => {
     assert.ok(stream_data.is_subscribed(canada.stream_id));
     assert.ok(stream_data.get_sub("Canada"));
     assert.ok(sub_store.get(canada.stream_id));
-    assert.equal(stream_data.num_subscribed_subs(), num_subscribed_subs - 1);
+    assert.equal(stream_data.num_subscribed_subs(), num_subscribed_subs);
+    assert.equal(stream_data.get_archived_subs().length, archived_subs.length + 1);
 
     blueslip.expect("warn", "Failed to archive stream 99999");
     stream_data.delete_sub(99999);
-
-    blueslip.expect("warn", "Can't subscribe to an archived stream.");
-    stream_data.subscribe_myself(canada);
 });
 
 test("notifications", ({override}) => {
@@ -1118,6 +1132,7 @@ test("get_invite_stream_data", ({override}) => {
         is_web_public: false,
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
     };
 
     people.init();
@@ -1140,6 +1155,7 @@ test("get_invite_stream_data", ({override}) => {
             is_web_public: false,
             can_administer_channel_group: nobody_group.id,
             can_add_subscribers_group: nobody_group.id,
+            can_subscribe_group: nobody_group.id,
         },
     ];
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
@@ -1152,6 +1168,7 @@ test("get_invite_stream_data", ({override}) => {
         is_web_public: false,
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
     };
     stream_data.add_sub(inviter);
 
@@ -1163,6 +1180,7 @@ test("get_invite_stream_data", ({override}) => {
         is_web_public: false,
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
     });
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 
@@ -1175,6 +1193,7 @@ test("get_invite_stream_data", ({override}) => {
         is_web_public: false,
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
     };
 
     stream_data.add_sub(tokyo);
@@ -1188,6 +1207,7 @@ test("get_invite_stream_data", ({override}) => {
         is_web_public: false,
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
     };
 
     stream_data.add_sub(random);
@@ -1200,6 +1220,7 @@ test("get_invite_stream_data", ({override}) => {
         is_web_public: false,
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
     });
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 });
@@ -1267,45 +1288,49 @@ test("can_unsubscribe_others", ({override}) => {
         can_remove_subscribers_group: admins_group.id,
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
     };
     stream_data.add_sub(sub);
 
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
     sub.can_remove_subscribers_group = moderators_group.id;
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
     sub.can_remove_subscribers_group = everyone_group.id;
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
 
     // With the setting set to user defined group not including admin,
     // admin can still unsubscribe others.
     sub.can_remove_subscribers_group = students.id;
     override(current_user, "is_admin", true);
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     override(current_user, "is_admin", false);
     sub.can_administer_channel_group = admins_group.id;
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     sub.can_administer_channel_group = nobody_group.id;
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
+    override(current_user, "is_guest", true);
+    assert.equal(stream_data.can_unsubscribe_others(sub), false);
+    override(current_user, "is_guest", false);
 
     // This isn't a real state, but we want coverage on !can_view_subscribers.
     sub.can_remove_subscribers_group = everyone_group.id;
@@ -1330,54 +1355,60 @@ test("can_subscribe_others", ({override}) => {
     };
     stream_data.add_sub(sub);
 
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), false);
 
     sub.can_add_subscribers_group = moderators_group.id;
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), false);
 
     sub.can_add_subscribers_group = everyone_group.id;
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
 
     // With the setting set to user defined group not including admin,
     // admin can still subscribe others.
     sub.can_add_subscribers_group = students.id;
     override(current_user, "is_admin", true);
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
     override(current_user, "is_admin", false);
-    people.initialize_current_user(moderator_user_id);
+    initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), false);
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), true);
+    override(current_user, "is_guest", true);
+    assert.equal(stream_data.can_subscribe_others(sub), false);
+    override(current_user, "is_guest", false);
 
     // A user belonging to `can_add_subscribers_group` can subscribe
     // others without being subscribed to a private channel.
     sub.subscribed = false;
     sub.invite_only = true;
+    override(current_user, "is_guest", false);
     assert.equal(stream_data.can_subscribe_others(sub), true);
+    override(current_user, "is_guest", true);
+    assert.equal(stream_data.can_subscribe_others(sub), false);
     sub.can_add_subscribers_group = nobody_group.id;
 
     // User with administrator privileges cannot subscribe others to a
     // private channel they are not subscribed to.
     override(current_user, "is_admin", true);
-    people.initialize_current_user(admin_user_id);
+    initialize_and_override_current_user(admin_user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), false);
     override(current_user, "is_admin", false);
     sub.can_administer_channel_group = students.id;
-    people.initialize_current_user(test_user.user_id);
+    initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_subscribe_others(sub), false);
 });
 
@@ -1535,6 +1566,7 @@ test("has_metadata_access", ({override}) => {
         history_public_to_subscribers: false,
         can_add_subscribers_group: nobody_group.id,
         can_administer_channel_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
     };
 
     assert.equal(stream_data.has_metadata_access(social), true);
@@ -1570,16 +1602,30 @@ test("has_metadata_access", ({override}) => {
     assert.equal(stream_data.has_metadata_access(social), false);
     social.can_administer_channel_group = me_group.id;
     assert.equal(stream_data.has_metadata_access(social), true);
+    override(current_user, "is_guest", true);
+    assert.equal(stream_data.has_metadata_access(social), false);
+    override(current_user, "is_guest", false);
     social.can_administer_channel_group = nobody_group.id;
 
-    // Users that can add other subscribers to a private channel
-    // have content access to that channel. Having content access
-    // should give them metadata access to that private channel even
-    // when unsubscribed.
+    // Users that can add other subscribers or subscribe themselves
+    // to a private channel have content access to that channel.
+    // Having content access should give them metadata access to
+    // that private channel even when unsubscribed.
     assert.equal(stream_data.has_metadata_access(social), false);
     social.can_add_subscribers_group = me_group.id;
     assert.equal(stream_data.has_metadata_access(social), true);
+    override(current_user, "is_guest", true);
+    assert.equal(stream_data.has_metadata_access(social), false);
+    override(current_user, "is_guest", false);
     social.can_add_subscribers_group = nobody_group.id;
+
+    assert.equal(stream_data.has_metadata_access(social), false);
+    social.can_subscribe_group = me_group.id;
+    assert.equal(stream_data.has_metadata_access(social), true);
+    override(current_user, "is_guest", true);
+    assert.equal(stream_data.has_metadata_access(social), false);
+    override(current_user, "is_guest", false);
+    social.can_subscribe_group = nobody_group.id;
 
     // Non-admin and non-guest user should have access to public
     // channel.
@@ -1609,6 +1655,7 @@ test("has_content_access", ({override}) => {
         history_public_to_subscribers: false,
         can_add_subscribers_group: nobody_group.id,
         can_administer_channel_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
     };
 
     assert.equal(stream_data.has_content_access(social), true);
@@ -1669,8 +1716,88 @@ test("has_content_access", ({override}) => {
     social.subscribed = false;
     assert.equal(stream_data.has_content_access(social), false);
 
+    // Users part of can_subscribe_group or can_add_subscribers_group
+    // should have content access even when unsubscribed.
     assert.equal(stream_data.has_content_access(social), false);
     social.can_add_subscribers_group = me_group.id;
     assert.equal(stream_data.has_content_access(social), true);
     social.can_add_subscribers_group = nobody_group.id;
+    assert.equal(stream_data.has_content_access(social), false);
+
+    social.can_subscribe_group = me_group.id;
+    assert.equal(stream_data.has_content_access(social), true);
+
+    social.can_subscribe_group = nobody_group.id;
+    assert.equal(stream_data.has_content_access(social), false);
+});
+
+test("can_preview", ({override_rewire}) => {
+    const social = {
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        history_public_to_subscribers: true,
+        can_add_subscribers_group: nobody_group.id,
+        can_administer_channel_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
+    };
+
+    override_rewire(stream_data, "has_content_access", () => true);
+    assert.equal(stream_data.can_preview(social), true);
+    social.history_public_to_subscribers = false;
+    assert.equal(stream_data.can_preview(social), false);
+    social.history_public_to_subscribers = true;
+    assert.equal(stream_data.can_preview(social), true);
+    override_rewire(stream_data, "has_content_access", () => false);
+    assert.equal(stream_data.can_preview(social), false);
+});
+
+run_test("can_toggle_subscription", ({override}) => {
+    const social = {
+        subscribed: false,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: false,
+        can_add_subscribers_group: nobody_group.id,
+        can_administer_channel_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
+    };
+    social.subscribed = true;
+
+    override(current_user, "user_id", me.user_id);
+
+    override(page_params, "is_spectator", true);
+    assert.equal(stream_data.can_toggle_subscription(social), false);
+
+    override(page_params, "is_spectator", false);
+    assert.equal(stream_data.can_toggle_subscription(social), true);
+
+    override(current_user, "is_guest", true);
+    assert.equal(stream_data.can_toggle_subscription(social), true);
+
+    social.subscribed = false;
+    assert.equal(stream_data.can_toggle_subscription(social), false);
+
+    override(current_user, "is_guest", false);
+    assert.equal(stream_data.can_toggle_subscription(social), true);
+
+    social.invite_only = true;
+    assert.equal(stream_data.can_toggle_subscription(social), false);
+
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.can_toggle_subscription(social), false);
+
+    override(current_user, "is_admin", false);
+
+    social.can_add_subscribers_group = me_group.id;
+    assert.equal(stream_data.can_toggle_subscription(social), true);
+
+    social.can_add_subscribers_group = nobody_group.id;
+    assert.equal(stream_data.can_toggle_subscription(social), false);
+    social.can_subscribe_group = me_group.id;
+    assert.equal(stream_data.can_toggle_subscription(social), true);
 });

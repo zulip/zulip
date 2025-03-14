@@ -165,7 +165,7 @@ ul {
             "pnum" on,
             "lnum" on;
         color: hsl(0deg 0% 100%);
-        transition: none 0.8s ease-out;
+        transition: 0.8s ease-out;
         transition-property: background, transform;
         cursor: pointer;
     }
@@ -198,7 +198,9 @@ ul {
     }
 
     .client-logos-div {
-        transition: opacity 0.7s ease-out;
+        transition:
+            opacity,
+            background 0.7s ease-out;
         background-position: center;
     }
 
@@ -419,7 +421,7 @@ ul {
     }
 
     .quote__text {
-        transition: none 0.5s ease-out;
+        transition: 0.5s ease-out;
         transition-property: background, box-shadow;
         font-family: var(--font-ss3);
         font-style: normal;

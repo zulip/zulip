@@ -218,30 +218,23 @@ test("stream delete (normal)", ({override}) => {
 
     override(settings_streams, "update_default_streams_table", noop);
 
-    narrow_state.is_for_stream_id = () => true;
+    narrow_state.narrowed_to_stream_id = () => true;
 
     let bookend_updates = 0;
     override(message_lists.current, "update_trailing_bookend", () => {
         bookend_updates += 1;
     });
 
-    const removed_stream_ids = [];
-
-    override(stream_settings_ui, "remove_stream", (stream_id) => {
-        removed_stream_ids.push(stream_id);
-    });
-
     let removed_sidebar_rows = 0;
     override(stream_list, "remove_sidebar_row", () => {
         removed_sidebar_rows += 1;
     });
+    override(stream_settings_ui, "update_settings_for_archived", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(message_live_update, "rerender_messages_view", noop);
     override(message_view_header, "maybe_rerender_title_area_for_stream", noop);
 
     dispatch(event);
-
-    assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
     // We should possibly be able to make a single call to
     // update_trailing_bookend, but we currently do it for each stream.
@@ -276,8 +269,8 @@ test("stream delete (special streams)", ({override}) => {
     override(realm, "realm_signup_announcements_stream_id", event.stream_ids[1]);
     override(realm, "realm_zulip_update_announcements_stream_id", event.stream_ids[0]);
 
-    override(stream_settings_ui, "remove_stream", noop);
     override(settings_org, "sync_realm_settings", noop);
+    override(stream_settings_ui, "update_settings_for_archived", noop);
     override(settings_streams, "update_default_streams_table", noop);
     override(message_lists.current, "update_trailing_bookend", noop);
     override(stream_list, "remove_sidebar_row", noop);
@@ -317,23 +310,18 @@ test("stream delete (stream is selected in compose)", ({override}) => {
 
     override(settings_streams, "update_default_streams_table", noop);
 
-    narrow_state.is_for_stream_id = () => true;
+    narrow_state.narrowed_to_stream_id = () => true;
 
     let bookend_updates = 0;
     override(message_lists.current, "update_trailing_bookend", () => {
         bookend_updates += 1;
     });
 
-    const removed_stream_ids = [];
-
-    override(stream_settings_ui, "remove_stream", (stream_id) => {
-        removed_stream_ids.push(stream_id);
-    });
-
     let removed_sidebar_rows = 0;
     override(stream_list, "remove_sidebar_row", () => {
         removed_sidebar_rows += 1;
     });
+    override(stream_settings_ui, "update_settings_for_archived", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(message_live_update, "rerender_messages_view", noop);
     override(message_view_header, "maybe_rerender_title_area_for_stream", noop);
@@ -341,7 +329,6 @@ test("stream delete (stream is selected in compose)", ({override}) => {
     dispatch(event);
 
     assert.equal(compose_state.stream_name(), "");
-    assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
     // We should possibly be able to make a single call to
     // update_trailing_bookend, but we currently do it for each stream.

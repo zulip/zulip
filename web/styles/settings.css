@@ -87,7 +87,12 @@ h3,
 
 #change_password_modal,
 #change_email_modal {
-    max-width: 480px;
+    width: 34.2857em; /* 480px at 14px/em */
+    max-width: 90vw;
+}
+
+#change-email-form-input-email {
+    max-width: 90%;
 }
 
 #change_email_modal {
@@ -119,6 +124,11 @@ h3,
     min-width: 0;
 }
 
+.change-email {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .admin-realm-description {
     height: 16em;
     width: 100%;
@@ -133,9 +143,9 @@ h3,
 
 .play_notification_sound {
     .notification-sound-icon {
-        font-size: 22px;
+        font-size: 1.5714em; /* 22px at 14px / em */
         /* Visually center with chevron in select */
-        line-height: 26px;
+        line-height: 1.8571em; /* 26px at 14px / em */
         cursor: pointer;
     }
 }
@@ -242,10 +252,10 @@ h3,
     }
 
     .loading_indicator_text {
-        font-size: 12px;
+        font-size: 0.8571em; /* 12px at 14px/em */
         font-weight: 400;
         vertical-align: middle;
-        line-height: 20px;
+        line-height: 1.6667em; /* 20px at 12px/em */
         display: inline-block;
         float: none;
         margin-top: 9px;
@@ -253,7 +263,7 @@ h3,
 
     .loading_indicator_spinner {
         width: 30%;
-        height: 20px;
+        height: 1.4286em; /* 20px at 14px/em */
         margin-top: 7px;
         vertical-align: middle;
         display: inline-block;
@@ -261,12 +271,6 @@ h3,
 
     .inline {
         display: inline !important;
-    }
-
-    /* Messy implementation of buttons with text and a pencil icon in them
-       having spacing before the pencil icon. */
-    button[data-dismiss="modal"] i.fa-pencil {
-        margin-left: 3px;
     }
 
     .hidden-email {
@@ -351,6 +355,17 @@ select.settings_select {
 .bot_type,
 .last_active {
     word-break: normal;
+}
+
+.last_active {
+    .loading_indicator_spinner {
+        width: 1.25em;
+        height: auto;
+        display: flex;
+        align-items: center;
+        margin: 0;
+        margin-left: 0.5em; /* The spinner is left-justified with a slight left margin to look good. */
+    }
 }
 
 .input-group {
@@ -453,23 +468,26 @@ input[type="checkbox"] {
 }
 
 .information-density-settings {
-    max-width: 325px;
+    display: flex;
+    gap: 2em;
 
-    .input-group {
+    &.disabled-setting .display-value {
+        opacity: 0.4;
+    }
+
+    .display-value {
+        background-color: var(--color-background-popover);
+        font-size: 1.15em;
+        line-height: 1;
         display: flex;
-        gap: 5px;
-        align-items: baseline;
+        align-items: center;
+        padding: 0.25em 0.375em;
+    }
 
-        label {
-            flex: 1 0 max-content;
-        }
-
-        .settings_text_input {
-            width: 0;
-            flex: 0 0 8ch;
-            margin-left: auto;
-            text-align: right;
-        }
+    .zulip-icon {
+        font-size: 1.15em;
+        width: 1.15em;
+        height: 1.15em;
     }
 }
 
@@ -495,7 +513,7 @@ input[type="checkbox"] {
         }
 
         .toggle-advanced-configurations-icon {
-            font-size: 20px;
+            font-size: 1.4286em; /* 20px at 14px / em */
         }
     }
 
@@ -572,7 +590,8 @@ input[type="checkbox"] {
 }
 
 .alert-notification {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     vertical-align: top;
     height: auto !important;
     width: auto !important;
@@ -601,8 +620,8 @@ input[type="checkbox"] {
     }
 
     .loading_indicator_spinner {
-        width: 13px;
-        height: 20px;
+        width: 0.9283em; /* 13px at 14px/em */
+        height: 1.4286em; /* 20px at 14px/em */
         margin: 0;
     }
 
@@ -622,6 +641,10 @@ input[type="checkbox"] {
         vertical-align: middle;
         margin-top: -2px;
     }
+
+    .settings-save-checkmark {
+        width: 0.9285em; /* 13px at 14px/em */
+    }
 }
 
 #profile-field-settings #admin-add-profile-field-status {
@@ -634,7 +657,8 @@ input[type="checkbox"] {
     padding: 4px 14px;
 }
 
-#user-notification-settings {
+#user-notification-settings,
+#realm-user-default-settings {
     .notification-table {
         thead {
             background-color: var(--color-background-notification-table-thead);
@@ -1294,7 +1318,9 @@ label.preferences-radio-choice-label {
 }
 
 .right.show .emoji_alt_code {
-    font-size: 1.2em;
+    /* This better aligns the example alt code
+       with the other emoji styles. */
+    margin-right: 1px;
 }
 
 .invite-user-link .fa-user-plus {
@@ -1458,7 +1484,7 @@ label.preferences-radio-choice-label {
 
         &.mobile {
             display: none;
-            border-bottom: 1px solid hsl(0deg 0% 87%);
+            border-bottom: 1px solid var(--color-border-modal-bar);
 
             .fa-chevron-left {
                 float: left;
@@ -1779,6 +1805,14 @@ label.preferences-radio-choice-label {
         display: none;
     }
 
+    .empty-email-col-for-user-group {
+        display: none;
+    }
+
+    .hidden-subscriber-email {
+        display: none;
+    }
+
     .upload-size {
         display: none;
     }
@@ -1812,6 +1846,10 @@ label.preferences-radio-choice-label {
             display: flex;
             justify-content: space-between;
             height: var(--settings-overlay-header-height);
+            /* We need the height to disregard border and
+               padding values added to other instances of
+               .settings-header. */
+            box-sizing: border-box;
 
             .fa-chevron-left {
                 transform: translate(-50px, 0);
@@ -1819,7 +1857,7 @@ label.preferences-radio-choice-label {
                 color: hsl(0deg 0% 67%);
                 padding: 2px 10px;
                 cursor: pointer;
-                transition: none 0.3s ease;
+                transition: 0.3s ease;
                 transition-property: opacity, transform;
             }
 
@@ -1860,12 +1898,6 @@ label.preferences-radio-choice-label {
                 100% - var(--settings-overlay-header-height) -
                     var(--settings-overlay-subheader-height)
             );
-
-            & li.active {
-                /* Don't highlight the active section in the settings list. */
-                background: inherit;
-                border-bottom: 1px solid hsl(0deg 0% 93%);
-            }
         }
     }
 }

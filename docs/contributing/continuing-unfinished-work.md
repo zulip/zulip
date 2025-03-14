@@ -135,11 +135,20 @@ putting together your pull request, there are a few key points to keep in mind.
   the work of others.
 
 - **Explain the relationship between your PR and prior work** in the description
-  for your pull request.
+  for your pull request. This is required for your PR to be reviewed, as
+  reviewing a new PR when there is an existing one is a good use of time only if
+  the motivation for doing so is clear.
   - If you started from an existing PR, explain what changes you made, and how
     you addressed each point of reviewer feedback that hadn't been addressed previously.
   - If you started from scratch, explain _why_ you decided to do so, and how
-    your approach differs from prior work.
+    your approach differs from prior work. For example:
+    - "I didn't use the work in PR #12345, because the surrounding code has
+      changed too much since it was written."
+    - "I didn't use the work in PR #23154, because [this reviewer
+      comment](#present-your-pull-request) asked to solve this issue using CSS,
+      rather than the JavaScript changes made in #23154."
+    - "I didn't use the work in PRs #12345 and #23154, because both didn't work
+      properly when a user opened their own profile."
 
 [completion-candidate]: https://github.com/zulip/zulip/pulls?q=is%3Aopen+is%3Apr+label%3A%22completion+candidate%22
 [coauthor-git-guide]: https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors

@@ -709,19 +709,6 @@ class SystemGroupRequiredError(JsonableError):
         return _("'{setting_name}' must be a system user group.")
 
 
-class IncompatibleParameterValuesError(JsonableError):
-    data_fields = ["first_parameter", "second_parameter"]
-
-    def __init__(self, first_parameter: str, second_parameter: str) -> None:
-        self.first_parameter = first_parameter
-        self.second_parameter = second_parameter
-
-    @staticmethod
-    @override
-    def msg_format() -> str:
-        return _("Incompatible values for '{first_parameter}' and '{second_parameter}'.")
-
-
 class CannotDeactivateGroupInUseError(JsonableError):
     code = ErrorCode.CANNOT_DEACTIVATE_GROUP_IN_USE
     data_fields = ["objections"]
@@ -756,3 +743,13 @@ class CannotManageDefaultChannelError(JsonableError):
     @override
     def msg_format() -> str:
         return _("You do not have permission to change default channels.")
+
+
+class EmailAlreadyInUseError(JsonableError):
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Email is already in use.")

@@ -297,17 +297,51 @@ bot code to persistently store data.
 
 The interface for doing this is `bot_handler.storage`.
 
-The data is stored in the Zulip Server's database.  Each bot user has
+The data is stored in the Zulip Server's database. Each bot user has
 an independent storage quota available to it.
 
 #### Performance considerations
 
-Since each access to `bot_handler.storage` will involve a round-trip
-to the server, we recommend writing bots so that they do a single
-`bot_handler.storage.get` at the start of `handle_message`, and a
-single `bot_handler.storage.put` at the end to submit the state to the
-server.  We plan to offer a context manager that takes care of this
-automatically.
+You can use `bot_handler.storage` in one of two ways:
+
+- **Direct access**: You can use bot_handler.storage directly, which
+will result in a round-trip to the server for each `get`, `put`, and
+`contains` call.
+- **Context manager**: Alternatively, you can use the `use_storage`
+context manager to minimize the number of round-trips to the server. We
+recommend writing bots with the context manager such that they
+automatically fetch data at the start of `handle_message` and submit the
+state to the server at the end.
+
+#### Context manager use_storage
+
+`use_storage(storage: BotStorage, keys: List[str])`
+
+The context manager fetches the data for the specified keys and stores
+them in a `CachedStorage` object with a `bot_handler.storage.get` call for
+each key, at the start. This object will not communicate with the server
+until manually calling flush or getting some values that are not previously
+fetched. After the context manager block is exited, it will automatically
+flush any changes made to the `CachedStorage` object to the server.
+
+##### Arguments
+* storage - a BotStorage object, i.e., `bot_handler.storage`
+* keys - a list of keys to fetch
+
+##### Example
+
+```python
+with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
+    print(cache.get("foo"))  # print the value of "foo"
+    cache.put("foo", "new value")  # update the value of "foo"
+# changes are automatically flushed to the server on exiting the block
+```
+
+#### bot_handler.storage methods
+
+When using the `use_storage` context manager, the `bot_handler.storage`
+methods on the yielded object will only operate on a cached version of the
+storage.
 
 #### bot_handler.storage.put
 
@@ -349,6 +383,10 @@ print(bot_handler.storage.get("foo"))  # print "bar"
 
 will check if the entry `key` exists.
 
+Note that this will only check the cache, so it would return `False` if no
+previous call to `bot_handler.storage.get()` or `bot_handler.storage.put()`
+was made for `key`, since the bot was restarted.
+
 ##### Arguments
 
 * key - a UTF-8 string
@@ -369,6 +407,43 @@ converted to an UTF-8 string. You can specify custom data marshaling
 by setting the functions `bot_handler.storage.marshal` and
 `bot_handler.storage.demarshal`. These functions parse your data on
 every call to `put` and `get`, respectively.
+
+#### Flushing cached data to the server
+
+When using the `use_storage` context manager, you can manually flush
+changes made to the cache to the server, using the below methods.
+
+#### cache.flush
+
+`cache.flush()`
+
+will flush all changes to the cache to the server.
+
+##### Example
+```python
+with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
+    cache.put("foo", "foo_value")  # update the value of "foo"
+    cache.put("bar", "bar_value")  # update the value of "bar"
+    cache.flush()  # manually flush both the changes to the server
+```
+
+#### cache.flush_one
+
+`cache.flush_one(key)`
+
+will flush the changes for the specified key to the server.
+
+##### Arguments
+
+- key - a UTF-8 string
+
+##### Example
+```python
+with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
+    cache.put("foo", "baz")  # update the value of "foo"
+    cache.put("bar", "bar_value")  # update the value of "bar"
+    cache.flush_one("foo")  # flush the changes to "foo" to the server
+```
 
 ### Configuration file
 

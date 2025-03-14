@@ -251,12 +251,14 @@ exports.finish = function () {
 
     for (const path of Object.keys(require.cache)) {
         if (path.startsWith(webPath) && !path.startsWith(testsLibPath)) {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete require.cache[path];
         }
     }
     Object.assign(global, old_globals);
     old_globals = {};
     for (const name of new_globals) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete global[name];
     }
     new_globals.clear();
@@ -316,6 +318,7 @@ exports.with_overrides = function (test_function) {
             if (had_value) {
                 obj[prop] = old_value;
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 delete obj[prop];
             }
         });

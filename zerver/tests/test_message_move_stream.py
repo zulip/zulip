@@ -18,7 +18,10 @@ from zerver.lib.streams import (
 )
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
+from zerver.lib.types import UserGroupMembersDict
 from zerver.lib.url_encoding import near_stream_message_url
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, Stream, UserMessage, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
@@ -1121,9 +1124,11 @@ class MessageMoveStreamTest(ZulipTestCase):
             "othello", "old_stream", "new_stream", "test"
         )
 
-        setting_group = self.create_or_update_anonymous_group_for_setting([othello], [owners_group])
+        setting_group_member_dict = UserGroupMembersDict(
+            direct_members=[othello.id], direct_subgroups=[owners_group.id]
+        )
         do_change_stream_group_based_setting(
-            new_stream, "can_send_message_group", setting_group, acting_user=desdemona
+            new_stream, "can_send_message_group", setting_group_member_dict, acting_user=desdemona
         )
 
         check_move_message_to_stream(iago, expect_fail=True)
@@ -1207,7 +1212,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(59), self.assert_memcached_count(14):
+        with self.assert_database_query_count(61), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
@@ -1314,6 +1319,10 @@ class MessageMoveStreamTest(ZulipTestCase):
                     has_user_message=lambda: has_user_message,
                     stream=stream,
                     is_subscribed=is_subscribed,
+                    user_group_membership_details=UserGroupMembershipDetails(
+                        user_recursive_group_ids=None
+                    ),
+                    is_modifying_message=False,
                 ),
                 has_access,
             )
@@ -1532,6 +1541,7 @@ class MessageMoveStreamTest(ZulipTestCase):
         # 'prepare_move_topics' sends 3 messages in the first_stream
         messages = get_topic_messages(user_profile, first_stream, "test")
         self.assert_length(messages, 3)
+        realm = messages[0].realm
 
         # Test resolving a topic (test ->  ✔ test) while changing stream (first_stream -> second_stream)
         new_topic_name = "✔ test"
@@ -1570,6 +1580,32 @@ class MessageMoveStreamTest(ZulipTestCase):
             messages[4].content,
             f"This topic was moved here from #**{second_stream.name}>✔ test** by @_**{user_profile.full_name}|{user_profile.id}**.",
         )
+
+        # Test resolving a topic (test ->  ✔ test) while changing stream (first_stream -> second_stream) with no moving messages
+        # between channels permission.
+        new_topic_name = RESOLVED_TOPIC_PREFIX + " test"
+        new_stream = second_stream
+
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_move_messages_between_channels_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "stream_id": new_stream.id,
+                "topic": new_topic_name,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_error(result, "You don't have permission to move this message")
 
     def parameterized_test_move_message_involving_private_stream(
         self,
@@ -1710,6 +1746,10 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
+                is_modifying_message=False,
             ),
             True,
         )
@@ -1726,6 +1766,10 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
+                is_modifying_message=False,
             ),
             False,
         )
@@ -1750,6 +1794,10 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
+                is_modifying_message=False,
             ),
             False,
         )
@@ -1784,6 +1832,10 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
+                is_modifying_message=False,
             ),
             True,
         )
@@ -1800,6 +1852,10 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
+                is_modifying_message=False,
             ),
             False,
         )
@@ -1817,6 +1873,10 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: False,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
+                is_modifying_message=False,
             ),
             False,
         )
@@ -1843,6 +1903,10 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
+                is_modifying_message=False,
             ),
             True,
         )
@@ -1853,6 +1917,10 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
+                is_modifying_message=False,
             ),
             True,
         )
@@ -1884,6 +1952,10 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: False,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
+                is_modifying_message=False,
             ),
             False,
         )
@@ -1901,6 +1973,10 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: False,
                 stream=old_stream,
                 is_subscribed=False,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
+                is_modifying_message=False,
             ),
             False,
         )
@@ -1926,6 +2002,10 @@ class MessageMoveStreamTest(ZulipTestCase):
                 has_user_message=lambda: True,
                 stream=new_stream,
                 is_subscribed=True,
+                user_group_membership_details=UserGroupMembershipDetails(
+                    user_recursive_group_ids=None
+                ),
+                is_modifying_message=False,
             ),
             True,
         )

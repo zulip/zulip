@@ -21,11 +21,13 @@
         </div>
         <a href="{{preview_url}}" class="button small rounded tippy-zulip-delayed-tooltip" id="preview-stream-button" role="button" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="bottom" {{#unless should_display_preview_button }}style="display: none"{{/unless}}><i class="fa fa-eye"></i></a>
         {{#if is_realm_admin}}
-        <button class="button small rounded button-danger deactivate tippy-zulip-delayed-tooltip" type="button" data-tippy-content="{{t 'Archive channel'}}">
-            <span class="icon-container">
-                <i class="zulip-icon zulip-icon-archive" aria-hidden="true"></i>
-            </span>
-        </button>
+        {{#unless is_archived}}
+            <button class="button small rounded button-danger deactivate tippy-zulip-delayed-tooltip" type="button" data-tippy-content="{{t 'Archive channel'}}">
+                <span class="icon-container">
+                    <i class="zulip-icon zulip-icon-archive" aria-hidden="true"></i>
+                </span>
+            </button>
+        {{/unless}}
         {{/if}}
     </div>
     {{/with}}
@@ -41,7 +43,8 @@
             <div class="stream-header">
                 {{> stream_privacy_icon
                   invite_only=invite_only
-                  is_web_public=is_web_public }}
+                  is_web_public=is_web_public
+                  is_archived=is_archived }}
                 <div class="stream-name">
                     <span class="sub-stream-name" data-tippy-content="{{name}}">{{name}}</span>
                 </div>
@@ -64,6 +67,7 @@
               zulip_plan_is_not_limited=../zulip_plan_is_not_limited
               upgrade_text_for_wide_organization_logo=../upgrade_text_for_wide_organization_logo
               is_business_type_org=../is_business_type_org
+              has_billing_access=../has_billing_access
               org_level_message_retention_setting=../org_level_message_retention_setting
               is_stream_edit=true
               prefix="id_"

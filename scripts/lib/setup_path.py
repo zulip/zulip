@@ -8,9 +8,15 @@ import sys
 
 def setup_path() -> None:
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    venv = os.path.realpath(os.path.join(BASE_DIR, "zulip-py3-venv"))
+    venv = os.path.realpath(os.path.join(BASE_DIR, ".venv"))
     if sys.prefix != venv:
-        sys.path = list(filter(lambda p: "/zulip-py3-venv/" not in p, sys.path))
+        sys.path = list(
+            filter(
+                # zulip-py3-venv was an historical virtualenv symlink
+                lambda p: "/zulip-py3-venv/" not in p and "/.venv/" not in p,
+                sys.path,
+            )
+        )
         activate_this = os.path.join(venv, "bin", "activate_this.py")
         activate_locals = dict(__file__=activate_this)
         with open(activate_this) as f:

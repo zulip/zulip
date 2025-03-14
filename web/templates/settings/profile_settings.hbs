@@ -69,10 +69,14 @@
                     <span class="user-details-desc">{{date_joined_text}}</span>
                 </div>
             </div>
-            <button class="button rounded sea-green" id="show_my_user_profile_modal">
-                {{t 'Preview profile' }}
-                <i class="show-user-profile-icon fa fa-external-link" aria-hidden="true"></i>
-            </button>
+            {{> ../components/action_button
+              label=(t "Preview profile")
+              attention="quiet"
+              intent="brand"
+              id="show_my_user_profile_modal"
+              icon="external-link"
+              aria-hidden="true"
+              }}
         </div>
     </div>
 </div>

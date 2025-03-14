@@ -4,14 +4,18 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
+import render_confirm_mark_as_unread_from_here from "../templates/confirm_dialog/confirm_mark_as_unread_from_here.hbs";
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
+import render_skipped_marking_unread from "../templates/skipped_marking_unread.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as feedback_widget from "./feedback_widget.ts";
 import {Filter} from "./filter.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as message_flags from "./message_flags.ts";
 import * as message_lists from "./message_lists.ts";
@@ -24,11 +28,14 @@ import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import type {MessageDetails} from "./server_event_types.ts";
 import type {NarrowTerm} from "./state_data.ts";
+import * as sub_store from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
+import * as util from "./util.ts";
 
 let loading_indicator_displayed = false;
+let unsubscribed_ignored_channels: number[] = [];
 
 // We might want to use a slightly smaller batch for the first
 // request, because empirically, the first request can be
@@ -37,6 +44,14 @@ let loading_indicator_displayed = false;
 // the progress indicator experience of 1000, 3000, etc. feels weird.
 const INITIAL_BATCH_SIZE = 1000;
 const FOLLOWUP_BATCH_SIZE = 1000;
+
+// Minimum count of affected messages required to trigger the confirmation
+// dialog when marking messages as unread in an interleaved narrow.
+// When the last message in the narrow is fetched, the exact count is known,
+// otherwise we use the lower bound count.
+const MIN_MARK_AS_UNREAD_COUNT_KNOWN = 50;
+const MIN_MARK_AS_UNREAD_COUNT_LOWER_BOUND = 10;
+const UNREAD_COUNT_STEP_SIZE = 25;
 
 // When you start Zulip, window_focused should be true, but it might not be the
 // case after a server-initiated reload.
@@ -70,7 +85,48 @@ const update_flags_for_narrow_response_schema = z.object({
     last_processed_id: z.number().nullable(),
     found_oldest: z.boolean(),
     found_newest: z.boolean(),
+    ignored_because_not_subscribed_channels: z.array(z.number()),
 });
+
+const update_flags_for_response_schema = z.object({
+    ignored_because_not_subscribed_channels: z.array(z.number()),
+});
+
+function handle_skipped_unsubscribed_streams(
+    ignored_because_not_subscribed_channels: number[],
+): void {
+    if (ignored_because_not_subscribed_channels.length > 0) {
+        // Zulip has an invariant that all unread messages must be in streams
+        // the user is subscribed to. Notify the user if messages from
+        // unsubscribed streams are ignored by the server.
+        const stream_names_with_privacy_symbol_html = ignored_because_not_subscribed_channels.map(
+            (stream_id) => {
+                const stream = sub_store.get(stream_id);
+                const decorated_stream_name = render_inline_decorated_stream_name({stream});
+                return `<span class="white-space-nowrap">${decorated_stream_name}</span>`;
+            },
+        );
+
+        const populate: (element: JQuery) => void = ($container) => {
+            const formatted_stream_list_text = util.format_array_as_list(
+                stream_names_with_privacy_symbol_html,
+                "long",
+                "conjunction",
+            );
+            const rendered_html = render_skipped_marking_unread({
+                streams: formatted_stream_list_text,
+            });
+            $container.html(rendered_html);
+        };
+
+        const title_text = $t({defaultMessage: "Skipped unsubscribed channels"});
+
+        feedback_widget.show({
+            populate,
+            title_text,
+        });
+    }
+}
 
 function bulk_update_read_flags_for_narrow(
     narrow: NarrowTerm[],
@@ -278,34 +334,95 @@ function process_newly_read_message(
 
 export function mark_as_unread_from_here(message_id: number): void {
     assert(message_lists.current !== undefined);
-    const narrow = message_lists.current.data.filter.get_stringified_narrow_for_server_query();
+    const current_filter = message_lists.current.data.filter;
+    const narrow = current_filter.get_stringified_narrow_for_server_query();
     message_lists.current.prevent_reading();
 
-    // If we have already fully fetched the current view, we can
-    // send the server the set of IDs to update, rather than
-    // updating on the basis of the narrow.
-    let message_ids_to_update;
-    if (message_lists.current.data.fetch_status.has_found_newest()) {
-        message_ids_to_update = message_lists.current
-            .all_messages()
-            .filter((msg) => msg.id >= message_id)
-            .map((msg) => msg.id);
+    const has_found_newest = message_lists.current.data.fetch_status.has_found_newest();
+    const may_contain_multiple_conversations = current_filter.may_contain_multiple_conversations();
+
+    function do_mark_unread(message_ids_to_update: number[] | undefined): void {
+        // If we have already fully fetched the current view, we can
+        // send the server the set of IDs to update, rather than
+        // updating on the basis of the narrow.
+        if (message_ids_to_update !== undefined && message_ids_to_update.length < 200) {
+            do_mark_unread_by_ids(message_ids_to_update);
+        } else {
+            const include_anchor = true;
+            const messages_marked_unread_till_now = 0;
+            const num_after = INITIAL_BATCH_SIZE - 1;
+            do_mark_unread_by_narrow(
+                message_id,
+                include_anchor,
+                messages_marked_unread_till_now,
+                num_after,
+                narrow,
+            );
+        }
     }
 
-    if (message_ids_to_update !== undefined && message_ids_to_update.length < 200) {
-        do_mark_unread_by_ids(message_ids_to_update);
+    const locally_available_matching_message_ids = message_lists.current
+        .all_messages()
+        .filter((msg) => msg.id >= message_id && !msg.unread)
+        .map((msg) => msg.id);
+    const locally_available_message_count = locally_available_matching_message_ids.length;
+    let display_count: string;
+
+    if (has_found_newest) {
+        // Since we have the anchor message ID and the newest
+        // messages, we know exactly which messages to mark as unread.
+
+        // If it's a single topic, or the number is small, we just do
+        // the request without a confirmation dialog.
+        if (
+            !may_contain_multiple_conversations ||
+            locally_available_matching_message_ids.length < MIN_MARK_AS_UNREAD_COUNT_KNOWN
+        ) {
+            do_mark_unread(locally_available_matching_message_ids);
+            return;
+        }
+
+        display_count = locally_available_message_count.toString();
+    } else if (locally_available_message_count < UNREAD_COUNT_STEP_SIZE) {
+        display_count = locally_available_message_count.toString();
     } else {
-        const include_anchor = true;
-        const messages_marked_unread_till_now = 0;
-        const num_after = INITIAL_BATCH_SIZE - 1;
-        do_mark_unread_by_narrow(
-            message_id,
-            include_anchor,
-            messages_marked_unread_till_now,
-            num_after,
-            narrow,
-        );
+        // Otherwise, we round down to the nearest
+        // UNREAD_COUNT_STEP_SIZE and display as, e.g., `25+`.
+        const rounded_count =
+            Math.floor(locally_available_message_count / UNREAD_COUNT_STEP_SIZE) *
+            UNREAD_COUNT_STEP_SIZE;
+        display_count = `${rounded_count}+`;
     }
+
+    const context = {
+        // If we don't know how many messages will be affected, but
+        // can't prove the number is more than 10, we avoid showing a
+        // count, since it just seems weird to say "3+ messages will
+        // be marked as read".
+        //
+        // It's not obvious this case is worth having special strings
+        // for, given how unlikely it is. A sample scenario is that
+        // we're be that we're near the fetched bottom of a /near/1
+        // search view where can_apply_locally is false, which will
+        // have triggered a request for the next batch of messages
+        // from the server, but that request has not returned. But it
+        // may happen more offline if the client is intermittantly
+        // offline.
+        show_message_count: locally_available_message_count >= MIN_MARK_AS_UNREAD_COUNT_LOWER_BOUND,
+        count: display_count,
+    };
+
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Mark messages as unread?"}),
+        html_body: render_confirm_mark_as_unread_from_here(context),
+        on_click() {
+            if (has_found_newest) {
+                do_mark_unread(locally_available_matching_message_ids);
+            } else {
+                do_mark_unread(undefined);
+            }
+        },
+    });
 }
 
 function do_mark_unread_by_narrow(
@@ -330,6 +447,12 @@ function do_mark_unread_by_narrow(
         success(raw_data) {
             const data = update_flags_for_narrow_response_schema.parse(raw_data);
             messages_marked_unread_till_now += data.updated_count;
+            unsubscribed_ignored_channels = [
+                ...new Set([
+                    ...unsubscribed_ignored_channels,
+                    ...data.ignored_because_not_subscribed_channels,
+                ]),
+            ];
             if (!data.found_newest) {
                 assert(data.last_processed_id !== null);
                 // If we weren't able to complete the request fully in
@@ -358,8 +481,14 @@ function do_mark_unread_by_narrow(
                     FOLLOWUP_BATCH_SIZE,
                     narrow,
                 );
-            } else if (loading_indicator_displayed) {
-                finish_loading(messages_marked_unread_till_now);
+            } else {
+                if (loading_indicator_displayed) {
+                    finish_loading(messages_marked_unread_till_now);
+                }
+                if (unsubscribed_ignored_channels.length > 0) {
+                    handle_skipped_unsubscribed_streams(unsubscribed_ignored_channels);
+                    unsubscribed_ignored_channels = [];
+                }
             }
         },
         error(xhr) {
@@ -382,9 +511,15 @@ function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
     void channel.post({
         url: "/json/messages/flags",
         data: {messages: JSON.stringify(message_ids_to_update), op: "remove", flag: "read"},
-        success() {
+        success(raw_data) {
             if (loading_indicator_displayed) {
                 finish_loading(message_ids_to_update.length);
+            }
+            const data = update_flags_for_response_schema.parse(raw_data);
+            const ignored_because_not_subscribed_channels =
+                data.ignored_because_not_subscribed_channels;
+            if (ignored_because_not_subscribed_channels.length > 0) {
+                handle_skipped_unsubscribed_streams(ignored_because_not_subscribed_channels);
             }
         },
         error(xhr) {
@@ -634,6 +769,13 @@ export function mark_stream_as_read(stream_id: number): void {
             {operator: "channel", operand: stream_id.toString()},
         ],
         "add",
+    );
+}
+
+export function mark_stream_as_unread(stream_id: number): void {
+    bulk_update_read_flags_for_narrow(
+        [{operator: "channel", operand: stream_id.toString()}],
+        "remove",
     );
 }
 

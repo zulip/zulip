@@ -142,9 +142,23 @@
         padding: 0;
 
         &:hover,
+        &.narrow-filter:has(a.user-presence-link:focus-visible),
         &.highlighted_user {
             background-color: var(--color-buddy-list-highlighted-user);
             box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+        }
+
+        &.narrow-filter:has(a.user-presence-link:focus-visible),
+        &.highlighted_user {
+            outline: 2px solid var(--color-outline-focus);
+            outline-offset: -2px;
+        }
+    }
+
+    & .narrow-filter {
+        a.user-presence-link:focus {
+            outline: none;
+            text-decoration: none;
         }
     }
 
@@ -153,22 +167,39 @@
         place-self: center center;
         /* Tighten the line-height to match the icon's size... */
         line-height: 1;
-        /* ...which is approximately 11px at 16px/1em. */
-        font-size: 0.6875em;
+        /* ...which is approximately 8px at 15px/1em in Vlad's design. */
+        font-size: 0.5333em;
     }
 
     .user_sidebar_entry.with_avatar {
-        .user-profile-picture {
+        .user-profile-picture-container {
             /* Establish positioning context for user circle. */
             position: relative;
+            /* TODO: Express this as part of the grid on
+               .selectable_sidebar_block. */
+            margin-right: var(--right-sidebar-avatar-right-margin);
+
+            &:not(:has(.user-circle-offline)) .user-profile-picture {
+                /* The over-avatar user circle width is 15.5px at 20px/1em;
+                   we adjust the border radius here to avoid any pixels
+                   from the avatar bleeding through. */
+                border-bottom-right-radius: 0.3875em; /* 7.75px at 20px/1em */
+            }
+        }
+
+        .user-profile-picture {
+            /* Push back on the margin-right usually allotted here;
+               we put it on .user-profile-picture-container instead,
+               so that user circles occupy the corner of the image. */
+            margin-right: 0;
         }
 
         .user-circle {
             position: absolute;
             /* 10px at 16px/1em */
             font-size: 0.625em;
-            bottom: -1px;
-            right: -1px;
+            bottom: -0.5px;
+            right: -0.5px;
             background-color: var(--color-background);
             /* A 1.5px border provides better results than
                a 1px border, especially at smaller font sizes. */
@@ -189,10 +220,6 @@
         font-size: 0.875em;
         /* Override .empty-list-message !important styling */
         padding: 0 !important;
-        margin-left: calc(
-            var(--right-sidebar-toggle-width-offset) +
-                var(--right-sidebar-left-spacing)
-        );
         text-align: left;
 
         &:hover {
@@ -294,7 +321,10 @@
         "starting-anchor-element row-content markers-and-controls" var(
             --line-height-sidebar-row
         )
-        ".                       row-content ." auto / 20px minmax(0, 1fr)
+        ".                       row-content ." auto / var(
+            --right-sidebar-presence-circle-width
+        )
+        minmax(0, 1fr)
         minmax(0, auto);
     align-items: baseline;
 }
@@ -306,6 +336,7 @@
 
     .selectable_sidebar_block {
         margin: 4px;
+        margin-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
     }
 
     .avatar-preload-background {
@@ -388,22 +419,26 @@
        that controls remain aligned with the username,
        even when there is a status line shown below.
 
-       The 26px column for the vdots is less than the
+       The 25px column for the vdots is less than the
        30px allotted in the left sidebar, but it holds
        the username area constant, so that no ellipsis
-       appears on the username on hover. */
+       appears on the username on hover. The 25px value
+       is necessary for correct vdots alignment with the
+       filter row's vdots. */
     grid-template:
         "row-content ending-anchor-element" var(--line-height-sidebar-row)
-        "row-content ." auto / minmax(0, 1fr) 26px;
+        "row-content ." auto / minmax(0, 1fr) var(--right-sidebar-vdots-width);
     align-content: baseline;
     margin-right: var(--width-simplebar-scroll-hover);
-    margin-left: var(--right-sidebar-toggle-width-offset);
     /* When both the left circle and three dot menu are present, we want
        the space to the left of the circle to be more similar to the space
        to the right of the three dot menu. */
     &:not(.with_avatar) {
-        padding-left: 2px;
-        margin-left: calc(var(--right-sidebar-toggle-width-offset) - 2px);
+        padding-left: calc(var(--right-sidebar-toggle-width-offset) - 2px);
+    }
+
+    &:hover {
+        cursor: pointer;
     }
 
     .user-name-and-status-emoji {
@@ -501,8 +536,12 @@
         color: var(--color-vdots-visible);
         justify-content: center;
         display: grid;
-        width: 25px;
+        width: var(--right-sidebar-vdots-width);
         margin-left: 5px;
+        /* Push back against default right-sidebar
+           spacing for better vdots alignment. */
+        margin-right: 0;
+        padding-left: 0;
 
         &:hover {
             color: var(--color-vdots-hover);
@@ -513,7 +552,6 @@
 .buddy-list-user-link,
 .invite-user-shortcut {
     margin-right: var(--width-simplebar-scroll-hover);
-    padding-left: var(--right-sidebar-left-spacing);
     border-radius: 4px;
 
     &:hover {
@@ -546,8 +584,16 @@
     }
 }
 
-.buddy-list-user-link {
-    margin-left: var(--right-sidebar-toggle-width-offset);
+#user-list.with_avatars
+    .buddy-list-user-link
+    .right-sidebar-wrappable-text-container,
+#user-list.with_avatars .buddy-list-section .empty-list-message {
+    margin-left: var(--right-sidebar-text-indent-with-avatar);
+}
+
+.buddy-list-user-link .right-sidebar-wrappable-text-container,
+.buddy-list-section .empty-list-message {
+    margin-left: var(--right-sidebar-text-indent-without-avatar);
 }
 
 .invite-user-shortcut {
@@ -557,19 +603,17 @@
        from the legacy value. */
     margin-top: calc(25px - (var(--legacy-body-line-height-unitless) * 1em));
     margin-bottom: var(--sidebar-bottom-spacing);
-    padding-left: 0;
 
     .invite-user-link {
-        grid-template-columns:
-            var(--right-sidebar-header-icon-toggle-width)
-            minmax(0, 1fr);
-
-        .zulip-icon-user-plus {
-            justify-self: center;
-            /* Smaller icon size to align the link text with the other buddy list links */
-            font-size: 13px;
-        }
+        /* TODO: We should eventually change the grid to use the correct
+           --right-sidebar-presence-circle-width with left spacing, and
+           share that left spacing value here. */
+        padding-left: calc(var(--right-sidebar-toggle-width-offset) + 0.3em);
     }
+}
+
+#user-list.with_avatars .invite-user-link {
+    padding-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
 }
 
 #buddy-list-actions-menu-popover {
@@ -585,7 +629,10 @@
 
     .popover-menu-link:not(.display-style-selector-header) {
         display: grid;
-        grid-template: "left-icon row-content" auto / 18px 1fr;
+        grid-template: "left-icon row-content" auto / 18px minmax(
+                max-content,
+                1fr
+            );
         align-items: center;
 
         .popover-menu-icon,

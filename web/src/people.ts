@@ -455,20 +455,31 @@ function _calc_user_and_other_ids(user_ids_string: string): {
     return {user_ids, other_ids};
 }
 
-export function get_recipients(user_ids_string: string): string {
+export function get_recipients(user_ids_string: string): string[] {
     // See message_store.get_pm_full_names() for a similar function.
 
     const {other_ids} = _calc_user_and_other_ids(user_ids_string);
 
     if (other_ids.length === 0) {
         // direct message with oneself
-        return my_full_name();
+        return [my_full_name()];
     }
 
     const names = get_display_full_names(other_ids);
     const sorted_names = names.sort(util.make_strcmp());
 
-    return sorted_names.join(", ");
+    return sorted_names;
+}
+
+export function format_recipients(
+    users_ids_string: string,
+    join_strategy: "long" | "narrow",
+): string {
+    const formatted_recipients_string = util.format_array_as_list_with_conjuction(
+        get_recipients(users_ids_string),
+        join_strategy,
+    );
+    return formatted_recipients_string;
 }
 
 export function pm_reply_user_string(message: Message | MessageWithBooleans): string | undefined {
@@ -778,6 +789,14 @@ export function sender_is_guest(message: Message): boolean {
     return false;
 }
 
+export function sender_is_deactivated(message: Message): boolean {
+    const sender_id = message.sender_id;
+    if (sender_id) {
+        return !is_active_user_for_popover(message.sender_id);
+    }
+    return false;
+}
+
 export function is_valid_bot_user(user_id: number): boolean {
     const user = maybe_get_user_by_id(user_id, true);
     return user?.is_bot ?? false;
@@ -1021,6 +1040,14 @@ export function filter_all_users(pred: (person: User) => boolean): User[] {
 export function get_realm_users(): User[] {
     // includes humans and bots from your realm
     return [...active_user_dict.values()];
+}
+
+export function get_realm_users_and_welcome_bot(): User[] {
+    return [...active_user_dict.values(), WELCOME_BOT];
+}
+
+export function get_realm_users_and_system_bots(): User[] {
+    return [...active_user_dict.values(), ...cross_realm_dict.values()];
 }
 
 export function get_realm_active_human_users(): User[] {
@@ -1513,7 +1540,6 @@ export function make_user(user_id: number, email: string, full_name: string): Us
         is_guest: false,
         is_bot: false,
         is_moderator: false,
-        is_billing_admin: false,
         // We explicitly don't set `avatar_url` for fake person objects so that fallback code
         // will ask the server or compute a gravatar URL only once we need the avatar URL,
         // it's important for performance that we not hash every user's email to get gravatar URLs.
@@ -1695,14 +1721,6 @@ export function set_custom_profile_field_data(
             rendered_value: field.rendered_value,
         };
     }
-}
-
-export function is_current_user(email?: string | null): boolean {
-    if (email === null || email === undefined || page_params.is_spectator) {
-        return false;
-    }
-
-    return email.toLowerCase() === my_current_email().toLowerCase();
 }
 
 export function initialize_current_user(user_id: number): void {

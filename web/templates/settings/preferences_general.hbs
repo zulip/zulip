@@ -23,7 +23,7 @@
     </div>
     <div class="input-group">
         <label for="{{prefix}}color_scheme" class="settings-field-label">{{t "Theme" }}</label>
-        <div id="{{prefix}}color_scheme" class="tab-picker prop-element" data-setting-widget-type="radio-group">
+        <div id="{{prefix}}color_scheme" class="tab-picker prop-element" data-setting-widget-type="radio-group" data-setting-choice-type="number">
             <input type="radio" id="{{prefix}}theme_select_automatic" class="tab-option setting_color_scheme" data-setting-widget-type="number" name="{{prefix}}theme_select" value="{{color_scheme_values.automatic.code}}" />
             <label class="tab-option-content tippy-zulip-delayed-tooltip" for="{{prefix}}theme_select_automatic" aria-label="{{t 'Select automatic theme' }}" data-tooltip-template-id="automatic-theme-template" tabindex="0">
                 <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i>
@@ -46,21 +46,28 @@
       label=settings_label.enter_sends
       prefix=prefix}}
 
-    {{> settings_checkbox
-      setting_name="dense_mode"
-      is_checked=settings_object.dense_mode
-      label=settings_label.dense_mode
-      prefix=prefix}}
-
     <div class="information-density-settings">
-        <div class="title">{{t "Information density settings"}}</div>
-        {{#each information_density_settings.settings.user_preferences}}
-            {{> settings_numeric_input
-              setting_name=this
-              setting_value=(lookup ../settings_object this)
-              label=(lookup ../settings_label this)
-              render_only=(lookup ../settings_render_only.render_only this)
-              prefix=../prefix}}
-        {{/each}}
+        <div class="font-size-setting info-density-controls">
+            <div class="title">{{t "Font size"}}</div>
+            {{> info_density_control_button_group
+              property="web_font_size_px"
+              default_icon_class="zulip-icon-type-big"
+              property_value=settings_object.web_font_size_px
+              display_value=settings_object.web_font_size_px
+              for_settings_ui=true
+              prefix=prefix
+              }}
+        </div>
+        <div class="line-height-setting info-density-controls">
+            <div class="title">{{t "Line spacing"}}</div>
+            {{> info_density_control_button_group
+              property="web_line_height_percent"
+              default_icon_class="zulip-icon-line-height-big"
+              property_value=settings_object.web_line_height_percent
+              display_value=web_line_height_percent_display_value
+              for_settings_ui=true
+              prefix=prefix
+              }}
+        </div>
     </div>
 </div>

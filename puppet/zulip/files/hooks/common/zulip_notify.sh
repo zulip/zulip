@@ -26,12 +26,11 @@ fi
 from=${ZULIP_OLD_MERGE_BASE_COMMIT:-$ZULIP_OLD_VERSION}
 to=${ZULIP_NEW_MERGE_BASE_COMMIT:-$ZULIP_NEW_VERSION}
 deploy_environment=$(crudini --get /etc/zulip/zulip.conf machine deploy_type || echo "development")
+# shellcheck disable=SC2034
 commit_count=$(git rev-list "${from}..${to}" | wc -l)
 
-echo "zulip_notify: Sending notify of $from .. $to ($commit_count commits) for $deploy_environment to $zulip_notify_server"
-
 zulip_send() {
-    ./zulip-py3-venv/bin/zulip-send \
+    uv run --no-sync zulip-send \
         --site "$zulip_notify_server" \
         --user "$zulip_notify_bot_email" \
         --api-key "$zulip_api_key" \

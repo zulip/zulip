@@ -284,7 +284,7 @@
 
     /* these are converting grey things to "new grey".
        :disabled rules are exploded for CSS selector performance reasons. */
-    button:disabled,
+    button:disabled:not(.action-button, .icon-button, .info-density-button),
     option:disabled,
     select:disabled,
     textarea:disabled,
@@ -296,6 +296,11 @@
     #stream-advanced-configurations .dropdown-widget-button:disabled {
         color: inherit;
         opacity: 0.5;
+    }
+
+    button.info-density-button:disabled {
+        color: inherit;
+        opacity: 0.4;
     }
 
     .rendered_markdown .message_inline_image {
@@ -482,6 +487,12 @@
         .zulip-icon-user {
             opacity: 0.7;
         }
+    }
+
+    #recent_view
+        .change_visibility_policy
+        .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
+        filter: invert(1);
     }
 
     .drafts-container .header-body .delete-drafts-group > *:focus {
@@ -700,17 +711,6 @@
     #recent_view_loading_messages_indicator {
         & path {
             fill: hsl(0deg 0% 100%);
-        }
-    }
-
-    .small_square_button {
-        &.small_square_x {
-            background-color: hsl(0deg 0% 95%);
-            color: hsl(0deg 0% 42%);
-
-            &:hover {
-                color: hsl(0deg 0% 18%);
-            }
         }
     }
 

@@ -171,8 +171,16 @@ const admins_group = {
 };
 const admins_group_item = user_group_item(admins_group);
 
+const members_group = {
+    id: 5,
+    name: "role:members",
+    description: "",
+    members: new Set([]),
+    is_system_group: true,
+};
+
 user_groups.initialize({
-    realm_user_groups: [bob_system_group, bob_group, second_bob_group, admins_group],
+    realm_user_groups: [bob_system_group, bob_group, second_bob_group, admins_group, members_group],
 });
 
 function test(label, f) {
@@ -496,6 +504,17 @@ test("sort_recipients", () => {
         "zman@test.net",
     ]);
 
+    // Test match by email (To get coverage for ok_users and ok_bots)
+    assert.deepEqual(get_typeahead_result("b_user_1@zulip.net", ""), [
+        "b_user_1@zulip.net",
+        "a_user@zulip.org",
+        "b_user_2@zulip.net",
+        "b_user_3@zulip.net",
+        "zman@test.net",
+        "a_bot@zulip.com",
+        "b_bot@example.com",
+    ]);
+
     // Typeahead for direct message [query, "", ""]
     assert.deepEqual(get_typeahead_result("a", "", ""), [
         "a_user@zulip.org",
@@ -542,10 +561,10 @@ test("sort_recipients", () => {
 
     // Typeahead for stream message [query, stream-id, topic-name]
     assert.deepEqual(get_typeahead_result("b", dev_sub.stream_id, "Dev topic"), [
-        subscriber_email_3,
         subscriber_email_2,
         subscriber_email_1,
         "b_user_1@zulip.net",
+        subscriber_email_3,
         "a_bot@zulip.com",
         "zman@test.net",
         "a_user@zulip.org",
@@ -569,9 +588,9 @@ test("sort_recipients", () => {
         "zman@test.net",
         "b_user_3@zulip.net",
         "a_user@zulip.org",
-        "b_bot@example.com",
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
+        "b_bot@example.com",
         "a_bot@zulip.com",
     ]);
 });
@@ -618,8 +637,8 @@ test("sort_recipients pm counts", () => {
     assert.deepEqual(get_typeahead_result("b"), [
         "b_user_2@zulip.net",
         "b_user_1@zulip.net",
-        "b_bot@example.com",
         "b_user_3@zulip.net",
+        "b_bot@example.com",
         "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
@@ -1118,6 +1137,7 @@ test("sort_group_setting_options", ({override_rewire}) => {
         b_user_2.full_name,
         b_user_1.full_name,
         b_user_3.full_name,
+        members_group.name,
         admins_group.name,
         a_user.full_name,
         zman.full_name,
@@ -1130,6 +1150,7 @@ test("sort_group_setting_options", ({override_rewire}) => {
         b_user_2.full_name,
         b_user_1.full_name,
         b_user_3.full_name,
+        members_group.name,
         admins_group.name,
         a_user.full_name,
         zman.full_name,
@@ -1140,11 +1161,51 @@ test("sort_group_setting_options", ({override_rewire}) => {
         admins_group.name,
         a_user.full_name,
         bob_system_group.name,
+        members_group.name,
         bob_group.name,
         second_bob_group.name,
         b_user_2.full_name,
         b_user_1.full_name,
         b_user_3.full_name,
+    ]);
+
+    assert.deepEqual(get_group_setting_typeahead_result("me", second_bob_group), [
+        members_group.name,
+        bob_system_group.name,
+        admins_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        b_user_2.full_name,
+        a_user.full_name,
+        b_user_1.full_name,
+        b_user_3.full_name,
+        zman.full_name,
+    ]);
+
+    assert.deepEqual(get_group_setting_typeahead_result("ever", second_bob_group), [
+        members_group.name,
+        bob_system_group.name,
+        admins_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        b_user_2.full_name,
+        a_user.full_name,
+        b_user_1.full_name,
+        b_user_3.full_name,
+        zman.full_name,
+    ]);
+
+    assert.deepEqual(get_group_setting_typeahead_result("translated: members", second_bob_group), [
+        members_group.name,
+        bob_system_group.name,
+        admins_group.name,
+        bob_group.name,
+        second_bob_group.name,
+        b_user_2.full_name,
+        a_user.full_name,
+        b_user_1.full_name,
+        b_user_3.full_name,
+        zman.full_name,
     ]);
 
     override_rewire(bootstrap_typeahead, "MAX_ITEMS", 6);

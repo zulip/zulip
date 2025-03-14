@@ -11,7 +11,13 @@
         <div class="bot-settings-tip" id="personal-bot-settings-tip">
         </div>
         <div>
-            <button class="button rounded sea-green add-a-new-bot {{#unless can_create_new_bots}}hide{{/unless}}">{{t "Add a new bot" }}</button>
+            {{> ../components/action_button
+              label=(t "Add a new bot")
+              attention="quiet"
+              intent="brand"
+              custom_classes="add-a-new-bot"
+              hidden=(not can_create_new_bots)
+              }}
         </div>
         {{/unless}}
 

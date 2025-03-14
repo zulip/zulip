@@ -458,7 +458,7 @@ def update_message_content(
         members = mention_data.get_group_members(group_id)
         rendering_result.mentions_user_ids.update(members)
 
-    # One could imagine checking realm.allow_edit_history here and
+    # One could imagine checking realm.message_edit_history_visibility_policy here and
     # modifying the events based on that setting, but doing so
     # doesn't really make sense.  We need to send the edit event
     # to clients regardless, and a client already had access to
@@ -856,20 +856,46 @@ def do_update_message(
         subscriptions = get_active_subscriptions_for_stream_id(
             message_edit_request.target_stream.id, include_deactivated_users=False
         )
-        # We exclude long-term idle users, since they by
-        # definition have no active clients.
-        subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
-        # Remove duplicates by excluding the id of users already
-        # in users_to_be_notified list.  This is the case where a
-        # user both has a UserMessage row and is a current
-        # Subscriber
-        subscriptions = subscriptions.exclude(
-            user_profile_id__in=[um.user_profile_id for um in unmodified_user_messages]
-        )
 
+        def exclude_duplicates_from_subscription(
+            subs: QuerySet[Subscription],
+        ) -> QuerySet[Subscription]:
+            # We exclude long-term idle users, since they by
+            # definition have no active clients.
+            subs = subs.exclude(user_profile__long_term_idle=True)
+            # Remove duplicates by excluding the id of users already
+            # in users_to_be_notified list.  This is the case where a
+            # user both has a UserMessage row and is a current
+            # Subscriber
+            subs = subs.exclude(
+                user_profile_id__in=[um.user_profile_id for um in unmodified_user_messages]
+            )
+
+            if message_edit_request.is_stream_edited:
+                subs = subs.exclude(user_profile__in=users_losing_access)
+
+            return subs
+
+        old_stream_subs_not_in_new_stream = set()
         if message_edit_request.is_stream_edited:
-            subscriptions = subscriptions.exclude(user_profile__in=users_losing_access)
+            # We also need to include users who are not subscribed to new stream
+            # but are subscribed to the old stream.
+            old_stream_subscriptions = get_active_subscriptions_for_stream_id(
+                stream_being_edited.id, include_deactivated_users=False
+            )
+            old_stream_subscriptions = exclude_duplicates_from_subscription(
+                old_stream_subscriptions
+            )
+            old_stream_subscriber_ids = set(
+                old_stream_subscriptions.values_list("user_profile_id", flat=True)
+            )
+            new_stream_subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
+            old_stream_subs_not_in_new_stream = old_stream_subscriber_ids.difference(
+                new_stream_subscriber_ids
+            )
 
+        subscriptions = exclude_duplicates_from_subscription(subscriptions)
+        if message_edit_request.is_stream_edited:
             # TODO: Guest users don't see the new moved topic
             # unless breadcrumb message for new stream is
             # enabled. Excluding these users from receiving this
@@ -893,7 +919,8 @@ def do_update_message(
             )
 
         subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
-        users_to_be_notified += map(subscriber_info, sorted(subscriber_ids))
+        notifiable_ids = subscriber_ids.union(old_stream_subs_not_in_new_stream)
+        users_to_be_notified += map(subscriber_info, sorted(notifiable_ids))
 
     # UserTopic updates and the content of notifications depend on
     # whether we've moved the entire topic, or just part of it. We
@@ -1312,9 +1339,7 @@ def build_message_edit_request(
     is_stream_edited = False
     target_stream = orig_stream
     if stream_id is not None:
-        target_stream = access_stream_by_id_for_message(
-            user_profile, stream_id, require_active=True
-        )[0]
+        target_stream = access_stream_by_id_for_message(user_profile, stream_id)[0]
         is_stream_edited = True
 
     return StreamMessageEditRequest(
@@ -1350,7 +1375,7 @@ def check_update_message(
     and raises a JsonableError if otherwise.
     It returns the number changed.
     """
-    message = access_message(user_profile, message_id, lock_message=True)
+    message = access_message(user_profile, message_id, lock_message=True, is_modifying_message=True)
 
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds
@@ -1386,24 +1411,28 @@ def check_update_message(
         isinstance(message_edit_request, StreamMessageEditRequest)
         and message_edit_request.is_topic_edited
     ):
-        if not user_profile.can_move_messages_to_another_topic():
-            raise JsonableError(_("You don't have permission to edit this message"))
+        if message_edit_request.topic_resolved or message_edit_request.topic_unresolved:
+            if not user_profile.can_resolve_topic():
+                raise JsonableError(_("You don't have permission to resolve topics."))
+        else:
+            if not user_profile.can_move_messages_to_another_topic():
+                raise JsonableError(_("You don't have permission to edit this message"))
 
-        # If there is a change to the topic, check that the user is allowed to
-        # edit it and that it has not been too long. If user is not admin or moderator,
-        # and the time limit for editing topics is passed, raise an error.
-        if (
-            user_profile.realm.move_messages_within_stream_limit_seconds is not None
-            and not user_profile.is_realm_admin
-            and not user_profile.is_moderator
-        ):
-            deadline_seconds = (
-                user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
-            )
-            if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
-                raise JsonableError(
-                    _("The time limit for editing this message's topic has passed.")
+            # If there is a change to the topic, check that the user is allowed to
+            # edit it and that it has not been too long. If user is not admin or moderator,
+            # and the time limit for editing topics is passed, raise an error.
+            if (
+                user_profile.realm.move_messages_within_stream_limit_seconds is not None
+                and not user_profile.is_realm_admin
+                and not user_profile.is_moderator
+            ):
+                deadline_seconds = (
+                    user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
                 )
+                if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
+                    raise JsonableError(
+                        _("The time limit for editing this message's topic has passed.")
+                    )
 
     rendering_result = None
     links_for_embed: set[str] = set()
@@ -1477,6 +1506,8 @@ def check_update_message(
             and not user_profile.is_realm_admin
             and not user_profile.is_moderator
             and message_edit_request.is_message_moved
+            and not message_edit_request.topic_resolved
+            and not message_edit_request.topic_unresolved
         ):
             check_time_limit_for_change_all_propagate_mode(
                 message, user_profile, topic_name, stream_id

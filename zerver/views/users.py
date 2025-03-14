@@ -45,6 +45,7 @@ from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
     CannotDeactivateLastUserError,
+    EmailAlreadyInUseError,
     JsonableError,
     MissingAuthenticationError,
     OrganizationAdministratorRequiredError,
@@ -603,7 +604,7 @@ def add_bot_backend(
         raise JsonableError(_("Bad name or username"))
     try:
         get_user_by_delivery_email(email, user_profile.realm)
-        raise JsonableError(_("Username already in use"))
+        raise EmailAlreadyInUseError
     except UserProfile.DoesNotExist:
         pass
 
@@ -810,7 +811,7 @@ def create_user_backend(
 
     try:
         get_user_by_delivery_email(email, user_profile.realm)
-        raise JsonableError(_("Email '{email}' already in use").format(email=email))
+        raise EmailAlreadyInUseError
     except UserProfile.DoesNotExist:
         pass
 

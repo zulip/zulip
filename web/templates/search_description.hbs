@@ -44,11 +44,19 @@
             {{~!-- squash whitespace --~}}
         {{else if (eq this.operand "resolved")}}
             {{~!-- squash whitespace --~}}
-            {{this.verb}}topics marked as resolved
+            {{this.verb}}resolved topics
             {{~!-- squash whitespace --~}}
         {{else if (eq this.operand "followed")}}
             {{~!-- squash whitespace --~}}
             {{this.verb}}followed topics
+            {{~!-- squash whitespace --~}}
+        {{else if (eq this.operand "muted")}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}muted messages
+            {{~!-- squash whitespace --~}}
+        {{else if (eq this.operand "unresolved")}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}unresolved topics
             {{~!-- squash whitespace --~}}
         {{else}}
             {{~!-- squash whitespace --~}}

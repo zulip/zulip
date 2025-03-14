@@ -7,5 +7,5 @@ Zulip server:
 $ vagrant up
 $ vagrant ssh
 
-(zulip-py3-venv) vagrant@vagrant:/srv/zulip$ ./tools/run-dev
+(zulip-server) vagrant@vagrant:/srv/zulip$ ./tools/run-dev
 ```

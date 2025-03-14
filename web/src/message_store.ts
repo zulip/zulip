@@ -74,6 +74,7 @@ export const raw_message_schema = z.intersection(
             id: z.number(),
             is_me_message: z.boolean(),
             last_edit_timestamp: z.optional(z.number()),
+            last_moved_timestamp: z.optional(z.number()),
             reactions: z.array(message_reaction_schema),
             recipient_id: z.number(),
             sender_email: z.string(),

@@ -20,6 +20,182 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 369**
+
+* [`POST /register`](/api/register-queue): Added `navigation_tour_video_url`
+  to the response.
+
+**Feature level 368**
+
+* [`GET /events`](/api/get-events): An event with `type: "saved_snippet"`
+  and `op: "update"` is sent to the current user when a saved snippet is edited.
+* [`PATCH /saved_snippets/{saved_snippet_id}`](/api/edit-saved-snippet):
+  Added a new endpoint for editing a saved snippet.
+
+**Feature level 367**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events):
+  Added new  `can_resolve_topics_group` realm setting, which is a
+  [group-setting value](/api/group-setting-values) describing the set of
+  users with permission to resolve topics in a stream.
+
+**Feature level 366**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added a new [search/narrow filter](/api/construct-narrow),
+  `is:muted`, matching messages in topics and channels that the user
+  has [muted](/help/mute-a-topic).
+
+**Feature level 365**
+
+* [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): Added
+  `last_moved_timestamp` field to message objects for when the message
+  was last moved to a different channel or topic. If the message's topic
+  has only been [resolved or unresolved](/help/resolve-a-topic), then
+  the field is not present. Clients should use this field, rather than
+  parsing the message object's `edit_history` array, to display an
+  indicator that the message has been moved.
+ * [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): The
+  `last_edit_timestamp` field on message objects is only present if the
+  message's content has been edited. Previously, this field was present
+  if the message's content had been edited or moved to a different
+  channel or topic. Clients should use this field, rather than parsing
+  the message object's `edit_history` array, to display an indicator
+  that the message has been edited.
+
+**Feature level 364**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings)
+  [`GET /events`](/api/get-events): Removed `dense_mode` setting.
+
+**Feature level 363**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue):
+  Added `can_manage_billing_group` realm setting which is a
+  [group-setting value](/api/group-setting-values) describing the set of users
+  with permission manage plans and billing for the organization.
+* [`POST /register`](/api/register-queue): Added a new `realm_billing` object
+  containing additional information about the organization's billing state,
+  such as sponsorship request status.
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email), [`GET /users/me`](/api/get-own-user),
+  [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Removed `is_billing_admin` field from user objects, as the permission to manage
+  plans and billing in the organization is now controlled by `can_manage_billing_group`.
+
+**Feature level 362**
+
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`DELETE /users/me/subscriptions`](/api/unsubscribe): Subscriptions
+  in archived channels can now be edited by users with the appropriate
+  permission, just like in non-archived channels.
+* [`PATCH /streams/{stream_id}`](/api/update-stream): Archived
+  channels can now be converted between public and private channels,
+  just like non-archived channels.
+* [`POST /register`](/api/register-queue): The `never_subscribed` data
+  structure now includes archived channels for clients that declared
+  the `archived_channels` client capability.
+
+**Feature level 361**
+
+* [`POST /messages/{message_id}/typing`](/api/set-typing-status-for-message-edit):
+  Renamed `POST /messages/{message_id}/typing` to
+  `POST /message_edit_typing`, passing the one `message_id` parameter
+  in the URL path, for consistency with the rest of the API.
+
+**Feature level 360**
+
+* [`GET /messages/{message_id}`](/api/get-message), [`GET
+  /messages/{message_id}/read_receipts`](/api/get-read-receipts):
+  Messages from an archived channels can now be read through these API
+  endpoints, if the channel's access control permissions permit doing
+  so.
+
+**Feature level 359**
+
+* `PATCH /bots/{bot_user_id}`: Previously, changing the owner of a bot
+  unsubscribed the bot from any channels that the new owner was not
+  subscribed to. This behavior was removed in favor of documenting the
+  security trade-off associated with giving bots read access to
+  sensitive channel content.
+
+**Feature level 358**
+
+* `PATCH /realm`, [`GET /events`](/api/get-events): Changed `allow_edit_history`
+  boolean field to `message_edit_history_visibility_policy` integer field to
+  support an intermediate field for `Moves only` edit history of messages.
+* [`POST /register`](/api/register-queue): `realm_allow_edit_history` field is
+  deprecated and has been replaced by `realm_message_edit_history_visibility_policy`.
+  The value of `realm_allow_edit_history` is set to `False` if
+  `realm_message_edit_history_visibility_policy` is configured as "None",
+  and `True` for "Moves only" or "All" message edit history.
+
+**Feature level 357**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_subscribe_group`
+  field to Stream and Subscription objects.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_subscribe_group` parameter to support setting and changing the
+  user group whose members can subscribe to the specified stream.
+
+**Feature level 356**
+
+* [`GET /streams`](/api/get-streams): The new parameter
+  `include_can_access_content`, if set to True, returns all the
+  channels that the user making the request has content access to.
+* [`GET /streams`](/api/get-streams): Rename `include_all_active` to
+  `include_all` since the separate `exclude_archived` parameter is
+  what controls whether to include archived channels. The
+  `include_all` parameter is now supported for non-administrators.
+
+**Feature level 355**
+
+* [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /messages/flags`](/api/update-message-flags):
+  Added `ignored_because_not_subscribed_channels` field in the response, which
+  is a list of the channels whose messages were skipped to mark as unread
+  because the user is not subscribed to them.
+
+**Feature level 354**
+
+* [`GET /messages`](/api/get-messages), [`GET
+  /messages/{message_id}`](/api/get-message), [`POST
+  /messages/flags/narrow`]: Users can access messages in unsubscribed
+  private channels that are accessible only via groups that grant
+  content access.
+* [`GET /messages/{message_id}/read_receipts`](/api/get-read-receipts):
+  Users can access read receipts in unsubscribed private channels that are
+  accessible only via groups that grant content access.
+* [`POST /messages/{message_id}/reactions`](/api/add-reaction),
+  [`DELETE /messages/{message_id}/reactions`](/api/remove-reaction):
+  Users can react to messages in unsubscribed private channels that are
+  accessible only via groups that grant content access.
+* `POST /submessage`: Users can interact with polls and similar
+  widgets in messages in unsubscribed private channels that are
+  accessible only via groups that grant content access.
+* [`PATCH /messages/{message_id}`](/api/update-message): Users can
+  edit messages they have posted in unsubscribed private channels that
+  are accessible only via groups that grant content access.
+* [`POST
+  /message_edit_typing`](/api/set-typing-status-for-message-edit):
+  Users can generate typing notifications when editing messages in
+  unsubscribed private channels that are accessible only via groups
+  that grant content access.
+* [`POST /messages`](/api/send-message): Users can send messages to
+  private channels with shared history without subscribing if they are
+  part of groups that grant content access and also in
+  `can_send_message_group`.
+
 **Feature level 353**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
@@ -114,7 +290,7 @@ format used by the Zulip server that they are interacting with.
   `POST /zulip-services/verify/{access_token}/`: Added new API
   endpoints for transferring Zulip services registrations.
 * `POST /remotes/server/register`: Added new response format for
-  hostnames that are already registere.
+  hostnames that are already registered.
 
 **Feature level 344**
 
@@ -191,7 +367,7 @@ deactivated groups.
 * `POST /calls/bigbluebutton/create`: Added a `voice_only` parameter
   controlling whether the call should be voice-only, in which case we
   keep cameras disabled for this call. Now the call creator is a
-  moderator and all other joinees are viewers.
+  moderator and all other joiners are viewers.
 
 **Feature level 336**
 

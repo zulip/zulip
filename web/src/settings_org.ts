@@ -15,6 +15,7 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import type {UserGroupForDropdownListWidget} from "./group_permission_settings.ts";
 import {$t, $t_html, get_language_name} from "./i18n.ts";
+import * as information_density from "./information_density.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as pygments_data from "./pygments_data.ts";
@@ -35,7 +36,6 @@ import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_notifications from "./settings_notifications.ts";
-import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_realm_domains from "./settings_realm_domains.ts";
 import * as settings_ui from "./settings_ui.ts";
 import {current_user, realm, realm_schema} from "./state_data.ts";
@@ -145,6 +145,7 @@ export function enable_or_disable_group_permission_settings(): void {
             "realm_create_multiuse_invite_group",
             "realm_can_create_groups",
             "realm_can_manage_all_groups",
+            "realm_can_manage_billing_group",
         ];
         for (const setting_name of owner_editable_settings) {
             const $permission_pill_container = $(`#id_${CSS.escape(setting_name)}`);
@@ -527,9 +528,11 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_can_delete_own_message_group":
         case "realm_can_invite_users_group":
         case "realm_can_manage_all_groups":
+        case "realm_can_manage_billing_group":
         case "realm_can_mention_many_users_group":
         case "realm_can_move_messages_between_channels_group":
         case "realm_can_move_messages_between_topics_group":
+        case "realm_can_resolve_topics_group":
         case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
@@ -698,6 +701,25 @@ export function discard_realm_default_property_element_changes(elem: HTMLElement
                 .find(`input[value='${CSS.escape(property_value.toString())}']`)
                 .prop("checked", true);
             break;
+        case "web_font_size_px":
+        case "web_line_height_percent": {
+            const setting_value = z.number().parse(property_value);
+            $elem.val(setting_value);
+            if (property_name === "web_font_size_px") {
+                $elem.closest(".button-group").find(".display-value").text(setting_value);
+            } else {
+                $elem
+                    .closest(".button-group")
+                    .find(".display-value")
+                    .text(
+                        information_density.get_string_display_value_for_line_height(setting_value),
+                    );
+            }
+            information_density.enable_or_disable_control_buttons(
+                $elem.closest(".settings-subsection-parent"),
+            );
+            break;
+        }
         case "email_notifications_batching_period_seconds":
         case "email_notification_batching_period_edit_minutes":
             settings_notifications.set_notification_batching_ui(
@@ -1139,28 +1161,35 @@ export let init_dropdown_widgets = (): void => {
         "channel",
     );
 
-    const default_code_language_options = (): dropdown_widget.Option[] => {
-        const options = Object.keys(pygments_data.langs).map((x) => ({
-            name: x,
-            unique_id: x,
-        }));
-
-        const disabled_option = {
-            is_setting_disabled: true,
-            unique_id: "",
-            name: $t({defaultMessage: "No language set"}),
-        };
-
-        options.unshift(disabled_option);
-        return options;
-    };
     set_up_dropdown_widget(
         "realm_default_code_block_language",
-        default_code_language_options,
+        combined_code_language_options,
         "language",
     );
 
     set_up_dropdown_widget_for_realm_group_settings();
+};
+
+export const combined_code_language_options = (): dropdown_widget.Option[] => {
+    // Default language options from pygments_data
+    const default_options = Object.keys(pygments_data.langs).map((x) => ({
+        name: x,
+        unique_id: x,
+    }));
+
+    // Custom playground language options from realm_playgrounds.
+    const playground_options = (realm.realm_playgrounds ?? []).map((playground) => ({
+        name: playground.pygments_language,
+        unique_id: playground.pygments_language,
+    }));
+
+    const disabled_option = {
+        is_setting_disabled: true,
+        unique_id: "",
+        name: $t({defaultMessage: "No language set"}),
+    };
+
+    return [disabled_option, ...playground_options, ...default_options];
 };
 
 export function rewire_init_dropdown_widgets(value: typeof init_dropdown_widgets): void {
@@ -1227,7 +1256,7 @@ export function register_save_discard_widget_handlers(
 
     $container.on(
         "click",
-        ".subsection-header .subsection-changes-save button",
+        ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
         function (this: HTMLElement, e: JQuery.ClickEvent) {
             e.preventDefault();
             e.stopPropagation();
@@ -1243,22 +1272,17 @@ export function register_save_discard_widget_handlers(
                     settings_components.populate_data_for_default_realm_settings_request(
                         $subsection_elem,
                     );
-
-                if (
-                    data.dense_mode !== undefined ||
-                    data.web_font_size_px !== undefined ||
-                    data.web_line_height_percent !== undefined
-                ) {
-                    success_continuation = () => {
-                        settings_preferences.update_information_density_settings_visibility(
-                            $("#realm-user-default-settings"),
-                            realm_user_settings_defaults,
-                            data,
-                        );
-                    };
-                }
             }
             save_organization_settings(data, $save_button, patch_url, success_continuation);
+        },
+    );
+
+    $container.on(
+        "click",
+        ".subsection-header .subsection-changes-save button",
+        (e: JQuery.ClickEvent) => {
+            // Prevents the default form submission action when clicking a button (e.g., "Saving...").
+            e.preventDefault();
         },
     );
 }
@@ -1514,6 +1538,10 @@ export function build_page(): void {
         realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, false);
         realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, true);
     }
+
+    $("#id_org_profile_preview").on("click", () => {
+        window.open("/login/?preview=true", "_blank", "noopener,noreferrer");
+    });
 
     $("#organization-profile .deactivate_realm_button").on("click", deactivate_organization);
 }

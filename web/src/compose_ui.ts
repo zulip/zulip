@@ -17,6 +17,7 @@ import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
+import * as compose_state from "./compose_state.ts";
 import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
@@ -25,7 +26,7 @@ import * as people from "./people.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rtl from "./rtl.ts";
-import {current_user} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
 import * as util from "./util.ts";
@@ -202,13 +203,18 @@ export function maybe_show_scrolling_formatting_buttons(container_selector: stri
 function get_focus_area(opts: ComposeTriggeredOptions): string {
     // Set focus to "Topic" when narrowed to a stream+topic
     // and "Start new conversation" button clicked.
-    if (opts.message_type === "stream" && opts.stream_id && !opts.topic) {
+    if (
+        opts.message_type === "stream" &&
+        opts.stream_id &&
+        !opts.topic &&
+        realm.realm_mandatory_topics
+    ) {
         return "input#stream_message_recipient_topic";
     } else if (
         (opts.message_type === "stream" && opts.stream_id !== undefined) ||
         (opts.message_type === "private" && opts.private_message_recipient)
     ) {
-        if (opts.trigger === "clear topic button") {
+        if (opts.trigger === "clear topic button" || opts.trigger === "compose_hotkey") {
             return "input#stream_message_recipient_topic";
         }
         return "textarea#compose-textarea";
@@ -426,10 +432,20 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
             }
         }
 
-        if (stream_name && opts.topic) {
+        let topic_display_name: string | undefined;
+        if (opts.topic !== "") {
+            topic_display_name = opts.topic;
+        } else if (
+            !realm.realm_mandatory_topics &&
+            !$("input#stream_message_recipient_topic").is(":focus")
+        ) {
+            topic_display_name = util.get_final_topic_display_name(opts.topic);
+        }
+
+        if (stream_name && topic_display_name !== undefined) {
             return $t(
                 {defaultMessage: "Message #{channel_name} > {topic_name}"},
-                {channel_name: stream_name, topic_name: opts.topic},
+                {channel_name: stream_name, topic_name: topic_display_name},
             );
         } else if (stream_name) {
             return $t({defaultMessage: "Message #{channel_name}"}, {channel_name: stream_name});
@@ -541,16 +557,16 @@ export function handle_scrolling_formatting_buttons(event: JQuery.ScrollEvent): 
 
     // If we're within 4px of the start or end of the formatting buttons,
     // go ahead and hide the respective scrolling button
-    const hide_scroll_button_threshhold_px = 4;
+    const hide_scroll_button_threshold_px = 4;
 
     $button_container.addClass("can-scroll-forward can-scroll-backward");
 
     assert(typeof button_bar_left_scroll === "number");
 
-    if (button_bar_left_scroll >= button_bar_max_left_scroll - hide_scroll_button_threshhold_px) {
+    if (button_bar_left_scroll >= button_bar_max_left_scroll - hide_scroll_button_threshold_px) {
         $button_container.removeClass("can-scroll-forward");
     }
-    if (button_bar_left_scroll <= hide_scroll_button_threshhold_px) {
+    if (button_bar_left_scroll <= hide_scroll_button_threshold_px) {
         $button_container.removeClass("can-scroll-backward");
     }
 }
@@ -1291,10 +1307,14 @@ export function show_compose_spinner(): void {
 }
 
 export function render_and_show_preview(
+    $preview_container: JQuery,
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
 ): void {
+    const preview_render_count = compose_state.get_preview_render_count() + 1;
+    compose_state.set_preview_render_count(preview_render_count);
+
     function show_preview(rendered_content: string, raw_content?: string): void {
         // content is passed to check for status messages ("/me ...")
         // and will be undefined in case of errors
@@ -1335,6 +1355,16 @@ export function render_and_show_preview(
             url: "/json/messages/render",
             data: {content},
             success(response_data) {
+                if (
+                    preview_render_count !== compose_state.get_preview_render_count() ||
+                    !$preview_container.hasClass("preview_mode")
+                ) {
+                    // The user is no longer in preview mode or the compose
+                    // input has already been updated with new raw Markdown
+                    // since this rendering request was sent off to the server, so
+                    // there's nothing to do.
+                    return;
+                }
                 const data = message_render_response_schema.parse(response_data);
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);

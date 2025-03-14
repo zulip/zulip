@@ -664,7 +664,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         full_name: user.full_name,
         is_active: people.is_person_active(user.user_id),
         is_bot: user.is_bot,
-        is_me: people.is_current_user(user.email),
+        is_me: people.is_my_user_id(user.user_id),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
         profile_data,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
@@ -1134,14 +1134,16 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         return;
     }
 
+    const hide_deactivate_button =
+        current_user.is_admin && !current_user.is_owner && person.is_owner;
     const html_body = render_admin_human_form({
         user_id,
         email: person.delivery_email,
         full_name: person.full_name,
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: person.is_owner && !current_user.is_owner,
-        owner_is_only_user_in_organization: people.get_active_human_count() === 1,
         is_active,
+        hide_deactivate_button,
     });
 
     $container.append($(html_body));
@@ -1462,7 +1464,7 @@ export function initialize(): void {
         hide_user_profile();
     });
 
-    $("body").on("click", "#user-profile-modal .stream_list_item", () => {
+    $("body").on("click", "#user-profile-modal .user-profile-channel-list-item", () => {
         hide_user_profile();
     });
 

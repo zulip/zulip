@@ -1,4 +1,3 @@
-import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
@@ -22,15 +21,15 @@ import * as message_viewport from "./message_viewport.ts";
 import * as narrow_banner from "./narrow_banner.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import {narrow_term_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
-import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
-const response_schema = z.object({
+export const response_schema = z.object({
     anchor: z.number(),
     found_newest: z.boolean(),
     found_oldest: z.boolean(),
@@ -127,7 +126,7 @@ export function fetch_more_if_required_for_current_msg_list(
     if (has_found_oldest && has_found_newest && message_lists.current.visibly_empty()) {
         // Even after loading more messages, we have
         // no messages to display in this narrow.
-        narrow_banner.show_empty_narrow_message();
+        narrow_banner.show_empty_narrow_message(message_lists.current.data.filter);
         compose_closed_ui.update_buttons_for_private();
         compose_recipient.check_posting_policy_for_compose_box();
     }
@@ -342,7 +341,9 @@ export function get_narrow_for_message_fetch(filter: Filter): string {
     return narrow_param_string;
 }
 
-function get_parameters_for_message_fetch_api(opts: MessageFetchOptions): MessageFetchAPIParams {
+export function get_parameters_for_message_fetch_api(
+    opts: MessageFetchOptions,
+): MessageFetchAPIParams {
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
         // floating point temporary IDs, which is intended to be a.
@@ -392,18 +393,16 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         url: "/json/messages",
         data,
         success(raw_data) {
-            if (!$("#connection-error").hasClass("get-events-error")) {
-                ui_report.hide_error($("#connection-error"));
-            }
+            popup_banners.close_connection_error_popup_banner(true);
             const data = response_schema.parse(raw_data);
             get_messages_success(data, opts);
         },
         error(xhr) {
-            if (xhr.status === 400 && !$("#connection-error").hasClass("get-events-error")) {
+            if (xhr.status === 400) {
                 // We successfully reached the server, so hide the
                 // connection error notice, even if the request failed
                 // for other reasons.
-                ui_report.hide_error($("#connection-error"));
+                popup_banners.close_connection_error_popup_banner(true);
             }
 
             if (
@@ -433,7 +432,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                     !opts.msg_list.is_combined_feed_view &&
                     opts.msg_list.visibly_empty()
                 ) {
-                    narrow_banner.show_empty_narrow_message();
+                    narrow_banner.show_empty_narrow_message(opts.msg_list.data.filter);
                 }
 
                 // TODO: This should probably do something explicit with
@@ -443,7 +442,11 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 return;
             }
 
-            ui_report.show_error($("#connection-error"));
+            popup_banners.open_connection_error_popup_banner({
+                on_retry_callback() {
+                    load_messages(opts, attempt + 1);
+                },
+            });
 
             const delay_secs = util.get_retry_backoff_seconds(xhr, attempt, true);
             setTimeout(() => {

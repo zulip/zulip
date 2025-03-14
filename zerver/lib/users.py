@@ -108,7 +108,7 @@ def check_bot_name_available(realm_id: int, full_name: str, *, is_activation: bo
                 f'There is already an active bot named "{full_name}" in this organization. To reactivate this bot, you must rename or deactivate the other one first.'
             )
         else:
-            raise JsonableError(_("Name is already in use!"))
+            raise JsonableError(_("Name is already in use."))
 
 
 def check_short_name(short_name_raw: str) -> str:
@@ -564,7 +564,6 @@ class APIUserDict(TypedDict):
     is_admin: bool
     is_owner: bool
     is_guest: bool
-    is_billing_admin: NotRequired[bool]
     role: int
     is_bot: bool
     full_name: str
@@ -612,7 +611,6 @@ def format_user_row(
         is_admin=is_admin,
         is_owner=is_owner,
         is_guest=is_guest,
-        is_billing_admin=row["is_billing_admin"],
         role=row["role"],
         is_bot=is_bot,
         full_name=row["full_name"],
@@ -628,7 +626,6 @@ def format_user_row(
     if acting_user is None:
         # Remove data about other users which are not useful to spectators
         # or can reveal personal information about a user.
-        del result["is_billing_admin"]
         del result["timezone"]
 
     # Zulip clients that support using `GET /avatar/{user_id}` as a
@@ -958,7 +955,6 @@ def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
         avatar_version=user_profile.avatar_version,
         is_active=user_profile.is_active,
         role=user_profile.role,
-        is_billing_admin=user_profile.is_billing_admin,
         is_bot=user_profile.is_bot,
         timezone=user_profile.timezone,
         date_joined=user_profile.date_joined,
@@ -1011,7 +1007,6 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
         is_admin=False,
         is_owner=False,
         is_guest=False,
-        is_billing_admin=False,
         role=UserProfile.ROLE_MEMBER,
         is_bot=False,
         full_name=str(UserProfile.INACCESSIBLE_USER_NAME),

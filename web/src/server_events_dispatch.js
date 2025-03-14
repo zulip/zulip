@@ -97,7 +97,10 @@ import * as user_topics from "./user_topics.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
 
 export function dispatch_normal_event(event) {
-    const noop = function () {};
+    const noop = function () {
+        // Do nothing
+    };
+
     switch (event.type) {
         case "alert_words":
             alert_words.set_words(event.alert_words);
@@ -210,22 +213,26 @@ export function dispatch_normal_event(event) {
 
         case "realm": {
             const realm_settings = {
-                allow_edit_history: noop,
                 allow_message_editing: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
+                can_access_all_users_group: noop,
                 can_add_custom_emoji_group: noop,
                 can_add_subscribers_group: noop,
                 can_create_bots_group: noop,
                 can_create_groups: noop,
                 can_create_private_channel_group: noop,
                 can_create_public_channel_group: noop,
+                can_create_web_public_channel_group: noop,
                 can_create_write_only_bots_group: noop,
                 can_delete_any_message_group: noop,
                 can_delete_own_message_group: noop,
+                can_invite_users_group: noop,
                 can_manage_all_groups: noop,
+                can_manage_billing_group: noop,
                 can_mention_many_users_group: noop,
                 can_move_messages_between_channels_group: noop,
                 can_move_messages_between_topics_group: noop,
+                can_resolve_topics_group: noop,
                 can_summarize_topics_group: noop,
                 create_multiuse_invite_group: noop,
                 default_code_block_language: noop,
@@ -243,6 +250,7 @@ export function dispatch_normal_event(event) {
                 mandatory_topics: noop,
                 message_content_edit_limit_seconds: noop,
                 message_content_delete_limit_seconds: noop,
+                message_edit_history_visibility_policy: noop,
                 move_messages_between_streams_limit_seconds: noop,
                 move_messages_within_stream_limit_seconds: message_edit.update_inline_topic_edit_ui,
                 message_retention_days: noop,
@@ -279,9 +287,13 @@ export function dispatch_normal_event(event) {
                         }
 
                         if (event.property === "enable_spectator_access") {
-                            stream_settings_ui.update_stream_privacy_choices(
+                            stream_ui_updates.update_stream_privacy_choices(
                                 "can_create_web_public_channel_group",
                             );
+                        }
+
+                        if (event.property === "mandatory_topics") {
+                            compose_recipient.update_compose_area_placeholder_text();
                         }
                     }
                     break;
@@ -335,7 +347,7 @@ export function dispatch_normal_event(event) {
                                     key === "can_create_private_channel_group" ||
                                     key === "can_create_web_public_channel_group"
                                 ) {
-                                    stream_settings_ui.update_stream_privacy_choices(key);
+                                    stream_ui_updates.update_stream_privacy_choices(key);
                                 }
 
                                 if (
@@ -347,7 +359,14 @@ export function dispatch_normal_event(event) {
                                     compose_recipient.check_posting_policy_for_compose_box();
                                 }
 
-                                if (key === "can_move_messages_between_topics_group") {
+                                if (
+                                    key === "can_move_messages_between_topics_group" ||
+                                    key === "can_resolve_topics_group"
+                                ) {
+                                    // Technically we just need to rerender the message recipient
+                                    // bars to update the buttons for editing or resolving a topic,
+                                    // but because these policies are changed rarely, it's fine to
+                                    // rerender the entire message feed.
                                     message_live_update.rerender_messages_view();
                                 }
 
@@ -558,11 +577,15 @@ export function dispatch_normal_event(event) {
         case "saved_snippets":
             switch (event.op) {
                 case "add":
-                    saved_snippets.add_saved_snippet(event.saved_snippet);
+                    saved_snippets.update_saved_snippet_dict(event.saved_snippet);
                     saved_snippets_ui.rerender_dropdown_widget();
                     break;
                 case "remove":
                     saved_snippets.remove_saved_snippet(event.saved_snippet_id);
+                    saved_snippets_ui.rerender_dropdown_widget();
+                    break;
+                case "update":
+                    saved_snippets.update_saved_snippet_dict(event.saved_snippet);
                     saved_snippets_ui.rerender_dropdown_widget();
                     break;
             }
@@ -622,12 +645,13 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream_id of event.stream_ids) {
-                        const was_subscribed = sub_store.get(stream_id).subscribed;
-                        const is_narrowed_to_stream = narrow_state.is_for_stream_id(stream_id);
+                        const sub = sub_store.get(stream_id);
+                        const is_subscribed = sub.subscribed;
+                        const is_narrowed_to_stream = narrow_state.narrowed_to_stream_id(stream_id);
                         stream_data.delete_sub(stream_id);
-                        stream_settings_ui.remove_stream(stream_id);
+                        stream_settings_ui.update_settings_for_archived(sub);
                         message_view_header.maybe_rerender_title_area_for_stream(stream_id);
-                        if (was_subscribed) {
+                        if (is_subscribed) {
                             stream_list.remove_sidebar_row(stream_id);
                             if (stream_id === compose_state.selected_recipient_id) {
                                 compose_state.set_selected_recipient_id("");
@@ -790,12 +814,12 @@ export function dispatch_normal_event(event) {
             // here from `settings_account` when this file is converted to typescript,
             // and use them instead of `privacy_settings`.
             const privacy_settings = [
-                "send_stream_typing_notifications",
+                "allow_private_data_export",
+                "email_address_visibility",
+                "presence_enabled",
                 "send_private_typing_notifications",
                 "send_read_receipts",
-                "presence_enabled",
-                "email_address_visibility",
-                "allow_private_data_export",
+                "send_stream_typing_notifications",
             ];
 
             if (privacy_settings.includes(event.property)) {
@@ -812,31 +836,28 @@ export function dispatch_normal_event(event) {
 
             const user_preferences = [
                 "color_scheme",
-                "web_font_size_px",
-                "web_line_height_percent",
                 "default_language",
-                "web_home_view",
                 "demote_inactive_streams",
-                "dense_mode",
-                "web_mark_read_on_scroll_policy",
-                "web_channel_default_view",
+                "display_emoji_reaction_users",
                 "emojiset",
-                "web_escape_navigates_to_home_view",
+                "enter_sends",
                 "fluid_layout_width",
+                "hide_ai_features",
                 "high_contrast_mode",
                 "receives_typing_notifications",
+                "starred_message_counts",
                 "timezone",
-                "twenty_four_hour_time",
                 "translate_emoticons",
-                "display_emoji_reaction_users",
+                "twenty_four_hour_time",
                 "user_list_style",
                 "web_animate_image_previews",
-                "web_stream_unreads_count_display_policy",
-                "starred_message_counts",
+                "web_channel_default_view",
+                "web_escape_navigates_to_home_view",
+                "web_home_view",
+                "web_mark_read_on_scroll_policy",
                 "web_navigate_to_sent_message",
-                "enter_sends",
+                "web_stream_unreads_count_display_policy",
                 "web_suggest_update_timezone",
-                "hide_ai_features",
             ];
 
             const original_home_view = user_settings.web_home_view;
@@ -897,19 +918,19 @@ export function dispatch_normal_event(event) {
                 );
                 activity_ui.build_user_sidebar();
             }
-            if (event.property === "dense_mode") {
-                $("body").toggleClass("less-dense-mode");
-                $("body").toggleClass("more-dense-mode");
-                information_density.set_base_typography_css_variables();
-                information_density.calculate_timestamp_widths();
-            }
             if (
                 event.property === "web_font_size_px" ||
                 event.property === "web_line_height_percent"
             ) {
-                information_density.set_base_typography_css_variables();
-                information_density.calculate_timestamp_widths();
+                // We just ignore events for web_font_size_px"
+                // and "web_line_height_percent" settings as we
+                // are fine with a window not being updated due
+                // to changes being done from another window and
+                // also helps in avoiding weird issues on clicking
+                // the "+"/"-" buttons multiple times quickly when
+                // updating these settings.
             }
+
             if (event.property === "web_mark_read_on_scroll_policy") {
                 unread_ui.update_unread_banner();
             }
@@ -1056,7 +1077,7 @@ export function dispatch_normal_event(event) {
 
                 // Update the status text in compose box placeholder when opened to self.
                 if (compose_pm_pill.get_user_ids().includes(event.user_id)) {
-                    compose_recipient.update_placeholder_text();
+                    compose_recipient.update_compose_area_placeholder_text();
                 }
             }
 

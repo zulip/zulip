@@ -81,7 +81,7 @@ export const user_list_style_values: {
         code: number;
         description: string;
     };
-    with_avatar?: {
+    with_avatar: {
         code: number;
         description: string;
     };
@@ -196,7 +196,6 @@ export const get_information_density_preferences = (): DisplaySettings => ({
 });
 
 type SettingsRenderOnly = {
-    dense_mode: boolean;
     hide_ai_features: boolean;
     high_contrast_mode: boolean;
     web_font_size_px: boolean;
@@ -205,7 +204,6 @@ type SettingsRenderOnly = {
 
 /* istanbul ignore next */
 export const get_settings_render_only = (): SettingsRenderOnly => ({
-    dense_mode: page_params.development_environment,
     // Offer the UI for hiding AI features exactly when the server
     // supports doing so.
     hide_ai_features: realm.server_can_summarize_topics,
@@ -257,6 +255,21 @@ export const common_policy_values = {
         order: 4,
         code: 1,
         description: $t({defaultMessage: "Admins, moderators and members"}),
+    },
+};
+
+export const message_edit_history_visibility_policy_values = {
+    always: {
+        code: "all",
+        description: $t({defaultMessage: "Show edits and moves"}),
+    },
+    moves_only: {
+        code: "moves",
+        description: $t({defaultMessage: "Move history only"}),
+    },
+    never: {
+        code: "none",
+        description: $t({defaultMessage: "Don't allow"}),
     },
 };
 
@@ -492,7 +505,7 @@ export const realm_deletion_in_values = {
         description: $t({defaultMessage: "30 days"}),
         default: false,
     },
-    ninty_days: {
+    ninety_days: {
         value: 90 * 24 * 60,
         description: $t({defaultMessage: "90 days"}),
         default: false,
@@ -528,7 +541,6 @@ export const user_role_map = new Map(user_role_array.map((role) => [role.code, r
 
 export const preferences_settings_labels = {
     default_language_settings_label: $t({defaultMessage: "Language"}),
-    dense_mode: $t({defaultMessage: "Compact mode"}),
     display_emoji_reaction_users: new Handlebars.SafeString(
         $t_html({
             defaultMessage:
@@ -636,6 +648,7 @@ export const all_group_setting_labels = {
             defaultMessage: "Who can start a direct message conversation",
         }),
         can_manage_all_groups: $t({defaultMessage: "Who can administer all user groups"}),
+        can_manage_billing_group: $t({defaultMessage: "Who can manage plans and billing"}),
         can_create_groups: $t({defaultMessage: "Who can create user groups"}),
         can_move_messages_between_topics_group: $t({
             defaultMessage: "Who can move messages to another topic",
@@ -643,6 +656,7 @@ export const all_group_setting_labels = {
         can_move_messages_between_channels_group: $t({
             defaultMessage: "Who can move messages to another channel",
         }),
+        can_resolve_topics_group: $t({defaultMessage: "Who can resolve topics"}),
         can_delete_any_message_group: $t({defaultMessage: "Who can delete any message"}),
         can_delete_own_message_group: $t({defaultMessage: "Who can delete their own messages"}),
         can_access_all_users_group: $t({
@@ -662,6 +676,7 @@ export const all_group_setting_labels = {
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
         can_send_message_group: $t({defaultMessage: "Who can post to this channel"}),
         can_administer_channel_group: $t({defaultMessage: "Who can administer this channel"}),
+        can_subscribe_group: $t({defaultMessage: "Who can subscribe to this channel"}),
         can_remove_subscribers_group: $t({
             defaultMessage: "Who can unsubscribe anyone from this channel",
         }),
@@ -716,6 +731,7 @@ export const realm_group_permission_settings: {
         settings: [
             "can_move_messages_between_topics_group",
             "can_move_messages_between_channels_group",
+            "can_resolve_topics_group",
         ],
     },
     {
@@ -732,6 +748,7 @@ export const realm_group_permission_settings: {
         subsection_heading: $t({defaultMessage: "Other permissions"}),
         subsection_key: "org-other-permissions",
         settings: [
+            "can_manage_billing_group",
             "can_summarize_topics_group",
             "can_create_write_only_bots_group",
             "can_create_bots_group",
@@ -752,12 +769,14 @@ export const owner_editable_realm_group_permission_settings = new Set([
 export const stream_group_permission_settings: StreamGroupSettingName[] = [
     "can_send_message_group",
     "can_administer_channel_group",
+    "can_subscribe_group",
     "can_add_subscribers_group",
     "can_remove_subscribers_group",
 ];
 
 export const stream_group_permission_settings_requiring_content_access: StreamGroupSettingName[] = [
     "can_add_subscribers_group",
+    "can_subscribe_group",
 ];
 
 // Order of settings is important, as this list is used to
@@ -1072,12 +1091,12 @@ export const system_user_groups_list = [
     {
         name: "role:everyone",
         dropdown_option_name: $t({defaultMessage: "Admins, moderators, members and guests"}),
-        display_name: $t({defaultMessage: "Everyone"}),
+        display_name: $t({defaultMessage: "Everyone including guests"}),
     },
     {
         name: "role:members",
         dropdown_option_name: $t({defaultMessage: "Admins, moderators and members"}),
-        display_name: $t({defaultMessage: "Members"}),
+        display_name: $t({defaultMessage: "Everyone except guests"}),
     },
     {
         name: "role:fullmembers",
@@ -1105,6 +1124,8 @@ export const system_user_groups_list = [
         display_name: $t({defaultMessage: "Nobody"}),
     },
 ];
+
+export const alternate_members_group_typeahead_matching_name = $t({defaultMessage: "Members"});
 
 export const user_topic_visibility_policy_values = {
     followed: {
@@ -1207,4 +1228,12 @@ export const bot_type_values = {
         type_id: 4,
         name: $t({defaultMessage: "Embedded bot"}),
     },
+};
+
+export const realm_plan_types = {
+    self_hosted: {code: 1},
+    limited: {code: 2},
+    standard: {code: 3},
+    standard_free: {code: 4},
+    plus: {code: 10},
 };

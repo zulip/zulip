@@ -144,15 +144,19 @@ export function open(
     });
 
     $micromodal.find(".modal__overlay").on("click", (e) => {
+        if (!$(e.target).is(".modal__overlay")) {
+            return;
+        }
+
+        if ($(e.target).hasClass("ignore-overlay-click")) {
+            return;
+        }
+
         /* Micromodal's data-micromodal-close feature doesn't check for
            range selections; this means dragging a selection of text in an
            input inside the modal too far will weirdly close the modal.
            See https://github.com/ghosh/Micromodal/issues/505.
            Work around this with our own implementation. */
-        if (!$(e.target).is(".modal__overlay")) {
-            return;
-        }
-
         if (document.getSelection()?.type === "Range") {
             return;
         }

@@ -144,8 +144,8 @@ exports.fixtures = {
         message_id: 128,
         recipient: {
             type: "channel",
-            channel_id: this.stream_typing_in_id,
-            topic: this.topic_typing_in,
+            channel_id: exports.stream_typing_in_id,
+            topic: exports.topic_typing_in,
         },
     },
 
@@ -156,8 +156,8 @@ exports.fixtures = {
         message_id: 128,
         recipient: {
             type: "channel",
-            channel_id: this.stream_typing_in_id,
-            topic: this.topic_typing_in,
+            channel_id: exports.stream_typing_in_id,
+            topic: exports.topic_typing_in,
         },
     },
 
@@ -347,6 +347,13 @@ exports.fixtures = {
         value: false,
     },
 
+    realm__update__mandatory_topics: {
+        type: "realm",
+        op: "update",
+        property: "mandatory_topics",
+        value: false,
+    },
+
     realm__update__name: {
         type: "realm",
         op: "update",
@@ -406,6 +413,7 @@ exports.fixtures = {
             can_create_public_channel_group: 3,
             can_invite_users_group: 3,
             can_move_messages_between_topics_group: 3,
+            can_resolve_topics_group: 1,
             direct_message_permission_group: 3,
             plan_type: 3,
             upload_quota_mib: 50000,
@@ -564,7 +572,6 @@ exports.fixtures = {
             is_admin: false,
             is_active: true,
             is_owner: false,
-            is_billing_admin: false,
             role: 400,
             is_bot: false,
             is_guest: false,
@@ -585,7 +592,6 @@ exports.fixtures = {
             is_admin: false,
             is_active: true,
             is_owner: false,
-            is_billing_admin: false,
             role: 400,
             is_bot: true,
             is_guest: false,
@@ -658,6 +664,17 @@ exports.fixtures = {
         type: "saved_snippets",
         op: "remove",
         saved_snippet_id: 1,
+    },
+
+    saved_snippets__update: {
+        type: "saved_snippets",
+        op: "update",
+        saved_snippet: {
+            id: 1,
+            title: "Example 2",
+            content: "Welcome to the organization.",
+            date_created: 1681662420,
+        },
     },
 
     scheduled_messages__add: {
@@ -739,8 +756,8 @@ exports.fixtures = {
         op: "start",
         message_type: "stream",
         sender: typing_person1,
-        stream_id: this.stream_typing_in_id,
-        topic: this.topic_typing_in,
+        stream_id: exports.stream_typing_in_id,
+        topic: exports.topic_typing_in,
     },
 
     stream_typing__stop: {
@@ -748,8 +765,8 @@ exports.fixtures = {
         op: "stop",
         message_type: "stream",
         sender: typing_person1,
-        stream_id: this.stream_typing_in_id,
-        topic: this.topic_typing_in,
+        stream_id: exports.stream_typing_in_id,
+        topic: exports.topic_typing_in,
     },
 
     submessage: {
@@ -970,13 +987,6 @@ exports.fixtures = {
         op: "update",
         property: "demote_inactive_streams",
         value: 2,
-    },
-
-    user_settings__dense_mode: {
-        type: "user_settings",
-        op: "update",
-        property: "dense_mode",
-        value: true,
     },
 
     user_settings__display_emoji_reaction_users: {

@@ -37,7 +37,7 @@ const realm = {};
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
-const user_settings = {defualt_language: "en"};
+const user_settings = {default_language: "en"};
 initialize_user_settings({user_settings});
 
 const me = {
@@ -165,7 +165,7 @@ function initialize_pm_pill(mock_template) {
     $("#private_message_recipient").before = noop;
 
     compose_pm_pill.initialize({
-        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+        on_pill_create_or_remove: compose_recipient.update_compose_area_placeholder_text,
     });
 
     $("#zephyr-mirror-error").is = noop;
@@ -186,6 +186,8 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
         stream_id: 101,
         name: "party",
         subscribed: true,
+        can_add_subscribers_group: nobody.id,
+        can_subscribe_group: nobody.id,
     };
     stream_data.add_sub(party_sub);
     assert.ok(compose_validate.validate_stream_message_address_info(party_sub));
@@ -227,10 +229,7 @@ test_ui("validate", ({mock_template, override}) => {
     override(realm, "realm_direct_message_initiator_group", everyone.id);
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_private_message_recipient);
-        assert.equal(
-            data.banner_text,
-            $t({defaultMessage: "Please specify at least one valid recipient."}),
-        );
+        assert.equal(data.banner_text, compose_validate.NO_PRIVATE_RECIPIENT_ERROR_MESSAGE);
         pm_recipient_error_rendered = true;
         return "<banner-stub>";
     });
@@ -325,7 +324,7 @@ test_ui("validate", ({mock_template, override}) => {
     let empty_stream_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_stream);
-        assert.equal(data.banner_text, $t({defaultMessage: "Please specify a channel."}));
+        assert.equal(data.banner_text, compose_validate.NO_CHANNEL_SELECTED_ERROR_MESSAGE);
         empty_stream_error_rendered = true;
         return "<banner-stub>";
     });
@@ -344,10 +343,7 @@ test_ui("validate", ({mock_template, override}) => {
     let missing_topic_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.topic_missing);
-        assert.equal(
-            data.banner_text,
-            $t({defaultMessage: "Topics are required in this organization."}),
-        );
+        assert.equal(data.banner_text, compose_validate.TOPICS_REQUIRED_ERROR_MESSAGE);
         missing_topic_error_rendered = true;
         return "<banner-stub>";
     });
@@ -720,6 +716,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
         name: "random",
         can_add_subscribers_group: admin.id,
         can_administer_channel_group: admin.id,
+        can_subscribe_group: admin.id,
     };
     stream_data.add_sub(sub);
     compose_state.set_stream_id(sub.stream_id);

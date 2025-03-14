@@ -7,9 +7,13 @@
     </div>
     {{#if (not hide_add_button)}}
         <div class="add_subscriber_button_wrapper inline-block">
-            <button type="submit" name="add_subscriber" class="button add-subscriber-button add-users-button small rounded sea-green" tabindex="0">
-                {{t 'Add' }}
-            </button>
+            {{> ../components/action_button
+              label=(t "Add")
+              custom_classes="add-subscriber-button add-users-button"
+              attention="quiet"
+              intent="brand"
+              type="submit"
+              }}
         </div>
     {{/if}}
 </div>

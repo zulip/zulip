@@ -1520,7 +1520,7 @@ Output:
         """
         Mark all messages within the topic associated with message `target_message_id` as resolved.
         """
-        message = access_message(acting_user, target_message_id)
+        message = access_message(acting_user, target_message_id, is_modifying_message=False)
         return self.api_patch(
             acting_user,
             f"/api/v1/messages/{target_message_id}",

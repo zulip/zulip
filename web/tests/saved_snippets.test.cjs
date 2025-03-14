@@ -41,7 +41,7 @@ run_test("add_saved_snippet", () => {
         content: "Test content",
         date_created: 128374878,
     };
-    saved_snippets.add_saved_snippet(saved_snippet);
+    saved_snippets.update_saved_snippet_dict(saved_snippet);
 
     const my_saved_snippet = saved_snippets.get_saved_snippet_by_id(2);
     assert.equal(my_saved_snippet, saved_snippet);
@@ -54,7 +54,7 @@ run_test("options for dropdown widget", () => {
         content: "Test content",
         date_created: 128374876,
     };
-    saved_snippets.add_saved_snippet(saved_snippet);
+    saved_snippets.update_saved_snippet_dict(saved_snippet);
 
     assert.deepEqual(saved_snippets.get_options_for_dropdown_widget(), [
         {
@@ -63,6 +63,7 @@ run_test("options for dropdown widget", () => {
             description: "Test content",
             bold_current_selection: true,
             has_delete_icon: true,
+            has_edit_icon: true,
         },
         {
             unique_id: 2,
@@ -70,6 +71,7 @@ run_test("options for dropdown widget", () => {
             description: "Test content",
             bold_current_selection: true,
             has_delete_icon: true,
+            has_edit_icon: true,
         },
         {
             unique_id: 1,
@@ -77,6 +79,7 @@ run_test("options for dropdown widget", () => {
             description: "Test content",
             bold_current_selection: true,
             has_delete_icon: true,
+            has_edit_icon: true,
         },
     ]);
 });

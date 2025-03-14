@@ -251,7 +251,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             short_name="hambot",
         )
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Username already in use")
+        self.assert_json_error(result, "Email is already in use.")
 
         dup_full_name = "The Bot of Hamlet"
 
@@ -260,7 +260,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             short_name="whatever",
         )
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Name is already in use!")
+        self.assert_json_error(result, "Name is already in use.")
 
     def test_add_bot_with_user_avatar(self) -> None:
         email = "hambot-bot@zulip.testserver"
@@ -1083,7 +1083,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         assert test_bot.bot_owner is not None
         self.assertEqual(test_bot.bot_owner.id, self.example_user("iago").id)
 
-        self.assertFalse(
+        self.assertTrue(
             Subscription.objects.filter(
                 user_profile=test_bot, recipient__type_id=private_stream.id, active=True
             ).exists()
@@ -1143,7 +1143,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "full_name": already_taken_name,
         }
         result = self.client_patch(url, bot_info)
-        self.assert_json_error(result, "Name is already in use!")
+        self.assert_json_error(result, "Name is already in use.")
 
         # We can use our own name (with extra whitespace), and the
         # server should silently do nothing.
@@ -1359,7 +1359,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(bot_user.bot_owner.id, hamlet.id)
 
         assert private_stream.recipient_id is not None
-        self.assertFalse(
+        self.assertTrue(
             Subscription.objects.filter(
                 user_profile=bot_user, recipient_id=private_stream.recipient_id, active=True
             ).exists()

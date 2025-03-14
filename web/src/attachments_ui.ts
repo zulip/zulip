@@ -13,6 +13,8 @@ import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as scroll_util from "./scroll_util.ts";
+import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
+import * as settings_config from "./settings_config.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
@@ -72,7 +74,8 @@ function set_upload_space_stats(): void {
         return;
     }
     const args = {
-        show_upgrade_message: realm.realm_plan_type === 2,
+        show_upgrade_message:
+            realm.realm_plan_type === settings_config.realm_plan_types.limited.code,
         upload_quota_string: $t(
             {
                 defaultMessage:
@@ -220,7 +223,9 @@ export function set_up_attachments(): void {
 export function suggest_delete_detached_attachments(attachments_list: ServerAttachment[]): void {
     const html_body = render_confirm_delete_detached_attachments_modal({
         attachments_list,
-        realm_allow_edit_history: realm.realm_allow_edit_history,
+        realm_message_edit_history_is_visible:
+            realm.realm_message_edit_history_visibility_policy !==
+            message_edit_history_visibility_policy_values.never.code,
     });
 
     // Since we want to delete multiple attachments, we want to be

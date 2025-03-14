@@ -7,6 +7,10 @@
         border-radius: 5px;
         position: absolute;
         overflow: hidden;
+        /* We bump the z-index to keep the search box
+           clickable despite position-based layout
+           adjustments. */
+        z-index: 1;
     }
 
     .search_icon {
@@ -107,7 +111,7 @@
 
         @media (height < $short_navbar_cutoff_height) {
             #searchbox-input-container .search_icon {
-                font-size: 18px;
+                font-size: 1.125em; /* 18px at 16px/em */
             }
         }
     }
@@ -189,7 +193,7 @@
         background: transparent;
         text-overflow: ellipsis;
         overflow: hidden;
-        white-space: nowrap;
+        white-space: pre;
         flex-grow: 1;
 
         color: var(--color-text-search);
@@ -232,7 +236,7 @@
         }
 
         &:not(.focused) {
-            max-height: var(--search-box-height);
+            height: var(--search-box-height);
             overflow: hidden;
 
             .search-input-and-pills {
@@ -263,7 +267,7 @@
                 /* Replaced by the 5px gap. */
                 margin-right: 0;
                 /* Don't inherit large line-height for user pill labels. */
-                line-height: 1;
+                line-height: 1.1;
             }
 
             .pill {
@@ -280,7 +284,7 @@
                 grid-template-columns: auto 1fr auto;
 
                 /* Don't inherit large line-height for user pills themselves, either. */
-                line-height: 1;
+                line-height: 1.1;
 
                 &:not(.deactivated-pill) {
                     background-color: var(--color-background-user-pill);

@@ -93,7 +93,7 @@ const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
 const {set_realm} = zrequire("state_data");
 
-const realm = {};
+const realm = {realm_mandatory_topics: true};
 set_realm(realm);
 
 const start = compose_actions.start;

@@ -1902,21 +1902,21 @@ class TestSupportEndpoint(ZulipTestCase):
             "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "new-name"}
         )
         self.assert_in_success_response(
-            ["Subdomain already in use. Please choose a different one."], result
+            ["Subdomain is already in use. Please choose a different one."], result
         )
 
         result = self.client_post(
             "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "zulip"}
         )
         self.assert_in_success_response(
-            ["Subdomain already in use. Please choose a different one."], result
+            ["Subdomain is already in use. Please choose a different one."], result
         )
 
         result = self.client_post(
             "/activity/support", {"realm_id": f"{lear_realm.id}", "new_subdomain": "lear"}
         )
         self.assert_in_success_response(
-            ["Subdomain already in use. Please choose a different one."], result
+            ["Subdomain is already in use. Please choose a different one."], result
         )
 
         # Test renaming to a "reserved" subdomain

@@ -4,7 +4,6 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
-const blueslip = require("./lib/zblueslip.cjs");
 
 mock_esm("../src/user_topics", {
     is_topic_muted: () => false,
@@ -52,7 +51,7 @@ function assert_unread_info(expected) {
 }
 
 function candidate_ids() {
-    return narrow_state._possible_unread_message_ids();
+    return narrow_state._possible_unread_message_ids(message_lists.current?.data.filter);
 }
 
 run_test("get_unread_ids", () => {
@@ -101,9 +100,6 @@ run_test("get_unread_ids", () => {
     message_store.update_message_cache(other_topic_message);
 
     stream_data.add_sub(sub);
-
-    unread_ids = candidate_ids();
-    assert.equal(unread_ids, undefined);
 
     terms = [{operator: "search", operand: "whatever"}];
     set_filter(terms);
@@ -256,12 +252,6 @@ run_test("get_unread_ids", () => {
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [private_msg.id]);
-
-    message_lists.set_current(undefined);
-    blueslip.expect("error", "unexpected call to get_first_unread_info");
-    assert_unread_info({
-        flavor: "cannot_compute",
-    });
 });
 
 run_test("defensive code", ({override_rewire}) => {

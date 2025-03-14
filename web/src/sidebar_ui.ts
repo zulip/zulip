@@ -7,7 +7,6 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 import {buddy_list} from "./buddy_list.ts";
 import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
-import {media_breakpoints_num} from "./css_variables.ts";
 import {reorder_left_sidebar_navigation_list} from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";
@@ -45,31 +44,44 @@ export let left_sidebar_expanded_as_overlay = false;
 export let right_sidebar_expanded_as_overlay = false;
 
 export function hide_userlist_sidebar(): void {
-    $(".app-main .column-right").removeClass("expanded");
+    const $userlist_sidebar = $(".app-main .column-right");
+    $userlist_sidebar.removeClass("expanded topmost-overlay");
     right_sidebar_expanded_as_overlay = false;
 }
 
 export function show_userlist_sidebar(): void {
+    const $streamlist_sidebar = $(".app-main .column-left");
     const $userlist_sidebar = $(".app-main .column-right");
     if ($userlist_sidebar.css("display") !== "none") {
         // Return early if the right sidebar is already visible.
         return;
     }
 
-    if (window.innerWidth >= media_breakpoints_num.xl) {
+    if (ui_util.matches_viewport_state("gte_xl_min")) {
         $("body").removeClass("hide-right-sidebar");
         fix_invite_user_button_flicker();
         return;
     }
 
     $userlist_sidebar.addClass("expanded");
+    if (left_sidebar_expanded_as_overlay) {
+        $userlist_sidebar.addClass("topmost-overlay");
+        $streamlist_sidebar.removeClass("topmost-overlay");
+    }
     fix_invite_user_button_flicker();
     resize.resize_page_components();
     right_sidebar_expanded_as_overlay = true;
 }
 
 export function show_streamlist_sidebar(): void {
-    $(".app-main .column-left").addClass("expanded");
+    const $userlist_sidebar = $(".app-main .column-right");
+    const $streamlist_sidebar = $(".app-main .column-left");
+    // Left sidebar toggle icon is attached to middle column.
+    $(".app-main .column-left, #navbar-middle").addClass("expanded");
+    if (right_sidebar_expanded_as_overlay) {
+        $streamlist_sidebar.addClass("topmost-overlay");
+        $userlist_sidebar.removeClass("topmost-overlay");
+    }
     resize.resize_stream_filters_container();
     left_sidebar_expanded_as_overlay = true;
 }
@@ -90,7 +102,9 @@ export function show_left_sidebar(): void {
 }
 
 export function hide_streamlist_sidebar(): void {
-    $(".app-main .column-left").removeClass("expanded");
+    const $streamlist_sidebar = $(".app-main .column-left");
+    $(".app-main .column-left, #navbar-middle").removeClass("expanded");
+    $streamlist_sidebar.removeClass("topmost-overlay");
     left_sidebar_expanded_as_overlay = false;
 }
 
@@ -145,7 +159,7 @@ export function initialize(): void {
         e.preventDefault();
         e.stopPropagation();
 
-        if (window.innerWidth >= media_breakpoints_num.xl) {
+        if (ui_util.matches_viewport_state("gte_xl_min")) {
             $("body").toggleClass("hide-right-sidebar");
             if (!$("body").hasClass("hide-right-sidebar")) {
                 fix_invite_user_button_flicker();
@@ -171,11 +185,11 @@ export function initialize(): void {
         e.preventDefault();
         e.stopPropagation();
 
-        if (window.innerWidth >= media_breakpoints_num.md) {
+        if (ui_util.matches_viewport_state("gte_md_min")) {
             $("body").toggleClass("hide-left-sidebar");
             if (
                 message_lists.current !== undefined &&
-                window.innerWidth <= media_breakpoints_num.xl
+                !ui_util.matches_viewport_state("gte_xl_min")
             ) {
                 // We expand the middle column width between md and xl breakpoints when the
                 // left sidebar is hidden. This can cause the pointer to move out of view.

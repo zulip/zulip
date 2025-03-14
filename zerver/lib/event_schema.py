@@ -5,7 +5,9 @@
 # by a test in test_events.py with a schema checker here.
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
+import inspect
 from collections.abc import Callable
+from enum import Enum
 from pprint import PrettyPrinter
 from typing import cast
 
@@ -39,6 +41,7 @@ from zerver.lib.event_types import (
     EventPresence,
     EventReactionAdd,
     EventReactionRemove,
+    EventRealmBilling,
     EventRealmBotAdd,
     EventRealmBotDelete,
     EventRealmBotUpdate,
@@ -60,6 +63,7 @@ from zerver.lib.event_types import (
     EventRestart,
     EventSavedSnippetsAdd,
     EventSavedSnippetsRemove,
+    EventSavedSnippetsUpdate,
     EventScheduledMessagesAdd,
     EventScheduledMessagesRemove,
     EventScheduledMessagesUpdate,
@@ -106,13 +110,12 @@ from zerver.lib.event_types import (
     PersonEmail,
     PersonFullName,
     PersonIsActive,
-    PersonIsBillingAdmin,
     PersonRole,
     PersonTimezone,
     PlanTypeData,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
-from zerver.lib.types import AnonymousSettingGroupDict
+from zerver.lib.types import UserGroupMembersDict
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 
 
@@ -173,6 +176,7 @@ check_muted_users = make_checker(EventMutedUsers)
 check_onboarding_steps = make_checker(EventOnboardingSteps)
 check_reaction_add = make_checker(EventReactionAdd)
 check_reaction_remove = make_checker(EventReactionRemove)
+check_realm_billing = make_checker(EventRealmBilling)
 check_realm_bot_delete = make_checker(EventRealmBotDelete)
 check_realm_deactivated = make_checker(EventRealmDeactivated)
 check_realm_domains_add = make_checker(EventRealmDomainsAdd)
@@ -186,6 +190,7 @@ check_realm_user_remove = make_checker(EventRealmUserRemove)
 check_restart = make_checker(EventRestart)
 check_saved_snippets_add = make_checker(EventSavedSnippetsAdd)
 check_saved_snippets_remove = make_checker(EventSavedSnippetsRemove)
+check_saved_snippets_update = make_checker(EventSavedSnippetsUpdate)
 check_scheduled_message_add = make_checker(EventScheduledMessagesAdd)
 check_scheduled_message_remove = make_checker(EventScheduledMessagesRemove)
 check_scheduled_message_update = make_checker(EventScheduledMessagesUpdate)
@@ -254,7 +259,6 @@ PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     delivery_email=PersonDeliveryEmail,
     email=PersonEmail,
     full_name=PersonFullName,
-    is_billing_admin=PersonIsBillingAdmin,
     role=PersonRole,
     timezone=PersonTimezone,
     is_active=PersonIsActive,
@@ -426,7 +430,10 @@ def check_realm_update(
         return
 
     property_type = Realm.property_types[prop]
-    assert isinstance(value, property_type)
+    if inspect.isclass(property_type) and issubclass(property_type, Enum):
+        assert isinstance(value, str)
+    else:
+        assert isinstance(value, property_type)
 
 
 def check_realm_default_update(
@@ -530,7 +537,7 @@ def check_stream_update(
         assert value in Stream.STREAM_POST_POLICY_TYPES
     elif prop in Stream.stream_permission_group_settings:
         assert extra_keys == set()
-        assert isinstance(value, int | AnonymousSettingGroupDict)
+        assert isinstance(value, int | UserGroupMembersDict)
     elif prop == "first_message_id":
         assert extra_keys == set()
         assert isinstance(value, int)

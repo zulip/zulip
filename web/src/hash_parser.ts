@@ -116,7 +116,14 @@ export function is_in_specified_hash_category(hash_categories: string[]): boolea
     return hash_categories.includes(main_hash);
 }
 
-export const allowed_web_public_narrows = [
+export function is_an_allowed_web_public_narrow(operator: string, operand: string): boolean {
+    if (operator === "is" && operand === "resolved") {
+        return true;
+    }
+    return allowed_web_public_narrow_operators.includes(operator);
+}
+
+export const allowed_web_public_narrow_operators = [
     "channels",
     "channel",
     "streams",
@@ -156,9 +163,16 @@ export function is_spectator_compatible(hash: string): boolean {
     const main_hash = get_hash_category(hash);
 
     if (main_hash === "narrow") {
-        const hash_section = get_hash_section(hash);
-        if (!allowed_web_public_narrows.includes(hash_section)) {
-            return false;
+        const hash_components = hash
+            .split(/\//)
+            .filter((hash_component) => hash_component !== "#narrow");
+
+        for (let i = 0; i < hash_components.length; i += 2) {
+            const hash_section = hash_components[i]!.replace(/^-/, "");
+            const second_hash_section = hash_components[i + 1]!;
+            if (!is_an_allowed_web_public_narrow(hash_section, second_hash_section)) {
+                return false;
+            }
         }
         return true;
     }

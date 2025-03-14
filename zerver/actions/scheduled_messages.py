@@ -41,8 +41,9 @@ def check_schedule_message(
     *,
     forwarder_user_profile: UserProfile | None = None,
     read_by_sender: bool | None = None,
+    skip_events: bool = False,
 ) -> int:
-    addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
+    addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name, realm)
     send_request = check_message(
         sender,
         client,
@@ -61,7 +62,9 @@ def check_schedule_message(
             client.default_read_by_sender() and send_request.message.recipient != sender.recipient
         )
 
-    return do_schedule_messages([send_request], sender, read_by_sender=read_by_sender)[0]
+    return do_schedule_messages(
+        [send_request], sender, read_by_sender=read_by_sender, skip_events=skip_events
+    )[0]
 
 
 def do_schedule_messages(
@@ -69,6 +72,7 @@ def do_schedule_messages(
     sender: UserProfile,
     *,
     read_by_sender: bool = False,
+    skip_events: bool = False,
 ) -> list[int]:
     scheduled_messages: list[tuple[ScheduledMessage, SendMessageRequest]] = []
 
@@ -104,14 +108,15 @@ def do_schedule_messages(
                 scheduled_message.has_attachment = True
                 scheduled_message.save(update_fields=["has_attachment"])
 
-        event = {
-            "type": "scheduled_messages",
-            "op": "add",
-            "scheduled_messages": [
-                scheduled_message.to_dict() for scheduled_message, ignored in scheduled_messages
-            ],
-        }
-        send_event_on_commit(sender.realm, event, [sender.id])
+        if not skip_events:
+            event = {
+                "type": "scheduled_messages",
+                "op": "add",
+                "scheduled_messages": [
+                    scheduled_message.to_dict() for scheduled_message, ignored in scheduled_messages
+                ],
+            }
+            send_event_on_commit(sender.realm, event, [sender.id])
 
     return [scheduled_message.id for scheduled_message, ignored in scheduled_messages]
 

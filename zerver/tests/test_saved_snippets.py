@@ -49,6 +49,36 @@ class SavedSnippetTests(ZulipTestCase):
             msg=f"title is too long (limit: {SavedSnippet.MAX_TITLE_LENGTH} characters)",
         )
 
+    def test_edit_saved_snippet(self) -> None:
+        """Tests updation of saved snippets."""
+
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        saved_snippet_id = self.create_example_saved_snippet(user)
+
+        result = self.client_patch(
+            f"/json/saved_snippets/{saved_snippet_id}",
+            {"title": "New title"},
+        )
+        self.assert_json_success(result)
+
+        result = self.client_patch(
+            f"/json/saved_snippets/{saved_snippet_id}", {"content": "New content"}
+        )
+        self.assert_json_success(result)
+
+        result = self.client_patch(
+            f"/json/saved_snippets/{saved_snippet_id}",
+        )
+        self.assert_json_error(result, "No new data is supplied", status_code=400)
+
+        # Tests if error is thrown when the provided ID does not exist.
+        result = self.client_patch(
+            "/json/saved_snippets/10",
+            {"content": "New content"},
+        )
+        self.assert_json_error(result, "Saved snippet does not exist.", status_code=404)
+
     def test_delete_saved_snippet(self) -> None:
         """Tests deletion of saved snippets."""
 

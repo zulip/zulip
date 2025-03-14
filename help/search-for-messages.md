@@ -117,6 +117,9 @@ Zulip offers the following filters based on the location of the message.
 * `is:resolved`: Search messages in [resolved topics](/help/resolve-a-topic).
 * `-is:resolved`: Search messages in [unresolved topics](/help/resolve-a-topic).
 * `is:unread`: Search your unread messages.
+* `is:muted`: Search [muted](/help/mute-a-topic) messages.
+* `-is:muted`: Search only [unmuted](/help/mute-a-topic) messages. By default,
+  both muted and unmuted messages are included in keyword search results.
 * `has:reaction`: Search messages with [emoji reactions](/help/emoji-reactions).
 
 ### Search by message ID
