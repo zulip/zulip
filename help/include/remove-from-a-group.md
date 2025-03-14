@@ -21,6 +21,7 @@
 
 1. Find the group you would like to remove the user from.
 
-1. Click the **Remove** button in that row.
+1. Click the **Remove** button in that row. Zulip will notify the user about the
+   groups they've been removed from.
 
 {end_tabs}
