@@ -522,6 +522,10 @@
             height: 0;
             overflow: auto;
             flex-grow: 1;
+            /* Moves scrollbar out without affecting content */
+            margin-right: -15px;
+            /* Keeps space for scrollbar */
+            padding-right: 15px;
 
             .option-row {
                 list-style-type: none;
