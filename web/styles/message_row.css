@@ -713,6 +713,14 @@
     border-radius: 4px;
     border: 0;
     line-height: 1;
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
 }
 
 .message_edit_save {
