@@ -177,6 +177,13 @@ large numbers of very large image files are uploaded at once. (When
 backlogged, image previews for images that have not yet been
 thumbnailed will appear as loading spinners).
 
+#### `email_senders_workers`
+
+How many email-sending workers to run. Defaults to 1; adding more
+workers can prevent email-sending queue backlogging when large numbers
+of very large emails are enqueued at once. This is generally only
+necessary on quite large installs.
+
 #### `nameserver`
 
 When the [S3 storage backend][s3-backend] is in use, downloads from S3 are
