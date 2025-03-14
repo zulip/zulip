@@ -522,6 +522,8 @@
             height: 0;
             overflow: auto;
             flex-grow: 1;
+            margin-right: -15px; /* Moves scrollbar out without affecting content */
+            padding-right: 15px; /* Keeps space for scrollbar */
 
             .option-row {
                 list-style-type: none;
@@ -531,7 +533,6 @@
                 display: flex;
                 align-items: center;
                 gap: 10px;
-                margin-right: 18px;
 
                 .drag-icon {
                     color: hsl(0deg 0% 75%);
