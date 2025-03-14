@@ -1011,6 +1011,10 @@ export function validate(scheduling_message: boolean, show_banner = true): boole
         return false;
     }
 
+    if (upload_in_progress) {
+        return false;
+    }
+
     return true;
 }
 
