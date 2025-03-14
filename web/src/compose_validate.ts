@@ -64,6 +64,9 @@ export let wildcard_mention_threshold = 15;
 
 export function set_upload_in_progress(status: boolean): void {
     upload_in_progress = status;
+    if (!status) {
+        validate(false, false);
+    }
     update_send_button_status();
 }
 
