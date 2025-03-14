@@ -602,7 +602,6 @@ ul.popover-group-menu-member-list {
 
     .subscription-group-list,
     .subscription-stream-list {
-        position: relative;
         border: 1px solid hsl(0deg 0% 83%);
         border-radius: 4px;
         overflow: auto;
