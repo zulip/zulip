@@ -24,24 +24,22 @@ async function copy_messages(
             window.getSelection()!.removeAllRanges();
             window.getSelection()!.addRange(selectedRange);
 
-            // Remove existing copy/paste divs, which may linger from the previous
-            // example.  (The code clears these out with a zero-second timeout, which
-            // is probably sufficient for human users, but which causes problems here.)
-            document.querySelector("#copytempdiv")?.remove();
-
             // emulate copy event
-            document.dispatchEvent(
-                new KeyboardEvent("keydown", {
-                    key: "c",
-                    code: "KeyC",
-                    ctrlKey: true,
-                    keyCode: 67,
-                    which: 67,
-                }),
-            );
+            const clipboard_data = new DataTransfer();
+            const copy_event = new ClipboardEvent("copy", {
+                bubbles: true,
+                cancelable: true,
+                clipboardData: clipboard_data,
+            });
+            document.dispatchEvent(copy_event);
 
-            // find temp div with copied text
-            return [...document.querySelectorAll("#copytempdiv > p")].map((p) => p.textContent!);
+            const copied_html = clipboard_data.getData("text/html");
+
+            // Convert the copied HTML into separate message strings
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(copied_html, "text/html");
+
+            return [...doc.body.children].map((el) => el.textContent!.trim());
         },
         start_message,
         end_message,
