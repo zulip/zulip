@@ -720,12 +720,12 @@
     height: 2em;
     /* Match Save button's basic colors to
        the compose box Send button. */
-    color: var(--color-compose-send-button-icon-color);
-    background-color: var(--color-compose-send-button-background);
+    color: var(--color-text-brand-primary-action-button);
+    background-color: var(--color-background-brand-primary-action-button);
 
     &:hover {
         background-color: var(
-            --color-compose-send-button-background-interactive
+            --color-background-brand-primary-action-button-hover
         );
     }
 
