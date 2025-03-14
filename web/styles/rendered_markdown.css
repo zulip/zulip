@@ -280,6 +280,16 @@
         overflow: auto hidden;
     }
 
+    .katex-mathml annotation {
+        /* Because annotations are never displayable, browser user-agent
+           stylesheets mark them as not displayable, which has the
+           side effect of having them not be included in the HTML
+           version of copying the content. Override this, so KaTeX can
+           be copy/pasted within Zulip. */
+        user-select: all;
+        display: inline;
+    }
+
     .tex-error {
         color: hsl(0deg 0% 50%);
     }
