@@ -8,8 +8,8 @@ build:
   jobs:
     create_environment:
       - asdf plugin add uv
-      - asdf install uv 0.6.2
-      - asdf global uv 0.6.2
+      - asdf install uv 0.6.6
+      - asdf global uv 0.6.6
       - UV_PROJECT_ENVIRONMENT=$READTHEDOCS_VIRTUALENV_PATH uv venv
     install:
       - UV_PROJECT_ENVIRONMENT=$READTHEDOCS_VIRTUALENV_PATH uv sync --frozen --only-group=docs
