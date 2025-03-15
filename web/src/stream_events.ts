@@ -187,24 +187,27 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             stream_list.update_streams_sidebar();
         },
         is_archived(value) {
-            if (!value) {
-                // We currently do not live-update when unarchiving stream.
-                return;
-            }
             const is_subscribed = sub.subscribed;
             const is_narrowed_to_stream = narrow_state.narrowed_to_stream_id(stream_id);
-            stream_data.mark_archived(stream_id);
-            stream_settings_ui.update_settings_for_archived(sub);
-            message_view_header.maybe_rerender_title_area_for_stream(stream_id);
-            if (is_subscribed) {
-                stream_list.remove_sidebar_row(stream_id);
-                if (stream_id === compose_state.selected_recipient_id) {
-                    compose_state.set_selected_recipient_id("");
-                    compose_recipient.on_compose_select_recipient_update();
+            if (!value) {
+                stream_data.mark_unarchived(sub.stream_id);
+                if (is_subscribed) {
+                    stream_list.add_sidebar_row(sub);
                 }
+            } else {
+                stream_data.mark_archived(stream_id);
+                if (is_subscribed) {
+                    stream_list.remove_sidebar_row(stream_id);
+                    if (stream_id === compose_state.selected_recipient_id) {
+                        compose_state.set_selected_recipient_id("");
+                        compose_recipient.on_compose_select_recipient_update();
+                    }
+                }
+                stream_data.remove_default_stream(stream_id);
+                settings_streams.update_default_streams_table();
             }
-            settings_streams.update_default_streams_table();
-            stream_data.remove_default_stream(stream_id);
+            stream_settings_ui.update_settings_for_archived_and_unarchived(sub);
+            message_view_header.maybe_rerender_title_area_for_stream(stream_id);
             if (is_narrowed_to_stream) {
                 assert(message_lists.current !== undefined);
                 message_lists.current.update_trailing_bookend(true);
