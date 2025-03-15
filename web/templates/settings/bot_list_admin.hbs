@@ -1,4 +1,4 @@
-<div id="admin-bot-list" class="settings-section" data-name="bot-list-admin">
+<div id="admin-bot-list" class="settings-section bot-settings-section" data-name="bot-list-admin">
     <div class="bot-settings-tip" id="admin-bot-settings-tip">
     </div>
     <div class="clear-float"></div>
@@ -21,7 +21,11 @@
     <div class="settings_panel_list_header">
         <h3>{{t "Bots"}}</h3>
         <div class="alert-notification" id="bot-field-status"></div>
-        {{> filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter bots')}}
+        <div class="bot_filters">
+
+            {{> ../dropdown_widget widget_name=all_bots_list_dropdown_widget_name}}
+            {{> filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter bots')}}
+        </div>
     </div>
 
     <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
