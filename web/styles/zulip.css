@@ -1612,7 +1612,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
         @extend %hide-right-sidebar;
     }
 
-    #navbar-middle {
+    body:not(.spectator-view) #navbar-middle {
         margin-right: var(--right-column-collapsed-sidebar-width);
     }
 
