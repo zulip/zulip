@@ -12,6 +12,7 @@ const {
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {SideEffect} = require("./lib/side_effect.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -180,10 +181,11 @@ run_test("fill_screen_with_content early break on big list", ({override, mock_te
     stub_buddy_list_elements();
     mock_template("buddy_list/view_all_users.hbs", false, () => "<view-all-users-stub>");
 
-    let chunks_inserted = 0;
+    const chunk_insert_side_effect = new SideEffect("chunk inserted via render_more");
+
     override(buddy_list, "render_more", () => {
         elem.scrollHeight += 100;
-        chunks_inserted += 1;
+        chunk_insert_side_effect.has_happened();
     });
     override(message_viewport, "height", () => 550);
 
@@ -204,12 +206,14 @@ run_test("fill_screen_with_content early break on big list", ({override, mock_te
         user_ids.push(person.user_id);
     });
 
-    buddy_list.populate({
-        all_user_ids: user_ids,
+    chunk_insert_side_effect.should_happen_during(() => {
+        buddy_list.populate({
+            all_user_ids: user_ids,
+        });
     });
 
     // Only 6 chunks, even though that's 120 users instead of the full 300.
-    assert.equal(chunks_inserted, 6);
+    assert.equal(chunk_insert_side_effect.num_times_met, 6);
 });
 
 run_test("big_list", ({override, override_rewire, mock_template}) => {
