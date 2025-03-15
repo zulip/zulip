@@ -1216,10 +1216,16 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
             if row["id"] in exportable_user_ids:
                 pass
             else:
-                # Convert non-exportable users to
-                # inactive is_mirror_dummy users.
-                row["is_mirror_dummy"] = True
-                row["is_active"] = False
+                # Non-exportable users should be turned into mirror dummies, with the notable exception
+                # of users who were already deactivated. Mirror dummies can sign up with the matching email
+                # address to reactivate their account. However, deactivated users are specifically meant to
+                # be prevented from re-entering the organization with the deactivated account.
+                # In order to maintain that restriction through the export->import cycle, we need to keep
+                # deactivated accounts as just deactivated - without flipping is_mirror_dummy=True.
+                if row["is_active"]:
+                    row["is_mirror_dummy"] = True
+                    row["is_active"] = False
+
                 if row["email_address_visibility"] == UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY:
                     # The user chose not to make their email address visible even to the realm administrators.
                     # Generate a dummy email address for them so that this preference can't be bypassed
