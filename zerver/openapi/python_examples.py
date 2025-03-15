@@ -439,6 +439,29 @@ def revoke_reusable_invitation_link(client: Client) -> None:
     validate_against_openapi_schema(result, "/invites/multiuse/{invite_id}", "delete", "200")
 
 
+@openapi_test_function("/invites/multiuse/{invite_id}:patch")
+def edit_reusable_invitation_link(client: Client) -> None:
+    stream_ids = get_subscribed_stream_ids(client)[:2]
+    request = {
+        "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
+        "invite_as": 400,
+        "stream_ids": [1, 8],
+    }
+    result = client.call_endpoint(url="/invites/multiuse", method="POST", request=request)
+    # {code_example|start}
+    # Edit reusable invitation link
+    invite_id = 1
+    request = {
+        "invite_as": 600,
+        "stream_ids": stream_ids,
+    }
+    result = client.call_endpoint(
+        url=f"/invites/multiuse/{invite_id}", method="PATCH", request=request
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/invites/multiuse/{invite_id}", "patch", "200")
+
+
 @openapi_test_function("/invites/{invite_id}/resend:post")
 def resend_email_invitation(client: Client) -> None:
     invites = client.call_endpoint(url="/invites", method="GET")["invites"]
@@ -1935,6 +1958,7 @@ def test_invitations(client: Client) -> None:
     revoke_email_invitation(client)
     create_reusable_invitation_link(client)
     revoke_reusable_invitation_link(client)
+    edit_reusable_invitation_link(client)
     get_invitations(client)
     resend_email_invitation(client)
 
