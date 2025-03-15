@@ -56,8 +56,8 @@ When you deactivate a user:
 
 {settings_tab|users}
 
-1. In the **Actions** column, click the **deactivate** (<i class="fa
-   fa-user-times"></i>) icon for the user you want to deactivate.
+1. In the **Actions** column, click the **deactivate user** (<i class="zulip-icon
+   zulip-icon-user-x"></i>) icon for the user you want to deactivate.
 
 1. *(optional)* Select **Notify this user by email?** if desired, and enter a
    custom comment to include in the notification email.
