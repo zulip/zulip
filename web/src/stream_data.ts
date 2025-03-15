@@ -310,6 +310,15 @@ export function mark_archived(stream_id: number): void {
     sub.is_archived = true;
 }
 
+export function mark_unarchived(stream_id: number): void {
+    const sub = get_sub_by_id(stream_id);
+    if (sub === undefined || !stream_info.get(stream_id)) {
+        blueslip.warn("Failed to unarchive stream " + stream_id.toString());
+        return;
+    }
+    sub.is_archived = false;
+}
+
 export function delete_sub(stream_id: number): void {
     if (!stream_info.get(stream_id)) {
         blueslip.warn("Failed to archive stream " + stream_id.toString());
@@ -695,6 +704,14 @@ export function can_archive_stream(sub: StreamSubscription): boolean {
     return can_administer_channel(sub);
 }
 
+export function can_unarchive_stream(sub: StreamSubscription): boolean {
+    if (!sub.is_archived) {
+        return false;
+    }
+
+    return can_administer_channel(sub);
+}
+
 export function can_view_subscribers(sub: StreamSubscription): boolean {
     return has_metadata_access(sub);
 }
@@ -1026,6 +1043,10 @@ export function initialize(params: StateData["stream_data"]): void {
 
 export function remove_default_stream(stream_id: number): void {
     default_stream_ids.delete(stream_id);
+}
+
+export function add_default_stream(stream_id: number): void {
+    default_stream_ids.add(stream_id);
 }
 
 export function get_options_for_dropdown_widget(): (dropdown_widget.Option & {
