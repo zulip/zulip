@@ -702,6 +702,14 @@ export function can_archive_stream(sub: StreamSubscription): boolean {
     return can_administer_channel(sub);
 }
 
+export function can_unarchive_stream(sub: StreamSubscription): boolean {
+    if (!sub.is_archived) {
+        return false;
+    }
+
+    return can_administer_channel(sub);
+}
+
 export function can_view_subscribers(sub: StreamSubscription): boolean {
     return has_metadata_access(sub);
 }
