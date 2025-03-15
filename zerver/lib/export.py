@@ -1214,7 +1214,7 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
     for row in rows:
         if exportable_user_ids is not None:
             if row["id"] in exportable_user_ids:
-                assert not row["is_mirror_dummy"]
+                pass
             else:
                 # Convert non-exportable users to
                 # inactive is_mirror_dummy users.
@@ -2713,6 +2713,16 @@ def get_consented_user_ids(realm: Realm) -> set[int]:
     # 1) It is a human account and enabled allow_private_data_export.
     # 2) It is a bot account with allow_private_data_export toggled on.
     # 3) It is a bot whose owner is (1).
+    # 4) It is a mirror dummy. This is a special case that requires some
+    #    explanation. There are two cases where an account will be a mirror dummy:
+    #    a) It comes from a 3rd party export (e.g. from Slack) - in some cases,
+    #       certain limited accounts are turned into Zulip mirror dummy accounts.
+    #       For such an account, the admins already have access to all the original data,
+    #       so we can freely consider the user as consenting and export everything.
+    #    b) It was imported from another Zulip export; and it was a non-consented user
+    #       in it. Thus, only public data of the user was exported->imported.
+    #       Therefore, again we can consider the user as consenting and export
+    #       everything - all this data is public by construction.
 
     query = sql.SQL("""
         WITH consenting_humans AS (
@@ -2732,6 +2742,7 @@ def get_consented_user_ids(realm: Realm) -> set[int]:
                 AND is_bot
                 AND realm_id = {realm_id}
             )
+            OR (is_mirror_dummy AND realm_id = {realm_id})
     """).format(realm_id=sql.Literal(realm.id))
 
     with connection.cursor() as cursor:
