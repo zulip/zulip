@@ -317,12 +317,13 @@ export function insert_new_messages(
                 continue;
             }
 
-            message_events_util.maybe_add_narrowed_messages(messages, list);
+            const messages_are_new = true;
+            message_events_util.maybe_add_narrowed_messages(messages, list, messages_are_new);
             continue;
         }
 
         // Update the message list's rendering for the newly arrived messages.
-        const render_info = list.add_messages(messages);
+        const render_info = list.add_messages(messages, {messages_are_new: true});
 
         // The render_info.need_user_to_scroll calculation, which
         // looks at message feed scroll positions to see whether the
