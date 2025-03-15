@@ -248,7 +248,7 @@ function handle_unsuccessful_response(response: JQuery.jqXHR): void {
         // Django returning an HTML response containing a stack trace
         // with useful debugging information regarding the backend
         // code.
-        document.write(response.responseText);
+        set_results_notice(response.responseText, "warning");
     }
     return;
 }
