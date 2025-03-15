@@ -51,8 +51,8 @@
                 </button>
             </span>
             {{else}}
-            <button class="button rounded small button-warning reactivate {{#if is_bot}}reactivate-bot-tooltip{{else}}reactivate-user-tooltip{{/if}}">
-                <i class="fa fa-user-plus" aria-hidden="true"></i>
+            <button class="button rounded small button-warning reactivate reactivate-user-button {{#if is_bot}}reactivate-bot-tooltip{{else}}reactivate-user-tooltip{{/if}}">
+                <i class="zulip-icon zulip-icon-user-plus" aria-hidden="true"></i>
             </button>
             {{/if}}
         </span>

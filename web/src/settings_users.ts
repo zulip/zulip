@@ -132,7 +132,11 @@ export function update_view_on_deactivate(user_id: number, is_bot: boolean): voi
         $button.addClass("reactivate-user-tooltip");
         $button.removeClass("deactivate-user-tooltip");
     }
-    $button.empty().append($("<i>").addClass(["fa", "fa-user-plus"]).attr("aria-hidden", "true"));
+    $button
+        .empty()
+        .append(
+            $("<i>").addClass(["zulip-icon", "zulip-icon-user-plus"]).attr("aria-hidden", "true"),
+        );
     $row.removeClass("active-user");
     $row.addClass("deactivated_user");
 

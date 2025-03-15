@@ -1324,6 +1324,12 @@ label.preferences-radio-choice-label {
     margin-right: 1px;
 }
 
+.reactivate-user-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 35px;
+}
+
 .invite-user-link .fa-user-plus {
     text-decoration: none;
     margin-right: 5px;

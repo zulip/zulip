@@ -90,8 +90,8 @@ bots will be deactivated until the user manually
 
 1. Select the **Deactivated** tab.
 
-1. Click the **Reactivate** button to the right of the user that you
-   want to reactivate.
+1. In the **Actions** column, click the **reactivate user** (<i class="zulip-icon
+   zulip-icon-user-plus"></i>) icon for the user you want to reactivate.
 
 {tab|via-user-profile}
 

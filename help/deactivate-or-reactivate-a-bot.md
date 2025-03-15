@@ -63,8 +63,8 @@ bot, regardless of who owns them.
 
 {settings_tab|bot-list-admin}
 
-1. In the **Actions** column, click the **reactivate bot** (<i class="fa fa-user-plus"></i>)
-   icon for the bot you want to reactivate.
+1. In the **Actions** column, click the **reactivate bot** (<i class="zulip-icon
+   zulip-icon-user-plus"></i>) icon for the bot you want to reactivate.
 
 1. Approve by clicking **Confirm**.
 
