@@ -349,7 +349,7 @@ h4.user_group_setting_subsection_title {
    screens where there's only one panel and the overlay doesn't
    have enough space for all the buttons. */
 @container settings-overlay (
-    ((width >= $settings_overlay_sidebar_collapse_breakpoint) and (width < calc(80em + 80px)))
+    ((width >= $settings_overlay_sidebar_collapse_breakpoint) and (width < calc(90em + 80px)))
     or ((width < $settings_overlay_sidebar_collapse_breakpoint) and (width <= 36em))
 ) {
     #subscription_overlay .subscriptions-container {
