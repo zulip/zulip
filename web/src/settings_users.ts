@@ -125,7 +125,11 @@ export function update_view_on_deactivate(user_id: number, is_bot: boolean): voi
     $row.find("i.deactivated-user-icon").show();
     $button.addClass("button-warning reactivate");
     $button.removeClass("deactivate button-danger");
-    $button.empty().append($("<i>").addClass(["fa", "fa-user-plus"]).attr("aria-hidden", "true"));
+    $button
+        .empty()
+        .append(
+            $("<i>").addClass(["zulip-icon", "zulip-icon-user-plus"]).attr("aria-hidden", "true"),
+        );
     $row.removeClass("active-user");
     $row.addClass("deactivated_user");
 
@@ -151,7 +155,9 @@ export function update_view_on_reactivate(user_id: number, is_bot: boolean): voi
     $row.find("i.deactivated-user-icon").hide();
     $button.addClass("button-danger deactivate");
     $button.removeClass("button-warning reactivate");
-    $button.empty().append($("<i>").addClass(["fa", "fa-user-times"]).attr("aria-hidden", "true"));
+    $button
+        .empty()
+        .append($("<i>").addClass(["zulip-icon", "zulip-icon-user-x"]).attr("aria-hidden", "true"));
     $row.removeClass("deactivated_user");
     $row.addClass("active-user");
 

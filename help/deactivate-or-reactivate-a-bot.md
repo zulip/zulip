@@ -15,7 +15,7 @@ bot, regardless of who owns them.
 
 {settings_tab|your-bots}
 
-1. Click the **deactivate bot** (<i class="fa fa-user-times"></i>) icon on the profile
+1. Click the **deactivate bot** (<i class="zulip-icon zulip-icon-user-x"></i>) icon on the profile
    card for the bot you want to deactivate.
 
 1. Approve by clicking **Deactivate**.
@@ -31,7 +31,7 @@ bot, regardless of who owns them.
 
 {settings_tab|bot-list-admin}
 
-1. In the **Actions** column, click the **deactivate bot** (<i class="fa fa-user-times"></i>)
+1. In the **Actions** column, click the **deactivate bot** (<i class="zulip-icon zulip-icon-user-x"></i>)
    icon for the bot you want to deactivate.
 
 1. Approve by clicking **Deactivate**.
@@ -63,7 +63,7 @@ bot, regardless of who owns them.
 
 {settings_tab|bot-list-admin}
 
-1. In the **Actions** column, click the **reactivate bot** (<i class="fa fa-user-plus"></i>)
+1. In the **Actions** column, click the **reactivate bot** (<i class="zulip-icon zulip-icon-user-plus"></i>)
    icon for the bot you want to reactivate.
 
 1. Approve by clicking **Confirm**.
@@ -76,6 +76,6 @@ bot, regardless of who owns them.
 * [Bots overview](/help/bots-overview)
 * [Integrations overview](/help/integrations-overview)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
-* [Edit a bot](/help/edit-a-bot)
+* [Manage a bot](/help/edit-a-bot)
 * [Restrict bot creation](/help/restrict-bot-creation)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
