@@ -24,6 +24,7 @@ export type SettingsSubscription = StreamSubscription & {
     can_add_subscribers: boolean;
     can_remove_subscribers: boolean;
     can_archive_stream: boolean;
+    can_unarchive_stream: boolean;
     preview_url: string;
     is_old_stream: boolean;
     subscriber_count: number;
@@ -61,6 +62,7 @@ export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscript
         can_add_subscribers: stream_data.can_subscribe_others(sub),
         can_remove_subscribers: stream_data.can_unsubscribe_others(sub),
         can_archive_stream: stream_data.can_archive_stream(sub),
+        can_unarchive_stream: stream_data.can_unarchive_stream(sub),
 
         preview_url: hash_util.by_stream_url(sub.stream_id),
         is_old_stream: sub.stream_weekly_traffic !== null,
