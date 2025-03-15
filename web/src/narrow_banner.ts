@@ -7,6 +7,7 @@ import type {Filter} from "./filter.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type {NarrowBannerData, SearchData} from "./narrow_error.ts";
 import {narrow_error} from "./narrow_error.ts";
+import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as spectators from "./spectators.ts";
@@ -123,6 +124,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                   },
               ),
     };
+
     const default_banner_for_multiple_filters = $t({defaultMessage: "No search results."});
 
     if (current_filter.is_in_home()) {
@@ -141,6 +143,18 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                               `<a href="#narrow/channels/public">${content_html.join("")}</a>`,
                       },
                   ),
+        };
+    }
+
+    if (
+        narrow_state.has_message_in_muted_topic() !== undefined &&
+        narrow_state.has_message_in_muted_topic()
+    ) {
+        return {
+            title: $t({
+                defaultMessage:
+                    "This feed is empty, because you have muted all the topics in this channel.",
+            }),
         };
     }
 

@@ -100,6 +100,10 @@ export class MessageListData {
         return this._items.length === 0;
     }
 
+    show_muted_placeholder(): boolean {
+        return this._items.length === 0 && this._all_items.length > 0;
+    }
+
     first(): Message | undefined {
         return this._items[0];
     }
