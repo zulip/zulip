@@ -201,6 +201,7 @@ function get_events({dont_block = false} = {}) {
             get_events_timeout = setTimeout(get_events, 0);
         },
         error(xhr, error_type) {
+            let retry_delay_secs;
             try {
                 get_events_xhr = undefined;
                 // If we're old enough that our message queue has been
@@ -225,6 +226,7 @@ function get_events({dont_block = false} = {}) {
                     get_events_failures += 1;
                 }
 
+                retry_delay_secs = util.get_retry_backoff_seconds(xhr, get_events_failures);
                 if (get_events_failures >= 8) {
                     popup_banners.open_connection_error_popup_banner({
                         on_retry_callback() {
@@ -239,7 +241,9 @@ function get_events({dont_block = false} = {}) {
                 blueslip.error("Failed to handle get_events error", undefined, error);
             }
 
-            const retry_delay_secs = util.get_retry_backoff_seconds(xhr, get_events_failures);
+            if (retry_delay_secs === undefined) {
+                retry_delay_secs = util.get_retry_backoff_seconds(xhr, get_events_failures);
+            }
             get_events_timeout = setTimeout(get_events, retry_delay_secs * 1000);
         },
     });
