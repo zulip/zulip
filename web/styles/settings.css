@@ -1324,6 +1324,7 @@ label.preferences-radio-choice-label {
     margin-right: 1px;
 }
 
+.manage-user-button,
 .deactivate-user-button,
 .reactivate-user-button {
     display: inline-flex;
@@ -1331,6 +1332,7 @@ label.preferences-radio-choice-label {
     min-height: 35px;
 }
 
+.manage-bot-button,
 .deactivate-bot-button {
     display: inline-flex;
     align-items: center;

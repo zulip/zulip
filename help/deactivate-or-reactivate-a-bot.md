@@ -22,8 +22,9 @@ bot, regardless of who owns them.
 
 !!! tip ""
 
-    You can also click the **pencil** (<i class="fa fa-pencil"></i>) icon,
-    scroll down to the bottom, and click **Deactivate bot**.
+    You can also click the **manage bot** (<i class="zulip-icon
+    zulip-icon-user-cog"></i>) icon, scroll down to the bottom,
+    and click **Deactivate bot**.
 
 {tab|via-organization-settings}
 
@@ -38,8 +39,9 @@ bot, regardless of who owns them.
 
 !!! tip ""
 
-    You can also click the **pencil** (<i class="fa fa-pencil"></i>) icon,
-    scroll down to the bottom, and click **Deactivate bot**.
+    You can also click the **manage bot** (<i class="zulip-icon
+    zulip-icon-user-cog"></i>) icon, scroll down to the bottom,
+    and click **Deactivate bot**.
 
 {end_tabs}
 

@@ -10,8 +10,8 @@ active bot in the organization.
 
 {settings_tab|your-bots}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the profile
-   card for the bot you want to edit.
+1. Click the **manage bot** (<i class="zulip-icon zulip-icon-user-cog"></i>)
+   icon on the profile card for the bot you want to manage.
 
 1. Edit bot information as desired, and click **Save changes**.
 
@@ -25,8 +25,8 @@ active bot in the organization.
 
 {settings_tab|bot-list-admin}
 
-1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
-   icon for the bot you want to edit.
+1. In the **Actions** column, click the **manage bot** (<i class="zulip-icon
+   zulip-icon-user-cog"></i>) icon for the bot you want to manage.
 
 1. Edit bot information as desired, and click **Save changes**.
 

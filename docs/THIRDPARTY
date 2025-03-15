@@ -197,6 +197,11 @@ Files: web/shared/icons/user-plus.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 
+Files: web/shared/icons/user-cog.svg
+Source: https://lucide.dev/icons/user-cog
+Copyright: 2013-2022 Cole Bemis
+License: ISC License
+
 Files: web/shared/icons/user-x.svg
 Source: https://lucide.dev/icons/user-x
 Copyright: 2013-2022 Cole Bemis
