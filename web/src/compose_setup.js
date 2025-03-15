@@ -79,7 +79,7 @@ export function initialize() {
         $("#compose-send-button").removeClass("disabled-message-send-controls");
     });
 
-    $("textarea#compose-textarea").on("input propertychange", () => {
+    $("textarea#compose-textarea").on("input change", () => {
         if ($("#compose").hasClass("preview_mode")) {
             compose.render_preview_area();
         }

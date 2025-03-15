@@ -953,7 +953,7 @@ export function deactivate_organization(e: JQuery.Event): void {
         });
 
         $("#custom-realm-deletion-time").on(
-            "input propertychange",
+            "input change",
             ".custom-time-input-value, .custom-time-input-unit",
             () => {
                 custom_deletion_time_input = util.check_time_input(
