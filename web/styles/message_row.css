@@ -571,15 +571,27 @@
     }
 
     .edit_content {
-        /* Icons for editing content are determined on message hover;
-           we set an empty `.edit_content` to take the eventual width
-           of whatever icon is displayed, so as to avoid a grid shift. */
-        &:empty {
-            width: var(--message-box-icon-width);
-        }
+        width: var(--message-box-icon-width);
 
         &:hover {
             cursor: pointer;
+        }
+
+        .move_message_button,
+        .edit_content_button {
+            display: none;
+        }
+
+        &.can-edit-content {
+            .edit_content_button {
+                display: inline;
+            }
+        }
+
+        &.can-move-message {
+            .move_message_button {
+                display: inline;
+            }
         }
     }
 
