@@ -1,5 +1,5 @@
 // todo: Refactor pills subsystem to use modern javascript classes?
-
+import {parseAddressList} from "email-addresses";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -262,8 +262,21 @@ export function create<ItemType extends {type: string}>(
         },
 
         insertManyPills(pills: string | string[]) {
-            if (typeof pills === "string") {
+            if (typeof pills === "string" && store.split_text_on_comma) {
                 pills = pills.split(/,/g).map((pill) => pill.trim());
+            } else {
+                const parsed_emails = parseAddressList(typeof pills === "string" ? pills : "");
+                if (parsed_emails) {
+                    pills = parsed_emails.map((email) =>
+                        email.type === "mailbox"
+                            ? email.name
+                                ? `"${email.name}" <${email.address}>`
+                                : `<${email.address}>`
+                            : "",
+                    );
+                } else {
+                    pills = [pills].flat();
+                }
             }
 
             // this is an array to push all the errored values to, so it's drafts
@@ -368,7 +381,7 @@ export function create<ItemType extends {type: string}>(
 
             // Typing of the comma is prevented if the last field doesn't validate,
             // as well as when the new pill is created.
-            if (e.key === ",") {
+            if (e.key === "," && store.split_text_on_comma) {
                 // if the pill is successful, it will create the pill and clear
                 // the input.
                 if (funcs.appendPill(store.$input.text().trim())) {
