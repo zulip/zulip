@@ -1,0 +1,3 @@
+* [`POST /register`](/api/register-queue): Updated
+  `realm_incoming_webhook_bots` with a new `interfaced_settings` key,
+  it defines what interfaced settings each integration uses.

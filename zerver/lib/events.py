@@ -77,6 +77,7 @@ from zerver.lib.users import (
     max_message_id_for_user,
 )
 from zerver.lib.utils import optional_bytes_to_mib
+from zerver.lib.webhooks.interfaced_settings import get_interfaced_settings_for
 from zerver.models import (
     Client,
     CustomProfileField,
@@ -711,6 +712,7 @@ def fetch_initial_state_data(
                 ]
                 if integration.config_options
                 else [],
+                "interfaced_settings": get_interfaced_settings_for(integration),
             }
             for integration in WEBHOOK_INTEGRATIONS
             if integration.legacy is False
