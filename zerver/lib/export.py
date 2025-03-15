@@ -10,6 +10,7 @@ import glob
 import hashlib
 import logging
 import os
+import random
 import secrets
 import shutil
 import subprocess
@@ -39,6 +40,7 @@ from version import ZULIP_VERSION
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.migration_status import MigrationStatusJson, parse_migration_status
 from zerver.lib.pysa import mark_sanitized
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload.s3 import get_bucket
 from zerver.lib.utils import get_fk_field_name
@@ -105,6 +107,7 @@ SourceFilter: TypeAlias = Callable[[Record], bool]
 
 CustomFetch: TypeAlias = Callable[[TableData, Context], None]
 CustomReturnIds: TypeAlias = Callable[[TableData], set[int]]
+CustomProcessResults: TypeAlias = Callable[[list[Record], Context], list[Record]]
 
 
 class MessagePartial(TypedDict):
@@ -512,6 +515,7 @@ class Config:
         custom_fetch: CustomFetch | None = None,
         custom_tables: list[TableName] | None = None,
         custom_return_ids: CustomReturnIds | None = None,
+        custom_process_results: CustomProcessResults | None = None,
         concat_and_destroy: list[TableName] | None = None,
         id_source: IdSource | None = None,
         source_filter: SourceFilter | None = None,
@@ -533,6 +537,7 @@ class Config:
         self.custom_fetch = custom_fetch
         self.custom_tables = custom_tables
         self.custom_return_ids = custom_return_ids
+        self.custom_process_results = custom_process_results
         self.concat_and_destroy = concat_and_destroy
         self.id_source = id_source
         self.source_filter = source_filter
@@ -798,7 +803,12 @@ def export_from_config(
             )
 
     # Post-process rows
+    custom_process_results = config.custom_process_results
     for t in exported_tables:
+        if custom_process_results is not None:
+            # The config might specify a function to do final processing
+            # of the exported data for the tables - e.g. to strip out private data.
+            response[t] = custom_process_results(response[t], context)
         if t in DATE_FIELDS:
             floatify_datetime_fields(response, t)
 
@@ -1068,11 +1078,45 @@ def get_realm_config() -> Config:
             "_stream_subscription",
             "_huddle_subscription",
         ],
+        custom_process_results=custom_process_subscription_in_realm_config,
     )
 
     add_user_profile_child_configs(user_profile_config)
 
     return realm_config
+
+
+def custom_process_subscription_in_realm_config(
+    subscriptions: list[Record], context: Context
+) -> list[Record]:
+    export_type = context["export_type"]
+    if export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT:
+        return subscriptions
+
+    consented_user_ids = context["exportable_user_ids"]
+
+    def scrub_subscription_if_needed(subscription: Record) -> Record:
+        if subscription["user_profile"] in consented_user_ids:
+            return subscription
+        # We create a replacement Subscription, setting only the essential fields,
+        # while allowing all the other ones to fall back to the defaults
+        # defined in the model.
+        scrubbed_subscription = Subscription(
+            id=subscription["id"],
+            user_profile_id=subscription["user_profile"],
+            recipient_id=subscription["recipient"],
+            active=subscription["active"],
+            is_user_active=subscription["is_user_active"],
+            # Letting the color be the default color for every stream would create a visually
+            # jarring experience. Instead, we can pick colors randomly for a normal-feeling
+            # experience, without leaking any information about the user's preferences.
+            color=random.choice(STREAM_ASSIGNMENT_COLORS),
+        )
+        subscription_dict = model_to_dict(scrubbed_subscription)
+        return subscription_dict
+
+    processed_rows = map(scrub_subscription_if_needed, subscriptions)
+    return list(processed_rows)
 
 
 def add_user_profile_child_configs(user_profile_config: Config) -> None:
