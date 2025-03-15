@@ -605,6 +605,16 @@ function edit_message($row: JQuery, raw_content: string): void {
     currently_editing_messages.set(message.id, $message_edit_content);
     message_lists.current.show_edit_message($row, $form);
 
+    // Apply saved height if available
+    const message_id = message.id.toString();
+    const saved_height = localStorage.getItem(`textarea_height_${message_id}`);
+    if (saved_height) {
+        $message_edit_content.height(Number.parseInt(saved_height, 10));
+    }
+
+    currently_editing_messages.set(message.id, $message_edit_content);
+    message_lists.current.show_edit_message($row, $form);
+
     // Attach event handlers to `form` instead of `textarea` to allow
     // typeahead to call stopPropagation if it can handle the event
     // and prevent the form from submitting.
