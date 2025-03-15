@@ -83,7 +83,11 @@ export function initialize() {
         if ($("#compose").hasClass("preview_mode")) {
             compose.render_preview_area();
         }
-        compose_validate.warn_if_topic_resolved(false);
+        // We want to show the banner if the topic is resolved
+        // and #compose_select_recipient_widget is closed.
+        if (!compose_recipient.is_dropdown_open()) {
+            compose_validate.warn_if_topic_resolved(false);
+        }
         const compose_text_length = compose_validate.check_overflow_text($("#send_message_form"));
         if (compose_text_length !== 0 && $("textarea#compose-textarea").hasClass("invalid")) {
             $("textarea#compose-textarea").toggleClass("invalid", false);

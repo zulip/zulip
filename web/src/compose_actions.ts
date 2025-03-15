@@ -415,8 +415,11 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         drafts.set_compose_draft_id(opts.draft_id);
     }
 
-    // Show a warning if topic is resolved
-    compose_validate.warn_if_topic_resolved(true);
+    // We want to show the banner if the topic is resolved
+    // and #compose_select_recipient_widget is closed.
+    if (compose_recipient.is_dropdown_open()) {
+        compose_validate.warn_if_topic_resolved(true);
+    }
     // Show a warning if dm recipient contains guest
     compose_validate.warn_if_guest_in_dm_recipient();
     // Show a warning if the user is in a search narrow when replying to a message
