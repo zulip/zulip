@@ -36,7 +36,7 @@
         {{/if}}
     </td>
     {{/if}}
-    {{#if can_modify}}
+    {{#if (or is_bot can_modify)}}
     <td class="actions">
         <span class="user-status-settings">
             <span {{#if (and is_bot cannot_edit)}}class="tippy-zulip-tooltip"{{/if}} {{#if (and is_bot cannot_edit)}}data-tippy-content="{{t 'This bot cannot be edited.'}}"{{/if}}>
