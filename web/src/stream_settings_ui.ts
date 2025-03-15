@@ -805,7 +805,7 @@ function setup_page(callback: () => void): void {
         }
 
         // show the "Stream settings" header by default.
-        $(".display-type #stream_settings_title").show();
+        $(".display-type #stream_settings_title").css("display", "-webkit-box");
     }
 
     function populate_and_fill(): void {
