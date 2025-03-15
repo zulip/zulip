@@ -22,7 +22,7 @@ const CONNECTION_ERROR_POPUP_BANNER: Banner = {
         {
             attention: "quiet",
             label: $t({defaultMessage: "Try now"}),
-            custom_classes: "retry-connection",
+            custom_classes: "retry-connection button-hide-loading-indicator-on-hover",
         },
     ],
     close_button: true,
