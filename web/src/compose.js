@@ -28,6 +28,9 @@ import * as zcommand from "./zcommand.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
+export const failed_message_queue = [];
+let retry_failed = false;
+
 export function clear_invites() {
     $(
         `#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
@@ -167,6 +170,14 @@ export function send_message_success(request, data) {
     }
 }
 
+export function remove_failed_message(message) { 
+    if(!message) { 
+        return;
+    }
+    
+    failed_message_queue = failed_message_queue.filter((msg => msg.id != message.id));
+}
+
 export let send_message = (request = create_message_object()) => {
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
@@ -207,6 +218,41 @@ export let send_message = (request = create_message_object()) => {
     request.locally_echoed = locally_echoed;
     request.resend = false;
 
+    function retry_failed_messages() {
+        if (failed_message_queue.length === 0) {
+            retry_failed = false;
+            return;
+        }
+
+        retry_failed = true;
+        const message = failed_message_queue[0];
+
+        const is_message_deleted = echo.delete_message_container.some((deleted_message) => {
+            return deleted_message.local_id === message.local_id;
+        });
+
+        if (is_message_deleted) {
+            failed_message_queue.shift();
+            retry_failed_messages();
+            return;
+        }
+
+        message.resend = true;
+
+        transmit.send_message(
+            message,
+            (data) => {
+                send_message_success(message, data);
+
+                failed_message_queue.shift();
+                retry_failed_messages();
+            },
+            () => {
+                setTimeout(retry_failed_messages, 10000);
+            },
+        );
+    }
+
     function success(data) {
         send_message_success(request, data);
     }
@@ -243,19 +289,29 @@ export let send_message = (request = create_message_object()) => {
             compose_ui.hide_compose_spinner();
             return;
         }
-
-        echo.message_send_error(message.id, response);
-
         // We might not have updated the draft count because we assumed the
         // message would send. Ensure that the displayed count is correct.
         drafts.sync_count();
 
         const draft = drafts.draft_model.getDraft(request.draft_id);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(request.draft_id, draft);
+
+        if (!draft) {
+            return;
+        }
+
+        message.content = request.content;
+        draft.message = message;
+        echo.message_send_error(message.id, response);
+        drafts.draft_model.editDraft(message.draft_id, draft);
+        failed_message_queue.push(message);
+
+        if (!retry_failed) {
+            retry_failed_messages();
+        }
     }
 
     transmit.send_message(request, success, error);
+
     server_events.assert_get_events_running(
         "Restarting get_events because it was not running during send",
     );
