@@ -1,8 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_edit_content_button from "../templates/edit_content_button.hbs";
-
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as rows from "./rows.ts";
@@ -14,11 +12,13 @@ export function message_unhover(): void {
     if ($current_message_hover === undefined) {
         return;
     }
-    $current_message_hover.find(".edit_content").empty();
+    $current_message_hover.removeClass("can-edit-content can-move-message");
     $current_message_hover = undefined;
 }
 
 export function message_hover($message_row: JQuery): void {
+    // This code is performance-sensitive, so we must perform any DOM updates
+    // together. We don't want to trigger reflows multiple times.
     const id = rows.id($message_row);
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(id);
@@ -26,14 +26,11 @@ export function message_hover($message_row: JQuery): void {
 
     if ($current_message_hover && rows.id($current_message_hover) === id) {
         return;
-    } else if (message.locally_echoed) {
-        return;
     }
 
-    message_unhover();
     $current_message_hover = $message_row;
 
-    if (!message.sent_by_me) {
+    if (!message.sent_by_me || message.locally_echoed) {
         // The actions and reactions icon hover logic is handled entirely by CSS
         return;
     }
@@ -46,12 +43,20 @@ export function message_hover($message_row: JQuery): void {
         can_move_message,
     };
     const $edit_content = $message_row.find(".edit_content");
-    $edit_content.html(render_edit_content_button(args));
-
-    if (args.is_content_editable) {
+    if (args.is_content_editable && !$edit_content.hasClass("can-edit-content")) {
+        $edit_content.addClass("can-edit-content");
+        $edit_content.removeClass("can-move-message");
         $edit_content.attr("data-tooltip-template-id", "edit-content-tooltip-template");
-    } else if (args.can_move_message) {
+    } else if (
+        !args.is_content_editable &&
+        args.can_move_message &&
+        !$edit_content.hasClass("can-move-message")
+    ) {
+        $edit_content.addClass("can-move-message");
+        $edit_content.removeClass("can-edit-content");
         $edit_content.attr("data-tooltip-template-id", "move-message-tooltip-template");
+    } else if (!args.is_content_editable && !args.can_move_message) {
+        $edit_content.removeClass("can-edit-content can-move-message");
     }
 }
 

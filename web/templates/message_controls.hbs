@@ -1,6 +1,9 @@
 {{#unless is_archived}}
     {{#if msg/sent_by_me}}
-        <div class="edit_content message_control_button"></div>
+        <div class="edit_content message_control_button">
+            <i class="message-controls-icon zulip-icon zulip-icon-edit edit_content_button edit_message_button" role="button" tabindex="0" aria-label="{{t 'Edit message' }} (e)"></i>
+            <i class="message-controls-icon zulip-icon zulip-icon-move-alt move_message_button edit_message_button" role="button" tabindex="0" aria-label="{{t 'Move message' }} (m)"></i>
+        </div>
     {{/if}}
 
     {{#unless msg/sent_by_me}}
