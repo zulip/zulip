@@ -68,8 +68,18 @@ function rerender_ui(): void {
     } else {
         $unmatched_streams_table.css("display", "table-row-group");
     }
+    update_notification_banner();
 }
+function update_notification_banner(): void {
+    const permission = Notification.permission;
 
+    if (permission === "granted") {
+        $(".desktop-setting-notications").hide();
+        $(".send_test_notification").show();
+    } else {
+        $(".send_test_notification").hide();
+    }
+}
 function change_notification_setting(
     setting: string,
     value: number | string | boolean,
@@ -338,7 +348,16 @@ export function set_up(settings_panel: SettingsPanel): void {
             $t({defaultMessage: "This is a test notification from Zulip."}),
         );
     });
-
+    $("#settings_content").on("click", ".request-desktop-notifications", (e) => {
+        e.preventDefault();
+        void Notification.requestPermission().then((permission) => {
+            if (permission === "granted") {
+                update_notification_banner();
+            } else if (permission === "denied") {
+                window.open("/help/desktop-notifications#check-platform-settings", "_blank");
+            }
+        });
+    });
     set_enable_marketing_emails_visibility();
     rerender_ui();
 }
