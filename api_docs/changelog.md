@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 370**
+
+* [`PATCH /streams/{stream_id}`](/api/update-stream): Added `is_archived`
+parameter to support unarchiving archived channels. Sending a PATCH request
+with `is_archived: false` will unarchive the specified channel.
+
 **Feature level 369**
 
 * [`POST /register`](/api/register-queue): Added `navigation_tour_video_url`
