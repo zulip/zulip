@@ -146,7 +146,7 @@ class TestReadReceipts(ZulipTestCase):
         self.assertIn(cordelia.id, result.json()["user_ids"])
 
         # Disable read receipts setting; confirm Cordelia no longer appears.
-        do_change_user_setting(cordelia, "send_read_receipts", False, acting_user=cordelia)
+        do_change_user_setting([cordelia], "send_read_receipts", False, acting_user=cordelia)
 
         result = self.client_get(f"/json/messages/{message_id}/read_receipts")
         self.assert_json_success(result)
@@ -171,7 +171,7 @@ class TestReadReceipts(ZulipTestCase):
         self.assertIn(bot.id, result.json()["user_ids"])
 
         # Disable read receipts setting; confirm bot no longer appears.
-        do_change_user_setting(bot, "send_read_receipts", False, acting_user=bot)
+        do_change_user_setting([bot], "send_read_receipts", False, acting_user=bot)
 
         result = self.client_get(f"/json/messages/{message_id}/read_receipts")
         self.assert_json_success(result)

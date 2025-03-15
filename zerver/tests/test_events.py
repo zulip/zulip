@@ -551,7 +551,7 @@ class NormalActionsTest(BaseAction):
         user = self.user_profile
 
         do_change_user_setting(
-            user_profile=user,
+            user_profiles=[user],
             setting_name="automatically_follow_topics_where_mentioned",
             setting_value=True,
             acting_user=None,
@@ -742,14 +742,14 @@ class NormalActionsTest(BaseAction):
         message_id = self.send_stream_message(hamlet, "Verona", "hello", "topic")
         message = Message.objects.get(id=message_id)
         do_change_user_setting(
-            user_profile=hamlet,
+            user_profiles=[hamlet],
             setting_name="automatically_follow_topics_policy",
             setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
         )
         for setting_value in UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES:
             do_change_user_setting(
-                user_profile=hamlet,
+                user_profiles=[hamlet],
                 setting_name="automatically_unmute_topics_in_muted_streams_policy",
                 setting_value=setting_value,
                 acting_user=None,
@@ -768,14 +768,14 @@ class NormalActionsTest(BaseAction):
         #                ON_SEND               |                       ON_SEND                         |     FOLLOWED
         #                ON_SEND               |                        NEVER                          |     FOLLOWED
         do_change_user_setting(
-            user_profile=hamlet,
+            user_profiles=[hamlet],
             setting_name="automatically_follow_topics_policy",
             setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
             acting_user=None,
         )
         for setting_value in UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES:
             do_change_user_setting(
-                user_profile=hamlet,
+                user_profiles=[hamlet],
                 setting_name="automatically_unmute_topics_in_muted_streams_policy",
                 setting_value=setting_value,
                 acting_user=None,
@@ -795,7 +795,7 @@ class NormalActionsTest(BaseAction):
         #          ON_INITIATION               |                       ON_SEND                         |     FOLLOWED
         #          ON_INITIATION               |                        NEVER                          |     FOLLOWED
         do_change_user_setting(
-            user_profile=hamlet,
+            user_profiles=[hamlet],
             setting_name="automatically_follow_topics_policy",
             setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
@@ -804,7 +804,7 @@ class NormalActionsTest(BaseAction):
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES
         ):
             do_change_user_setting(
-                user_profile=hamlet,
+                user_profiles=[hamlet],
                 setting_name="automatically_unmute_topics_in_muted_streams_policy",
                 setting_value=setting_value,
                 acting_user=None,
@@ -829,7 +829,7 @@ class NormalActionsTest(BaseAction):
         #             NEVER                    |                      ON_SEND                          |      UNMUTED
         #             NEVER                    |                       NEVER                           |        NA
         do_change_user_setting(
-            user_profile=hamlet,
+            user_profiles=[hamlet],
             setting_name="automatically_follow_topics_policy",
             setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
             acting_user=None,
@@ -840,7 +840,7 @@ class NormalActionsTest(BaseAction):
             UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
         ]:
             do_change_user_setting(
-                user_profile=hamlet,
+                user_profiles=[hamlet],
                 setting_name="automatically_unmute_topics_in_muted_streams_policy",
                 setting_value=setting_value,
                 acting_user=None,
@@ -861,7 +861,7 @@ class NormalActionsTest(BaseAction):
             visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
         )
         do_change_user_setting(
-            user_profile=hamlet,
+            user_profiles=[hamlet],
             setting_name="automatically_unmute_topics_in_muted_streams_policy",
             setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
@@ -873,7 +873,7 @@ class NormalActionsTest(BaseAction):
             )
 
         do_change_user_setting(
-            user_profile=hamlet,
+            user_profiles=[hamlet],
             setting_name="automatically_unmute_topics_in_muted_streams_policy",
             setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
             acting_user=None,
@@ -888,7 +888,7 @@ class NormalActionsTest(BaseAction):
         assert isinstance(events[0]["message"]["avatar_url"], str)
 
         do_change_user_setting(
-            hamlet,
+            [hamlet],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -2222,7 +2222,7 @@ class NormalActionsTest(BaseAction):
         assert isinstance(events[0]["person"]["avatar_url_medium"], str)
 
         do_change_user_setting(
-            self.user_profile,
+            [self.user_profile],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=self.user_profile,
@@ -2279,7 +2279,7 @@ class NormalActionsTest(BaseAction):
 
     def test_change_user_delivery_email_email_address_visibility_admins(self) -> None:
         do_change_user_setting(
-            self.user_profile,
+            [self.user_profile],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
@@ -2300,7 +2300,7 @@ class NormalActionsTest(BaseAction):
 
     def test_change_user_delivery_email_email_address_visibility_everyone(self) -> None:
         do_change_user_setting(
-            self.user_profile,
+            [self.user_profile],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -2328,7 +2328,7 @@ class NormalActionsTest(BaseAction):
         self.set_up_db_for_testing_user_access()
         cordelia = self.example_user("cordelia")
         do_change_user_setting(
-            cordelia,
+            [cordelia],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
@@ -2711,7 +2711,7 @@ class NormalActionsTest(BaseAction):
                 continue
 
             do_change_user_setting(
-                self.user_profile, notification_setting, False, acting_user=self.user_profile
+                [self.user_profile], notification_setting, False, acting_user=self.user_profile
             )
 
             num_events = 2
@@ -2728,7 +2728,7 @@ class NormalActionsTest(BaseAction):
             for setting_value in [True, False]:
                 with self.verify_action(num_events=num_events) as events:
                     do_change_user_setting(
-                        self.user_profile,
+                        [self.user_profile],
                         notification_setting,
                         setting_value,
                         acting_user=self.user_profile,
@@ -2744,7 +2744,7 @@ class NormalActionsTest(BaseAction):
                     num_events=num_events,
                 ) as events:
                     do_change_user_setting(
-                        self.user_profile,
+                        [self.user_profile],
                         notification_setting,
                         setting_value,
                         acting_user=self.user_profile,
@@ -2763,7 +2763,7 @@ class NormalActionsTest(BaseAction):
         for val in [True, False]:
             with self.verify_action(num_events=3) as events:
                 do_change_user_setting(
-                    self.user_profile,
+                    [self.user_profile],
                     presence_enabled_setting,
                     val,
                     acting_user=self.user_profile,
@@ -2779,7 +2779,7 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action(num_events=2) as events:
             do_change_user_setting(
-                self.user_profile, notification_setting, "ding", acting_user=self.user_profile
+                [self.user_profile], notification_setting, "ding", acting_user=self.user_profile
             )
         check_user_settings_update("events[0]", events[0])
         check_update_global_notifications("events[1]", events[1], "ding")
@@ -2789,14 +2789,14 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action(num_events=2) as events:
             do_change_user_setting(
-                self.user_profile, notification_setting, 2, acting_user=self.user_profile
+                [self.user_profile], notification_setting, 2, acting_user=self.user_profile
             )
         check_user_settings_update("events[0]", events[0])
         check_update_global_notifications("events[1]", events[1], 2)
 
         with self.verify_action(num_events=2) as events:
             do_change_user_setting(
-                self.user_profile, notification_setting, 1, acting_user=self.user_profile
+                [self.user_profile], notification_setting, 1, acting_user=self.user_profile
             )
         check_user_settings_update("events[0]", events[0])
         check_update_global_notifications("events[1]", events[1], 1)
@@ -2806,14 +2806,14 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action(num_events=2) as events:
             do_change_user_setting(
-                self.user_profile, notification_setting, 3, acting_user=self.user_profile
+                [self.user_profile], notification_setting, 3, acting_user=self.user_profile
             )
         check_user_settings_update("events[0]", events[0])
         check_update_global_notifications("events[1]", events[1], 3)
 
         with self.verify_action(num_events=2) as events:
             do_change_user_setting(
-                self.user_profile, notification_setting, 2, acting_user=self.user_profile
+                [self.user_profile], notification_setting, 2, acting_user=self.user_profile
             )
         check_user_settings_update("events[0]", events[0])
         check_update_global_notifications("events[1]", events[1], 2)
@@ -2824,7 +2824,7 @@ class NormalActionsTest(BaseAction):
         for setting_value in UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES:
             with self.verify_action(num_events=1) as events:
                 do_change_user_setting(
-                    self.user_profile,
+                    [self.user_profile],
                     notification_setting,
                     setting_value,
                     acting_user=self.user_profile,
@@ -2837,7 +2837,7 @@ class NormalActionsTest(BaseAction):
         for setting_value in UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES:
             with self.verify_action(num_events=1) as events:
                 do_change_user_setting(
-                    self.user_profile,
+                    [self.user_profile],
                     notification_setting,
                     setting_value,
                     acting_user=self.user_profile,
@@ -3790,7 +3790,7 @@ class NormalActionsTest(BaseAction):
     def test_display_setting_event_not_sent(self) -> None:
         with self.verify_action(state_change_expected=True, user_settings_object=True) as events:
             do_change_user_setting(
-                self.user_profile,
+                [self.user_profile],
                 "web_home_view",
                 "all_messages",
                 acting_user=self.user_profile,
@@ -3800,7 +3800,7 @@ class NormalActionsTest(BaseAction):
     def test_notification_setting_event_not_sent(self) -> None:
         with self.verify_action(state_change_expected=True, user_settings_object=True) as events:
             do_change_user_setting(
-                self.user_profile,
+                [self.user_profile],
                 "enable_sounds",
                 False,
                 acting_user=self.user_profile,
@@ -4323,7 +4323,7 @@ class UserDisplayActionTest(BaseAction):
                 num_events=num_events, user_settings_object=user_settings_object
             ) as events:
                 do_change_user_setting(
-                    self.user_profile,
+                    [self.user_profile],
                     setting_name,
                     value,
                     acting_user=self.user_profile,
@@ -4354,7 +4354,7 @@ class UserDisplayActionTest(BaseAction):
         num_events = 2
         with self.verify_action(num_events=num_events) as events:
             do_change_user_setting(
-                self.user_profile,
+                [self.user_profile],
                 "allow_private_data_export",
                 True,
                 acting_user=self.user_profile,
@@ -4369,7 +4369,7 @@ class UserDisplayActionTest(BaseAction):
         num_events = 1
         with self.verify_action(num_events=num_events, state_change_expected=False) as events:
             do_change_user_setting(
-                cordelia,
+                [cordelia],
                 "allow_private_data_export",
                 True,
                 acting_user=cordelia,
@@ -4383,7 +4383,7 @@ class UserDisplayActionTest(BaseAction):
         for value in values:
             with self.verify_action(num_events=num_events) as events:
                 do_change_user_setting(
-                    self.user_profile,
+                    [self.user_profile],
                     "timezone",
                     value,
                     acting_user=self.user_profile,
@@ -4397,7 +4397,7 @@ class UserDisplayActionTest(BaseAction):
         cordelia = self.example_user("cordelia")
         do_change_user_role(self.user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
         do_change_user_setting(
-            cordelia,
+            [cordelia],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
             acting_user=None,
@@ -4405,7 +4405,7 @@ class UserDisplayActionTest(BaseAction):
 
         with self.verify_action(user_settings_object=True) as events:
             do_change_user_setting(
-                cordelia,
+                [cordelia],
                 "email_address_visibility",
                 UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
                 acting_user=self.user_profile,
@@ -4415,7 +4415,7 @@ class UserDisplayActionTest(BaseAction):
 
         with self.verify_action(user_settings_object=True) as events:
             do_change_user_setting(
-                cordelia,
+                [cordelia],
                 "email_address_visibility",
                 UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
                 acting_user=self.user_profile,
@@ -4863,7 +4863,7 @@ class SubscribeActionTest(BaseAction):
 class DraftActionTest(BaseAction):
     def do_enable_drafts_synchronization(self, user_profile: UserProfile) -> None:
         do_change_user_setting(
-            user_profile, "enable_drafts_synchronization", True, acting_user=self.user_profile
+            [user_profile], "enable_drafts_synchronization", True, acting_user=self.user_profile
         )
 
     def test_draft_create_event(self) -> None:

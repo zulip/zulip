@@ -1206,7 +1206,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_get_custom_profile_fields_from_api_for_single_user(self) -> None:
         self.login("iago")
         do_change_user_setting(
-            self.example_user("iago"),
+            [self.example_user("iago")],
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
