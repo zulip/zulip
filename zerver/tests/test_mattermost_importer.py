@@ -902,6 +902,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             group_direct_messages[0].content, "Who is going to Hogsmeade this weekend?\n\n"
         )
+        self.assertEqual(group_direct_messages[0].topic_name(), "")
 
         personal_messages = messages.filter(recipient__type=Recipient.PERSONAL).order_by(
             "date_sent"
@@ -914,6 +915,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertTrue(personal_messages[0].has_attachment)
         self.assertTrue(personal_messages[0].has_image)
         self.assertTrue(personal_messages[0].has_link)
+        self.assertEqual(personal_messages[0].topic_name(), "")
 
     def test_do_convert_data_with_masking(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
