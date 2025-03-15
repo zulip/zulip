@@ -56,6 +56,7 @@
                 </a>
             </li>
             {{/if}}
+            {{#unless is_stream_archived}}
             {{#if has_unread_messages}}
             <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
                 <a role="menuitem" class="sidebar-popover-mark-topic-read popover-menu-link" tabindex="0">
@@ -71,6 +72,7 @@
                 </a>
             </li>
             {{/if}}
+            {{/unless}}
             <li role="none" class="link-item popover-menu-list-item">
                 <a role="menuitem" class="sidebar-popover-copy-link-to-topic popover-menu-link" data-clipboard-text="{{ url }}" tabindex="0">
                     <i class="popover-menu-icon zulip-icon zulip-icon-link-alt" aria-hidden="true"></i>
