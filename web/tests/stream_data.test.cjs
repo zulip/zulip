@@ -946,6 +946,29 @@ test("mark_archived", () => {
     stream_data.mark_archived(99999);
 });
 
+test("mark_unarchived", () => {
+    const canada = {
+        stream_id: 101,
+        name: "Canada",
+        is_archived: true,
+        subscribed: true,
+    };
+
+    stream_data.add_sub(canada);
+    assert.ok(stream_data.is_stream_archived(canada.stream_id));
+    assert.ok(stream_data.is_subscribed(canada.stream_id));
+
+    stream_data.mark_unarchived(canada.stream_id);
+    assert.ok(!stream_data.is_stream_archived(canada.stream_id));
+    assert.ok(stream_data.is_subscribed(canada.stream_id));
+    const sub = stream_data.get_sub("Canada");
+    assert.equal(sub.stream_id, canada.stream_id);
+    assert.equal(sub.is_archived, false);
+
+    blueslip.expect("warn", "Failed to unarchive stream 99999");
+    stream_data.mark_unarchived(99999);
+});
+
 test("notifications", ({override}) => {
     const india = {
         stream_id: 102,

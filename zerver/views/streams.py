@@ -38,6 +38,7 @@ from zerver.actions.streams import (
     do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
+    do_unarchive_stream,
     get_subscriber_ids,
 )
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
@@ -269,6 +270,7 @@ def update_stream_backend(
     is_web_public: Json[bool] | None = None,
     new_name: str | None = None,
     message_retention_days: Json[str] | Json[int] | None = None,
+    is_archived: Json[bool] | None = None,
     can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
@@ -395,6 +397,9 @@ def update_stream_backend(
         do_change_stream_message_retention_days(
             stream, user_profile, new_message_retention_days_value
         )
+
+    if is_archived is not None and not is_archived:
+        do_unarchive_stream(stream, stream.name, acting_user=None)
 
     if description is not None:
         if "\n" in description:

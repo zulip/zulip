@@ -21237,6 +21237,16 @@ paths:
                   example: false
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
+                is_archived:
+                  description: |
+                    A boolean indicating whether the channel is
+                    [archived](/help/archive-a-channel) or
+                    unarchived. Currently only allows unarchiving
+                    previously archived channels.
+
+                    **Changes**: New in Zulip 11.0 (feature level 388).
+                  type: boolean
+                  example: true
                 can_add_subscribers_group:
                   allOf:
                     - description: |

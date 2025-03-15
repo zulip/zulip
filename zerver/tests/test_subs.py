@@ -2193,19 +2193,24 @@ class StreamAdminTest(ZulipTestCase):
             self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
 
     def test_unarchive_stream(self) -> None:
-        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
         cordelia = self.example_user("cordelia")
+        self.login_user(iago)
 
         stream = self.make_stream("new_stream", is_web_public=True)
         was_invite_only = stream.invite_only
         was_web_public = stream.is_web_public
         was_history_public = stream.history_public_to_subscribers
 
-        self.subscribe(hamlet, stream.name)
+        self.subscribe(iago, stream.name)
         self.subscribe(cordelia, stream.name)
         do_deactivate_stream(stream, acting_user=None)
+
+        data = {}
+        data["is_archived"] = "false"
         with self.capture_send_event_calls(expected_num_events=3) as events:
-            do_unarchive_stream(stream, new_name="new_stream", acting_user=None)
+            result = self.api_patch(iago, f"/json/streams/{stream.id}", info=data)
+            self.assert_json_success(result)
 
         # Clients will get this event only if they support
         # archived_channels client capability.
@@ -2239,7 +2244,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(stream.history_public_to_subscribers, was_history_public)
 
         self.assertEqual(
-            {hamlet.id, cordelia.id},
+            {iago.id, cordelia.id},
             {
                 sub.user_profile_id
                 for sub in get_active_subscriptions_for_stream_id(
@@ -2247,6 +2252,71 @@ class StreamAdminTest(ZulipTestCase):
                 )
             },
         )
+
+    def test_permissions_and_archiving_behavior(self) -> None:
+        """
+        Test permissions for archiving and unarchiving streams, and ensure users without
+        the necessary permissions cannot archive or unarchive a stream.
+        """
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+
+        self.login_user(desdemona)
+        stream = self.make_stream("test_stream", invite_only=False)
+        self.subscribe(iago, stream.name)
+
+        do_deactivate_stream(stream, acting_user=None)
+        stream.refresh_from_db()
+        self.assertTrue(stream.deactivated)
+
+        data = {}
+        data["is_archived"] = "false"
+        result = self.api_patch(desdemona, f"/json/streams/{stream.id}", info=data)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertFalse(stream.deactivated)
+
+        cordelia = self.example_user("cordelia")
+        self.login_user(cordelia)
+
+        stream1 = self.make_stream("test_stream_1", invite_only=False)
+        self.subscribe(iago, stream1.name)
+
+        do_deactivate_stream(stream1, acting_user=None)
+        stream1.refresh_from_db()
+        self.assertTrue(stream1.deactivated)
+
+        result = self.api_patch(cordelia, f"/json/streams/{stream1.id}", info=data)
+        self.assert_json_error(result, "You do not have permission to administer this channel.")
+
+        do_change_stream_group_based_setting(
+            stream1,
+            "can_administer_channel_group",
+            UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+            acting_user=desdemona,
+        )
+
+        result = self.api_patch(cordelia, f"/json/streams/{stream1.id}", info=data)
+        self.assert_json_success(result)
+
+        stream1.refresh_from_db()
+        self.assertFalse(stream1.deactivated)
+
+    def test_is_archived_true_does_not_archive_stream(self) -> None:
+        """
+        Ensure that passing `is_archived` as True does not archive the stream.
+        """
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        stream = self.make_stream("test_stream", invite_only=False)
+        self.subscribe(iago, stream.name)
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}", {"is_archived": orjson.dumps(True).decode()}
+        )
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertFalse(stream.deactivated)
 
     def test_deactivate_stream_backend_requires_existing_stream(self) -> None:
         user_profile = self.example_user("hamlet")

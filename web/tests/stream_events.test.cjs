@@ -335,7 +335,7 @@ test("update_property", ({override}) => {
         stream_data.subscribe_myself(sub);
 
         const stub = make_stub();
-        override(stream_settings_ui, "update_settings_for_archived", stub.f);
+        override(stream_settings_ui, "update_settings_for_archived_and_unarchived", stub.f);
         override(settings_streams, "update_default_streams_table", noop);
         override(message_live_update, "rerender_messages_view", noop);
 
@@ -364,9 +364,34 @@ test("update_property", ({override}) => {
         assert.equal(removed_sidebar_rows, 1);
     }
 
-    // We do not live update unarchiving stream, but we test this for coverage.
+    // Test unarchiving stream
     {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_settings_for_archived_and_unarchived", stub.f);
+        override(message_live_update, "rerender_messages_view", noop);
+
+        let bookend_updates = 0;
+        override(message_lists.current, "update_trailing_bookend", () => {
+            bookend_updates += 1;
+        });
+
+        let added_sidebar_rows = 0;
+        override(stream_list, "add_sidebar_row", () => {
+            added_sidebar_rows += 1;
+        });
+
+        compose_state.set_stream_id(stream_id);
+
+        // Unarchive the stream
         stream_events.update_property(stream_id, "is_archived", false);
+        assert.ok(!stream_data.is_stream_archived(stream_id));
+        assert.ok(stream_data.is_subscribed(stream_id));
+
+        const args = stub.get_args("sub");
+        assert.equal(args.sub.stream_id, stream_id);
+
+        assert.equal(bookend_updates, 1);
+        assert.equal(added_sidebar_rows, 1);
     }
 
     // Test deprecated properties for coverage.

@@ -28,14 +28,18 @@
           id="preview-stream-button"
           hidden=(not should_display_preview_button)
           }}
-        {{#if can_archive_stream}}
         {{> ../components/icon_button
           icon="archive"
           intent="danger"
           custom_classes="tippy-zulip-delayed-tooltip deactivate"
           data-tippy-content=(t 'Archive channel')
           }}
-        {{/if}}
+        {{> ../components/icon_button
+          icon="unarchive"
+          intent="success"
+          custom_classes="tippy-zulip-delayed-tooltip reactivate"
+          data-tippy-content=(t 'Unarchive channel')
+          }}
     </div>
     {{/with}}
 </div>

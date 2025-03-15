@@ -361,25 +361,29 @@ export function update_settings_for_subscribed(slim_sub: StreamSubscription): vo
     update_empty_left_panel_message();
 }
 
-export function update_settings_for_archived(slim_sub: StreamSubscription): void {
+export function update_settings_for_archived_and_unarchived(slim_sub: StreamSubscription): void {
     if (!overlays.streams_open()) {
         return;
     }
 
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     update_left_panel_row(sub);
+
+    const has_archived_channels = stream_data.get_archived_subs().length > 0;
+    if (has_archived_channels) {
+        $(".stream_settings_filter_container").removeClass("hide_filter");
+    } else {
+        $(".stream_settings_filter_container").addClass("hide_filter");
+        stream_settings_components.set_filter_dropdown_value(
+            stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
+        );
+    }
     redraw_left_panel();
-    $(".stream_settings_filter_container").removeClass("hide_filter");
 
     const active_data = stream_settings_components.get_active_data();
     if (active_data.id === sub.stream_id) {
-        const $archive_button = $(".stream_settings_header .deactivate");
-
-        if ($archive_button.length > 0) {
-            $archive_button.remove();
-        }
-
         stream_settings_components.set_right_panel_title(sub);
+        stream_ui_updates.update_settings_button_for_archive_and_unarchive(sub);
         stream_ui_updates.update_toggler_for_sub(sub);
         stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
         stream_ui_updates.update_stream_privacy_icon_in_settings(sub);

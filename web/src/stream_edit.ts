@@ -5,6 +5,7 @@ import type * as tippy from "tippy.js";
 import {z} from "zod";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
+import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.hbs";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
@@ -284,6 +285,7 @@ export function show_settings_for(node: HTMLElement): void {
 
     $edit_container.addClass("show");
 
+    stream_ui_updates.update_settings_button_for_archive_and_unarchive(sub);
     show_subscription_settings(sub);
     settings_org.set_message_retention_setting_dropdown(sub);
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
@@ -742,6 +744,41 @@ export function initialize(): void {
             help_link: "/help/archive-a-channel",
             html_body,
             on_click: do_archive_stream,
+        });
+
+        $(".dialog_submit_button").attr("data-stream-id", stream_id);
+    });
+
+    $("#channels_overlay_container").on("click", ".reactivate", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const stream_id = get_stream_id(this);
+        function do_unarchive_stream(): void {
+            channel.patch({
+                url: `/json/streams/${stream_id}`,
+                data: {is_archived: false},
+                error(xhr) {
+                    ui_report.error(
+                        $t_html({defaultMessage: "Failed"}),
+                        xhr,
+                        $(".stream_change_property_info"),
+                    );
+                },
+            });
+        }
+
+        const stream = sub_store.get(stream_id);
+        const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({stream});
+        const html_body = render_settings_reactivation_stream_modal();
+
+        confirm_dialog.launch({
+            html_heading: $t_html(
+                {defaultMessage: "Unarchive <z-link></z-link>?"},
+                {"z-link": () => stream_name_with_privacy_symbol_html},
+            ),
+            id: "unarchive-stream-modal",
+            html_body,
+            on_click: do_unarchive_stream,
         });
 
         $(".dialog_submit_button").attr("data-stream-id", stream_id);
