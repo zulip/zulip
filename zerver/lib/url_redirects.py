@@ -127,6 +127,7 @@ HELP_DOCUMENTATION_REDIRECTS: list[URLRedirect] = [
     URLRedirect("/help/roles-and-permissions", "/help/user-roles"),
     URLRedirect("/help/add-or-remove-users-from-a-channel", "/help/subscribe-users-to-a-channel"),
     URLRedirect("/help/disable-message-edit-history", "/help/restrict-message-edit-history-access"),
+    URLRedirect("/help/edit-a-bot", "/help/manage-a-bot"),
 ]
 
 LANDING_PAGE_REDIRECTS = [

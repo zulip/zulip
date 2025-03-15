@@ -264,7 +264,7 @@
 * [Integrations overview](/help/integrations-overview)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 * [Generate integration URL](/help/generate-integration-url)
-* [Edit a bot](/help/edit-a-bot)
+* [Manage a bot](/help/manage-a-bot)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Request an integration](/help/request-an-integration)
 * [Restrict bot creation](/help/restrict-bot-creation)

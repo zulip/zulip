@@ -4,8 +4,8 @@ You can view a list of all bots in your organization, including deactivated bots
 
 Organization [administrators](/help/user-roles) can also
 [deactivate](/help/deactivate-or-reactivate-a-bot),
-[reactivate](/help/deactivate-or-reactivate-a-bot) or
-[edit](/help/edit-a-bot#edit-a-bot-in-your-organization) any bot on the list.
+[reactivate](/help/deactivate-or-reactivate-a-bot), or
+[manage](/help/manage-a-bot#manage-a-bot-in-your-organization) any bot on the list.
 
 {start_tabs}
 
@@ -17,6 +17,6 @@ Organization [administrators](/help/user-roles) can also
 
 * [Bots overview](/help/bots-overview)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
-* [Edit a bot](/help/edit-a-bot)
+* [Manage a bot](/help/manage-a-bot)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [View your bots](/help/view-your-bots)

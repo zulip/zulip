@@ -1,10 +1,10 @@
-# Edit a bot
+# Manage a bot
 
-Zulip lets you edit the properties of any bot for which you are the owner.
-Organization [administrators](/help/user-roles) can also edit any
+Zulip lets you manage the properties of any bot for which you are the owner.
+Organization [administrators](/help/user-roles) can also manage any
 active bot in the organization.
 
-## Edit your bot
+## Manage your bot
 
 {start_tabs}
 
@@ -13,11 +13,11 @@ active bot in the organization.
 1. Click the **manage bot** (<i class="zulip-icon zulip-icon-user-cog"></i>)
    icon on the profile card for the bot you want to manage.
 
-1. Edit bot information as desired, and click **Save changes**.
+1. Update bot information as desired, and click **Save changes**.
 
 {end_tabs}
 
-## Edit a bot in your organization
+## Manage a bot in your organization
 
 {!admin-only.md!}
 
@@ -28,7 +28,7 @@ active bot in the organization.
 1. In the **Actions** column, click the **manage bot** (<i class="zulip-icon
    zulip-icon-user-cog"></i>) icon for the bot you want to manage.
 
-1. Edit bot information as desired, and click **Save changes**.
+1. Update bot information as desired, and click **Save changes**.
 
 {end_tabs}
 

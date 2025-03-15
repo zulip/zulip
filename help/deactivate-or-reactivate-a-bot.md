@@ -78,6 +78,6 @@ bot, regardless of who owns them.
 * [Bots overview](/help/bots-overview)
 * [Integrations overview](/help/integrations-overview)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
-* [Edit a bot](/help/edit-a-bot)
+* [Manage a bot](/help/manage-a-bot)
 * [Restrict bot creation](/help/restrict-bot-creation)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)

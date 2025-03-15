@@ -85,7 +85,7 @@ is visible and available for anyone to use.
 
 * [Integrations overview](/help/integrations-overview)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
-* [Edit a bot](/help/edit-a-bot)
+* [Manage a bot](/help/manage-a-bot)
 * [Request an integration](/help/request-an-integration)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Restrict bot creation](/help/restrict-bot-creation)
