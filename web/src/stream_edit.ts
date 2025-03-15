@@ -4,7 +4,7 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import {z} from "zod";
 
-import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
+import render_settings_deactivation_or_reactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_or_reactivate_stream.hbs";
 import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
@@ -353,6 +353,16 @@ function stream_setting_changed(elem: HTMLInputElement): void {
 export function archive_stream(stream_id: number, $alert_element: JQuery): void {
     channel.del({
         url: "/json/streams/" + stream_id,
+        error(xhr) {
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $alert_element);
+        },
+    });
+}
+
+export function unarchive_stream(stream_id: number, $alert_element: JQuery): void {
+    channel.patch({
+        url: `/json/streams/${stream_id}`,
+        data: {is_archived: false},
         error(xhr) {
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $alert_element);
         },
@@ -725,12 +735,13 @@ export function initialize(): void {
             is_signup_announcements_stream ||
             is_zulip_update_announcements_stream;
 
-        const html_body = render_settings_deactivation_stream_modal({
+        const html_body = render_settings_deactivation_or_reactivation_stream_modal({
             stream_name_with_privacy_symbol_html,
             is_new_stream_announcements_stream,
             is_signup_announcements_stream,
             is_zulip_update_announcements_stream,
             is_announcement_stream,
+            is_archived: false,
         });
 
         confirm_dialog.launch({
@@ -742,6 +753,39 @@ export function initialize(): void {
             help_link: "/help/archive-a-channel",
             html_body,
             on_click: do_archive_stream,
+        });
+
+        $(".dialog_submit_button").attr("data-stream-id", stream_id);
+    });
+
+    $("#channels_overlay_container").on("click", ".reactivate", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        function do_unarchive_stream(): void {
+            const stream_id = Number($(".dialog_submit_button").attr("data-stream-id"));
+            unarchive_stream(stream_id, $(".stream_change_property_info"));
+        }
+
+        const stream_id = get_stream_id(this);
+        const stream = sub_store.get(stream_id);
+
+        const stream_name_with_privacy_symbol_html = render_inline_decorated_stream_name({stream});
+
+        const html_body = render_settings_deactivation_or_reactivation_stream_modal({
+            stream_name_with_privacy_symbol_html,
+            is_archived: true,
+        });
+
+        confirm_dialog.launch({
+            html_heading: $t_html(
+                {defaultMessage: "Unarchive <z-link></z-link>?"},
+                {"z-link": () => stream_name_with_privacy_symbol_html},
+            ),
+            id: "unarchive-stream-modal",
+            help_link: "/help/archive-a-channel",
+            html_body,
+            on_click: do_unarchive_stream,
         });
 
         $(".dialog_submit_button").attr("data-stream-id", stream_id);
