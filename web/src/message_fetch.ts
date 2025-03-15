@@ -393,7 +393,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         url: "/json/messages",
         data,
         success(raw_data) {
-            popup_banners.close_connection_error_popup_banner(true);
+            popup_banners.close_connection_error_popup_banner("message_fetch");
             const data = response_schema.parse(raw_data);
             get_messages_success(data, opts);
         },
@@ -402,7 +402,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 // We successfully reached the server, so hide the
                 // connection error notice, even if the request failed
                 // for other reasons.
-                popup_banners.close_connection_error_popup_banner(true);
+                popup_banners.close_connection_error_popup_banner("message_fetch");
             }
 
             if (
@@ -442,13 +442,14 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 return;
             }
 
-            popup_banners.open_connection_error_popup_banner({
+            const delay_secs = util.get_retry_backoff_seconds(xhr, attempt, true);
+            popup_banners.open_connection_error_popup_banner("message_fetch", {
                 on_retry_callback() {
                     load_messages(opts, attempt + 1);
                 },
+                retry_seconds: delay_secs,
             });
 
-            const delay_secs = util.get_retry_backoff_seconds(xhr, attempt, true);
             setTimeout(() => {
                 load_messages(opts, attempt + 1);
             }, delay_secs * 1000);

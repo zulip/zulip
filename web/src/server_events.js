@@ -192,7 +192,7 @@ function get_events({dont_block = false} = {}) {
             try {
                 get_events_xhr = undefined;
                 get_events_failures = 0;
-                popup_banners.close_connection_error_popup_banner();
+                popup_banners.close_connection_error_popup_banner("server_events");
 
                 get_events_success(data.events);
             } catch (error) {
@@ -232,7 +232,7 @@ function get_events({dont_block = false} = {}) {
                         on_retry_callback() {
                             restart_get_events({dont_block: true});
                         },
-                        is_get_events_error: true,
+                        retry_seconds: retry_delay_secs,
                     });
                 } else {
                     popup_banners.close_connection_error_popup_banner();
