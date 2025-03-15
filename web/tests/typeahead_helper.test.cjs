@@ -705,8 +705,8 @@ test("sort_recipients pm counts", () => {
 
     assert.deepEqual(get_typeahead_result("b", linux_sub.stream_id, "Linux topic"), [
         "b_user_3@zulip.net",
-        "b_user_2@zulip.net",
         "b_user_1@zulip.net",
+        "b_user_2@zulip.net",
         "b_bot@example.com",
         "a_bot@zulip.com",
         "a_user@zulip.org",

@@ -279,32 +279,43 @@ export function compare_users_for_streams(
     current_stream_id: number,
     current_topic: string,
 ): number {
-    // Now handle actual people users.
-    // give preference to subscribed users first
+    // Typeahead sorting priority order for users in stream conversations:
+
+    // 1. Subscribers over non-subscribers.
 
     // If the client does not yet have complete subscriber data,
     // "unknown" and "not subscribed" are both represented as false here.
     const a_is_sub = stream_data.is_user_subscribed(current_stream_id, user_a.user_id);
     const b_is_sub = stream_data.is_user_subscribed(current_stream_id, user_b.user_id);
-
     if (a_is_sub && !b_is_sub) {
         return -1;
     } else if (!a_is_sub && b_is_sub) {
         return 1;
     }
 
-    const preference = recent_senders.compare_by_recency(
+    // 2. Users who have sent messages to the current topic over those who haven't sent to the current topic.
+    // 3. Users who have sent messages to the stream over those who haven't sent to the stream.
+    const result = recent_senders.compare_by_recency(
         user_a,
         user_b,
         current_stream_id,
         current_topic,
     );
-
-    if (preference !== 0) {
-        return preference;
+    if (result > 0) {
+        return 1;
+    } else if (result < 0) {
+        return -1;
     }
 
-    return compare_users_by_interaction(user_a, user_b);
+    // 4. Users have PMed with, over users haven't PMed with.
+    const a_is_partner = pm_conversations.is_partner(user_a.user_id);
+    const b_is_partner = pm_conversations.is_partner(user_b.user_id);
+    if (a_is_partner && !b_is_partner) {
+        return -1;
+    } else if (!a_is_partner && b_is_partner) {
+        return 1;
+    }
+    return 0;
 }
 
 export function compare_users_for_pms(user_a: User, user_b: User): number {
