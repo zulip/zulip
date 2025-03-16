@@ -2266,11 +2266,13 @@ body:not(.spectator-view) {
 
 .inbox-filter-dropdown-list-container,
 .recent-view-filter-dropdown-list-container {
+    overflow: visible;
+
     .list-item {
         &:focus {
             border-radius: 4px;
             outline: 1px solid var(--color-outline-focus) !important;
-            outline-offset: -1px;
+            outline-offset: -2px;
             background-color: transparent;
         }
 
