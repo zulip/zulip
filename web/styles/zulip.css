@@ -2254,7 +2254,11 @@ body:not(.spectator-view) {
 
 .inbox-filter-dropdown-list-container,
 .recent-view-filter-dropdown-list-container {
+    padding: 1px;
+
     .list-item {
+        margin: 1px;
+        
         &:focus {
             border-radius: 4px;
             outline: 1px solid var(--color-outline-focus) !important;
