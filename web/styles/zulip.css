@@ -2224,12 +2224,7 @@ body:not(.spectator-view) {
         }
 
         .dropdown-list-edit {
-            color: var(--color-text-neutral-icon-button);
             right: 30px;
-
-            &:hover {
-                color: var(--color-text-neutral-icon-button-hover);
-            }
         }
 
         &:focus,

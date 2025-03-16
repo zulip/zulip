@@ -6,7 +6,7 @@
                 {{#if bold_current_selection}}
                     <span class="dropdown-list-bold-selected">{{name}}</span>
                     {{#if has_edit_icon}}
-                        {{> components/icon_button custom_classes="dropdown-list-edit" intent="brand" icon="edit" aria-label=(t "Edit snippet") }}
+                        {{> components/icon_button custom_classes="dropdown-list-edit" intent="neutral" icon="edit" aria-label=(t "Edit snippet") }}
                     {{/if}}
                     {{#if has_delete_icon}}
                         {{> components/icon_button custom_classes="dropdown-list-delete" intent="danger" icon="trash" aria-label=(t "Delete snippet") }}
