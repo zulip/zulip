@@ -12,6 +12,7 @@ const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const user_groups = zrequire("user_groups");
+const compose_validate = zrequire("compose_validate");
 
 set_global("document", {
     querySelector() {},
@@ -337,7 +338,11 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
             success(payload);
             stub_state.send_msg_called += 1;
         });
-
+        override_rewire(
+            compose_validate,
+            "check_compose_content_validity_and_adjust_send_button_tooltip",
+            noop,
+        );
         override_rewire(echo, "reify_message_id", (local_id, message_id) => {
             assert.equal(typeof local_id, "string");
             assert.equal(typeof message_id, "number");
@@ -637,6 +642,12 @@ test_ui("update_fade", ({override, override_rewire}) => {
     override_rewire(compose_recipient, "update_narrow_to_recipient_visibility", () => {
         update_narrow_to_recipient_visibility_called = true;
     });
+    override_rewire(
+        compose_validate,
+        "check_compose_content_validity_and_adjust_send_button_tooltip",
+        noop,
+    );
+
     override_rewire(drafts, "update_compose_draft_count", noop);
     override(compose_pm_pill, "get_user_ids", () => []);
 

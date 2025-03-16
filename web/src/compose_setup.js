@@ -71,14 +71,6 @@ export function initialize() {
         compose_ui.handle_keyup(event, $("textarea#compose-textarea").expectOne());
     });
 
-    $("#compose-send-button").on("mouseenter", () => {
-        compose_validate.validate(false, false);
-        compose_validate.update_send_button_status();
-    });
-    $("#compose-send-button").on("mouseleave", () => {
-        $("#compose-send-button").removeClass("disabled-message-send-controls");
-    });
-
     $("textarea#compose-textarea").on("input propertychange", () => {
         if ($("#compose").hasClass("preview_mode")) {
             compose.render_preview_area();
@@ -606,6 +598,7 @@ export function initialize() {
         const $input = $("input#stream_message_recipient_topic");
         $input.val("");
         $input.trigger("focus");
+        compose_validate.check_compose_content_validity_and_adjust_send_button_tooltip();
     });
 
     $("input#stream_message_recipient_topic").on("focus", () => {

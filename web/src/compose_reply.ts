@@ -11,6 +11,7 @@ import * as compose_paste from "./compose_paste.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as compose_validate from "./compose_validate.ts";
 import * as copy_messages from "./copy_messages.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -432,4 +433,5 @@ export function initialize(): void {
     $("body").on("click", ".compose_reply_button", () => {
         respond_to_message({trigger: "reply button"});
     });
+    compose_validate.check_compose_content_validity_and_adjust_send_button_tooltip();
 }

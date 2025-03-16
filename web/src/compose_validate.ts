@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import type * as tippy from "tippy.js";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
@@ -29,9 +30,11 @@ import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import type {UserOrMention} from "./typeahead_helper.ts";
+import {parse_html} from "./ui_util.ts";
 import {toggle_user_group_info_popover} from "./user_group_popover.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 let user_acknowledged_stream_wildcard = false;
@@ -67,6 +70,10 @@ export let wildcard_mention_threshold = 15;
 
 export function set_upload_in_progress(status: boolean): void {
     upload_in_progress = status;
+    if (!upload_in_progress) {
+        check_compose_content_validity_and_adjust_send_button_tooltip();
+        return;
+    }
     update_send_button_status();
 }
 
@@ -928,10 +935,47 @@ export function check_overflow_text($container: JQuery): number {
             set_message_too_long_for_compose(false);
         }
     }
-
+    // update the flags on every keystroke and disable the
+    // send button based on the state of the validity flags.
+    check_compose_content_validity_and_adjust_send_button_tooltip();
     return text.length;
 }
 
+export let check_compose_content_validity_and_adjust_send_button_tooltip = function (): void {
+    // We call this in a setTimeout to defer execution
+    // because of the faulty behavior on page reload,
+    // where the flags are set incorrectly.
+    // A reproducer for this is having a recipient in the
+    // pill-container and reloading the page.
+    // The tooltip content asks you to enter a
+    // valid recipient, which is faulty.
+    setTimeout(() => {
+        const is_valid = validate(false, false);
+        update_send_button_status();
+
+        const $send_button = $("#compose-send-button");
+        const element: tippy.ReferenceElement = util.the($send_button);
+        const instance = element._tippy;
+        if (!instance) {
+            return;
+        }
+        if (!is_valid) {
+            instance.setContent(get_disabled_send_tooltip());
+        } else {
+            if (user_settings.enter_sends) {
+                instance.setContent(parse_html($("#send-enter-tooltip-template").html()));
+            } else {
+                instance.setContent(parse_html($("#send-ctrl-enter-tooltip-template").html()));
+            }
+        }
+    }, 0);
+};
+
+export function rewire_check_compose_content_validity_and_adjust_send_button_tooltip(
+    value: typeof check_compose_content_validity_and_adjust_send_button_tooltip,
+): void {
+    check_compose_content_validity_and_adjust_send_button_tooltip = value;
+}
 export function validate_message_length($container: JQuery, trigger_flash = true): boolean {
     const $textarea = $container.find<HTMLTextAreaElement>(".message-textarea");
     // Match the behavior of compose_state.message_content of trimming trailing whitespace

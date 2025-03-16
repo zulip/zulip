@@ -119,6 +119,7 @@ export function update_on_recipient_change(): void {
     compose_validate.warn_if_guest_in_dm_recipient();
     drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
+    compose_validate.check_compose_content_validity_and_adjust_send_button_tooltip();
 }
 
 export function get_posting_policy_error_message(): string {
@@ -179,6 +180,7 @@ function switch_message_type(message_type: MessageType): void {
     update_compose_for_message_type(opts);
     update_compose_area_placeholder_text();
     compose_ui.set_focus(opts);
+    compose_validate.check_compose_content_validity_and_adjust_send_button_tooltip();
 }
 
 function update_recipient_label(stream_id?: number): void {

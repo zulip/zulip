@@ -228,6 +228,9 @@ export function initialize(): void {
             }
             return undefined;
         },
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 
     tippy.delegate("body", {

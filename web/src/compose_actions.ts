@@ -460,6 +460,7 @@ export let cancel = (): void => {
         }
         return;
     }
+    compose_validate.check_compose_content_validity_and_adjust_send_button_tooltip();
     hide_box();
     clear_box();
     compose_banner.clear_message_sent_banners();

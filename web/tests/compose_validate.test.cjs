@@ -531,11 +531,15 @@ test_ui("test_stream_posting_permission", ({mock_template, override}) => {
     assert.ok(!banner_rendered);
 });
 
-test_ui("test_check_overflow_text", ({override}) => {
+test_ui("test_check_overflow_text", ({override, override_rewire}) => {
     const fake_compose_box = new FakeComposeBox();
 
     override(realm, "max_message_length", 10000);
-
+    override_rewire(
+        compose_validate,
+        "check_compose_content_validity_and_adjust_send_button_tooltip",
+        noop,
+    );
     // RED
     {
         fake_compose_box.set_textarea_val("a".repeat(10005));

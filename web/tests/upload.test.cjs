@@ -28,6 +28,9 @@ mock_esm("@uppy/tus", {default: class Tus {}});
 const compose_actions = mock_esm("../src/compose_actions");
 const compose_reply = mock_esm("../src/compose_reply");
 const compose_state = mock_esm("../src/compose_state");
+const compose_validate = mock_esm("../src/compose_validate", {
+    set_upload_in_progress: noop,
+});
 const rows = mock_esm("../src/rows");
 
 const compose_ui = zrequire("compose_ui");
@@ -248,9 +251,9 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
         banner_shown = true;
         return "<banner-stub>";
     });
-    override(compose_state, "get_message_type", () => "stream");
+    override(compose_validate, "set_upload_in_progress", () => {});
     await upload.upload_files(uppy, config, files);
-    assert.ok($("#compose-send-button").hasClass("disabled-message-send-controls"));
+    assert.ok(!$("#compose-send-button").hasClass("disabled-message-send-controls"));
     assert.ok(banner_shown);
     assert.ok(compose_ui_insert_syntax_and_focus_called);
     assert.ok(compose_ui_autosize_textarea_called);
@@ -456,7 +459,7 @@ test("copy_paste", ({override, override_rewire}) => {
     assert.equal(upload_files_called, false);
 });
 
-test("uppy_events", ({override, override_rewire, mock_template}) => {
+test("uppy_events", ({override_rewire, mock_template}) => {
     $("#compose_banners .upload_banner .moving_bar").css = noop;
     $("#compose_banners .upload_banner").length = 0;
     override_rewire(compose_ui, "smart_insert_inline", noop);
@@ -518,7 +521,6 @@ test("uppy_events", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_ui, "autosize_textarea", () => {
         compose_ui_autosize_textarea_called = true;
     });
-    override(compose_state, "get_message_type", () => "stream");
     on_upload_success_callback(file, response);
 
     assert.ok(compose_ui_replace_syntax_called);

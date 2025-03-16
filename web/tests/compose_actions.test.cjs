@@ -9,6 +9,7 @@ const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 const user_groups = zrequire("user_groups");
+const compose_validate = zrequire("compose_validate");
 
 const nobody = {
     name: "role:nobody",
@@ -162,6 +163,12 @@ test("start", ({override, override_rewire, mock_template}) => {
 
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
+    override_rewire(
+        compose_validate,
+        "check_compose_content_validity_and_adjust_send_button_tooltip",
+        noop,
+    );
+
     override_rewire(stream_data, "can_post_messages_in_stream", () => true);
     mock_template("inline_decorated_stream_name.hbs", false, noop);
 
@@ -311,6 +318,12 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
 
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
+    override_rewire(
+        compose_validate,
+        "check_compose_content_validity_and_adjust_send_button_tooltip",
+        noop,
+    );
+
     override_private_message_recipient({override});
     mock_template("inline_decorated_stream_name.hbs", false, noop);
 
@@ -495,6 +508,11 @@ test("quote_message", ({disallow, override, override_rewire}) => {
             assert.equal(topic, "");
         }
     });
+    override_rewire(
+        compose_validate,
+        "check_compose_content_validity_and_adjust_send_button_tooltip",
+        noop,
+    );
 
     $("textarea#compose-textarea").caret = noop;
     $("textarea#compose-textarea").attr("id", "compose-textarea");
