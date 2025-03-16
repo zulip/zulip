@@ -621,14 +621,14 @@ const make_emoji = (emoji_dict) => ({
 const sorted_user_list = [
     ali_item,
     alice_item,
-    cordelia_item,
-    hal_item, // Early Hal
-    gael_item,
     harry_item,
-    hamlet_item, // King Hamlet
+    hal_item, // Early Hal
     lear_item,
     twin1_item, // Mark Twin
     twin2_item,
+    gael_item,
+    hamlet_item, // King Hamlet
+    cordelia_item,
     othello_item,
 ];
 
@@ -1268,14 +1268,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 let expected_value = [
                     ali_item,
                     alice_item,
-                    cordelia_item,
-                    hal_item,
-                    gael_item,
                     harry_item,
-                    hamlet_item,
+                    hal_item,
                     lear_item,
                     twin1_item,
                     twin2_item,
+                    gael_item,
+                    hamlet_item,
+                    cordelia_item,
                     othello_item,
                     hamletcharacters,
                     backend,
@@ -1816,8 +1816,8 @@ test("begins_typeahead", ({override, override_rewire}) => {
     const users_and_all_mention = [
         ...sorted_user_list,
         mention_all,
-        notification_bot_item,
         welcome_bot_item,
+        notification_bot_item,
     ];
     const users_and_user_groups = [
         ...sorted_user_list,
@@ -1827,8 +1827,8 @@ test("begins_typeahead", ({override, override_rewire}) => {
         call_center, // "folks working in support",
         admins,
         members,
-        notification_bot_item,
         welcome_bot_item,
+        notification_bot_item,
     ];
     const mention_everyone = broadcast_item(ct.broadcast_mentions()[1]);
     function mentions_with_silent_marker(mentions, is_silent) {
@@ -1853,8 +1853,8 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 othello_item,
                 cordelia_item,
                 mention_everyone,
-                notification_bot_item,
                 welcome_bot_item,
+                notification_bot_item,
             ],
             false,
         ),
@@ -1863,7 +1863,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
         "test @_**o",
 
         mentions_with_silent_marker(
-            [othello_item, cordelia_item, admins, members, notification_bot_item, welcome_bot_item],
+            [othello_item, cordelia_item, admins, members, welcome_bot_item, notification_bot_item],
             true,
         ),
     );
@@ -1874,8 +1874,8 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 othello_item,
                 cordelia_item,
                 mention_everyone,
-                notification_bot_item,
                 welcome_bot_item,
+                notification_bot_item,
             ],
             false,
         ),
@@ -1883,7 +1883,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals(
         "test @_*k",
         mentions_with_silent_marker(
-            [hamlet_item, lear_item, twin1_item, twin2_item, backend],
+            [lear_item, hamlet_item, twin1_item, twin2_item, backend],
             true,
         ),
     );
@@ -1917,12 +1917,12 @@ test("begins_typeahead", ({override, override_rewire}) => {
             [
                 ali_item,
                 alice_item,
-                cordelia_item,
-                gael_item,
-                hamlet_item,
                 lear_item,
                 twin1_item,
                 twin2_item,
+                gael_item,
+                hamlet_item,
+                cordelia_item,
                 othello_item,
                 notification_bot_item,
             ],
@@ -1935,12 +1935,12 @@ test("begins_typeahead", ({override, override_rewire}) => {
             [
                 ali_item,
                 alice_item,
-                cordelia_item,
-                gael_item,
-                hamlet_item,
                 lear_item,
                 twin1_item,
                 twin2_item,
+                gael_item,
+                hamlet_item,
+                cordelia_item,
                 othello_item,
                 admins,
                 notification_bot_item,
@@ -1952,8 +1952,8 @@ test("begins_typeahead", ({override, override_rewire}) => {
         "test\n @l",
         mentions_with_silent_marker(
             [
-                cordelia_item,
                 lear_item,
+                cordelia_item,
                 ali_item,
                 alice_item,
                 hal_item,
@@ -1970,8 +1970,8 @@ test("begins_typeahead", ({override, override_rewire}) => {
         "test\n @_l",
         mentions_with_silent_marker(
             [
-                cordelia_item,
                 lear_item,
+                cordelia_item,
                 ali_item,
                 alice_item,
                 hal_item,
@@ -1999,8 +1999,8 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 othello_item,
                 cordelia_item,
                 mention_everyone,
-                notification_bot_item,
                 welcome_bot_item,
+                notification_bot_item,
             ],
             false,
         ),
@@ -2008,7 +2008,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals(
         "test @_o",
         mentions_with_silent_marker(
-            [othello_item, cordelia_item, admins, members, notification_bot_item, welcome_bot_item],
+            [othello_item, cordelia_item, admins, members, welcome_bot_item, notification_bot_item],
             true,
         ),
     );
@@ -2491,7 +2491,7 @@ test("typeahead_results", ({override}) => {
     assert_mentions_matches("oor ", []);
     assert_mentions_matches("oor o", []);
     assert_mentions_matches("oor of venice", []);
-    assert_mentions_matches("King ", [not_silent(hamlet_item), not_silent(lear_item)]);
+    assert_mentions_matches("King ", [not_silent(lear_item), not_silent(hamlet_item)]);
     assert_mentions_matches("King H", [not_silent(hamlet_item)]);
     assert_mentions_matches("King L", [not_silent(lear_item)]);
     assert_mentions_matches("delia lear", []);
@@ -2516,10 +2516,10 @@ test("typeahead_results", ({override}) => {
         not_silent(mention_everyone),
         not_silent(hal_item),
         not_silent(alice_item),
-        not_silent(cordelia_item),
+        not_silent(lear_item),
         not_silent(gael_item),
         not_silent(hamlet_item),
-        not_silent(lear_item),
+        not_silent(cordelia_item),
         not_silent(othello_item),
         not_silent(hamletcharacters),
         not_silent(call_center),
@@ -2535,8 +2535,8 @@ test("typeahead_results", ({override}) => {
         not_silent(mention_everyone),
         not_silent(mention_topic),
         not_silent(cordelia_item),
-        not_silent(notification_bot_item),
         not_silent(welcome_bot_item),
+        not_silent(notification_bot_item),
     ]);
 
     // Autocomplete by slash commands.

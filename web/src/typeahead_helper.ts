@@ -240,39 +240,6 @@ export function sorter<T>(query: string, objs: T[], get_item: (x: T) => string):
     return [...results.matches, ...results.rest];
 }
 
-export function compare_users_by_interaction(user_a: User, user_b: User): number {
-    const count_a = people.get_recipient_count(user_a);
-    const count_b = people.get_recipient_count(user_b);
-
-    if (count_a > count_b) {
-        return -1;
-    } else if (count_a < count_b) {
-        return 1;
-    }
-
-    const a_is_partner = pm_conversations.is_partner(user_a.user_id);
-    const b_is_partner = pm_conversations.is_partner(user_b.user_id);
-
-    // This code will never run except in the rare case that one has no
-    // recent DM message history with a user, but does have some older
-    // message history that's outside the "recent messages only"
-    // data set powering people.get_recipient_count.
-    if (a_is_partner && !b_is_partner) {
-        return -1;
-    } else if (!a_is_partner && b_is_partner) {
-        return 1;
-    }
-
-    // We use alpha sort as a tiebreaker, which might be helpful for
-    // new users.
-    if (user_a.full_name < user_b.full_name) {
-        return -1;
-    } else if (user_a === user_b) {
-        return 0;
-    }
-    return 1;
-}
-
 export function compare_users_for_streams(
     user_a: User,
     user_b: User,
@@ -319,7 +286,38 @@ export function compare_users_for_streams(
 }
 
 export function compare_users_for_pms(user_a: User, user_b: User): number {
-    return compare_users_by_interaction(user_a, user_b);
+    // Typeahead sorting priority order for PM conversations:
+
+    // 1. Users who have PMed with each other over those who haven't.
+    const a_is_partner = pm_conversations.is_partner(user_a.user_id);
+    const b_is_partner = pm_conversations.is_partner(user_b.user_id);
+    if (a_is_partner && !b_is_partner) {
+        return -1;
+    } else if (!a_is_partner && b_is_partner) {
+        return 1;
+    }
+
+    // 2. Recipients with higher counts.
+    const count_a = people.get_recipient_count(user_a);
+    const count_b = people.get_recipient_count(user_b);
+    if (count_a > count_b) {
+        return -1;
+    } else if (count_a < count_b) {
+        return 1;
+    }
+
+    // 3. Normal users over bots: Already covered in sort_recipients,
+    // since users are always put over bots, there exists no scenario
+    // when users and bots are compared.
+
+    // 4. Users with shorter names over those with longer names
+    if (user_a.full_name.length < user_b.full_name.length) {
+        return -1;
+    } else if (user_a.full_name.length > user_b.full_name.length) {
+        return 1;
+    }
+
+    return 0;
 }
 
 export function compare_user_wildcard(): number {
