@@ -691,7 +691,7 @@ class NarrowBuilder:
         return set(self_recipient_ids) & set(narrow_recipient_ids)
 
     def by_dm_including(
-    self, query: Select, operand: str | int | Iterable[int], maybe_negate: ConditionTransform
+        self, query: Select, operand: str | int | Iterable[int], maybe_negate: ConditionTransform
     ) -> Select:
         # This operator does not support is_web_public_query.
         assert not self.is_web_public_query
@@ -723,7 +723,7 @@ class NarrowBuilder:
                     user_profiles.append(user)
                 except UserProfile.DoesNotExist:
                     continue
-            
+
             # If no valid users were found, raise an error
             if not user_profiles:
                 raise BadNarrowOperatorError("No valid users found in " + str(operand))
@@ -767,7 +767,9 @@ class NarrowBuilder:
                 *one_on_one_conditions,
                 and_(
                     column("recipient_id", Integer).in_(direct_message_group_recipient_ids),
-                ) if direct_message_group_recipient_ids else false(),
+                )
+                if direct_message_group_recipient_ids
+                else false(),
             ),
         )
         return query.where(maybe_negate(cond))
