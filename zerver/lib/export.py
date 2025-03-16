@@ -1093,7 +1093,14 @@ def custom_process_subscription_in_realm_config(
     if export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT:
         return subscriptions
 
-    consented_user_ids = context["exportable_user_ids"]
+    exportable_user_ids_from_context = context["exportable_user_ids"]
+    if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
+        assert exportable_user_ids_from_context is not None
+        consented_user_ids = exportable_user_ids_from_context
+    else:
+        assert export_type == RealmExport.EXPORT_PUBLIC
+        assert exportable_user_ids_from_context is None
+        consented_user_ids = set()
 
     def scrub_subscription_if_needed(subscription: Record) -> Record:
         if subscription["user_profile"] in consented_user_ids:
@@ -1239,7 +1246,23 @@ def get_randomized_exported_user_dummy_email_address(realm: Realm) -> str:
 
 def custom_fetch_user_profile(response: TableData, context: Context) -> None:
     realm = context["realm"]
+    export_type = context["export_type"]
     exportable_user_ids = context["exportable_user_ids"]
+    if export_type != RealmExport.EXPORT_FULL_WITH_CONSENT:
+        # exportable_user_ids should only be passed for consent exports.
+        assert exportable_user_ids is None
+
+    if export_type == RealmExport.EXPORT_PUBLIC:
+        # In a public export, none of the users are considered "exportable",
+        # as we're not exporting anybody's private data.
+        # The only difference between PUBLIC and a theoretical EXPORT_FULL_WITH_CONSENT
+        # where 0 users are consenting is that in a PUBLIC export we won't turn users
+        # into mirrr dummy users. A public export is meant to provide useful accounts
+        # for everybody after importing; just with all private data removed.
+        # The only exception to that will be users with email visibility set to "nobody",
+        # as they can't be functional accounts without a real delivery email - which can't
+        # be exported.
+        exportable_user_ids = set()
 
     query = UserProfile.objects.filter(realm_id=realm.id).exclude(
         # These were, in some early versions of Zulip, inserted into
@@ -1260,13 +1283,13 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
             if row["id"] in exportable_user_ids:
                 pass
             else:
-                # Non-exportable users should be turned into mirror dummies, with the notable exception
-                # of users who were already deactivated. Mirror dummies can sign up with the matching email
-                # address to reactivate their account. However, deactivated users are specifically meant to
-                # be prevented from re-entering the organization with the deactivated account.
-                # In order to maintain that restriction through the export->import cycle, we need to keep
-                # deactivated accounts as just deactivated - without flipping is_mirror_dummy=True.
-                if row["is_active"]:
+                # In a consent export, non-exportable users should be turned into mirror dummies, with the
+                # notable exception of users who were already deactivated. Mirror dummies can sign up with the
+                # matching email address to reactivate their account. However, deactivated users are
+                # specifically meant to be prevented from re-entering the organization with the deactivated
+                # account. In order to maintain that restriction through the export->import cycle, we need to
+                # keep deactivated accounts as just deactivated - without flipping is_mirror_dummy=True.
+                if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT and row["is_active"]:
                     row["is_mirror_dummy"] = True
                     row["is_active"] = False
 
@@ -1275,6 +1298,11 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
                     # Generate a dummy email address for them so that this preference can't be bypassed
                     # through the export feature.
                     row["delivery_email"] = get_randomized_exported_user_dummy_email_address(realm)
+                    if export_type == RealmExport.EXPORT_PUBLIC:
+                        # In a public export, this account obviously becomes unusable due to not having
+                        # a functional delivery_email.
+                        row["is_mirror_dummy"] = True
+                        row["is_active"] = False
 
                 for settings_name in RealmUserDefault.property_types:
                     if settings_name == "email_address_visibility":
@@ -1464,7 +1492,16 @@ def custom_fetch_realm_audit_logs_for_realm(response: TableData, context: Contex
     """
     realm = context["realm"]
     export_type = context["export_type"]
-    consenting_user_ids = context["exportable_user_ids"]
+    exportable_user_ids_from_context = context["exportable_user_ids"]
+    if export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT:
+        assert exportable_user_ids_from_context is None
+    elif export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
+        assert exportable_user_ids_from_context is not None
+        consenting_user_ids = exportable_user_ids_from_context
+    else:
+        assert export_type == RealmExport.EXPORT_PUBLIC
+        assert exportable_user_ids_from_context is None
+        consenting_user_ids = set()
 
     query = RealmAuditLog.objects.filter(realm=realm).select_related("acting_user")
     realmauditlog_objects = list(query)
@@ -2284,6 +2321,10 @@ def do_export_realm(
     export_as_active: bool | None = None,
 ) -> tuple[str, dict[str, int | dict[str, int]]]:
     response: TableData = {}
+    if exportable_user_ids is not None:
+        # We only use this arg for consent exports. Any other usage
+        # indicates a bug.
+        assert export_type == RealmExport.EXPORT_FULL_WITH_CONSENT
 
     # We need at least one thread running to export
     # UserMessage rows.  The management command should
