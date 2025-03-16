@@ -1410,13 +1410,46 @@ def fetch_client_data(response: TableData, client_ids: set[int]) -> None:
 
 def custom_fetch_direct_message_groups(response: TableData, context: Context) -> None:
     realm = context["realm"]
+    export_type = context["export_type"]
+    exportable_user_ids_from_context = context["exportable_user_ids"]
+
+    if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
+        assert exportable_user_ids_from_context is not None
+        consented_user_ids = exportable_user_ids_from_context
+    elif export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT:
+        assert exportable_user_ids_from_context is None
+    else:
+        assert export_type == RealmExport.EXPORT_PUBLIC
+        consented_user_ids = set()
+
     user_profile_ids = {
         r["id"] for r in response["zerver_userprofile"] + response["zerver_userprofile_mirrordummy"]
     }
 
-    # First we get all direct message groups involving someone in the realm.
-    realm_direct_message_group_subs = Subscription.objects.select_related("recipient").filter(
-        recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__in=user_profile_ids
+    recipient_filter = Q()
+    if export_type != RealmExport.EXPORT_FULL_WITHOUT_CONSENT:
+        # First we find the set of recipient ids of DirectMessageGroups which can be exported.
+        # A DirectMessageGroup can be exported only if at least one of its users is consenting
+        # to the export of private data.
+        # We can find this set by gathering all the Subscriptions of consenting users to
+        # DirectMessageGroups and collecting the set of recipient_ids from those Subscriptions.
+        exportable_direct_message_group_recipient_ids = set(
+            Subscription.objects.filter(
+                recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__in=consented_user_ids
+            )
+            .distinct("recipient_id")
+            .values_list("recipient_id", flat=True)
+        )
+        recipient_filter = Q(recipient_id__in=exportable_direct_message_group_recipient_ids)
+
+    # Now we fetch all the Subscription objects to the exportable DireMessageGroups in the realm.
+    realm_direct_message_group_subs = (
+        Subscription.objects.select_related("recipient")
+        .filter(
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+            user_profile__in=user_profile_ids,
+        )
+        .filter(recipient_filter)
     )
     realm_direct_message_group_recipient_ids = {
         sub.recipient_id for sub in realm_direct_message_group_subs
@@ -1456,6 +1489,12 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
     response["zerver_huddle"] = make_raw(
         DirectMessageGroup.objects.filter(id__in=direct_message_group_ids)
     )
+    if export_type == RealmExport.EXPORT_PUBLIC and any(
+        response[t] for t in ["_huddle_recipient", "_huddle_subscription", "zerver_huddle"]
+    ):
+        raise AssertionError(
+            "Public export should not result in exporting any data in _huddle tables"
+        )
 
 
 def custom_fetch_scheduled_messages(response: TableData, context: Context) -> None:
