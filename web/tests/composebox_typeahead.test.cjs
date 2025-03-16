@@ -2342,7 +2342,7 @@ test("filter_and_sort_mentions (normal)", ({override}) => {
     const mention_all = broadcast_item(ct.broadcast_mentions()[0]);
     assert.deepEqual(
         suggestions,
-        possibly_silent_list([mention_all, ali_item, alice_item, hal_item, call_center], is_silent),
+        possibly_silent_list([ali_item, alice_item, mention_all, hal_item, call_center], is_silent),
     );
 
     // call_center group is shown in typeahead even when user is member of
@@ -2351,7 +2351,7 @@ test("filter_and_sort_mentions (normal)", ({override}) => {
     suggestions = ct.filter_and_sort_mentions(is_silent, "al");
     assert.deepEqual(
         suggestions,
-        possibly_silent_list([mention_all, ali_item, alice_item, hal_item, call_center], is_silent),
+        possibly_silent_list([ali_item, alice_item, mention_all, hal_item, call_center], is_silent),
     );
 
     // call_center group is not shown in typeahead when user is neither
@@ -2361,7 +2361,7 @@ test("filter_and_sort_mentions (normal)", ({override}) => {
     suggestions = ct.filter_and_sort_mentions(is_silent, "al");
     assert.deepEqual(
         suggestions,
-        possibly_silent_list([mention_all, ali_item, alice_item, hal_item], is_silent),
+        possibly_silent_list([ali_item, alice_item, mention_all, hal_item], is_silent),
     );
 });
 
@@ -2513,8 +2513,8 @@ test("typeahead_results", ({override}) => {
     // Here, we suggest only "everyone" instead of both the matching
     // "everyone" and "stream" wildcard mentions.
     assert_mentions_matches("e", [
-        not_silent(mention_everyone),
         not_silent(hal_item),
+        not_silent(mention_everyone),
         not_silent(alice_item),
         not_silent(lear_item),
         not_silent(gael_item),
@@ -2532,9 +2532,9 @@ test("typeahead_results", ({override}) => {
     // Here, we suggest both "everyone" and "topic".
     assert_mentions_matches("o", [
         not_silent(othello_item),
+        not_silent(cordelia_item),
         not_silent(mention_everyone),
         not_silent(mention_topic),
-        not_silent(cordelia_item),
         not_silent(welcome_bot_item),
         not_silent(notification_bot_item),
     ]);

@@ -672,6 +672,9 @@ test("sort_recipients all mention", () => {
         ...matches.map((user) => user_item(user)),
         broadcast_item(all_obj),
     ];
+
+    peer_data.add_subscriber(linux_sub.stream_id, people.get_user_id("a_user@zulip.org"));
+
     const results = th.sort_recipients({
         users: user_and_mention_items,
         query: "a",
@@ -680,8 +683,8 @@ test("sort_recipients all mention", () => {
     });
 
     assertSameEmails(results, [
+        a_user_item, // subscriber over wildcard
         broadcast_item(all_obj),
-        a_user_item,
         a_bot_item,
         b_user_1_item,
         b_user_2_item,
@@ -876,7 +879,7 @@ test("sort broadcast mentions for stream message type", () => {
 
     assert.deepEqual(
         results2.map((r) => r.user.email),
-        ["all", "everyone", "stream", "channel", "topic", zman.email, a_user.email],
+        [zman.email, a_user.email, "all", "everyone", "stream", "channel", "topic"],
     );
 });
 
@@ -916,8 +919,8 @@ test("test compare directly for stream message type", () => {
     const all_obj_item = broadcast_item(all_obj);
 
     assert.equal(th.compare_people_for_relevance(all_obj_item, all_obj_item), 0);
-    assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), -1);
-    assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), 1);
+    assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), -1);
+    assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), 1);
 });
 
 test("test compare directly for direct message", () => {

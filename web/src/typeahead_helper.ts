@@ -15,6 +15,7 @@ import type {
     TopicSuggestion,
 } from "./composebox_typeahead.ts";
 import type {InputPillContainer} from "./input_pill.ts";
+import {pm_ids_set} from "./narrow_state.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {PseudoMentionUser, User} from "./people.ts";
@@ -320,16 +321,75 @@ export function compare_users_for_pms(user_a: User, user_b: User): number {
     return 0;
 }
 
-export function compare_user_wildcard(): number {
+// The properties from which at least one should be satisfied by the user to be kept above wildcards.
+export function get_properties_to_satisy(
+    user: User,
+    stream_id?: number,
+    topic?: string,
+): boolean[] {
+    let properties_to_satisfy;
+    const user_pmed = pm_conversations.is_partner(user.user_id);
+
+    if (stream_id === undefined || topic === undefined) {
+        // PM conversations
+
+        // Wildcard gets higher priority over:
+        // Users who have not PMed with the current user.
+        properties_to_satisfy = [user_pmed];
+    } else {
+        // Stream conversations
+
+        // Wildcard gets higher priority over:
+        // The non-subscribers who have neither participated in the topic nor stream
+        // and also with whom the current user hasn't PMed.
+
+        const user_is_sub = stream_data.is_user_subscribed(stream_id, user.user_id);
+
+        // The max_id_for_stream_topic_sender() will be > 0 if the user have sent at least one message to the topic
+        const user_is_sender_to_current_topic =
+            recent_senders.max_id_for_stream_topic_sender({
+                stream_id,
+                topic,
+                sender_id: user.user_id,
+            }) > 0;
+
+        const user_is_sender_to_current_stream =
+            recent_senders.max_id_for_stream_sender({
+                stream_id,
+                sender_id: user.user_id,
+            }) > 0;
+
+        properties_to_satisfy = [
+            user_is_sub,
+            user_is_sender_to_current_topic,
+            user_is_sender_to_current_stream,
+            user_pmed,
+        ];
+    }
+    return properties_to_satisfy;
+}
+
+export function compare_user_wildcard(
+    properties_to_satisfy: boolean[],
+    view_is_stream: boolean,
+): number {
     // Assumption for convenience: Assuming that the user is user_a and wildcard is b.
     // If the other way around is true, just change the sign (multiplying with -1)
 
-    // If message type is private, wildcards are put at the bottom
+    // If message type is private or not viewing a stream conversation, with being it a 1:1 DM, wildcards are put at the bottom
     const message_type = compose_state.get_message_type();
-    if (message_type === "private") {
+    const pm_members_count = pm_ids_set().size;
+    if ((message_type === "private" || !view_is_stream) && pm_members_count <= 1) {
         return -1;
     }
 
+    // Streams or Group DMs
+    const atleast_one_satisifies = properties_to_satisfy.some(Boolean);
+    if (atleast_one_satisifies) {
+        return -1;
+    }
+
+    // If any rule didn't get satisfy for a user, put wildcard at the top.
     return 1;
 }
 
@@ -364,11 +424,17 @@ export function compare_people_for_relevance(
             return compare_users_for_pms(person_a.user, person_b.user);
         }
         // a: user, b: wildcard
-        return compare_user_wildcard();
+        return compare_user_wildcard(
+            get_properties_to_satisy(person_a.user, current_stream_id, current_topic),
+            view_is_stream,
+        );
     }
     if (person_b.type === "user") {
         // a: wildcard, b: user
-        return -compare_user_wildcard();
+        return -compare_user_wildcard(
+            get_properties_to_satisy(person_b.user, current_stream_id, current_topic),
+            view_is_stream,
+        );
     }
 
     // Both a and b are wildcards
