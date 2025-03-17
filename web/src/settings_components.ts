@@ -1811,6 +1811,7 @@ export function get_group_assigned_realm_permissions(group: UserGroup): {
                     setting_name,
                     group.id,
                     can_edit,
+                    "realm",
                 );
             if (assigned_permission_object !== undefined) {
                 assigned_permission_objects.push(assigned_permission_object);
@@ -1854,6 +1855,7 @@ export function get_group_assigned_stream_permissions(group: UserGroup): {
                     setting_name,
                     group.id,
                     can_edit_settings,
+                    "stream",
                 );
             if (assigned_permission_object !== undefined) {
                 assigned_permission_objects.push(assigned_permission_object);
@@ -1892,6 +1894,7 @@ export function get_group_assigned_user_group_permissions(group: UserGroup): {
                     setting_name,
                     group.id,
                     can_edit_settings,
+                    "group",
                 );
             if (assigned_permission_object !== undefined) {
                 assigned_permission_objects.push(assigned_permission_object);
