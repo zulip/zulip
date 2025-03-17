@@ -274,24 +274,28 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_is_operator_for_resolved_topics(self) -> None:
         term = NarrowParameter(operator="is", operand="resolved")
-        self._do_add_term_test(term, "WHERE (subject LIKE %(subject_1)s || '%%'")
+        self._do_add_term_test(
+            term, "WHERE (subject LIKE %(subject_1)s || '%%') AND is_channel_message"
+        )
 
     def test_add_term_using_is_operator_for_negated_resolved_topics(self) -> None:
         term = NarrowParameter(operator="is", operand="resolved", negated=True)
-        self._do_add_term_test(term, "WHERE (subject NOT LIKE %(subject_1)s || '%%'")
+        self._do_add_term_test(
+            term, "WHERE NOT ((subject LIKE %(subject_1)s || '%%') AND is_channel_message)"
+        )
 
     def test_add_term_using_is_operator_for_followed_topics(self) -> None:
         term = NarrowParameter(operator="is", operand="followed", negated=False)
         self._do_add_term_test(
             term,
-            "EXISTS (SELECT 1 \nFROM zerver_usertopic \nWHERE zerver_usertopic.user_profile_id = %(param_1)s AND zerver_usertopic.visibility_policy = %(param_2)s AND upper(zerver_usertopic.topic_name) = upper(zerver_message.subject) AND zerver_usertopic.recipient_id = zerver_message.recipient_id)",
+            "EXISTS (SELECT 1 \nFROM zerver_usertopic \nWHERE zerver_usertopic.user_profile_id = %(param_1)s AND zerver_usertopic.visibility_policy = %(param_2)s AND upper(zerver_usertopic.topic_name) = upper(zerver_message.subject) AND zerver_message.is_channel_message AND zerver_usertopic.recipient_id = zerver_message.recipient_id)",
         )
 
     def test_add_term_using_is_operator_for_negated_followed_topics(self) -> None:
         term = NarrowParameter(operator="is", operand="followed", negated=True)
         self._do_add_term_test(
             term,
-            "NOT (EXISTS (SELECT 1 \nFROM zerver_usertopic \nWHERE zerver_usertopic.user_profile_id = %(param_1)s AND zerver_usertopic.visibility_policy = %(param_2)s AND upper(zerver_usertopic.topic_name) = upper(zerver_message.subject) AND zerver_usertopic.recipient_id = zerver_message.recipient_id))",
+            "NOT (EXISTS (SELECT 1 \nFROM zerver_usertopic \nWHERE zerver_usertopic.user_profile_id = %(param_1)s AND zerver_usertopic.visibility_policy = %(param_2)s AND upper(zerver_usertopic.topic_name) = upper(zerver_message.subject) AND zerver_message.is_channel_message AND zerver_usertopic.recipient_id = zerver_message.recipient_id))",
         )
 
     def test_add_term_using_is_operator_for_muted_topics(self) -> None:
@@ -310,19 +314,27 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_topic_operator_and_lunch_operand(self) -> None:
         term = NarrowParameter(operator="topic", operand="lunch")
-        self._do_add_term_test(term, "WHERE upper(subject) = upper(%(param_1)s)")
+        self._do_add_term_test(
+            term, "WHERE upper(subject) = upper(%(param_1)s) AND is_channel_message"
+        )
 
     def test_add_term_using_topic_operator_lunch_operand_and_negated(self) -> None:  # NEGATED
         term = NarrowParameter(operator="topic", operand="lunch", negated=True)
-        self._do_add_term_test(term, "WHERE upper(subject) != upper(%(param_1)s)")
+        self._do_add_term_test(
+            term, "WHERE NOT (upper(subject) = upper(%(param_1)s) AND is_channel_message)"
+        )
 
     def test_add_term_using_topic_operator_and_personal_operand(self) -> None:
         term = NarrowParameter(operator="topic", operand="personal")
-        self._do_add_term_test(term, "WHERE upper(subject) = upper(%(param_1)s)")
+        self._do_add_term_test(
+            term, "WHERE upper(subject) = upper(%(param_1)s) AND is_channel_message"
+        )
 
     def test_add_term_using_topic_operator_personal_operand_and_negated(self) -> None:  # NEGATED
         term = NarrowParameter(operator="topic", operand="personal", negated=True)
-        self._do_add_term_test(term, "WHERE upper(subject) != upper(%(param_1)s)")
+        self._do_add_term_test(
+            term, "WHERE NOT (upper(subject) = upper(%(param_1)s) AND is_channel_message)"
+        )
 
     def test_add_term_using_sender_operator(self) -> None:
         term = NarrowParameter(operator="sender", operand=self.othello_email)
@@ -550,7 +562,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="search", operand='"french fries"')
         self._do_add_term_test(
             term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
+            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
         )
 
     @override_settings(USING_PGROONGA=False)
@@ -558,7 +570,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
         self._do_add_term_test(
             term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
+            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
         )
 
     @override_settings(USING_PGROONGA=True)
@@ -4554,7 +4566,7 @@ class GetOldMessagesTest(ZulipTestCase):
         channel = get_stream("Scotland", realm)
         assert channel.recipient is not None
         recipient_id = channel.recipient.id
-        cond = f"AND NOT (recipient_id = {recipient_id} AND upper(subject) = upper('golf'))"
+        cond = f"AND NOT (recipient_id = {recipient_id} AND upper(subject) = upper('golf') AND is_channel_message)"
         self.assertIn(cond, queries[0].sql)
 
         # Next, verify the use_first_unread_anchor setting invokes
@@ -4612,7 +4624,7 @@ class GetOldMessagesTest(ZulipTestCase):
         expected_query = """\
 SELECT id AS message_id \n\
 FROM zerver_message \n\
-WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_1)s))\
+WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_1)s) AND is_channel_message)\
 """
 
         self.assertEqual(get_sqlalchemy_sql(query), expected_query)
@@ -4639,8 +4651,8 @@ WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_
         expected_query = """\
 SELECT id \n\
 FROM zerver_message \n\
-WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_1)s) \
-OR recipient_id = %(recipient_id_2)s AND upper(subject) = upper(%(param_2)s)) \
+WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_1)s) AND is_channel_message \
+OR recipient_id = %(recipient_id_2)s AND upper(subject) = upper(%(param_2)s) AND is_channel_message) \
 AND (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_3]))\
 """
         self.assertEqual(get_sqlalchemy_sql(query), expected_query)
@@ -4670,10 +4682,10 @@ AND (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_3]))\
         expected_query = """\
 SELECT id \n\
 FROM zerver_message \n\
-WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_1)s) \
-OR recipient_id = %(recipient_id_2)s AND upper(subject) = upper(%(param_2)s)) \
+WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_1)s) AND is_channel_message \
+OR recipient_id = %(recipient_id_2)s AND upper(subject) = upper(%(param_2)s) AND is_channel_message) \
 AND NOT (recipient_id IN (__[POSTCOMPILE_recipient_id_3]) \
-AND NOT (recipient_id = %(recipient_id_4)s AND upper(subject) = upper(%(param_3)s)))\
+AND NOT (recipient_id = %(recipient_id_4)s AND upper(subject) = upper(%(param_3)s) AND is_channel_message))\
 """
         self.assertEqual(get_sqlalchemy_sql(query), expected_query)
         params = get_sqlalchemy_query_params(query)
@@ -4946,7 +4958,7 @@ WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXIST
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND upper(subject) = upper('blah') ORDER BY message_id ASC \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND upper(subject) = upper('blah') AND is_channel_message ORDER BY message_id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
@@ -4958,7 +4970,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
 SELECT anon_1.message_id \n\
 FROM (SELECT id AS message_id \n\
 FROM zerver_message \n\
-WHERE realm_id = 2 AND recipient_id = {scotland_recipient} AND upper(subject) = upper('blah') ORDER BY zerver_message.id ASC \n\
+WHERE realm_id = 2 AND recipient_id = {scotland_recipient} AND upper(subject) = upper('blah') AND is_channel_message ORDER BY zerver_message.id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
@@ -5075,7 +5087,7 @@ WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type_id != 2 OR (EXIST
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only AND NOT zerver_stream.is_in_zephyr_realm OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (content ILIKE '%jumping%' OR subject ILIKE '%jumping%') AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', '"jumping" quickly')) ORDER BY message_id ASC \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (content ILIKE '%jumping%' OR subject ILIKE '%jumping%' AND is_channel_message) AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', '"jumping" quickly')) ORDER BY message_id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
