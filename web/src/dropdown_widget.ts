@@ -23,10 +23,7 @@ const noop = (): void => {
     // Empty function for default values.
 };
 
-export enum DataTypes {
-    NUMBER = "number",
-    STRING = "string",
-}
+export type DataType = "number" | "string";
 
 export type Option = {
     unique_id: number | string;
@@ -70,7 +67,7 @@ export type DropdownWidgetOptions = {
     tippy_props?: Partial<tippy.Props>;
     // NOTE: Any value other than `undefined` will be rendered when class is initialized.
     default_id?: string | number | undefined;
-    unique_id_type?: DataTypes;
+    unique_id_type?: DataType;
     // Text to show if the current value is not in `get_options()`.
     text_if_current_value_not_in_options?: string;
     hide_search_box?: boolean;
@@ -107,7 +104,7 @@ export class DropdownWidget {
     instance: tippy.Instance | undefined;
     default_id: string | number | undefined;
     current_value: string | number | undefined;
-    unique_id_type: DataTypes | undefined;
+    unique_id_type: DataType | undefined;
     $events_container: JQuery;
     text_if_current_value_not_in_options: string;
     hide_search_box: boolean;
@@ -492,7 +489,7 @@ export class DropdownWidget {
                     const selected_unique_id = $(event.currentTarget).attr("data-unique-id");
                     assert(selected_unique_id !== undefined);
                     this.current_value = selected_unique_id;
-                    if (this.unique_id_type === DataTypes.NUMBER) {
+                    if (this.unique_id_type === "number") {
                         this.current_value = Number.parseInt(this.current_value, 10);
                     }
                     this.item_click_callback(event, instance, this, false);

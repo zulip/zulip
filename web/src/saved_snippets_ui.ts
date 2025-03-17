@@ -200,7 +200,7 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
         get_options: saved_snippets.get_options_for_dropdown_widget,
         item_click_callback,
         $events_container: $("body"),
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
+        unique_id_type: "number",
         sticky_bottom_option: $t({
             defaultMessage: "Create a new saved snippet",
         }),

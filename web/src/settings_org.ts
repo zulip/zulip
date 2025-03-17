@@ -1068,9 +1068,9 @@ function set_up_dropdown_widget(
         text_if_current_value_not_in_options = $t({defaultMessage: "Cannot view channel"});
     }
 
-    let unique_id_type = dropdown_widget.DataTypes.NUMBER;
+    let unique_id_type: dropdown_widget.DataType = "number";
     if (setting_type === "language") {
-        unique_id_type = dropdown_widget.DataTypes.STRING;
+        unique_id_type = "string";
     }
 
     const setting_dropdown_widget = new dropdown_widget.DropdownWidget({
