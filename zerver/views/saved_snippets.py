@@ -2,7 +2,6 @@ from typing import Annotated
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import gettext as _
 from pydantic import StringConstraints
 
 from zerver.actions.saved_snippets import (
@@ -11,7 +10,6 @@ from zerver.actions.saved_snippets import (
     do_edit_saved_snippet,
     do_get_saved_snippets,
 )
-from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.models import SavedSnippet, UserProfile
@@ -68,7 +66,9 @@ def edit_saved_snippet(
     ] = None,
 ) -> HttpResponse:
     if title is None and content is None:
-        raise JsonableError(_("No new data is supplied"))
+        # No changes are requested; exit early to avoid sending a
+        # spurious event to clients.
+        return json_success(request)
 
     do_edit_saved_snippet(saved_snippet_id, title, content, user_profile)
     return json_success(request)

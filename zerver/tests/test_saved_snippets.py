@@ -67,10 +67,11 @@ class SavedSnippetTests(ZulipTestCase):
         )
         self.assert_json_success(result)
 
+        # No-op requests succeed.
         result = self.client_patch(
             f"/json/saved_snippets/{saved_snippet_id}",
         )
-        self.assert_json_error(result, "No new data is supplied", status_code=400)
+        self.assert_json_success(result)
 
         # Tests if error is thrown when the provided ID does not exist.
         result = self.client_patch(

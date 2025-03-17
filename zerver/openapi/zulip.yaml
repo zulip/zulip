@@ -6451,7 +6451,6 @@ paths:
           required: true
           example: 3
       requestBody:
-        required: true
         content:
           application/x-www-form-urlencoded:
             schema:
@@ -6473,22 +6472,6 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
-        "400":
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "No new data is supplied",
-                        "result": "error",
-                      }
-                    description: |
-                      A typical failed JSON response for when neither title nor content is
-                      provided in the request:
         "404":
           description: Not Found.
           content:
