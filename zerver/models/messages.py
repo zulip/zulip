@@ -329,6 +329,7 @@ def get_context_for_message(message: Message) -> QuerySet[Message]:
         realm_id=message.realm_id,
         recipient_id=message.recipient_id,
         subject__iexact=message.subject,
+        is_channel_message=True,
         id__lt=message.id,
         date_sent__gt=message.date_sent - timedelta(minutes=15),
     ).order_by("-id")[:10]

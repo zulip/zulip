@@ -1629,6 +1629,7 @@ def visibility_policy_for_send_message(
             user_profile=sender,
             message__recipient_id=message.recipient_id,
             message__subject__iexact=message.topic_name(),
+            message__is_channel_message=True,
         ).exclude(message_id=message.id)
 
     if (

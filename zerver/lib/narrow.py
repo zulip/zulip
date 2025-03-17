@@ -837,7 +837,11 @@ class NarrowBuilder:
                 term = term[1:-1]
                 term = "%" + connection.ops.prep_for_like_query(term) + "%"
                 cond: ClauseElement = or_(
-                    column("content", Text).ilike(term), topic_column_sa().ilike(term)
+                    column("content", Text).ilike(term),
+                    and_(
+                        topic_column_sa().ilike(term),
+                        column("is_channel_message", Boolean),
+                    ),
                 )
                 query = query.where(maybe_negate(cond))
 

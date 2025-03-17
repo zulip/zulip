@@ -8,12 +8,18 @@ from zerver.models import UserTopic
 def topic_match_sa(topic_name: str) -> ColumnElement[Boolean]:
     # _sa is short for SQLAlchemy, which we use mostly for
     # queries that search messages
-    topic_cond = func.upper(column("subject", Text)) == func.upper(literal(topic_name))
+    topic_cond = and_(
+        func.upper(column("subject", Text)) == func.upper(literal(topic_name)),
+        column("is_channel_message", Boolean),
+    )
     return topic_cond
 
 
 def get_resolved_topic_condition_sa() -> ColumnElement[Boolean]:
-    resolved_topic_cond = column("subject", Text).startswith(RESOLVED_TOPIC_PREFIX)
+    resolved_topic_cond = and_(
+        column("subject", Text).startswith(RESOLVED_TOPIC_PREFIX),
+        column("is_channel_message", Boolean),
+    )
     return resolved_topic_cond
 
 
@@ -32,6 +38,7 @@ def get_followed_topic_condition_sa(user_id: int) -> ColumnElement[Boolean]:
                 == literal(UserTopic.VisibilityPolicy.FOLLOWED),
                 func.upper(literal_column("zerver_usertopic.topic_name"))
                 == func.upper(literal_column("zerver_message.subject")),
+                literal_column("zerver_message.is_channel_message", Boolean),
                 literal_column("zerver_usertopic.recipient_id")
                 == literal_column("zerver_message.recipient_id"),
             )

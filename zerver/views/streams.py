@@ -1063,6 +1063,7 @@ def delete_in_topic(
                 user_profile__in=users_with_stale_user_topic_rows,
                 message__recipient_id=assert_is_not_none(stream.recipient_id),
                 message__subject__iexact=topic_name,
+                message__is_channel_message=True,
             ).values_list("user_profile", flat=True)
         )
         users_with_stale_user_topic_rows = list(

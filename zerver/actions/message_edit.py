@@ -1246,6 +1246,7 @@ def check_time_limit_for_change_all_propagate_mode(
             user_profile=user_profile,
             message__recipient_id=message.recipient_id,
             message__subject__iexact=message.topic_name(),
+            message__is_channel_message=True,
         ).values_list("message_id", flat=True)
         messages_allowed_to_move: list[int] = list(
             Message.objects.filter(

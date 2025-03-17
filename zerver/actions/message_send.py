@@ -1263,11 +1263,14 @@ def already_sent_mirrored_message_id(message: Message) -> int | None:
         time_window = timedelta(seconds=0)
 
     messages = Message.objects.filter(
-        # Uses index: zerver_message_realm_recipient_subject
+        # Uses index: zerver_message_realm_recipient_subject for
+        # channel messages or zerver_message_realm_sender_recipient for
+        # DMs
         realm_id=message.realm_id,
         sender=message.sender,
         recipient=message.recipient,
         subject=message.topic_name(),
+        is_channel_message=message.is_channel_message,
         content=message.content,
         sending_client=message.sending_client,
         date_sent__gte=message.date_sent - time_window,
