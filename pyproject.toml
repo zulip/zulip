@@ -113,7 +113,7 @@ prod = [
 
   # Install Python Social Auth
   "social-auth-app-django",
-  "social-auth-core[azuread]", # https://github.com/python-social-auth/social-core/pull/1025
+  "social-auth-core[azuread,openidconnect,saml]",
   "python3-saml",
 
   # For encrypting a login token to the desktop app
@@ -470,7 +470,6 @@ ignore = [
     "E402", # Module level import not at top of file
     "E501", # Line too long
     "E731", # Do not assign a lambda expression, use a def
-    "LOG015", # `error()` call on root logger
     "N802", # Function name should be lowercase
     "N806", # Variable in function should be lowercase
     "PERF203", # `try`-`except` within a loop incurs performance overhead
@@ -507,7 +506,6 @@ ignore = [
     "TC001", # Move application import into a type-checking block
     "TC002", # Move third-party import into a type-checking block
     "TC003", # Move standard library import into a type-checking block
-    "TC006", # Add quotes to type expression in `typing.cast()`
 ]
 
 [tool.ruff.lint.flake8-bandit]
