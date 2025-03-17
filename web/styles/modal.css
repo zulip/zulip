@@ -219,10 +219,6 @@
     margin-bottom: 10px;
 }
 
-#archive-stream-modal .notification_stream_archive_warning {
-    margin-bottom: 0;
-}
-
 #read_receipts_modal {
     .modal__container {
         width: 25.7142em; /* 360px at 14px em */
