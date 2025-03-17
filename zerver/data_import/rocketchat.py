@@ -517,6 +517,7 @@ def process_raw_message_batch(
         has_attachment = False
         has_image = False
         has_link = raw_message["has_link"]
+        is_channel_message = raw_message["is_channel_message"]
 
         if "file" in raw_message:
             has_attachment = True
@@ -547,6 +548,7 @@ def process_raw_message_batch(
             rendered_content=rendered_content,
             topic_name=topic_name,
             user_id=sender_user_id,
+            is_channel_message=is_channel_message,
             has_image=has_image,
             has_link=has_link,
             has_attachment=has_attachment,
@@ -676,6 +678,7 @@ def process_messages(
         if is_pm_data:
             # Message is in a 1:1 or group direct message.
             rc_channel_id = message["rid"]
+            message_dict["is_channel_message"] = False
             if rc_channel_id in direct_message_group_id_to_direct_message_group_map:
                 direct_message_group_id = direct_message_group_id_mapper.get(rc_channel_id)
                 message_dict["recipient_id"] = direct_message_group_id_to_recipient_id[
@@ -695,11 +698,13 @@ def process_messages(
                     message_dict["recipient_id"] = user_id_to_recipient_id[zulip_member_id]
         elif message["rid"] in dsc_id_to_dsc_map:
             # Message is in a discussion
+            message_dict["is_channel_message"] = True
             dsc_channel = dsc_id_to_dsc_map[message["rid"]]
             parent_channel_id = dsc_channel["prid"]
             stream_id = stream_id_mapper.get(parent_channel_id)
             message_dict["recipient_id"] = stream_id_to_recipient_id[stream_id]
         else:
+            message_dict["is_channel_message"] = True
             stream_id = stream_id_mapper.get(message["rid"])
             message_dict["recipient_id"] = stream_id_to_recipient_id[stream_id]
 

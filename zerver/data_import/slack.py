@@ -1028,6 +1028,7 @@ def channel_message_to_zerver_message(
             user_id=slack_user_id_to_zulip_user_id[slack_user_id],
             recipient_id=recipient_id,
             realm_id=realm_id,
+            is_channel_message=not is_private,
             has_image=has_image,
             has_link=has_link,
             has_attachment=has_attachment,

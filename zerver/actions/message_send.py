@@ -1803,6 +1803,9 @@ def check_message(
     message.realm = realm
     if addressee.is_stream():
         message.set_topic_name(topic_name)
+        message.is_channel_message = True
+    else:
+        message.is_channel_message = False
     if forged and forged_timestamp is not None:
         # Forged messages come with a timestamp
         message.date_sent = timestamp_to_datetime(forged_timestamp)
