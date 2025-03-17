@@ -2306,7 +2306,10 @@ test("content_highlighter_html", ({override_rewire}) => {
     ct.get_or_set_completing_for_tests("syntax");
     th_render_typeahead_item_called = false;
     override_rewire(typeahead_helper, "render_typeahead_item", (item) => {
-        assert.deepEqual(item, {primary: "py"});
+        assert.deepEqual(item, {
+            is_default_language: false,
+            primary: "py",
+        });
         th_render_typeahead_item_called = true;
     });
     ct.content_highlighter_html({type: "syntax", language: "py"});
