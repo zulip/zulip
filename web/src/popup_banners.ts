@@ -5,6 +5,8 @@ import type {Banner} from "./banners.ts";
 import * as buttons from "./buttons.ts";
 import {$t} from "./i18n.ts";
 
+export type ReloadingReason = "reload" | "update";
+
 let retry_connection_interval: ReturnType<typeof setInterval> | undefined;
 let original_retry_delay_secs = 0;
 
@@ -85,6 +87,22 @@ const FOUND_MISSING_UNREADS_IN_CURRENT_NARROW: Banner = {
     ],
     close_button: true,
     custom_classes: "found-missing-unreads popup-banner",
+};
+
+const reloading_application_banner = (reason: ReloadingReason): Banner => {
+    let label = $t({defaultMessage: "Reloading…"});
+    if (reason === "update") {
+        label = $t({
+            defaultMessage: "The application has been updated; Reloading…",
+        });
+    }
+    return {
+        intent: "info",
+        label,
+        buttons: [],
+        close_button: false,
+        custom_classes: "reloading-application popup-banner",
+    };
 };
 
 export function open_found_missing_unreads_banner(on_jump_to_first_unread: () => void): void {
@@ -195,6 +213,15 @@ export function close_connection_error_popup_banner(
         clearInterval(retry_connection_interval);
     }
     fade_out_popup_banner($banner);
+}
+
+export function open_reloading_application_banner(reason: ReloadingReason): void {
+    const $banner = $("#popup_banners_wrapper").find(".reloading-application");
+    if ($banner.length > 0) {
+        // If the banner is already open, don't open it again.
+        return;
+    }
+    banners.append(reloading_application_banner(reason), $("#popup_banners_wrapper"));
 }
 
 export function initialize(): void {

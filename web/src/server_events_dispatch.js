@@ -183,7 +183,7 @@ export function dispatch_normal_event(event) {
         case "web_reload_client": {
             const reload_options = {
                 save_compose: true,
-                message_html: "The application has been updated; reloading!",
+                reason: "update",
             };
             if (event.immediate) {
                 reload_options.immediate = true;
