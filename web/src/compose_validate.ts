@@ -893,6 +893,7 @@ export function check_overflow_text($container: JQuery): number {
     const $indicator = $container.find(".message-limit-indicator");
     const is_edit_container = $textarea.closest(".message_row").length > 0;
 
+    const old_no_message_content = no_message_content;
     const old_message_too_long = message_too_long;
 
     if (text.length > max_length) {
@@ -936,13 +937,21 @@ export function check_overflow_text($container: JQuery): number {
             set_message_too_long_for_compose(false);
         }
     }
-    if (!is_edit_container && message_too_long !== old_message_too_long) {
-        // If this keystroke changed the truth status for whether
-        // we're too long, then we need to refresh the send button
-        // status. This is expensive, but naturally debounced by the
-        // fact that crossing the MAX_MESSAGE_LENGTH threshold is
-        // rare.
-        validate_and_update_send_button_status();
+
+    if (!is_edit_container) {
+        // Update the state for whether the message is empty.
+        set_no_message_content(text.length === 0);
+        if (
+            message_too_long !== old_message_too_long ||
+            old_no_message_content !== no_message_content
+        ) {
+            // If this keystroke changed the truth status for whether
+            // the message is empty or too long, then we need to
+            // refresh the send button status from scratch. This is
+            // expensive, but naturally debounced by the fact this
+            // changes rarely.
+            validate_and_update_send_button_status();
+        }
     }
     return text.length;
 }
@@ -1022,10 +1031,15 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
     set_no_message_content(no_message_content);
     if (no_message_content) {
         if (show_banner) {
+            // If you tried actually sending a message with empty
+            // compose, flash the textarea as invalid.
             $("textarea#compose-textarea").toggleClass("invalid", true);
             $("textarea#compose-textarea").trigger("focus");
         }
         return false;
+    } else if ($("textarea#compose-textarea").hasClass("invalid")) {
+        // Hide the invalid indicator now that it's non-empty.
+        $("textarea#compose-textarea").toggleClass("invalid", false);
     }
 
     if ($("#zephyr-mirror-error").is(":visible")) {

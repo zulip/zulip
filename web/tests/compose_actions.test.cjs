@@ -314,6 +314,9 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     override_private_message_recipient({override});
     mock_template("inline_decorated_stream_name.hbs", false, noop);
 
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
+
     // Test direct message
     const person = {
         user_id: 22,

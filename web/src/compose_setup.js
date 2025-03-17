@@ -77,9 +77,7 @@ export function initialize() {
         }
         compose_validate.warn_if_topic_resolved(false);
         const compose_text_length = compose_validate.check_overflow_text($("#send_message_form"));
-        if (compose_text_length !== 0 && $("textarea#compose-textarea").hasClass("invalid")) {
-            $("textarea#compose-textarea").toggleClass("invalid", false);
-        }
+
         // Change compose close button tooltip as per condition.
         // We save compose text in draft only if its length is > 2.
         if (compose_text_length > 2) {
