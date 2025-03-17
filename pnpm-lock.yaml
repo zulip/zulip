@@ -9,22 +9,22 @@ overrides:
 
 patchedDependencies:
   handlebars:
-    hash: 53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9
+    hash: c5t5wnxp6mvabdrpn7wm4zt2zu
     path: patches/handlebars.patch
   source-sans@3.46.0:
-    hash: ff8a94a40e19ec762e2330b3c0d98cac8ca59104c82a11ffa84876df41cb7cf7
+    hash: 4n7ij66tzyhzaqnxsenbilrxr4
     path: patches/source-sans@3.46.0.patch
   stylelint-high-performance-animation:
-    hash: 373440124818a77fac6c94a22f3053f14030591200d1afeb9b8acfba8ee73bb2
+    hash: cy5nqfxesj5boe2re7uewkdeyu
     path: patches/stylelint-high-performance-animation.patch
   svgicons2svgfont:
-    hash: 86273ae5aedf4b98aa321647d0068e9c42b8f5bf02c3e0ce50ff705ee76ebca2
+    hash: d4mkid5oxxg6zfe7zsae2cikn4
     path: patches/svgicons2svgfont.patch
   textarea-caret@3.1.0:
-    hash: 2cd9d12abf52d671d6ee95776dafd56f4e4809f9d7b46fa0c4b866ac5b112138
+    hash: 4l2w4ru66ocl2j45eog5vet7ve
     path: patches/textarea-caret@3.1.0.patch
   tippy.js@6.3.7:
-    hash: 9222309d05de36d657352749c54e80598df679f1e271a9c9bc3e7e979a82e4f6
+    hash: mlbmk5pq4q6iuwarqu6solgeeq
     path: patches/tippy.js@6.3.7.patch
 
 importers:
@@ -153,10 +153,10 @@ importers:
         version: 1.2.0
       handlebars:
         specifier: ^4.7.2
-        version: 4.7.8(patch_hash=53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9)
+        version: 4.7.8(patch_hash=c5t5wnxp6mvabdrpn7wm4zt2zu)
       handlebars-loader:
         specifier: ^1.7.1
-        version: 1.7.3(handlebars@4.7.8(patch_hash=53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9))
+        version: 1.7.3(handlebars@4.7.8(patch_hash=c5t5wnxp6mvabdrpn7wm4zt2zu))
       html-webpack-plugin:
         specifier: ^5.3.2
         version: 5.6.3(webpack@5.98.0)
@@ -246,7 +246,7 @@ importers:
         version: 2.38.0
       source-sans:
         specifier: ^3.28.0
-        version: 3.46.0(patch_hash=ff8a94a40e19ec762e2330b3c0d98cac8ca59104c82a11ffa84876df41cb7cf7)
+        version: 3.46.0(patch_hash=4n7ij66tzyhzaqnxsenbilrxr4)
       stackframe:
         specifier: ^1.3.4
         version: 1.3.4
@@ -261,10 +261,10 @@ importers:
         version: 4.1.1
       textarea-caret:
         specifier: ^3.1.0
-        version: 3.1.0(patch_hash=2cd9d12abf52d671d6ee95776dafd56f4e4809f9d7b46fa0c4b866ac5b112138)
+        version: 3.1.0(patch_hash=4l2w4ru66ocl2j45eog5vet7ve)
       tippy.js:
         specifier: ^6.3.7
-        version: 6.3.7(patch_hash=9222309d05de36d657352749c54e80598df679f1e271a9c9bc3e7e979a82e4f6)
+        version: 6.3.7(patch_hash=mlbmk5pq4q6iuwarqu6solgeeq)
       turndown:
         specifier: ^7.0.0
         version: 7.2.0
@@ -466,7 +466,7 @@ importers:
         version: 37.0.0(stylelint@16.16.0(typescript@5.8.2))
       stylelint-high-performance-animation:
         specifier: ^1.10.0
-        version: 1.11.0(patch_hash=373440124818a77fac6c94a22f3053f14030591200d1afeb9b8acfba8ee73bb2)(stylelint@16.16.0(typescript@5.8.2))
+        version: 1.11.0(patch_hash=cy5nqfxesj5boe2re7uewkdeyu)(stylelint@16.16.0(typescript@5.8.2))
       svgo:
         specifier: ^3.0.0
         version: 3.3.2
@@ -11979,11 +11979,11 @@ snapshots:
 
   '@vusion/webfonts-generator@0.8.0':
     dependencies:
-      handlebars: 4.7.8(patch_hash=53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9)
+      handlebars: 4.7.8(patch_hash=c5t5wnxp6mvabdrpn7wm4zt2zu)
       mkdirp: 1.0.4
       q: 1.5.1
       svg2ttf: 6.0.3
-      svgicons2svgfont: 10.0.6(patch_hash=86273ae5aedf4b98aa321647d0068e9c42b8f5bf02c3e0ce50ff705ee76ebca2)
+      svgicons2svgfont: 10.0.6(patch_hash=d4mkid5oxxg6zfe7zsae2cikn4)
       ttf2eot: 3.1.0
       ttf2woff: 3.0.0
       ttf2woff2: 4.0.5
@@ -14738,15 +14738,15 @@ snapshots:
 
   handle-thing@2.0.1: {}
 
-  handlebars-loader@1.7.3(handlebars@4.7.8(patch_hash=53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9)):
+  handlebars-loader@1.7.3(handlebars@4.7.8(patch_hash=c5t5wnxp6mvabdrpn7wm4zt2zu)):
     dependencies:
       async: 3.2.6
       fastparse: 1.1.2
-      handlebars: 4.7.8(patch_hash=53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9)
+      handlebars: 4.7.8(patch_hash=c5t5wnxp6mvabdrpn7wm4zt2zu)
       loader-utils: 1.4.2
       object-assign: 4.1.1
 
-  handlebars@4.7.8(patch_hash=53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9):
+  handlebars@4.7.8(patch_hash=c5t5wnxp6mvabdrpn7wm4zt2zu):
     dependencies:
       minimist: 1.2.8
       neo-async: 2.6.2
@@ -18577,7 +18577,7 @@ snapshots:
 
   source-map@0.7.4: {}
 
-  source-sans@3.46.0(patch_hash=ff8a94a40e19ec762e2330b3c0d98cac8ca59104c82a11ffa84876df41cb7cf7): {}
+  source-sans@3.46.0(patch_hash=4n7ij66tzyhzaqnxsenbilrxr4): {}
 
   space-separated-tokens@2.0.2: {}
 
@@ -18785,7 +18785,7 @@ snapshots:
       stylelint: 16.16.0(typescript@5.8.2)
       stylelint-config-recommended: 15.0.0(stylelint@16.16.0(typescript@5.8.2))
 
-  stylelint-high-performance-animation@1.11.0(patch_hash=373440124818a77fac6c94a22f3053f14030591200d1afeb9b8acfba8ee73bb2)(stylelint@16.16.0(typescript@5.8.2)):
+  stylelint-high-performance-animation@1.11.0(patch_hash=cy5nqfxesj5boe2re7uewkdeyu)(stylelint@16.16.0(typescript@5.8.2)):
     dependencies:
       postcss-value-parser: 4.2.0
       stylelint: 16.16.0(typescript@5.8.2)
@@ -18891,7 +18891,7 @@ snapshots:
       microbuffer: 1.0.0
       svgpath: 2.6.0
 
-  svgicons2svgfont@10.0.6(patch_hash=86273ae5aedf4b98aa321647d0068e9c42b8f5bf02c3e0ce50ff705ee76ebca2):
+  svgicons2svgfont@10.0.6(patch_hash=d4mkid5oxxg6zfe7zsae2cikn4):
     dependencies:
       commander: 7.2.0
       geometry-interfaces: 1.1.4
@@ -18992,7 +18992,7 @@ snapshots:
 
   text-hex@1.0.0: {}
 
-  textarea-caret@3.1.0(patch_hash=2cd9d12abf52d671d6ee95776dafd56f4e4809f9d7b46fa0c4b866ac5b112138): {}
+  textarea-caret@3.1.0(patch_hash=4l2w4ru66ocl2j45eog5vet7ve): {}
 
   thingies@1.21.0(tslib@2.8.1):
     dependencies:
@@ -19038,7 +19038,7 @@ snapshots:
 
   tinyqueue@3.0.0: {}
 
-  tippy.js@6.3.7(patch_hash=9222309d05de36d657352749c54e80598df679f1e271a9c9bc3e7e979a82e4f6):
+  tippy.js@6.3.7(patch_hash=mlbmk5pq4q6iuwarqu6solgeeq):
     dependencies:
       '@popperjs/core': 2.11.8
 
