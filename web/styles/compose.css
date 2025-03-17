@@ -1806,4 +1806,15 @@ textarea.new_message_textarea {
             pointer-events: none;
         }
     }
+
+    .message-edit-textbox {
+        /* In preview mode, we hide the message edit
+           textbox to prevent it from appearing behind
+           the preview container. We cannot set its
+           display to none or visibility to hidden, as
+           that would prevent us from modifying the
+           textarea's value. */
+        height: 0;
+        overflow: hidden;
+    }
 }

@@ -764,13 +764,15 @@
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
     transition: border-color 0.2s ease;
+    display: grid;
+    grid-template-areas: "message-edit-content";
 
     &:has(.message_edit_content:focus) {
         border-color: var(--color-message-content-container-border-focus);
     }
 
     .message-edit-textbox {
-        position: relative;
+        grid-area: message-edit-content;
 
         .textarea-over-limit {
             background-color: var(
@@ -954,6 +956,7 @@ of the base style defined for a read-only textarea in dark mode. */
 
     .preview_message_area {
         max-height: var(--max-message-edit-height);
+        grid-area: message-edit-content;
     }
 }
 
