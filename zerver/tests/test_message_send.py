@@ -1818,6 +1818,18 @@ class StreamMessagesTest(ZulipTestCase):
             ).flags.is_private.is_set
         )
 
+    def test_is_channel_message(self) -> None:
+        user_profile = self.example_user("iago")
+        self.subscribe(user_profile, "Denmark")
+
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", content="test")
+        message = most_recent_message(user_profile)
+        self.assertTrue(message.is_channel_message)
+
+        self.send_personal_message(self.example_user("hamlet"), user_profile, content="test")
+        message = most_recent_message(user_profile)
+        self.assertFalse(message.is_channel_message)
+
     def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> set[int]:
         with self.capture_send_event_calls(expected_num_events=1) as events:
             self.send_stream_message(
