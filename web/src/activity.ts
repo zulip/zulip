@@ -33,10 +33,7 @@ export const post_presence_response_schema = z.object({
 });
 
 /* Keep in sync with views.py:update_active_status_backend() */
-export enum ActivityState {
-    ACTIVE = "active",
-    IDLE = "idle",
-}
+export type ActivityState = "active" | "idle";
 
 /*
     Helpers for detecting user activity and managing user idle states
@@ -103,15 +100,15 @@ export function compute_active_status(): ActivityState {
     // detection; older desktop app releases never set that property.
     if (electron_bridge?.get_idle_on_system !== undefined) {
         if (electron_bridge.get_idle_on_system()) {
-            return ActivityState.IDLE;
+            return "idle";
         }
-        return ActivityState.ACTIVE;
+        return "active";
     }
 
     if (client_is_active) {
-        return ActivityState.ACTIVE;
+        return "active";
     }
-    return ActivityState.IDLE;
+    return "idle";
 }
 
 export let send_presence_to_server = (redraw?: () => void): void => {
