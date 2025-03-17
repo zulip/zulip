@@ -81,6 +81,13 @@
 
         #searchbox-input-container {
             width: var(--search-box-width);
+
+            @media (width < $md_min) {
+                grid-template:
+                    "search-icon search-pills" var(--search-box-height)
+                    / var(--search-box-height) 0;
+                column-gap: 0;
+            }
         }
 
         .search-input {
