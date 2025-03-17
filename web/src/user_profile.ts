@@ -216,7 +216,7 @@ function render_user_profile_subscribe_widget(): void {
         get_options: get_user_unsub_streams_for_dropdown,
         item_click_callback: change_state_of_subscribe_button,
         $events_container: $("#user-profile-modal"),
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
+        unique_id_type: "number",
     };
     user_profile_subscribe_widget =
         user_profile_subscribe_widget ?? new dropdown_widget.DropdownWidget(opts);
@@ -963,7 +963,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             item_click_callback,
             $events_container: $("#bot-edit-form"),
             default_id: owner_id,
-            unique_id_type: dropdown_widget.DataTypes.NUMBER,
+            unique_id_type: "number",
         });
         bot_owner_dropdown_widget.setup();
 

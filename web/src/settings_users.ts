@@ -257,7 +257,7 @@ function create_role_filter_dropdown(
 ): dropdown_widget.DropdownWidget {
     return new dropdown_widget.DropdownWidget({
         widget_name: section.dropdown_widget_name,
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
+        unique_id_type: "number",
         get_options: get_role_options,
         $events_container,
         item_click_callback: role_selected_handler,

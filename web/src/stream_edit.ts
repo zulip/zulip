@@ -464,7 +464,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
             item_click_callback,
             $events_container: $("#copy_email_address_modal"),
             default_id: people.EMAIL_GATEWAY_BOT.user_id,
-            unique_id_type: dropdown_widget.DataTypes.NUMBER,
+            unique_id_type: "number",
             hide_search_box: true,
         });
         sender_dropdown_widget.setup();
