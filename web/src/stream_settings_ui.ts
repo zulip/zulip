@@ -680,11 +680,9 @@ export function switch_stream_sort(tab_name: string): void {
     redraw_left_panel();
 }
 
-function filters_dropdown_options(current_value: string | number | undefined): {
-    unique_id: string;
-    name: string;
-    bold_current_selection: boolean;
-}[] {
+function filters_dropdown_options(
+    current_value: string | number | undefined,
+): dropdown_widget.Option[] {
     return [
         {
             unique_id: stream_settings_data.FILTERS.ARCHIVED_CHANNELS,

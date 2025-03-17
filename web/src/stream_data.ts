@@ -4,6 +4,7 @@ import * as blueslip from "./blueslip.ts";
 import type {Bot} from "./bot_data.ts";
 import * as bot_data from "./bot_data.ts";
 import * as color_data from "./color_data.ts";
+import type * as dropdown_widget from "./dropdown_widget.ts";
 import {FoldDict} from "./fold_dict.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
@@ -1011,11 +1012,9 @@ export function remove_default_stream(stream_id: number): void {
     default_stream_ids.delete(stream_id);
 }
 
-export function get_options_for_dropdown_widget(): {
-    name: string;
-    unique_id: number;
+export function get_options_for_dropdown_widget(): (dropdown_widget.Option & {
     stream: StreamSubscription;
-}[] {
+})[] {
     return subscribed_subs()
         .filter((stream) => !stream.is_archived)
         .map((stream) => ({

@@ -1,6 +1,7 @@
 import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
+import type * as dropdown_widget from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
 import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
@@ -110,15 +111,10 @@ export function get_realm_user_groups_for_setting(
     return [...system_user_groups, ...user_groups_excluding_system_groups];
 }
 
-export type UserGroupForDropdownListWidget = {
-    name: string;
-    unique_id: number;
-};
-
 export function get_realm_user_groups_for_dropdown_list_widget(
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
-): UserGroupForDropdownListWidget[] {
+): dropdown_widget.Option[] {
     const allowed_setting_groups = get_realm_user_groups_for_setting(setting_name, setting_type);
 
     return allowed_setting_groups.map((group) => {

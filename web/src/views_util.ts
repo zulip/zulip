@@ -39,12 +39,9 @@ export const COMMON_DROPDOWN_WIDGET_PARAMS = {
     disable_for_spectators: true,
 } satisfies Partial<dropdown_widget.DropdownWidgetOptions>;
 
-export function filters_dropdown_options(current_value: string | number | undefined): {
-    unique_id: string;
-    name: string;
-    description: string;
-    bold_current_selection: boolean;
-}[] {
+export function filters_dropdown_options(
+    current_value: string | number | undefined,
+): dropdown_widget.Option[] {
     return [
         {
             unique_id: FILTERS.FOLLOWED_TOPICS,
