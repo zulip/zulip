@@ -1662,11 +1662,9 @@ export function filter_click_handler(
     widget.render();
 }
 
-function filters_dropdown_options(current_value: string | number | undefined): {
-    unique_id: string;
-    name: string;
-    bold_current_selection: boolean;
-}[] {
+function filters_dropdown_options(
+    current_value: string | number | undefined,
+): dropdown_widget.Option[] {
     return [
         {
             unique_id: FILTERS.ACTIVE_GROUPS,

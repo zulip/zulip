@@ -31,8 +31,13 @@ export enum DataTypes {
 export type Option = {
     unique_id: number | string;
     name: string;
+    description?: string;
+    is_direct_message?: boolean;
     is_setting_disabled?: boolean;
     stream?: StreamSubscription;
+    bold_current_selection?: boolean;
+    has_delete_icon?: boolean;
+    has_edit_icon?: boolean;
 };
 
 export type DropdownWidgetOptions = {

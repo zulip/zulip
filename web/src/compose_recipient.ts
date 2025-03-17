@@ -27,11 +27,6 @@ import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 type MessageType = "stream" | "private";
-type DirectMessagesOption = {
-    is_direct_message: boolean;
-    unique_id: string | number;
-    name: string;
-};
 
 let compose_select_recipient_dropdown_widget: DropdownWidget;
 
@@ -272,8 +267,7 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
 }
 
 function get_options_for_recipient_widget(): Option[] {
-    const options: (Option | DirectMessagesOption)[] =
-        stream_data.get_options_for_dropdown_widget();
+    const options: Option[] = stream_data.get_options_for_dropdown_widget();
 
     const direct_messages_option = {
         is_direct_message: true,

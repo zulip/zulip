@@ -261,20 +261,12 @@ function reset_subscribe_widget(): void {
     }
 }
 
-export function get_user_unsub_streams_for_dropdown(): {
-    name: string;
-    unique_id: number;
-    stream: StreamSubscription;
-}[] {
+export function get_user_unsub_streams_for_dropdown(): dropdown_widget.Option[] {
     const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
     return get_user_unsub_streams(target_user_id);
 }
 
-export function get_user_unsub_streams(user_id: number): {
-    name: string;
-    unique_id: number;
-    stream: StreamSubscription;
-}[] {
+export function get_user_unsub_streams(user_id: number): dropdown_widget.Option[] {
     return stream_data
         .get_streams_for_user(user_id)
         .can_subscribe.map((stream) => ({

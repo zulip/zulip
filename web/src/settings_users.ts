@@ -217,7 +217,7 @@ function count_users_by_role(user_ids: number[]): Record<number, number> {
     return role_counts;
 }
 
-function get_roles_with_counts(user_ids: number[]): {unique_id: number; name: string}[] {
+function get_roles_with_counts(user_ids: number[]): dropdown_widget.Option[] {
     const role_counts = count_users_by_role(user_ids);
     return [
         {
@@ -240,12 +240,12 @@ function get_roles_with_counts(user_ids: number[]): {unique_id: number; name: st
     ];
 }
 
-function get_roles_count_for_active_users(): {unique_id: number; name: string}[] {
+function get_roles_count_for_active_users(): dropdown_widget.Option[] {
     const active_user_ids = people.get_realm_active_human_user_ids();
     return get_roles_with_counts(active_user_ids);
 }
 
-function get_roles_count_for_deactivated_users(): {unique_id: number; name: string}[] {
+function get_roles_count_for_deactivated_users(): dropdown_widget.Option[] {
     const deactivated_user_ids = people.get_non_active_human_ids();
     return get_roles_with_counts(deactivated_user_ids);
 }
@@ -253,7 +253,7 @@ function get_roles_count_for_deactivated_users(): {unique_id: number; name: stri
 function create_role_filter_dropdown(
     $events_container: JQuery,
     section: UserSettingsSection,
-    get_role_options: () => {unique_id: number; name: string}[],
+    get_role_options: () => dropdown_widget.Option[],
 ): dropdown_widget.DropdownWidget {
     return new dropdown_widget.DropdownWidget({
         widget_name: section.dropdown_widget_name,

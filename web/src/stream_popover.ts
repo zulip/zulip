@@ -781,11 +781,7 @@ export async function build_move_topic_to_stream_popover(
         }
 
         stream_widget_value = current_stream_id;
-        const streams_list_options = (): {
-            name: string;
-            unique_id: number;
-            stream: sub_store.StreamSubscription;
-        }[] =>
+        const streams_list_options = (): dropdown_widget.Option[] =>
             stream_data.get_options_for_dropdown_widget().filter(({stream}) => {
                 if (stream.stream_id === current_stream_id) {
                     return true;
