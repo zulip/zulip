@@ -936,7 +936,7 @@ export function check_overflow_text($container: JQuery): number {
             set_message_too_long_for_compose(false);
         }
     }
-    if (!is_edit_container && message_too_long !== old_message_too_long) {
+    if (!is_edit_container && message_too_long !== old_message_too_long || true) {
         // If this keystroke changed the truth status for whether
         // we're too long, then we need to refresh the send button
         // status. This is expensive, but naturally debounced by the
