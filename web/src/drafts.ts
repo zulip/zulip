@@ -577,6 +577,7 @@ export type FormattedDraft =
           is_stream: false;
           draft_id: string;
           recipients: string;
+          no_recipients: boolean;
           raw_content: string;
           time_stamp: string;
       };
@@ -651,6 +652,10 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
     }
 
     const emails = util.extract_pm_recipients(draft.private_message_recipient);
+    let no_recipients = false;
+    if (!draft.private_message_recipient) {
+        no_recipients = true;
+    }
     const recipients = people.emails_to_full_names_string(emails);
     return {
         draft_id: draft.id,
@@ -658,6 +663,7 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
         recipients,
         raw_content: draft.content,
         time_stamp,
+        no_recipients,
         ...markdown_data,
     };
 }
