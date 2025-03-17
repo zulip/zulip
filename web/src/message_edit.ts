@@ -1787,7 +1787,6 @@ export function show_preview_area($element: JQuery): void {
     $row.addClass("preview_mode");
     $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", -1);
 
-    $msg_edit_content.hide();
     $row.find(".markdown_preview").hide();
     $row.find(".undo_markdown_preview").show();
     const $preview_message_area = $row.find(".preview_message_area");
@@ -1810,7 +1809,6 @@ export function clear_preview_area($element: JQuery): void {
     $row.removeClass("preview_mode");
     $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", 0);
 
-    $row.find(".message_edit_content").show();
     $row.find(".undo_markdown_preview").hide();
     $row.find(".preview_message_area").hide();
     $row.find(".preview_content").empty();
