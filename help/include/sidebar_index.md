@@ -276,6 +276,7 @@
 * [Zulip Cloud billing](/help/zulip-cloud-billing)
 * [Self-hosted billing](/help/self-hosted-billing)
 * [GDPR compliance](/help/gdpr-compliance)
+* [Move to Zulip Cloud](/help/move-to-zulip-cloud)
 * [Support the Zulip project](/help/support-zulip-project)
 * [Linking to the Zulip website](/help/linking-to-zulip-website)
 * [Contact support](/help/contact-support)
