@@ -1,6 +1,6 @@
 # Zulip Open Project integration
 
-Get Zulip notifications for new sign-ups on your **Open Project** page.
+Get Zulip notifications for new events on your **Open Project** page.
 
 {start_tabs}
 
@@ -8,15 +8,15 @@ Get Zulip notifications for new sign-ups on your **Open Project** page.
 
 1. {!generate-webhook-url-basic.md!}
 
-1. In OpenProject, click on sign in button and then create your organization.
+1. Sign in to OpenProject and create your organization.
 
-1. After logging in Go to **Profile** > **Administration**.
+1. Inside your organization go to **Profile** > **Administration**.
 
-1. Click navigate to **API and Webhooks** > **Webhooks**.
+1. Navigate to **API and Webhooks** > **Webhooks**.
 
-1. Click on **+ Webhook** and enter Name and Payload URL same as URL generated above.
+1. Click on **+ Webhook** and create a new webhook with the `Payload URL` same as the URL generated above.
 
-1. Scroll down and select every events in **Enabled Events**, then click save.
+1. Make sure all events are enabled in the **Enabled Events** section, then click save.
 
 {end_tabs}
 
