@@ -1778,9 +1778,6 @@ export function is_message_oldest_or_newest(
 
 export function show_preview_area($element: JQuery): void {
     const $row = rows.get_closest_row($element);
-    const $msg_edit_content = $row.find<HTMLTextAreaElement>("textarea.message_edit_content");
-    const content = $msg_edit_content.val();
-    assert(content !== undefined);
 
     // Disable unneeded compose_control_buttons as we don't
     // need them in preview mode.
@@ -1789,6 +1786,14 @@ export function show_preview_area($element: JQuery): void {
 
     $row.find(".markdown_preview").hide();
     $row.find(".undo_markdown_preview").show();
+
+    render_preview_area($row);
+}
+
+export function render_preview_area($row: JQuery): void {
+    const $msg_edit_content = $row.find<HTMLTextAreaElement>("textarea.message_edit_content");
+    const content = $msg_edit_content.val();
+    assert(content !== undefined);
     const $preview_message_area = $row.find(".preview_message_area");
     compose_ui.render_and_show_preview(
         $row,
