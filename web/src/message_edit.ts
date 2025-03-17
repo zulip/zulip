@@ -620,7 +620,7 @@ function edit_message($row: JQuery, raw_content: string): void {
         }
     });
 
-    $form.on("input propertychange", () => {
+    $form.on("input", () => {
         compose_validate.check_overflow_text($row);
     });
 

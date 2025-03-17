@@ -71,7 +71,7 @@ export function initialize() {
         compose_ui.handle_keyup(event, $("textarea#compose-textarea").expectOne());
     });
 
-    $("textarea#compose-textarea").on("input propertychange", () => {
+    $("textarea#compose-textarea").on("input", () => {
         if ($("#compose").hasClass("preview_mode")) {
             compose.render_preview_area();
         }
