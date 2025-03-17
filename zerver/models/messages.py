@@ -206,29 +206,6 @@ class Message(AbstractMessage):
                 name="zerver_message_realm_date_sent",
             ),
             models.Index(
-                # To be removed shortly
-                "realm_id",
-                Upper("subject"),
-                F("id").desc(nulls_last=True),
-                name="zerver_message_realm_upper_subject_all",
-            ),
-            models.Index(
-                # To be removed shortly
-                "realm_id",
-                "recipient_id",
-                Upper("subject"),
-                F("id").desc(nulls_last=True),
-                name="zerver_message_realm_recipient_upper_subject_all",
-            ),
-            models.Index(
-                # To be removed shortly
-                "realm_id",
-                "recipient_id",
-                "subject",
-                F("id").desc(nulls_last=True),
-                name="zerver_message_realm_recipient_subject_all",
-            ),
-            models.Index(
                 # For users searching by topic (but not stream), which
                 # is done case-insensitively
                 "realm_id",
