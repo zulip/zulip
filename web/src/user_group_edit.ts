@@ -764,6 +764,7 @@ export function update_realm_setting_in_permissions_panel(
         setting_name,
         active_group_id,
         can_edit,
+        "realm",
     );
 
     const group_has_permission = assigned_permission_object !== undefined;
@@ -824,6 +825,7 @@ export function update_stream_setting_in_permissions_panel(
         setting_name,
         active_group_id,
         can_edit,
+        "stream",
     );
 
     const group_has_permission = assigned_permission_object !== undefined;
@@ -902,6 +904,7 @@ export function update_group_setting_in_permissions_panel(
         setting_name,
         active_group_id,
         can_edit,
+        "group",
     );
 
     const group_has_permission = assigned_permission_object !== undefined;

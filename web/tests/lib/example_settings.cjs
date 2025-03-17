@@ -61,4 +61,14 @@ exports.server_supported_permission_settings = {
             allowed_system_groups: [],
         },
     },
+    group: {
+        can_manage_group: {
+            require_system_group: false,
+            allow_internet_group: false,
+            allow_nobody_group: true,
+            allow_everyone_group: false,
+            default_group_name: "role:nobody",
+            allowed_system_groups: [],
+        },
+    },
 };

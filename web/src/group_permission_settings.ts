@@ -1,3 +1,4 @@
+import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
@@ -160,6 +161,7 @@ export function get_assigned_permission_object(
     setting_name: RealmGroupSettingName | StreamGroupSettingName | GroupGroupSettingName,
     group_id: number,
     can_edit_settings: boolean,
+    setting_type: "realm" | "stream" | "group",
 ): AssignedGroupPermission | undefined {
     // This function returns an object of type AssignedGroupPermission
     // containing details about whether the user can edit the setting,
@@ -192,6 +194,17 @@ export function get_assigned_permission_object(
             // The group has permission directly, so the user can remove
             // the permission for this particular group, and there is no
             // need to show a tooltip.
+            const permission_config = get_group_permission_setting_config(
+                setting_name,
+                setting_type,
+            );
+            assert(permission_config !== undefined);
+            if (!permission_config.allow_nobody_group) {
+                assigned_permission_object.can_edit = false;
+                assigned_permission_object.tooltip_message = $t({
+                    defaultMessage: "At lease one user needs to have this permission.",
+                });
+            }
             return assigned_permission_object;
         }
 
@@ -215,6 +228,22 @@ export function get_assigned_permission_object(
     if (direct_subgroup_ids.includes(group_id)) {
         // The group is one of the groups that has permission and can be
         // changed to not have permission.
+        if (
+            setting_value.direct_subgroups.length === 1 &&
+            setting_value.direct_members.length === 0
+        ) {
+            const permission_config = get_group_permission_setting_config(
+                setting_name,
+                setting_type,
+            );
+            assert(permission_config !== undefined);
+            if (!permission_config.allow_nobody_group) {
+                assigned_permission_object.can_edit = false;
+                assigned_permission_object.tooltip_message = $t({
+                    defaultMessage: "At lease one user needs to have this permission.",
+                });
+            }
+        }
         return assigned_permission_object;
     }
 
