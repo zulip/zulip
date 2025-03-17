@@ -54,6 +54,7 @@ rules:
 
   - id: dont-import-models-in-migrations
     patterns:
+      - pattern-not: from zerver.lib.migrate import $X
       - pattern-not: from zerver.lib.partial import partial
       - pattern-not: from zerver.lib.mime_types import $X
       - pattern-not: from zerver.lib.redis_utils import get_redis_client
