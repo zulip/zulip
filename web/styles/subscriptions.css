@@ -1079,7 +1079,6 @@ h4.user_group_setting_subsection_title {
             position: relative;
             font-size: 1.5em;
             font-weight: 600;
-            margin-left: -3px;
             white-space: nowrap;
             max-width: 90%;
             flex: auto;
@@ -1121,7 +1120,7 @@ h4.user_group_setting_subsection_title {
 
         .large-icon {
             display: flex;
-            margin-right: 8px;
+            margin-right: 5px;
 
             &.hash::after {
                 top: -1px;
