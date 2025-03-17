@@ -77,7 +77,7 @@
     border-radius: 5px;
     background-color: var(--color-background-settings-plus-button);
     color: var(--color-text-settings-plus-button);
-    margin: 0 0 0 5px;
+    margin: 0;
     height: 100%;
     width: var(--settings-overlay-header-button-height);
     display: flex;
@@ -338,34 +338,44 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-/* Subheader styles. These aren't in a separate subheader div yet,
-   so we add `.overlay-container` for now to apppease the linter in
-   differentiating from the main container styles below. */
-.two-pane-settings-container.overlay-container {
-    .list-toggler-container {
-        align-items: center;
-        padding: 0 8px;
-        border-bottom: 1px solid var(--color-border-modal-bar);
+.two-pane-settings-container .two-pane-settings-subheader {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border-modal-bar);
+    grid-area: subheader;
+
+    .left,
+    .right {
         display: flex;
-        justify-content: space-between;
-        height: var(--settings-overlay-subheader-height);
+        justify-content: center;
     }
 
-    .stream_sorter_toggle {
+    .list-toggler-container {
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 8px;
+        display: flex;
+        justify-content: end;
+        flex-grow: 1;
+        gap: 5px;
+    }
+
+    .tab-switcher.stream_sorter_toggle {
         margin-left: auto;
     }
 
+    .tab-switcher,
     #add_new_subscription {
+        margin: 0;
         height: var(--settings-overlay-header-button-height);
     }
 
     .display-type {
-        height: var(--settings-overlay-subheader-height);
+        width: 100%;
         display: flex;
         justify-content: center;
         align-items: center;
         font-weight: 600;
-        border-bottom: 1px solid var(--color-border-modal-bar);
 
         & a {
             color: inherit;
@@ -412,68 +422,25 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-#subscription_overlay .two-pane-settings-container {
-    container: subscriptions / inline-size;
-}
-
-/* There's an awkward width of modal that is wider than the
-   breakpoint that collapses the left pane, but still narrow
-   enough that the sort buttons need a second row to be visible
-   without overlapping other UI. Note that for 16px and larger
-   font sizes, we always show two rows of buttons.
-
-   We also show two rows of buttons on particularly narrow
-   screens where there's only one panel and the overlay doesn't
-   have enough space for all the buttons. */
-@container settings-overlay (
-    ((width >= $settings_overlay_sidebar_collapse_breakpoint) and (width < calc(80em + 80px)))
-    or ((width < $settings_overlay_sidebar_collapse_breakpoint) and (width <= 36em))
-) {
-    #subscription_overlay .two-pane-settings-container {
-        .left {
-            .list-toggler-container {
-                height: 5em;
-                justify-content: end;
-                flex-wrap: wrap;
-            }
-
-            .tab-switcher {
-                margin-right: 0;
-            }
-
-            .tab-switcher:first-child {
-                /* This forces the other buttons to the next row */
-                width: 100%;
-                display: flex;
-                justify-content: end;
-            }
-        }
-
-        .right .display-type {
-            height: 5em;
-        }
-
-        .streams-list {
-            /* Calculated from several heights and padding/margin measurements
-            in .list-toggler-container and .stream_filter, with some added
-            fiddling to see what worked best at 12px - 20px font sizes.
-            Notably this height is shorter than the similar calculation
-            below because the toggler is taller.
-            When we redesign this area we should make this less brittle. */
-            height: calc(100% - 5.4em - 40px);
-        }
-
-        #stream_settings {
-            height: calc(100% - 5em);
-        }
-    }
-}
-
 .two-pane-settings-container {
+    display: grid;
+    grid-template-areas:
+        "header   "
+        "subheader"
+        "body     ";
+    grid-template-rows:
+        var(--settings-overlay-header-height)
+        minmax(var(--settings-overlay-subheader-height), max-content)
+        minmax(0, 1fr);
     position: relative;
     height: 95%;
     border-radius: 4px;
     padding: 0;
+    /* TODO(evy) Broken! For some reason the children are not shrinking and growing
+       with the container element. It seems to load fine on page-load, but when I
+       change the size of the screen things start getting cut off.
+       I tried setting 97vw width on every child element too but then the container
+       was shrinking faster than the children. ??? */
     width: 97%;
     overflow: hidden;
     max-width: 1200px;
@@ -490,7 +457,7 @@ h4.user_group_setting_subsection_title {
     }
 
     .two-pane-settings-header {
-        height: var(--settings-overlay-header-height);
+        grid-area: header;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -513,13 +480,8 @@ h4.user_group_setting_subsection_title {
         cursor: pointer;
     }
 
-    .left,
-    .right {
-        position: relative;
-        display: inline-block;
-        vertical-align: top;
-        height: calc(100% - var(--settings-overlay-header-height));
-        margin: 0 -2px;
+    .two-pane-settings-body {
+        display: flex;
     }
 
     .left .no-streams-to-show,
@@ -652,11 +614,6 @@ h4.user_group_setting_subsection_title {
     position: relative;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
-    /* Calculated from several heights and padding/margin measurements
-    in .list-toggler-container and .stream_filter, with some added
-    fiddling to see what worked best at 12px - 20px font sizes.
-    When we redesign this area we should make this less brittle. */
-    height: calc(100% - 3.4em - 40px);
     width: 100%;
 }
 
@@ -940,9 +897,8 @@ h4.user_group_setting_subsection_title {
         .settings-sticky-footer {
             display: flex;
             justify-content: space-between;
-            position: absolute;
-            bottom: 0;
-            width: calc(100% - 27px);
+            /* Subtract 15px padding on either side. */
+            width: calc(100% - 30px);
             padding: 9px 15px 15px;
             text-align: right;
             background-color: var(--color-background-modal-bar);
@@ -1156,7 +1112,6 @@ h4.user_group_setting_subsection_title {
 
     .settings {
         position: relative;
-        height: calc(100% - var(--settings-overlay-header-height));
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
 
@@ -1429,10 +1384,6 @@ div.settings-radio-input-parent {
         position: relative;
         overflow: hidden;
         height: 95%;
-
-        .list-toggler-container {
-            text-align: left;
-        }
 
         .two-pane-settings-header .fa-chevron-left {
             visibility: visible;
