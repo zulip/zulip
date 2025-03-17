@@ -36,9 +36,8 @@ export const COMMON_DROPDOWN_WIDGET_PARAMS = {
     tippy_props: TIPPY_PROPS,
     unique_id_type: dropdown_widget.DataTypes.STRING,
     hide_search_box: true,
-    bold_current_selection: true,
     disable_for_spectators: true,
-};
+} satisfies Partial<dropdown_widget.DropdownWidgetOptions>;
 
 export function filters_dropdown_options(current_value: string | number | undefined): {
     unique_id: string;
