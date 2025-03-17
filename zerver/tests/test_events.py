@@ -3196,9 +3196,7 @@ class NormalActionsTest(BaseAction):
         )
         self.assertEqual(
             events[6]["data"]["can_mention_group"],
-            UserGroupMembersData(
-                direct_members=[hamlet.id], direct_subgroups=[members_group.id]
-            ),
+            UserGroupMembersData(direct_members=[hamlet.id], direct_subgroups=[members_group.id]),
         )
 
         user_profile = self.example_user("cordelia")
@@ -3226,9 +3224,7 @@ class NormalActionsTest(BaseAction):
         )
         self.assertEqual(
             events[6]["data"]["can_mention_group"],
-            UserGroupMembersData(
-                direct_members=[hamlet.id], direct_subgroups=[members_group.id]
-            ),
+            UserGroupMembersData(direct_members=[hamlet.id], direct_subgroups=[members_group.id]),
         )
 
         user_profile = self.example_user("shiva")
@@ -4042,9 +4038,7 @@ class RealmPropertyActionTest(BaseAction):
         check_realm_update_dict("events[0]", events[0])
         self.assertEqual(
             events[0]["data"][setting_name],
-            UserGroupMembersData(
-                direct_members=[othello.id], direct_subgroups=[admins_group.id]
-            ),
+            UserGroupMembersData(direct_members=[othello.id], direct_subgroups=[admins_group.id]),
         )
 
         old_setting_api_value = get_group_setting_value_for_api(setting_group)

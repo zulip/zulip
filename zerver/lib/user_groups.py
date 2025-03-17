@@ -592,9 +592,7 @@ def get_members_and_subgroups_of_groups(group_ids: set[int]) -> dict[int, UserGr
 
     group_members_dict: dict[int, UserGroupMembersData] = dict()
     for group_id in group_ids:
-        group_members_dict[group_id] = UserGroupMembersData(
-            direct_members=[], direct_subgroups=[]
-        )
+        group_members_dict[group_id] = UserGroupMembersData(direct_members=[], direct_subgroups=[])
 
     all_members = user_members.union(group_subgroups)
     for member_type, group_id, member_id in all_members:
