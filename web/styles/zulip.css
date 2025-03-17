@@ -1576,6 +1576,19 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     }
 }
 
+@media (width < $md_min) {
+    .spectator-view {
+        #navbar-middle {
+            /* = (width of button, square with header) * 3 (number of buttons) */
+            margin-right: calc(var(--header-height) * 3);
+        }
+
+        .header-main .column-right {
+            width: calc(var(--header-height) * 3);
+        }
+    }
+}
+
 %hide-right-sidebar {
     .column-right {
         display: none;
