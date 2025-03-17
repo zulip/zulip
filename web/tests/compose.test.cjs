@@ -307,7 +307,6 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         const server_message_id = 127;
         override(markdown, "render", noop);
 
-        override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
         override_rewire(echo, "try_deliver_locally", (message_request) => {
             const local_id_float = 123.04;
             return echo.insert_local_message(message_request, local_id_float, (messages) => {
