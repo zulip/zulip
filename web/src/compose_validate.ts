@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _, {isNumber} from "lodash";
+import type {ReferenceElement} from "tippy.js";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
@@ -950,6 +951,13 @@ export let validate_and_update_send_button_status = function (): void {
     const is_valid = validate(false, false);
     const $send_button = $("#compose-send-button");
     $send_button.toggleClass("disabled-message-send-controls", !is_valid);
+    const send_button_element: ReferenceElement = util.the($send_button);
+    if (send_button_element._tippy?.state.isVisible) {
+        // If the tooltip is displayed, we update tooltip content
+        // and other properties by hiding and showing the tooltip again.
+        send_button_element._tippy.hide();
+        send_button_element._tippy.show();
+    }
 };
 
 export function rewire_validate_and_update_send_button_status(
