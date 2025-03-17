@@ -66,6 +66,10 @@ export function open_found_missing_unreads_banner(on_jump_to_first_unread: () =>
 
 export function close_found_missing_unreads_banner(): void {
     const $banner = $("#popup_banners_wrapper").find(".found-missing-unreads");
+    if ($banner.length === 0) {
+        return;
+    }
+
     fade_out_popup_banner($banner);
 }
 
