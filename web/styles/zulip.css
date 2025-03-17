@@ -2220,7 +2220,7 @@ body:not(.spectator-view) {
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        
+
         .dropdown-list-delete,
         .dropdown-list-edit {
             position: absolute;
