@@ -9,18 +9,20 @@ const billing_frequency_schema = z.enum(["Monthly", "Annual"]);
 const billing_base_url = $("#billing-page").attr("data-billing-base-url")!;
 
 // Matches the CustomerPlan model in the backend.
-enum BillingFrequency {
-    BILLING_SCHEDULE_ANNUAL = 1,
-    BILLING_SCHEDULE_MONTHLY = 2,
-}
+const BillingFrequency = {
+    BILLING_SCHEDULE_ANNUAL: 1,
+    BILLING_SCHEDULE_MONTHLY: 2,
+} as const;
+type BillingFrequency = (typeof BillingFrequency)[keyof typeof BillingFrequency];
 
-enum CustomerPlanStatus {
-    ACTIVE = 1,
-    DOWNGRADE_AT_END_OF_CYCLE = 2,
-    FREE_TRIAL = 3,
-    SWITCH_TO_ANNUAL_AT_END_OF_CYCLE = 4,
-    SWITCH_TO_MONTHLY_AT_END_OF_CYCLE = 6,
-}
+const CustomerPlanStatus = {
+    ACTIVE: 1,
+    DOWNGRADE_AT_END_OF_CYCLE: 2,
+    FREE_TRIAL: 3,
+    SWITCH_TO_ANNUAL_AT_END_OF_CYCLE: 4,
+    SWITCH_TO_MONTHLY_AT_END_OF_CYCLE: 6,
+} as const;
+type CustomerPlanStatus = (typeof CustomerPlanStatus)[keyof typeof CustomerPlanStatus];
 
 export function create_update_current_cycle_license_request(): void {
     $("#current-manual-license-count-update-button .billing-button-text").text("");
@@ -410,7 +412,7 @@ export function initialize(): void {
             (switch_to_monthly_eoc && billing_frequency_selected === "Annual")
         ) {
             $("#org-billing-frequency-confirm-button").toggleClass("hide", false);
-            let new_status = CustomerPlanStatus.ACTIVE;
+            let new_status: CustomerPlanStatus = CustomerPlanStatus.ACTIVE;
             if (downgrade_at_end_of_cycle) {
                 new_status = CustomerPlanStatus.DOWNGRADE_AT_END_OF_CYCLE;
             } else if (free_trial) {
@@ -419,10 +421,10 @@ export function initialize(): void {
             $("#org-billing-frequency-confirm-button").attr("data-status", new_status);
         } else if (current_billing_frequency !== billing_frequency_selected) {
             $("#org-billing-frequency-confirm-button").toggleClass("hide", false);
-            let new_status = free_trial
+            let new_status: CustomerPlanStatus = free_trial
                 ? CustomerPlanStatus.FREE_TRIAL
                 : CustomerPlanStatus.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE;
-            let new_schedule = BillingFrequency.BILLING_SCHEDULE_ANNUAL;
+            let new_schedule: BillingFrequency = BillingFrequency.BILLING_SCHEDULE_ANNUAL;
             if (billing_frequency_selected === "Monthly") {
                 new_status = free_trial
                     ? CustomerPlanStatus.FREE_TRIAL
