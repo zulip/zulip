@@ -16,6 +16,12 @@ const mc = 849; // Middle column as wide as it appears after the `sm` breakpoint
 // Base em unit for container_breakpoints conversion
 const base_em_px = 16;
 
+// Used for main settings overlay and stream/subscription settings overlay
+// measured as the width of the overlay itself, not the width of the full
+// screen. 800px is the breakpoint at the 14px legacy font size, scaled with
+// em to user-chosen font-size.
+const settings_overlay_sidebar_collapse_breakpoint = 800;
+
 export const media_breakpoints = {
     xs_min: xs + "px",
     sm_min: sm + "px",
@@ -27,11 +33,8 @@ export const media_breakpoints = {
     mm_min: mm + "px",
     ms_min: ms + "px",
     short_navbar_cutoff_height: "600px",
-    // Used for main settings overlay and stream/subscription settings overlay
-    // measured as the width of the overlay itself, not the width of the full
-    // screen. 800px is the breakpoint at the 14px legacy font size, scaled with
-    // em to user-chosen font-size.
-    settings_overlay_sidebar_collapse_breakpoint: 800 / 14 + "em",
+    settings_overlay_sidebar_collapse_breakpoint:
+        settings_overlay_sidebar_collapse_breakpoint / 14 + "em",
 };
 
 export const container_breakpoints = {
@@ -54,4 +57,5 @@ export const media_breakpoints_num = {
     ml,
     mm,
     ms,
+    settings_overlay_sidebar_collapse_breakpoint,
 };
