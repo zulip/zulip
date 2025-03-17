@@ -32,6 +32,10 @@ mock_esm("../src/group_permission_settings", {
     },
 });
 
+mock_esm("../src/resize", {
+    resize_settings_overlay() {},
+});
+
 set_global("page_params", {});
 
 const {set_current_user, set_realm} = zrequire("state_data");

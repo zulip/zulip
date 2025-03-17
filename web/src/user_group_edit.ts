@@ -1546,7 +1546,6 @@ export function change_state(
     if (section === "new") {
         do_open_create_user_group();
         redraw_user_group_list();
-        resize.resize_settings_creation_overlay($("#groups_overlay_container"));
         return;
     }
 
@@ -2156,6 +2155,7 @@ export function initialize(): void {
     $("#groups_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $("#groups_overlay_container .two-pane-settings-header").removeClass("slide-left");
+        resize.resize_settings_overlay_subheader_for_narrow_screens($("#groups_overlay_container"));
     });
 
     $("#groups_overlay_container").on(
