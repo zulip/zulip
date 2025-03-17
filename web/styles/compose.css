@@ -1177,8 +1177,8 @@ textarea.new_message_textarea {
     border-radius: 4px;
     border: 0;
     margin-bottom: 0;
-    color: var(--color-text-brand-primary-action-button);
-    background-color: var(--color-background-brand-primary-action-button);
+    color: var(--color-text-info-primary-action-button);
+    background-color: var(--color-background-info-primary-action-button);
 
     &:active {
         transition: transform 80ms;
@@ -1193,13 +1193,13 @@ textarea.new_message_textarea {
         border: 1px solid var(--color-compose-send-button-focus-border);
         box-shadow: 0 0 5px var(--color-compose-send-button-focus-shadow);
         background-color: var(
-            --color-background-brand-primary-action-button-active
+            --color-background-info-primary-action-button-active
         );
     }
 
     &:hover {
         background-color: var(
-            --color-background-brand-primary-action-button-hover
+            --color-background-info-primary-action-button-hover
         );
     }
 }
