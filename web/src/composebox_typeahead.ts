@@ -80,6 +80,7 @@ export type SlashCommandSuggestion = SlashCommand & {type: "slash"};
 
 export type LanguageSuggestion = {
     language: string;
+    is_default_language?: boolean;
     type: "syntax";
 };
 
@@ -845,17 +846,43 @@ export function get_candidates(
         token = current_token;
         // If the code formatting button was triggered, we want to show a blank option
         // to improve the discoverability of the possibility of specifying a language.
-        const language_list = compose_ui.code_formatting_button_triggered
-            ? ["", ...realm_playground.get_pygments_typeahead_list_for_composebox()]
-            : realm_playground.get_pygments_typeahead_list_for_composebox();
+        const language_list = realm_playground.get_pygments_typeahead_list_for_composebox();
         compose_ui.set_code_formatting_button_triggered(false);
         const matcher = get_language_matcher(token);
         const matches = language_list.filter((item) => matcher(item));
+        const default_language = realm.realm_default_code_block_language;
+        let priority_languages;
+        if (default_language) {
+            priority_languages = [default_language, "text", "quote", "spoiler", "math"];
+        } else {
+            priority_languages = ["text", "quote", "spoiler", "math"];
+        }
+        const priority_language_suggestions: LanguageSuggestion[] = priority_languages.map(
+            (language) => {
+                if (language !== default_language) {
+                    return {
+                        language,
+                        type: "syntax",
+                    };
+                }
+                return {
+                    language,
+                    is_default_language: true,
+                    type: "syntax",
+                };
+            },
+        );
         const matches_list: LanguageSuggestion[] = matches.map((language) => ({
             language,
             type: "syntax",
         }));
-        return typeahead_helper.sort_languages(matches_list, token);
+        const sorted_languages = typeahead_helper.sort_languages(matches_list, token);
+        if (token.length === 0 && realm.realm_default_code_block_language) {
+            return [...priority_language_suggestions, ...sorted_languages.slice(1)];
+        } else if (token.length === 0) {
+            return [...priority_language_suggestions, ...sorted_languages.slice(1)];
+        }
+        return sorted_languages;
     }
 
     // Only start the emoji autocompleter if : is directly after one
@@ -1109,7 +1136,10 @@ export function content_highlighter_html(item: TypeaheadSuggestion): string | un
         case "stream":
             return typeahead_helper.render_stream(item);
         case "syntax":
-            return typeahead_helper.render_typeahead_item({primary: item.language});
+            return typeahead_helper.render_typeahead_item({
+                primary: item.language,
+                is_default_language: item.is_default_language === true,
+            });
         case "topic_jump":
             return typeahead_helper.render_typeahead_item({primary: item.message});
         case "topic_list": {
@@ -1415,15 +1445,6 @@ function get_footer_html(): string | false {
         case "silent_mention":
             tip_text = $t({defaultMessage: "This silent mention won't trigger notifications."});
             break;
-        case "syntax":
-            if (realm.realm_default_code_block_language !== "") {
-                tip_text = $t(
-                    {defaultMessage: "Default is {language}. Use 'text' to disable highlighting."},
-                    {language: realm.realm_default_code_block_language},
-                );
-                break;
-            }
-            return false;
         default:
             return false;
     }
@@ -1464,6 +1485,15 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
 
                     if (item.is_new_topic) {
                         return `<em>${$t({defaultMessage: "New"})}</em>`;
+                    }
+                } else if (item.type === "syntax") {
+                    if (
+                        item.language !== "" &&
+                        item.language === realm.realm_default_code_block_language
+                    ) {
+                        return `<em>${$t({defaultMessage: "(default)"})}</em>`;
+                    } else if (item.language === "text") {
+                        return `<em>${$t({defaultMessage: "(no highlighting)"})}</em>`;
                     }
                 }
                 return false;
