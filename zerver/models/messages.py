@@ -98,7 +98,7 @@ class AbstractMessage(models.Model):
     # Whether the message contains a link.
     has_link = models.BooleanField(default=False, db_index=True)
     # If the message is a channel message (as opposed to a DM or group-DM)
-    is_channel_message = models.BooleanField(default=True, null=True, db_index=True)
+    is_channel_message = models.BooleanField(default=True, db_index=True)
 
     class Meta:
         abstract = True
