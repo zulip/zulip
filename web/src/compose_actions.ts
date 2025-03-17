@@ -206,6 +206,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
         compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
     }
     compose_ui.maybe_show_scrolling_formatting_buttons("#message-formatting-controls-container");
+    compose_validate.validate_and_update_send_button_status();
 };
 
 export function rewire_complete_starting_tasks(value: typeof complete_starting_tasks): void {

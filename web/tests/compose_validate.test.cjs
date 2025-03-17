@@ -531,9 +531,10 @@ test_ui("test_stream_posting_permission", ({mock_template, override}) => {
     assert.ok(!banner_rendered);
 });
 
-test_ui("test_check_overflow_text", ({override}) => {
+test_ui("test_check_overflow_text", ({override, override_rewire}) => {
     const fake_compose_box = new FakeComposeBox();
 
+    override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
     override(realm, "max_message_length", 10000);
 
     // RED

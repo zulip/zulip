@@ -1,7 +1,7 @@
 /* Compose box module responsible for the message's recipient */
 
 import $ from "jquery";
-import _, {isNumber} from "lodash";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
@@ -21,7 +21,6 @@ import {$t} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import * as sub_store from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
@@ -114,37 +113,17 @@ export function update_on_recipient_change(): void {
     compose_validate.warn_if_guest_in_dm_recipient();
     drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
-}
-
-export function get_posting_policy_error_message(): string {
-    if (compose_state.selected_recipient_id === "direct") {
-        const recipients = compose_pm_pill.get_user_ids_string();
-        return compose_validate.check_dm_permissions_and_get_error_string(recipients);
-    }
-
-    if (!isNumber(compose_state.selected_recipient_id)) {
-        return "";
-    }
-
-    const stream = sub_store.get(compose_state.selected_recipient_id);
-    if (stream && !stream_data.can_post_messages_in_stream(stream)) {
-        return $t({
-            defaultMessage: "You do not have permission to post in this channel.",
-        });
-    }
-    return "";
+    compose_validate.validate_and_update_send_button_status();
 }
 
 export let check_posting_policy_for_compose_box = (): void => {
-    const banner_text = get_posting_policy_error_message();
+    const banner_text = compose_validate.get_posting_policy_error_message();
     if (banner_text === "") {
-        compose_validate.set_recipient_disallowed(false);
         compose_banner.clear_errors();
         return;
     }
 
     let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
-    compose_validate.set_recipient_disallowed(true);
     if (compose_state.selected_recipient_id === "direct") {
         banner_classname = compose_banner.CLASSNAMES.cannot_send_direct_message;
         compose_banner.cannot_send_direct_message_error(banner_text);

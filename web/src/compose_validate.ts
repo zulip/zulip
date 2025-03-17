@@ -1,5 +1,5 @@
 import $ from "jquery";
-import _ from "lodash";
+import _, {isNumber} from "lodash";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
@@ -41,7 +41,6 @@ let missing_topic = false;
 let no_private_recipient = true;
 let no_message_content = false;
 let message_too_long = false;
-let recipient_disallowed = false;
 
 export const NO_PRIVATE_RECIPIENT_ERROR_MESSAGE = $t({
     defaultMessage: "Please add a valid recipient.",
@@ -67,7 +66,7 @@ export let wildcard_mention_threshold = 15;
 
 export function set_upload_in_progress(status: boolean): void {
     upload_in_progress = status;
-    update_send_button_status();
+    validate_and_update_send_button_status();
 }
 
 function set_no_channel_selected(status: boolean): void {
@@ -101,25 +100,31 @@ function set_message_too_long_for_edit(status: boolean, $container: JQuery): voi
     $message_edit_save_container.toggleClass("disabled-message-edit-save", save_is_disabled);
 }
 
-export function set_recipient_disallowed(status: boolean): void {
-    recipient_disallowed = status;
-}
+export function get_posting_policy_error_message(): string {
+    if (compose_state.selected_recipient_id === "direct") {
+        const recipients = compose_pm_pill.get_user_ids_string();
+        return check_dm_permissions_and_get_error_string(recipients);
+    }
 
-export function update_send_button_status(): void {
-    const recipient_type = compose_state.get_message_type();
-    $("#compose-send-button").toggleClass(
-        "disabled-message-send-controls",
-        upload_in_progress ||
-            no_channel_selected ||
-            (missing_topic && recipient_type === "stream") ||
-            (no_private_recipient && recipient_type === "private") ||
-            message_too_long ||
-            recipient_disallowed ||
-            no_message_content,
-    );
+    if (!isNumber(compose_state.selected_recipient_id)) {
+        return "";
+    }
+
+    const stream = sub_store.get(compose_state.selected_recipient_id);
+    if (stream && !stream_data.can_post_messages_in_stream(stream)) {
+        return $t({
+            defaultMessage: "You do not have permission to post in this channel.",
+        });
+    }
+    return "";
 }
 
 export function get_disabled_send_tooltip(): string {
+    const posting_policy_error = get_posting_policy_error_message();
+    if (posting_policy_error !== "") {
+        return posting_policy_error;
+    }
+
     const recipient_type = compose_state.get_message_type();
     if (no_channel_selected && recipient_type === "stream") {
         return NO_CHANNEL_SELECTED_ERROR_MESSAGE;
@@ -887,6 +892,8 @@ export function check_overflow_text($container: JQuery): number {
     const $indicator = $container.find(".message-limit-indicator");
     const is_edit_container = $textarea.closest(".message_row").length > 0;
 
+    const old_message_too_long = message_too_long;
+
     if (text.length > max_length) {
         $indicator.removeClass("textarea-approaching-limit");
         $textarea.removeClass("textarea-approaching-limit");
@@ -928,10 +935,28 @@ export function check_overflow_text($container: JQuery): number {
             set_message_too_long_for_compose(false);
         }
     }
-
+    if (!is_edit_container && message_too_long !== old_message_too_long) {
+        // If this keystroke changed the truth status for whether
+        // we're too long, then we need to refresh the send button
+        // status. This is expensive, but naturally debounced by the
+        // fact that crossing the MAX_MESSAGE_LENGTH threshold is
+        // rare.
+        validate_and_update_send_button_status();
+    }
     return text.length;
 }
 
+export let validate_and_update_send_button_status = function (): void {
+    const is_valid = validate(false, false);
+    const $send_button = $("#compose-send-button");
+    $send_button.toggleClass("disabled-message-send-controls", !is_valid);
+};
+
+export function rewire_validate_and_update_send_button_status(
+    value: typeof validate_and_update_send_button_status,
+): void {
+    validate_and_update_send_button_status = value;
+}
 export function validate_message_length($container: JQuery, trigger_flash = true): boolean {
     const $textarea = $container.find<HTMLTextAreaElement>(".message-textarea");
     // Match the behavior of compose_state.message_content of trimming trailing whitespace
@@ -968,7 +993,8 @@ function report_validation_error(
         compose_banner.show_error_message(message, classname, $container, $bad_input);
     }
 }
-export function validate(scheduling_message: boolean, show_banner = true): boolean {
+
+export let validate = (scheduling_message: boolean, show_banner = true): boolean => {
     const message_content = compose_state.message_content();
     // The validation checks in this function are in a specific priority order. Don't
     // change their order unless you want to change which priority they're shown in.
@@ -1016,6 +1042,10 @@ export function validate(scheduling_message: boolean, show_banner = true): boole
     }
 
     return true;
+};
+
+export function rewire_validate(value: typeof validate): void {
+    validate = value;
 }
 
 export function convert_mentions_to_silent_in_direct_messages(

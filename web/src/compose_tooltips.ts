@@ -6,7 +6,7 @@ import * as tippy from "tippy.js";
 import render_drafts_tooltip from "../templates/drafts_tooltip.hbs";
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
 
-import * as compose_recipient from "./compose_recipient.ts";
+import * as blueslip from "./blueslip.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
@@ -209,40 +209,50 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#compose-send-button:not(.disabled-message-send-controls)",
-        delay: EXTRA_LONG_HOVER_DELAY,
+        target: "#compose-send-button",
+        // 350px at 14px/1em
+        maxWidth: "25em",
         // By default, tippyjs uses a trigger value of "mouseenter focus",
         // but by specifying "mouseenter", this will prevent showing the
         // Send tooltip when tabbing to the Send button.
         trigger: "mouseenter",
         appendTo: () => document.body,
+        onTrigger(instance) {
+            if (instance.reference.classList.contains("disabled-message-send-controls")) {
+                instance.setProps({
+                    delay: 0,
+                });
+            } else {
+                instance.setProps({
+                    delay: EXTRA_LONG_HOVER_DELAY,
+                });
+            }
+        },
         onShow(instance) {
             // Don't show send-area tooltips if the popover is displayed.
             if (popover_menus.is_scheduled_messages_popover_displayed()) {
                 return false;
             }
+
+            if (instance.reference.classList.contains("disabled-message-send-controls")) {
+                const error_message = compose_validate.get_disabled_send_tooltip();
+                instance.setContent(error_message);
+
+                if (!error_message) {
+                    blueslip.error("Compose send button incorrectly disabled.");
+                    // We don't return but show normal tooltip to user.
+                    instance.reference.classList.remove("disabled-message-send-controls");
+                } else {
+                    return undefined;
+                }
+            }
+
             if (user_settings.enter_sends) {
                 instance.setContent(parse_html($("#send-enter-tooltip-template").html()));
             } else {
                 instance.setContent(parse_html($("#send-ctrl-enter-tooltip-template").html()));
             }
             return undefined;
-        },
-    });
-
-    tippy.delegate("body", {
-        target: "#compose-send-button.disabled-message-send-controls",
-        // 350px at 14px/1em
-        maxWidth: "25em",
-        onShow(instance) {
-            instance.setContent(
-                compose_recipient.get_posting_policy_error_message() ||
-                    compose_validate.get_disabled_send_tooltip(),
-            );
-        },
-        appendTo: () => document.body,
-        onHidden(instance) {
-            instance.destroy();
         },
     });
 

@@ -66,6 +66,7 @@ const echo = zrequire("echo");
 const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+const compose_validate = zrequire("compose_validate");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const realm = {};
@@ -306,6 +307,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         const server_message_id = 127;
         override(markdown, "render", noop);
 
+        override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
         override_rewire(echo, "try_deliver_locally", (message_request) => {
             const local_id_float = 123.04;
             return echo.insert_local_message(message_request, local_id_float, (messages) => {
@@ -637,6 +639,7 @@ test_ui("update_fade", ({override, override_rewire}) => {
     override_rewire(compose_recipient, "update_narrow_to_recipient_visibility", () => {
         update_narrow_to_recipient_visibility_called = true;
     });
+    override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
     override_rewire(drafts, "update_compose_draft_count", noop);
     override(compose_pm_pill, "get_user_ids", () => []);
 

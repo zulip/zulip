@@ -8,6 +8,7 @@ const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
+const compose_validate = zrequire("compose_validate");
 const user_groups = zrequire("user_groups");
 
 const nobody = {
@@ -153,6 +154,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_actions, "complete_starting_tasks", noop);
     override_rewire(compose_actions, "blur_compose_inputs", noop);
     override_rewire(compose_actions, "clear_textarea", noop);
+    override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
     const $elem = $("#send_message_form");
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
@@ -302,6 +304,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
     override_rewire(compose_actions, "complete_starting_tasks", noop);
     override_rewire(compose_actions, "clear_textarea", noop);
+    override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
     const $elem = $("#send_message_form");
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
@@ -446,6 +449,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
 
     override_rewire(compose_actions, "complete_starting_tasks", noop);
     override_rewire(compose_actions, "clear_textarea", noop);
+    override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
     override_private_message_recipient({override});
 
     let selected_message;
