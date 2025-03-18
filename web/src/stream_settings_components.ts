@@ -99,7 +99,9 @@ export function get_active_data(): {
 } {
     const $active_row = $("div.stream-row.active");
     const valid_active_id = Number.parseInt($active_row.attr("data-stream-id")!, 10);
-    const $active_tabs = $(".subscriptions-container").find("div.ind-tab.selected");
+    const $active_tabs = $("#subscription_overlay .two-pane-settings-container").find(
+        "div.ind-tab.selected",
+    );
     return {
         $row: $active_row,
         id: valid_active_id,
