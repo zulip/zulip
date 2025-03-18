@@ -49,7 +49,20 @@ options.
 
 [chat-zulip-org]: https://zulip.com/development-community/
 
-## Custom Terms of Service and Privacy policy
+## Customizing user onboarding
+
+### Navigation tour video
+
+New users are offered a [2-minute video
+tour](https://static.zulipchat.com/static/navigation-tour-video/zulip-10.mp4),
+which shows where to find everything to get started with Zulip.
+
+You can modify `NAVIGATION_TOUR_VIDEO_URL` in `/etc/zulip/settings.py` in order
+to host the official video on your network, or to provide your own introductory
+video with information on how your organization uses Zulip. A value of `None`
+disables the navigation tour video experience.
+
+### Terms of Service and Privacy policy
 
 :::{important}
 
