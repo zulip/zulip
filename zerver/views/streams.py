@@ -839,6 +839,7 @@ def send_messages_for_new_subscribers(
                     recipient_user=recipient_user,
                     content=msg,
                     mention_backend=mention_backend,
+                    acting_user=user_profile,
                 )
             )
 

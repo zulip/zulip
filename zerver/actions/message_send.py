@@ -1992,6 +1992,7 @@ def internal_prep_private_message(
     *,
     mention_backend: MentionBackend | None = None,
     disable_external_notifications: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> SendMessageRequest | None:
     """
     See _internal_prep_message for details of how this works.
@@ -2009,6 +2010,7 @@ def internal_prep_private_message(
         content=content,
         mention_backend=mention_backend,
         disable_external_notifications=disable_external_notifications,
+        acting_user=acting_user,
     )
 
 

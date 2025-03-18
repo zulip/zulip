@@ -311,6 +311,7 @@ def notify_for_user_group_subscription_changes(
                 recipient_user=recipient_user,
                 content=message,
                 mention_backend=mention_backend,
+                acting_user=acting_user,
             )
         )
 
