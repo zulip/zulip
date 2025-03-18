@@ -114,11 +114,18 @@ function hide_loading_indicator(): void {
 }
 
 export function fetch_and_render_message_history(message: Message): void {
+    assert(message_lists.current !== undefined);
+    const message_container = message_lists.current.view.message_containers.get(message.id);
+    assert(message_container !== undefined);
     const move_history_only =
         realm.realm_message_edit_history_visibility_policy ===
         message_edit_history_visibility_policy_values.moves_only.code;
     $("#message-edit-history-overlay-container").html(
-        render_message_history_overlay({move_history_only}),
+        render_message_history_overlay({
+            moved: message_container.moved,
+            edited: message_container.edited,
+            move_history_only,
+        }),
     );
     open_overlay();
     show_loading_indicator();
