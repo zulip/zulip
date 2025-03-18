@@ -1424,9 +1424,7 @@ div.settings-radio-input-parent {
     .subscriptions-container {
         max-width: 95%;
     }
-}
 
-@media (width < $lg_min) {
     .subscriptions-container .left .list-toggler-container {
         flex-wrap: wrap;
     }
