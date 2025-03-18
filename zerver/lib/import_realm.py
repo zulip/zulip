@@ -32,11 +32,7 @@ from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, Table
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
-from zerver.lib.migration_status import (
-    MigrationStatusJson,
-    get_migration_status,
-    parse_migration_status,
-)
+from zerver.lib.migration_status import MigrationStatusJson, parse_migration_status
 from zerver.lib.mime_types import guess_type
 from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
@@ -2172,9 +2168,8 @@ def check_migration_status(exported_migration_status: MigrationStatusJson) -> No
     custom migrations are identical.
     """
     mismatched_migrations_log: dict[str, str] = {}
-    local_showmigrations = get_migration_status(close_connection_when_done=False)
     local_migration_status = MigrationStatusJson(
-        migrations_by_app=parse_migration_status(local_showmigrations), zulip_version=ZULIP_VERSION
+        migrations_by_app=parse_migration_status(), zulip_version=ZULIP_VERSION
     )
 
     # Different major versions are the most common form of mismatch
