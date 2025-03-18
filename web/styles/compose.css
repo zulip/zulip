@@ -1192,6 +1192,8 @@ textarea.new_message_textarea {
     &:focus-visible {
         border: 1px solid var(--color-compose-send-button-focus-border);
         box-shadow: 0 0 5px var(--color-compose-send-button-focus-shadow);
+        /* Override default browser ring. */
+        outline: 0;
     }
 
     &:hover {
