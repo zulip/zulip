@@ -9,7 +9,11 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.realm_settings import do_deactivate_realm
-from zerver.lib.export import export_realm_wrapper
+from zerver.lib.export import (
+    check_export_with_consent_is_usable,
+    check_public_export_is_usable,
+    export_realm_wrapper,
+)
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import RealmExport
 
@@ -103,6 +107,11 @@ class Command(ZulipBaseCommand):
             help="Whether to export private data of users who consented",
         )
         parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Skip checks for whether the generated export will be a usable realm.",
+        )
+        parser.add_argument(
             "--upload",
             action="store_true",
             help="Whether to upload resulting tarball to s3 or LOCAL_UPLOADS_DIR",
@@ -117,6 +126,7 @@ class Command(ZulipBaseCommand):
         output_dir = options["output_dir"]
         public_only = options["public_only"]
         export_full_with_consent = options["export_full_with_consent"]
+        assert not (public_only and export_full_with_consent)
 
         print(f"\033[94mExporting realm\033[0m: {realm.string_id}")
 
@@ -149,6 +159,15 @@ class Command(ZulipBaseCommand):
         except FileExistsError:
             raise CommandError(
                 f"Refusing to overwrite existing tarball: {tarball_path}. Aborting..."
+            )
+
+        if (not options["force"]) and (
+            (export_full_with_consent and not check_export_with_consent_is_usable(realm))
+            or (public_only and not check_public_export_is_usable(realm))
+        ):
+            raise CommandError(
+                "The generated export will not be a usable organization! "
+                "You can pass --force to skip this check."
             )
 
         if options["deactivate_realm"]:

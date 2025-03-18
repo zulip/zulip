@@ -3034,3 +3034,30 @@ def do_common_export_processes(output_dir: str) -> None:
 
     logging.info("Exporting migration status")
     export_migration_status(output_dir)
+
+
+def check_export_with_consent_is_usable(realm: Realm) -> bool:
+    # Users without consent enabled will end up deactivated in the exported
+    # data. An organization without a consenting Owner would therefore not be
+    # functional after export->import. That's most likely not desired by the user
+    # so check for such a case.
+    consented_user_ids = get_consented_user_ids(realm)
+    return UserProfile.objects.filter(
+        id__in=consented_user_ids, role=UserProfile.ROLE_REALM_OWNER, realm=realm
+    ).exists()
+
+
+def check_public_export_is_usable(realm: Realm) -> bool:
+    # Since users with email visibility set to NOBODY won't have their real emails
+    # exported, this could result in a lack of functional Owner accounts.
+    # We make sure that at least one Owner can have their real email address exported.
+    return UserProfile.objects.filter(
+        role=UserProfile.ROLE_REALM_OWNER,
+        email_address_visibility__in=[
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        ],
+        realm=realm,
+    ).exists()

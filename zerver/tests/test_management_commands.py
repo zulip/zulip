@@ -519,7 +519,7 @@ class TestExport(ZulipTestCase):
             self.example_user("iago"), "allow_private_data_export", True, acting_user=None
         )
         do_change_user_setting(
-            self.example_user("iago"), "allow_private_data_export", True, acting_user=None
+            self.example_user("desdemona"), "allow_private_data_export", True, acting_user=None
         )
 
         with (
