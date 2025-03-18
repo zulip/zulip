@@ -178,6 +178,10 @@ function make_zjquery() {
         },
     });
 
+    zjquery.reset_selector = (selector) => {
+        elems.delete(selector);
+    };
+
     zjquery.clear_all_elements = function () {
         elems.clear();
     };

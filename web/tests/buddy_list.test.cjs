@@ -249,8 +249,10 @@ run_test("big_list", ({override, override_rewire}) => {
     // Here we're just saying both lists are rendered as empty from start,
     // which doesn't actually happen, since I don't know how to properly
     // get it set in the middle of buddy_list.populate().
-    $("#buddy-list-users-matching-view .empty-list-message").length = 1;
-    $("#buddy-list-other-users .empty-list-message").length = 1;
+    $.reset_selector("#buddy-list-users-matching-view .empty-list-message");
+    $("#buddy-list-users-matching-view .empty-list-message").remove = noop;
+    $.reset_selector("#buddy-list-other-users .empty-list-message");
+    $("#buddy-list-users-matching-view .empty-list-message").remove = noop;
 
     _.times(num_users, (i) => {
         const person = make_user({

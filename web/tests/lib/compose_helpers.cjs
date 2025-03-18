@@ -32,7 +32,8 @@ class FakeComposeBox {
         $(".message-limit-indicator").html("");
         $(".message-limit-indicator").text("");
 
-        $("#compose_banners .user_not_subscribed").length = 0;
+        $.reset_selector("#compose_banners .user_not_subscribed");
+        $.set_results("#compose_banners .user_not_subscribed", []);
 
         this.$content_textarea.set_height(50);
         this.$content_textarea.val("default message");
