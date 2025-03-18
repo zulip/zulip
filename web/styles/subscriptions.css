@@ -280,8 +280,8 @@ h4.user_group_setting_subsection_title {
     display: inline;
 }
 
-.subscriptions-container .subscriptions-header .fa-chevron-left,
-.user-groups-container .user-groups-header .fa-chevron-left {
+.two-pane-settings-container .subscriptions-header .fa-chevron-left,
+.two-pane-settings-container .user-groups-header .fa-chevron-left {
     position: relative;
     transform: translate(-50px, 0);
     opacity: 0;
@@ -291,13 +291,14 @@ h4.user_group_setting_subsection_title {
     padding: 2px 10px;
 
     cursor: pointer;
+    visibility: hidden;
 
     transition: 0.3s ease;
     transition-property: opacity, transform;
 }
 
-.user-groups-container .user-groups-header.slide-left .fa-chevron-left,
-.subscriptions-container .subscriptions-header.slide-left .fa-chevron-left,
+.two-pane-settings-container .user-groups-header.slide-left .fa-chevron-left,
+.two-pane-settings-container .subscriptions-header.slide-left .fa-chevron-left,
 #settings_overlay_container
     .settings-header.mobile.slide-left
     .fa-chevron-left {
@@ -342,7 +343,7 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.subscriptions-container {
+#subscription_overlay .two-pane-settings-container {
     container: subscriptions / inline-size;
 }
 
@@ -359,7 +360,7 @@ h4.user_group_setting_subsection_title {
     ((width >= $settings_overlay_sidebar_collapse_breakpoint) and (width < calc(80em + 80px)))
     or ((width < $settings_overlay_sidebar_collapse_breakpoint) and (width <= 36em))
 ) {
-    #subscription_overlay .subscriptions-container {
+    #subscription_overlay .two-pane-settings-container {
         .left {
             .list-toggler-container {
                 height: 5em;
@@ -399,8 +400,7 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.user-groups-container,
-.subscriptions-container {
+.two-pane-settings-container {
     position: relative;
     height: 95%;
     border-radius: 4px;
@@ -430,10 +430,6 @@ h4.user_group_setting_subsection_title {
         font-weight: 700;
         background-color: var(--color-background-modal-bar);
         border-bottom: 1px solid var(--color-border-modal-bar);
-
-        .fa-chevron-left {
-            visibility: hidden;
-        }
 
         .exit {
             font-weight: 600;
@@ -1420,12 +1416,11 @@ div.settings-radio-input-parent {
 }
 
 @media (width < $lg_min) {
-    .user-groups-container,
-    .subscriptions-container {
+    .two-pane-settings-container {
         max-width: 95%;
     }
 
-    .subscriptions-container .left .list-toggler-container {
+    .two-pane-settings-container .left .list-toggler-container {
         flex-wrap: wrap;
     }
 
@@ -1445,8 +1440,7 @@ div.settings-radio-input-parent {
    Longer-term we should extract this logic two-column-overlay class
    to read more naturally. */
 @container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
-    .user-groups-container,
-    .subscriptions-container {
+    .two-pane-settings-container {
         position: relative;
         overflow: hidden;
 
@@ -1494,8 +1488,7 @@ div.settings-radio-input-parent {
 
     #subscription_overlay,
     #groups_overlay {
-        .user-groups-container,
-        .subscriptions-container {
+        .two-pane-settings-container {
             height: 95%;
         }
 

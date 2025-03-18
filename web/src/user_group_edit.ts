@@ -1216,7 +1216,7 @@ function empty_right_panel(): void {
 
 function open_right_panel_empty(): void {
     empty_right_panel();
-    const tab_key = $(".user-groups-container")
+    const tab_key = $("#groups_overlay .two-pane-settings-container")
         .find("div.ind-tab.selected")
         .first()
         .attr("data-tab-key");
@@ -1302,7 +1302,9 @@ export function is_group_already_present(group: UserGroup): boolean {
 }
 
 export function get_active_data(): ActiveData {
-    const $active_tabs = $(".user-groups-container").find("div.ind-tab.selected");
+    const $active_tabs = $("#groups_overlay .two-pane-settings-container").find(
+        "div.ind-tab.selected",
+    );
     const active_group_id = user_group_components.active_group_id;
     let $row;
     if (active_group_id !== undefined) {
