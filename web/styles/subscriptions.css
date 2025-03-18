@@ -899,13 +899,11 @@ h4.user_group_setting_subsection_title {
 }
 
 #settings_page,
-#groups_overlay,
-#subscription_overlay {
+.two-pane-settings-overlay {
     container: settings-overlay / inline-size;
 }
 
-#groups_overlay,
-#subscription_overlay {
+.two-pane-settings-overlay {
     .tab-switcher {
         display: flex;
         flex-wrap: nowrap;
@@ -1431,10 +1429,10 @@ div.settings-radio-input-parent {
 }
 
 /* Note that this block has settings_page CSS as well, and thus needs
-   to match the media queries in settings.css.
+   to match the media queries in settings.css
 
-   Longer-term we should extract this logic two-column-overlay class
-   to read more naturally. */
+   We should eventually consolidate some of these styles with the settings
+   menu, using shared classnames. */
 @container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
     .two-pane-settings-container {
         position: relative;
@@ -1449,10 +1447,8 @@ div.settings-radio-input-parent {
         }
     }
 
-    #groups_overlay .left,
-    #groups_overlay .right,
-    #subscription_overlay .left,
-    #subscription_overlay .right,
+    .two-pane-settings-overlay .left,
+    .two-pane-settings-overlay .right,
     #settings_page .content-wrapper.right {
         position: absolute;
         display: block;
@@ -1463,8 +1459,7 @@ div.settings-radio-input-parent {
         border: none;
     }
 
-    #groups_overlay .right,
-    #subscription_overlay .right,
+    .two-pane-settings-overlay .right,
     #settings_page .content-wrapper.right {
         position: absolute;
         left: 101%;
@@ -1481,8 +1476,7 @@ div.settings-radio-input-parent {
         }
     }
 
-    #subscription_overlay,
-    #groups_overlay {
+    .two-pane-settings-overlay {
         .two-pane-settings-container {
             height: 95%;
         }
