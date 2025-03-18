@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 370**
+
+* [`POST /messages`](/api/send-message),
+  [`POST /scheduled_messages`](/api/create-scheduled-message),
+  [`PATCH /scheduled_messages/<int:scheduled_message_id>`](/api/update-scheduled-message):
+  The `"(no topic)"` value when used for `topic` parameter is
+  now interpreted as an empty string.
+
 **Feature level 369**
 
 * [`POST /register`](/api/register-queue): Added `navigation_tour_video_url`

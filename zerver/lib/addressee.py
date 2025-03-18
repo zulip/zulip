@@ -5,7 +5,10 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.string_validation import check_stream_topic
-from zerver.lib.topic import maybe_rename_general_chat_to_empty_topic
+from zerver.lib.topic import (
+    maybe_rename_general_chat_to_empty_topic,
+    maybe_rename_no_topic_to_empty_topic,
+)
 from zerver.models import Realm, Stream, UserProfile
 from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
@@ -148,6 +151,7 @@ class Addressee:
     def for_stream(stream: Stream, topic_name: str) -> "Addressee":
         topic_name = topic_name.strip()
         topic_name = maybe_rename_general_chat_to_empty_topic(topic_name)
+        topic_name = maybe_rename_no_topic_to_empty_topic(topic_name)
         check_stream_topic(topic_name)
         return Addressee(
             msg_type="stream",
@@ -159,6 +163,7 @@ class Addressee:
     def for_stream_name(stream_name: str, topic_name: str) -> "Addressee":
         topic_name = topic_name.strip()
         topic_name = maybe_rename_general_chat_to_empty_topic(topic_name)
+        topic_name = maybe_rename_no_topic_to_empty_topic(topic_name)
         check_stream_topic(topic_name)
         return Addressee(
             msg_type="stream",
@@ -170,6 +175,7 @@ class Addressee:
     def for_stream_id(stream_id: int, topic_name: str) -> "Addressee":
         topic_name = topic_name.strip()
         topic_name = maybe_rename_general_chat_to_empty_topic(topic_name)
+        topic_name = maybe_rename_no_topic_to_empty_topic(topic_name)
         check_stream_topic(topic_name)
         return Addressee(
             msg_type="stream",

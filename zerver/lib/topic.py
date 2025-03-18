@@ -384,6 +384,12 @@ def maybe_rename_general_chat_to_empty_topic(topic_name: str) -> str:
     return topic_name
 
 
+def maybe_rename_no_topic_to_empty_topic(topic_name: str) -> str:
+    if topic_name == "(no topic)":
+        topic_name = ""
+    return topic_name
+
+
 def maybe_rename_empty_topic_to_general_chat(
     topic_name: str, is_channel_message: bool, allow_empty_topic_name: bool
 ) -> str:
