@@ -337,6 +337,7 @@ export function warn_if_mentioning_unsubscribed_user(
         }
     }
 }
+
 export function warn_if_mentioning_unsubscribed_group(
     mentioned_group: UserGroup,
     $textarea: JQuery<HTMLTextAreaElement>,
@@ -348,9 +349,6 @@ export function warn_if_mentioning_unsubscribed_group(
 
     const stream_id = get_stream_id_for_textarea($textarea);
     if (!stream_id) {
-        // One could imagine doing something with DMs here, but given
-        // all DMs are given the same notification prevalence as
-        // mentions, it doesn't seem useful.
         return;
     }
 
@@ -370,15 +368,13 @@ export function warn_if_mentioning_unsubscribed_group(
     }
 
     const $banner_container = compose_banner.get_compose_banner_container($textarea);
-    if (
-        $banner_container.find(
-            `.${CSS.escape(compose_banner.CLASSNAMES.group_entirely_not_subscribed)}`,
-        ).length > 0
-    ) {
-        // Don't add a second banner if one is already present.
-        // TODO: This should work like warn_if_mentioning_unsubscribed_user,
-        // where we actually check if it's the same group.
-        return;
+
+    // Check if a banner for this specific group already exists
+    const $existing_banners = $banner_container.find(
+        `.${CSS.escape(compose_banner.CLASSNAMES.group_entirely_not_subscribed)} a[data-user-group-id="${mentioned_group.id}"]`,
+    );
+    if ($existing_banners.length > 0) {
+        return; // Avoid duplicate banners
     }
 
     const context = {
@@ -390,6 +386,7 @@ export function warn_if_mentioning_unsubscribed_group(
     const new_row_html = render_compose_mention_group_warning(context);
     compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
 }
+
 // Called when clearing the compose box and similar contexts to clear
 // the warning for composing to a resolved topic, if present. Also clears
 // the state for whether this warning has already been shown in the
