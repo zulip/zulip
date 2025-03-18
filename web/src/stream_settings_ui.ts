@@ -924,7 +924,7 @@ export function switch_to_stream_row(stream_id: number): void {
 
 function show_right_section(): void {
     $(".right").addClass("show");
-    $(".subscriptions-header").addClass("slide-left");
+    $("#subscription_overlay .two-pane-settings-header").addClass("slide-left");
     resize.resize_stream_subscribers_list();
 }
 
@@ -1160,6 +1160,6 @@ export function initialize(): void {
 
     $("#channels_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
-        $(".subscriptions-header").removeClass("slide-left");
+        $("#channels_overlay_container .two-pane-settings-header").removeClass("slide-left");
     });
 }

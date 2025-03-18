@@ -268,8 +268,7 @@ h4.user_group_setting_subsection_title {
     display: inline;
 }
 
-.two-pane-settings-container .subscriptions-header .fa-chevron-left,
-.two-pane-settings-container .user-groups-header .fa-chevron-left {
+.two-pane-settings-container .two-pane-settings-header .fa-chevron-left {
     position: relative;
     transform: translate(-50px, 0);
     opacity: 0;
@@ -285,8 +284,9 @@ h4.user_group_setting_subsection_title {
     transition-property: opacity, transform;
 }
 
-.two-pane-settings-container .user-groups-header.slide-left .fa-chevron-left,
-.two-pane-settings-container .subscriptions-header.slide-left .fa-chevron-left,
+.two-pane-settings-container
+    .two-pane-settings-header.slide-left
+    .fa-chevron-left,
 #settings_overlay_container
     .settings-header.mobile.slide-left
     .fa-chevron-left {
@@ -408,8 +408,7 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .user-groups-header,
-    .subscriptions-header {
+    .two-pane-settings-header {
         height: var(--settings-overlay-header-height);
         display: flex;
         align-items: center;
@@ -1446,8 +1445,7 @@ div.settings-radio-input-parent {
             text-align: left;
         }
 
-        .user-groups-header .fa-chevron-left,
-        .subscriptions-header .fa-chevron-left {
+        .two-pane-settings-header .fa-chevron-left {
             visibility: visible;
         }
     }

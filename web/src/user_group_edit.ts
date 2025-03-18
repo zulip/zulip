@@ -1344,7 +1344,7 @@ export function switch_to_group_row(group: UserGroup): void {
 
 function show_right_section(): void {
     $(".right").addClass("show");
-    $(".user-groups-header").addClass("slide-left");
+    $("#groups_overlay .two-pane-settings-header").addClass("slide-left");
 }
 
 export function add_group_to_table(group: UserGroup): void {
@@ -2017,7 +2017,7 @@ export function initialize(): void {
 
     $("#groups_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
-        $(".user-groups-header").removeClass("slide-left");
+        $("#groups_overlay_container .two-pane-settings-header").removeClass("slide-left");
     });
 
     $("#groups_overlay_container").on("click", ".join_leave_button", function (this: HTMLElement) {
