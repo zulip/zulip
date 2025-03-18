@@ -2280,20 +2280,6 @@ class RealmImportExportTest(ExportFile):
             )
             do_import_realm(get_output_dir(), "test-zulip")
 
-    def test_clean_up_migration_status_json(self) -> None:
-        user = self.example_user("hamlet")
-        with (
-            patch("zerver.lib.export.get_migration_status") as mock_export,
-        ):
-            mock_export.return_value = self.fixture_data(
-                "with_stale_migrations.txt", "import_fixtures/showmigrations_fixtures"
-            )
-
-            realm = user.realm
-        self.export_realm_and_create_auditlog(realm)
-
-        self.verify_migration_status_json()
-
 
 class SingleUserExportTest(ExportFile):
     def do_files_test(self, is_s3: bool) -> None:

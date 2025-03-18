@@ -33,11 +33,7 @@ from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
 from version import ZULIP_VERSION
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
-from zerver.lib.migration_status import (
-    MigrationStatusJson,
-    get_migration_status,
-    parse_migration_status,
-)
+from zerver.lib.migration_status import MigrationStatusJson, parse_migration_status
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload.s3 import get_bucket
@@ -2636,9 +2632,8 @@ def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
 
 
 def export_migration_status(output_dir: str) -> None:
-    export_showmigration = get_migration_status(close_connection_when_done=False)
     migration_status_json = MigrationStatusJson(
-        migrations_by_app=parse_migration_status(export_showmigration),
+        migrations_by_app=parse_migration_status(),
         zulip_version=ZULIP_VERSION,
     )
     output_file = os.path.join(output_dir, "migration_status.json")
