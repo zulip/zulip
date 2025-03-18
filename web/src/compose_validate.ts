@@ -12,6 +12,7 @@ import render_stream_wildcard_warning from "../templates/compose_banner/stream_w
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
 
+import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
@@ -1020,10 +1021,12 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
         compose_state.get_message_type() !== "private" &&
         !validate_stream_message(scheduling_message, show_banner)
     ) {
+        blueslip.debug("Invalid compose state: Stream message validation failed");
         return false;
     }
 
     if (compose_state.get_message_type() === "private" && !validate_private_message(show_banner)) {
+        blueslip.debug("Invalid compose state: Private message validation failed");
         return false;
     }
 
@@ -1036,6 +1039,7 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
             $("textarea#compose-textarea").toggleClass("invalid", true);
             $("textarea#compose-textarea").trigger("focus");
         }
+        blueslip.debug("Invalid compose state: Empty message");
         return false;
     } else if ($("textarea#compose-textarea").hasClass("invalid")) {
         // Hide the invalid indicator now that it's non-empty.
@@ -1051,15 +1055,18 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
             compose_banner.CLASSNAMES.zephyr_not_running,
             $("#compose_banners"),
         );
+        blueslip.debug("Invalid compose state: Zephyr mirroring not running");
         return false;
     }
     // TODO: This doesn't actually show a banner, it triggers a flash
     const trigger_flash = show_banner;
     if (!validate_message_length($("#send_message_form"), trigger_flash)) {
+        blueslip.debug("Invalid compose state: Message too long");
         return false;
     }
 
     if (upload_in_progress) {
+        blueslip.debug("Invalid compose state: Upload in progress");
         return false;
     }
 
