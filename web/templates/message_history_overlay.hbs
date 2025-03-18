@@ -5,7 +5,15 @@
                 {{#if move_history_only}}
                 <h1>{{t "Message move history" }}</h1>
                 {{else}}
-                <h1>{{t "Message edit history" }}</h1>
+                {{#if edited}}
+                    {{#if moved}}
+                    <h1>{{t "Message edit and move history" }}</h1>
+                    {{else}}
+                    <h1>{{t "Message edit history" }}</h1>
+                    {{/if}}
+                {{else if moved}}
+                    <h1>{{t "Message move history" }}</h1>
+                {{/if}}
                 {{/if}}
                 <div class="exit">
                     <span class="exit-sign">&times;</span>
