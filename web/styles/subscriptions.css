@@ -70,8 +70,7 @@
     height: var(--settings-overlay-header-button-height);
 }
 
-.create_user_group_plus_button,
-.create_stream_plus_button {
+.two-pane-settings-plus-button {
     font-weight: 400;
     position: relative;
     border: 1px solid var(--color-border-settings-plus-button);
