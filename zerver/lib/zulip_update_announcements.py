@@ -340,6 +340,18 @@ quickly insert them into the message you're composing.
             private_channels_url="/help/channel-permissions#private-channels",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=14,
+        message="""
+**Web and desktop updates**
+- You can now choose from a wide range of [font size]({font_size_url})
+and [line spacing]({line_spacing_url}) options, to make the Zulip interface
+feel most comfortable for you.
+""".format(
+            font_size_url="/help/font-size",
+            line_spacing_url="/help/line-spacing",
+        ),
+    ),
 ]
 
 
