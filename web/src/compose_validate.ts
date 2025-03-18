@@ -762,7 +762,7 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
 
     if (realm.realm_mandatory_topics) {
         const topic = compose_state.topic();
-        const missing_topic = topic === "";
+        const missing_topic = util.is_topic_name_considered_empty(topic);
         set_missing_topic(missing_topic);
         if (missing_topic) {
             report_validation_error(

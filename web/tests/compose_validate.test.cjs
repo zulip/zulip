@@ -33,7 +33,8 @@ mock_esm("../src/group_permission_settings", {
     }),
 });
 
-const realm = {};
+const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
+const realm = {realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME};
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
@@ -343,7 +344,6 @@ test_ui("validate", ({mock_template, override}) => {
     stream_data.add_sub(denmark);
     compose_state.set_stream_id(denmark.stream_id);
     override(realm, "realm_mandatory_topics", true);
-    compose_state.topic("");
     let missing_topic_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.topic_missing);
@@ -351,8 +351,13 @@ test_ui("validate", ({mock_template, override}) => {
         missing_topic_error_rendered = true;
         return "<banner-stub>";
     });
-    assert.ok(!compose_validate.validate());
-    assert.ok(missing_topic_error_rendered);
+
+    for (const topic_name of ["", "(no topic)", `translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`]) {
+        compose_state.topic(topic_name);
+        missing_topic_error_rendered = false;
+        assert.ok(!compose_validate.validate());
+        assert.ok(missing_topic_error_rendered);
+    }
 });
 
 test_ui("get_invalid_recipient_emails", ({override, override_rewire}) => {
