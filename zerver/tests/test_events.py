@@ -229,7 +229,7 @@ from zerver.lib.events import apply_events, fetch_initial_state_data, post_proce
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.muted_users import get_mute_object
-from zerver.lib.streams import check_update_all_streams_active_status
+from zerver.lib.streams import check_update_all_streams_active_status, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_dummy_file,
@@ -244,6 +244,7 @@ from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict, UserGroupMembersData
 from zerver.lib.upload import upload_message_attachment
 from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
     get_group_setting_value_for_api,
     get_role_based_system_groups_dict,
 )
@@ -1269,6 +1270,145 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(state_change_expected=False) as events:
             do_remove_reaction(self.user_profile, message, "1f389", "unicode_emoji")
         check_reaction_remove("events[0]", events[0])
+
+    def do_test_events_on_changing_private_stream_permission_settings_granting_metadata_access(
+        self, setting_name: str
+    ) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        private_stream = get_stream("private_stream", iago.realm)
+        self.login_user(iago)
+        params = {}
+
+        self.assertFalse(
+            user_has_metadata_access(
+                hamlet,
+                private_stream,
+                UserGroupMembershipDetails(user_recursive_group_ids=None),
+                is_subscribed=False,
+            )
+        )
+        params[setting_name] = orjson.dumps(
+            {
+                "new": {
+                    "direct_members": [hamlet.id],
+                    "direct_subgroups": [],
+                },
+            }
+        ).decode()
+        with self.verify_action(num_events=2) as events:
+            result = self.client_patch(
+                f"/json/streams/{private_stream.id}",
+                params,
+            )
+        self.assert_json_success(result)
+        check_stream_create("events[0]", events[0])
+        check_subscription_peer_add("events[1]", events[1])
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=iago.realm, is_system_group=True
+        )
+        private_stream = get_stream("private_stream", iago.realm)
+        self.assertTrue(
+            user_has_metadata_access(
+                hamlet,
+                private_stream,
+                UserGroupMembershipDetails(user_recursive_group_ids=None),
+                is_subscribed=False,
+            )
+        )
+        params[setting_name] = orjson.dumps(
+            {
+                "new": nobody_group.id,
+            }
+        ).decode()
+        with self.verify_action(num_events=1) as events:
+            result = self.client_patch(
+                f"/json/streams/{private_stream.id}",
+                params,
+            )
+        self.assert_json_success(result)
+        check_stream_delete("events[0]", events[0])
+
+    def do_test_events_on_changing_private_stream_permission_settings_not_granting_metadata_access(
+        self, setting_name: str
+    ) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        private_stream = get_stream("private_stream", iago.realm)
+        params = {}
+        self.login_user(iago)
+        expected_num_events = 1
+        if setting_name == "can_send_message_group":
+            expected_num_events = 2
+
+        self.assertFalse(
+            user_has_metadata_access(
+                hamlet,
+                private_stream,
+                UserGroupMembershipDetails(user_recursive_group_ids=None),
+                is_subscribed=False,
+            )
+        )
+        params[setting_name] = orjson.dumps(
+            {
+                "new": {
+                    "direct_members": [hamlet.id],
+                    "direct_subgroups": [],
+                },
+            }
+        ).decode()
+        with self.capture_send_event_calls(expected_num_events=expected_num_events) as events:
+            result = self.client_patch(
+                f"/json/streams/{private_stream.id}",
+                params,
+            )
+        self.assert_json_success(result)
+        event = events[0]["event"]
+        self.assertEqual(event["type"], "stream")
+        self.assertEqual(event["op"], "update")
+        self.assertEqual(event["stream_id"], private_stream.id)
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=iago.realm, is_system_group=True
+        )
+        private_stream = get_stream("private_stream", iago.realm)
+        self.assertFalse(
+            user_has_metadata_access(
+                hamlet,
+                private_stream,
+                UserGroupMembershipDetails(user_recursive_group_ids=None),
+                is_subscribed=False,
+            )
+        )
+        params[setting_name] = orjson.dumps(
+            {
+                "new": nobody_group.id,
+            }
+        ).decode()
+        with self.capture_send_event_calls(expected_num_events=expected_num_events) as events:
+            result = self.client_patch(
+                f"/json/streams/{private_stream.id}",
+                params,
+            )
+        self.assert_json_success(result)
+        event = events[0]["event"]
+        self.assertEqual(event["type"], "stream")
+        self.assertEqual(event["op"], "update")
+        self.assertEqual(event["stream_id"], private_stream.id)
+
+    def test_events_on_changing_private_stream_permission_settings(self) -> None:
+        self.make_stream("private_stream", invite_only=True)
+        self.subscribe(self.example_user("iago"), "private_stream")
+        for setting_name in Stream.stream_permission_group_settings:
+            if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
+                self.do_test_events_on_changing_private_stream_permission_settings_granting_metadata_access(
+                    setting_name
+                )
+            else:
+                self.do_test_events_on_changing_private_stream_permission_settings_not_granting_metadata_access(
+                    setting_name
+                )
 
     def test_invite_user_event(self) -> None:
         self.user_profile = self.example_user("iago")
@@ -2580,7 +2720,7 @@ class NormalActionsTest(BaseAction):
         do_change_stream_group_based_setting(
             private_stream_2,
             "can_administer_channel_group",
-            UserGroupMembersDict(direct_members=[self.user_profile.id], direct_subgroups=[]),
+            UserGroupMembersData(direct_members=[self.user_profile.id], direct_subgroups=[]),
             acting_user=self.user_profile,
         )
 
@@ -2629,7 +2769,7 @@ class NormalActionsTest(BaseAction):
         do_change_stream_group_based_setting(
             private_stream_2,
             "can_administer_channel_group",
-            UserGroupMembersDict(direct_members=[self.user_profile.id], direct_subgroups=[]),
+            UserGroupMembersData(direct_members=[self.user_profile.id], direct_subgroups=[]),
             acting_user=self.user_profile,
         )
 
@@ -2753,6 +2893,46 @@ class NormalActionsTest(BaseAction):
                 check_user_group_remove_members("events[2]", events[2])
             elif role == UserProfile.ROLE_MEMBER:
                 check_user_group_add_members("events[2]", events[2])
+
+    def test_gain_access_through_metadata_groups(self) -> None:
+        reset_email_visibility_to_everyone_in_zulip_realm()
+
+        # Important: We need to refresh from the database here so that
+        # we don't have a stale UserProfile object with an old value
+        # for email being passed into this next function.
+        self.user_profile.refresh_from_db()
+
+        private_stream_1 = self.make_stream("private_stream_1", invite_only=True)
+        # We add this subscriber to make sure that event
+        # applies correctly to the `subscribers` key of
+        # stream data of "streams".
+        self.subscribe(self.example_user("cordelia"), "private_stream_1")
+        with self.verify_action(num_events=2, include_subscribers=True) as events:
+            do_change_stream_group_based_setting(
+                private_stream_1,
+                "can_administer_channel_group",
+                UserGroupMembersData(direct_members=[self.user_profile.id], direct_subgroups=[]),
+                acting_user=self.user_profile,
+            )
+        check_stream_create("events[0]", events[0])
+        check_subscription_peer_add("events[1]", events[1])
+
+        private_stream_2 = self.make_stream("private_stream_2", invite_only=True)
+        # We add this subscriber to make sure that event
+        # applies correctly to the `unsubscribed` key of
+        # stream data of "streams".
+        self.subscribe(self.example_user("cordelia"), "private_stream_2")
+        self.subscribe(self.user_profile, "private_stream_2")
+        self.unsubscribe(self.user_profile, "private_stream_2")
+        with self.verify_action(num_events=2, include_subscribers=True) as events:
+            do_change_stream_group_based_setting(
+                private_stream_2,
+                "can_administer_channel_group",
+                UserGroupMembersData(direct_members=[self.user_profile.id], direct_subgroups=[]),
+                acting_user=self.user_profile,
+            )
+        check_stream_create("events[0]", events[0])
+        check_subscription_peer_add("events[1]", events[1])
 
     def test_change_notification_settings(self) -> None:
         for notification_setting in self.user_profile.notification_setting_types:
@@ -4529,24 +4709,25 @@ class SubscribeActionTest(BaseAction):
         self.do_test_subscribe_events(include_subscribers=False)
 
     def do_test_subscribe_events(self, include_subscribers: bool) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+        realm = othello.realm
+
         # Subscribe to a totally new stream, so it's just Hamlet on it
         with self.verify_action(
             event_types=["subscription"], include_subscribers=include_subscribers
         ) as events:
-            self.subscribe(self.example_user("hamlet"), "test_stream")
+            self.subscribe(hamlet, "test_stream")
         check_subscription_add("events[0]", events[0])
 
         # Add another user to that totally new stream
         with self.verify_action(
             include_subscribers=include_subscribers, state_change_expected=include_subscribers
         ) as events:
-            self.subscribe(self.example_user("othello"), "test_stream")
+            self.subscribe(othello, "test_stream")
         check_subscription_peer_add("events[0]", events[0])
 
-        hamlet = self.example_user("hamlet")
-        iago = self.example_user("iago")
-        othello = self.example_user("othello")
-        realm = othello.realm
         stream = get_stream("test_stream", self.user_profile.realm)
 
         # Now remove the first user, to test the normal unsubscribe flow and
