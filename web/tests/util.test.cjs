@@ -532,7 +532,7 @@ run_test("get_final_topic_display_name", ({override}) => {
 
 run_test("is_topic_name_considered_empty", ({override}) => {
     // Topic is not considered empty if it is distinct string
-    // other than "(no topic)", or realm_empty_topic_display_name.
+    // other than "(no topic)", or the displayed topic name for empty string.
     assert.ok(!util.is_topic_name_considered_empty("some topic"));
 
     // Topic is considered empty if it is an empty string.
@@ -541,9 +541,10 @@ run_test("is_topic_name_considered_empty", ({override}) => {
     // Topic is considered empty if it is equal to "(no topic)".
     assert.ok(util.is_topic_name_considered_empty("(no topic)"));
 
-    // Topic name is considered empty if it is equal to realm_empty_topic_display_name.
+    // Topic name is considered empty if it is equal to the displayed
+    // topic name for empty string.
     override(realm, "realm_empty_topic_display_name", "general chat");
-    assert.ok(util.is_topic_name_considered_empty("general chat"));
+    assert.ok(util.is_topic_name_considered_empty("translated: general chat"));
 });
 
 run_test("get_retry_backoff_seconds", () => {

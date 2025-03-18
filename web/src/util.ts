@@ -559,8 +559,8 @@ export function is_topic_name_considered_empty(topic: string): boolean {
     // NOTE: Use this check only when realm.realm_mandatory_topics is set to true.
     topic = topic.trim();
     // When the topic is mandatory in a realm via realm_mandatory_topics, the topic
-    // can't be an empty string, "(no topic)", or realm_empty_topic_display_name.
-    if (topic === "" || topic === "(no topic)" || topic === realm.realm_empty_topic_display_name) {
+    // can't be an empty string, "(no topic)", or the displayed topic name for empty string.
+    if (topic === "" || topic === "(no topic)" || topic === get_final_topic_display_name("")) {
         return true;
     }
     return false;
