@@ -728,7 +728,9 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
 
 test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     mock_banners();
-    $("#compose_banners .topic_resolved").length = 0;
+    $.reset_selector("#compose_banners .topic_resolved");
+    $.set_results("#compose_banners .topic_resolved", []);
+    $("#compose_banners .topic_resolved").remove = noop;
     override(realm, "realm_can_resolve_topics_group", everyone.id);
 
     let error_shown = false;
@@ -825,7 +827,8 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
 
     // to show warning for guest emails, banner should be created
     realm.realm_enable_guest_user_dm_warning = true;
-    $banner.length = 0;
+    $.reset_selector(`#compose_banners .${CSS.escape(classname)}`);
+    $banner = $.set_results(`#compose_banners .${CSS.escape(classname)}`, []);
     compose_validate.warn_if_guest_in_dm_recipient();
     assert.ok(is_active);
     assert.deepEqual(compose_state.get_recipient_guest_ids_for_dm_warning(), [33]);
@@ -847,8 +850,8 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
 
     initialize_pm_pill(mock_template);
     compose_state.private_message_recipient_emails("guest@example.com, new_guest@example.com");
+    $.reset_selector(`#compose_banners .${CSS.escape(classname)}`);
     $banner = $(`#compose_banners .${CSS.escape(classname)}`);
-    $banner.length = 1;
     let is_updated = false;
     $banner.set_find_results(".banner_content", {
         text(content) {

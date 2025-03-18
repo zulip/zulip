@@ -267,7 +267,8 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
     assert.ok(!$denmark_row.hasClass("active"));
 
     function test_filter(params, expected_streams) {
-        $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
+        $.reset_selector("#channels_overlay_container .stream-row:not(.notdisplayed)");
+        $.set_results("#channels_overlay_container .stream-row:not(.notdisplayed)", []);
         const stream_ids = stream_settings_ui.redraw_left_panel(params);
         assert.deepEqual(
             stream_ids,
