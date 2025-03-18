@@ -903,8 +903,28 @@ of the base style defined for a read-only textarea in dark mode. */
 
 .message_edit_save .loader {
     display: none;
-    height: 28px;
-    width: 28px;
+    /* 28px at 16px/1em */
+    height: 1.75em;
+    width: 1.75em;
+    grid-area: button-display;
+    justify-self: center;
+    z-index: 1;
+}
+
+.message_edit_save:has(.showing-button-spinner) {
+    /* We want to maintain the width of the Save button
+       in an i18n friendly way; this quick grid ensures
+       that the width of the text holds the button open,
+       while the styles above ensure the spinner's
+       centering. */
+    display: grid;
+    grid-template: "button-display";
+}
+
+.showing-button-spinner {
+    visibility: hidden;
+    grid-area: button-display;
+    z-index: 0;
 }
 
 .edit-controls {
