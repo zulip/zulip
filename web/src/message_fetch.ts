@@ -394,25 +394,22 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         });
     }
 
+    if (load_messages_timeout !== undefined) {
+        clearTimeout(load_messages_timeout);
+    }
+
     void channel.get({
         url: "/json/messages",
         data,
         success(raw_data) {
-            if (load_messages_timeout !== undefined) {
-                clearTimeout(load_messages_timeout);
-            }
             popup_banners.close_connection_error_popup_banner("message_fetch");
             const data = response_schema.parse(raw_data);
             get_messages_success(data, opts);
         },
         error(xhr) {
             if (xhr.status === 400) {
-                // We successfully reached the server, so hide the
-                // connection error notice, even if the request failed
-                // for other reasons.
-                if (load_messages_timeout !== undefined) {
-                    clearTimeout(load_messages_timeout);
-                }
+                // Even though the request failed, we did reach the
+                // server, and can hide the connection error notice.
                 popup_banners.close_connection_error_popup_banner("message_fetch");
             }
 
