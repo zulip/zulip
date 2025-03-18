@@ -1,7 +1,6 @@
 from datetime import timedelta
 from typing import Annotated
 
-from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -12,9 +11,10 @@ from analytics.models import RealmCount
 from zerver.actions.realm_export import do_delete_realm_export, notify_realm_export
 from zerver.decorator import require_realm_admin
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.export import get_realm_exports_serialized
+from zerver.lib.export import get_consented_user_ids, get_realm_exports_serialized
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.response import json_success
+from zerver.lib.send_email import FromAddress
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
 from zerver.models import RealmExport, UserProfile
@@ -78,9 +78,47 @@ def export_realm(
     ):
         raise JsonableError(
             _("Please request a manual export from {email}.").format(
-                email=settings.ZULIP_ADMINISTRATOR,
+                email=FromAddress.SUPPORT,
             )
         )
+
+    if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
+        # Users without consent enabled will end up deactivated in the exported
+        # data. An organization without a consenting Owner would therefore not be
+        # functional after export->import. That's most likely not desired by the user
+        # so check for such a case and return an error.
+        consented_user_ids = get_consented_user_ids(realm)
+        if not UserProfile.objects.filter(
+            id__in=consented_user_ids, role=UserProfile.ROLE_REALM_OWNER, realm=realm
+        ).exists():
+            raise JsonableError(
+                _(
+                    "Make sure at least one Organization Owner is consenting to the export "
+                    "or contact {email} for help."
+                ).format(email=FromAddress.SUPPORT)
+            )
+    elif export_type == RealmExport.EXPORT_PUBLIC:
+        # Since users with email visibility set to NOBODY won't have their real emails
+        # exported, this could result in a lack of functional Owner accounts.
+        # We make sure that at least one Owner can have their real email address exported
+        # or return an error.
+        if not UserProfile.objects.filter(
+            role=UserProfile.ROLE_REALM_OWNER,
+            email_address_visibility__in=[
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            ],
+            realm=realm,
+        ).exists():
+            raise JsonableError(
+                _(
+                    "Make sure at least one Organization Owner allows other "
+                    "Administrators to see their email address "
+                    "or contact {email} for help"
+                ).format(email=FromAddress.SUPPORT)
+            )
 
     row = RealmExport.objects.create(
         realm=realm,

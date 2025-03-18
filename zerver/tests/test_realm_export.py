@@ -208,6 +208,41 @@ class RealmExportTest(ZulipTestCase):
         admin = self.example_user("iago")
         self.login_user(admin)
 
+        owner = self.example_user("desdemona")
+        do_change_user_setting(
+            owner,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            acting_user=None,
+        )
+
+        result = self.client_post("/json/export/realm")
+        self.assert_json_error_contains(
+            result,
+            "Make sure at least one Organization Owner allows "
+            "other Administrators to see their email address",
+        )
+        do_change_user_setting(
+            owner,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
+        )
+
+        do_change_user_setting(
+            owner,
+            "allow_private_data_export",
+            False,
+            acting_user=None,
+        )
+        result = self.client_post(
+            "/json/export/realm",
+            info={"export_type": RealmExport.EXPORT_FULL_WITH_CONSENT},
+        )
+        self.assert_json_error_contains(
+            result, "Make sure at least one Organization Owner is consenting"
+        )
+
         with (
             patch(
                 "zerver.lib.export.do_export_realm", side_effect=Exception("failure")
