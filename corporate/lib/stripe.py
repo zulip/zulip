@@ -5413,6 +5413,31 @@ def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> da
     return billing_period_end
 
 
+def maybe_send_fixed_price_plan_renewal_reminder_email(
+    plan: CustomerPlan, billing_session: BillingSession
+) -> None:
+    # We expect to have both an end date and next invoice date
+    # for this CustomerPlan.
+    assert plan.end_date is not None
+    assert plan.next_invoice_date is not None
+    # The max gap between two months is 62 days (1 Jul - 1 Sep).
+    if plan.end_date - plan.next_invoice_date <= timedelta(days=62):
+        context = {
+            "billing_entity": billing_session.billing_entity_display_name,
+            "end_date": plan.end_date.strftime("%Y-%m-%d"),
+            "support_url": billing_session.support_url(),
+            "notice_reason": "fixed_price_plan_ends_soon",
+        }
+        send_email(
+            "zerver/emails/internal_billing_notice",
+            to_emails=[BILLING_SUPPORT_EMAIL],
+            from_address=FromAddress.tokenized_no_reply_address(),
+            context=context,
+        )
+        plan.reminder_to_review_plan_email_sent = True
+        plan.save(update_fields=["reminder_to_review_plan_email_sent"])
+
+
 def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
     if event_time is None:
         event_time = timezone_now()
@@ -5435,25 +5460,10 @@ def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
 
         if (
             plan.fixed_price is not None
+            and plan.end_date is not None
             and not plan.reminder_to_review_plan_email_sent
-            and plan.end_date is not None  # for mypy
-            # The max gap between two months is 62 days. (1 Jul - 1 Sep)
-            and plan.end_date - plan.next_invoice_date <= timedelta(days=62)
         ):
-            context = {
-                "billing_entity": billing_session.billing_entity_display_name,
-                "end_date": plan.end_date.strftime("%Y-%m-%d"),
-                "support_url": billing_session.support_url(),
-                "notice_reason": "fixed_price_plan_ends_soon",
-            }
-            send_email(
-                "zerver/emails/internal_billing_notice",
-                to_emails=[BILLING_SUPPORT_EMAIL],
-                from_address=FromAddress.tokenized_no_reply_address(),
-                context=context,
-            )
-            plan.reminder_to_review_plan_email_sent = True
-            plan.save(update_fields=["reminder_to_review_plan_email_sent"])
+            maybe_send_fixed_price_plan_renewal_reminder_email(plan, billing_session)
 
         if remote_server:
             free_plan_with_no_next_plan = (
