@@ -1675,8 +1675,7 @@ def do_change_stream_group_based_setting(
             "property": setting_name,
         },
     )
-    current_user_ids_with_metadata_access = can_access_stream_metadata_user_ids(stream)
-    event = dict(
+    update_event = dict(
         op="update",
         type="stream",
         property=setting_name,
@@ -1684,13 +1683,19 @@ def do_change_stream_group_based_setting(
         stream_id=stream.id,
         name=stream.name,
     )
-    send_event_on_commit(stream.realm, event, current_user_ids_with_metadata_access)
+    current_user_ids_with_metadata_access = can_access_stream_metadata_user_ids(stream)
+
     if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
         user_ids_gaining_metadata_access = (
             current_user_ids_with_metadata_access - old_user_ids_with_metadata_access
         )
         user_ids_losing_metadata_access = (
             old_user_ids_with_metadata_access - current_user_ids_with_metadata_access
+        )
+        send_event_on_commit(
+            stream.realm,
+            update_event,
+            current_user_ids_with_metadata_access - user_ids_gaining_metadata_access,
         )
 
         if len(user_ids_gaining_metadata_access) > 0:
@@ -1703,8 +1708,24 @@ def do_change_stream_group_based_setting(
                 recent_traffic,
                 anonymous_group_membership,
             )
+            subscriber_ids = get_active_subscriptions_for_stream_id(
+                stream.id, include_deactivated_users=False
+            ).values_list("user_profile_id", flat=True)
+            peer_add_event = dict(
+                type="subscription",
+                op="peer_add",
+                stream_ids=[stream.id],
+                user_ids=sorted(subscriber_ids),
+            )
+            send_event_on_commit(
+                stream.realm,
+                peer_add_event,
+                user_ids_gaining_metadata_access,
+            )
         if len(user_ids_losing_metadata_access) > 0:
             send_stream_deletion_event(stream.realm, user_ids_losing_metadata_access, [stream])
+    else:
+        send_event_on_commit(stream.realm, update_event, current_user_ids_with_metadata_access)
 
     if setting_name == "can_send_message_group":
         old_stream_post_policy = get_stream_post_policy_value_based_on_group_setting(old_user_group)
