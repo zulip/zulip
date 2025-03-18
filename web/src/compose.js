@@ -9,6 +9,7 @@ import render_wildcard_mention_not_allowed_error from "../templates/compose_bann
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_notifications from "./compose_notifications.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -167,7 +168,12 @@ export function send_message_success(request, data) {
     }
 }
 
-export let send_message = (request = create_message_object()) => {
+export let send_message = (message_content = compose_state.message_content()) => {
+    const [content_to_send, rest_of_the_content] =
+        compose_split_messages.split_message(message_content);
+    const will_split_message = Boolean(rest_of_the_content);
+    const request = create_message_object(content_to_send);
+
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
     if (request.type === "private") {
@@ -190,8 +196,10 @@ export let send_message = (request = create_message_object()) => {
 
     let local_id;
     let locally_echoed;
-
-    const message = echo.try_deliver_locally(request, message_events.insert_new_messages);
+    // Do not try local echo if message will be split in parts.
+    const message = !will_split_message
+        ? echo.try_deliver_locally(request, message_events.insert_new_messages)
+        : null;
     if (message) {
         // We are rendering this message locally with an id
         // like 92l99.01 that corresponds to a reasonable
@@ -213,6 +221,9 @@ export let send_message = (request = create_message_object()) => {
 
     function success(data) {
         send_message_success(request, data);
+        if (will_split_message) {
+            send_message(rest_of_the_content, true);
+        }
     }
 
     function error(response, server_error_code) {
@@ -245,18 +256,25 @@ export let send_message = (request = create_message_object()) => {
             // (Restoring this state is handled by clear_compose_box
             // for locally echoed messages.)
             compose_ui.hide_compose_spinner();
-            return;
+        } else {
+            echo.message_send_error(message.id, response);
+
+            // We might not have updated the draft count because we assumed the
+            // message would send. Ensure that the displayed count is correct.
+            drafts.sync_count();
+            const draft = drafts.draft_model.getDraft(request.draft_id);
+            draft.is_sending_saving = false;
+            drafts.draft_model.editDraft(request.draft_id, draft);
         }
-
-        echo.message_send_error(message.id, response);
-
-        // We might not have updated the draft count because we assumed the
-        // message would send. Ensure that the displayed count is correct.
-        drafts.sync_count();
-
-        const draft = drafts.draft_model.getDraft(request.draft_id);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(request.draft_id, draft);
+        if (will_split_message) {
+            compose_state.message_content(
+                content_to_send +
+                    compose_split_messages.SPLIT_DELIMITER +
+                    compose_split_messages.trim_except_whitespace_before_text(rest_of_the_content),
+            );
+            $("textarea#compose-textarea").trigger("input");
+            compose_ui.autosize_textarea($("textarea#compose-textarea"));
+        }
     }
 
     transmit.send_message(request, success, error);
