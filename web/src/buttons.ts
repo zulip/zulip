@@ -20,10 +20,14 @@ export function show_button_loading_indicator($button: JQuery): void {
     const $button_loading_indicator = $("<span>")
         .attr("id", loading_indicator_unique_id)
         .addClass("button-loading-indicator");
-    $button.append($button_loading_indicator);
-    loading.make_indicator($button_loading_indicator, {
-        width: $button.width(),
-        height: $button.height(),
+    requestAnimationFrame(() => {
+        // We want this to happen in the same animation frame to
+        // avoid showing a non spinning loading indicator.
+        $button.append($button_loading_indicator);
+        loading.make_indicator($button_loading_indicator, {
+            width: $button.width(),
+            height: $button.height(),
+        });
     });
 }
 
