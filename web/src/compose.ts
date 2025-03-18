@@ -11,6 +11,7 @@ import render_wildcard_mention_not_allowed_error from "../templates/compose_bann
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_notifications from "./compose_notifications.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -148,8 +149,9 @@ export type SentMessageData = SendMessageData & {
 export function send_message_success(
     sent_message: SentMessageData | LocalMessage,
     data: PostMessageAPIData,
+    is_partial_send = false,
 ): void {
-    if (!sent_message.locally_echoed) {
+    if (!sent_message.locally_echoed && !is_partial_send) {
         clear_compose_box();
     }
 
@@ -181,8 +183,11 @@ export function send_message_success(
     }
 }
 
-export let send_message = (): void => {
+export let send_message = (message_content: string = compose_state.message_content()): void => {
     // Changes here must also be kept in sync with echo.try_deliver_locally
+    const [content_to_send, rest_of_the_content] =
+        compose_split_messages.split_message(message_content);
+    const is_content_to_send_split = rest_of_the_content !== "";
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
 
@@ -207,7 +212,7 @@ export let send_message = (): void => {
         const recipient_ids = compose_state.private_message_recipient_ids();
         message_data = {
             type: message_type,
-            content: compose_state.message_content(),
+            content: content_to_send,
             sender_id: current_user.user_id,
             queue_id: server_events_state.queue_id,
             topic: "",
@@ -224,7 +229,7 @@ export let send_message = (): void => {
         const topic = compose_state.topic();
         message_data = {
             type: message_type,
-            content: compose_state.message_content(),
+            content: content_to_send,
             sender_id: current_user.user_id,
             queue_id: server_events_state.queue_id,
             topic: util.is_topic_name_considered_empty(topic) ? "" : topic,
@@ -236,7 +241,9 @@ export let send_message = (): void => {
 
     let local_id: string;
 
-    const message = echo.try_deliver_locally(message_data, message_events.insert_new_messages);
+    const message = !is_content_to_send_split
+        ? echo.try_deliver_locally(message_data, message_events.insert_new_messages)
+        : undefined;
     const locally_echoed = Boolean(message);
     if (message) {
         // We are rendering this message locally with an id
@@ -267,7 +274,13 @@ export let send_message = (): void => {
                 resend: false,
             },
             parsed_data,
+            is_content_to_send_split,
         );
+        if (is_content_to_send_split) {
+            send_message(rest_of_the_content);
+        } else {
+            compose_ui.hide_compose_spinner();
+        }
     }
 
     function error(response: string, server_error_code: string): void {
@@ -300,21 +313,29 @@ export let send_message = (): void => {
             // (Restoring this state is handled by clear_compose_box
             // for locally echoed messages.)
             compose_ui.hide_compose_spinner();
-            return;
+        } else {
+            assert(message !== undefined);
+            echo.message_send_error(message.id, response);
+
+            // We might not have updated the draft count because we assumed the
+            // message would send. Ensure that the displayed count is correct.
+            drafts.sync_count();
+
+            assert(draft_id !== undefined);
+            const draft = drafts.draft_model.getDraft(draft_id);
+            assert(draft !== false);
+            draft.is_sending_saving = false;
+            drafts.draft_model.editDraft(draft_id, draft);
         }
-
-        assert(message !== undefined);
-        echo.message_send_error(message.id, response);
-
-        // We might not have updated the draft count because we assumed the
-        // message would send. Ensure that the displayed count is correct.
-        drafts.sync_count();
-
-        assert(draft_id !== undefined);
-        const draft = drafts.draft_model.getDraft(draft_id);
-        assert(draft !== false);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(draft_id, draft);
+        if (is_content_to_send_split) {
+            compose_state.message_content(
+                content_to_send +
+                    compose_split_messages.SPLIT_DELIMITER +
+                    compose_split_messages.trim_except_whitespace_before_text(rest_of_the_content),
+            );
+            $("textarea#compose-textarea").trigger("input");
+            compose_ui.autosize_textarea($("textarea#compose-textarea"));
+        }
     }
 
     transmit.send_message(
