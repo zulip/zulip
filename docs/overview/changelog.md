@@ -10,15 +10,14 @@ This page contains the release history for the Zulip server. See also the
 This section documents important features that we expect to be in the
 final 10.0 release, but are not available in 10.0-beta1.
 
-- Replaced the compact mode setting with flexible options for font
-  size and line spacing in the Zulip web app.
-
 ### Zulip Server 10.0-beta2
 
 _Released 2025-03-06_
 
 #### Highlights
 
+- Replaced the compact mode setting with flexible options for font
+  size and line spacing in the Zulip web app.
 - Redesigned how channel messages without a topic work to be much
   nicer, displayed as a special _general chat_ topic.
 - Redesigned the left sidebar visually, adding convenient "New topic"
@@ -62,7 +61,8 @@ _Released 2025-03-06_
   visiting a conversation.
 - Reworked the "archive channel" functionality to preserve channel
   names and content access, with a view towards supporting unarchiving
-  channels.
+  channels. Most settings for archived channels can be edited, to
+  allow adjusting access to archived channels.
 - Significantly improved the performance of rendering message feeds in
   the web application, and improved client-side caching to allow
   instantly rendering most recently visited views.
@@ -95,6 +95,10 @@ _Released 2025-03-06_
   server, even if the secrets have been lost.
 - Added new typing indicators for when someone is editing a message
   that you're viewing in the message feed.
+- Added a new 2-minute onboarding video focused on the basics of
+  navigating the Zulip interface. The feature comes with a setting
+  allowing installations to self-host the video (or extend or replace
+  it with their own site-specific content).
 
 #### Full feature changelog
 
@@ -115,11 +119,14 @@ _Released 2025-03-06_
 - Added `*` keyboard shortcut for navigating to starred messages view.
 - Added new personal and organization-level settings controlling
   access to and display of any future AI features.
+- Added a new organization setting for who can manage billing,
+  replacing a single-user field with a normal permissions setting.
 - Added UI support for data exports with member consent, including a
   privacy setting for users to specify whether their private data can
   be included in data exports.
 - Added new settings option to allow viewing message moves but not
-  message edits in message edit history.
+  message edits in message edit history. Improved how message moves
+  are presented in the message edit history UI.
 - Added new prompt when editing a message to remove the last reference
   to a previously uploaded file.
 - Added new prompt when your timezone doesn't match your profile
@@ -130,6 +137,9 @@ _Released 2025-03-06_
   panel. Previously, it was only accessible in the compose area.
 - Added a wizard for creating collaborative to-do widgets.
 - Added a new channel details menu when clicking channel pills.
+- Added a new permission setting for resolving topics, separate from
+  the permission for moving messages.
+- Added new `is:muted` search operator, replacing the older `-in:home`.
 - Added live-update support to several message views: Reactions,
   Starred messages, `is:followed`, and other views that previously did
   not support it. Improved the labels for the resolved and unresolved
@@ -140,6 +150,14 @@ _Released 2025-03-06_
 - Added support for editing group membership on user profiles.
 - Added a clarifying modal the first time a user tries to resolve a
   topic, confirming that they understand it's resolved for everyone.
+- Added a confirmation modal when trying to bulk mark as unread in an
+  interleaved view like the combined feed.
+- Added a new warning banner when mentioning a group, none of whose
+  members will see the message being drafted.
+- Added a new warning banner for situations where a user has 50K+
+  unread messages and that caused Zulip to take them to the oldest
+  recent unread, not the very oldest unread message, after someone
+  replied to a months-old conversation.
 - Added informative new error output when attempting to load a data
   export into a Zulip server running a different server version.
 - Added support for scheduling deletion of all data when deactivating
@@ -149,7 +167,8 @@ _Released 2025-03-06_
   support those image formats. Animated images with very high total
   pixel counts now preview the first few frames, rather than not
   offering a preview at all.
-- Increased the size of image and video previews.
+- Increased the size of image and video previews, and improved the
+  play button experience for video previews.
 - Added a new API endpoint for bulk-fetching messages by ID. Improved
   API support for fetching users by email address.
 - Added API support for changing another user's email address, with a
@@ -198,11 +217,13 @@ _Released 2025-03-06_
   options in narrow windows and handle too-long messages.
 - Redesigned icons for bots, deactivated users, copying, and many
   other actions.
+- Redesigned connection error and reloading banners.
 - Redesigned the UI for changing your name or email address.
 - Redesigned the top-of-screen banners.
 - Redesigned the modal for moving topics, including a new warning
   banner when moving messages will combine two topics.
 - Redesigned the channel color picker experience.
+- Redesigned many buttons in settings.
 - Redesigned how users are displayed across the app to be consistent
   in how deactivated status, status emoji, guest markers, and other
   decorations appear.
@@ -278,6 +299,7 @@ _Released 2025-03-06_
 - Fixed inconsistencies in display order of group direct message recipients.
 - Renamed `stream` to `channel` in generated URLs, now that enough
   time has passed since `channel` support was added to mobile clients.
+- Hardened the message-fetching code path against access control bugs.
 - Optimized the presence synchronization protocol to use dramatically
   less network and CPU resources in large organizations.
 - Optimized new database creation runtime by squashing almost 700
