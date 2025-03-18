@@ -307,10 +307,14 @@
 
     .recent_view_participants {
         display: inline-flex; /* Causes LI items to display in row. */
+        /* Keep avatars centered on the line. */
+        vertical-align: middle;
         list-style-type: none;
         margin: auto; /* Centers vertically / horizontally in flex container. */
-        height: 24px;
-        padding: 4px;
+        /* 24px at 16px/1em */
+        height: 1.5em;
+        /* 4px at 16px/1em */
+        padding: 0.25em 4px;
         border-radius: 6px;
         overflow: hidden;
 
@@ -325,11 +329,13 @@
     }
 
     .recent_view_participant_item {
-        height: 24px;
+        /* 24px at 16px/1em */
+        height: 1.5em;
         margin: 0;
         padding: 0 1.5px;
         position: relative;
-        min-width: 24px;
+        /* 24px at 16px/1em */
+        min-width: 1.5em;
         cursor: pointer;
 
         .fa-user {
@@ -340,10 +346,13 @@
     .recent_view_participant_avatar,
     .recent_view_participant_overflow {
         border: 0;
-        border-radius: 6px;
+        /* Keep the rounded corners from ballooning
+           to a circle at smaller font sizes.
+           6px at 16px/1em */
+        border-radius: 0.375em;
         color: var(--color-recent-view-participant-overflow-text);
         display: block;
-        height: 24px;
+        height: 100%;
         text-align: center;
         background-color: var(
             --color-background-recent-view-participant-overflow
@@ -355,7 +364,8 @@
     }
 
     .recent_view_participant_overflow {
-        line-height: 24px;
+        /* 24px at 16px/1em */
+        line-height: 1.5;
     }
 
     & tr {
