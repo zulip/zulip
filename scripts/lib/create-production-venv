@@ -29,4 +29,7 @@ else:
 
 os.chdir(ZULIP_PATH)
 run(["scripts/lib/install-uv"])
-run(["uv", "sync", "--frozen", "--only-group=prod"])
+run(
+    ["uv", "sync", "--frozen", "--only-group=prod"],
+    env={k: v for k, v in os.environ.items() if k not in {"PYTHONDEVMODE", "PYTHONWARNINGS"}},
+)
