@@ -1229,6 +1229,9 @@ export class Filter {
         if (_.isEqual(term_types, ["is-mentioned"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["is-alerted"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
         }
@@ -1304,6 +1307,8 @@ export class Filter {
                     return "/#narrow/is/mentioned";
                 case "channels-public":
                     return "/#narrow/channels/public";
+                case "is-alerted":
+                    return "/#narrow/is/alerted";
                 case "dm":
                     return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
