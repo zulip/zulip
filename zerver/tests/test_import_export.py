@@ -70,6 +70,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import BadImageError
 from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_attachment
+from zerver.lib.url_encoding import encode_stream, get_message_narrow_link
 from zerver.lib.utils import assert_is_not_none, get_fk_field_name
 from zerver.models import (
     AlertWord,
@@ -2836,6 +2837,85 @@ class RealmImportExportTest(ExportFile):
                 exportable_user_ids=get_consented_user_ids(realm),
             )
             do_import_realm(get_output_dir(), "test-zulip")
+
+    def test_import_messages_with_channel_narrow_links(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+
+        # Send a message containing channel link
+        denmark_channel = get_stream("Denmark", original_realm)
+        encoded_channel = encode_stream(denmark_channel.id, denmark_channel.name)
+        channel_link_message = (
+            f"[channel narrow link](http://zulip.testserver/#narrow/channel/{encoded_channel})"
+        )
+        self.send_stream_message(self.example_user("iago"), "Denmark", channel_link_message)
+
+        # Send a message containing topic link
+        topic_link_message = f"[topic narrow link](http://zulip.testserver/#narrow/channel/{encoded_channel}/topic/test)"
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_link_message)
+
+        # Send a message containing message narrow link
+        target_message_content = "message narrow link!"
+        target_message_id = self.send_stream_message(
+            self.example_user("othello"), "Denmark", target_message_content
+        )
+        target_message = Message.objects.get(id=target_message_id)
+        target_message_narrow_link = get_message_narrow_link(target_message)
+        quote_and_reply_content = f"[message narrow link]({target_message_narrow_link})"
+        self.send_stream_message(self.example_user("othello"), "Denmark", quote_and_reply_content)
+
+        self.export_realm_and_create_auditlog(original_realm)
+
+        # -- IMPORT channel messages -- #
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        # Verify channel link
+        imported_denmark_channel = Stream.objects.get(name="Denmark", realm=imported_realm)
+        encoded_imported_channel = encode_stream(
+            imported_denmark_channel.id, imported_denmark_channel.name
+        )
+        imported_channel_link_message = Message.objects.get(
+            content=channel_link_message, realm=imported_realm
+        )
+        expected_channel_link = f"#narrow/channel/{encoded_imported_channel}"
+        assert imported_channel_link_message.rendered_content is not None
+        self.assertIn(
+            expected_channel_link,
+            imported_channel_link_message.rendered_content,
+        )
+
+        # Verify topic link
+        imported_topic_link_message = Message.objects.get(
+            content=topic_link_message, realm=imported_realm
+        )
+        expected_topic_link = f"#narrow/channel/{encoded_imported_channel}/topic/test"
+        assert imported_topic_link_message.rendered_content is not None
+        self.assertIn(
+            expected_topic_link,
+            imported_topic_link_message.rendered_content,
+        )
+
+        # Verify channel message link
+        imported_othello = get_user_by_delivery_email(
+            self.example_user_map["othello"], imported_realm
+        )
+        imported_quote_and_reply_message = Message.objects.get(
+            sender=imported_othello,
+            recipient__type_id=imported_denmark_channel.id,
+            content__icontains="[message narrow link](",
+            realm=imported_realm,
+        )
+        imported_target_message = Message.objects.get(
+            content=target_message_content, realm=imported_realm
+        )
+        expected_channel_message_narrow_link = get_message_narrow_link(imported_target_message)
+        assert imported_quote_and_reply_message.rendered_content is not None
+        self.assertIn(
+            expected_channel_message_narrow_link,
+            imported_quote_and_reply_message.rendered_content,
+        )
 
 
 class SingleUserExportTest(ExportFile):
