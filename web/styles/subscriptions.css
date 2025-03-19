@@ -566,7 +566,7 @@ h4.user_group_setting_subsection_title {
                 font-size: 1.5em; /* 21px at 14px/em */
                 line-height: 1.25;
                 font-weight: 600;
-                word-break: break-all;
+                overflow-wrap: break-word;
                 line-clamp: 2;
                 -webkit-line-clamp: 2;
                 -webkit-box-orient: vertical;
