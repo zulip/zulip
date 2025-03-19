@@ -46,7 +46,7 @@ def export_realm(
     #
     # It's very possible that higher limits would be completely safe.
     MAX_MESSAGE_HISTORY = 250000
-    MAX_UPLOAD_QUOTA = 10 * 1024 * 1024 * 1024
+    MAX_UPLOAD_QUOTA = 20 * 1024 * 1024 * 1024
 
     # Filter based upon the number of events that have occurred in the delta
     # If we are at the limit, the incoming request is rejected
