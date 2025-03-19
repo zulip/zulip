@@ -2,6 +2,7 @@ import collections
 import logging
 import os
 import shutil
+from collections.abc import Sequence
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from difflib import unified_diff
@@ -10,7 +11,7 @@ from typing import Any
 import bmemcached
 import orjson
 import pyvips
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, ResultSet
 from django.conf import settings
 from django.core.cache import cache
 from django.core.management.base import CommandError
@@ -34,6 +35,8 @@ from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
 from zerver.lib.migration_status import MigrationStatusJson, parse_migration_status
 from zerver.lib.mime_types import guess_type
+from zerver.lib.narrow import BadNarrowOperatorError, InvalidOperatorCombinationError
+from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.partial import partial
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
@@ -52,6 +55,7 @@ from zerver.lib.thumbnail import (
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend, upload_emoji_image
 from zerver.lib.upload.s3 import get_bucket
+from zerver.lib.url_decoding import Filter, is_same_server_narrow_link, parse_narrow_url
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
@@ -452,6 +456,11 @@ def fix_message_rendered_content(
             # in this use case.
             get_user_upload_previews(realm.id, message[content_key])
 
+            if fixed_rendered_content := fix_narrow_urls_in_message_content(
+                message[rendered_content_key], realm
+            ):
+                message[rendered_content_key] = fixed_rendered_content
+
             continue
 
         try:
@@ -475,6 +484,12 @@ def fix_message_rendered_content(
                 sent_by_bot=sent_by_bot,
                 translate_emoticons=translate_emoticons,
             ).rendered_content
+            # Near-links fix has to be done here for third-party platforms
+            # import because those doesn't have any rendered content yet.
+            if fixed_rendered_content := fix_narrow_urls_in_message_content(
+                rendered_content, realm
+            ):
+                message[rendered_content_key] = fixed_rendered_content
 
             message[rendered_content_key] = rendered_content
             if "scheduled_timestamp" not in message:
@@ -490,6 +505,169 @@ def fix_message_rendered_content(
             logging.warning(
                 "Error in Markdown rendering for message ID %s; continuing", message["id"]
             )
+
+
+def find_relative_links_from_soup(
+    soup: BeautifulSoup, relative_link_prefixes: Sequence[str]
+) -> ResultSet[Any]:
+    """
+    Find relative links with matching `relative_link_prefixes`
+    from the `href` attribute of all the `a` html tags in the
+    provided `soup`.
+    """
+    return soup.find_all(
+        lambda tag: tag.name == "a"
+        and tag.has_attr("href")
+        and (tag.get("href").startswith(tuple(relative_link_prefixes)))
+    )
+
+
+def get_filter_instance_of_url(url: str, realm: Realm) -> Filter | None:
+    """
+    Creates a new instance of `Filter` from the narrow URL.
+    This checks whether the narrow URL is from the same server.
+
+    Returns a new instance of `Filter` or `None` if the operation
+    fails.
+    """
+    if not is_same_server_narrow_link(url):
+        return None
+
+    narrow_terms = parse_narrow_url(url)
+    if not narrow_terms:
+        return None
+
+    return Filter(narrow_terms, realm)
+
+
+def remap_terms_object_id(term: NarrowTerm, id_map: dict[int, int]) -> NarrowTerm | None:
+    """
+    Remaps the terms operand -- if it's an object ID -- to the
+    corresponding ID found in the supplied `id_map`.
+
+    Returns a copy the passed-in `NarrowTerm` with the updated
+    operand. If the operation fails, returns `None`.
+    """
+    old_id = term.operand
+    if not isinstance(old_id, int):
+        return None
+
+    new_id = id_map.get(old_id)
+    if new_id is None:
+        return None
+
+    new_term = NarrowTerm(operator=term.operator, operand=new_id, negated=term.negated)
+    return new_term
+
+
+def get_a_term_from_filter(terms_handler: Filter, operator: str) -> NarrowTerm | None:
+    terms = terms_handler.get_terms(operator)
+    if len(terms) != 1:
+        return None
+    return terms[0]
+
+
+def fix_channel_narrow_url(
+    url: str, channel_id_map: dict[int, int], message_id_map: dict[int, int], realm: Realm
+) -> str | None:
+    """
+    Remaps the object IDs (channel ID & message ID) in a given
+    narrow url.
+
+    Returns the updated narrow URL or `None` if the operation
+    fails.
+    """
+    try:
+        terms_handler = get_filter_instance_of_url(url, realm)
+    except (BadNarrowOperatorError, InvalidOperatorCombinationError):
+        return None
+
+    if not terms_handler:
+        return None
+
+    # Fix channel ID
+    channel_term = get_a_term_from_filter(terms_handler, "channel")
+    if channel_term is None:
+        return None
+
+    new_channel_term = remap_terms_object_id(channel_term, channel_id_map)
+    if not new_channel_term:
+        return None
+
+    try:
+        terms_handler.update_term(channel_term, new_channel_term)
+    except AssertionError:
+        return None
+
+    if get_a_term_from_filter(terms_handler, "topic") is None:
+        # A narrow URL with only a channel term is probably
+        # a channel URL.
+        return terms_handler.generate_channel_url()
+
+    message_terms = terms_handler.get_terms_with_message_id()
+    if len(message_terms) != 1:
+        # A narrow URL with only a channel term & a topic
+        # term is probably a topic URL.
+        return terms_handler.generate_topic_url()
+
+    # Fix message ID
+    message_term = message_terms[0]
+    new_message_term = remap_terms_object_id(message_term, message_id_map)
+    if new_message_term is None:
+        # Fallback to create a topic URL if we fail to remap
+        # the message ID.
+        return terms_handler.generate_topic_url()
+
+    try:
+        terms_handler.update_term(message_term, new_message_term)
+    except AssertionError:
+        return None
+    try:
+        return terms_handler.generate_message_url()
+    except InvalidOperatorCombinationError:
+        return None
+
+
+def fix_narrow_urls_in_message_content(rendered_content: str, realm: Realm) -> str | None:
+    """
+    Remaps the object IDs of narrow links in message contents.
+    This currently only handles these types of narrow links:
+     - Channel link
+     - Topic link
+     - Channel message link
+    """
+    # TODO: All exported narrow links in messages are broken,
+    # this only fixes the most common cases. We can extend this
+    # to fix other narrow links.
+    if not rendered_content:
+        return None
+
+    soup = BeautifulSoup(rendered_content, "html.parser")
+
+    CHANNEL_NARROW_PREFIXES = (
+        "#narrow/channel",
+        "#narrow/stream",
+    )
+
+    narrow_links = find_relative_links_from_soup(soup, [*CHANNEL_NARROW_PREFIXES])
+
+    if narrow_links == []:
+        return None
+
+    for link in narrow_links:
+        narrow_link: str = link["href"]
+
+        if narrow_link.startswith(CHANNEL_NARROW_PREFIXES) and (
+            updated_channel_narrow_url := fix_channel_narrow_url(
+                narrow_link,
+                ID_MAP["stream"],
+                ID_MAP["message"],
+                realm,
+            )
+        ):
+            link["href"] = updated_channel_narrow_url
+
+    return str(soup)
 
 
 def fix_message_edit_history(
