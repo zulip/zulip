@@ -331,6 +331,19 @@ export function initialize(): void {
     $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
 }
 
+export function update_topic_inputbox_on_mandatory_topics_change(): void {
+    if (realm.realm_mandatory_topics) {
+        const $input = $("input#stream_message_recipient_topic");
+        $input.attr("placeholder", $t({defaultMessage: "Topic"}));
+        $input.removeClass("empty-topic-display");
+        const $topic_not_mandatory_placeholder = $("#topic-not-mandatory-placeholder");
+        $topic_not_mandatory_placeholder.removeClass("visible");
+        $topic_not_mandatory_placeholder.hide();
+        return;
+    }
+    update_topic_displayed_text(compose_state.topic());
+}
+
 export function update_topic_displayed_text(
     topic_name: string | undefined,
     has_topic_focus = false,
