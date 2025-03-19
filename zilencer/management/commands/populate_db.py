@@ -1288,6 +1288,7 @@ def generate_and_send_messages(
             message.subject = random.choice(possible_topic_names[message.recipient.id])
             saved_data["subject"] = message.subject
 
+        message.is_channel_message = recipient_type == Recipient.STREAM
         message.date_sent = choose_date_sent(
             num_messages, tot_messages, options["oldest_message_days"], options["threads"]
         )
