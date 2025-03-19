@@ -279,6 +279,11 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     return {
                         title: $t({defaultMessage: "You have no unread messages!"}),
                     };
+                case "alerted":
+                    // You have no alerted messages.
+                    return {
+                        title: $t({defaultMessage: "You have no alerted messages!"}),
+                    };
                 case "resolved":
                     return {
                         title: $t({defaultMessage: "No topics are marked as resolved."}),
