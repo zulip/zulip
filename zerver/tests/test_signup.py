@@ -185,20 +185,14 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         realm.save(update_fields=["deactivated", "deactivated_redirect"])
 
         result = self.client_get("/login/", follow=True)
-        self.assertIn(
-            'This organization has moved to <a href="http://example.zulipchat.com">http://example.zulipchat.com</a>.',
-            result.content.decode(),
-        )
+        self.assertIn(result.request.get("SERVER_NAME"), ["example.zulipchat.com"])
 
     def test_deactivation_notice_when_realm_subdomain_is_changed(self) -> None:
         realm = get_realm("zulip")
         do_change_realm_subdomain(realm, "new-subdomain-name", acting_user=None)
 
         result = self.client_get("/login/", follow=True)
-        self.assertIn(
-            'This organization has moved to <a href="http://new-subdomain-name.testserver">http://new-subdomain-name.testserver</a>.',
-            result.content.decode(),
-        )
+        self.assertIn(result.request.get("SERVER_NAME"), ["new-subdomain-name.testserver"])
 
     def test_no_deactivation_notice_with_no_redirect(self) -> None:
         realm = get_realm("zulip")
@@ -220,18 +214,12 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         do_change_realm_subdomain(realm, "new-name-1", acting_user=None)
 
         result = self.client_get("/login/", follow=True)
-        self.assertIn(
-            'This organization has moved to <a href="http://new-name-1.testserver">http://new-name-1.testserver</a>.',
-            result.content.decode(),
-        )
+        self.assertIn(result.request.get("SERVER_NAME"), ["new-name-1.testserver"])
 
         realm = get_realm("new-name-1")
         do_change_realm_subdomain(realm, "new-name-2", acting_user=None)
         result = self.client_get("/login/", follow=True)
-        self.assertIn(
-            'This organization has moved to <a href="http://new-name-2.testserver">http://new-name-2.testserver</a>.',
-            result.content.decode(),
-        )
+        self.assertIn(result.request.get("SERVER_NAME"), ["new-name-2.testserver"])
 
 
 class AddNewUserHistoryTest(ZulipTestCase):
