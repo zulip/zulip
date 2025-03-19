@@ -791,20 +791,6 @@
         }
     }
 
-    #settings_page,
-    #stream_settings,
-    #user_group_settings {
-        .save-button-controls .discard-button {
-            color: hsl(0deg 0% 80%);
-
-            &:hover {
-                .save-discard-widget-button-text {
-                    color: hsl(0deg 0% 100%);
-                }
-            }
-        }
-    }
-
     .help_link_widget:hover {
         color: inherit;
     }

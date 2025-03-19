@@ -52,11 +52,6 @@ kbd {
     .hide-sm {
         display: none !important;
     }
-
-    #settings_page .save-button-controls {
-        display: block;
-        margin: 10px 0 0;
-    }
 }
 
 .light {
@@ -889,79 +884,10 @@ input.settings_text_input {
     display: flex;
     margin: 0.2857em 0.5714em; /* 4px 8px at 14px/em */
     align-items: center;
+    gap: 5px;
 
     &.hide {
         display: none;
-    }
-
-    .save-discard-widget-button {
-        border-radius: 5px;
-        border: 1px solid hsl(0deg 0% 80%);
-        text-decoration: none;
-        color: hsl(0deg 0% 47%);
-        min-width: 5.7142em; /* 80px at 14px/em */
-        display: flex;
-        align-items: center;
-        height: 1.8429em; /* 25.8px at 14px/em */
-
-        &:hover,
-        &:focus {
-            border: 1px solid hsl(0deg 0% 61%);
-
-            .discard-button.save-discard-widget-button-text {
-                color: hsl(0deg 0% 18%);
-            }
-        }
-
-        &.primary {
-            background-color: hsl(156deg 30% 50%);
-            color: hsl(0deg 0% 100%);
-            border: 1px solid hsl(155deg 30% 50%);
-
-            &:hover,
-            &:focus {
-                background-color: hsl(166deg 35% 57%);
-                border: 1px solid hsl(166deg 35% 57%);
-            }
-
-            .save-discard-widget-button-icon {
-                font-weight: 400;
-                color: hsl(0deg 0% 100%);
-            }
-
-            &.saving {
-                background-color: hsl(156deg 14% 40%);
-                border-color: hsl(156deg 14% 40%);
-                display: flex;
-            }
-        }
-
-        &.save-button {
-            margin-right: 5px;
-
-            .save-discard-widget-button-loading {
-                display: none;
-            }
-
-            &.saving {
-                .save-discard-widget-button-icon {
-                    display: none;
-                }
-
-                .save-discard-widget-button-loading {
-                    display: block;
-                    margin-right: 0.5em; /* 7px at 14px/em */
-                }
-            }
-        }
-
-        .save-discard-widget-button-icon {
-            margin-right: 3px;
-            font-size: 1.0714em; /* 15px at 14px/em */
-            font-weight: 400;
-            display: flex;
-            align-items: center;
-        }
     }
 }
 
