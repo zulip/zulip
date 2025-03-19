@@ -125,10 +125,14 @@ export function create({
     $pill_container,
     get_potential_subscribers,
     get_user_groups,
+    onPillCreateAction,
+    onPillRemoveAction,
 }: {
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
     get_user_groups: () => UserGroup[];
+    onPillCreateAction: (pill_user_ids: number[]) => void;
+    onPillRemoveAction: (pill_user_ids: number[]) => void;
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
@@ -151,6 +155,13 @@ export function create({
     set_up_pill_typeahead({pill_widget, $pill_container, get_users, get_user_groups: get_groups});
 
     set_up_handlers_for_add_button_state(pill_widget, $pill_container);
+
+    pill_widget.onPillCreate(() => {
+        onPillCreateAction(get_pill_user_ids(pill_widget));
+    });
+    pill_widget.onPillRemove(() => {
+        onPillRemoveAction(get_pill_user_ids(pill_widget));
+    });
 
     return pill_widget;
 }

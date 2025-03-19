@@ -533,7 +533,7 @@ export function initialize_everything(state_data) {
     stream_create.initialize();
     stream_edit.initialize();
     user_group_edit.initialize();
-    stream_edit_subscribers.initialize();
+    stream_edit_subscribers.initialize(state_data.max_subs_for_notification);
     stream_data.initialize(state_data.stream_data);
     user_group_edit_members.initialize();
     stream_card_popover.initialize();
