@@ -293,6 +293,7 @@ export function dispatch_normal_event(event) {
                         }
 
                         if (event.property === "mandatory_topics") {
+                            compose_recipient.update_topic_inputbox_on_mandatory_topics_change();
                             compose_recipient.update_compose_area_placeholder_text();
                         }
                     }
