@@ -847,7 +847,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             allow_internet_group=False,
             allow_nobody_group=True,
             allow_everyone_group=True,
-            default_group_name=SystemGroups.MEMBERS,
+            default_group_name=SystemGroups.EVERYONE,
         ),
         can_summarize_topics_group=GroupPermissionSetting(
             require_system_group=False,
