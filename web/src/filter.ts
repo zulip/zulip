@@ -1388,6 +1388,9 @@ export class Filter {
             case "is-followed":
                 zulip_icon = "follow";
                 break;
+            case "is-alerted":
+                zulip_icon = "eye";
+                break;
             default:
                 icon = undefined;
                 break;
@@ -1484,7 +1487,7 @@ export class Filter {
                 // formatted in the message view header. They are used in narrow.js to
                 // update the browser title.
                 case "is-alerted":
-                    return $t({defaultMessage: "Alerted messages"});
+                    return $t({defaultMessage: "Alerted Messages"});
                 case "is-unread":
                     return $t({defaultMessage: "Unread messages"});
             }
@@ -1520,6 +1523,13 @@ export class Filter {
                         defaultMessage: "Messages in topics you follow.",
                     }),
                     link: "/help/follow-a-topic",
+                };
+            case "is-alerted":
+                return {
+                    description: $t({
+                        defaultMessage: "Messages containing alert words",
+                    }),
+                    link: "/help/dm-mention-alert-notifications",
                 };
         }
         if (
