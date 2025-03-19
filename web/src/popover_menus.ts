@@ -20,6 +20,7 @@ type PopoverName =
     | "left_sidebar_inbox_popover"
     | "left_sidebar_all_messages_popover"
     | "left_sidebar_recent_view_popover"
+    | "left_sidebar_alert_words_popover"
     | "top_left_sidebar"
     | "message_actions"
     | "stream_card_popover"
@@ -41,6 +42,7 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     left_sidebar_inbox_popover: null,
     left_sidebar_all_messages_popover: null,
     left_sidebar_recent_view_popover: null,
+    left_sidebar_alert_words_popover: null,
     top_left_sidebar: null,
     message_actions: null,
     stream_card_popover: null,
