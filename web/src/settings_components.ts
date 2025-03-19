@@ -7,6 +7,7 @@ import {z} from "zod";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import * as buttons from "./buttons.ts";
 import * as compose_banner from "./compose_banner.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
@@ -538,10 +539,10 @@ export function change_save_button_state($element: JQuery, state: string): void 
     }
 
     const $save_button = $element.find(".save-button");
-    const $textEl = $save_button.find(".save-discard-widget-button-text");
+    const $textEl = $save_button.find(".action-button-label");
 
     if (state !== "saving") {
-        $save_button.removeClass("saving");
+        buttons.hide_button_loading_indicator($save_button);
     }
 
     if (state === "discarded") {
@@ -573,12 +574,14 @@ export function change_save_button_state($element: JQuery, state: string): void 
             is_show = false;
             break;
         case "saving":
-            button_text = $t({defaultMessage: "Saving"});
+            // We don't change the button text on the saving
+            // state to avoid changing the button size while
+            // we show the loading indicator.
             data_status = "saving";
             is_show = true;
 
             $element.find(".discard-button").hide();
-            $save_button.addClass("saving");
+            buttons.show_button_loading_indicator($save_button);
             break;
         case "failed":
             button_text = $t({defaultMessage: "Save changes"});
@@ -592,8 +595,9 @@ export function change_save_button_state($element: JQuery, state: string): void 
             break;
     }
 
-    assert(button_text !== undefined);
-    $textEl.text(button_text);
+    if (button_text !== undefined) {
+        $textEl.text(button_text);
+    }
     assert(data_status !== undefined);
     $save_button.attr("data-status", data_status);
     if (state === "unsaved") {

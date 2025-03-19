@@ -16,6 +16,10 @@ mock_esm("../src/loading", {
     make_indicator: noop,
     destroy_indicator: noop,
 });
+mock_esm("../src/buttons", {
+    show_button_loading_indicator: noop,
+    hide_button_loading_indicator: noop,
+});
 mock_esm("../src/scroll_util", {scroll_element_into_container: noop});
 set_global("document", "document-stub");
 
@@ -61,14 +65,14 @@ function createSaveButtons(subsection) {
     const $save_button_controls = $(".save-button-controls");
     const $stub_save_button = $(".save-discard-widget-button.save-button");
     const $stub_discard_button = $(".save-discard-widget-button.discard-button");
-    const $stub_save_button_text = $(".save-discard-widget-button-text");
+    const $stub_save_button_text = $(".action-button-label");
     $stub_save_button_header.set_find_results(
         ".subsection-failed-status p",
         $("<failed-status-stub>"),
     );
     $stub_save_button.closest = () => $stub_save_button_header;
     $save_button_controls.set_find_results(".save-button", $stub_save_button);
-    $stub_save_button.set_find_results(".save-discard-widget-button-text", $stub_save_button_text);
+    $stub_save_button.set_find_results(".action-button-label", $stub_save_button_text);
     $stub_save_button_header.set_find_results(".save-button-controls", $save_button_controls);
     $stub_save_button_header.set_find_results(
         ".subsection-changes-discard button",
@@ -185,9 +189,7 @@ function test_change_save_button_state() {
     }
     {
         settings_components.change_save_button_state($save_button_controls, "saving");
-        assert.equal($save_button_text.text(), "translated: Saving");
         assert.equal($save_button.attr("data-status"), "saving");
-        assert.equal($save_button.hasClass("saving"), true);
         assert.equal($discard_button.visible(), false);
     }
     {

@@ -261,7 +261,10 @@ h3,
         margin-top: 9px;
     }
 
-    .loading_indicator_spinner {
+    /* Don't apply these styling to the loading indicator inside the
+       action buttons, as the required CSS for them is already defined
+       in buttons.css */
+    .loading_indicator_spinner:not(.action-button .loading_indicator_spinner) {
         width: 30%;
         height: 1.4286em; /* 20px at 14px/em */
         margin-top: 7px;
