@@ -352,6 +352,25 @@ feel most comfortable for you.
             line_spacing_url="/help/line-spacing",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=15,
+        message=(
+            """
+We make many improvements to Zulip beyond what we can share here. Learn about
+additional feature highlights, and other Zulip project updates since July
+2024, in the [blog post]({blog_post_10_0_url}) announcing today's release of
+Zulip Server 10.0.
+"""
+            if settings.CORPORATE_ENABLED
+            else """
+We make many improvements to Zulip beyond what we can share here. Check out our
+[release announcement blog post]({blog_post_10_0_url}) to learn about additional
+feature highlights in Zulip Server 10.0, and other Zulip project updates.
+"""
+        ).format(
+            blog_post_10_0_url="https://blog.zulip.com/zulip-server-10-0",
+        ),
+    ),
 ]
 
 
