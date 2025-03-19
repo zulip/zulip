@@ -4695,7 +4695,7 @@ class TwoFactorAuthTest(ZulipTestCase):
 
 
 class NameRestrictionsTest(ZulipTestCase):
-    def test_whitelisted_disposable_domains(self) -> None:
+    def test_override_allow_email_domains(self) -> None:
         self.assertFalse(is_disposable_domain("OPayQ.com"))
 
 
