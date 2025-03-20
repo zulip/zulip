@@ -835,6 +835,65 @@ def create_user_backend(
     return json_success(request, data={"user_id": target_user.id})
 
 
+@typed_endpoint
+def create_user_backend_no_full_name_check(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    email: str,
+    password: str,
+    full_name_raw: Annotated[str, ApiParamConfig("full_name")],
+) -> HttpResponse:
+    if not user_profile.can_create_users:
+        raise JsonableError(_("User not authorized to create users"))
+
+    full_name = full_name_raw
+    form = CreateUserForm({"full_name": full_name, "email": email})
+    if not form.is_valid():
+        raise JsonableError(_("Bad name or username"))
+
+    # Check that the new user's email address belongs to the admin's realm
+    # (Since this is an admin API, we don't require the user to have been
+    # invited first.)
+    realm = user_profile.realm
+    try:
+        email_allowed_for_realm(email, user_profile.realm)
+    except DomainNotAllowedForRealmError:
+        raise JsonableError(
+            _("Email '{email}' not allowed in this organization").format(
+                email=email,
+            )
+        )
+    except DisposableEmailError:
+        raise JsonableError(_("Disposable email addresses are not allowed in this organization"))
+    except EmailContainsPlusError:
+        raise JsonableError(_("Email addresses containing + are not allowed."))
+
+    try:
+        get_user_by_delivery_email(email, user_profile.realm)
+        raise EmailAlreadyInUseError
+    except UserProfile.DoesNotExist:
+        pass
+
+    if not check_password_strength(password):
+        raise JsonableError(str(PASSWORD_TOO_WEAK_ERROR))
+
+    target_user = do_create_user(
+        email,
+        password,
+        realm,
+        full_name,
+        # Explicitly set tos_version=-1. This means that users
+        # created via this mechanism would be prompted to set
+        # the email_address_visibility setting on first login.
+        # For servers that have configured Terms of Service,
+        # users will also be prompted to accept the Terms of
+        # Service on first login.
+        tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
+        acting_user=user_profile,
+    )
+    return json_success(request, data={"user_id": target_user.id})
+
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     raw_user_data = get_users_for_api(
         user_profile.realm,
