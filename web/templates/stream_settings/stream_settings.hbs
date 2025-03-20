@@ -2,7 +2,14 @@
     <div class="tab-container"></div>
     {{#with sub}}
     <div class="button-group">
-        <div class="sub_unsub_button_wrapper inline-block {{#unless should_display_subscription_button }}cannot-subscribe-tooltip{{/unless}}" data-tooltip-template-id="cannot-subscribe-tooltip-template">
+        <div class="sub_unsub_button_wrapper inline-block" data-tooltip-template-id="{{#if subscribed}}cannot-unsubscribe-tooltip-template{{else}}cannot-subscribe-tooltip-template{{/if}}">
+            <template id="cannot-unsubscribe-tooltip-template">
+                <span>
+                    {{#tr}}
+                        You are not allowed to unsubscribe from this channel.
+                    {{/tr}}
+                </span>
+            </template>
             <template id="cannot-subscribe-tooltip-template">
                 <span>
                     {{#tr}}
