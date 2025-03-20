@@ -83,6 +83,10 @@ export function watch_manual_resize_for_element(box: Element): (() => void)[] {
     return [box_handler, body_handler];
 }
 
+function height_of($element: JQuery): number {
+    return $element.get(0)!.getBoundingClientRect().height;
+}
+
 export function reset_compose_message_max_height(bottom_whitespace_height?: number): void {
     // If the compose-box is open, we set the `max-height` property of
     // `compose-textarea` and `preview-textarea`, so that the
@@ -95,10 +99,10 @@ export function reset_compose_message_max_height(bottom_whitespace_height?: numb
         bottom_whitespace_height = get_bottom_whitespace_height();
     }
 
-    const compose_height = $("#compose").get(0)!.getBoundingClientRect().height;
+    const compose_height = height_of($("#compose"));
     const compose_textarea_height = Math.max(
-        $("textarea#compose-textarea").get(0)!.getBoundingClientRect().height,
-        $("#preview_message_area").get(0)!.getBoundingClientRect().height,
+        height_of($("textarea#compose-textarea")),
+        height_of($("#preview_message_area")),
     );
     const compose_non_textarea_height = compose_height - compose_textarea_height;
 
