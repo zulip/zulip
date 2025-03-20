@@ -74,6 +74,7 @@ from zerver.lib.streams import (
     StreamsCategorizedByPermissionsForAddingSubscribers,
     access_stream_by_id,
     access_stream_by_name,
+    bulk_can_access_stream_metadata_user_ids,
     can_access_stream_history,
     can_access_stream_metadata_user_ids,
     create_stream_if_needed,
@@ -8775,6 +8776,200 @@ class AccessStreamTest(ZulipTestCase):
                 is_subscribed=True,
             ),
             True,
+        )
+
+    def test_can_access_stream_metadata_user_ids(self) -> None:
+        aaron = self.example_user("aaron")
+        cordelia = self.example_user("cordelia")
+        guest_user = self.example_user("polonius")
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
+        realm = aaron.realm
+        public_stream = self.make_stream("public_stream", realm, invite_only=False)
+        nobody_system_group = NamedUserGroup.objects.get(
+            name="role:nobody", realm=realm, is_system_group=True
+        )
+
+        # Public stream with no subscribers.
+        expected_public_user_ids = set(active_non_guest_user_ids(realm.id))
+        self.assertCountEqual(
+            can_access_stream_metadata_user_ids(public_stream), expected_public_user_ids
+        )
+        bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+            [public_stream]
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+
+        # Public stream with 1 guest as a subscriber.
+        self.subscribe(guest_user, "public_stream")
+        expected_public_user_ids.add(guest_user.id)
+        self.assertCountEqual(
+            can_access_stream_metadata_user_ids(public_stream), expected_public_user_ids
+        )
+        bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+            [public_stream]
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+
+        test_bot = self.create_test_bot("foo", desdemona)        
+        expected_public_user_ids.add(test_bot.id)
+        private_stream = self.make_stream("private_stream", realm, invite_only=True)
+        # Nobody is subscribed yet for the private stream, only admin
+        # users will turn up for that stream. We will continue testing
+        # the existing public stream for the bulk function here on.
+        expected_private_user_ids = {iago.id, desdemona.id}
+        self.assertCountEqual(
+            can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids
+        )
+        bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+            [public_stream, private_stream]
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+        )
+
+        # Bot with admin privileges should also be part of the result.
+        do_change_user_role(test_bot, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=desdemona)
+        expected_private_user_ids.add(test_bot.id)
+        self.assertCountEqual(
+            can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids
+        )
+        bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+            [public_stream, private_stream]
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+        )
+
+        # Subscriber should also be part of the result.
+        self.subscribe(aaron, "private_stream")
+        expected_private_user_ids.add(aaron.id)
+        self.assertCountEqual(
+            can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids
+        )
+        bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+            [public_stream, private_stream]
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+        )
+
+        stream_permission_group_settings = set(Stream.stream_permission_group_settings.keys())
+        stream_permission_group_settings_not_granting_metadata_access = (
+            stream_permission_group_settings
+            - set(Stream.stream_permission_group_settings_granting_metadata_access)
+        )
+        for setting_name in stream_permission_group_settings_not_granting_metadata_access:
+            do_change_stream_group_based_setting(
+                private_stream,
+                setting_name,
+                UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+                acting_user=cordelia,
+            )
+            self.assertCountEqual(
+                can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids
+            )
+            with self.assert_database_query_count(6):
+                bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+                    [public_stream, private_stream]
+                )
+            self.assertCountEqual(
+                bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+            )
+            self.assertCountEqual(
+                bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+            )
+
+        for setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
+            do_change_stream_group_based_setting(
+                private_stream,
+                setting_name,
+                UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+                acting_user=cordelia,
+            )
+            expected_private_user_ids.add(cordelia.id)
+            self.assertCountEqual(
+                can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids
+            )
+            with self.assert_database_query_count(6):
+                bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+                    [public_stream, private_stream]
+                )
+            self.assertCountEqual(
+                bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+            )
+            self.assertCountEqual(
+                bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+            )
+
+            do_change_stream_group_based_setting(
+                private_stream, setting_name, nobody_system_group, acting_user=cordelia
+            )
+            expected_private_user_ids.remove(cordelia.id)
+            bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+                [public_stream, private_stream]
+            )
+            self.assertCountEqual(
+                can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids
+            )
+            self.assertCountEqual(
+                bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+            )
+            self.assertCountEqual(
+                bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+            )
+
+        # Query count should not increase on fetching user ids for an
+        # additional public stream.
+        public_stream_2 = self.make_stream("public_stream_2", realm, invite_only=False)
+        with self.assert_database_query_count(6):
+            bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+                [public_stream, public_stream_2, private_stream]
+            )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream_2.id],
+            active_non_guest_user_ids(realm.id),
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+        )
+
+        # Query count should not increase on fetching user ids for an
+        # additional private stream.
+        private_stream_2 = self.make_stream("private_stream_2", realm, invite_only=True)
+        self.subscribe(aaron, "private_stream_2")
+        with self.assert_database_query_count(6):
+            bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+                [public_stream, public_stream_2, private_stream, private_stream_2]
+            )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream_2.id],
+            active_non_guest_user_ids(realm.id),
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[private_stream_2.id], expected_private_user_ids
         )
 
 
