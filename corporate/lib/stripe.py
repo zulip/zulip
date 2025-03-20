@@ -5486,6 +5486,35 @@ def maybe_send_invoice_overdue_email(
     plan.save(update_fields=["invoice_overdue_email_sent"])
 
 
+def check_remote_server_audit_log_data(
+    remote_server: RemoteZulipServer, plan: CustomerPlan, billing_session: BillingSession
+) -> bool:
+    # If this is a complimentary access plan without an upgrade scheduled,
+    # we do not need the remote server's audit log data to downgrade the plan.
+    if plan.is_complimentary_access_plan() and plan.status == CustomerPlan.ACTIVE:
+        return True
+
+    # We expect to have a next invoice date for this CustomerPlan.
+    assert plan.next_invoice_date is not None
+    next_invoice_date = plan.next_invoice_date
+    last_audit_log_update = remote_server.last_audit_log_update
+    if last_audit_log_update is None or next_invoice_date > last_audit_log_update:
+        if not plan.invoice_overdue_email_sent:
+            maybe_send_invoice_overdue_email(
+                plan, billing_session, next_invoice_date, last_audit_log_update
+            )
+
+        # We still process free trial plans so that we can directly downgrade them.
+        if plan.is_free_trial() and not plan.charge_automatically:  # nocoverage
+            return True
+
+        # We don't have current audit log data from the remote server,
+        # so we don't have enough information to invoice the plan.
+        return False
+
+    return True
+
+
 def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
     if event_time is None:
         event_time = timezone_now()
@@ -5504,8 +5533,6 @@ def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
             remote_server = plan.customer.remote_server
             billing_session = RemoteServerBillingSession(remote_server=remote_server)
 
-        assert plan.next_invoice_date is not None  # for mypy
-
         if (
             plan.fixed_price is not None
             and plan.end_date is not None
@@ -5513,32 +5540,17 @@ def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
         ):
             maybe_send_fixed_price_plan_renewal_reminder_email(plan, billing_session)
 
+        try_to_invoice_plan = True
         if remote_server:
-            free_plan_with_no_next_plan = (
-                not plan.is_a_paid_plan() and plan.status == CustomerPlan.ACTIVE
+            try_to_invoice_plan = check_remote_server_audit_log_data(
+                remote_server, plan, billing_session
             )
-            free_trial_pay_by_invoice_plan = plan.is_free_trial() and not plan.charge_automatically
-            last_audit_log_update = remote_server.last_audit_log_update
-            if not free_plan_with_no_next_plan and (
-                last_audit_log_update is None or plan.next_invoice_date > last_audit_log_update
-            ):
-                if not plan.invoice_overdue_email_sent:
-                    next_invoice_date = plan.next_invoice_date
-                    maybe_send_invoice_overdue_email(
-                        plan, billing_session, next_invoice_date, last_audit_log_update
-                    )
 
-                # We still process free trial plans so that we can directly downgrade them.
-                # Above emails can serve as a reminder to followup for additional feedback.
-                if not free_trial_pay_by_invoice_plan:
-                    continue
-
-        while (
-            plan.next_invoice_date is not None  # type: ignore[redundant-expr] # plan.next_invoice_date can be None after calling invoice_plan.
-            and plan.next_invoice_date <= event_time
-        ):
-            billing_session.invoice_plan(plan, plan.next_invoice_date)
-            plan.refresh_from_db()
+        if try_to_invoice_plan:
+            # plan.next_invoice_date can be None after calling invoice_plan.
+            while plan.next_invoice_date is not None and plan.next_invoice_date <= event_time:
+                billing_session.invoice_plan(plan, plan.next_invoice_date)
+                plan.refresh_from_db()
 
 
 def is_realm_on_free_trial(realm: Realm) -> bool:
