@@ -1108,6 +1108,10 @@ textarea.new_message_textarea {
         display: none;
         visibility: hidden;
         pointer-events: none;
+
+        &.visible {
+            visibility: visible;
+        }
     }
 
     /* Styles for new conversation button in the recipient_box */
