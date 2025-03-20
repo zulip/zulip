@@ -518,7 +518,6 @@ h4.user_group_setting_subsection_title {
         position: relative;
         display: inline-block;
         vertical-align: top;
-        width: 40%;
         height: calc(100% - var(--settings-overlay-header-height));
         margin: 0 -2px;
     }
@@ -572,6 +571,7 @@ h4.user_group_setting_subsection_title {
     }
 
     .left {
+        width: 40%;
         border-right: 1px solid var(--color-border-modal-bar);
     }
 
