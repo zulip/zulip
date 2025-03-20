@@ -8,12 +8,21 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.stream_subscription import get_user_ids_for_streams
+from zerver.lib.stream_traffic import get_streams_traffic
+from zerver.lib.streams import (
+    bulk_can_access_stream_metadata_user_ids,
+    get_anonymous_group_membership_dict_for_streams,
+    get_metadata_access_streams_via_group_ids,
+    send_stream_creation_event,
+)
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
 from zerver.lib.user_groups import (
     convert_to_user_group_members_dict,
     get_group_setting_value_for_api,
     get_group_setting_value_for_audit_log_data,
+    get_recursive_supergroups_union_for_groups,
     get_role_based_system_groups_dict,
     set_defaults_for_group_settings,
 )
@@ -303,6 +312,17 @@ def bulk_add_members_to_user_groups(
     # a single group; but it's easy enough for the implementation to
     # support both.
 
+    if len(user_groups) == 0 or len(user_profile_ids) == 0:
+        return
+
+    realm = user_groups[0].realm
+    supergroups = get_recursive_supergroups_union_for_groups(
+        [user_group.id for user_group in user_groups]
+    )
+    streams = list(
+        get_metadata_access_streams_via_group_ids([group.id for group in supergroups], realm)
+    )
+    old_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
     memberships = [
         UserGroupMembership(user_group_id=user_group.id, user_profile_id=user_id)
         for user_id in user_profile_ids
@@ -312,7 +332,7 @@ def bulk_add_members_to_user_groups(
     now = timezone_now()
     RealmAuditLog.objects.bulk_create(
         RealmAuditLog(
-            realm=user_group.realm,
+            realm=realm,
             modified_user_id=user_id,
             modified_user_group=user_group,
             event_type=AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
@@ -323,8 +343,36 @@ def bulk_add_members_to_user_groups(
         for user_group in user_groups
     )
 
+    subscriber_ids_for_streams = get_user_ids_for_streams({stream.id for stream in streams})
+    new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
+    recent_traffic = get_streams_traffic({stream.id for stream in streams}, realm)
+    anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(streams)
+
     for user_group in user_groups:
         do_send_user_group_members_update_event("add_members", user_group, user_profile_ids)
+
+    for stream in streams:
+        user_ids_gaining_metadata_access = (
+            new_stream_metadata_user_ids[stream.id] - old_stream_metadata_user_ids[stream.id]
+        )
+        send_stream_creation_event(
+            realm,
+            stream,
+            list(user_ids_gaining_metadata_access),
+            recent_traffic,
+            anonymous_group_membership,
+        )
+        peer_add_event = dict(
+            type="subscription",
+            op="peer_add",
+            stream_ids=[stream.id],
+            user_ids=sorted(subscriber_ids_for_streams[stream.id]),
+        )
+        send_event_on_commit(
+            realm,
+            peer_add_event,
+            user_ids_gaining_metadata_access,
+        )
 
 
 @transaction.atomic(savepoint=False)
