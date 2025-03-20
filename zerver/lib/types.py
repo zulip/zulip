@@ -179,6 +179,7 @@ class RawStreamDict(TypedDict):
     can_remove_subscribers_group_id: int
     can_resolve_topics_group_id: int
     can_subscribe_group_id: int
+    can_unsubscribe_group_id: int
     creator_id: int | None
     date_created: datetime
     deactivated: bool
@@ -236,6 +237,7 @@ class SubscriptionStreamDict(TypedDict):
     can_remove_subscribers_group: int | UserGroupMembersDict
     can_resolve_topics_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
+    can_unsubscribe_group: int | UserGroupMembersDict
     color: str
     creator_id: int | None
     date_created: int
@@ -281,6 +283,7 @@ class NeverSubscribedStreamDict(TypedDict):
     can_remove_subscribers_group: int | UserGroupMembersDict
     can_resolve_topics_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
+    can_unsubscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
     default_push_notifications: bool
@@ -322,6 +325,7 @@ class DefaultStreamDict(TypedDict):
     can_remove_subscribers_group: int | UserGroupMembersDict
     can_resolve_topics_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
+    can_unsubscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
     default_push_notifications: bool
