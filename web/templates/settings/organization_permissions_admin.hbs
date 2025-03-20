@@ -356,7 +356,8 @@
                       }}
                 {{/if}}
 
-                <div class="disabled-unfinished-feature" style="display: none">
+                <div class="disabled-unfinished-feature"
+                  {{#unless server_can_summarize_topics}}style="display: none"{{/unless}}>
                     {{#unless server_can_summarize_topics}}
                         <div class="tip">
                             {{#if is_plan_self_hosted}}
