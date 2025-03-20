@@ -21,8 +21,6 @@ preparing a new release.
     with changes since the last release. While doing so, take notes on
     things that might need follow-up work or documentation before we
     can happily advertise them in a release blog post.
-  - Inspect all `TODO/compatibility` comments for whether we can
-    remove any backwards-compatibility code in this release.
 - Create a burn-down list of issues that need to be fixed before we can
   release, and make sure all of them are being worked on.
 - Draft the release blog post (a.k.a. the release notes) in Paper. In
@@ -113,6 +111,8 @@ preparing a new release.
     - Add a new line to the `production_upgrade` matrix in
       `.github/workflows/production-suite.yml`.
   - Update /history page in `templates/corporate/history.md`.
+  - Inspect all `TODO/compatibility` comments for whether we can
+    remove any backwards-compatibility code following this release.
 - _Minor releases only (e.g., 3.2):_
   - On the release branch, update `ZULIP_VERSION` to the present
     release with a `+git` suffix, e.g., `3.2+git`.
