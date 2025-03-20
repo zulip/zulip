@@ -52,6 +52,39 @@ $$O(n^2)$$
 
 {!latex-examples.md!}
 
+## Copy and paste formatted LaTeX
+
+### Copy LateX from a message in Zulip
+
+Zulip supports [quoting](/help/quote-or-forward-a-message#quote-a-message),
+[forwarding](/help/quote-or-forward-a-message#forward-a-message), or copying
+math expressions, and pasting them into the compose box.
+
+!!! tip ""
+
+    If you select part of a math expression to copy, Zulip will automatically
+    expand your selection to copy the full expression.
+
+### Copy LaTeX from an external website
+
+You can copy LaTeX from many third-party sites that use KaTeX, and paste it into
+Zulip.
+
+!!! tip ""
+
+    If copy-pasting math from a website isn't working, consider contacting the
+    website's administrators with the information below, as it may be an easy fix.
+
+This feature is powered by KaTeX's MathML annotations, which embed the original
+LaTeX source in the HTML for a math expression. For it to work, the website
+needs to:
+
+- Generate math expressions using KaTeX in the default `htmlAndMathml` [output
+mode](https://katex.org/docs/options.html).
+- Allow MathML annotations to be included in HTML copied by the browser (for
+Zulip, this was [a couple lines of
+CSS](https://github.com/zulip/zulip/commit/353f57e518b88333615911f12a031177c46d7fbe)).
+
 ## Related articles
 
 * [Message formatting](/help/format-your-message-using-markdown)
