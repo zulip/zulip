@@ -7,7 +7,12 @@
 {% set PAGE_DESCRIPTION = _("Browse the publicly accessible channels in {org_name} without logging in.").format(org_name=realm_name)  %}
 
 {% block meta_viewport %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<!-- From version 132, Firefox now defaults to not resize the viewport
+content but only the visual viewport. While this works well in
+Chrome Android, it creates a buggy experience in Firefox Android
+where the compose box is hidden under keyboard. To fix it, we rollback
+to resizing content when keyboard is shown on Firefox Android. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no {% if is_firefox_android %}, interactive-widget=resizes-content{% endif %}" />
 {% endblock %}
 
 {% block customhead %}
