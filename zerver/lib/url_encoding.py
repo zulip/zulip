@@ -1,11 +1,12 @@
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import quote, urlsplit
 
 import re2
 
+from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.types import UserDisplayRecipient
-from zerver.models import Realm, Stream, UserProfile
+from zerver.models import Message, Realm, Stream, UserProfile
 
 
 def hash_util_encode(string: str) -> str:
@@ -109,3 +110,30 @@ def append_url_query_string(original_url: str, query: str) -> str:
     u = urlsplit(original_url)
     query = u.query + ("&" if u.query and query else "") + query
     return u._replace(query=query).geturl()
+
+
+def get_message_narrow_link(
+    message: Message,
+    operator: Literal["near", "with"] = "near",
+) -> str:
+    from zerver.lib.url_decoding import Filter
+    from zerver.models.recipients import Recipient, get_direct_message_group_user_ids
+
+    realm = message.realm
+    if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+        gdm_recipient = list(get_direct_message_group_user_ids(message.recipient))
+        narrow_terms = [NarrowTerm("dm", gdm_recipient, False)]
+    elif message.recipient.type == Recipient.PERSONAL:
+        dm_recipient = message.recipient.type_id
+        narrow_terms = [NarrowTerm("dm", dm_recipient, False)]
+    else:
+        assert message.recipient.type == Recipient.STREAM
+        recipient = message.recipient.type_id
+        topic_name = message.topic_name()
+        narrow_terms = [
+            NarrowTerm("channel", recipient, False),
+            NarrowTerm("topic", topic_name, False),
+        ]
+
+    narrow_terms.append(NarrowTerm(operator, message.id, False))
+    return Filter(narrow_terms, realm).generate_message_url()
