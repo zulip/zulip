@@ -17,7 +17,7 @@ def add_log(committer_dict: dict[str, int], input: list[str]) -> None:
         committer_name = dataset.split("\t")[1]
         commit_count = int(dataset.split("\t")[0])
 
-        if committer_name.endswith("[bot]"):
+        if committer_name.endswith("[bot]") or committer_name == "Hosted Weblate":
             # Exclude dependabot[bot] and other GitHub bots.
             global bot_commits
             bot_commits += commit_count
