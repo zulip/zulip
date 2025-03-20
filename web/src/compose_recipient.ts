@@ -356,14 +356,15 @@ export function update_topic_displayed_text(
     // reset
     $input.attr("placeholder", "");
     $input.removeClass("empty-topic-display");
-    $topic_not_mandatory_placeholder.css({visibility: "hidden"});
+    $topic_not_mandatory_placeholder.removeClass("visible");
     $topic_not_mandatory_placeholder.hide();
 
     function update_placeholder_visibility(): void {
-        $topic_not_mandatory_placeholder.css(
-            "visibility",
-            $input.val() === "" ? "visible" : "hidden",
-        );
+        if ($input.val() === "") {
+            $topic_not_mandatory_placeholder.addClass("visible");
+        } else {
+            $topic_not_mandatory_placeholder.removeClass("visible");
+        }
     }
 
     if (is_empty_string_topic && !has_topic_focus && recipient_widget_hidden) {
