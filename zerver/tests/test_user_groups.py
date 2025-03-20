@@ -555,6 +555,21 @@ class UserGroupTestCase(ZulipTestCase):
         with self.assertRaisesRegex(JsonableError, "Invalid system group name."):
             get_system_user_group_by_name("hamletcharacters", realm.id)
 
+    def test_update_user_group_members_noop_case(self) -> None:
+        hamlet = self.example_user("hamlet")
+        test_group = check_add_user_group(
+            hamlet.realm,
+            "test_group",
+            [self.example_user("othello")],
+            "Test group",
+            acting_user=self.example_user("othello"),
+        )
+        # These functions should not do anything if any of the list
+        # arguments is empty.
+        with self.capture_send_event_calls(expected_num_events=0):
+            bulk_add_members_to_user_groups([], [hamlet.id], acting_user=None)
+            bulk_add_members_to_user_groups([test_group], [], acting_user=None)
+
 
 class UserGroupAPITestCase(UserGroupTestCase):
     def test_user_group_create(self) -> None:
@@ -1734,7 +1749,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         with (
             mock.patch("zerver.views.user_groups.notify_for_user_group_subscription_changes"),
-            self.assert_database_query_count(14),
+            self.assert_database_query_count(16),
         ):
             result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
