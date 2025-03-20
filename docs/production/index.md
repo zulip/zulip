@@ -26,6 +26,7 @@ reverse-proxies
 multiple-organizations
 email-gateway
 video-calls
+ai-integrations
 giphy-gif-integration
 scim
 ```
