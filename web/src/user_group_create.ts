@@ -9,6 +9,7 @@ import * as group_permission_settings from "./group_permission_settings.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
+import * as resize from "./resize.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
@@ -183,6 +184,7 @@ function clear_error_display(): void {
 export function show_new_user_group_modal(): void {
     $("#user-group-creation").removeClass("hide");
     $(".right .settings").hide();
+    resize.resize_settings_creation_overlay();
 
     user_group_create_members.build_widgets();
 

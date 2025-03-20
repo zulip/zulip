@@ -938,6 +938,7 @@ export function change_state(
     if (section === "new") {
         do_open_create_stream();
         show_right_section();
+        resize.resize_settings_creation_overlay();
         return;
     }
 
