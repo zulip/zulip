@@ -5515,42 +5515,78 @@ def check_remote_server_audit_log_data(
     return True
 
 
+def review_and_maybe_invoice_plan(
+    plan: CustomerPlan,
+    event_time: datetime,
+) -> None:
+    remote_server: RemoteZulipServer | None = None
+    if plan.customer.realm is not None:
+        billing_session: BillingSession = RealmBillingSession(realm=plan.customer.realm)
+    elif plan.customer.remote_realm is not None:
+        remote_realm = plan.customer.remote_realm
+        remote_server = remote_realm.server
+        billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+    elif plan.customer.remote_server is not None:
+        remote_server = plan.customer.remote_server
+        billing_session = RemoteServerBillingSession(remote_server=remote_server)
+
+    if (
+        plan.fixed_price is not None
+        and plan.end_date is not None
+        and not plan.reminder_to_review_plan_email_sent
+    ):
+        maybe_send_fixed_price_plan_renewal_reminder_email(plan, billing_session)
+
+    try_to_invoice_plan = True
+    if remote_server:
+        # We need the audit log data from the remote server to be
+        # current enough for license checks on paid plans.
+        try_to_invoice_plan = check_remote_server_audit_log_data(
+            remote_server, plan, billing_session
+        )
+
+    if try_to_invoice_plan:
+        # plan.next_invoice_date can be None after calling invoice_plan.
+        while plan.next_invoice_date is not None and plan.next_invoice_date <= event_time:
+            billing_session.invoice_plan(plan, plan.next_invoice_date)
+            plan.refresh_from_db()
+
+
 def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
+    failed_customer_ids = set()
     if event_time is None:
         event_time = timezone_now()
     # For complimentary access plans with status SWITCH_PLAN_TIER_AT_PLAN_END, we need
     # to invoice the complimentary access plan followed by the new plan on the same day,
     # hence ordering by ID.
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time).order_by("id"):
-        remote_server: RemoteZulipServer | None = None
-        if plan.customer.realm is not None:
-            billing_session: BillingSession = RealmBillingSession(realm=plan.customer.realm)
-        elif plan.customer.remote_realm is not None:
-            remote_realm = plan.customer.remote_realm
-            remote_server = remote_realm.server
-            billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
-        elif plan.customer.remote_server is not None:
-            remote_server = plan.customer.remote_server
-            billing_session = RemoteServerBillingSession(remote_server=remote_server)
+        if plan.customer.id in failed_customer_ids:  # nocoverage
+            # We've already had a failure for this customer in this
+            # invoicing attempt; skip it so we can process others,
+            # without incorrectly processing other plans on this same
+            # customer.
+            continue
 
-        if (
-            plan.fixed_price is not None
-            and plan.end_date is not None
-            and not plan.reminder_to_review_plan_email_sent
-        ):
-            maybe_send_fixed_price_plan_renewal_reminder_email(plan, billing_session)
-
-        try_to_invoice_plan = True
-        if remote_server:
-            try_to_invoice_plan = check_remote_server_audit_log_data(
-                remote_server, plan, billing_session
-            )
-
-        if try_to_invoice_plan:
-            # plan.next_invoice_date can be None after calling invoice_plan.
-            while plan.next_invoice_date is not None and plan.next_invoice_date <= event_time:
-                billing_session.invoice_plan(plan, plan.next_invoice_date)
-                plan.refresh_from_db()
+        try:
+            review_and_maybe_invoice_plan(plan, event_time)
+        except Exception as e:
+            failed_customer_ids.add(plan.customer.id)
+            if isinstance(e, BillingError):
+                billing_logger.exception(
+                    "Invoicing failed: Customer.id: %s, CustomerPlan.id: %s, BillingError: %s",
+                    plan.customer.id,
+                    plan.id,
+                    e.error_description,
+                )
+            elif isinstance(e, AssertionError):  # nocoverage
+                billing_logger.exception(
+                    "Invoicing failed due to AssertionError: Customer.id: %s, CustomerPlan.id: %s",
+                    plan.customer.id,
+                    plan.id,
+                    stack_info=True,
+                )
+            else:
+                billing_logger.exception(e, stack_info=True)  # nocoverage
 
 
 def is_realm_on_free_trial(realm: Realm) -> bool:

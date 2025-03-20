@@ -2174,12 +2174,15 @@ class StripeTest(StripeTestCase):
         customer.minimum_licenses = None
         customer.save()
 
-        with self.assertRaises(BillingError) as context:
+        with self.assertLogs("corporate.stripe", level="ERROR") as m:
             invoice_plans_as_needed(self.next_year + timedelta(days=366))
-        error_message = context.exception.error_description
-        self.assertEqual(
-            error_message,
+        self.assertIn(
+            f"ERROR:corporate.stripe:Invoicing failed: Customer.id: {customer.id}",
+            m.output[0],
+        )
+        self.assertIn(
             "Renewal licenses (6) less than minimum licenses (10) required for plan Zulip Cloud Plus.",
+            m.output[0],
         )
 
     def test_upgrade_with_tampered_seat_count(self) -> None:
@@ -6013,11 +6016,15 @@ class InvoiceTest(StripeTestCase):
             "name-extra-user",
             acting_user=None,
         )
-        with self.assertRaises(BillingError) as context:
+        with self.assertLogs("corporate.stripe", level="ERROR") as m:
             invoice_plans_as_needed(self.next_year)
-        self.assertRegex(
-            context.exception.error_description,
+        self.assertIn(
+            "ERROR:corporate.stripe:Invoicing failed: Customer.id:",
+            m.output[0],
+        )
+        self.assertIn(
             "Customer has not manually updated plan for current license count:",
+            m.output[0],
         )
 
     @mock_stripe()
