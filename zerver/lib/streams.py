@@ -1798,3 +1798,19 @@ def send_stream_deletion_event(
         stream_ids=[stream.id for stream in streams],
     )
     send_event_on_commit(realm, stream_deletion_event, user_ids)
+
+
+def get_metadata_access_streams_via_group_ids(
+    group_ids: list[int], realm: Realm
+) -> QuerySet[Stream]:
+    """
+    Given a list of group ids, we will return streams that contains
+    those group ids as a value for one of the group permission settings
+    that can grant metadata access.
+    """
+    return Stream.objects.filter(
+        Q(can_add_subscribers_group_id__in=group_ids)
+        | Q(can_administer_channel_group_id__in=group_ids)
+        | Q(can_subscribe_group_id__in=group_ids),
+        realm_id=realm.id,
+    )
