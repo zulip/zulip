@@ -302,6 +302,7 @@ def update_stream_backend(
     can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
+    can_unsubscribe_group: Json[GroupSettingChangeRequest] | None = None,
     default_push_notifications: Json[bool] | None = None,
     description: ChannelDescription = None,
     folder_id: Json[int | None] | MissingType = Missing,
@@ -641,6 +642,7 @@ def remove_subscriptions_backend(
         streams_as_dict,
         user_profile,
         unsubscribing_others=unsubscribing_others,
+        people_to_unsub=people_to_unsub,
     )
 
     result: dict[str, list[str]] = dict(removed=[], not_removed=[])
@@ -699,6 +701,7 @@ def create_channel(
     can_resolve_topics_group: Json[int | UserGroupMembersData] | None = None,
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
     can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
+    can_unsubscribe_group: Json[int | UserGroupMembersData] | None = None,
     default_push_notifications: Json[bool] = False,
     description: ChannelDescription = None,
     folder_id: Json[int] | None = None,
@@ -779,6 +782,7 @@ def create_channel(
         can_send_message_group=group_settings_map["can_send_message_group"],
         can_remove_subscribers_group=group_settings_map["can_remove_subscribers_group"],
         can_subscribe_group=group_settings_map["can_subscribe_group"],
+        can_unsubscribe_group=group_settings_map["can_unsubscribe_group"],
         can_resolve_topics_group=group_settings_map["can_resolve_topics_group"],
         folder=folder,
         topics_policy=topics_policy_value,
@@ -837,6 +841,7 @@ def add_subscriptions_backend(
     can_resolve_topics_group: Json[int | UserGroupMembersData] | None = None,
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
     can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
+    can_unsubscribe_group: Json[int | UserGroupMembersData] | None = None,
     default_push_notifications: Json[bool] = False,
     folder_id: Json[int] | None = None,
     history_public_to_subscribers: Json[bool] | None = None,
