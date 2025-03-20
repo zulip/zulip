@@ -871,37 +871,51 @@ def get_raw_unread_data(
             where=[UserMessage.where_unread()],
         )
 
-    # Limit unread messages for performance reasons.  We do this
-    # inside a CTE, such that the join to Recipients, below, can't be
-    # implied to remove rows, and thus allows a Nested Loop join,
-    # potentially memoized to reduce the number of Recipient lookups.
-    cte = With(user_msgs[:MAX_UNREAD_MESSAGES])
+    with connection.cursor() as cursor:
+        try:
+            # Force-disable (parallel) bitmap heap scans.  The
+            # parallel nature of this means that the LIMIT cannot be
+            # pushed down into the walk of the index, and it also
+            # requires an additional outer sort -- which is all
+            # unnecessary, as the zerver_usermessage_unread_message_id
+            # index is properly ordered already.  This is all due to
+            # statistics mis-estimations, since partial indexes do not
+            # have their own statistics.
+            cursor.execute("SET enable_bitmapscan TO off")
 
-    user_msgs = (
-        cte.join(Recipient, id=cte.col.recipient_id)
-        .with_cte(cte)
-        .annotate(
-            message_id=cte.col.message_id,
-            sender_id=cte.col.sender_id,
-            recipient_id=cte.col.recipient_id,
-            topic=cte.col.topic,
-            flags=cte.col.flags,
-            recipient__type=F("type"),
-            recipient__type_id=F("type_id"),
-        )
-        .values(
-            "message_id",
-            "sender_id",
-            "topic",
-            "flags",
-            "recipient_id",
-            "recipient__type",
-            "recipient__type_id",
-        )
-    )
+            # Limit unread messages for performance reasons.  We do this
+            # inside a CTE, such that the join to Recipients, below, can't be
+            # implied to remove rows, and thus allows a Nested Loop join,
+            # potentially memoized to reduce the number of Recipient lookups.
+            cte = With(user_msgs[:MAX_UNREAD_MESSAGES])
 
-    rows = list(reversed(user_msgs))
-    return extract_unread_data_from_um_rows(rows, user_profile)
+            user_msgs = (
+                cte.join(Recipient, id=cte.col.recipient_id)
+                .with_cte(cte)
+                .annotate(
+                    message_id=cte.col.message_id,
+                    sender_id=cte.col.sender_id,
+                    recipient_id=cte.col.recipient_id,
+                    topic=cte.col.topic,
+                    flags=cte.col.flags,
+                    recipient__type=F("type"),
+                    recipient__type_id=F("type_id"),
+                )
+                .values(
+                    "message_id",
+                    "sender_id",
+                    "topic",
+                    "flags",
+                    "recipient_id",
+                    "recipient__type",
+                    "recipient__type_id",
+                )
+            )
+
+            rows = list(reversed(user_msgs))
+        finally:
+            cursor.execute("SET enable_bitmapscan TO on")
+        return extract_unread_data_from_um_rows(rows, user_profile)
 
 
 def extract_unread_data_from_um_rows(
