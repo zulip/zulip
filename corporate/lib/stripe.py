@@ -5438,6 +5438,54 @@ def maybe_send_fixed_price_plan_renewal_reminder_email(
         plan.save(update_fields=["reminder_to_review_plan_email_sent"])
 
 
+def maybe_send_invoice_overdue_email(
+    plan: CustomerPlan,
+    billing_session: BillingSession,
+    next_invoice_date: datetime,
+    last_audit_log_update: datetime | None,
+) -> None:
+    if last_audit_log_update is None:  # nocoverage
+        # We have no audit log data from the remote server at all,
+        # and they have a paid plan or scheduled upgrade, so email
+        # billing support.
+        context = {
+            "billing_entity": billing_session.billing_entity_display_name,
+            "support_url": billing_session.support_url(),
+            "last_audit_log_update": "Never uploaded",
+            "notice_reason": "invoice_overdue",
+        }
+        send_email(
+            "zerver/emails/internal_billing_notice",
+            to_emails=[BILLING_SUPPORT_EMAIL],
+            from_address=FromAddress.tokenized_no_reply_address(),
+            context=context,
+        )
+        plan.invoice_overdue_email_sent = True
+        plan.save(update_fields=["invoice_overdue_email_sent"])
+        return
+
+    if next_invoice_date - last_audit_log_update < timedelta(days=1):  # nocoverage
+        # If it's been less than a day since the last audit log update,
+        # then don't email billing support as the issue with the remote
+        # server could be transient.
+        return
+
+    context = {
+        "billing_entity": billing_session.billing_entity_display_name,
+        "support_url": billing_session.support_url(),
+        "last_audit_log_update": last_audit_log_update.strftime("%Y-%m-%d"),
+        "notice_reason": "invoice_overdue",
+    }
+    send_email(
+        "zerver/emails/internal_billing_notice",
+        to_emails=[BILLING_SUPPORT_EMAIL],
+        from_address=FromAddress.tokenized_no_reply_address(),
+        context=context,
+    )
+    plan.invoice_overdue_email_sent = True
+    plan.save(update_fields=["invoice_overdue_email_sent"])
+
+
 def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
     if event_time is None:
         event_time = timezone_now()
@@ -5474,27 +5522,11 @@ def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
             if not free_plan_with_no_next_plan and (
                 last_audit_log_update is None or plan.next_invoice_date > last_audit_log_update
             ):
-                if (
-                    last_audit_log_update is None
-                    or plan.next_invoice_date - last_audit_log_update >= timedelta(days=1)
-                ) and not plan.invoice_overdue_email_sent:
-                    last_audit_log_update_string = "Never uploaded"
-                    if last_audit_log_update is not None:
-                        last_audit_log_update_string = last_audit_log_update.strftime("%Y-%m-%d")
-                    context = {
-                        "billing_entity": billing_session.billing_entity_display_name,
-                        "support_url": billing_session.support_url(),
-                        "last_audit_log_update": last_audit_log_update_string,
-                        "notice_reason": "invoice_overdue",
-                    }
-                    send_email(
-                        "zerver/emails/internal_billing_notice",
-                        to_emails=[BILLING_SUPPORT_EMAIL],
-                        from_address=FromAddress.tokenized_no_reply_address(),
-                        context=context,
+                if not plan.invoice_overdue_email_sent:
+                    next_invoice_date = plan.next_invoice_date
+                    maybe_send_invoice_overdue_email(
+                        plan, billing_session, next_invoice_date, last_audit_log_update
                     )
-                    plan.invoice_overdue_email_sent = True
-                    plan.save(update_fields=["invoice_overdue_email_sent"])
 
                 # We still process free trial plans so that we can directly downgrade them.
                 # Above emails can serve as a reminder to followup for additional feedback.
