@@ -822,3 +822,76 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             cordelia,
             [private_stream, private_stream_2],
         )
+
+    def test_user_unsubscribe_themselves(self) -> None:
+        """
+        User trying to unsubscribe themselves from the stream, where
+        principals has the id of the acting_user performing the
+        unsubscribe action.
+        """
+        admin = self.example_user("iago")
+        aaron = self.example_user("aaron")
+        cordelia = self.example_user("cordelia")
+
+        stream_name = "hümbüǵ"
+        stream = self.make_stream(stream_name)
+
+        # Test that an admin can always unsubscribe themselves.
+        self.check_unsubscribing_user(
+            admin,
+            admin,
+            [stream],
+        )
+
+        anonymous_group_member_dict = UserGroupMembersData(
+            direct_members=[aaron.id], direct_subgroups=[]
+        )
+
+        # Test that a user in the can_unsubscribe_group can
+        # unsubscribe themselves
+        self.check_unsubscribing_user(
+            aaron,
+            aaron,
+            [stream],
+            group_setting_name="can_unsubscribe_group",
+            group_setting_value=anonymous_group_member_dict,
+        )
+
+        # Test that a user in the can_administer_channel_group can
+        # unsubscribe themselves
+        self.check_unsubscribing_user(
+            aaron,
+            aaron,
+            [stream],
+            group_setting_name="can_administer_channel_group",
+            group_setting_value=anonymous_group_member_dict,
+        )
+
+        # Test that a user in the can_remove_subscribers_group can
+        # unsubscribe themselves
+        self.check_unsubscribing_user(
+            aaron,
+            aaron,
+            [stream],
+            group_setting_name="can_remove_subscribers_group",
+            group_setting_value=anonymous_group_member_dict,
+        )
+
+        # Test that a user not in any of the permission groups cannot
+        # unsubscribe themselves
+        self.check_unsubscribing_user(
+            cordelia,
+            cordelia,
+            [stream],
+            expect_fail=True,
+        )
+
+        private_stream = self.make_stream("private_stream", invite_only=True)
+        result = self.api_delete(
+            cordelia,
+            "/api/v1/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps([private_stream.name]).decode(),
+            },
+        )
+        self.assert_json_error(result, "Insufficient permission")
