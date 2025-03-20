@@ -5,7 +5,7 @@ release series. See the [current Zulip changelog][latest-changelog]
 for newer release series, or the [commit log][commit-log] for an
 up-to-date list of all changes.
 
-## Zulip Server 10.x series (development)
+## Zulip Server 10.x series
 
 ### Zulip Server 10.0
 
