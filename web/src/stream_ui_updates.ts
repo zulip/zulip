@@ -202,6 +202,7 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
     } else {
         $settings_button.text($t({defaultMessage: "Subscribe"})).addClass("unsubscribed");
     }
+    const $parent = $settings_button.parent();
     if (stream_data.can_toggle_subscription(sub)) {
         $settings_button.prop("disabled", false);
         const $parent_element: tippy.ReferenceElement & HTMLElement = util.the(
@@ -212,7 +213,13 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
         $settings_button.addClass("toggle-subscription-tooltip");
     } else {
         $settings_button.attr("title", "");
-        initialize_cant_subscribe_popover();
+        if (sub.subscribed) {
+            $parent.attr("data-tooltip-template-id", "cannot-unsubscribe-tooltip-template");
+        } else {
+            $parent.attr("data-tooltip-template-id", "cannot-subscribe-tooltip-template");
+        }
+        const $button_wrapper = $(".settings .stream_settings_header .sub_unsub_button_wrapper");
+        settings_components.initialize_disable_button_hint_popover($button_wrapper, undefined);
         $settings_button.prop("disabled", true);
         $settings_button.removeClass("toggle-subscription-tooltip");
     }
