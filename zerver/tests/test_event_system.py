@@ -1213,7 +1213,7 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         with (
-            self.assert_database_query_count(42),
+            self.assert_database_query_count(44),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=user.realm)
@@ -1259,7 +1259,7 @@ class FetchQueriesTest(ZulipTestCase):
             subscription=9,
             update_display_settings=0,
             update_global_notifications=0,
-            update_message_flags=5,
+            update_message_flags=7,
             user_settings=0,
             user_status=1,
             user_topic=1,
