@@ -46,6 +46,7 @@ from zerver.lib.user_groups import (
     get_recursive_strict_subgroups,
     get_recursive_subgroups,
     get_recursive_subgroups_union_for_groups,
+    get_recursive_supergroups_union_for_groups,
     get_role_based_system_groups_dict,
     get_subgroup_ids,
     get_system_user_group_by_name,
@@ -308,6 +309,16 @@ class UserGroupTestCase(ZulipTestCase):
         GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=staff_group)
         GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=manager_group)
 
+        subgroup_for_anonymous_supergroup = check_add_user_group(
+            realm, "subgroup_for_anonymous_supergroup", [iago], acting_user=iago
+        )
+        anonymous_supergroup = check_add_user_group(
+            realm, "anonymous_supergroup", [iago], acting_user=iago
+        )
+        GroupGroupMembership.objects.create(
+            supergroup=anonymous_supergroup, subgroup=subgroup_for_anonymous_supergroup
+        )
+
         self.assertCountEqual(
             list(get_recursive_subgroups(leadership_group.id)), [leadership_group.usergroup_ptr]
         )
@@ -331,6 +342,24 @@ class UserGroupTestCase(ZulipTestCase):
                 leadership_group.usergroup_ptr,
                 staff_group.usergroup_ptr,
                 manager_group.usergroup_ptr,
+            ],
+        )
+
+        with self.assert_database_query_count(1):
+            recursive_supergroups_union_for_groups = list(
+                get_recursive_supergroups_union_for_groups(
+                    [leadership_group.id, subgroup_for_anonymous_supergroup.id]
+                )
+            )
+        self.assertCountEqual(
+            recursive_supergroups_union_for_groups,
+            [
+                leadership_group.usergroup_ptr,
+                everyone_group.usergroup_ptr,
+                staff_group.usergroup_ptr,
+                manager_group.usergroup_ptr,
+                subgroup_for_anonymous_supergroup.usergroup_ptr,
+                anonymous_supergroup.usergroup_ptr,
             ],
         )
 
