@@ -780,6 +780,14 @@ h4.user_group_setting_subsection_title {
                 color: var(--color-stream-group-row-plus-icon-disabled);
             }
 
+            &.checked svg {
+                opacity: 0.5;
+            }
+
+            &.checked svg {
+                opacity: 0.5;
+            }
+
             .sub-unsub-icon {
                 color: var(--color-stream-group-row-checked-icon-disabled);
                 cursor: not-allowed;

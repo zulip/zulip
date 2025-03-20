@@ -101,6 +101,7 @@ class StreamDict(TypedDict, total=False):
     can_remove_subscribers_group: UserGroup | None
     can_resolve_topics_group: UserGroup | None
     can_subscribe_group: UserGroup | None
+    can_unsubscribe_group: UserGroup | None
     folder: ChannelFolder | None
 
 
@@ -356,6 +357,7 @@ def create_stream_if_needed(
     can_remove_subscribers_group: UserGroup | None = None,
     can_resolve_topics_group: UserGroup | None = None,
     can_subscribe_group: UserGroup | None = None,
+    can_unsubscribe_group: UserGroup | None = None,
     folder: ChannelFolder | None = None,
     acting_user: UserProfile | None = None,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
@@ -489,6 +491,7 @@ def create_streams_if_needed(
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
             can_resolve_topics_group=stream_dict.get("can_resolve_topics_group", None),
             can_subscribe_group=stream_dict.get("can_subscribe_group", None),
+            can_unsubscribe_group=stream_dict.get("can_unsubscribe_group", None),
             folder=stream_dict.get("folder", None),
             acting_user=acting_user,
             anonymous_group_membership=anonymous_group_membership,
@@ -539,6 +542,11 @@ def is_user_in_can_subscribe_group(stream: Stream, user_recursive_group_ids: set
     # allow_everyone_group=False.
     group_allowed_to_subscribe_id = stream.can_subscribe_group_id
     return group_allowed_to_subscribe_id in user_recursive_group_ids
+
+
+def is_user_in_can_unsubscribe_group(stream: Stream, user_recursive_group_ids: set[int]) -> bool:
+    group_allowed_to_unsubscribe_id = stream.can_unsubscribe_group_id
+    return group_allowed_to_unsubscribe_id in user_recursive_group_ids
 
 
 def is_user_in_groups_granting_content_access(
@@ -1312,6 +1320,37 @@ def bulk_can_remove_subscribers_from_streams(
     return True
 
 
+def bulk_can_unsubscribe_self_from_streams(
+    streams: list[Stream], user_profile: UserProfile
+) -> bool:
+    if user_profile.is_realm_admin:
+        return True
+
+    user_recursive_group_ids = set(
+        get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+    )
+
+    can_administer_all_streams: bool = True
+    for stream in streams:
+        if not is_user_in_can_administer_channel_group(stream, user_recursive_group_ids):
+            can_administer_all_streams = False
+
+    if can_administer_all_streams:
+        return True
+
+    if not bulk_check_basic_stream_access(user_profile, streams):
+        raise JsonableError(_("Invalid channel ID"))
+
+    for stream in streams:
+        if not (
+            is_user_in_can_remove_subscribers_group(stream, user_recursive_group_ids)
+            or is_user_in_can_unsubscribe_group(stream, user_recursive_group_ids)
+        ):
+            return False
+
+    return True
+
+
 def get_streams_to_which_user_cannot_add_subscribers(
     streams: list[Stream],
     user_profile: UserProfile,
@@ -1544,6 +1583,7 @@ def list_to_streams(
     user_profile: UserProfile,
     autocreate: bool = False,
     unsubscribing_others: bool = False,
+    unsubscribing_self: bool = False,
     is_default_stream: bool = False,
     request_settings_dict: dict[str, Any] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
@@ -1573,6 +1613,10 @@ def list_to_streams(
     existing_streams: list[Stream] = []
     missing_stream_dicts: list[StreamDict] = []
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
+    if unsubscribing_self and not bulk_can_unsubscribe_self_from_streams(
+        list(existing_stream_map.values()), user_profile
+    ):
+        raise JsonableError(_("Insufficient permission"))
 
     if unsubscribing_others and not bulk_can_remove_subscribers_from_streams(
         list(existing_stream_map.values()), user_profile
@@ -1758,6 +1802,9 @@ def stream_to_dict(
     can_subscribe_group = get_group_setting_value_for_register_api(
         stream.can_subscribe_group_id, anonymous_group_membership
     )
+    can_unsubscribe_group = get_group_setting_value_for_register_api(
+        stream.can_unsubscribe_group_id, anonymous_group_membership
+    )
 
     stream_post_policy = get_stream_post_policy_value_based_on_group_setting(
         stream.can_send_message_group
@@ -1775,6 +1822,7 @@ def stream_to_dict(
         can_remove_subscribers_group=can_remove_subscribers_group,
         can_resolve_topics_group=can_resolve_topics_group,
         can_subscribe_group=can_subscribe_group,
+        can_unsubscribe_group=can_unsubscribe_group,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
         description=stream.description,
