@@ -52,6 +52,12 @@ $$O(n^2)$$
 
 {!latex-examples.md!}
 
+## Quoting and copy-pasting LaTeX
+
+Zulip supports quoting or copying rendered math expressions in messages and pasting them (in the original LaTeX source format) into the Zulip compose box. This feature is powered by KaTeX's MathML annotations, which embed the original LaTeX source in the HTML for a math expression. When copying math expressions, Zulip will automatically expand the selected region as required to fully copy a partially selected math expression, whether within a math block or an inline expression.
+
+This feature also enables copying LaTeX from third-party sites using KaTeX and pasting them into Zulip. For this to work, the math expressions must have been generated using KaTeX in the default `htmlAndMathml` [output mode](https://katex.org/docs/options.html), and for the site to allow MathML annotations to be included in HTML copied by the browser (for Zulip, this was [a couple lines of CSS](https://github.com/zulip/zulip/commit/353f57e518b88333615911f12a031177c46d7fbe)).
+
 ## Related articles
 
 * [Message formatting](/help/format-your-message-using-markdown)
