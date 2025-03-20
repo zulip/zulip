@@ -20,6 +20,10 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 371**
+
+No changes; feature level used for Zulip 10.0 release.
+
 **Feature level 370**
 
 * [`POST /messages`](/api/send-message),

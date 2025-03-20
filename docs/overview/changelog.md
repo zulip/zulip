@@ -1,18 +1,15 @@
 # Version history
 
-This page contains the release history for the Zulip server. See also the
-[Zulip release lifecycle](../overview/release-lifecycle.md).
+This page contains the release history for the Zulip Server 10.x stable
+release series. See the [current Zulip changelog][latest-changelog]
+for newer release series, or the [commit log][commit-log] for an
+up-to-date list of all changes.
 
 ## Zulip Server 10.x series (development)
 
-### Planned for 10.0
+### Zulip Server 10.0
 
-This section documents important features that we expect to be in the
-final 10.0 release, but are not available in 10.0-beta1.
-
-### Zulip Server 10.0-beta2
-
-_Released 2025-03-06_
+_Released 2025-03-20_
 
 #### Highlights
 
@@ -4601,7 +4598,7 @@ _Released 2015-10-19_
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 10.0](#upgrade-notes-for-100)
+- [Upgrade notes for 10.0](#upgrade-notes-for-100)
 - [Upgrade notes for 9.0](#upgrade-notes-for-90)
 - [Upgrade notes for 8.0](#upgrade-notes-for-80)
 - [Upgrade notes for 7.0](#upgrade-notes-for-70)
