@@ -337,10 +337,6 @@ input::placeholder {
     }
 }
 
-.stream_sorter_toggle {
-    margin-left: auto;
-}
-
 /* -- unified overlay design component -- */
 div.overlay {
     position: fixed;
