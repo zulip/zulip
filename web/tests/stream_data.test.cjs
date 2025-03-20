@@ -550,6 +550,7 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_unsubscribe_group: nobody_group.id,
     };
     const social = {
         color: "red",
@@ -562,6 +563,7 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_unsubscribe_group: nobody_group.id,
     };
     const test = {
         color: "yellow",
@@ -573,6 +575,7 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_unsubscribe_group: nobody_group.id,
     };
     const world = {
         color: "blue",
@@ -585,6 +588,7 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_unsubscribe_group: nobody_group.id,
     };
     const errors = {
         color: "green",
@@ -597,6 +601,7 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_unsubscribe_group: nobody_group.id,
     };
     const subs = [denmark, social, test, world, errors];
     for (const sub of subs) {
@@ -690,6 +695,7 @@ test("admin_options", ({override}) => {
             can_administer_channel_group,
             can_add_subscribers_group: admins_group.id,
             can_subscribe_group: admins_group.id,
+            can_unsubscribe_group: everyone_group.id,
             date_created: 1691057093,
             creator_id: null,
         };
@@ -794,6 +800,10 @@ test("stream_settings", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_unsubscribe_group: {
+            direct_subgroups: [],
+            direct_members: [],
+        },
         date_created: 1691057093,
         creator_id: null,
     };
@@ -808,6 +818,10 @@ test("stream_settings", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_unsubscribe_group: {
+            direct_subgroups: [],
+            direct_members: [],
+        },
         date_created: 1691057093,
         creator_id: null,
     };
@@ -824,6 +838,10 @@ test("stream_settings", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_unsubscribe_group: {
+            direct_subgroups: [],
+            direct_members: [],
+        },
         date_created: 1691057093,
         creator_id: null,
         is_archived: true,
@@ -841,6 +859,10 @@ test("stream_settings", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_unsubscribe_group: {
+            direct_subgroups: [],
+            direct_members: [],
+        },
         date_created: 1691057093,
         creator_id: null,
         is_archived: false,
@@ -1430,6 +1452,7 @@ test("get_invite_stream_data", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
         can_subscribe_group: nobody_group.id,
+        can_unsubscribe_group: nobody_group.id,
     };
 
     people.init();
@@ -1453,6 +1476,7 @@ test("get_invite_stream_data", ({override}) => {
             can_administer_channel_group: nobody_group.id,
             can_add_subscribers_group: nobody_group.id,
             can_subscribe_group: nobody_group.id,
+            can_unsubscribe_group: nobody_group.id,
         },
     ];
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
@@ -1466,6 +1490,7 @@ test("get_invite_stream_data", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
         can_subscribe_group: nobody_group.id,
+        can_unsubscribe_group: nobody_group.id,
     };
     stream_data.add_sub_for_tests(inviter);
 
@@ -1478,6 +1503,7 @@ test("get_invite_stream_data", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
         can_subscribe_group: nobody_group.id,
+        can_unsubscribe_group: nobody_group.id,
     });
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 
@@ -1491,6 +1517,7 @@ test("get_invite_stream_data", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
         can_subscribe_group: nobody_group.id,
+        can_unsubscribe_group: nobody_group.id,
     };
 
     stream_data.add_sub_for_tests(tokyo);
@@ -1505,6 +1532,7 @@ test("get_invite_stream_data", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
         can_subscribe_group: nobody_group.id,
+        can_unsubscribe_group: nobody_group.id,
     };
 
     stream_data.add_sub_for_tests(random);
@@ -1518,6 +1546,7 @@ test("get_invite_stream_data", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
         can_subscribe_group: nobody_group.id,
+        can_unsubscribe_group: nobody_group.id,
     });
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 });
@@ -2391,6 +2420,7 @@ run_test("stream access table-driven test", ({override}) => {
             can_add_subscribers_group: nobody_group.id,
             can_administer_channel_group: nobody_group.id,
             can_subscribe_group: nobody_group.id,
+            can_unsubscribe_group: nobody_group.id,
             ...test_case.stream,
         };
 
@@ -2425,6 +2455,10 @@ run_test("stream access table-driven test", ({override}) => {
 run_test("can_preview with content access override", ({override_rewire}) => {
     const social = {
         history_public_to_subscribers: true,
+        can_add_subscribers_group: nobody_group.id,
+        can_administer_channel_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
+        can_unsubscribe_group: nobody_group.id,
     };
 
     override_rewire(stream_data, "has_content_access", () => true);
@@ -2448,7 +2482,9 @@ run_test("can_toggle_subscription", ({override}) => {
         history_public_to_subscribers: false,
         can_add_subscribers_group: nobody_group.id,
         can_administer_channel_group: nobody_group.id,
+        can_remove_subscribers_group: nobody_group.id,
         can_subscribe_group: nobody_group.id,
+        can_unsubscribe_group: nobody_group.id,
     };
 
     override(current_user, "user_id", me.user_id);
@@ -2457,10 +2493,10 @@ run_test("can_toggle_subscription", ({override}) => {
     assert.equal(stream_data.can_toggle_subscription(social), false);
 
     override(page_params, "is_spectator", false);
-    assert.equal(stream_data.can_toggle_subscription(social), true);
+    assert.equal(stream_data.can_toggle_subscription(social), false);
 
     override(current_user, "is_guest", true);
-    assert.equal(stream_data.can_toggle_subscription(social), true);
+    assert.equal(stream_data.can_toggle_subscription(social), false);
 
     social.subscribed = false;
     assert.equal(stream_data.can_toggle_subscription(social), false);
@@ -2483,6 +2519,25 @@ run_test("can_toggle_subscription", ({override}) => {
     assert.equal(stream_data.can_toggle_subscription(social), false);
     social.can_subscribe_group = me_group.id;
     assert.equal(stream_data.can_toggle_subscription(social), true);
+
+    social.subscribed = true;
+    assert.equal(stream_data.can_toggle_subscription(social), false);
+
+    social.can_remove_subscribers_group = me_group.id;
+    assert.equal(stream_data.can_toggle_subscription(social), true);
+
+    social.can_unsubscribe_group = everyone_group.id;
+    social.can_remove_subscribers_group = nobody_group.id;
+    assert.equal(stream_data.can_toggle_subscription(social), true);
+
+    social.can_unsubscribe_group = me_group.id;
+    assert.equal(stream_data.can_toggle_subscription(social), true);
+
+    social.can_unsubscribe_group = nobody_group.id;
+    assert.equal(stream_data.can_toggle_subscription(social), false);
+
+    override(current_user, "is_admin", true);
+    assert.equal(stream_data.can_toggle_subscription(social), true);
 });
 
 run_test("can_archive_stream", ({override}) => {
@@ -2497,6 +2552,7 @@ run_test("can_archive_stream", ({override}) => {
         can_add_subscribers_group: me_group.id,
         can_administer_channel_group: nobody_group.id,
         can_subscribe_group: me_group.id,
+        can_unsubscribe_group: nobody_group.id,
     };
     override(current_user, "user_id", me.user_id);
 
