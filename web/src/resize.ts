@@ -218,9 +218,24 @@ function resize_navbar_alerts(): void {
     }
 }
 
+export function resize_settings_creation_overlay(): void {
+    if ($(".two-pane-settings-creation-simplebar-container").length === 0) {
+        return;
+    }
+
+    $(".two-pane-settings-creation-simplebar-container").css(
+        "height",
+        height_of($(".two-pane-settings-container")) -
+            height_of($(".two-pane-settings-header")) -
+            height_of($(".two-pane-settings-overlay .display-type")) -
+            height_of($(".settings-sticky-footer")),
+    );
+}
+
 export function resize_page_components(): void {
     resize_navbar_alerts();
     resize_sidebars();
     resize_bottom_whitespace();
     resize_stream_subscribers_list();
+    resize_settings_creation_overlay();
 }
