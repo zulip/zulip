@@ -34,6 +34,14 @@ exports.server_supported_permission_settings = {
             default_group_name: "role:nobody",
             allowed_system_groups: [],
         },
+        can_unsubscribe_group: {
+            require_system_group: false,
+            allow_internet_group: false,
+            allow_nobody_group: true,
+            allow_everyone_group: true,
+            default_group_name: "role:nobody",
+            allowed_system_groups: [],
+        },
         can_resolve_topics_group: {
             require_system_group: false,
             allow_internet_group: false,
