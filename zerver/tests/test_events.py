@@ -2231,6 +2231,48 @@ class NormalActionsTest(BaseAction):
             do_update_user_group_name(api_design, "api-deisgn", acting_user=None)
         check_user_group_update("events[0]", events[0], {"name"})
 
+    def do_test_user_group_events_on_stream_metadata_access_change(
+        self, setting_name: str, stream: Stream, user_group: NamedUserGroup
+    ) -> None:
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+        do_change_stream_group_based_setting(stream, setting_name, user_group, acting_user=othello)
+
+        if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
+            with self.verify_action(num_events=3) as events:
+                bulk_add_members_to_user_groups([user_group], [hamlet.id], acting_user=None)
+            check_user_group_add_members("events[0]", events[0])
+            check_stream_create("events[1]", events[1])
+            check_subscription_peer_add("events[2]", events[2])
+        else:
+            with self.verify_action() as events:
+                bulk_add_members_to_user_groups([user_group], [hamlet.id], acting_user=None)
+            check_user_group_add_members("events[0]", events[0])
+
+        # Remove group member for the next test
+        bulk_remove_members_from_user_groups([user_group], [hamlet.id], acting_user=None)
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=othello.realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, setting_name, nobody_group, acting_user=othello
+        )
+
+    def test_user_group_events_on_stream_metadata_access_change(self) -> None:
+        test_group = check_add_user_group(
+            self.user_profile.realm,
+            "test_group",
+            [self.example_user("othello")],
+            "Test group",
+            acting_user=self.example_user("othello"),
+        )
+        private_stream = self.make_stream("private_stream", invite_only=True)
+        for setting_name in Stream.stream_permission_group_settings:
+            self.do_test_user_group_events_on_stream_metadata_access_change(
+                setting_name, private_stream, test_group
+            )
+
     def test_default_stream_groups_events(self) -> None:
         streams = [
             get_stream(stream_name, self.user_profile.realm)
