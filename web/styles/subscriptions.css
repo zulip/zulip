@@ -391,7 +391,6 @@ h4.user_group_setting_subsection_title {
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            margin: 20px 10px 0;
 
             &.showing-info-title {
                 display: -webkit-box;
