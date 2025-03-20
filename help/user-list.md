@@ -18,6 +18,11 @@ You can choose to have each user's name appear with their
 user list styles. To avoid distraction, you can
 [hide](#show-or-hide-the-user-list) the user list any time.
 
+Here is an overview of all the information and actions you can take in Zulip's
+user list.
+
+![User list information and actions](/static/images/help/user-list-actions.png)
+
 ## Filter users
 
 {start_tabs}
