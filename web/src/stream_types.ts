@@ -22,6 +22,7 @@ export const stream_permission_group_settings_schema = z.enum([
     "can_resolve_topics_group",
     "can_send_message_group",
     "can_subscribe_group",
+    "can_unsubscribe_group",
 ]);
 export type StreamPermissionGroupSetting = z.infer<typeof stream_permission_group_settings_schema>;
 
@@ -46,6 +47,7 @@ export const stream_schema = z.object({
     can_resolve_topics_group: group_setting_value_schema,
     can_send_message_group: group_setting_value_schema,
     can_subscribe_group: group_setting_value_schema,
+    can_unsubscribe_group: group_setting_value_schema,
     creator_id: z.nullable(z.number()),
     date_created: z.number(),
     description: z.string(),
