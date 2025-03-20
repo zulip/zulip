@@ -17,16 +17,16 @@
 # Paweł Ostrowski, 2024
 # Piotr Nowak <nowak.piotr77@gmail.com>, 2017
 # Robert Obryk <robryk@gmail.com>, 2020
-# Sylwester Cyba, 2024
+# Sylwester Cyba, 2024-2025
 # Tim Abbott <tabbott@kandralabs.com>, 2024
 # Tomasz Kołek <tomasz-kolek@o2.pl>, 2018
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-14 21:30+0000\n"
+"POT-Creation-Date: 2025-03-20 06:34+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Sylwester Cyba, 2024\n"
+"Last-Translator: Sylwester Cyba, 2024-2025\n"
 "Language-Team: Polish (http://app.transifex.com/zulip/zulip/language/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -257,16 +257,16 @@ msgid "Session not found"
 msgstr "Nie odnaleziono sesji"
 
 #: corporate/lib/stripe.py:3410 zerver/decorator.py:209
-#: zerver/decorator.py:708 zerver/lib/streams.py:1323
-#: zerver/lib/streams.py:1349 zerver/lib/streams.py:1351
-#: zerver/lib/streams.py:1353 zerver/lib/streams.py:1372
-#: zerver/lib/user_groups.py:165 zerver/lib/user_groups.py:191
-#: zerver/lib/user_groups.py:355 zerver/lib/user_groups.py:451
+#: zerver/decorator.py:708 zerver/lib/streams.py:1327
+#: zerver/lib/streams.py:1353 zerver/lib/streams.py:1355
+#: zerver/lib/streams.py:1357 zerver/lib/streams.py:1376
+#: zerver/lib/user_groups.py:166 zerver/lib/user_groups.py:192
+#: zerver/lib/user_groups.py:356 zerver/lib/user_groups.py:452
 #: zerver/lib/users.py:202 zerver/lib/users.py:265 zerver/lib/users.py:294
 #: zerver/lib/users.py:298 zerver/views/invite.py:144
 #: zerver/views/invite.py:255 zerver/views/message_summary.py:31
 #: zerver/views/presence.py:53 zerver/views/realm_emoji.py:35
-#: zerver/views/streams.py:357 zerver/views/streams.py:725
+#: zerver/views/streams.py:357 zerver/views/streams.py:722
 msgid "Insufficient permission"
 msgstr "Niewystarczające pozwolenie"
 
@@ -701,7 +701,7 @@ msgid ""
 "            in instructions</a> to administer the plan for your\n"
 "            Zulip server.\n"
 "            "
-msgstr ""
+msgstr " Nie ma możliwości zarządzania planami\n            w tej organizacji z racji tego, że Zulip serwer jest już w planie\n            %(server_plan_name)s co obejmuje wszystkie\n            organizacje na tym serwerze. Zobacz <b>płatności za serwer</b> w\n            <a href=\"https://zulip.com/help/self-hosted-billing#log-in-to-billing-management\">zakładce\n            z instrukcjami</a> aby zarządzać planami\n            serwera Zulip.\n            "
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:23
 msgid ""
@@ -1510,13 +1510,13 @@ msgstr "O ile nie ma maila z potwierdzeniem w odebranych lub w spamie można go 
 #: templates/zerver/app/index.html:6
 #, python-brace-format
 msgid "Public view of {org_name} | Zulip team chat"
-msgstr ""
+msgstr "Widok publiczny {org_name} | czat zespołowy Zulip"
 
 #: templates/zerver/app/index.html:7
 #, python-brace-format
 msgid ""
 "Browse the publicly accessible channels in {org_name} without logging in."
-msgstr ""
+msgstr "Przeglądaj publicznie dostępne kanału w {org_name} bez logowania się."
 
 #: templates/zerver/app/index.html:135
 msgid ""
@@ -1528,15 +1528,15 @@ msgstr "O ile ta wiadomość nie chce zniknąć, spróbuj <a class=\"reload-lnk\
 msgid "Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
 msgstr "Błąd załadowania Zulip. Spróbuj <a class=\"reload-lnk\">przeładować</a> stronę."
 
-#: templates/zerver/app/index.html:238
+#: templates/zerver/app/index.html:237
 msgid "No conversations match your filters."
 msgstr "Nie ma dyskusji wpisujących się w filtry."
 
-#: templates/zerver/app/index.html:251
+#: templates/zerver/app/index.html:250
 msgid "This view is still loading messages."
 msgstr "Ten widok nadal ładuje wpisy."
 
-#: templates/zerver/app/index.html:254
+#: templates/zerver/app/index.html:253
 msgid "Load more"
 msgstr "Pokaż więcej"
 
@@ -2918,7 +2918,7 @@ msgstr "Twoja organizacja Zulip, %(realm_name)s, została wyłączona dnia %(loc
 #: templates/zerver/emails/realm_deactivated.txt:13
 msgid ""
 "All data associated with this organization has been permanently deleted."
-msgstr ""
+msgstr "Wszystkie dane związane z tą organizacją zostały na dobre skasowane."
 
 #: templates/zerver/emails/realm_deactivated.html:23
 #: templates/zerver/emails/realm_deactivated.txt:15
@@ -2926,7 +2926,7 @@ msgstr ""
 msgid ""
 "All data associated with this organization will be permanently deleted on "
 "%(deletion_date)s."
-msgstr ""
+msgstr "Wszystkie dane powiązane z tą organizacją zostaną trwale usunięte dnia %(deletion_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html:27
 #: templates/zerver/emails/realm_deactivated.txt:19
@@ -2945,21 +2945,21 @@ msgstr "Twoja organizacja Zulip %(realm_name)s została wyłączona"
 msgid ""
 "You have deactivated your Zulip organization, %(realm_name)s, on "
 "%(localized_date)s. "
-msgstr ""
+msgstr "Wyłączyłeś organizację Zulip, %(realm_name)s, dnia %(localized_date)s. "
 
 #: templates/zerver/emails/realm_deactivated.txt:8
 #, python-format
 msgid ""
 "Your Zulip organization, %(realm_name)s, was deactivated by "
 "%(deactivating_owner)s on %(localized_date)s. "
-msgstr ""
+msgstr "Twoja organizacja Zulip, %(realm_name)s, została wyłączona przez %(deactivating_owner)s dnia %(localized_date)s. "
 
 #: templates/zerver/emails/realm_deactivated.txt:10
 #, python-format
 msgid ""
 "Your Zulip organization, %(realm_name)s, was deactivated on "
 "%(localized_date)s. "
-msgstr ""
+msgstr "Twoja organizacja Zulip, %(realm_name)s, została wyłączona %(localized_date)s. "
 
 #: templates/zerver/emails/realm_reactivation.html:8
 #: templates/zerver/emails/realm_reactivation.txt:1
@@ -3458,7 +3458,7 @@ msgstr "Proszę użyj innego URL, <a href=\"%(root_domain_url)s/accounts/find/\"
 msgid ""
 "<a href=\"%(current_url)s/serverlogin/\">Click here</a> to access plan "
 "management for your Zulip server."
-msgstr ""
+msgstr "<a href=\"%(current_url)s/serverlogin/\">Kliknij tutaj</a> aby uzyskać dostęp do zarządzania planami serwera Zulip."
 
 #: templates/zerver/log_into_subdomain_token_invalid.html:4
 msgid "Invalid or expired login session"
@@ -3739,7 +3739,7 @@ msgstr "Zaloguj się do swojej organizacji"
 
 #: templates/zerver/realm_redirect.html:25
 msgid "your-organization"
-msgstr ""
+msgstr "twoja-organizacja"
 
 #: templates/zerver/realm_redirect.html:37
 msgid "Don't know your organization URL?"
@@ -4124,7 +4124,7 @@ msgstr "Wątki są wymagane w tej organizacji."
 
 #: zerver/actions/message_edit.py:133
 msgid "General chat cannot be marked as resolved"
-msgstr ""
+msgstr "Czatu ogólnego nie można oznaczyć jako rozwiązany"
 
 #: zerver/actions/message_edit.py:139
 msgid "Cannot change message content while changing channel"
@@ -4138,7 +4138,7 @@ msgstr "Widżety nie mogą być modyfikowane."
 msgid "Your organization has turned off message editing"
 msgstr "Twoja organizacja wyłączyła możliwość edycji wiadomości."
 
-#: zerver/actions/message_edit.py:157 zerver/actions/message_edit.py:1419
+#: zerver/actions/message_edit.py:157 zerver/actions/message_edit.py:1420
 msgid "You don't have permission to edit this message"
 msgstr "Nie masz pozwolenia na edycję tej wiadomości"
 
@@ -4191,19 +4191,19 @@ msgid ""
 "{user}."
 msgstr "{changed_messages_count} wiadomości zostało przeniesionych tu z {old_location} przez {user}."
 
-#: zerver/actions/message_edit.py:1416
+#: zerver/actions/message_edit.py:1417
 msgid "You don't have permission to resolve topics."
-msgstr ""
+msgstr "Nie masz uprawnień do rozwiązywania wątków."
 
-#: zerver/actions/message_edit.py:1434
+#: zerver/actions/message_edit.py:1435
 msgid "The time limit for editing this message's topic has passed."
 msgstr "Skończyło się okno czasowe na zmianę tytułu tematu."
 
-#: zerver/actions/message_edit.py:1484
+#: zerver/actions/message_edit.py:1485
 msgid "You don't have permission to move this message"
 msgstr "Nie masz uprawnień do przeniesienia tego wpisu"
 
-#: zerver/actions/message_edit.py:1501
+#: zerver/actions/message_edit.py:1502
 msgid "The time limit for editing this message's channel has passed"
 msgstr "Upłynął limit czasu zmiany wpisu w tym kanale"
 
@@ -4232,31 +4232,31 @@ msgstr "Nieprawidłowa wiadomość"
 msgid "Unable to render message"
 msgstr "Nie można pokazać wiadomości"
 
-#: zerver/actions/message_send.py:1298
+#: zerver/actions/message_send.py:1301
 msgid "Expected exactly one channel"
 msgstr "Oczekuje dokładnie jednego kanału"
 
-#: zerver/actions/message_send.py:1309
+#: zerver/actions/message_send.py:1312
 msgid "Invalid data type for channel"
 msgstr "Wadliwy typ danych dla kanału"
 
-#: zerver/actions/message_send.py:1325 zerver/actions/message_send.py:1335
+#: zerver/actions/message_send.py:1328 zerver/actions/message_send.py:1338
 #: zerver/lib/recipient_parsing.py:15
 msgid "Invalid data type for recipients"
 msgstr "Wadliwy typ danych dla odbiorców"
 
-#: zerver/actions/message_send.py:1343 zerver/actions/message_send.py:1351
+#: zerver/actions/message_send.py:1346 zerver/actions/message_send.py:1354
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr "Listy odbiorców mogą zawierać adresy email lub identyfikatory użytkowników, ale nie oba te elementy."
 
-#: zerver/actions/message_send.py:1501
+#: zerver/actions/message_send.py:1504
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel ID {channel_id}, "
 "but there is no channel with that ID."
 msgstr "Twój bot {bot_identity} próbował wysłać wiadomość do kanału o identyfikatorze {channel_id}, ale kanał o tym identyfikatorze nie istnieje."
 
-#: zerver/actions/message_send.py:1512
+#: zerver/actions/message_send.py:1515
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}, "
@@ -4264,26 +4264,26 @@ msgid ""
 "it."
 msgstr "Twój bot {bot_identity} próbował wysłać wiadomość do kanału {channel_name}, ale ten kanał nie istnieje. Kliknij [tutaj]({new_channel_link}), aby go utworzyć."
 
-#: zerver/actions/message_send.py:1524
+#: zerver/actions/message_send.py:1527
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}. "
 "The channel exists but does not have any subscribers."
 msgstr "Twój bot {bot_identity} próbował wysłać wiadomość do kanału {channel_name}. Kanał istnieje, ale nie ma żadnych subskrybentów."
 
-#: zerver/actions/message_send.py:1626
+#: zerver/actions/message_send.py:1629
 msgid "You do not have permission to access some of the recipients."
 msgstr "Nie masz uprawnień dostępu do niektórych odbiorców."
 
-#: zerver/actions/message_send.py:1763
+#: zerver/actions/message_send.py:1766
 msgid "Topics are required in this organization"
 msgstr "Wątki są wymagane w tej organizacji"
 
-#: zerver/actions/message_send.py:1826
+#: zerver/actions/message_send.py:1832
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Widżety: programista API wysłał wadliwą zawartość JSON"
 
-#: zerver/actions/message_send.py:1832
+#: zerver/actions/message_send.py:1838
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr "Widżety: {error_msg}"
@@ -4306,26 +4306,26 @@ msgstr "Uporządkowana lista nie może zawierać zduplikowanych łączników"
 msgid "The ordered list must enumerate all existing linkifiers exactly once"
 msgstr "Uporządkowana lista musi wyliczać wszystkie istniejące łączniki dokładnie raz"
 
-#: zerver/actions/realm_settings.py:307
+#: zerver/actions/realm_settings.py:308
 #, python-brace-format
 msgid ""
 "You need to upgrade to the {required_upgrade_plan_name} plan to use this "
 "authentication method."
 msgstr "Aby korzystać z tej metody uwierzytelniania, należy uaktualnić plan do wersji {required_upgrade_plan_name}."
 
-#: zerver/actions/realm_settings.py:322
+#: zerver/actions/realm_settings.py:323
 #, python-brace-format
 msgid "Invalid authentication method: {name}. Valid methods are: {methods}"
 msgstr "Wadliwa metoda autoryzacji: {name}. Dostępne metody to: {methods}"
 
-#: zerver/actions/realm_settings.py:348
+#: zerver/actions/realm_settings.py:349
 #, python-brace-format
 msgid "Authentication method {name} is not available on your current plan."
 msgstr "Metoda uwierzytelniania {name} nie jest dostępna w bieżącym planie."
 
-#: zerver/actions/realm_settings.py:457 zerver/views/streams.py:337
+#: zerver/actions/realm_settings.py:458 zerver/views/streams.py:337
 msgid "Moderation request channel must be private."
-msgstr ""
+msgstr "Kanał moderacji musi być prywatny."
 
 #: zerver/actions/saved_snippets.py:54 zerver/actions/saved_snippets.py:87
 msgid "Saved snippet does not exist."
@@ -4356,94 +4356,94 @@ msgstr "Wiadomość zaplanowana na {delivery_datetime} nie została wysłana z p
 msgid "[View scheduled messages](#scheduled)"
 msgstr "[Zobacz odłożone wiadomości](#scheduled)"
 
-#: zerver/actions/streams.py:118
+#: zerver/actions/streams.py:119
 msgid "Channel is already deactivated"
 msgstr "Kanał jest już wyłączony"
 
-#: zerver/actions/streams.py:178
+#: zerver/actions/streams.py:179
 #, python-brace-format
 msgid "Channel {channel_name} has been archived."
 msgstr "Kanał {channel_name} został zarchiwizowany."
 
-#: zerver/actions/streams.py:217
+#: zerver/actions/streams.py:218
 msgid "Channel is not currently deactivated"
 msgstr "Kanał nie jest obecnie wyłączony"
 
-#: zerver/actions/streams.py:220
+#: zerver/actions/streams.py:221
 #, python-brace-format
 msgid "Channel named {channel_name} already exists"
 msgstr "Kanał o nazwie {channel_name} już istnieje"
 
-#: zerver/actions/streams.py:223
+#: zerver/actions/streams.py:224
 msgid "Channel is private and have no subscribers"
 msgstr "Kanał jest prywatny i nie ma subskrybujących"
 
-#: zerver/actions/streams.py:282
+#: zerver/actions/streams.py:285
 #, python-brace-format
 msgid "Channel {channel_name} un-archived."
 msgstr "Kanał {channel_name} przywrócony z archiwum."
 
-#: zerver/actions/streams.py:1168
+#: zerver/actions/streams.py:1173
 #, python-brace-format
 msgid ""
 "{user} changed the [access permissions]({help_link}) for this channel from "
 "**{old_policy}** to **{new_policy}**."
 msgstr "{user} zmienił [prawa dostępu]({help_link}) dla tego kanału z **{old_policy}** na **{new_policy}**."
 
-#: zerver/actions/streams.py:1390
+#: zerver/actions/streams.py:1399
 #, python-brace-format
 msgid ""
 "{user} changed the [posting permissions]({help_link}) for this channel:\n"
 "\n"
 "* **Old**: {old_setting_description}\n"
 "* **New**: {new_setting_description}\n"
-msgstr ""
+msgstr "{user} zmienił [posting permissions]({help_link}) tego kanału:\n\n* **Stare**: {old_setting_description}\n* **Nowe**: {new_setting_description}\n"
 
-#: zerver/actions/streams.py:1456
+#: zerver/actions/streams.py:1465
 #, python-brace-format
 msgid "{user_name} renamed channel {old_channel_name} to {new_channel_name}."
 msgstr "{user_name} zmienił nazwę kanału {old_channel_name} na {new_channel_name}."
 
-#: zerver/actions/streams.py:1472 zerver/actions/streams.py:1474
-#: zerver/views/streams.py:881
+#: zerver/actions/streams.py:1481 zerver/actions/streams.py:1483
+#: zerver/views/streams.py:879
 msgid "No description."
 msgstr "Brak opisu."
 
-#: zerver/actions/streams.py:1477
+#: zerver/actions/streams.py:1486
 #, python-brace-format
 msgid "{user} changed the description for this channel."
 msgstr "{user} zmienił opis tego kanału."
 
-#: zerver/actions/streams.py:1479
+#: zerver/actions/streams.py:1488
 msgid "Old description"
 msgstr "Stary opis"
 
-#: zerver/actions/streams.py:1483
+#: zerver/actions/streams.py:1492
 msgid "New description"
 msgstr "Nowy opis"
 
-#: zerver/actions/streams.py:1550 zerver/actions/streams.py:1557
+#: zerver/actions/streams.py:1559 zerver/actions/streams.py:1566
 msgid "Forever"
 msgstr "Na zawsze"
 
-#: zerver/actions/streams.py:1551 zerver/actions/streams.py:1556
-#: zerver/actions/streams.py:1560 zerver/actions/streams.py:1561
+#: zerver/actions/streams.py:1560 zerver/actions/streams.py:1565
+#: zerver/actions/streams.py:1569 zerver/actions/streams.py:1570
 #, python-brace-format
 msgid "{number_of_days} days"
 msgstr "{number_of_days} dni"
 
-#: zerver/actions/streams.py:1553 zerver/actions/streams.py:1563
+#: zerver/actions/streams.py:1562 zerver/actions/streams.py:1572
 #, python-brace-format
 msgid ""
 "Messages in this channel will now be automatically deleted {number_of_days} "
 "days after they are sent."
 msgstr "Wiadomości w tym kanale będą teraz automatycznie usuwane {number_of_days} dni po ich wysłaniu."
 
-#: zerver/actions/streams.py:1558
+#: zerver/actions/streams.py:1567
 msgid "Messages in this channel will now be retained forever."
 msgstr "Wiadomości w tym kanale będą teraz przechowywane bezterminowo."
 
-#: zerver/actions/streams.py:1566
+#: zerver/actions/streams.py:1575
 #, python-brace-format
 msgid ""
 "{user} has changed the [message retention period]({help_link}) for this channel:\n"
@@ -4457,12 +4457,12 @@ msgstr "{user} zmienił [okres przechowywania wpisów]({help_link}) dla tego kan
 msgid "You cannot attach a submessage to this message."
 msgstr "Nie możesz dodać podwpisu do tego wpisu."
 
-#: zerver/actions/typing.py:61 zerver/lib/addressee.py:33
+#: zerver/actions/typing.py:61 zerver/lib/addressee.py:36
 #, python-brace-format
 msgid "Invalid user ID {user_id}"
 msgstr "Błędne ID użytkownika {user_id}"
 
-#: zerver/actions/user_groups.py:225 zerver/actions/user_groups.py:261
+#: zerver/actions/user_groups.py:226 zerver/actions/user_groups.py:262
 #, python-brace-format
 msgid "User group '{group_name}' already exists."
 msgstr "Grupa użytkowników '{group_name}' już istnieje."
@@ -4528,7 +4528,7 @@ msgstr "Subdomena może składać się tylko z małych liter, cyfr i znaków \"-
 
 #: zerver/forms.py:85
 msgid "Subdomain is already in use. Please choose a different one."
-msgstr ""
+msgstr "Subdomena jest już w użyciu. Proszę wybierz inną."
 
 #: zerver/forms.py:86
 msgid "Subdomain reserved. Please choose a different one."
@@ -4599,35 +4599,35 @@ msgstr "Wskazówka: możesz wprowadzić wiele adresów email, oddzielając je pr
 
 #: zerver/forms.py:566
 msgid "Please enter at most 10 emails."
-msgstr "Wporowadź maks. 10 adresów email."
+msgstr "Wprowadź maks. 10 adresów email."
 
 #: zerver/forms.py:579
 msgid "We couldn't find that Zulip organization."
 msgstr "Nie udało się odnaleźć takiej organizacji Zulip"
 
-#: zerver/lib/addressee.py:22
+#: zerver/lib/addressee.py:25
 #, python-brace-format
 msgid "Invalid email '{email}'"
 msgstr "Wadliwy email '{email}'"
 
-#: zerver/lib/addressee.py:61 zerver/lib/addressee.py:128
+#: zerver/lib/addressee.py:64 zerver/lib/addressee.py:131
 #: zerver/views/typing.py:47
 msgid "Missing topic"
 msgstr "Brak wątku"
 
-#: zerver/lib/addressee.py:113
+#: zerver/lib/addressee.py:116
 msgid "Cannot send to multiple channels"
 msgstr "Nie można wysłać do wielu kanałów"
 
-#: zerver/lib/addressee.py:125
+#: zerver/lib/addressee.py:128
 msgid "Missing channel"
 msgstr "Brakujący kanał"
 
-#: zerver/lib/addressee.py:136
+#: zerver/lib/addressee.py:139
 msgid "Message must have recipients"
 msgstr "Wiadomość musi mieć odbiorcę"
 
-#: zerver/lib/addressee.py:145 zerver/lib/outgoing_webhook.py:217
+#: zerver/lib/addressee.py:148 zerver/lib/outgoing_webhook.py:217
 msgid "Invalid message type"
 msgstr "Nieprawidłowy typ wiadomości"
 
@@ -4793,7 +4793,7 @@ msgstr "Nazwy emoji mogą zawierać tylko małe litery angielskie, cyfry, spacje
 msgid "Emoji name is missing"
 msgstr "Brakuje nazwy emoji"
 
-#: zerver/lib/events.py:1985
+#: zerver/lib/events.py:1996
 msgid "Could not allocate event queue"
 msgstr "Nie można stworzyć kolejki zdarzeń"
 
@@ -4906,7 +4906,7 @@ msgid "User not authenticated"
 msgstr "Użytkownik nie został uwierzytelniony"
 
 #: zerver/lib/exceptions.py:496 zerver/views/auth.py:787
-#: zerver/views/auth.py:1135 zerver/views/auth.py:1201
+#: zerver/views/auth.py:1140 zerver/views/auth.py:1206
 msgid "Invalid subdomain"
 msgstr "Nieprawidłowa subdomena"
 
@@ -4977,15 +4977,15 @@ msgstr "Nie można wyłączyć grupy użytkowników będącej w użyciu."
 
 #: zerver/lib/exceptions.py:735
 msgid "You do not have permission to administer this channel."
-msgstr ""
+msgstr "Nie masz uprawnień do administracji tym kanałem."
 
 #: zerver/lib/exceptions.py:745
 msgid "You do not have permission to change default channels."
-msgstr ""
+msgstr "Nie masz uprawnień do zmiany domyślnych ustawień kanału."
 
 #: zerver/lib/exceptions.py:755
 msgid "Email is already in use."
-msgstr ""
+msgstr "Email jest już w użyciu."
 
 #: zerver/lib/external_accounts.py:36
 msgid "Twitter username"
@@ -5067,7 +5067,7 @@ msgstr "Wiadomość musi mieć treść"
 msgid "Message must not contain null bytes"
 msgstr "Wiadomość nie może być pusta"
 
-#: zerver/lib/message.py:1480 zerver/lib/message.py:1492
+#: zerver/lib/message.py:1483 zerver/lib/message.py:1495
 #, python-brace-format
 msgid "You are not allowed to mention user group '{user_group_name}'."
 msgstr "Nie masz uprawnień aby wymienić grupy użytkowników '{user_group_name}'."
@@ -5082,19 +5082,19 @@ msgstr "Wadliwy operator zawężenia: {desc}"
 msgid "Invalid narrow operator combination: {desc}"
 msgstr "Wadliwa kombinacja operatora zawężającego: {desc}"
 
-#: zerver/lib/narrow.py:973
+#: zerver/lib/narrow.py:977
 msgid "Duplicate 'with' operators."
 msgstr "Duplikuj operatory 'with'."
 
-#: zerver/lib/narrow.py:983 zerver/lib/narrow.py:1004
+#: zerver/lib/narrow.py:987 zerver/lib/narrow.py:1008
 msgid "Invalid 'with' operator"
 msgstr "Wadliwy operator 'with'"
 
-#: zerver/lib/narrow.py:1220
+#: zerver/lib/narrow.py:1265
 msgid "Missing 'anchor' argument."
 msgstr "Brakuje argumentu 'anchor'."
 
-#: zerver/lib/narrow.py:1240
+#: zerver/lib/narrow.py:1285
 msgid "Invalid anchor"
 msgstr "Wadliwe zakotwiczenie"
 
@@ -5156,7 +5156,7 @@ msgstr "\nRozpocząłem kilka rozmów, które pomogą ci zacząć. Można je zna
 msgid ""
 "\n"
 "You can always come back to the [Welcome to Zulip video]({navigation_tour_video_url}) for a quick app overview.\n"
-msgstr ""
+msgstr "\nZawsze możesz wrócić do filmiku [Witaj w Zulip]({navigation_tour_video_url}) aby zapoznać się z podstawami.\n"
 
 #: zerver/lib/onboarding.py:92
 #, python-brace-format
@@ -5170,7 +5170,7 @@ msgid ""
 "\n"
 "{demo_organization_text}\n"
 "\n"
-msgstr ""
+msgstr "\nWitaj w Zulip!👋 {inform_about_tracked_onboarding_messages_text}\n\n{getting_started_text} {organization_setup_text}\n\n{navigation_tour_video_text}\n\n{demo_organization_text}\n\n"
 
 #: zerver/lib/onboarding.py:140
 msgid ""
@@ -5307,14 +5307,14 @@ msgid ""
 "\n"
 "To kick off a new conversation, pick a channel in the left sidebar, and click\n"
 "the `+` button next to its name.\n"
-msgstr ""
+msgstr "\nAby rozpocząć nową dyskusję skieruj uwagę na kanały dostępne po lewej stronie i skorzystaj z przycisku `+` obok jego nazwy.\n"
 
 #: zerver/lib/onboarding.py:296
 msgid ""
 "\n"
 "Label your conversation with a topic. Think about finishing the sentence: “Hey,\n"
 "can we chat about…?”\n"
-msgstr ""
+msgstr "\nNadaj wątkowi charakter. To powinno być coś w rodzaju “Hej, czy możemy podyskutować o…?”\n"
 
 #: zerver/lib/onboarding.py:301
 msgid ""
@@ -5416,7 +5416,7 @@ msgstr "{full_name} wspomniał o tobie:"
 #: zerver/lib/push_notifications.py:1053
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
-msgstr "{full_name} wymieniane wszędzie:"
+msgstr "{full_name} wywołał wszystkich:"
 
 #: zerver/lib/push_notifications.py:1465
 msgid "Test notification"
@@ -5439,8 +5439,8 @@ msgstr "Urządzenie nie zostało rozpoznane przez bramkę push"
 msgid "Invalid data type for channel ID"
 msgstr "Zła data lub ID kanału"
 
-#: zerver/lib/recipient_users.py:35 zerver/lib/streams.py:501
-#: zerver/lib/streams.py:517 zerver/tornado/views.py:225
+#: zerver/lib/recipient_users.py:35 zerver/lib/streams.py:505
+#: zerver/lib/streams.py:521 zerver/tornado/views.py:225
 #: zerver/views/events_register.py:72 zerver/views/message_send.py:196
 #: zerver/views/message_send.py:217
 msgid "User not authorized for this query"
@@ -5465,7 +5465,7 @@ msgstr "Błąd odsyłacza powiadomień push: {error}"
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
 msgstr "Nie można zdecydować czy '{var_name1}' czy '{var_name2}'"
 
-#: zerver/lib/request.py:83 zerver/lib/streams.py:562
+#: zerver/lib/request.py:83 zerver/lib/streams.py:566
 #: zerver/views/typing.py:44
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
@@ -5485,44 +5485,44 @@ msgstr "Zaplanowany wpis nie istnieje"
 msgid "{service_name} account security"
 msgstr "{service_name} bezpieczeństwo konta"
 
-#: zerver/lib/streams.py:464 zerver/lib/streams.py:472
+#: zerver/lib/streams.py:468 zerver/lib/streams.py:476
 msgid "You do not have permission to post in this channel."
 msgstr "Nie masz uprawnień do publikowania wpisów na tym kanale."
 
-#: zerver/lib/streams.py:508 zerver/lib/streams.py:554
+#: zerver/lib/streams.py:512 zerver/lib/streams.py:558
 #, python-brace-format
 msgid "Not authorized to send to channel '{channel_name}'"
 msgstr "Brak uprawnień dla aktywności w '{channel_name}'"
 
-#: zerver/lib/streams.py:650 zerver/lib/streams.py:685
-#: zerver/lib/streams.py:814 zerver/lib/streams.py:841
-#: zerver/lib/streams.py:912 zerver/views/user_topics.py:107
+#: zerver/lib/streams.py:654 zerver/lib/streams.py:689
+#: zerver/lib/streams.py:818 zerver/lib/streams.py:845
+#: zerver/lib/streams.py:916 zerver/views/user_topics.py:107
 msgid "Invalid channel ID"
 msgstr "Wadliwe ID kanału"
 
-#: zerver/lib/streams.py:883
+#: zerver/lib/streams.py:887
 msgid "Channel name is already in use."
-msgstr ""
+msgstr "Nazwa kanału już w użyciu."
 
-#: zerver/lib/streams.py:895 zerver/lib/streams.py:1020
+#: zerver/lib/streams.py:899 zerver/lib/streams.py:1024
 #, python-brace-format
 msgid "Invalid channel name '{channel_name}'"
 msgstr "Wadliwa nazwa kanału '{channel_name}'"
 
-#: zerver/lib/streams.py:1355 zerver/views/streams.py:333
+#: zerver/lib/streams.py:1359 zerver/views/streams.py:333
 msgid "A default channel cannot be private."
 msgstr "Domyślny kanał nie może być prywatny."
 
-#: zerver/lib/streams.py:1359
+#: zerver/lib/streams.py:1363
 #, python-brace-format
 msgid "Channel(s) ({channel_names}) do not exist"
 msgstr "Kanał(y) ({channel_names}) nie istnieje"
 
-#: zerver/lib/streams.py:1368 zerver/views/streams.py:355
+#: zerver/lib/streams.py:1372 zerver/views/streams.py:355
 msgid "Web-public channels are not enabled."
 msgstr "Kanały ogólnodostępne nie są włączone"
 
-#: zerver/lib/streams.py:1401
+#: zerver/lib/streams.py:1405
 #, python-brace-format
 msgid "Default channel group with id '{group_id}' does not exist."
 msgstr "Domyślna grupa kanałów o identyfikatorze '{group_id}' nie istnieje."
@@ -5546,24 +5546,24 @@ msgstr "Wadliwy znak w nazwie kanału - w miejscu {position}."
 msgid "Invalid character in topic, at position {position}!"
 msgstr "Wadliwy znak w tytule - w miejscu {position}."
 
-#: zerver/lib/subscription_info.py:417
+#: zerver/lib/subscription_info.py:441
 msgid "Subscriber data is not available for this channel"
 msgstr "Dane o subskrybentach nie są dostępne dla tego kanału"
 
-#: zerver/lib/subscription_info.py:438
+#: zerver/lib/subscription_info.py:462
 msgid "Unable to retrieve subscribers for private channel"
 msgstr "Nie można zobaczyć subrybujących prywatny kanał"
 
-#: zerver/lib/thumbnail.py:166
+#: zerver/lib/thumbnail.py:163
 msgid "Could not decode image; did you upload an image file?"
 msgstr "Nie można zdekodować obrazu; czy przesłałeś plik obrazu?"
 
-#: zerver/lib/thumbnail.py:177 zerver/lib/thumbnail.py:184
-#: zerver/lib/thumbnail.py:195
+#: zerver/lib/thumbnail.py:174 zerver/lib/thumbnail.py:181
+#: zerver/lib/thumbnail.py:192
 msgid "Image size exceeds limit."
 msgstr "Rozmiar obrazu przekracza limit,"
 
-#: zerver/lib/thumbnail.py:201
+#: zerver/lib/thumbnail.py:198
 msgid "Image is corrupted or truncated"
 msgstr "Obraz jest uszkodzony lub ucięty"
 
@@ -5703,53 +5703,53 @@ msgstr "Przesłane dane przekraczają limit twojej organizacji."
 msgid "Image size exceeds limit"
 msgstr "Rozmiar obrazu przekracza limit"
 
-#: zerver/lib/user_groups.py:99 zerver/lib/user_groups.py:128
+#: zerver/lib/user_groups.py:100 zerver/lib/user_groups.py:129
 msgid "User group is deactivated."
 msgstr "Grupa użytkowników wyłączona."
 
-#: zerver/lib/user_groups.py:131
+#: zerver/lib/user_groups.py:132
 msgid "Invalid user group"
 msgstr "Nieprawidłowa grupa"
 
-#: zerver/lib/user_groups.py:136
+#: zerver/lib/user_groups.py:137
 msgid "Invalid system group name."
-msgstr ""
+msgstr "Wadliwa nazwa grupy systemowej."
 
-#: zerver/lib/user_groups.py:346 zerver/lib/user_groups.py:442
+#: zerver/lib/user_groups.py:347 zerver/lib/user_groups.py:443
 #, python-brace-format
 msgid "Invalid user group ID: {group_id}"
 msgstr "Wadliwy ID grupy użytkowników: {group_id}"
 
-#: zerver/lib/user_groups.py:377
+#: zerver/lib/user_groups.py:378
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:internet' group."
 msgstr "'{setting_name}' ustawienie nie można zostać ustawione dla grupy 'role:internet'."
 
-#: zerver/lib/user_groups.py:387
+#: zerver/lib/user_groups.py:388
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:nobody' group."
 msgstr "Ustawienia '{setting_name}' nie można przypisać do grupy 'role:nobody'."
 
-#: zerver/lib/user_groups.py:397
+#: zerver/lib/user_groups.py:398
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:everyone' group."
 msgstr "Ustawienia '{setting_name}' nie można przypisać do grupy 'role:everyone'."
 
-#: zerver/lib/user_groups.py:407
+#: zerver/lib/user_groups.py:408
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to '{group_name}' group."
 msgstr "Ustawienia '{setting_name}' nie można przypisać do grupy '{group_name}'"
 
-#: zerver/lib/user_groups.py:516
+#: zerver/lib/user_groups.py:517
 msgid "User group name can't be empty!"
 msgstr "Nazwa grupy użytkowników nie może być pusta!"
 
-#: zerver/lib/user_groups.py:520
+#: zerver/lib/user_groups.py:521
 #, python-brace-format
 msgid "User group name cannot exceed {max_length} characters."
 msgstr "Nazwa grupy użytkowników nie może przekraczać {max_length} znaków."
 
-#: zerver/lib/user_groups.py:528
+#: zerver/lib/user_groups.py:529
 #, python-brace-format
 msgid "User group name cannot start with '{prefix}'."
 msgstr "Nazwa dla grupy użytkowników nie może rozpoczynać się od '{prefix}'."
@@ -5776,7 +5776,7 @@ msgstr "W tej organizacji wymagane są niepowtarzalne nazwy."
 
 #: zerver/lib/users.py:111
 msgid "Name is already in use."
-msgstr ""
+msgstr "Nazwa już w użyciu."
 
 #: zerver/lib/users.py:117 zerver/views/users.py:591 zerver/views/users.py:604
 #: zerver/views/users.py:793
@@ -5927,9 +5927,9 @@ msgstr "W nazwie powinien znajdować się ukośnik zcommand."
 msgid "No such command: {command}"
 msgstr "Brak komendy: {command}"
 
-#: zerver/lib/zulip_update_announcements.py:530
+#: zerver/lib/zulip_update_announcements.py:542
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
-msgstr ""
+msgstr "`zulip_update_announcements_stream` jest niespodziewanie wyłączony."
 
 #: zerver/middleware.py:464
 #, python-brace-format
@@ -6023,15 +6023,15 @@ msgstr "Grupa %(name)r w szablonie URL nie występuje we wzorcu łącznika."
 msgid "Group %(name)r in linkifier pattern is not present in URL template."
 msgstr "Grupa %(name)r w szablonie łącznika nie występuje w szablonie URL."
 
-#: zerver/models/messages.py:363
+#: zerver/models/messages.py:369
 msgid "Unicode emoji"
 msgstr "Emoji unicode"
 
-#: zerver/models/messages.py:364
+#: zerver/models/messages.py:370
 msgid "Custom emoji"
 msgstr "Spersonalizowane emoji"
 
-#: zerver/models/messages.py:365
+#: zerver/models/messages.py:371
 msgid "Zulip extra emoji"
 msgstr "Zulip ekstra emoji"
 
@@ -6093,7 +6093,7 @@ msgstr "Zezwól na GIF z serii PG (ochrona rodzicielska)"
 
 #: zerver/models/realms.py:648
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
-msgstr "Zezwalaj na GIF-y z oceną PG-13 (Wskazówki dla rodziców - poniżej 13 lat)"
+msgstr "Zezwalaj na GIF-y z oceną PG-13 (kontrola rodzicielska - poniżej 13 lat)"
 
 #: zerver/models/realms.py:652
 msgid "Allow GIFs rated R (Restricted)"
@@ -6171,20 +6171,20 @@ msgstr "nieznany system operacyjny"
 msgid "An unknown browser"
 msgstr "Nieznana przeglądarka"
 
-#: zerver/tornado/event_queue.py:736
+#: zerver/tornado/event_queue.py:735
 msgid "Missing 'queue_id' argument"
 msgstr "Brak argumentu 'queue_id'"
 
-#: zerver/tornado/event_queue.py:739
+#: zerver/tornado/event_queue.py:738
 msgid "Missing 'last_event_id' argument"
 msgstr "Brak argumentu 'last_event_id'"
 
-#: zerver/tornado/event_queue.py:746
+#: zerver/tornado/event_queue.py:745
 #, python-brace-format
 msgid "An event newer than {event_id} has already been pruned!"
 msgstr "Zdarzenie nowsze od {event_id} zostało już wyczyszczone!"
 
-#: zerver/tornado/event_queue.py:756
+#: zerver/tornado/event_queue.py:755
 #, python-brace-format
 msgid "Event {event_id} was not in this queue"
 msgstr "Zdarzenia {event_id} nie było w tym zapytaniu"
@@ -6210,11 +6210,11 @@ msgstr "Niewłaściwy JSON web token"
 msgid "No email specified in JSON web token claims"
 msgstr "Nie określono adresu email w danych tokena JSON"
 
-#: zerver/views/auth.py:1141
+#: zerver/views/auth.py:1146
 msgid "Subdomain required"
 msgstr "Subdomena jest wymagana"
 
-#: zerver/views/auth.py:1205
+#: zerver/views/auth.py:1210
 msgid "Password is incorrect."
 msgstr "Hasło nie jest poprawne"
 
@@ -6337,12 +6337,12 @@ msgstr "Za nami okno czasowe na skasowanie tego wpisu"
 msgid "Message already deleted"
 msgstr "Wiadomość została już usunięta"
 
-#: zerver/views/message_fetch.py:157
+#: zerver/views/message_fetch.py:158
 #, python-brace-format
 msgid "Too many messages requested (maximum {max_messages})."
 msgstr "Zażądano zbyt wielu wiadomości (maksimum to {max_messages})."
 
-#: zerver/views/message_fetch.py:162 zerver/views/message_flags.py:94
+#: zerver/views/message_fetch.py:163 zerver/views/message_flags.py:94
 msgid "The anchor can only be excluded at an end of the range"
 msgstr "Kotwicę można wykluczyć tylko na końcu zakresu"
 
@@ -6369,15 +6369,15 @@ msgstr "Mirroring Zephyr nie jest dozwolony w tej organizacji"
 
 #: zerver/views/message_summary.py:28
 msgid "AI features are not enabled on this server."
-msgstr ""
+msgstr "Funkcje AI nie są włączone na tym serwerze."
 
 #: zerver/views/message_summary.py:38
 msgid "Reached monthly limit for AI credits."
-msgstr ""
+msgstr "Wyczerpano limit żetonów do użycia AI."
 
 #: zerver/views/message_summary.py:42
 msgid "No messages in conversation to summarize"
-msgstr ""
+msgstr "Brak wiadomości w dyskusji do podsumowania"
 
 #: zerver/views/muted_users.py:16
 msgid "Cannot mute self"
@@ -6401,7 +6401,7 @@ msgstr "Nieznany etap wdrażania: {onboarding_step}"
 msgid ""
 "\n"
 "You asked to watch the [Welcome to Zulip video]({navigation_tour_video_url}) later. Is this a good time?\n"
-msgstr ""
+msgstr "\nPoprosiłeś o odłożenie oglądania filmiku [Witaj w Zulip]({navigation_tour_video_url}) Czy teraz masz chwilę?\n"
 
 #: zerver/views/presence.py:48
 msgid "Presence is not supported for bot users."
@@ -6445,7 +6445,7 @@ msgstr "Błąd zwrócony przez bramkę: {result}"
 
 #: zerver/views/push_notifications.py:246
 msgid "Verification secret not prepared"
-msgstr ""
+msgstr "Sekret weryfikacyjny nie jest przygotowany"
 
 #: zerver/views/reactions.py:48
 msgid ""
@@ -6484,13 +6484,13 @@ msgstr "Musi być organizacją demo."
 #, python-brace-format
 msgid ""
 "Data deletion time must be at most {max_allowed_days} days in the future."
-msgstr ""
+msgstr "Termin usunięcia danych może sięgać do {max_allowed_days} dni w przyszłość."
 
 #: zerver/views/realm.py:539
 #, python-brace-format
 msgid ""
 "Data deletion time must be at least {min_allowed_days} days in the future."
-msgstr ""
+msgstr "Termin usunięcia danych to nie mniej niż {min_allowed_days} dni przed nami."
 
 #: zerver/views/realm_domains.py:38
 #, python-brace-format
@@ -6562,13 +6562,9 @@ msgstr "Musisz przesłać dokładnie jedno logo."
 msgid "Invalid playground"
 msgstr "Wadliwa piaskownica"
 
-#: zerver/views/saved_snippets.py:71
-msgid "No new data is supplied"
-msgstr ""
-
 #: zerver/views/scheduled_messages.py:75
 msgid "Recipient required when updating type of scheduled message."
-msgstr "Wymagany odbiorca dla tego typu przekładanej wiadomości."
+msgstr "Wymagany odbiorca dla tego typu odwlekanej wiadomości."
 
 #: zerver/views/scheduled_messages.py:86
 msgid "Topic required when updating scheduled message type to channel."
@@ -6601,13 +6597,13 @@ msgstr "Nieprawidłowe parametry"
 
 #: zerver/views/streams.py:345 zerver/views/streams.py:437
 msgid "Channel content access is required."
-msgstr ""
+msgstr "Wymagana kontrola dostępu do kanału"
 
 #: zerver/views/streams.py:399
 msgid "Channel already has that name."
 msgstr "Kanał ma już taką nazwę."
 
-#: zerver/views/streams.py:498 zerver/views/user_groups.py:486
+#: zerver/views/streams.py:498 zerver/views/user_groups.py:487
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr "Brak polecenia. Określ przynajmniej jedno \"dodaj\" lub \"skasuj\"."
 
@@ -6621,45 +6617,45 @@ msgstr "{user_full_name} dodał cię do śledzących kanał {channel_name}."
 msgid "{user_full_name} subscribed you to the following channels:"
 msgstr "{user_full_name} dodał cię do śledzących następujące kanały:"
 
-#: zerver/views/streams.py:720
+#: zerver/views/streams.py:717
 #, python-brace-format
 msgid "Unable to access channel ({channel_name})."
 msgstr "Brak dostępu do kanału ({channel_name})."
 
-#: zerver/views/streams.py:736
+#: zerver/views/streams.py:733
 msgid "You can only invite other Zephyr mirroring users to private channels."
 msgstr "Do kanałów prywatnych można zapraszać tylko innych użytkowników mirroringu Zephyr."
 
-#: zerver/views/streams.py:853
+#: zerver/views/streams.py:851
 #, python-brace-format
 msgid "{user_name} created the following channels: {new_channels}."
 msgstr "{user_name} utworzył następujące kanały: {new_channels}."
 
-#: zerver/views/streams.py:855
+#: zerver/views/streams.py:853
 #, python-brace-format
 msgid "{user_name} created a new channel {new_channels}."
 msgstr "{user_name} utworzył nowy kanał {new_channels}."
 
-#: zerver/views/streams.py:856
+#: zerver/views/streams.py:854
 msgid "new channels"
 msgstr "nowe kanały"
 
-#: zerver/views/streams.py:890
+#: zerver/views/streams.py:888
 #, python-brace-format
 msgid "**{policy}** channel created by {user_name}. **Description:**"
 msgstr "**{policy}** kanału dodane przez {user_name}. **Opis:**"
 
-#: zerver/views/streams.py:1121
+#: zerver/views/streams.py:1120
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr "{property} to nie boolean"
 
-#: zerver/views/streams.py:1124
+#: zerver/views/streams.py:1123
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr "Nieznane właściwości subskrypcji: {property}"
 
-#: zerver/views/streams.py:1172
+#: zerver/views/streams.py:1171
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr "Nie zasubskrybowany do kanału ID {channel_id}"
@@ -6685,7 +6681,7 @@ msgstr "Plik jest większy niż maksymalny rozmiar przesyłania skonfigurowany n
 #: zerver/views/tusd.py:249
 #, python-brace-format
 msgid "Uploaded file is larger than the allowed limit of {max_file_size} MiB"
-msgstr ""
+msgstr "Przekazany plik przekracza dozwolony limit {max_file_size} MiB"
 
 #: zerver/views/typing.py:50 zerver/views/typing.py:92
 msgid "User has disabled typing notifications for channel messages"
@@ -6748,29 +6744,29 @@ msgstr "{user_full_name} dodał cię do grupy {group_name}."
 msgid "{user_full_name} removed you from the group {group_name}."
 msgstr "{user_full_name} usunął cię z grupy {group_name}."
 
-#: zerver/views/user_groups.py:351
+#: zerver/views/user_groups.py:352
 #, python-brace-format
 msgid "User {user_id} is already a member of this group"
 msgstr "Użytkownik {user_id} jest już członkiem tej grupy"
 
-#: zerver/views/user_groups.py:394
+#: zerver/views/user_groups.py:395
 #, python-brace-format
 msgid "There is no member '{user_id}' in this user group"
 msgstr "Brak użytkownika '{user_id}' w tej grupie użytkowników"
 
-#: zerver/views/user_groups.py:423
+#: zerver/views/user_groups.py:424
 #, python-brace-format
 msgid "User group {group_id} is already a subgroup of this group."
 msgstr "Grupa użytkowników {group_id} jest już podgrupą tej grupy."
 
-#: zerver/views/user_groups.py:434
+#: zerver/views/user_groups.py:435
 #, python-brace-format
 msgid ""
 "User group {user_group_id} is already a subgroup of one of the passed "
 "subgroups."
 msgstr "Grupa użytkowników {user_group_id} jest już podgrupą jednej z podanych podgrup."
 
-#: zerver/views/user_groups.py:462
+#: zerver/views/user_groups.py:463
 #, python-brace-format
 msgid "User group {group_id} is not a subgroup of this group."
 msgstr "Grupa użytkowników {group_id} nie jest podgrupą tej grupy."
@@ -6889,7 +6885,7 @@ msgstr "Wadliwy token dostępu Zoom"
 
 #: zerver/views/video_calls.py:61
 msgid "Unknown Zoom user email"
-msgstr ""
+msgstr "Nieznany email użytkownika Zoom"
 
 #: zerver/views/video_calls.py:66 zerver/views/video_calls.py:205
 msgid "Zoom credentials have not been configured"
@@ -6966,7 +6962,7 @@ msgstr "Treść nie może być pusta"
 
 #: zerver/webhooks/jotform/view.py:25
 msgid "Unable to handle Jotform payload"
-msgstr ""
+msgstr "Nie można obsłużyć współpracy z Jotform"
 
 #: zerver/webhooks/librato/view.py:176
 msgid "Malformed JSON input"
@@ -6998,19 +6994,19 @@ msgstr "Eksport danych zakończony. [View and download exports]({export_settings
 
 #: zilencer/auth.py:61
 msgid "The verification secret has expired"
-msgstr ""
+msgstr "Sekret weryfikacji wygasł"
 
 #: zilencer/auth.py:63
 msgid "The verification secret is invalid"
-msgstr ""
+msgstr "Sekret weryfikacji jest wadliwy"
 
 #: zilencer/auth.py:65
 msgid "The verification secret is malformed"
-msgstr ""
+msgstr "Sekret weryfikacji jest zdeformowany"
 
 #: zilencer/auth.py:67
 msgid "The verification secret is for a different hostname"
-msgstr ""
+msgstr "Sekret weryfikacji przynależy do innego hosta"
 
 #: zilencer/auth.py:128
 msgid "Invalid subdomain for push notifications bouncer"
@@ -7033,7 +7029,7 @@ msgstr "Nieprawidłowy rodzaj tokenu."
 #: zilencer/views.py:153
 #, python-brace-format
 msgid "{hostname} contains invalid components (e.g., path, query, fragment)."
-msgstr ""
+msgstr "{hostname} zawiera błędne komponenty (jak ścieżka, zapytanie, fragment)."
 
 #: zilencer/views.py:160
 #, python-brace-format
@@ -7043,7 +7039,7 @@ msgstr "{hostname} nie jest poprawnym hostname"
 #: zilencer/views.py:170
 #, python-brace-format
 msgid "{hostname} not yet registered"
-msgstr ""
+msgstr "Jeszcze nie zarejestrowano {hostname}"
 
 #: zilencer/views.py:222
 msgid "Invalid email address."
@@ -7064,20 +7060,20 @@ msgstr "{domain} nie istnieje"
 msgid ""
 "The global limits on recent usage of this endpoint have been reached. Please"
 " try again later or reach out to {support_email} for assistance."
-msgstr ""
+msgstr "Wyczerpano limit przewidziany dla tego punktu końcowego. Proszę spróbuj ponownie później lub skontaktuj się z {support_email} aby uzyskać pomoc."
 
 #: zilencer/views.py:350
 msgid "Registration not found for this hostname"
-msgstr ""
+msgstr "Nie odnaleziono rejestracji dla tego hosta"
 
 #: zilencer/views.py:362
 msgid "The host reported it has no verification secret."
-msgstr ""
+msgstr "Host nie ma przydzielonego sekretu weryfikacji."
 
 #: zilencer/views.py:364
 #, python-brace-format
 msgid "Error response received from the host: {status_code}"
-msgstr ""
+msgstr "Napotkano na błąd hosta: {status_code}"
 
 #: zilencer/views.py:434
 msgid "Missing ios_app_id"
