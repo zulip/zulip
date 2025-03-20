@@ -351,6 +351,10 @@ h4.user_group_setting_subsection_title {
         height: var(--settings-overlay-subheader-height);
     }
 
+    .stream_sorter_toggle {
+        margin-left: auto;
+    }
+
     #add_new_subscription {
         height: var(--settings-overlay-header-button-height);
     }
