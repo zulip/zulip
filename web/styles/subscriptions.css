@@ -1424,9 +1424,11 @@ div.settings-radio-input-parent {
    We should eventually consolidate some of these styles with the settings
    menu, using shared classnames. */
 @container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
-    .two-pane-settings-container {
+    /* Two classnames for extra specificity to override wide-screen styles. */
+    .two-pane-settings-overlay .two-pane-settings-container {
         position: relative;
         overflow: hidden;
+        height: 95%;
 
         .list-toggler-container {
             text-align: left;
@@ -1435,32 +1437,30 @@ div.settings-radio-input-parent {
         .two-pane-settings-header .fa-chevron-left {
             visibility: visible;
         }
-    }
 
-    .two-pane-settings-overlay .left,
-    .two-pane-settings-overlay .right {
-        position: absolute;
-        display: block;
-        margin: 0;
-        width: 100%;
-        height: calc(100% - var(--settings-overlay-header-height));
+        /* default left pane open without `.right-pane-open` present */
+        .left {
+            display: block;
+            width: 100%;
+        }
 
-        border: none;
-    }
+        .right {
+            display: none;
+            background-color: var(--color-background-modal);
+            border-top: none;
+            transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+        }
 
-    .two-pane-settings-overlay .right {
-        position: absolute;
-        left: 101%;
+        &.right-pane-open {
+            .right {
+                display: block;
+                width: 100%;
+            }
 
-        top: var(--settings-overlay-header-height);
-        background-color: var(--color-background-modal);
-        border-top: none;
-
-        transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
-        z-index: 10;
-
-        &.show {
-            left: 0%;
+            .left,
+            .two-pane-settings-subheader {
+                display: none;
+            }
         }
     }
 
@@ -1485,10 +1485,6 @@ div.settings-radio-input-parent {
     }
 
     .two-pane-settings-overlay {
-        .two-pane-settings-container {
-            height: 95%;
-        }
-
         .settings {
             overflow: auto;
             -webkit-overflow-scrolling: touch;
