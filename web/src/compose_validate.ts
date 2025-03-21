@@ -44,6 +44,9 @@ let no_private_recipient = true;
 let no_message_content = false;
 let message_too_long = false;
 
+export const NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE = $t({
+    defaultMessage: "You do not have permission to post in this channel.",
+});
 export const NO_PRIVATE_RECIPIENT_ERROR_MESSAGE = $t({
     defaultMessage: "Please add a valid recipient.",
 });
@@ -114,9 +117,7 @@ export function get_posting_policy_error_message(): string {
 
     const stream = sub_store.get(compose_state.selected_recipient_id);
     if (stream && !stream_data.can_post_messages_in_stream(stream)) {
-        return $t({
-            defaultMessage: "You do not have permission to post in this channel.",
-        });
+        return NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
     }
     return "";
 }
@@ -780,9 +781,7 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
 
     if (!stream_data.can_post_messages_in_stream(sub)) {
         compose_banner.show_error_message(
-            $t({
-                defaultMessage: "You do not have permission to post in this channel.",
-            }),
+            NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE,
             compose_banner.CLASSNAMES.no_post_permissions,
             $banner_container,
         );

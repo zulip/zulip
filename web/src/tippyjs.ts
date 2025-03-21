@@ -705,7 +705,13 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: ".generate-channel-email-button-container.disabled_setting_tooltip",
-        content: $t({defaultMessage: "You do not have permission to post in this channel."}),
+        onShow(instance) {
+            instance.setContent(
+                ui_util.parse_html(
+                    $("#compose_disable_stream_reply_button_tooltip_template").html(),
+                ),
+            );
+        },
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
