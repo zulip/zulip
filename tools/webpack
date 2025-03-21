@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 os.chdir(os.path.join(os.path.dirname(__file__), "../web"))
 
 
+from scripts.lib.zulip_tools import get_config, get_config_file
 from version import ZULIP_VERSION
 
 webpack_command = [
@@ -39,6 +40,10 @@ def build_for_prod_or_puppeteer(quiet: bool, config_name: str | None = None) -> 
         webpack_args += [f"--config-name={config_name}"]
     if "PUPPETEER_TESTS" in os.environ:
         webpack_args.append("--env=puppeteer_tests")
+    else:
+        custom_5xx_file = get_config(get_config_file(), "application_server", "5xx_file")
+        if custom_5xx_file is not None:
+            webpack_args.append(f"--env=custom_5xx_file={custom_5xx_file}")
 
     # Silence warnings from "browserslist" about using old data; those
     # warnings are only useful for development
