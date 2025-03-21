@@ -39,15 +39,15 @@
 .banner-action-buttons {
     grid-area: banner-action-buttons;
     display: flex;
-    gap: 8px;
-    margin-left: 10px;
+    gap: 0.5em; /* 8px at 16px/1em */
+    margin-left: 0.625em; /* 10px at 16px/1em */
 }
 
 .banner-close-button {
     display: flex;
     grid-area: banner-close-button;
     padding: 0.6875em;
-    margin-left: 5px;
+    margin-left: 0.3125em; /* 5px at 16px/1em */
 
     &:focus-visible {
         outline-offset: -2px;
