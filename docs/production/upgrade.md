@@ -306,14 +306,19 @@ handle your setup.
 
 ### nginx configuration changes
 
-If you need to modify Zulip's `nginx` configuration, we recommend
-first attempting to add configuration to `/etc/nginx/conf.d` or
-`/etc/nginx/zulip-include/app.d`; those directories are designed for
-custom configuration, and are not overridden during upgrades. The
-former is useful for directives with the `http` [context][context],
-and the latter for `server` contexts.
+If you need to extend Zulip's `nginx` configuration, there are a few different
+include directories you can use, in different [contexts][context]:
+
+- `/etc/nginx/conf.d` is in the [`http` context][http-context]
+- `/etc/nginx/zulip-include/app.d` is in the [`server` context][server-context]
+  for the public-facing server
+- `/etc/nginx/zulip-include/localhost.d` is in the [`server`
+  context][server-context] for the server listening on `127.0.0.1:80`, which is
+  used for internal inter-process communication
 
 [context]: http://nginx.org/en/docs/beginners_guide.html#conf_structure
+[http-context]: http://nginx.org/en/docs/http/ngx_http_core_module.html#http
+[server-context]: http://nginx.org/en/docs/http/ngx_http_core_module.html#server
 
 ## Upgrading PostgreSQL
 
