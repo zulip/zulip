@@ -353,6 +353,9 @@ function stream_setting_changed(elem: HTMLInputElement): void {
 export function archive_stream(stream_id: number, $alert_element: JQuery): void {
     channel.del({
         url: "/json/streams/" + stream_id,
+        success() {
+            empty_right_panel();
+        },
         error(xhr) {
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $alert_element);
         },
@@ -363,6 +366,9 @@ export function unarchive_stream(stream_id: number, $alert_element: JQuery): voi
     channel.patch({
         url: `/json/streams/${stream_id}`,
         data: {is_archived: false},
+        success() {
+            empty_right_panel();
+        },
         error(xhr) {
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $alert_element);
         },
