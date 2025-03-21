@@ -53,6 +53,12 @@ class zulip::app_frontend_base {
     group  => 'root',
     mode   => '0755',
   }
+  file { '/etc/nginx/zulip-include/localhost.d/':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
 
   $loadbalancers = split(zulipconf('loadbalancer', 'ips', ''), ',')
   if $loadbalancers != [] {
