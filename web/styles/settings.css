@@ -507,13 +507,10 @@ input[type="checkbox"] {
 
 .advanced-configurations-container {
     .advance-config-title-container {
-        display: flex;
-        align-items: center;
         cursor: pointer;
-        flex-wrap: wrap;
 
         .stream_setting_subsection_title {
-            margin: 4px 8px;
+            margin: 4px 0;
         }
 
         .toggle-advanced-configurations-icon {
