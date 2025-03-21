@@ -40,6 +40,11 @@
     grid-area: banner-action-buttons;
     display: flex;
     gap: 0.5em; /* 8px at 16px/1em */
+    /* This margin is required to align the banner action
+       buttons vertically, since we cannot use flexbox
+       center alignment as we also need to account for the
+       UI when the banner has a muli-line label. */
+    margin: 0.0625em 0; /* 1px at 16px/1em */
     margin-left: 0.625em; /* 10px at 16px/1em */
 }
 
