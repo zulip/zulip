@@ -497,6 +497,7 @@ def process_raw_message_batch(
             rendered_content=rendered_content,
             topic_name=topic_name,
             user_id=sender_user_id,
+            is_channel_message=not is_pm_data,
             has_image=has_image,
             has_link=has_link,
             has_attachment=has_attachment,

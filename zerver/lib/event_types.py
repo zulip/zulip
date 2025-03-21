@@ -230,7 +230,7 @@ class EventMessage(BaseEvent):
 
 class EventMutedTopics(BaseEvent):
     type: Literal["muted_topics"]
-    muted_topics: list[tuple[str, str, int]]
+    muted_topics: list[list[str | int]]
 
 
 class MutedUser(BaseModel):
@@ -526,6 +526,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_mention_many_users_group: int | UserGroupMembersDict | None = None
     can_move_messages_between_channels_group: int | UserGroupMembersDict | None = None
     can_move_messages_between_topics_group: int | UserGroupMembersDict | None = None
+    can_resolve_topics_group: int | UserGroupMembersDict | None = None
     can_summarize_topics_group: int | UserGroupMembersDict | None = None
     direct_message_initiator_group: int | UserGroupMembersDict | None = None
     direct_message_permission_group: int | UserGroupMembersDict | None = None
@@ -706,6 +707,12 @@ class SavedSnippetFields(BaseModel):
 class EventSavedSnippetsAdd(BaseEvent):
     type: Literal["saved_snippets"]
     op: Literal["add"]
+    saved_snippet: SavedSnippetFields
+
+
+class EventSavedSnippetsUpdate(BaseEvent):
+    type: Literal["saved_snippets"]
+    op: Literal["update"]
     saved_snippet: SavedSnippetFields
 
 

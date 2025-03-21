@@ -37,7 +37,7 @@ from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import UserGroupMembersDict
+from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
 from zerver.lib.user_groups import (
     get_direct_user_groups,
     get_recursive_group_members,
@@ -198,17 +198,17 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[10]["description"], "")
         self.assertEqual(user_groups[10]["members"], [othello.id])
 
-        assert isinstance(user_groups[10]["can_manage_group"], UserGroupMembersDict)
-        self.assertEqual(user_groups[10]["can_manage_group"].direct_members, [othello.id])
+        assert not isinstance(user_groups[10]["can_manage_group"], int)
+        self.assertEqual(user_groups[10]["can_manage_group"]["direct_members"], [othello.id])
         self.assertCountEqual(
-            user_groups[10]["can_manage_group"].direct_subgroups,
+            user_groups[10]["can_manage_group"]["direct_subgroups"],
             [admins_system_group.id, hamletcharacters_group.id],
         )
 
-        assert isinstance(user_groups[10]["can_mention_group"], UserGroupMembersDict)
-        self.assertEqual(user_groups[10]["can_mention_group"].direct_members, [othello.id])
+        assert not isinstance(user_groups[10]["can_mention_group"], int)
+        self.assertEqual(user_groups[10]["can_mention_group"]["direct_members"], [othello.id])
         self.assertCountEqual(
-            user_groups[10]["can_mention_group"].direct_subgroups,
+            user_groups[10]["can_mention_group"]["direct_subgroups"],
             [admins_system_group.id, hamletcharacters_group.id],
         )
         self.assertFalse(user_groups[0]["deactivated"])
@@ -243,13 +243,8 @@ class UserGroupTestCase(ZulipTestCase):
         do_change_realm_permission_group_setting(
             realm, "can_create_public_channel_group", setting_group, acting_user=None
         )
-        realm_setting_group_ids = {
-            realm.create_multiuse_invite_group_id,
-            realm.can_create_public_channel_group_id,
-        }
-
         realm_user_groups = user_groups_in_realm_serialized(
-            realm, include_deactivated_groups=False, realm_setting_group_ids=realm_setting_group_ids
+            realm, include_deactivated_groups=False, fetch_anonymous_group_membership=True
         )
         named_user_groups = realm_user_groups.api_groups
         self.assert_length(named_user_groups, 11)
@@ -267,17 +262,15 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(system_groups_dict[admins_system_group.id], SystemGroups.ADMINISTRATORS)
         self.assertEqual(system_groups_dict[everyone_group.id], SystemGroups.EVERYONE)
 
-        realm_setting_anonymous_group_membership = (
-            realm_user_groups.realm_setting_anonymous_group_membership
-        )
+        anonymous_group_membership = realm_user_groups.anonymous_group_membership
+        self.assertIn(realm.can_create_public_channel_group_id, anonymous_group_membership)
         self.assertEqual(
-            realm_setting_anonymous_group_membership,
-            {
-                realm.can_create_public_channel_group_id: UserGroupMembersDict(
-                    direct_members=[cordelia.id], direct_subgroups=[owners_system_group.id]
-                )
-            },
+            anonymous_group_membership[realm.can_create_public_channel_group_id],
+            UserGroupMembersDict(
+                direct_members=[cordelia.id], direct_subgroups=[owners_system_group.id]
+            ),
         )
+        self.assertNotIn(realm.create_multiuse_invite_group_id, anonymous_group_membership)
 
     def test_get_direct_user_groups(self) -> None:
         othello = self.example_user("othello")
@@ -1555,7 +1548,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
             do_unarchive_stream(stream, "support", acting_user=None)
 
-            anonymous_setting_group_member_dict = UserGroupMembersDict(
+            anonymous_setting_group_member_dict = UserGroupMembersData(
                 direct_members=[hamlet.id], direct_subgroups=[moderators_group.id, support_group.id]
             )
             do_change_stream_group_based_setting(

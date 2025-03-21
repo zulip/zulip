@@ -1,7 +1,7 @@
 /* Compose box module responsible for the message's recipient */
 
 import $ from "jquery";
-import _, {isNumber} from "lodash";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
@@ -21,17 +21,11 @@ import {$t} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import * as sub_store from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 type MessageType = "stream" | "private";
-type DirectMessagesOption = {
-    is_direct_message: boolean;
-    unique_id: string | number;
-    name: string;
-};
 
 let compose_select_recipient_dropdown_widget: DropdownWidget;
 
@@ -119,37 +113,17 @@ export function update_on_recipient_change(): void {
     compose_validate.warn_if_guest_in_dm_recipient();
     drafts.update_compose_draft_count();
     check_posting_policy_for_compose_box();
-}
-
-export function get_posting_policy_error_message(): string {
-    if (compose_state.selected_recipient_id === "direct") {
-        const recipients = compose_pm_pill.get_user_ids_string();
-        return compose_validate.check_dm_permissions_and_get_error_string(recipients);
-    }
-
-    if (!isNumber(compose_state.selected_recipient_id)) {
-        return "";
-    }
-
-    const stream = sub_store.get(compose_state.selected_recipient_id);
-    if (stream && !stream_data.can_post_messages_in_stream(stream)) {
-        return $t({
-            defaultMessage: "You do not have permission to post in this channel.",
-        });
-    }
-    return "";
+    compose_validate.validate_and_update_send_button_status();
 }
 
 export let check_posting_policy_for_compose_box = (): void => {
-    const banner_text = get_posting_policy_error_message();
+    const banner_text = compose_validate.get_posting_policy_error_message();
     if (banner_text === "") {
-        compose_validate.set_recipient_disallowed(false);
         compose_banner.clear_errors();
         return;
     }
 
     let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
-    compose_validate.set_recipient_disallowed(true);
     if (compose_state.selected_recipient_id === "direct") {
         banner_classname = compose_banner.CLASSNAMES.cannot_send_direct_message;
         compose_banner.cannot_send_direct_message_error(banner_text);
@@ -272,8 +246,7 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
 }
 
 function get_options_for_recipient_widget(): Option[] {
-    const options: (Option | DirectMessagesOption)[] =
-        stream_data.get_options_for_dropdown_widget();
+    const options: Option[] = stream_data.get_options_for_dropdown_widget();
 
     const direct_messages_option = {
         is_direct_message: true,
@@ -358,6 +331,19 @@ export function initialize(): void {
     $("#private_message_recipient").on("input", restore_placeholder_in_firefox_for_no_input);
 }
 
+export function update_topic_inputbox_on_mandatory_topics_change(): void {
+    if (realm.realm_mandatory_topics) {
+        const $input = $("input#stream_message_recipient_topic");
+        $input.attr("placeholder", $t({defaultMessage: "Topic"}));
+        $input.removeClass("empty-topic-display");
+        const $topic_not_mandatory_placeholder = $("#topic-not-mandatory-placeholder");
+        $topic_not_mandatory_placeholder.removeClass("visible");
+        $topic_not_mandatory_placeholder.hide();
+        return;
+    }
+    update_topic_displayed_text(compose_state.topic());
+}
+
 export function update_topic_displayed_text(
     topic_name: string | undefined,
     has_topic_focus = false,
@@ -383,14 +369,15 @@ export function update_topic_displayed_text(
     // reset
     $input.attr("placeholder", "");
     $input.removeClass("empty-topic-display");
-    $topic_not_mandatory_placeholder.css({visibility: "hidden"});
+    $topic_not_mandatory_placeholder.removeClass("visible");
     $topic_not_mandatory_placeholder.hide();
 
     function update_placeholder_visibility(): void {
-        $topic_not_mandatory_placeholder.css(
-            "visibility",
-            $input.val() === "" ? "visible" : "hidden",
-        );
+        if ($input.val() === "") {
+            $topic_not_mandatory_placeholder.addClass("visible");
+        } else {
+            $topic_not_mandatory_placeholder.removeClass("visible");
+        }
     }
 
     if (is_empty_string_topic && !has_topic_focus && recipient_widget_hidden) {

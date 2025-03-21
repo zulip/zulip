@@ -38,8 +38,7 @@ def allocate_handler_id(handler: "AsyncDjangoHandler") -> int:
 
 
 def clear_handler_by_id(handler_id: int) -> None:
-    if handler_id in handlers:
-        del handlers[handler_id]
+    handlers.pop(handler_id, None)
 
 
 def handler_stats_string() -> str:

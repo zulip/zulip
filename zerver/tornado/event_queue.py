@@ -547,8 +547,7 @@ def do_gc_event_queues(
         filter_client_dict(realm_clients_all_streams, realm_id)
 
     for id in to_remove:
-        if id in web_reload_clients:
-            del web_reload_clients[id]
+        web_reload_clients.pop(id, None)
         for cb in gc_hooks:
             cb(
                 clients[id].user_profile_id,

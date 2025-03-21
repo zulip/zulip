@@ -4,6 +4,10 @@ from importlib import import_module
 from io import StringIO
 from typing import Any, TypeAlias, TypedDict
 
+from django.db import connection
+from django.db.migrations.loader import MigrationLoader
+from django.db.migrations.recorder import MigrationRecorder
+
 AppMigrations: TypeAlias = dict[str, list[str]]
 
 
@@ -93,36 +97,62 @@ def get_migration_status(**options: Any) -> str:
 
 
 def parse_migration_status(
-    migration_status_print: str, stale_migrations: list[tuple[str, str]] = STALE_MIGRATIONS
+    stale_migrations: list[tuple[str, str]] = STALE_MIGRATIONS,
 ) -> AppMigrations:
-    lines = migration_status_print.strip().split("\n")
-    migrations_dict: AppMigrations = {}
-    current_app = None
-    line_prefix = ("[X]", "[ ]", "[-]", "(no migrations)")
+    """
+    This is a copy of Django's `showmigrations` command, keep this in sync with
+    the actual logic from Django. The key differences are, this returns a dict
+    and filters out any migration found in the `stale_migrations` parameter.
 
+    Django's `showmigrations`:
+    https://github.com/django/django/blob/main/django/core/management/commands/showmigrations.py
+    """
+    # Load migrations from disk/DB
+    loader = MigrationLoader(connection, ignore_no_migrations=True)
+    recorder = MigrationRecorder(connection)
+    recorded_migrations = recorder.applied_migrations()
+    graph = loader.graph
+    migrations_dict: AppMigrations = {}
+    app_names = sorted(loader.migrated_apps)
     stale_migrations_dict: dict[str, list[str]] = {}
+
     for app, migration in stale_migrations:
         if app not in stale_migrations_dict:
             stale_migrations_dict[app] = []
         stale_migrations_dict[app].append(migration)
 
-    for line in lines:
-        line = line.strip()
-        if not line.startswith(line_prefix) and line:
-            current_app = line
-            migrations_dict[current_app] = []
-        elif line.startswith(line_prefix):
-            assert current_app is not None
-            apps_stale_migrations = stale_migrations_dict.get(current_app)
-            if (
-                apps_stale_migrations is not None
-                and line != "(no migrations)"
-                and line[4:] in apps_stale_migrations
-            ):
-                continue
-            migrations_dict[current_app].append(line)
+    # For each app, print its migrations in order from oldest (roots) to
+    # newest (leaves).
+    for app_name in app_names:
+        migrations_dict[app_name] = []
+        shown = set()
+        apps_stale_migrations = stale_migrations_dict.get(app_name, [])
+        for node in graph.leaf_nodes(app_name):
+            for plan_node in graph.forwards_plan(node):
+                if (
+                    plan_node not in shown
+                    and plan_node[0] == app_name
+                    and plan_node[1] not in apps_stale_migrations
+                ):
+                    # Give it a nice title if it's a squashed one
+                    title = plan_node[1]
 
-    # Installed apps that have no migrations and we still use will have
-    # "(no migrations)" as its only "migrations" list. Ones that just
-    # have [] means it's just a left over stale app we can clean up.
-    return {app: migrations for app, migrations in migrations_dict.items() if migrations != []}
+                    if graph.nodes[plan_node].replaces:
+                        title += f" ({len(graph.nodes[plan_node].replaces)} squashed migrations)"
+
+                    applied_migration = loader.applied_migrations.get(plan_node)
+                    # Mark it as applied/unapplied
+                    if applied_migration:
+                        if plan_node in recorded_migrations:
+                            output = f"[X] {title}"
+                        else:
+                            output = f"[-] {title}"
+                    else:
+                        output = f"[ ] {title}"
+                    migrations_dict[app_name].append(output)
+                    shown.add(plan_node)
+        # If there are no migrations, record as such
+        if not shown:
+            output = "(no migrations)"
+            migrations_dict[app_name].append(output)
+    return migrations_dict

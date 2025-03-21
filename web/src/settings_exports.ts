@@ -239,7 +239,7 @@ export function populate_export_consents_table(): void {
 
     filter_by_consent_dropdown_widget = new dropdown_widget.DropdownWidget({
         widget_name: "filter_by_consent",
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
+        unique_id_type: "number",
         get_options: () => filter_by_consent_options,
         item_click_callback(
             event: JQuery.ClickEvent,

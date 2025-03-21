@@ -33,7 +33,8 @@ mock_esm("../src/group_permission_settings", {
     }),
 });
 
-const realm = {};
+const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
+const realm = {realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME};
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
@@ -279,6 +280,8 @@ test_ui("validate", ({mock_template, override}) => {
     assert.ok(compose_validate.validate());
 
     let zephyr_error_rendered = false;
+    // For this first block, we should fail due to empty compose.
+    let expected_invalid_state = true;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         if (data.classname === compose_banner.CLASSNAMES.zephyr_not_running) {
             assert.equal(
@@ -296,14 +299,16 @@ test_ui("validate", ({mock_template, override}) => {
     compose_state.private_message_recipient("welcome-bot@example.com");
     $("textarea#compose-textarea").toggleClass = (classname, value) => {
         assert.equal(classname, "invalid");
-        assert.equal(value, true);
+        assert.equal(value, expected_invalid_state);
     };
     assert.ok(!compose_validate.validate());
     assert.ok(!$("#compose-send-button .loader").visible());
     assert.equal($("#compose-send-button").prop("disabled"), false);
     compose_validate.validate();
 
+    // Now add content to compose, and expect to see the banner.
     add_content_to_compose_box();
+    expected_invalid_state = false;
     let zephyr_checked = false;
     $("#zephyr-mirror-error").is = (arg) => {
         assert.equal(arg, ":visible");
@@ -339,7 +344,6 @@ test_ui("validate", ({mock_template, override}) => {
     stream_data.add_sub(denmark);
     compose_state.set_stream_id(denmark.stream_id);
     override(realm, "realm_mandatory_topics", true);
-    compose_state.topic("");
     let missing_topic_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.topic_missing);
@@ -347,8 +351,13 @@ test_ui("validate", ({mock_template, override}) => {
         missing_topic_error_rendered = true;
         return "<banner-stub>";
     });
-    assert.ok(!compose_validate.validate());
-    assert.ok(missing_topic_error_rendered);
+
+    for (const topic_name of ["", "(no topic)", `translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`]) {
+        compose_state.topic(topic_name);
+        missing_topic_error_rendered = false;
+        assert.ok(!compose_validate.validate());
+        assert.ok(missing_topic_error_rendered);
+    }
 });
 
 test_ui("get_invalid_recipient_emails", ({override, override_rewire}) => {
@@ -531,9 +540,10 @@ test_ui("test_stream_posting_permission", ({mock_template, override}) => {
     assert.ok(!banner_rendered);
 });
 
-test_ui("test_check_overflow_text", ({override}) => {
+test_ui("test_check_overflow_text", ({override, override_rewire}) => {
     const fake_compose_box = new FakeComposeBox();
 
+    override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
     override(realm, "max_message_length", 10000);
 
     // RED

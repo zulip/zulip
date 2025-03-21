@@ -70,7 +70,7 @@ from zerver.lib.streams import (
     check_stream_name_available,
     do_get_streams,
     filter_stream_authorization_for_adding_subscribers,
-    get_group_setting_value_dict_for_streams,
+    get_anonymous_group_membership_dict_for_streams,
     get_stream_permission_default_group,
     get_stream_permission_policy_name,
     list_to_streams,
@@ -86,7 +86,7 @@ from zerver.lib.topic import (
 )
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_color
-from zerver.lib.types import UserGroupMembersDict
+from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
     UserGroupMembershipDetails,
@@ -603,11 +603,11 @@ def add_subscriptions_backend(
     is_default_stream: Json[bool] = False,
     history_public_to_subscribers: Json[bool] | None = None,
     message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
-    can_add_subscribers_group: Json[int | UserGroupMembersDict] | None = None,
-    can_administer_channel_group: Json[int | UserGroupMembersDict] | None = None,
-    can_send_message_group: Json[int | UserGroupMembersDict] | None = None,
-    can_remove_subscribers_group: Json[int | UserGroupMembersDict] | None = None,
-    can_subscribe_group: Json[int | UserGroupMembersDict] | None = None,
+    can_add_subscribers_group: Json[int | UserGroupMembersData] | None = None,
+    can_administer_channel_group: Json[int | UserGroupMembersData] | None = None,
+    can_send_message_group: Json[int | UserGroupMembersData] | None = None,
+    can_remove_subscribers_group: Json[int | UserGroupMembersData] | None = None,
+    can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
     announce: Json[bool] = False,
     principals: Json[list[str] | list[int]] | None = None,
     authorization_errors_fatal: Json[bool] = True,
@@ -619,7 +619,7 @@ def add_subscriptions_backend(
     if principals is None:
         principals = []
 
-    setting_groups_dict = {}
+    anonymous_group_membership = {}
     group_settings_map = {}
     request_settings_dict = locals()
     # We don't want to calculate this value if no default values are
@@ -640,7 +640,8 @@ def add_subscriptions_backend(
                 setting_name=setting_name,
                 permission_configuration=permission_configuration,
             )
-            setting_groups_dict[group_settings_map[setting_name].id] = setting_value
+            if not isinstance(setting_value, int):
+                anonymous_group_membership[group_settings_map[setting_name].id] = setting_value
         else:
             if system_groups_name_dict is None:
                 system_groups_name_dict = get_role_based_system_groups_dict(realm)
@@ -650,13 +651,9 @@ def add_subscriptions_backend(
             if permission_configuration.default_group_name == "stream_creator_or_nobody":
                 # Default for some settings like "can_administer_channel_group"
                 # is anonymous group with stream creator.
-                setting_groups_dict[group_settings_map[setting_name].id] = UserGroupMembersDict(
-                    direct_subgroups=[], direct_members=[user_profile.id]
+                anonymous_group_membership[group_settings_map[setting_name].id] = (
+                    UserGroupMembersData(direct_subgroups=[], direct_members=[user_profile.id])
                 )
-            else:
-                setting_groups_dict[group_settings_map[setting_name].id] = group_settings_map[
-                    setting_name
-                ].id
 
     for stream_obj in streams_raw:
         # 'color' field is optional
@@ -703,7 +700,7 @@ def add_subscriptions_backend(
         user_profile,
         autocreate=True,
         is_default_stream=is_default_stream,
-        setting_groups_dict=setting_groups_dict,
+        anonymous_group_membership=anonymous_group_membership,
     )
 
     streams_categorized_by_permissions = filter_stream_authorization_for_adding_subscribers(
@@ -842,6 +839,7 @@ def send_messages_for_new_subscribers(
                     recipient_user=recipient_user,
                     content=msg,
                     mention_backend=mention_backend,
+                    acting_user=user_profile,
                 )
             )
 
@@ -964,10 +962,10 @@ def get_stream_backend(
     (stream, sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
 
     recent_traffic = get_streams_traffic({stream.id}, user_profile.realm)
-    setting_groups_dict = get_group_setting_value_dict_for_streams([stream])
+    anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
 
     return json_success(
-        request, data={"stream": stream_to_dict(stream, recent_traffic, setting_groups_dict)}
+        request, data={"stream": stream_to_dict(stream, recent_traffic, anonymous_group_membership)}
     )
 
 
@@ -1065,6 +1063,7 @@ def delete_in_topic(
                 user_profile__in=users_with_stale_user_topic_rows,
                 message__recipient_id=assert_is_not_none(stream.recipient_id),
                 message__subject__iexact=topic_name,
+                message__is_channel_message=True,
             ).values_list("user_profile", flat=True)
         )
         users_with_stale_user_topic_rows = list(

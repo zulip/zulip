@@ -65,8 +65,9 @@ existing owner's role.
 
 {settings_tab|users}
 
-1. Find the user you would like to manage. Click the **pencil**
-   (<i class="fa fa-pencil"></i>) to the right of their name.
+1. Find the user you would like to manage. Click the **manage bot**
+   (<i class="zulip-icon zulip-icon-user-cog"></i>) icon to the right
+   of their name.
 
 1. Under **User role**, select a [role](#roles).
 

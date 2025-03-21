@@ -187,8 +187,8 @@ in the Zulip app to add more to your repertoire as needed.
 * **Move message and (optionally) other messages in the same topic**: <kbd>M</kbd>
 
 * **View message edit and move history**: <kbd>Shift</kbd> +
-  <kbd>H</kbd>. Message edit history [must be
-  enabled](/help/disable-message-edit-history).
+  <kbd>H</kbd>. Viewing message edit history [must be
+  allowed](/help/restrict-message-edit-history-access).
 
 * **Star message**: <kbd>Ctrl</kbd> + <kbd>S</kbd>
 

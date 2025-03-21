@@ -457,9 +457,7 @@ function clear_error_display(): void {
 export function show_new_stream_modal(): void {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
-    stream_settings_components.hide_or_disable_stream_privacy_options_if_required(
-        $("#stream-creation"),
-    );
+    stream_ui_updates.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
 
     stream_create_subscribers.build_widgets();
 

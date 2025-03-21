@@ -19,6 +19,10 @@ Muting has the following effects:
 - In the desktop/web app, muted topics are sorted to the bottom of their channel,
   and muted channels are sorted to the bottom of their channel section.
 
+You can search muted messages using the `is:muted` [search
+filter](/help/search-for-messages#search-by-message-status), or exclude them
+from search results with `-is:muted`.
+
 !!! warn ""
 
     **Note**: Some parts of the Zulip experience may start to degrade

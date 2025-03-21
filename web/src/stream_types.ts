@@ -2,12 +2,13 @@ import {z} from "zod";
 
 import {group_setting_value_schema} from "./types.ts";
 
-export const enum StreamPostPolicy {
-    EVERYONE = 1,
-    ADMINS = 2,
-    RESTRICT_NEW_MEMBERS = 3,
-    MODERATORS = 4,
-}
+export const StreamPostPolicy = {
+    EVERYONE: 1,
+    ADMINS: 2,
+    RESTRICT_NEW_MEMBERS: 3,
+    MODERATORS: 4,
+} as const;
+export type StreamPostPolicy = (typeof StreamPostPolicy)[keyof typeof StreamPostPolicy];
 
 export const stream_permission_group_settings_schema = z.enum([
     "can_add_subscribers_group",
@@ -33,12 +34,7 @@ export const stream_schema = z.object({
     name: z.string(),
     rendered_description: z.string(),
     stream_id: z.number(),
-    stream_post_policy: z.nativeEnum({
-        EVERYONE: StreamPostPolicy.EVERYONE,
-        ADMINS: StreamPostPolicy.ADMINS,
-        RESTRICT_NEW_MEMBERS: StreamPostPolicy.RESTRICT_NEW_MEMBERS,
-        MODERATORS: StreamPostPolicy.MODERATORS,
-    }),
+    stream_post_policy: z.nativeEnum(StreamPostPolicy),
     can_add_subscribers_group: group_setting_value_schema,
     can_administer_channel_group: group_setting_value_schema,
     can_remove_subscribers_group: group_setting_value_schema,

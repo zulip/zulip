@@ -145,6 +145,8 @@ function clear_box(): void {
     $(".compose_control_button_container:has(.needs-empty-compose)").removeClass(
         "disabled-on-hover",
     );
+    // Reset send button status.
+    $("#compose-send-button").removeClass("disabled-message-send-controls");
 }
 
 let autosize_callback_opts: ComposeActionsStartOpts;
@@ -204,6 +206,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
         compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
     }
     compose_ui.maybe_show_scrolling_formatting_buttons("#message-formatting-controls-container");
+    compose_validate.validate_and_update_send_button_status();
 };
 
 export function rewire_complete_starting_tasks(value: typeof complete_starting_tasks): void {

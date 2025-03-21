@@ -302,10 +302,10 @@ class RealmExportTest(ZulipTestCase):
             subgroup="public_stream",
         )
 
-        # Space limit is set as 10 GiB
+        # Space limit is set as 20 GiB
         with patch(
             "zerver.models.Realm.currently_used_upload_space_bytes",
-            return_value=11 * 1024 * 1024 * 1024,
+            return_value=21 * 1024 * 1024 * 1024,
         ):
             result = self.client_post("/json/export/realm")
         self.assert_json_error(

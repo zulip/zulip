@@ -45,26 +45,30 @@ Usually within one business day.
 
 ## Product feedback
 
-* You can **suggest new features**, **report an issue**, or **share any other
-  feedback**, in the [Zulip development community](#zulip-community). It's the
-  best place to interactively discuss your problem or proposal.
-    * Response time: Usually within 1-3 business days.
-
-* If you have a **concrete bug report**, you can create an issue in the
-  appropriate [Zulip GitHub repository](https://github.com/zulip). Use the
-  [server/web app](https://github.com/zulip/zulip/issues/new) repository if you
-  aren't sure where to start.
-    * Response time: Usually within one week.
-
-* To **share feedback privately**, contact
-  [feedback@zulip.com](mailto:feedback@zulip.com). This works well if you'd like
-  to include details about your organization that shouldn't be posted in public.
-    * Response time: Usually within 1-3 business days.
-
-
 Your feedback helps us make Zulip better for everyone! Please reach out if you
 have questions, suggestions, or just want to brainstorm how to make Zulip work
 for your organization.
+
+* There are [several
+  ways](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html)
+  to **report possible bugs**.
+    * Response time: Usually within 1-3 business days in the [Zulip development
+      community](#zulip-community) or by email, or within one week [on
+      GitHub](https://github.com/zulip).
+
+* You can [**request
+  features**](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html)
+  or [**share
+  feedback**](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html#evaluation-and-onboarding-feedback).
+  Many improvements to the Zulip app start with a user's suggestion.
+    * Response time: Usually within 1-3 business days in the [Zulip development
+      community](#zulip-community) or by email, or within one week [on
+      GitHub](https://github.com/zulip).
+
+* To **report issues or share feedback privately**, contact
+  [feedback@zulip.com](mailto:feedback@zulip.com). This works well if you'd like
+  to include details about your organization that shouldn't be posted in public.
+    * Response time: Usually within 1-3 business days.
 
 [development-community]: https://zulip.com/development-community/
 [community-norms]: https://zulip.com/development-community/#community-norms

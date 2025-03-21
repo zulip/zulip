@@ -22,7 +22,6 @@ const alert_words_ui = mock_esm("../src/alert_words_ui");
 const attachments_ui = mock_esm("../src/attachments_ui");
 const audible_notifications = mock_esm("../src/audible_notifications");
 const bot_data = mock_esm("../src/bot_data");
-const compose_banner = mock_esm("../src/compose_banner");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const {electron_bridge} = mock_esm("../src/electron_bridge", {
     electron_bridge: {},
@@ -32,6 +31,7 @@ const emoji_picker = mock_esm("../src/emoji_picker");
 const gear_menu = mock_esm("../src/gear_menu");
 const information_density = mock_esm("../src/information_density");
 const linkifiers = mock_esm("../src/linkifiers");
+const compose_recipient = mock_esm("../src/compose_recipient");
 const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property: noop,
     update_current_view_for_topic_visibility: noop,
@@ -194,7 +194,7 @@ run_test("saved_snippets", ({override}) => {
     override(saved_snippets_ui, "rerender_dropdown_widget", noop);
     {
         const stub = make_stub();
-        override(saved_snippets, "add_saved_snippet", stub.f);
+        override(saved_snippets, "update_saved_snippet_dict", stub.f);
 
         dispatch(add_event);
         assert.equal(stub.num_calls, 1);
@@ -209,6 +209,16 @@ run_test("saved_snippets", ({override}) => {
         dispatch(remove_event);
         assert.equal(stub.num_calls, 1);
         assert_same(stub.get_args("event").event, remove_event.saved_snippet_id);
+    }
+
+    const update_event = event_fixtures.saved_snippets__update;
+    {
+        const stub = make_stub();
+        override(saved_snippets, "update_saved_snippet_dict", stub.f);
+
+        dispatch(update_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, update_event.saved_snippet);
     }
 });
 
@@ -488,7 +498,9 @@ run_test("realm settings", ({override}) => {
     override(gear_menu, "rerender", noop);
     override(narrow_title, "redraw_title", noop);
     override(navbar_alerts, "toggle_organization_profile_incomplete_banner", noop);
-    override(compose_banner, "clear_errors", noop);
+    override(compose_recipient, "update_topic_inputbox_on_mandatory_topics_change", noop);
+    override(compose_recipient, "update_compose_area_placeholder_text", noop);
+    override(compose_recipient, "check_posting_policy_for_compose_box", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
         with_overrides(({override}) => {
@@ -557,7 +569,7 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_default_code_block_language, "javascript");
 
     let update_called = false;
-    stream_settings_ui.update_stream_privacy_choices = (property) => {
+    stream_ui_updates.update_stream_privacy_choices = (property) => {
         assert_same(property, "can_create_web_public_channel_group");
         update_called = true;
     };
@@ -567,7 +579,7 @@ run_test("realm settings", ({override}) => {
     assert_same(update_called, true);
 
     let update_stream_privacy_choices_called = false;
-    stream_settings_ui.update_stream_privacy_choices = (property) => {
+    stream_ui_updates.update_stream_privacy_choices = (property) => {
         assert_same(property, "can_create_public_channel_group");
         update_stream_privacy_choices_called = true;
     };
@@ -583,6 +595,7 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_can_create_public_channel_group", 1);
     override(realm, "realm_can_invite_users_group", 1);
     override(realm, "realm_can_move_messages_between_topics_group", 1);
+    override(realm, "realm_can_move_messages_between_topics_group", 5);
     override(realm, "realm_direct_message_permission_group", 1);
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
@@ -607,6 +620,7 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_can_create_public_channel_group, 3);
     assert_same(realm.realm_can_invite_users_group, 3);
     assert_same(realm.realm_can_move_messages_between_topics_group, 3);
+    assert_same(realm.realm_can_resolve_topics_group, 1);
     assert_same(realm.realm_direct_message_permission_group, 3);
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);
@@ -1338,6 +1352,7 @@ run_test("user_status", ({override}) => {
         override(activity_ui, "redraw_user", stub.f);
         override(compose_pm_pill, "get_user_ids", () => [event.user_id]);
         override(pm_list, "update_private_messages", noop);
+        override(compose_recipient, "update_compose_area_placeholder_text", noop);
         dispatch(event);
         assert.equal(stub.num_calls, 2);
         const args = stub.get_args("user_id");

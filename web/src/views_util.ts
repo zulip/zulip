@@ -5,7 +5,7 @@ import * as activity_ui from "./activity_ui.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
-import * as dropdown_widget from "./dropdown_widget.ts";
+import type * as dropdown_widget from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_view_header from "./message_view_header.ts";
@@ -34,18 +34,14 @@ const TIPPY_PROPS: Partial<tippy.Props> = {
 export const COMMON_DROPDOWN_WIDGET_PARAMS = {
     get_options: filters_dropdown_options,
     tippy_props: TIPPY_PROPS,
-    unique_id_type: dropdown_widget.DataTypes.STRING,
+    unique_id_type: "string",
     hide_search_box: true,
-    bold_current_selection: true,
     disable_for_spectators: true,
-};
+} satisfies Partial<dropdown_widget.DropdownWidgetOptions>;
 
-export function filters_dropdown_options(current_value: string | number | undefined): {
-    unique_id: string;
-    name: string;
-    description: string;
-    bold_current_selection: boolean;
-}[] {
+export function filters_dropdown_options(
+    current_value: string | number | undefined,
+): dropdown_widget.Option[] {
     return [
         {
             unique_id: FILTERS.FOLLOWED_TOPICS,

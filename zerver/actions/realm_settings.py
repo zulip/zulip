@@ -24,10 +24,11 @@ from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
 from zerver.lib.sessions import delete_realm_user_sessions
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.types import UserGroupMembersDict
+from zerver.lib.types import UserGroupMembersData
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import (
+    convert_to_user_group_members_dict,
     get_group_setting_value_for_api,
     get_group_setting_value_for_audit_log_data,
 )
@@ -179,7 +180,7 @@ def do_change_realm_permission_group_setting(
     realm: Realm,
     setting_name: str,
     user_group: UserGroup,
-    old_setting_api_value: int | UserGroupMembersDict | None = None,
+    old_setting_api_value: int | UserGroupMembersData | None = None,
     *,
     acting_user: UserProfile | None,
 ) -> None:
@@ -212,7 +213,7 @@ def do_change_realm_permission_group_setting(
         type="realm",
         op="update_dict",
         property="default",
-        data={setting_name: new_setting_api_value},
+        data={setting_name: convert_to_user_group_members_dict(new_setting_api_value)},
     )
 
     send_event_on_commit(realm, event, active_user_ids(realm.id))

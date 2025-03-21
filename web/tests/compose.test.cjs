@@ -66,6 +66,7 @@ const echo = zrequire("echo");
 const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+const compose_validate = zrequire("compose_validate");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const realm = {};
@@ -637,6 +638,7 @@ test_ui("update_fade", ({override, override_rewire}) => {
     override_rewire(compose_recipient, "update_narrow_to_recipient_visibility", () => {
         update_narrow_to_recipient_visibility_called = true;
     });
+    override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
     override_rewire(drafts, "update_compose_draft_count", noop);
     override(compose_pm_pill, "get_user_ids", () => []);
 

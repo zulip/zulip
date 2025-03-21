@@ -63,6 +63,7 @@ from zerver.lib.event_types import (
     EventRestart,
     EventSavedSnippetsAdd,
     EventSavedSnippetsRemove,
+    EventSavedSnippetsUpdate,
     EventScheduledMessagesAdd,
     EventScheduledMessagesRemove,
     EventScheduledMessagesUpdate,
@@ -170,7 +171,6 @@ check_draft_update = make_checker(EventDraftsUpdate)
 check_heartbeat = make_checker(EventHeartbeat)
 check_invites_changed = make_checker(EventInvitesChanged)
 check_message = make_checker(EventMessage)
-check_muted_topics = make_checker(EventMutedTopics)
 check_muted_users = make_checker(EventMutedUsers)
 check_onboarding_steps = make_checker(EventOnboardingSteps)
 check_reaction_add = make_checker(EventReactionAdd)
@@ -189,6 +189,7 @@ check_realm_user_remove = make_checker(EventRealmUserRemove)
 check_restart = make_checker(EventRestart)
 check_saved_snippets_add = make_checker(EventSavedSnippetsAdd)
 check_saved_snippets_remove = make_checker(EventSavedSnippetsRemove)
+check_saved_snippets_update = make_checker(EventSavedSnippetsUpdate)
 check_scheduled_message_add = make_checker(EventScheduledMessagesAdd)
 check_scheduled_message_remove = make_checker(EventScheduledMessagesRemove)
 check_scheduled_message_update = make_checker(EventScheduledMessagesUpdate)
@@ -231,6 +232,7 @@ check_web_reload_client_event = make_checker(EventWebReloadClient)
 
 _check_delete_message = make_checker(EventDeleteMessage)
 _check_has_zoom_token = make_checker(EventHasZoomToken)
+_check_muted_topics = make_checker(EventMutedTopics)
 _check_presence = make_checker(EventPresence)
 _check_realm_bot_add = make_checker(EventRealmBotAdd)
 _check_realm_bot_update = make_checker(EventRealmBotUpdate)
@@ -301,6 +303,18 @@ def check_has_zoom_token(
 ) -> None:
     _check_has_zoom_token(var_name, event)
     assert event["value"] == value
+
+
+def check_muted_topics(
+    var_name: str,
+    event: dict[str, object],
+) -> None:
+    _check_muted_topics(var_name, event)
+    muted_topics = event["muted_topics"]
+    assert isinstance(muted_topics, list)
+    for muted_topic in muted_topics:
+        muted_topic_tuple = tuple(muted_topic)
+        assert list(map(type, muted_topic_tuple)) == [str, str, int]
 
 
 def check_presence(
@@ -535,7 +549,13 @@ def check_stream_update(
         assert value in Stream.STREAM_POST_POLICY_TYPES
     elif prop in Stream.stream_permission_group_settings:
         assert extra_keys == set()
-        assert isinstance(value, int | UserGroupMembersDict)
+        assert isinstance(value, int | dict)
+        # We cannot validate a TypedDict using isinstance, thus
+        # requiring this check.
+        if isinstance(value, dict):
+            expected_keys = set(inspect.get_annotations(UserGroupMembersDict).keys())
+            keys = set(value.keys())
+            assert expected_keys == keys
     elif prop == "first_message_id":
         assert extra_keys == set()
         assert isinstance(value, int)

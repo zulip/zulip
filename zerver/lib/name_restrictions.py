@@ -21,7 +21,7 @@ def is_reserved_subdomain(subdomain: str) -> bool:
 
 
 def is_disposable_domain(domain: str) -> bool:
-    if domain.lower() in WHITELISTED_EMAIL_DOMAINS:
+    if domain.lower() in OVERRIDE_ALLOW_EMAIL_DOMAINS:
         return False
     return domain.lower() in DISPOSABLE_DOMAINS
 
@@ -371,7 +371,8 @@ GENERIC_RESERVED_SUBDOMAINS = {
 
 DISPOSABLE_DOMAINS = set(blocklist)
 
-WHITELISTED_EMAIL_DOMAINS = {
+OVERRIDE_ALLOW_EMAIL_DOMAINS = {
+    "airsi.de",
     # Controlled by https://www.abine.com; more legitimate than most
     # disposable domains
     "opayq.com",

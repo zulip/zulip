@@ -813,6 +813,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_mention_many_users_group":
         case "realm_can_move_messages_between_channels_group":
         case "realm_can_move_messages_between_topics_group":
+        case "realm_can_resolve_topics_group":
         case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
@@ -914,8 +915,8 @@ export function get_group_setting_widget_value(
     }
 
     return {
-        direct_subgroups,
-        direct_members,
+        direct_subgroups: direct_subgroups.sort(),
+        direct_members: direct_members.sort(),
     };
 }
 
@@ -1071,6 +1072,7 @@ export function populate_data_for_realm_settings_request(
                     "can_mention_many_users_group",
                     "can_move_messages_between_channels_group",
                     "can_move_messages_between_topics_group",
+                    "can_resolve_topics_group",
                     "can_summarize_topics_group",
                     "create_multiuse_invite_group",
                     "direct_message_initiator_group",
@@ -1535,6 +1537,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["realm_can_mention_many_users_group", null],
     ["realm_can_move_messages_between_channels_group", null],
     ["realm_can_move_messages_between_topics_group", null],
+    ["realm_can_resolve_topics_group", null],
     ["realm_can_summarize_topics_group", null],
     ["realm_create_multiuse_invite_group", null],
     ["realm_direct_message_initiator_group", null],
@@ -1556,25 +1559,25 @@ export function set_group_setting_widget_value(
     pill_widget: GroupSettingPillContainer,
     property_value: GroupSettingValue,
 ): void {
-    pill_widget.clear();
+    pill_widget.clear(true);
 
     if (typeof property_value === "number") {
         const user_group = user_groups.get_user_group_from_id(property_value);
         if (user_group.name === "role:nobody") {
             return;
         }
-        user_group_pill.append_user_group(user_group, pill_widget);
+        user_group_pill.append_user_group(user_group, pill_widget, false);
     } else {
         for (const setting_sub_group_id of property_value.direct_subgroups) {
             const user_group = user_groups.get_user_group_from_id(setting_sub_group_id);
             if (user_group.name === "role:nobody") {
                 continue;
             }
-            user_group_pill.append_user_group(user_group, pill_widget);
+            user_group_pill.append_user_group(user_group, pill_widget, false);
         }
         for (const setting_user_id of property_value.direct_members) {
             const user = people.get_user_by_id_assert_valid(setting_user_id);
-            user_pill.append_user(user, pill_widget);
+            user_pill.append_user(user, pill_widget, false);
         }
     }
 }

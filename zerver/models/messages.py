@@ -97,6 +97,8 @@ class AbstractMessage(models.Model):
     has_image = models.BooleanField(default=False, db_index=True)
     # Whether the message contains a link.
     has_link = models.BooleanField(default=False, db_index=True)
+    # If the message is a channel message (as opposed to a DM or group-DM)
+    is_channel_message = models.BooleanField(default=True, db_index=True)
 
     class Meta:
         abstract = True
@@ -210,6 +212,7 @@ class Message(AbstractMessage):
                 Upper("subject"),
                 F("id").desc(nulls_last=True),
                 name="zerver_message_realm_upper_subject",
+                condition=Q(is_channel_message=True),
             ),
             models.Index(
                 # Most stream/topic searches are case-insensitive by
@@ -221,6 +224,7 @@ class Message(AbstractMessage):
                 Upper("subject"),
                 F("id").desc(nulls_last=True),
                 name="zerver_message_realm_recipient_upper_subject",
+                condition=Q(is_channel_message=True),
             ),
             models.Index(
                 # Used by already_sent_mirrored_message_id, and when
@@ -231,6 +235,7 @@ class Message(AbstractMessage):
                 "subject",
                 F("id").desc(nulls_last=True),
                 name="zerver_message_realm_recipient_subject",
+                condition=Q(is_channel_message=True),
             ),
             models.Index(
                 # Only used by update_first_visible_message_id
@@ -301,6 +306,7 @@ def get_context_for_message(message: Message) -> QuerySet[Message]:
         realm_id=message.realm_id,
         recipient_id=message.recipient_id,
         subject__iexact=message.subject,
+        is_channel_message=True,
         id__lt=message.id,
         date_sent__gt=message.date_sent - timedelta(minutes=15),
     ).order_by("-id")[:10]

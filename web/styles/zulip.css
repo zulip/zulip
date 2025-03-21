@@ -953,13 +953,11 @@ div.focused-message-list.is-conversation-view .recipient_row {
     gap: 5px;
     margin: 0;
     padding-right: 5px;
+    position: relative;
 }
 
 .inline_topic_edit {
     flex: 1;
-    /* Set the max width of the inline topic edit input to the realm's
-       max_topic_length (60 chars) + 5 chars extra for some cushion. */
-    max-width: 65ch;
     line-height: 1.2142em;
     padding: 0 5px;
     color: hsl(0deg 0% 33%);
@@ -977,6 +975,25 @@ div.focused-message-list.is-conversation-view .recipient_row {
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
+
+    &.empty-topic-display::placeholder {
+        color: inherit;
+    }
+}
+
+.inline-topic-edit-placeholder {
+    position: absolute;
+    left: 5px;
+    max-width: 65%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.inline-topic-edit-placeholder-visible {
+    visibility: visible;
 }
 
 .topic_edit_save {
@@ -1264,7 +1281,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
 }
 
 #multiuse_invite_link {
-    width: 370px;
+    width: 100%;
     text-overflow: ellipsis;
     white-space: nowrap;
     display: inline-block;
@@ -1556,6 +1573,19 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
            allow the width to be that of the flexing
            button elements. */
         width: auto;
+    }
+}
+
+@media (width < $md_min) {
+    .spectator-view {
+        #navbar-middle {
+            /* = (width of button, square with header) * 3 (number of buttons) */
+            margin-right: calc(var(--header-height) * 3);
+        }
+
+        .header-main .column-right {
+            width: calc(var(--header-height) * 3);
+        }
     }
 }
 
@@ -2168,6 +2198,61 @@ body:not(.spectator-view) {
         line-height: 20px;
         white-space: normal;
     }
+
+    .dropdown-list .dropdown-list-item-common-styles {
+        position: relative;
+        display: flex;
+        color: var(--color-dropdown-item);
+        padding: 3px 10px 3px 8px;
+        font-weight: 400;
+        white-space: normal;
+        /* Keep the line-height stable, instead of using the
+           user-set line-height, so that the icon is always
+           vertically centered properly. */
+        line-height: 1.214;
+
+        .stream-privacy-type-icon {
+            line-height: 1.214;
+            font-size: 0.93em;
+            /* We set only the width so that flexbox
+            can do its work to properly center,
+            regardless of the height. */
+            width: 0.93em;
+            padding-right: 5px;
+            /* Override the [data-tippy-root] style in
+               `tooltips.css`.
+               Because we are manually holding icon
+               alignment to the first/only line of a
+               channel, we make this adjustment here.
+               Calculated by eye to look good at 12px-20px. */
+            top: 0.05em;
+        }
+
+        .dropdown-list-delete,
+        .dropdown-list-edit {
+            position: absolute;
+            top: 0;
+            right: 5px;
+            visibility: hidden;
+        }
+
+        .dropdown-list-edit {
+            right: 30px;
+        }
+
+        &:focus,
+        &:hover {
+            color: var(--color-dropdown-item);
+            text-decoration: none;
+            background-color: var(--background-color-active-dropdown-item);
+            outline: none;
+
+            .dropdown-list-delete,
+            .dropdown-list-edit {
+                visibility: visible;
+            }
+        }
+    }
 }
 
 .dropdown-list-container .list-item {
@@ -2179,44 +2264,21 @@ body:not(.spectator-view) {
     }
 }
 
-.dropdown-list-container .dropdown-list .dropdown-list-item-common-styles {
-    position: relative;
-    display: flex;
-    align-items: center;
-    color: var(--color-dropdown-item);
-    padding: 3px 10px 3px 8px;
-    font-weight: 400;
-    line-height: var(--base-line-height-unitless);
-    white-space: normal;
+.inbox-filter-dropdown-list-container,
+.recent-view-filter-dropdown-list-container {
+    overflow: visible;
 
-    .stream-privacy-type-icon {
-        font-size: 0.93em;
-        /* We set only the width so that flexbox
-           can do its work to properly center,
-           regardless of the height. */
-        width: 0.93em;
-        padding-right: 5px;
-        /* Override the [data-tippy-root]
-           style in `tooltips.css`. */
-        top: 0;
-    }
+    .list-item {
+        &:focus {
+            border-radius: 4px;
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: -2px;
+            background-color: transparent;
+        }
 
-    .dropdown-list-delete {
-        position: absolute;
-        top: 0;
-        right: 5px;
-        visibility: hidden;
-    }
-
-    &:focus,
-    &:hover {
-        color: var(--color-dropdown-item);
-        text-decoration: none;
-        background-color: var(--background-color-active-dropdown-item);
-        outline: none;
-
-        .dropdown-list-delete {
-            visibility: visible;
+        &.active {
+            background-color: var(--background-color-active-dropdown-item);
+            outline: none;
         }
     }
 }

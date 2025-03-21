@@ -18,7 +18,72 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 11.0
+
+Feature levels 372-375 reserved for future use in 10.x maintenance
+releases.
+
 ## Changes in Zulip 10.0
+
+**Feature level 371**
+
+No changes; feature level used for Zulip 10.0 release.
+
+**Feature level 370**
+
+* [`POST /messages`](/api/send-message),
+  [`POST /scheduled_messages`](/api/create-scheduled-message),
+  [`PATCH /scheduled_messages/<int:scheduled_message_id>`](/api/update-scheduled-message):
+  The `"(no topic)"` value when used for `topic` parameter is
+  now interpreted as an empty string.
+
+**Feature level 369**
+
+* [`POST /register`](/api/register-queue): Added `navigation_tour_video_url`
+  to the response.
+
+**Feature level 368**
+
+* [`GET /events`](/api/get-events): An event with `type: "saved_snippet"`
+  and `op: "update"` is sent to the current user when a saved snippet is edited.
+* [`PATCH /saved_snippets/{saved_snippet_id}`](/api/edit-saved-snippet):
+  Added a new endpoint for editing a saved snippet.
+
+**Feature level 367**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events):
+  Added new  `can_resolve_topics_group` realm setting, which is a
+  [group-setting value](/api/group-setting-values) describing the set of
+  users with permission to resolve topics in a stream.
+
+**Feature level 366**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added a new [search/narrow filter](/api/construct-narrow),
+  `is:muted`, matching messages in topics and channels that the user
+  has [muted](/help/mute-a-topic).
+
+**Feature level 365**
+
+* [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): Added
+  `last_moved_timestamp` field to message objects for when the message
+  was last moved to a different channel or topic. If the message's topic
+  has only been [resolved or unresolved](/help/resolve-a-topic), then
+  the field is not present. Clients should use this field, rather than
+  parsing the message object's `edit_history` array, to display an
+  indicator that the message has been moved.
+ * [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): The
+  `last_edit_timestamp` field on message objects is only present if the
+  message's content has been edited. Previously, this field was present
+  if the message's content had been edited or moved to a different
+  channel or topic. Clients should use this field, rather than parsing
+  the message object's `edit_history` array, to display an indicator
+  that the message has been edited.
 
 **Feature level 364**
 

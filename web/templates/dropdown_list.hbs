@@ -1,10 +1,13 @@
 {{#with item}}
-    <li class="list-item" role="presentation" data-unique-id="{{unique_id}}" data-name="{{name}}" tabindex="0">
+    <li class="list-item {{#if is_item_selected}}active{{/if}}" role="presentation" data-unique-id="{{unique_id}}" data-name="{{name}}" tabindex="0">
         {{#if description}}
         <a class="dropdown-list-item-common-styles">
             <span class="dropdown-list-item-name">
                 {{#if bold_current_selection}}
                     <span class="dropdown-list-bold-selected">{{name}}</span>
+                    {{#if has_edit_icon}}
+                        {{> components/icon_button custom_classes="dropdown-list-edit" intent="neutral" icon="edit" aria-label=(t "Edit snippet") }}
+                    {{/if}}
                     {{#if has_delete_icon}}
                         {{> components/icon_button custom_classes="dropdown-list-delete" intent="danger" icon="trash" aria-label=(t "Delete snippet") }}
                     {{/if}}

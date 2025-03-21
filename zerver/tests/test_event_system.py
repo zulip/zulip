@@ -171,7 +171,7 @@ class EventsEndpointTest(ZulipTestCase):
                 status_code=401,
             )
 
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(15):
             result = self.client_post("/json/register")
             result_dict = self.assert_json_success(result)
             self.assertEqual(result_dict["queue_id"], None)
@@ -1213,7 +1213,7 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         with (
-            self.assert_database_query_count(46),
+            self.assert_database_query_count(42),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=user.realm)
@@ -1230,8 +1230,8 @@ class FetchQueriesTest(ZulipTestCase):
             onboarding_steps=1,
             presence=1,
             # 2 of the 3 queries here are a single query that is used
-            # both for the 'realm' event type and the
-            # 'realm_user_groups' event type.
+            # for all the 'realm', 'stream', 'subscription'
+            # and 'realm_user_groups' event types.
             realm=3,
             # Similarly, this query is shared with the realm_user total.
             realm_billing=1,
@@ -1250,8 +1250,12 @@ class FetchQueriesTest(ZulipTestCase):
             saved_snippets=1,
             scheduled_messages=1,
             starred_messages=1,
+            # 3 of the 5 queries here are shared with other event types
+            # as mentioned above.
             stream=5,
             stop_words=0,
+            # 3 of the 9 queries here are shared with other event types
+            # as mentioned above.
             subscription=9,
             update_display_settings=0,
             update_global_notifications=0,

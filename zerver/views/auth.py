@@ -803,12 +803,15 @@ def redirect_to_misconfigured_ldap_notice(request: HttpRequest, error_type: int)
         raise AssertionError("Invalid error type")
 
 
-def show_deactivation_notice(request: HttpRequest) -> HttpResponse:
+def show_deactivation_notice(request: HttpRequest, next: str = "/") -> HttpResponse:
     realm = get_realm_from_request(request)
     if realm and realm.deactivated:
         context = {"deactivated_domain_name": realm.name}
         if realm.deactivated_redirect is not None:
-            context["deactivated_redirect"] = realm.deactivated_redirect
+            # URL hash is automatically preserved by the browser.
+            # See https://stackoverflow.com/a/5283739
+            redirect_to = get_safe_redirect_to(next, realm.deactivated_redirect)
+            return HttpResponseRedirect(redirect_to)
         return render(request, "zerver/deactivated.html", context=context)
 
     return HttpResponseRedirect(reverse("login_page"))
@@ -919,6 +922,8 @@ def login_page(
 
     realm = get_realm_from_request(request)
     if realm and realm.deactivated:
+        if realm.deactivated_redirect:
+            return show_deactivation_notice(request, next)
         return redirect_to_deactivation_notice()
 
     extra_context = kwargs.pop("extra_context", {})

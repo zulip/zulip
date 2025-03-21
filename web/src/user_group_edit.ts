@@ -129,7 +129,7 @@ function update_add_members_elements(group: UserGroup): void {
     // Otherwise, we adjust whether the widgets are disabled based on
     // whether this user is authorized to add members.
     const $input_element = $add_members_container.find(".input").expectOne();
-    const $button_element = $add_members_container.find('button[name="add_member"]').expectOne();
+    const $button_element = $add_members_container.find("#add_member").expectOne();
 
     if (settings_data.can_add_members_to_user_group(group.id)) {
         $input_element.prop("contenteditable", true);
@@ -1058,7 +1058,7 @@ export function show_settings_for(group: UserGroup): void {
         .find(".realm-group-permissions")
         .on(
             "click",
-            ".subsection-header .subsection-changes-save button",
+            ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
             function (this: HTMLElement, e: JQuery.ClickEvent) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1073,7 +1073,7 @@ export function show_settings_for(group: UserGroup): void {
         .find(".channel-group-permissions")
         .on(
             "click",
-            ".subsection-header .subsection-changes-save button",
+            ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
             function (this: HTMLElement, e: JQuery.ClickEvent) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1095,7 +1095,7 @@ export function show_settings_for(group: UserGroup): void {
         .find(".user-group-permissions")
         .on(
             "click",
-            ".subsection-header .subsection-changes-save button",
+            ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
             function (this: HTMLElement, e: JQuery.ClickEvent) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1375,9 +1375,9 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
         update_group_details(group);
         if (event.data.name !== undefined) {
             // update settings title
-            $("#groups_overlay .user-group-info-title").text(
-                user_groups.get_display_group_name(group.name),
-            );
+            $("#groups_overlay .user-group-info-title")
+                .text(user_groups.get_display_group_name(group.name))
+                .addClass("showing-info-title");
         }
         if (event.data.can_mention_group !== undefined) {
             sync_group_permission_setting("can_mention_group", group);
@@ -1662,11 +1662,9 @@ export function filter_click_handler(
     widget.render();
 }
 
-function filters_dropdown_options(current_value: string | number | undefined): {
-    unique_id: string;
-    name: string;
-    bold_current_selection: boolean;
-}[] {
+function filters_dropdown_options(
+    current_value: string | number | undefined,
+): dropdown_widget.Option[] {
     return [
         {
             unique_id: FILTERS.ACTIVE_GROUPS,
@@ -2034,7 +2032,7 @@ export function initialize(): void {
 
     $("#groups_overlay_container").on(
         "click",
-        ".subsection-header .subsection-changes-save button",
+        ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
         function (this: HTMLElement, e) {
             e.preventDefault();
             e.stopPropagation();

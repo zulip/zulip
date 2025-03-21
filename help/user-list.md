@@ -18,6 +18,11 @@ You can choose to have each user's name appear with their
 user list styles. To avoid distraction, you can
 [hide](#show-or-hide-the-user-list) the user list any time.
 
+Here is an overview of all the information and actions you can take in Zulip's
+user list.
+
+![User list information and actions](/static/images/help/user-list-actions.png)
+
 ## Filter users
 
 {start_tabs}
@@ -25,7 +30,7 @@ user list styles. To avoid distraction, you can
 {tab|desktop-web}
 
 1. If the user list is hidden, click the **user list** (<i class="zulip-icon
-   zulip-icon-triple-users"></i> ) icon in the upper right to show it.
+   zulip-icon-user-list"></i> ) icon in the upper right to show it.
 
 1. Type the name of the user you are looking for in the **Filter users** box at
    the top of the right sidebar.
@@ -44,7 +49,7 @@ user list styles. To avoid distraction, you can
 {tab|via-right-sidebar}
 
 1. If the user list is hidden, click the **user list** (<i class="zulip-icon
-   zulip-icon-triple-users"></i> ) icon in the upper right to show it.
+   zulip-icon-user-list"></i> ) icon in the upper right to show it.
 
 1. Click the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>)
    to the right of the **Filter users** box.
@@ -65,7 +70,7 @@ user list styles. To avoid distraction, you can
 
 {tab|desktop-web}
 
-1. Click the **user list** (<i class="zulip-icon zulip-icon-triple-users"></i>
+1. Click the **user list** (<i class="zulip-icon zulip-icon-user-list"></i>
 ) icon in the upper right.
 
 !!! keyboard_tip ""

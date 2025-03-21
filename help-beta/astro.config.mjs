@@ -321,7 +321,7 @@ export default defineConfig({
                         "integrations-overview",
                         "add-a-bot-or-integration",
                         "generate-integration-url",
-                        "edit-a-bot",
+                        "manage-a-bot",
                         "deactivate-or-reactivate-a-bot",
                         "request-an-integration",
                         "restrict-bot-creation",

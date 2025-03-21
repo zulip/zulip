@@ -3,6 +3,8 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
+import * as resolved_topic from "../shared/src/resolved_topic.ts";
+
 import * as activity from "./activity.ts";
 import * as alert_words from "./alert_words.ts";
 import * as channel from "./channel.ts";
@@ -315,12 +317,13 @@ export function insert_new_messages(
                 continue;
             }
 
-            message_events_util.maybe_add_narrowed_messages(messages, list);
+            const messages_are_new = true;
+            message_events_util.maybe_add_narrowed_messages(messages, list, messages_are_new);
             continue;
         }
 
         // Update the message list's rendering for the newly arrived messages.
-        const render_info = list.add_messages(messages);
+        const render_info = list.add_messages(messages, {messages_are_new: true});
 
         // The render_info.need_user_to_scroll calculation, which
         // looks at message feed scroll positions to see whether the
@@ -373,6 +376,16 @@ export function insert_new_messages(
     pm_list.update_private_messages();
 
     return messages;
+}
+
+function topic_resolve_toggled(new_topic: string, original_topic: string): boolean {
+    if (resolved_topic.is_resolved(new_topic) && new_topic.slice(2) === original_topic) {
+        return true;
+    }
+    if (resolved_topic.is_resolved(original_topic) && original_topic.slice(2) === new_topic) {
+        return true;
+    }
+    return false;
 }
 
 export function update_messages(events: UpdateMessageEvent[]): void {
@@ -582,7 +595,15 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                         ...moved_message.edit_history,
                     ];
                 }
-                moved_message.last_edit_timestamp = event.edit_timestamp;
+
+                if (stream_changed) {
+                    moved_message.last_moved_timestamp = event.edit_timestamp;
+                } else if (topic_edited) {
+                    assert(new_topic !== undefined);
+                    if (!topic_resolve_toggled(new_topic, orig_topic)) {
+                        moved_message.last_moved_timestamp = event.edit_timestamp;
+                    }
+                }
 
                 // Update the unread counts; again, this must be called
                 // before we modify the topic field on the message.
@@ -753,7 +774,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             // flag is used to indicated update_message events that are
             // triggered by server latency optimizations, not user
             // interactions; these should not generate edit history updates.
-            if (!event.rendering_only) {
+            if (!event.rendering_only && any_message_content_edited) {
                 anchor_message.last_edit_timestamp = event.edit_timestamp;
             }
 

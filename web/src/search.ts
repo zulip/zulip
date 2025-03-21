@@ -53,7 +53,7 @@ function full_search_query_in_terms(): NarrowTerm[] {
     assert(search_pill_widget !== null);
     return [
         ...search_pill.get_current_search_pill_terms(search_pill_widget),
-        ...Filter.parse(get_search_bar_text()),
+        ...Filter.parse(get_search_bar_text(), true),
     ];
 }
 

@@ -141,8 +141,13 @@ class UserTopicDict(TypedDict, total=False):
     visibility_policy: int
 
 
+class UserGroupMembersDict(TypedDict):
+    direct_members: list[int]
+    direct_subgroups: list[int]
+
+
 @dataclass
-class UserGroupMembersDict:
+class UserGroupMembersData:
     direct_members: list[int]
     direct_subgroups: list[int]
 

@@ -89,7 +89,7 @@ def check_issue_labels() -> None:
             if is_issue(item) and not area_labeled(item)
         )
 
-    if len(unlabeled_issue_urls):
+    if unlabeled_issue_urls:
         print("The following issues don't have any area labels associated with it")
         print("\n".join(unlabeled_issue_urls))
     else:

@@ -49,6 +49,7 @@ export const server_message_schema = z
         id: z.number(),
         is_me_message: z.boolean(),
         last_edit_timestamp: z.number().optional(),
+        last_moved_timestamp: z.number().optional(),
         reactions: message_reaction_schema,
         recipient_id: z.number(),
         sender_email: z.string(),

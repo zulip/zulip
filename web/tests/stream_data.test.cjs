@@ -613,6 +613,7 @@ test("stream_settings", ({override}) => {
         can_subscribe_group: admins_group.id,
         date_created: 1691057093,
         creator_id: null,
+        is_archived: true,
     };
     stream_data.add_sub(cinnamon);
     stream_data.add_sub(amber);
@@ -620,8 +621,8 @@ test("stream_settings", ({override}) => {
 
     let sub_rows = stream_settings_data.get_streams_for_settings_page();
     assert.equal(sub_rows[0].color, "blue");
-    assert.equal(sub_rows[1].color, "amber");
-    assert.equal(sub_rows[2].color, "cinnamon");
+    /* Archived channel "ambed" is skipped, since it is archived. */
+    assert.equal(sub_rows[1].color, "cinnamon");
 
     sub_rows = stream_data.get_streams_for_admin();
     assert.equal(sub_rows[0].name, "a");
@@ -733,9 +734,6 @@ test("delete_sub", () => {
 
     blueslip.expect("warn", "Failed to archive stream 99999");
     stream_data.delete_sub(99999);
-
-    blueslip.expect("warn", "Can't subscribe to an archived stream.");
-    stream_data.subscribe_myself(canada);
 });
 
 test("notifications", ({override}) => {
@@ -1802,4 +1800,33 @@ run_test("can_toggle_subscription", ({override}) => {
     assert.equal(stream_data.can_toggle_subscription(social), false);
     social.can_subscribe_group = me_group.id;
     assert.equal(stream_data.can_toggle_subscription(social), true);
+});
+
+run_test("can_archive_stream", ({override}) => {
+    const social = {
+        subscribed: false,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: false,
+        can_add_subscribers_group: me_group.id,
+        can_administer_channel_group: nobody_group.id,
+        can_subscribe_group: me_group.id,
+    };
+    override(current_user, "user_id", me.user_id);
+
+    override(current_user, "is_admin", true);
+    social.is_archived = true;
+    assert.equal(stream_data.can_archive_stream(social), false);
+
+    social.is_archived = false;
+    assert.equal(stream_data.can_archive_stream(social), true);
+
+    override(current_user, "is_admin", false);
+    assert.equal(stream_data.can_archive_stream(social), false);
+
+    social.can_administer_channel_group = me_group.id;
+    assert.equal(stream_data.can_archive_stream(social), true);
 });

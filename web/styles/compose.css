@@ -1108,6 +1108,10 @@ textarea.new_message_textarea {
         display: none;
         visibility: hidden;
         pointer-events: none;
+
+        &.visible {
+            visibility: visible;
+        }
     }
 
     /* Styles for new conversation button in the recipient_box */
@@ -1146,14 +1150,17 @@ textarea.new_message_textarea {
 }
 
 #compose_select_recipient_widget {
-    width: auto;
+    /* We set width to 100% to get the ellipsis when
+       needed, but the flex and max-width properties
+       on the widget wrapper ultimately determine
+       how much space the channel picker occupies. */
+    width: 100%;
     outline: none;
     /* We override the component-level colors to
        ensure concord with the topic box. */
     color: var(--color-compose-recipient-box-text-color);
     background-color: var(--color-compose-recipient-box-background-color);
     border-color: var(--color-compose-recipient-box-border-color);
-    max-width: 30vw;
 
     &.dropdown-widget-button {
         padding: 0 6px;
@@ -1189,9 +1196,8 @@ textarea.new_message_textarea {
     &:focus-visible {
         border: 1px solid var(--color-compose-send-button-focus-border);
         box-shadow: 0 0 5px var(--color-compose-send-button-focus-shadow);
-        background-color: var(
-            --color-compose-send-button-background-interactive
-        );
+        /* Override default browser ring. */
+        outline: 0;
     }
 
     &:hover {
@@ -1455,16 +1461,14 @@ textarea.new_message_textarea {
         flex-direction: column-reverse;
     }
 
-    &.disabled-message-send-controls {
-        & button {
-            cursor: default;
-            opacity: 0.5;
-        }
-    }
-
     .compose-button-disabled {
         pointer-events: none;
     }
+}
+
+#compose-send-button.disabled-message-send-controls {
+    cursor: default;
+    opacity: 0.5;
 }
 
 .drag {
@@ -1489,6 +1493,17 @@ textarea.new_message_textarea {
 
 #compose_select_recipient_widget_wrapper {
     display: flex;
+    /* Allow the contents wrapped here to
+       expand the available space... */
+    white-space: nowrap;
+    flex: 0 1 fit-content;
+    /* But force an ellipsis here, rather than
+       just on an inner element. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Finally, hold this to a maximum width of
+       40% of the recipient row. */
+    max-width: 40%;
 
     &:focus-visible {
         outline: 0;
@@ -1694,7 +1709,8 @@ textarea.new_message_textarea {
     }
 }
 
-#add-new-saved-snippet-modal {
+#add-new-saved-snippet-modal,
+#edit-saved-snippet-modal {
     & .saved-snippet-title {
         width: 97%;
         margin-bottom: 20px;

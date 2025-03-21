@@ -19,13 +19,13 @@ from sqlalchemy.sql import (
     column,
     false,
     func,
-    join,
     literal,
     literal_column,
     not_,
     or_,
     select,
     table,
+    true,
     union_all,
 )
 from sqlalchemy.sql.selectable import SelectBase
@@ -57,6 +57,7 @@ from zerver.lib.topic_sqlalchemy import (
     topic_match_sa,
 )
 from zerver.lib.types import Validator
+from zerver.lib.user_groups import get_recursive_membership_groups
 from zerver.lib.user_topics import exclude_stream_and_topic_mutes
 from zerver.lib.validator import (
     check_bool,
@@ -386,7 +387,7 @@ class NarrowBuilder:
             )
             if conditions:
                 return query.where(maybe_negate(and_(*conditions)))
-            return query  # nocoverage
+            return query.where(maybe_negate(true()))
         elif operand == "all":
             return query
 
@@ -432,6 +433,19 @@ class NarrowBuilder:
         elif operand == "followed":
             cond = get_followed_topic_condition_sa(self.user_profile.id)
             return query.where(maybe_negate(cond))
+        elif operand == "muted":
+            # TODO: If we also have a channel operator, this could be
+            # a lot more efficient if limited to only those muting
+            # rules that appear in such channels.
+            conditions = exclude_muting_conditions(
+                self.user_profile, [NarrowParameter(operator="is", operand="muted")]
+            )
+            if conditions:
+                return query.where(maybe_negate(not_(and_(*conditions))))
+
+            # This is the case where no channels or topics were muted.
+            return query.where(maybe_negate(false()))
+
         raise BadNarrowOperatorError("unknown 'is' operand " + operand)
 
     _alphanum = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -823,7 +837,11 @@ class NarrowBuilder:
                 term = term[1:-1]
                 term = "%" + connection.ops.prep_for_like_query(term) + "%"
                 cond: ClauseElement = or_(
-                    column("content", Text).ilike(term), topic_column_sa().ilike(term)
+                    column("content", Text).ilike(term),
+                    and_(
+                        topic_column_sa().ilike(term),
+                        column("is_channel_message", Boolean),
+                    ),
                 )
                 query = query.where(maybe_negate(cond))
 
@@ -1050,11 +1068,10 @@ def exclude_muting_conditions(
 
 
 def get_base_query_for_search(
-    realm_id: int, user_profile: UserProfile | None, need_message: bool, need_user_message: bool
+    realm_id: int, user_profile: UserProfile | None, need_user_message: bool
 ) -> tuple[Select, ColumnElement[Integer]]:
     # Handle the simple case where user_message isn't involved first.
     if not need_user_message:
-        assert need_message
         query = (
             select(column("id", Integer).label("message_id"))
             .select_from(table("zerver_message"))
@@ -1065,31 +1082,80 @@ def get_base_query_for_search(
         return (query, inner_msg_id_col)
 
     assert user_profile is not None
-    if need_message:
-        query = (
-            select(column("message_id", Integer), column("flags", Integer))
-            # We don't limit by realm_id despite the join to
-            # zerver_messages, since the user_profile_id limit in
-            # usermessage is more selective, and the query planner
-            # can't know about that cross-table correlation.
-            .where(column("user_profile_id", Integer) == literal(user_profile.id))
-            .select_from(
-                join(
-                    table("zerver_usermessage"),
-                    table("zerver_message"),
-                    literal_column("zerver_usermessage.message_id", Integer)
-                    == literal_column("zerver_message.id", Integer),
-                )
-            )
+    user_recursive_group_ids = []
+    # We ignore group membership for guests; see the TODO comment in
+    # has_channel_content_access_helper.
+    if not user_profile.is_guest:
+        user_recursive_group_ids = sorted(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
         )
-        inner_msg_id_col = column("message_id", Integer)
-        return (query, inner_msg_id_col)
 
     query = (
-        select(column("message_id", Integer), column("flags", Integer))
+        select(column("message_id", Integer))
+        # We don't limit by realm_id despite the join to
+        # zerver_messages, since the user_profile_id limit in
+        # usermessage is more selective, and the query planner
+        # can't know about that cross-table correlation.
         .where(column("user_profile_id", Integer) == literal(user_profile.id))
         .select_from(table("zerver_usermessage"))
+        .join(
+            table("zerver_message"),
+            literal_column("zerver_usermessage.message_id", Integer)
+            == literal_column("zerver_message.id", Integer),
+        )
+        .join(
+            table("zerver_recipient"),
+            literal_column("zerver_message.recipient_id", Integer)
+            == literal_column("zerver_recipient.id", Integer),
+        )
+        # Mirror the restrictions in bulk_access_stream_messages_query, in order
+        # to prevent leftover UserMessage rows from granting access to messages
+        # the user was previously allowed to access but no longer is.
+        .where(
+            or_(
+                # Include direct messages.
+                literal_column("zerver_recipient.type_id", Integer) != Recipient.STREAM,
+                # Include messages where the recipient is a public stream and
+                # the user can access public streams, or the user is a non-guest
+                # belonging to a group granting access to the stream.
+                select()
+                .select_from(table("zerver_stream"))
+                .where(
+                    literal_column("zerver_stream.recipient_id", Integer)
+                    == literal_column("zerver_recipient.id", Integer)
+                )
+                .where(
+                    or_(
+                        and_(
+                            not_(literal_column("zerver_stream.invite_only", Boolean)),
+                            not_(literal_column("zerver_stream.is_in_zephyr_realm", Boolean)),
+                            user_profile.can_access_public_streams(),
+                        ),
+                        literal_column("zerver_stream.can_subscribe_group_id").in_(
+                            user_recursive_group_ids
+                        ),
+                        literal_column("zerver_stream.can_add_subscribers_group_id").in_(
+                            user_recursive_group_ids
+                        ),
+                    )
+                )
+                .exists(),
+                # Include messages where the user has an active subscription to
+                # the stream.
+                select()
+                .select_from(table("zerver_subscription"))
+                .where(
+                    literal_column("zerver_subscription.user_profile_id", Integer)
+                    == user_profile.id,
+                    literal_column("zerver_subscription.recipient_id", Integer)
+                    == literal_column("zerver_recipient.id", Integer),
+                    literal_column("zerver_subscription.active", Boolean),
+                )
+                .exists(),
+            )
+        )
     )
+
     inner_msg_id_col = column("message_id", Integer)
     return (query, inner_msg_id_col)
 
@@ -1146,19 +1212,12 @@ def find_first_unread_anchor(
     # flag for the user.
     need_user_message = True
 
-    # Because we will need to call exclude_muting_conditions, unless
-    # the user hasn't muted anything, we will need to include Message
-    # in our query.  It may be worth eventually adding an optimization
-    # for the case of a user who hasn't muted anything to avoid the
-    # join in that case, but it's low priority.
-    need_message = True
-
     query, inner_msg_id_col = get_base_query_for_search(
         realm_id=user_profile.realm_id,
         user_profile=user_profile,
-        need_message=need_message,
         need_user_message=need_user_message,
     )
+    query = query.add_columns(column("flags", Integer))
 
     query, is_search = add_narrow_conditions(
         user_profile=user_profile,
@@ -1427,15 +1486,8 @@ def fetch_messages(
         #
         # Note that is_web_public_query=True goes here, since
         # include_history is semantically correct for is_web_public_query.
-        need_message = True
         need_user_message = False
-    elif narrow is None:
-        # We need to limit to messages the user has received, but we don't actually
-        # need any fields from Message
-        need_message = False
-        need_user_message = True
     else:
-        need_message = True
         need_user_message = True
 
     # get_base_query_for_search and ok_to_include_history are responsible for ensuring
@@ -1444,9 +1496,10 @@ def fetch_messages(
     query, inner_msg_id_col = get_base_query_for_search(
         realm_id=realm.id,
         user_profile=user_profile,
-        need_message=need_message,
         need_user_message=need_user_message,
     )
+    if need_user_message:
+        query = query.add_columns(column("flags", Integer))
 
     query, is_search = add_narrow_conditions(
         user_profile=user_profile,

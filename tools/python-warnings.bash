@@ -4,9 +4,6 @@ export PYTHONWARNINGS=error
 
 PYTHONWARNINGS+=',ignore::ResourceWarning'
 
-# https://github.com/python/cpython/pull/96629
-PYTHONWARNINGS+=',default:check_home argument is deprecated and ignored.:DeprecationWarning:distutils.command.install'
-
 # https://github.com/disqus/django-bitfield/pull/135
 PYTHONWARNINGS+=',default:Attribute s is deprecated and will be removed in Python 3.14; use value instead:DeprecationWarning:__main__'
 
@@ -33,25 +30,11 @@ PYTHONWARNINGS+=',ignore:datetime.datetime.utcnow() is deprecated and scheduled 
 # https://github.com/python-openapi/openapi-core/issues/931
 PYTHONWARNINGS+=',ignore::DeprecationWarning:openapi_core.validation.request.validators'
 
-# pkg_resources deprecation
-PYTHONWARNINGS+=',default:pkg_resources is deprecated as an API.:DeprecationWarning'
-PYTHONWARNINGS+=',default:Deprecated call to `pkg_resources.declare_namespace(:DeprecationWarning:pkg_resources'
-
 # https://github.com/seb-m/pyinotify/issues/204
 PYTHONWARNINGS+=',ignore:The asyncore module is deprecated and will be removed in Python 3.12.:DeprecationWarning:pyinotify'
 
 # Semgrep still supports Python 3.8
 PYTHONWARNINGS+=',ignore:path is deprecated.:DeprecationWarning:semgrep.semgrep_core'
-
-# Various warnings from setuptools
-PYTHONWARNINGS+=',default:bdist_wheel.universal is deprecated:UserWarning'
-PYTHONWARNINGS+=',ignore:setup.py install is deprecated.:UserWarning'
-PYTHONWARNINGS+=',default:Unknown distribution option:UserWarning'
-PYTHONWARNINGS+=',default:setuptools.installer and fetch_build_eggs are deprecated.:UserWarning'
-PYTHONWARNINGS+=',default:The '\''wheel'\'' package is no longer the canonical location of the '\''bdist_wheel'\'' command:DeprecationWarning:wheel.bdist_wheel'
-PYTHONWARNINGS+=',default:Package '\''integrations.:UserWarning'
-PYTHONWARNINGS+=',default:Package '\''zulip.:UserWarning'
-PYTHONWARNINGS+=',default:Could not find libsqlite3:UserWarning'
 
 # https://github.com/scrapy/scrapy/issues/3288
 PYTHONWARNINGS+=',ignore:Passing method to twisted.internet.ssl.CertificateOptions was deprecated in Twisted 17.1.0.:DeprecationWarning:scrapy.core.downloader.contextfactory'

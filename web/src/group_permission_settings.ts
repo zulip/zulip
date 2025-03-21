@@ -1,8 +1,8 @@
 import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
+import type * as dropdown_widget from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
-import {page_params} from "./page_params.ts";
 import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import type {GroupPermissionSetting, GroupSettingValue} from "./state_data.ts";
@@ -58,6 +58,7 @@ export const realm_group_setting_name_schema = z.enum([
     "can_mention_many_users_group",
     "can_move_messages_between_channels_group",
     "can_move_messages_between_topics_group",
+    "can_resolve_topics_group",
     "can_summarize_topics_group",
     "create_multiuse_invite_group",
     "direct_message_initiator_group",
@@ -101,7 +102,7 @@ export function get_realm_user_groups_for_setting(
             return user_group;
         });
 
-    if (!page_params.development_environment || group_setting_config.require_system_group) {
+    if (group_setting_config.require_system_group) {
         return system_user_groups;
     }
 
@@ -110,15 +111,10 @@ export function get_realm_user_groups_for_setting(
     return [...system_user_groups, ...user_groups_excluding_system_groups];
 }
 
-export type UserGroupForDropdownListWidget = {
-    name: string;
-    unique_id: number;
-};
-
 export function get_realm_user_groups_for_dropdown_list_widget(
     setting_name: string,
     setting_type: "realm" | "stream" | "group",
-): UserGroupForDropdownListWidget[] {
+): dropdown_widget.Option[] {
     const allowed_setting_groups = get_realm_user_groups_for_setting(setting_name, setting_type);
 
     return allowed_setting_groups.map((group) => {
@@ -134,7 +130,7 @@ export function get_realm_user_groups_for_dropdown_list_widget(
         )!.dropdown_option_name;
 
         return {
-            name: user_groups.get_display_name_for_system_group_option(setting_name, display_name),
+            name: display_name,
             unique_id: group.id,
         };
     });

@@ -410,6 +410,10 @@ paths:
                                   description: |
                                     Object containing the changed details of the user.
                                     It has multiple forms depending on the value changed.
+
+                                    **Changes**: Removed `is_billing_admin` field in Zulip 10.0
+                                    (feature level 363), as it was replaced by the
+                                    `can_manage_billing_group` realm setting.
                                   oneOf:
                                     - type: object
                                       description: |
@@ -505,15 +509,6 @@ paths:
                                             - 300
                                             - 400
                                             - 600
-                                    - type: object
-                                      additionalProperties: false
-                                      description: |
-                                        When billing role of a user changes.
-                                      properties:
-                                        user_id:
-                                          type: integer
-                                          description: |
-                                            The ID of the user affected by this change.
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -4787,6 +4782,17 @@ paths:
                                             In Zulip 7.0 (feature level 159), `Nobody` was added as an option to
                                             `edit_topic_policy` enum.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_resolve_topics_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to [resolve topics](/help/resolve-a-topic)
+                                            in the organization.
+
+                                            **Changes**: New in Zulip 10.0 (feature level 367). Previously, permission to
+                                            resolve topics was controlled by the more general
+                                            can_move_messages_between_topics_group permission for moving messages.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_manage_all_groups:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -5493,6 +5499,41 @@ paths:
                                 {
                                   "type": "saved_snippets",
                                   "op": "add",
+                                  "saved_snippet":
+                                    {
+                                      "id": 1,
+                                      "title": "Example",
+                                      "content": "Welcome to the organization.",
+                                      "date_created": 1681662420,
+                                    },
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event containing details of the edited saved snippet.
+
+                                Clients should update the existing saved snippet with the
+                                ID provided in the `saved_snippet` object.
+
+                                **Changes**: New in Zulip 10.0 (feature level 368).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - saved_snippets
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                saved_snippet:
+                                  $ref: "#/components/schemas/SavedSnippet"
+                              example:
+                                {
+                                  "type": "saved_snippets",
+                                  "op": "update",
                                   "saved_snippet":
                                     {
                                       "id": 1,
@@ -6392,6 +6433,61 @@ paths:
                       A typical failed JSON response for when either title or content is
                       empty:
   /saved_snippets/{saved_snippet_id}:
+    patch:
+      operationId: edit-saved-snippet
+      tags: ["drafts"]
+      summary: Edit a saved snippet
+      description: |
+        Edit a saved snippet for the current user.
+
+        **Changes**: New in Zulip 10.0 (feature level 368).
+      parameters:
+        - name: saved_snippet_id
+          in: path
+          schema:
+            type: integer
+          description: |
+            The ID of the saved snippet to edit.
+          required: true
+          example: 3
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: |
+                    The title of the saved snippet.
+                  example: Welcome message
+                content:
+                  type: string
+                  description: |
+                    The content of the saved snippet in text/markdown format.
+
+                    Clients should insert this content into a message when using
+                    a saved snippet.
+                  example: Welcome to the organization.
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when no saved snippet exists
+                      with the provided ID:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "result": "error",
+                        "msg": "Saved snippet does not exist.",
+                      }
     delete:
       operationId: delete-saved-snippet
       tags: ["drafts"]
@@ -6544,14 +6640,17 @@ paths:
                     [`POST /register`](/api/register-queue) endpoint to determine
                     the maximum topic length.
 
-                    Note: When the value of `realm_empty_topic_display_name` found in
-                    the [POST /register](/api/register-queue) response is used for this
+                    Note: When `"(no topic)"` or the value of `realm_empty_topic_display_name`
+                    found in the [POST /register](/api/register-queue) response is used for this
                     parameter, it is interpreted as an empty string.
 
                     When [topics are required](/help/require-topics), this parameter can't
                     be `"(no topic)"`, an empty string, or the value of `realm_empty_topic_display_name`.
 
-                    **Changes**: Before Zulip 10.0 (feature level 334), empty string
+                    **Changes**: Before Zulip 10.0 (feature level 370), `"(no topic)"`
+                    was not interpreted as an empty string.
+
+                    Before Zulip 10.0 (feature level 334), empty string
                     was not a valid topic name for channel messages.
                   type: string
                   example: Castle
@@ -6718,14 +6817,17 @@ paths:
                     [`POST /register`](/api/register-queue) endpoint to determine
                     the maximum topic length.
 
-                    Note: When the value of `realm_empty_topic_display_name` found in
-                    the [POST /register](/api/register-queue) response is used for this
+                    Note: When `"(no topic)"` or the value of `realm_empty_topic_display_name`
+                    found in the [POST /register](/api/register-queue) response is used for this
                     parameter, it is interpreted as an empty string.
 
                     When [topics are required](/help/require-topics), this parameter can't
                     be `"(no topic)"`, an empty string, or the value of `realm_empty_topic_display_name`.
 
-                    **Changes**: Before Zulip 10.0 (feature level 334), empty string
+                    **Changes**: Before Zulip 10.0 (feature level 370), `"(no topic)"`
+                    was not interpreted as an empty string.
+
+                    Before Zulip 10.0 (feature level 334), empty string
                     was not a valid topic name for channel messages.
                   type: string
                   example: Castle
@@ -7221,6 +7323,7 @@ paths:
                                 id: {}
                                 is_me_message: {}
                                 last_edit_timestamp: {}
+                                last_moved_timestamp: {}
                                 reactions: {}
                                 recipient_id: {}
                                 sender_email: {}
@@ -7406,14 +7509,17 @@ paths:
                     [`POST /register`](/api/register-queue) endpoint to determine
                     the maximum topic length.
 
-                    Note: When the value of `realm_empty_topic_display_name` found in
-                    the [POST /register](/api/register-queue) response is used for this
+                    Note: When `"(no topic)"` or the value of `realm_empty_topic_display_name`
+                    found in the [POST /register](/api/register-queue) response is used for this
                     parameter, it is interpreted as an empty string.
 
                     When [topics are required](/help/require-topics), this parameter can't
                     be `"(no topic)"`, an empty string, or the value of `realm_empty_topic_display_name`.
 
-                    **Changes**: Before Zulip 10.0 (feature level 334), empty string
+                    **Changes**: Before Zulip 10.0 (feature level 370), `"(no topic)"`
+                    was not interpreted as an empty string.
+
+                    Before Zulip 10.0 (feature level 334), empty string
                     was not a valid topic name for channel messages.
 
                     New in Zulip 2.0.0. Previous Zulip releases encoded
@@ -8588,6 +8694,7 @@ paths:
                               id: {}
                               is_me_message: {}
                               last_edit_timestamp: {}
+                              last_moved_timestamp: {}
                               reactions: {}
                               recipient_id: {}
                               sender_email: {}
@@ -8698,6 +8805,7 @@ paths:
         linked documentation on when users are allowed to update messages are:
 
         - `allow_message_editing`
+        - `can_resolve_topics_group`
         - `can_move_messages_between_channels_group`
         - `can_move_messages_between_topics_group`
         - `message_content_edit_limit_seconds`
@@ -8709,7 +8817,12 @@ paths:
         of the [`realm op: update_dict`](/api/get-events#realm-update_dict)
         event in [`GET /events`](/api/get-events).
 
-        **Changes**: In Zulip 10.0 (feature level 316), `edit_topic_policy`
+        **Changes**: Prior to Zulip 10.0 (feature level 367), the permission for
+        resolving a topic was managed by `can_move_messages_between_topics_group`.
+        As of this feature level, users belonging to the `can_resolve_topics_group`
+        will have the permission to [resolve topics](/help/resolve-a-topic) in the organization.
+
+        In Zulip 10.0 (feature level 316), `edit_topic_policy`
         was removed and replaced by `can_move_messages_between_topics_group`
         realm setting.
 
@@ -8896,11 +9009,13 @@ paths:
                           if they wish to delete the uploaded files returned in this response,
                           which might otherwise remain visible only in message edit history.
 
-                          Note that [access to message edit
-                          history](/help/disable-message-edit-history) is configurable; this detail
-                          may be important in presenting the question clearly to users.
+                          Note that [access to message edit history][edit-history-access]
+                          is configurable; this detail may be important in presenting the
+                          question clearly to users.
 
                           New in Zulip 10.0 (feature level 285).
+
+                          [edit-history-access]: /help/restrict-message-edit-history-access
                         items:
                           $ref: "#/components/schemas/Attachment"
                     example:
@@ -9611,6 +9726,9 @@ paths:
       tags: ["users"]
       description: |
         Get basic data about the user/bot that requests this endpoint.
+
+        **Changes**: Removed `is_billing_admin` field in Zulip 10.0 (feature level 363), as it was
+        replaced by the `can_manage_billing_group` realm setting.
       responses:
         "200":
           description: Success
@@ -14841,6 +14959,16 @@ paths:
                           exist as all onboarding steps were implicitly hotspots.
                         items:
                           $ref: "#/components/schemas/OnboardingStep"
+                      navigation_tour_video_url:
+                        type: string
+                        nullable: true
+                        description: |
+                          Present if `onboarding_steps` is present in `fetch_event_types`.
+
+                          URL of the navigation tour video to display to new users during
+                          onboarding. If `null`, the onboarding video experience is disabled.
+
+                          **Changes**: New in Zulip 10.0 (feature level 369).
                       max_message_id:
                         type: integer
                         deprecated: true
@@ -17145,6 +17273,17 @@ paths:
                               **Changes**: New in Zulip 10.0 (feature level 280). Previously
                               `realm_create_web_public_stream_policy` field used to control
                               the permission to create web-public channels.
+                      realm_can_resolve_topics_group:
+                        allOf:
+                          - description: |
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to [resolve topics](/help/resolve-a-topic)
+                              in the organization.
+
+                              **Changes**: New in Zulip 10.0 (feature level 367). Previously, permission
+                              to resolve topics was controlled by the more general
+                              `can_move_messages_between_topics_group permission for moving messages`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_create_public_stream_policy:
                         type: integer
                         deprecated: true
@@ -22456,6 +22595,7 @@ paths:
                           id: {}
                           is_me_message: {}
                           last_edit_timestamp: {}
+                          last_moved_timestamp: {}
                           reactions: {}
                           recipient_id: {}
                           sender_email: {}
@@ -24114,6 +24254,7 @@ components:
             id: {}
             is_me_message: {}
             last_edit_timestamp: {}
+            last_moved_timestamp: {}
             reactions: {}
             recipient_id: {}
             sender_email: {}
@@ -24273,8 +24414,9 @@ components:
             ordered chronologically from most recent to least recent
             edit.
 
-            Not present if the message has never been edited or if the realm has
-            [disabled viewing of message edit history][disable-edit-history].
+            Not present if the message has never been edited or moved,
+            or if [viewing message edit history][edit-history-access]
+            is not allowed in the organization.
 
             Every object will contain `user_id` and `timestamp`.
 
@@ -24284,7 +24426,7 @@ components:
             only the topic was edited, only `prev_topic` and `topic`
             will be present in addition to `user_id` and `timestamp`.
 
-            [disable-edit-history]: /help/disable-message-edit-history
+            [edit-history-access]: /help/restrict-message-edit-history-access
 
             **Changes**: In Zulip 10.0 (feature level 284), removed the
             `prev_rendered_content_version` field as it is an internal
@@ -24303,10 +24445,32 @@ components:
         last_edit_timestamp:
           type: integer
           description: |
-            The UNIX timestamp for when the message was last edited,
-            in UTC seconds.
+            The UNIX timestamp for when the message's content was last edited, in
+            UTC seconds.
 
-            Not present if the message has never been edited.
+            Not present if the message's content has never been edited.
+
+            Clients should use this field, rather than parsing the `edit_history`
+            array, to display an indicator that the message has been edited.
+
+            **Changes**: Prior to Zulip 10.0 (feature level 365), this was the
+            time when the message was last edited or moved.
+        last_moved_timestamp:
+          type: integer
+          description: |
+            The UNIX timestamp for when the message was last moved to a different
+            channel or topic, in UTC seconds.
+
+            Not present if the message has never been moved, or if the only topic
+            moves for the message are [resolving or unresolving](/help/resolve-a-topic)
+            the message's topic.
+
+            Clients should use this field, rather than parsing the `edit_history`
+            array, to display an indicator that the message has been moved.
+
+            **Changes**: New in Zulip 10.0 (feature level 365). Previously,
+            parsing the `edit_history` array was required in order to correctly
+            display moved message indicators.
         reactions:
           type: array
           description: |
@@ -24805,6 +24969,9 @@ components:
       type: object
       description: |
         A dictionary containing basic data on a given Zulip user.
+
+        **Changes**: Removed `is_billing_admin` field in Zulip 10.0 (feature level 363), as it was
+        replaced by the `can_manage_billing_group` realm setting.
       properties:
         user_id:
           type: integer

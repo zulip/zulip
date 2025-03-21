@@ -35,8 +35,8 @@ export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list
 let should_redraw_active_users_list = false;
 let should_redraw_deactivated_users_list = false;
 let presence_data_fetched = false;
-let active_users_role_dropdown: dropdown_widget.DropdownWidget;
-let deactivated_users_role_dropdown: dropdown_widget.DropdownWidget;
+let active_users_role_dropdown: dropdown_widget.DropdownWidget | undefined;
+let deactivated_users_role_dropdown: dropdown_widget.DropdownWidget | undefined;
 
 type UserSettingsSection = {
     dropdown_widget_name: string;
@@ -114,7 +114,7 @@ export function allow_sorting_deactivated_users_list_by_email(): boolean {
     return deactivated_humans_with_visible_email.length > 0;
 }
 
-export function update_view_on_deactivate(user_id: number): void {
+export function update_view_on_deactivate(user_id: number, is_bot: boolean): void {
     const $row = get_user_info_row(user_id);
     if ($row.length === 0) {
         return;
@@ -124,19 +124,35 @@ export function update_view_on_deactivate(user_id: number): void {
     $button.prop("disabled", false);
     $row.find("i.deactivated-user-icon").show();
     $button.addClass("button-warning reactivate");
-    $button.removeClass("deactivate button-danger");
-    $button.empty().append($("<i>").addClass(["fa", "fa-user-plus"]).attr("aria-hidden", "true"));
+    $button.removeClass("button-danger deactivate");
+    if (is_bot) {
+        $button.addClass("reactivate-bot-tooltip");
+        $button.removeClass("deactivate-bot-tooltip");
+    } else {
+        $button.addClass("reactivate-user-tooltip");
+        $button.removeClass("deactivate-user-tooltip");
+    }
+    $button
+        .empty()
+        .append(
+            $("<i>").addClass(["zulip-icon", "zulip-icon-user-plus"]).attr("aria-hidden", "true"),
+        );
     $row.removeClass("active-user");
     $row.addClass("deactivated_user");
 
-    should_redraw_active_users_list = true;
-    should_redraw_deactivated_users_list = true;
-
-    active_users_role_dropdown.render(active_section.filters.role_code);
-    deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
+    if (!is_bot) {
+        should_redraw_active_users_list = true;
+        should_redraw_deactivated_users_list = true;
+        if (active_users_role_dropdown) {
+            active_users_role_dropdown.render(active_section.filters.role_code);
+        }
+        if (deactivated_users_role_dropdown) {
+            deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
+        }
+    }
 }
 
-export function update_view_on_reactivate(user_id: number): void {
+export function update_view_on_reactivate(user_id: number, is_bot: boolean): void {
     const $row = get_user_info_row(user_id);
     if ($row.length === 0) {
         return;
@@ -146,15 +162,29 @@ export function update_view_on_reactivate(user_id: number): void {
     $row.find("i.deactivated-user-icon").hide();
     $button.addClass("button-danger deactivate");
     $button.removeClass("button-warning reactivate");
-    $button.empty().append($("<i>").addClass(["fa", "fa-user-times"]).attr("aria-hidden", "true"));
+    if (is_bot) {
+        $button.addClass("deactivate-bot-tooltip");
+        $button.removeClass("reactivate-bot-tooltip");
+    } else {
+        $button.addClass("deactivate-user-tooltip");
+        $button.removeClass("reactivate-user-tooltip");
+    }
+    $button
+        .empty()
+        .append($("<i>").addClass(["zulip-icon", "zulip-icon-user-x"]).attr("aria-hidden", "true"));
     $row.removeClass("deactivated_user");
     $row.addClass("active-user");
 
-    should_redraw_active_users_list = true;
-    should_redraw_deactivated_users_list = true;
-
-    active_users_role_dropdown.render(active_section.filters.role_code);
-    deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
+    if (!is_bot) {
+        should_redraw_active_users_list = true;
+        should_redraw_deactivated_users_list = true;
+        if (active_users_role_dropdown) {
+            active_users_role_dropdown.render(active_section.filters.role_code);
+        }
+        if (deactivated_users_role_dropdown) {
+            deactivated_users_role_dropdown.render(deactivated_section.filters.role_code);
+        }
+    }
 }
 
 function add_value_to_filters(
@@ -207,7 +237,7 @@ function count_users_by_role(user_ids: number[]): Record<number, number> {
     return role_counts;
 }
 
-function get_roles_with_counts(user_ids: number[]): {unique_id: number; name: string}[] {
+function get_roles_with_counts(user_ids: number[]): dropdown_widget.Option[] {
     const role_counts = count_users_by_role(user_ids);
     return [
         {
@@ -230,12 +260,12 @@ function get_roles_with_counts(user_ids: number[]): {unique_id: number; name: st
     ];
 }
 
-function get_roles_count_for_active_users(): {unique_id: number; name: string}[] {
+function get_roles_count_for_active_users(): dropdown_widget.Option[] {
     const active_user_ids = people.get_realm_active_human_user_ids();
     return get_roles_with_counts(active_user_ids);
 }
 
-function get_roles_count_for_deactivated_users(): {unique_id: number; name: string}[] {
+function get_roles_count_for_deactivated_users(): dropdown_widget.Option[] {
     const deactivated_user_ids = people.get_non_active_human_ids();
     return get_roles_with_counts(deactivated_user_ids);
 }
@@ -243,11 +273,11 @@ function get_roles_count_for_deactivated_users(): {unique_id: number; name: stri
 function create_role_filter_dropdown(
     $events_container: JQuery,
     section: UserSettingsSection,
-    get_role_options: () => {unique_id: number; name: string}[],
+    get_role_options: () => dropdown_widget.Option[],
 ): dropdown_widget.DropdownWidget {
     return new dropdown_widget.DropdownWidget({
         widget_name: section.dropdown_widget_name,
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
+        unique_id_type: "number",
         get_options: get_role_options,
         $events_container,
         item_click_callback: role_selected_handler,

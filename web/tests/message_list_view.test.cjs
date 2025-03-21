@@ -45,27 +45,9 @@ function test(label, f) {
     });
 }
 
-test("msg_moved_var", () => {
+test("msg_edited_and_moved_vars", () => {
     // This is a test to verify that when the stream or topic is changed
     // (and the content is not), the message says "MOVED" rather than "EDITED."
-    // See the end of the test for the list of cases verified.
-
-    function build_message_context(message = {}, message_context = {}) {
-        message_context = {
-            ...message_context,
-        };
-        if ("edit_history" in message) {
-            message_context.msg = {
-                last_edit_timestamp: (next_timestamp += 1),
-                ...message,
-            };
-        } else {
-            message_context.msg = {
-                ...message,
-            };
-        }
-        return message_context;
-    }
 
     function build_message_group(messages) {
         return {message_containers: messages};
@@ -83,85 +65,29 @@ test("msg_moved_var", () => {
         return list;
     }
 
-    function assert_moved_true(message_container) {
-        assert.equal(message_container.moved, true);
-    }
-    function assert_moved_false(message_container) {
-        assert.equal(message_container.moved, false);
-    }
-
     (function test_msg_moved_var() {
         const messages = [
-            // no edit history: NO LABEL
-            build_message_context({}),
-            // stream changed: MOVED
-            build_message_context({
-                edit_history: [{prev_stream: 1, timestamp: 1000, user_id: 1}],
-            }),
-            // topic changed (not resolved/unresolved): MOVED
-            build_message_context({
-                edit_history: [
-                    {prev_topic: "test_topic", topic: "new_topic", timestamp: 1000, user_id: 1},
-                ],
-            }),
-            // content edited: EDITED
-            build_message_context({
-                edit_history: [{prev_content: "test_content", timestamp: 1000, user_id: 1}],
-            }),
-            // stream and topic edited: MOVED
-            build_message_context({
-                edit_history: [
-                    {
-                        prev_stream: 1,
-                        prev_topic: "test_topic",
-                        topic: "new_topic",
-                        timestamp: 1000,
-                        user_id: 1,
-                    },
-                ],
-            }),
-            // topic and content changed: EDITED
-            build_message_context({
-                edit_history: [
-                    {
-                        prev_topic: "test_topic",
-                        topic: "new_topic",
-                        prev_content: "test_content",
-                        timestamp: 1000,
-                        user_id: 1,
-                    },
-                ],
-            }),
-            // only topic resolved: NO LABEL
-            build_message_context({
-                edit_history: [
-                    {prev_topic: "test_topic", topic: "✔ test_topic", timestamp: 1000, user_id: 1},
-                ],
-            }),
-            // only topic unresolved: NO LABEL
-            build_message_context({
-                edit_history: [
-                    {prev_topic: "✔ test_topic", topic: "test_topic", timestamp: 1000, user_id: 1},
-                ],
-            }),
-            // multiple edit history logs, with at least one content edit: EDITED
-            build_message_context({
-                edit_history: [
-                    {prev_stream: 1, timestamp: 1000, user_id: 1},
-                    {prev_topic: "old_topic", topic: "test_topic", timestamp: 1001, user_id: 1},
-                    {prev_content: "test_content", timestamp: 1002, user_id: 1},
-                    {prev_topic: "test_topic", topic: "✔ test_topic", timestamp: 1003, user_id: 1},
-                ],
-            }),
-            // multiple edit history logs with no content edit: MOVED
-            build_message_context({
-                edit_history: [
-                    {prev_stream: 1, timestamp: 1000, user_id: 1},
-                    {prev_topic: "old_topic", topic: "test_topic", timestamp: 1001, user_id: 1},
-                    {prev_topic: "test_topic", topic: "✔ test_topic", timestamp: 1002, user_id: 1},
-                    {prev_topic: "✔ test_topic", topic: "test_topic", timestamp: 1003, user_id: 1},
-                ],
-            }),
+            // no edit or moved timestamps
+            {msg: {}},
+            // edit timestamp: EDITED
+            {
+                msg: {
+                    last_edit_timestamp: (next_timestamp += 1),
+                },
+            },
+            // moved timestamp: MOVED
+            {
+                msg: {
+                    last_moved_timestamp: (next_timestamp += 1),
+                },
+            },
+            // both edit and moved timestamp: EDITED
+            {
+                msg: {
+                    last_edit_timestamp: (next_timestamp += 1),
+                    last_moved_timestamp: (next_timestamp += 1),
+                },
+            },
         ];
 
         const message_group = build_message_group(messages);
@@ -171,32 +97,28 @@ test("msg_moved_var", () => {
             Object.assign(
                 message_container,
                 list._maybe_get_me_message(message_container.is_hidden, message_container.msg),
-                list._get_message_edited_vars(message_container.msg),
+                list._get_message_edited_and_moved_vars(message_container.msg),
             );
         }
 
         const result = list._message_groups[0].message_containers;
 
-        // no edit history: false
-        assert_moved_false(result[0]);
-        // stream changed: true
-        assert_moved_true(result[1]);
-        // topic changed: true
-        assert_moved_true(result[2]);
-        // content edited: false
-        assert_moved_false(result[3]);
-        // stream and topic edited: true
-        assert_moved_true(result[4]);
-        // topic and content changed: false
-        assert_moved_false(result[5]);
-        // only topic resolved: false
-        assert_moved_false(result[6]);
-        // only topic unresolved: false
-        assert_moved_false(result[7]);
-        // multiple edits with content edit: false
-        assert_moved_false(result[8]);
-        // multiple edits without content edit: true
-        assert_moved_true(result[9]);
+        // no edit or moved timestamps
+        assert.equal(result[0].edited, false);
+        assert.equal(result[0].moved, false);
+        assert.equal(result[0].modified, false);
+        // edit timestamp: EDITED
+        assert.equal(result[1].edited, true);
+        assert.equal(result[1].moved, false);
+        assert.equal(result[1].modified, true);
+        // moved timestamp: MOVED
+        assert.equal(result[2].edited, false);
+        assert.equal(result[2].moved, true);
+        assert.equal(result[2].modified, true);
+        // both edit and moved timestamp: EDITED
+        assert.equal(result[3].edited, true);
+        assert.equal(result[3].moved, true);
+        assert.equal(result[3].modified, true);
     })();
 });
 
@@ -283,7 +205,7 @@ test("message_edited_vars", () => {
             Object.assign(
                 message_container,
                 list._maybe_get_me_message(message_container.is_hidden, message_container.msg),
-                list._get_message_edited_vars(message_container.msg),
+                list._get_message_edited_and_moved_vars(message_container.msg),
             );
         }
 
@@ -368,7 +290,7 @@ test("muted_message_vars", () => {
         ];
         const message_group = build_message_group(messages);
         const list = build_list([message_group]);
-        list._get_message_edited_vars = noop;
+        list._get_message_edited_and_moved_vars = noop;
 
         // Sender is not muted.
         let result = calculate_variables(list, messages);

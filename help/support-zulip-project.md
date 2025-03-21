@@ -76,7 +76,7 @@ Collective](https://opencollective.com/zulip).
   Many improvements to the Zulip app start with a user's suggestion.
 
 * [**Give
-  feedback**](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html)
+  feedback**](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html#evaluation-and-onboarding-feedback)
   if you are evaluating or using Zulip.
 
 * [**Translate**](https://zulip.readthedocs.io/en/latest/translating/translating.html)

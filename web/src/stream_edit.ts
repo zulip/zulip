@@ -350,18 +350,11 @@ function stream_setting_changed(elem: HTMLInputElement): void {
     );
 }
 
-export function archive_stream(
-    stream_id: number,
-    $alert_element: JQuery,
-    $stream_row: JQuery,
-): void {
+export function archive_stream(stream_id: number, $alert_element: JQuery): void {
     channel.del({
         url: "/json/streams/" + stream_id,
         error(xhr) {
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $alert_element);
-        },
-        success() {
-            $stream_row.remove();
         },
     });
 }
@@ -471,7 +464,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
             item_click_callback,
             $events_container: $("#copy_email_address_modal"),
             default_id: people.EMAIL_GATEWAY_BOT.user_id,
-            unique_id_type: dropdown_widget.DataTypes.NUMBER,
+            unique_id_type: "number",
             hide_search_box: true,
         });
         sender_dropdown_widget.setup();
@@ -713,8 +706,7 @@ export function initialize(): void {
 
         function do_archive_stream(): void {
             const stream_id = Number($(".dialog_submit_button").attr("data-stream-id"));
-            const $row = $(".stream-row.active");
-            archive_stream(stream_id, $(".stream_change_property_info"), $row);
+            archive_stream(stream_id, $(".stream_change_property_info"));
         }
 
         const stream_id = get_stream_id(this);
@@ -816,7 +808,7 @@ export function initialize(): void {
 
     $("#channels_overlay_container").on(
         "click",
-        ".subsection-header .subsection-changes-save button",
+        ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
         function (this: HTMLElement, e) {
             e.preventDefault();
             e.stopPropagation();

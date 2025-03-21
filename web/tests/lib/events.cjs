@@ -413,6 +413,7 @@ exports.fixtures = {
             can_create_public_channel_group: 3,
             can_invite_users_group: 3,
             can_move_messages_between_topics_group: 3,
+            can_resolve_topics_group: 1,
             direct_message_permission_group: 3,
             plan_type: 3,
             upload_quota_mib: 50000,
@@ -663,6 +664,17 @@ exports.fixtures = {
         type: "saved_snippets",
         op: "remove",
         saved_snippet_id: 1,
+    },
+
+    saved_snippets__update: {
+        type: "saved_snippets",
+        op: "update",
+        saved_snippet: {
+            id: 1,
+            title: "Example 2",
+            content: "Welcome to the organization.",
+            date_created: 1681662420,
+        },
     },
 
     scheduled_messages__add: {

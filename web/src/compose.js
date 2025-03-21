@@ -108,7 +108,8 @@ export function create_message_object(message_content = compose_state.message_co
             message.to = people.user_ids_string_to_ids_array(message.to_user_ids);
         }
     } else {
-        message.topic = compose_state.topic();
+        const topic = compose_state.topic();
+        message.topic = util.is_topic_name_considered_empty(topic) ? "" : topic;
         const stream_id = compose_state.stream_id();
         message.stream_id = stream_id;
         message.to = stream_id;

@@ -197,9 +197,7 @@ mock_esm("../src/unread", {
 mock_esm("../src/resize", {
     update_recent_view: noop,
 });
-const dropdown_widget = mock_esm("../src/dropdown_widget", {
-    DataTypes: {NUMBER: "number", STRING: "string"},
-});
+const dropdown_widget = mock_esm("../src/dropdown_widget");
 dropdown_widget.DropdownWidget = function DropdownWidget() {
     this.setup = noop;
     this.render = noop;

@@ -10,7 +10,6 @@
         );
     grid-template-areas: var(--banner-grid-template-areas-lg);
     place-items: start;
-    font-size: 0.9375em;
     border: 1px solid;
     border-radius: 6px;
 }

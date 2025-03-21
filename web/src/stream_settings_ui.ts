@@ -50,9 +50,6 @@ import type {StreamSubscription} from "./sub_store.ts";
 import * as util from "./util.ts";
 import * as views_util from "./views_util.ts";
 
-let archived_status_dropdown_filter: string;
-let filters_dropdown_widget: dropdown_widget.DropdownWidget;
-
 export function is_sub_already_present(sub: StreamSubscription): boolean {
     return stream_ui_updates.row_for_stream_id(sub.stream_id).length > 0;
 }
@@ -265,10 +262,18 @@ export function add_sub_to_table(sub: StreamSubscription): void {
     const html = render_browse_streams_list_item(setting_sub);
     const $new_row = $(html);
 
-    if (stream_create.get_name() === sub.name) {
-        scroll_util.get_content_element($(".streams-list")).prepend($new_row);
-        scroll_util.reset_scrollbar($(".streams-list"));
+    if (stream_settings_components.filter_includes_channel(sub)) {
+        if (stream_create.get_name() === sub.name) {
+            scroll_util.get_content_element($(".streams-list")).prepend($new_row);
+            scroll_util.reset_scrollbar($(".streams-list"));
+        } else {
+            scroll_util.get_content_element($(".streams-list")).append($new_row);
+        }
     } else {
+        $new_row.addClass("notdisplayed");
+        // It does not matter whether we append or prepend the row here as
+        // row is not visible. It will only be visible after the filter is
+        // changed and its position will be decided by the usual sort order.
         scroll_util.get_content_element($(".streams-list")).append($new_row);
     }
 
@@ -310,21 +315,6 @@ export function add_sub_to_table(sub: StreamSubscription): void {
     update_empty_left_panel_message();
 }
 
-export function remove_stream(stream_id: number): void {
-    if (!overlays.streams_open()) {
-        return;
-    }
-
-    // It is possible that row is empty when we deactivate a
-    // stream, but we let jQuery silently handle that.
-    const $row = stream_ui_updates.row_for_stream_id(stream_id);
-    $row.remove();
-    update_empty_left_panel_message();
-    if (hash_parser.is_editing_stream(stream_id)) {
-        stream_edit.open_edit_panel_empty();
-    }
-}
-
 export function update_settings_for_subscribed(slim_sub: StreamSubscription): void {
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
@@ -352,6 +342,32 @@ export function update_settings_for_subscribed(slim_sub: StreamSubscription): vo
 
     // Update whether there's any streams shown or not.
     update_empty_left_panel_message();
+}
+
+export function update_settings_for_archived(slim_sub: StreamSubscription): void {
+    if (!overlays.streams_open()) {
+        return;
+    }
+
+    const sub = stream_settings_data.get_sub_for_settings(slim_sub);
+    update_left_panel_row(sub);
+    redraw_left_panel();
+    $(".stream_settings_filter_container").removeClass("hide_filter");
+
+    const active_data = stream_settings_components.get_active_data();
+    if (active_data.id === sub.stream_id) {
+        const $archive_button = $(".stream_settings_header .deactivate");
+
+        if ($archive_button.length > 0) {
+            $archive_button.remove();
+        }
+
+        stream_settings_components.set_right_panel_title(sub);
+        stream_ui_updates.update_toggler_for_sub(sub);
+        stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
+        stream_ui_updates.update_stream_privacy_icon_in_settings(sub);
+        stream_ui_updates.update_regular_sub_settings(sub);
+    }
 }
 
 export function show_active_stream_in_left_panel(): void {
@@ -390,7 +406,8 @@ export function update_settings_for_unsubscribed(slim_sub: StreamSubscription): 
 }
 
 function triage_stream(left_panel_params: LeftPanelParams, sub: StreamSubscription): string {
-    const current_channel_visibility_filter = archived_status_dropdown_filter;
+    const current_channel_visibility_filter =
+        stream_settings_components.get_filter_dropdown_value();
     const channel_visibility_filters = stream_settings_data.FILTERS;
     if (
         current_channel_visibility_filter === channel_visibility_filters.NON_ARCHIVED_CHANNELS &&
@@ -510,7 +527,8 @@ export function update_empty_left_panel_message(): void {
     const has_search_query =
         $<HTMLInputElement>("#stream_filter input[type='text']").val()!.trim() !== "";
     const has_filter =
-        archived_status_dropdown_filter !== stream_settings_data.FILTERS.ALL_CHANNELS;
+        stream_settings_components.get_filter_dropdown_value() !==
+        stream_settings_data.FILTERS.ALL_CHANNELS;
 
     // Both search queries and filters can lead to all channels being hidden.
     if (all_channels_hidden && (has_search_query || (has_filter && has_streams))) {
@@ -662,11 +680,9 @@ export function switch_stream_sort(tab_name: string): void {
     redraw_left_panel();
 }
 
-function filters_dropdown_options(current_value: string | number | undefined): {
-    unique_id: string;
-    name: string;
-    bold_current_selection: boolean;
-}[] {
+function filters_dropdown_options(
+    current_value: string | number | undefined,
+): dropdown_widget.Option[] {
     return [
         {
             unique_id: stream_settings_data.FILTERS.ARCHIVED_CHANNELS,
@@ -688,10 +704,6 @@ function filters_dropdown_options(current_value: string | number | undefined): {
     ];
 }
 
-export function set_filters_for_tests(filter_widget: dropdown_widget.DropdownWidget): void {
-    filters_dropdown_widget = filter_widget;
-}
-
 function filter_click_handler(
     event: JQuery.TriggeredEvent,
     dropdown: tippy.Instance,
@@ -702,24 +714,22 @@ function filter_click_handler(
 
     const filter_id = $(event.currentTarget).attr("data-unique-id");
     assert(filter_id !== undefined);
-    // We don't support multiple filters, so we clear existing and add the new filter.
-    archived_status_dropdown_filter = filter_id;
     redraw_left_panel();
     dropdown.hide();
     widget.render();
 }
 
 function set_up_dropdown_widget(): void {
-    archived_status_dropdown_filter = stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS;
-    filters_dropdown_widget = new dropdown_widget.DropdownWidget({
+    const widget: dropdown_widget.DropdownWidget = new dropdown_widget.DropdownWidget({
         ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
         get_options: filters_dropdown_options,
         widget_name: "stream_settings_filter",
         item_click_callback: filter_click_handler,
         $events_container: $("#stream_filter"),
-        default_id: archived_status_dropdown_filter,
+        default_id: stream_settings_data.FILTERS.NON_ARCHIVED_CHANNELS,
     });
-    filters_dropdown_widget.setup();
+    widget.setup();
+    stream_settings_components.set_filter_dropdown_widget(widget);
 }
 
 function setup_page(callback: () => void): void {
@@ -793,7 +803,7 @@ function setup_page(callback: () => void): void {
         }
 
         // show the "Stream settings" header by default.
-        $(".display-type #stream_settings_title").show();
+        $(".display-type #stream_settings_title").addClass("showing-info-title");
     }
 
     function populate_and_fill(): void {
@@ -838,11 +848,11 @@ function setup_page(callback: () => void): void {
         const rendered = render_stream_settings_overlay(template_data);
         $("#channels_overlay_container").append($(rendered));
 
+        set_up_dropdown_widget();
         render_left_panel_superset();
         initialize_components();
         redraw_left_panel();
         stream_create.set_up_handlers();
-        set_up_dropdown_widget();
 
         const throttled_redraw_left_panel = _.throttle(redraw_left_panel, 50);
         $("#stream_filter input[type='text']").on("input", () => {
@@ -965,20 +975,15 @@ export function change_state(
         switch_to_stream_row(stream_id);
 
         const sub = stream_data.get_sub_by_id(stream_id);
-        if (sub) {
+        if (sub && !stream_settings_components.filter_includes_channel(sub)) {
             const FILTERS = stream_settings_data.FILTERS;
-            const should_update_filter =
-                (archived_status_dropdown_filter === FILTERS.NON_ARCHIVED_CHANNELS &&
-                    sub.is_archived) ||
-                (archived_status_dropdown_filter === FILTERS.ARCHIVED_CHANNELS && !sub.is_archived);
-            if (should_update_filter) {
-                if (sub.is_archived) {
-                    archived_status_dropdown_filter = FILTERS.ARCHIVED_CHANNELS;
-                } else {
-                    archived_status_dropdown_filter = FILTERS.NON_ARCHIVED_CHANNELS;
-                }
-                filters_dropdown_widget.render(archived_status_dropdown_filter);
+            let selected_filter;
+            if (sub.is_archived) {
+                selected_filter = FILTERS.ARCHIVED_CHANNELS;
+            } else {
+                selected_filter = FILTERS.NON_ARCHIVED_CHANNELS;
             }
+            stream_settings_components.set_filter_dropdown_value(selected_filter);
         }
         return;
     }
@@ -1121,32 +1126,6 @@ export function do_open_create_stream(): void {
 export function open_create_stream(): void {
     do_open_create_stream();
     browser_history.update("#channels/new");
-}
-
-export function update_stream_privacy_choices(policy: string): void {
-    if (!overlays.streams_open()) {
-        return;
-    }
-    const stream_edit_panel_opened = $("#stream_permission_settings").is(":visible");
-    const stream_creation_form_opened = $("#stream-creation").is(":visible");
-
-    if (!stream_edit_panel_opened && !stream_creation_form_opened) {
-        return;
-    }
-    let $container = $("#stream-creation");
-    if (stream_edit_panel_opened) {
-        $container = $("#stream_permission_settings");
-    }
-
-    if (policy === "can_create_private_channel_group") {
-        stream_ui_updates.update_private_stream_privacy_option_state($container);
-    }
-    if (policy === "can_create_public_channel_group") {
-        stream_settings_components.update_public_stream_privacy_option_state($container);
-    }
-    if (policy === "can_create_web_public_channel_group") {
-        stream_ui_updates.update_web_public_stream_privacy_option_state($container);
-    }
 }
 
 export function initialize(): void {

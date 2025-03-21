@@ -507,11 +507,17 @@ export function initialize(): void {
         target: ".user_row .actions button",
         trigger: "mouseenter",
         onShow(instance) {
-            if ($(instance.reference).hasClass("deactivate")) {
+            if ($(instance.reference).hasClass("deactivate-user-tooltip")) {
                 instance.setContent($t({defaultMessage: "Deactivate user"}));
                 return undefined;
-            } else if ($(instance.reference).hasClass("reactivate")) {
+            } else if ($(instance.reference).hasClass("reactivate-user-tooltip")) {
                 instance.setContent($t({defaultMessage: "Reactivate user"}));
+                return undefined;
+            } else if ($(instance.reference).hasClass("deactivate-bot-tooltip")) {
+                instance.setContent($t({defaultMessage: "Deactivate bot"}));
+                return undefined;
+            } else if ($(instance.reference).hasClass("reactivate-bot-tooltip")) {
+                instance.setContent($t({defaultMessage: "Reactivate bot"}));
                 return undefined;
             }
             return false;
@@ -680,6 +686,16 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".saved_snippets-dropdown-list-container .dropdown-list-delete",
         content: $t({defaultMessage: "Delete snippet"}),
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".saved_snippets-dropdown-list-container .dropdown-list-edit",
+        content: $t({defaultMessage: "Edit snippet"}),
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {

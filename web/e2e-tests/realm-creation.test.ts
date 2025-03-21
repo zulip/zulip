@@ -78,6 +78,11 @@ async function realm_creation_tests(page: Page): Promise<void> {
     // element of id `lightbox_overlay` exists.
     await page.waitForSelector("#lightbox_overlay"); // if element doesn't exist,timeout error raises
 
+    // Check if the modal having the onboarding video has been displayed.
+    await common.wait_for_micromodal_to_open(page);
+    await page.click("#navigation-tour-video-modal .modal__close");
+    await common.wait_for_micromodal_to_close(page);
+
     // Updating common.realm_url because we are redirecting to it when logging out.
     common.set_realm_url(page.url());
 }

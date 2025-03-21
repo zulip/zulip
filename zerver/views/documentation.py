@@ -288,8 +288,9 @@ class MarkdownDirectoryView(ApiURLView):
             old_class = a.attrib.get("class", "")
             assert isinstance(old_class, str)
             a.attrib["class"] = old_class + " highlighted"
-        sidebar_html = "".join(html.tostring(child, encoding="unicode") for child in tree)
-        context["sidebar_html"] = Markup(sidebar_html)
+        context["sidebar_html"] = Markup().join(
+            Markup(html.tostring(child, encoding="unicode")) for child in tree
+        )
 
         add_google_analytics_context(context)
         return context

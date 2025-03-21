@@ -17,7 +17,6 @@ import type {PillUpdateField} from "./custom_profile_fields_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
-import * as loading from "./loading.ts";
 import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
@@ -601,9 +600,6 @@ export function set_up(): void {
 
         /* Ideally, this code path would use do_settings_change; we're avoiding it
            in order to do the success feedback without a banner. */
-        $status_element.fadeTo(0, 1);
-        loading.make_indicator($status_element, {text: settings_ui.strings.saving});
-
         void channel.patch({
             url: "/json/settings",
             data,
@@ -626,7 +622,6 @@ export function set_up(): void {
                 dialog_widget.close();
             },
             error(xhr) {
-                loading.destroy_indicator($status_element);
                 ui_report.error(settings_ui.strings.failure_html, xhr, $change_email_error);
                 dialog_widget.hide_dialog_spinner();
             },

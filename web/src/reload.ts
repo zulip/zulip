@@ -12,8 +12,9 @@ import type {LocalStorage} from "./localstorage.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";
 import {page_params} from "./page_params.ts";
+import * as popup_banners from "./popup_banners.ts";
+import type {ReloadingReason} from "./popup_banners.ts";
 import * as reload_state from "./reload_state.ts";
-import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
@@ -145,7 +146,7 @@ function delete_stale_tokens(ls: LocalStorage): void {
 function do_reload_app(
     send_after_reload: boolean,
     save_compose: boolean,
-    message_html: string,
+    reason: ReloadingReason,
 ): void {
     if (reload_state.is_in_progress()) {
         blueslip.log("do_reload_app: Doing nothing since reload_in_progress");
@@ -160,7 +161,7 @@ function do_reload_app(
     }
 
     // TODO: We need a better API for showing messages.
-    ui_report.message(message_html, $("#reloading-application"));
+    popup_banners.open_reloading_application_banner(reason);
     blueslip.log("Starting server requested page reload");
     reload_state.set_state_to_in_progress();
 
@@ -201,7 +202,12 @@ export function initiate({
     immediate = false,
     save_compose = true,
     send_after_reload = false,
-    message_html = "Reloading ...",
+    reason = "reload",
+}: {
+    immediate?: boolean;
+    save_compose?: boolean;
+    send_after_reload?: boolean;
+    reason?: ReloadingReason;
 }): void {
     if (reload_state.is_in_progress()) {
         // If we're already attempting to reload, there's nothing to do.
@@ -224,7 +230,7 @@ export function initiate({
         success() {
             server_reachable_check_failures = 0;
             if (immediate) {
-                do_reload_app(send_after_reload, save_compose, message_html);
+                do_reload_app(send_after_reload, save_compose, reason);
                 // We don't expect do_reload_app to return, but if it
                 // does, the fallthrough logic seems fine.
             }
@@ -264,7 +270,7 @@ export function initiate({
             const basic_idle_timeout = 1000 * 60 * 1 + random_variance;
 
             function reload_from_idle(): void {
-                do_reload_app(false, save_compose, message_html);
+                do_reload_app(false, save_compose, reason);
             }
 
             // Make sure we always do a reload eventually after
@@ -326,7 +332,7 @@ export function initiate({
                 server_reachable_check_failures,
             );
             setTimeout(() => {
-                initiate({immediate, save_compose, send_after_reload, message_html});
+                initiate({immediate, save_compose, send_after_reload, reason});
             }, retry_delay_secs * 1000);
         },
     });

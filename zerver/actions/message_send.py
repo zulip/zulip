@@ -1263,11 +1263,14 @@ def already_sent_mirrored_message_id(message: Message) -> int | None:
         time_window = timedelta(seconds=0)
 
     messages = Message.objects.filter(
-        # Uses index: zerver_message_realm_recipient_subject
+        # Uses index: zerver_message_realm_recipient_subject for
+        # channel messages or zerver_message_realm_sender_recipient for
+        # DMs
         realm_id=message.realm_id,
         sender=message.sender,
         recipient=message.recipient,
         subject=message.topic_name(),
+        is_channel_message=message.is_channel_message,
         content=message.content,
         sending_client=message.sending_client,
         date_sent__gte=message.date_sent - time_window,
@@ -1759,7 +1762,7 @@ def check_message(
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
-        if realm.mandatory_topics and topic_name in ("(no topic)", ""):
+        if realm.mandatory_topics and topic_name == "":
             raise JsonableError(_("Topics are required in this organization"))
 
     elif addressee.is_private():
@@ -1803,6 +1806,9 @@ def check_message(
     message.realm = realm
     if addressee.is_stream():
         message.set_topic_name(topic_name)
+        message.is_channel_message = True
+    else:
+        message.is_channel_message = False
     if forged and forged_timestamp is not None:
         # Forged messages come with a timestamp
         message.date_sent = timestamp_to_datetime(forged_timestamp)
@@ -1992,6 +1998,7 @@ def internal_prep_private_message(
     *,
     mention_backend: MentionBackend | None = None,
     disable_external_notifications: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> SendMessageRequest | None:
     """
     See _internal_prep_message for details of how this works.
@@ -2009,6 +2016,7 @@ def internal_prep_private_message(
         content=content,
         mention_backend=mention_backend,
         disable_external_notifications=disable_external_notifications,
+        acting_user=acting_user,
     )
 
 

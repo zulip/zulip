@@ -254,7 +254,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             item_click_callback: integration_item_click_callback,
             $events_container: $("#generate-integration-url-modal"),
             default_id: default_integration_option.unique_id,
-            unique_id_type: dropdown_widget.DataTypes.STRING,
+            unique_id_type: "string",
         });
         integration_input_dropdown_widget.setup();
 
@@ -298,7 +298,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             item_click_callback: stream_item_click_callback,
             $events_container: $("#generate-integration-url-modal"),
             default_id: direct_messages_option.unique_id,
-            unique_id_type: dropdown_widget.DataTypes.NUMBER,
+            unique_id_type: "number",
         });
         stream_input_dropdown_widget.setup();
 

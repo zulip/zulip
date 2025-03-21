@@ -607,3 +607,14 @@
         }
     }
 }
+
+.button-hide-loading-indicator-on-hover:hover {
+    .button-loading-indicator {
+        visibility: hidden;
+    }
+
+    .action-button-label,
+    .zulip-icon {
+        visibility: visible !important;
+    }
+}

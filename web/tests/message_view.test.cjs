@@ -370,6 +370,12 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         empty_narrow_html("translated: You aren't following any topics."),
     );
 
+    current_filter = set_filter([["is", "muted"]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You have no messages in muted topics and channels."),
+    );
     // organization has disabled sending direct messages
     override(realm, "realm_direct_message_permission_group", nobody.id);
 

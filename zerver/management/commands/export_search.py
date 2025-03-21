@@ -147,7 +147,10 @@ This is most often used for legal compliance.
 
         limits = reduce(
             or_,
-            [Q(content__icontains=term) | Q(subject__icontains=term) for term in terms],
+            [
+                Q(content__icontains=term) | Q(is_channel_message=True, subject__icontains=term)
+                for term in terms
+            ],
             limits,
         )
 

@@ -13,7 +13,6 @@ import {csrf_token} from "./csrf.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
-import type {UserGroupForDropdownListWidget} from "./group_permission_settings.ts";
 import {$t, $t_html, get_language_name} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as keydown_util from "./keydown_util.ts";
@@ -532,6 +531,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_can_mention_many_users_group":
         case "realm_can_move_messages_between_channels_group":
         case "realm_can_move_messages_between_topics_group":
+        case "realm_can_resolve_topics_group":
         case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
@@ -952,7 +952,7 @@ export function deactivate_organization(e: JQuery.Event): void {
         });
 
         $("#custom-realm-deletion-time").on(
-            "input propertychange",
+            "input",
             ".custom-time-input-value, .custom-time-input-unit",
             () => {
                 custom_deletion_time_input = util.check_time_input(
@@ -1068,9 +1068,9 @@ function set_up_dropdown_widget(
         text_if_current_value_not_in_options = $t({defaultMessage: "Cannot view channel"});
     }
 
-    let unique_id_type = dropdown_widget.DataTypes.NUMBER;
+    let unique_id_type: dropdown_widget.DataType = "number";
     if (setting_type === "language") {
-        unique_id_type = dropdown_widget.DataTypes.STRING;
+        unique_id_type = "string";
     }
 
     const setting_dropdown_widget = new dropdown_widget.DropdownWidget({
@@ -1112,7 +1112,7 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
             // we use pills UI.
             continue;
         }
-        const get_setting_options = (): UserGroupForDropdownListWidget[] =>
+        const get_setting_options = (): dropdown_widget.Option[] =>
             group_permission_settings.get_realm_user_groups_for_dropdown_list_widget(
                 setting_name,
                 "realm",
@@ -1255,7 +1255,7 @@ export function register_save_discard_widget_handlers(
 
     $container.on(
         "click",
-        ".subsection-header .subsection-changes-save button",
+        ".subsection-header .subsection-changes-save .save-button[data-status='unsaved']",
         function (this: HTMLElement, e: JQuery.ClickEvent) {
             e.preventDefault();
             e.stopPropagation();
@@ -1273,6 +1273,15 @@ export function register_save_discard_widget_handlers(
                     );
             }
             save_organization_settings(data, $save_button, patch_url, success_continuation);
+        },
+    );
+
+    $container.on(
+        "click",
+        ".subsection-header .subsection-changes-save button",
+        (e: JQuery.ClickEvent) => {
+            // Prevents the default form submission action when clicking a button (e.g., "Saving...").
+            e.preventDefault();
         },
     );
 }
@@ -1528,6 +1537,10 @@ export function build_page(): void {
         realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, false);
         realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, true);
     }
+
+    $("#id_org_profile_preview").on("click", () => {
+        window.open("/login/?preview=true", "_blank", "noopener,noreferrer");
+    });
 
     $("#organization-profile .deactivate_realm_button").on("click", deactivate_organization);
 }

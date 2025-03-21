@@ -977,6 +977,7 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(reaction.emoji_code, str(realm_emoji.id))
 
         # data to test import of onboaring step
+        OnboardingStep.objects.filter(user=sample_user).delete()
         OnboardingStep.objects.create(
             user=sample_user,
             onboarding_step="intro_inbox_view_modal",
@@ -2278,20 +2279,6 @@ class RealmImportExportTest(ExportFile):
                 export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
             )
             do_import_realm(get_output_dir(), "test-zulip")
-
-    def test_clean_up_migration_status_json(self) -> None:
-        user = self.example_user("hamlet")
-        with (
-            patch("zerver.lib.export.get_migration_status") as mock_export,
-        ):
-            mock_export.return_value = self.fixture_data(
-                "with_stale_migrations.txt", "import_fixtures/showmigrations_fixtures"
-            )
-
-            realm = user.realm
-        self.export_realm_and_create_auditlog(realm)
-
-        self.verify_migration_status_json()
 
 
 class SingleUserExportTest(ExportFile):

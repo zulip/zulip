@@ -99,8 +99,7 @@ class RemoteTestResult(django_runner.RemoteTestResult):
 
     def addInstrumentation(self, test: unittest.TestCase, data: dict[str, Any]) -> None:
         # Some elements of data['info'] cannot be serialized.
-        if "info" in data:
-            del data["info"]
+        data.pop("info", None)
 
         self.events.append(("addInstrumentation", self.test_index, data))
 

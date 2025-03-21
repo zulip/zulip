@@ -56,8 +56,8 @@ When you deactivate a user:
 
 {settings_tab|users}
 
-1. In the **Actions** column, click the **deactivate** (<i class="fa
-   fa-user-times"></i>) icon for the user you want to deactivate.
+1. In the **Actions** column, click the **deactivate user** (<i class="zulip-icon
+   zulip-icon-user-x"></i>) icon for the user you want to deactivate.
 
 1. *(optional)* Select **Notify this user by email?** if desired, and enter a
    custom comment to include in the notification email.
@@ -90,8 +90,8 @@ bots will be deactivated until the user manually
 
 1. Select the **Deactivated** tab.
 
-1. Click the **Reactivate** button to the right of the user that you
-   want to reactivate.
+1. In the **Actions** column, click the **reactivate user** (<i class="zulip-icon
+   zulip-icon-user-plus"></i>) icon for the user you want to reactivate.
 
 {tab|via-user-profile}
 

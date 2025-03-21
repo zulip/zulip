@@ -36,9 +36,12 @@
                             {{#*inline "z-link-convert-demo-organization-help"}}<a href="/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
                         {{/tr}}
                     </p>
-                    <button id="demo_organization_add_email_button" type="button" class="button rounded sea-green">
-                        {{t "Add email"}}
-                    </button>
+                    {{> ../components/action_button
+                      id="demo_organization_add_email_button"
+                      label=(t "Add email")
+                      attention="quiet"
+                      intent="brand"
+                      }}
                 </div>
                 {{/if}}
             </form>
@@ -57,7 +60,7 @@
                     <div class="input-group">
                         {{> ../components/action_button
                           label=(t "Change your password")
-                          type="quiet"
+                          attention="quiet"
                           intent="brand"
                           id="change_password"
                           }}
@@ -70,7 +73,7 @@
                 <div id="deactivate_account_container" class="inline-block {{#if user_is_only_organization_owner}}disabled_setting_tooltip{{/if}}">
                     {{> ../components/action_button
                       label=(t "Deactivate account")
-                      type="quiet"
+                      attention="quiet"
                       intent="danger"
                       id="user_deactivate_account_button"
                       disabled=user_is_only_organization_owner
@@ -79,7 +82,7 @@
                 {{#if owner_is_only_user_in_organization}}
                     {{> ../components/action_button
                       label=(t "Deactivate organization")
-                      type="quiet"
+                      attention="quiet"
                       intent="danger"
                       custom_classes="deactivate_realm_button inline-block"
                       }}
@@ -153,7 +156,7 @@
                 <div id="api_key_button_container" class="inline-block {{#unless user_has_email_set}}disabled_setting_tooltip{{/unless}}">
                     {{> ../components/action_button
                       label=(t "Manage your API key")
-                      type="quiet"
+                      attention="quiet"
                       intent="brand"
                       id="api_key_button"
                       disabled=(not user_has_email_set)

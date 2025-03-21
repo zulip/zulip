@@ -216,7 +216,7 @@ function render_user_profile_subscribe_widget(): void {
         get_options: get_user_unsub_streams_for_dropdown,
         item_click_callback: change_state_of_subscribe_button,
         $events_container: $("#user-profile-modal"),
-        unique_id_type: dropdown_widget.DataTypes.NUMBER,
+        unique_id_type: "number",
     };
     user_profile_subscribe_widget =
         user_profile_subscribe_widget ?? new dropdown_widget.DropdownWidget(opts);
@@ -261,20 +261,12 @@ function reset_subscribe_widget(): void {
     }
 }
 
-export function get_user_unsub_streams_for_dropdown(): {
-    name: string;
-    unique_id: number;
-    stream: StreamSubscription;
-}[] {
+export function get_user_unsub_streams_for_dropdown(): dropdown_widget.Option[] {
     const target_user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
     return get_user_unsub_streams(target_user_id);
 }
 
-export function get_user_unsub_streams(user_id: number): {
-    name: string;
-    unique_id: number;
-    stream: StreamSubscription;
-}[] {
+export function get_user_unsub_streams(user_id: number): dropdown_widget.Option[] {
     return stream_data
         .get_streams_for_user(user_id)
         .can_subscribe.map((stream) => ({
@@ -971,7 +963,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             item_click_callback,
             $events_container: $("#bot-edit-form"),
             default_id: owner_id,
-            unique_id_type: dropdown_widget.DataTypes.NUMBER,
+            unique_id_type: "number",
         });
         bot_owner_dropdown_widget.setup();
 
@@ -1134,6 +1126,8 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         return;
     }
 
+    const hide_deactivate_button =
+        current_user.is_admin && !current_user.is_owner && person.is_owner;
     const html_body = render_admin_human_form({
         user_id,
         email: person.delivery_email,
@@ -1141,6 +1135,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: person.is_owner && !current_user.is_owner,
         is_active,
+        hide_deactivate_button,
     });
 
     $container.append($(html_body));

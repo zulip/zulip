@@ -105,10 +105,13 @@ export function get_email_from_item(item: UserPill): string {
     return item.email;
 }
 
-export function append_person(opts: {
-    person: User;
-    pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer;
-}): void {
+export function append_person(
+    opts: {
+        person: User;
+        pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer;
+    },
+    execute_oncreate_callback = true,
+): void {
     const person = opts.person;
     const pill_widget = opts.pill_widget;
     const avatar_url = people.small_avatar_url_for_person(person);
@@ -125,7 +128,7 @@ export function append_person(opts: {
         is_bot: person.is_bot,
     };
 
-    pill_widget.appendValidatedData(pill_data);
+    pill_widget.appendValidatedData(pill_data, false, !execute_oncreate_callback);
     pill_widget.clear_text();
 }
 
@@ -182,12 +185,16 @@ export function filter_taken_users(
 export function append_user(
     user: User,
     pills: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer,
+    execute_oncreate_callback = true,
 ): void {
     if (user) {
-        append_person({
-            pill_widget: pills,
-            person: user,
-        });
+        append_person(
+            {
+                pill_widget: pills,
+                person: user,
+            },
+            execute_oncreate_callback,
+        );
     } else {
         blueslip.warn("Undefined user in function append_user");
     }

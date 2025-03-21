@@ -314,7 +314,7 @@ ul.popover-group-menu-member-list {
 }
 
 .popover-group-menu-member {
-    .zulip-icon-triple-users {
+    .zulip-icon-user-group {
         color: var(--color-icon-purple);
     }
 }
@@ -602,7 +602,6 @@ ul.popover-group-menu-member-list {
 
     .subscription-group-list,
     .subscription-stream-list {
-        position: relative;
         border: 1px solid hsl(0deg 0% 83%);
         border-radius: 4px;
         overflow: auto;
@@ -886,6 +885,31 @@ ul.popover-group-menu-member-list {
         box-sizing: border-box;
         width: 100%;
         height: auto;
+
+        &.empty-topic-display::placeholder {
+            color: inherit;
+        }
+    }
+
+    #move-topic-new-topic-input-wrapper {
+        position: relative;
+    }
+
+    .move-topic-new-topic-placeholder {
+        position: absolute;
+        left: 6px;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        pointer-events: none;
+        visibility: hidden;
+    }
+
+    .move-topic-new-topic-placeholder-visible {
+        visibility: visible;
     }
 
     #message_move_select_options {

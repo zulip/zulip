@@ -288,6 +288,11 @@ run_test("paste_handler_converter", () => {
     // Pasting from Excel using ^⇧V should paste formatted text.
     assert.equal(compose_paste.paste_handler_converter(input), "     \n\n$ 20.00\n\n$ 7.00");
 
+    // Pasting from the mac terminal
+    input =
+        '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="Content-Style-Type" content="text/css"><title></title><meta name="Generator" content="Cocoa HTML Writer"><meta name="CocoaVersion" content="2575.4"><style type="text/css">p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 11.0px Menlo; color: #000000}span.s1 {font-variant-ligatures: no-common-ligatures}</style></head><body><p class="p1"><span class="s1">insertions</span></p></body></html>';
+    assert.equal(compose_paste.paste_handler_converter(input), "insertions");
+
     // Math block tests
 
     /*

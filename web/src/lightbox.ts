@@ -13,13 +13,7 @@ import * as popovers from "./popovers.ts";
 import * as rows from "./rows.ts";
 import * as util from "./util.ts";
 
-enum MediaType {
-    Image = "image",
-    InlineVideo = "inline-video",
-    YoutubeVideo = "youtube-video",
-    VimeoVideo = "vimeo-video",
-    EmbedVideo = "embed-video",
-}
+type MediaType = "image" | "inline-video" | "youtube-video" | "vimeo-video" | "embed-video";
 
 type Media = {
     // Sender's full name
@@ -342,7 +336,7 @@ function display_video(payload: Media): void {
     ).hide();
     $(".player-container").show();
 
-    if (payload.type === MediaType.InlineVideo) {
+    if (payload.type === "inline-video") {
         $(".player-container").hide();
         $(".video-player, .media-description").show();
         const $video = $("<video>");
@@ -396,7 +390,7 @@ export function build_open_media_function(
         const payload = parse_media_data(util.the($media));
 
         assert(payload !== undefined);
-        if (payload.type === MediaType.Image) {
+        if (payload.type === "image") {
             display_image(payload);
         } else {
             display_video(payload);
@@ -534,18 +528,18 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
     const transcoded_image = $media.attr("data-transcoded-image");
 
     if (is_inline_video) {
-        type = MediaType.InlineVideo;
+        type = "inline-video";
         // Render video from original source to reduce load on our own servers.  The `url` is the
         // non-Camo'd version; `preview` is the Camo'd URL.
         source = url;
     } else if (is_youtube_video) {
-        type = MediaType.YoutubeVideo;
+        type = "youtube-video";
         source = "https://www.youtube.com/embed/" + $parent.attr("data-id");
     } else if (is_vimeo_video) {
-        type = MediaType.VimeoVideo;
+        type = "vimeo-video";
         source = "https://player.vimeo.com/video/" + $parent.attr("data-id");
     } else if (is_embed_video) {
-        type = MediaType.EmbedVideo;
+        type = "embed-video";
         source =
             "data:text/html," +
             window.encodeURIComponent(
@@ -553,7 +547,7 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
                     $parent.attr("data-id"),
             );
     } else {
-        type = MediaType.Image;
+        type = "image";
         if ($media.attr("data-src-fullsize")) {
             source = $media.attr("data-src-fullsize");
         } else if (transcoded_image && preview_src) {

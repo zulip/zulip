@@ -15,7 +15,6 @@ import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
 import * as compose_state from "./compose_state.ts";
 import * as compose_textarea from "./compose_textarea.ts";
 import * as condense from "./condense.ts";
-import * as copy_messages from "./copy_messages.ts";
 import * as deprecated_feature_notice from "./deprecated_feature_notice.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as emoji from "./emoji.ts";
@@ -1143,8 +1142,6 @@ export function process_hotkey(e, hotkey) {
             message_scroll_state.set_keyboard_triggered_current_scroll(true);
             navigate.page_down();
             return true;
-        case "copy_with_c":
-            return copy_messages.copy_handler();
     }
 
     if (
@@ -1229,7 +1226,9 @@ export function process_hotkey(e, hotkey) {
             }
 
             const canonical_name = emoji.get_emoji_name(first_reaction.emoji_code);
-            reactions.toggle_emoji_reaction(msg, canonical_name);
+            // `canonical_name` will be `undefined` for custom emoji, so we can default
+            // to the `emoji_name`.
+            reactions.toggle_emoji_reaction(msg, canonical_name ?? first_reaction.emoji_name);
             return true;
         }
         case "toggle_topic_visibility_policy":

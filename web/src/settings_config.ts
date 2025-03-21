@@ -656,6 +656,7 @@ export const all_group_setting_labels = {
         can_move_messages_between_channels_group: $t({
             defaultMessage: "Who can move messages to another channel",
         }),
+        can_resolve_topics_group: $t({defaultMessage: "Who can resolve topics"}),
         can_delete_any_message_group: $t({defaultMessage: "Who can delete any message"}),
         can_delete_own_message_group: $t({defaultMessage: "Who can delete their own messages"}),
         can_access_all_users_group: $t({
@@ -730,6 +731,7 @@ export const realm_group_permission_settings: {
         settings: [
             "can_move_messages_between_topics_group",
             "can_move_messages_between_channels_group",
+            "can_resolve_topics_group",
         ],
     },
     {

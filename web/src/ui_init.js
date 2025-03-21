@@ -34,8 +34,10 @@ import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
 import * as compose_setup from "./compose_setup.js";
 import * as compose_textarea from "./compose_textarea.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
+import * as compose_validate from "./compose_validate.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as condense from "./condense.ts";
+import * as copy_messages from "./copy_messages.ts";
 import * as desktop_integration from "./desktop_integration.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as drafts from "./drafts.ts";
@@ -598,11 +600,13 @@ export function initialize_everything(state_data) {
         playground_data: realm.realm_playgrounds,
         pygments_comparator_func: typeahead_helper.compare_language,
     });
+    copy_messages.initialize();
     compose_setup.initialize();
     // Typeahead must be initialized after compose_setup.initialize()
     composebox_typeahead.initialize({
         on_enter_send: compose.finish,
     });
+    compose_validate.initialize();
     compose_textarea.initialize();
     upload.initialize();
     search.initialize({
@@ -688,7 +692,11 @@ export function initialize_everything(state_data) {
     drafts_overlay_ui.initialize();
     // This needs to happen after activity_ui.initialize, so that user_filter
     // is defined. Also, must happen after people.initialize()
-    onboarding_steps.initialize(state_data.onboarding_steps, message_view.show);
+    onboarding_steps.initialize(
+        state_data.onboarding_steps,
+        state_data.navigation_tour_video_url,
+        message_view.show,
+    );
     typing.initialize();
     starred_messages_ui.initialize();
     user_status_ui.initialize();

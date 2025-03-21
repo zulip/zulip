@@ -85,10 +85,16 @@ I've kicked off some conversations to help you get started. You can find
 them in your [Inbox](/#inbox).
 """)
 
+        navigation_tour_video_string = _("""
+You can always come back to the [Welcome to Zulip video]({navigation_tour_video_url}) for a quick app overview.
+""").format(navigation_tour_video_url=settings.NAVIGATION_TOUR_VIDEO_URL)
+
         content = _("""
 Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
 
 {getting_started_text} {organization_setup_text}
+
+{navigation_tour_video_text}
 
 {demo_organization_text}
 
@@ -96,6 +102,7 @@ Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
             inform_about_tracked_onboarding_messages_text=inform_about_tracked_onboarding_messages_text,
             getting_started_text=getting_started_string,
             organization_setup_text=organization_setup_string,
+            navigation_tour_video_text=navigation_tour_video_string,
             demo_organization_text=demo_organization_warning_string,
         )
 

@@ -23,6 +23,7 @@ export type SettingsSubscription = StreamSubscription & {
     can_access_subscribers: boolean;
     can_add_subscribers: boolean;
     can_remove_subscribers: boolean;
+    can_archive_stream: boolean;
     preview_url: string;
     is_old_stream: boolean;
     subscriber_count: number;
@@ -59,6 +60,7 @@ export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscript
         can_access_subscribers: stream_data.can_view_subscribers(sub),
         can_add_subscribers: stream_data.can_subscribe_others(sub),
         can_remove_subscribers: stream_data.can_unsubscribe_others(sub),
+        can_archive_stream: stream_data.can_archive_stream(sub),
 
         preview_url: hash_util.by_stream_url(sub.stream_id),
         is_old_stream: sub.stream_weekly_traffic !== null,
@@ -157,7 +159,9 @@ export function get_streams_for_settings_page(): SettingsSubscription[] {
     }
     subscribed_rows.sort(by_name);
     unsubscribed_rows.sort(by_name);
-    const all_subs = [...unsubscribed_rows, ...subscribed_rows];
+    const all_subs = [...unsubscribed_rows, ...subscribed_rows].filter(
+        (stream) => !stream.is_archived,
+    );
 
     return get_subs_for_settings(all_subs);
 }

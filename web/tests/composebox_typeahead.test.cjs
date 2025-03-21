@@ -26,6 +26,8 @@ const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
     warn_if_topic_resolved: noop,
     stream_wildcard_mention_allowed: () => true,
+    warn_if_mentioning_unsubscribed_group: noop,
+    initialize: noop,
 });
 const input_pill = mock_esm("../src/input_pill");
 const message_user_ids = mock_esm("../src/message_user_ids", {
@@ -415,6 +417,26 @@ const harry = {
 };
 const harry_item = user_item(harry);
 
+const welcome_bot = {
+    full_name: "Welcome Bot",
+    is_bot: true,
+    is_system_bot: true,
+    user_id: 110,
+    email: "welcome-bot@zulip.com",
+};
+
+const welcome_bot_item = user_item(welcome_bot);
+
+const notification_bot = {
+    full_name: "Notification Bot",
+    is_bot: true,
+    is_system_bot: true,
+    user_id: 111,
+    email: "notification-bot@zulip.com",
+};
+
+const notification_bot_item = user_item(notification_bot);
+
 const hamletcharacters = user_group_item({
     name: "hamletcharacters",
     id: 1,
@@ -629,6 +651,8 @@ function test(label, f) {
         people.add_active_user(hal);
         people.add_active_user(harry);
         people.add_active_user(deactivated_user);
+        people.add_cross_realm_user(welcome_bot);
+        people.add_cross_realm_user(notification_bot);
         people.deactivate(deactivated_user);
         people.initialize_current_user(hamlet.user_id);
 
@@ -1254,6 +1278,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     call_center,
                     admins,
                     members,
+                    welcome_bot_item,
                 ];
                 assert.deepEqual(actual_value, expected_value);
 
@@ -1429,7 +1454,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 ct.get_or_set_token_for_testing("hamletcharacters");
                 actual_value = options.highlighter_html(hamletcharacters);
                 expected_value =
-                    '    <i class="typeahead-image zulip-icon zulip-icon-triple-users no-presence-circle" aria-hidden="true"></i>\n' +
+                    '    <i class="typeahead-image zulip-icon zulip-icon-user-group no-presence-circle" aria-hidden="true"></i>\n' +
                     '<div class="typeahead-text-container">\n' +
                     '    <strong class="typeahead-strong-section">hamletcharacters</strong>    <span class="autocomplete_secondary">Characters of Hamlet</span>' +
                     "</div>\n";
@@ -1785,7 +1810,12 @@ test("begins_typeahead", ({override, override_rewire}) => {
     ]);
 
     const mention_all = broadcast_item(ct.broadcast_mentions()[0]);
-    const users_and_all_mention = [...sorted_user_list, mention_all];
+    const users_and_all_mention = [
+        ...sorted_user_list,
+        mention_all,
+        notification_bot_item,
+        welcome_bot_item,
+    ];
     const users_and_user_groups = [
         ...sorted_user_list,
         // alphabetical
@@ -1794,6 +1824,8 @@ test("begins_typeahead", ({override, override_rewire}) => {
         call_center, // "folks working in support",
         admins,
         members,
+        notification_bot_item,
+        welcome_bot_item,
     ];
     const mention_everyone = broadcast_item(ct.broadcast_mentions()[1]);
     function mentions_with_silent_marker(mentions, is_silent) {
@@ -1802,8 +1834,6 @@ test("begins_typeahead", ({override, override_rewire}) => {
             is_silent,
         }));
     }
-    assert_typeahead_equals("@", mentions_with_silent_marker(users_and_all_mention, false));
-    // The user we're testing for is only allowed to do silent mentions of groups
     assert_typeahead_equals("@", mentions_with_silent_marker(users_and_all_mention, false));
     // The user we're testing for is only allowed to do silent mentions of groups
     assert_typeahead_equals("@_", mentions_with_silent_marker(users_and_user_groups, true));
@@ -1815,15 +1845,37 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("@_**", mentions_with_silent_marker(users_and_user_groups, true));
     assert_typeahead_equals(
         "test @**o",
-        mentions_with_silent_marker([othello_item, cordelia_item, mention_everyone], false),
+        mentions_with_silent_marker(
+            [
+                othello_item,
+                cordelia_item,
+                mention_everyone,
+                notification_bot_item,
+                welcome_bot_item,
+            ],
+            false,
+        ),
     );
     assert_typeahead_equals(
         "test @_**o",
-        mentions_with_silent_marker([othello_item, cordelia_item, admins, members], true),
+
+        mentions_with_silent_marker(
+            [othello_item, cordelia_item, admins, members, notification_bot_item, welcome_bot_item],
+            true,
+        ),
     );
     assert_typeahead_equals(
         "test @*o",
-        mentions_with_silent_marker([othello_item, cordelia_item, mention_everyone], false),
+        mentions_with_silent_marker(
+            [
+                othello_item,
+                cordelia_item,
+                mention_everyone,
+                notification_bot_item,
+                welcome_bot_item,
+            ],
+            false,
+        ),
     );
     assert_typeahead_equals(
         "test @_*k",
@@ -1869,6 +1921,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 twin1_item,
                 twin2_item,
                 othello_item,
+                notification_bot_item,
             ],
             false,
         ),
@@ -1887,6 +1940,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 twin2_item,
                 othello_item,
                 admins,
+                notification_bot_item,
             ],
             true,
         ),
@@ -1904,6 +1958,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 hamlet_item,
                 othello_item,
                 mention_all,
+                welcome_bot_item,
             ],
             false,
         ),
@@ -1923,6 +1978,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
                 hamletcharacters,
                 call_center,
                 members,
+                welcome_bot_item,
             ],
             true,
         ),
@@ -1935,11 +1991,23 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals(" @_zuli", []);
     assert_typeahead_equals(
         "test @o",
-        mentions_with_silent_marker([othello_item, cordelia_item, mention_everyone], false),
+        mentions_with_silent_marker(
+            [
+                othello_item,
+                cordelia_item,
+                mention_everyone,
+                notification_bot_item,
+                welcome_bot_item,
+            ],
+            false,
+        ),
     );
     assert_typeahead_equals(
         "test @_o",
-        mentions_with_silent_marker([othello_item, cordelia_item, admins, members], true),
+        mentions_with_silent_marker(
+            [othello_item, cordelia_item, admins, members, notification_bot_item, welcome_bot_item],
+            true,
+        ),
     );
     assert_typeahead_equals("test @z", []);
     assert_typeahead_equals("test @_z", []);
@@ -2447,6 +2515,7 @@ test("typeahead_results", ({override}) => {
         not_silent(othello_item),
         not_silent(hamletcharacters),
         not_silent(call_center),
+        not_silent(welcome_bot_item),
     ]);
 
     // Verify we suggest both 'the first matching stream wildcard' and
@@ -2458,6 +2527,8 @@ test("typeahead_results", ({override}) => {
         not_silent(mention_everyone),
         not_silent(mention_topic),
         not_silent(cordelia_item),
+        not_silent(notification_bot_item),
+        not_silent(welcome_bot_item),
     ]);
 
     // Autocomplete by slash commands.

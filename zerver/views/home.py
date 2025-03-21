@@ -244,6 +244,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     csp_nonce = secrets.token_hex(24)
 
     user_permission_info = get_user_permission_info(user_profile)
+    is_firefox_android = "Firefox" in client_user_agent and "Android" in client_user_agent
 
     response = render(
         request,
@@ -254,6 +255,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
             "csp_nonce": csp_nonce,
             "color_scheme": user_permission_info.color_scheme,
             "enable_gravatar": settings.ENABLE_GRAVATAR,
+            "is_firefox_android": is_firefox_android,
             "s3_avatar_public_url_prefix": settings.S3_AVATAR_PUBLIC_URL_PREFIX
             if settings.LOCAL_UPLOADS_DIR is None
             else "",

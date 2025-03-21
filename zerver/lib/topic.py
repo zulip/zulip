@@ -64,7 +64,7 @@ MESSAGE__TOPIC = "message__subject"
 def filter_by_topic_name_via_message(
     query: QuerySet[UserMessage], topic_name: str
 ) -> QuerySet[UserMessage]:
-    return query.filter(message__subject__iexact=topic_name)
+    return query.filter(message__is_channel_message=True, message__subject__iexact=topic_name)
 
 
 def messages_for_topic(
@@ -75,6 +75,7 @@ def messages_for_topic(
         realm_id=realm_id,
         recipient_id=stream_recipient_id,
         subject__iexact=topic_name,
+        is_channel_message=True,
     )
 
 
@@ -103,6 +104,7 @@ def get_first_message_for_user_in_topic(
                 user_profile=user_profile,
                 message__recipient_id=recipient_id,
                 message__subject__iexact=topic_name,
+                message__is_channel_message=True,
             )
             .values_list("message_id", flat=True)
             .first()
@@ -135,6 +137,7 @@ def user_message_exists_for_topic(
         user_profile=user_profile,
         message__recipient_id=recipient_id,
         message__subject__iexact=topic_name,
+        message__is_channel_message=True,
     ).exists()
 
 
@@ -163,6 +166,7 @@ def update_messages_for_topic_edit(
         realm_id=old_stream.realm_id,
         recipient_id=assert_is_not_none(old_stream.recipient_id),
         subject__iexact=message_edit_request.orig_topic_name,
+        is_channel_message=True,
     )
     if message_edit_request.propagate_mode == "change_all":
         messages = messages.exclude(id=edited_message.id)
@@ -277,7 +281,8 @@ def get_topic_history_for_public_stream(
     FROM "zerver_message"
     WHERE (
         "zerver_message"."realm_id" = %s AND
-        "zerver_message"."recipient_id" = %s
+        "zerver_message"."recipient_id" = %s AND
+        "zerver_message"."is_channel_message"
     )
     GROUP BY (
         "zerver_message"."subject"
@@ -319,7 +324,8 @@ def get_topic_history_for_stream(
     WHERE (
         "zerver_usermessage"."user_profile_id" = %s AND
         "zerver_message"."realm_id" = %s AND
-        "zerver_message"."recipient_id" = %s
+        "zerver_message"."recipient_id" = %s AND
+        "zerver_message"."is_channel_message"
     )
     GROUP BY (
         "zerver_message"."subject"
@@ -357,6 +363,7 @@ def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) ->
         realm_id=realm_id,
         recipient_id=recipient_id,
         subject__iexact=topic_name,
+        is_channel_message=True,
     )
     participants = set(
         UserProfile.objects.filter(
@@ -373,6 +380,12 @@ def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) ->
 
 def maybe_rename_general_chat_to_empty_topic(topic_name: str) -> str:
     if topic_name == Message.EMPTY_TOPIC_FALLBACK_NAME:
+        topic_name = ""
+    return topic_name
+
+
+def maybe_rename_no_topic_to_empty_topic(topic_name: str) -> str:
+    if topic_name == "(no topic)":
         topic_name = ""
     return topic_name
 

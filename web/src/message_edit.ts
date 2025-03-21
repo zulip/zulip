@@ -347,7 +347,7 @@ export function stream_and_topic_exist_in_edit_history(
 
 export function hide_message_edit_spinner($row: JQuery): void {
     $row.find(".loader").hide();
-    $row.find(".message_edit_save span").show();
+    $row.find(".message_edit_save span").removeClass("showing-button-spinner");
     $row.find(".message_edit_save").removeClass("message-edit-button-disabled");
     $row.find(".message_edit_cancel").removeClass("message-edit-button-disabled");
 }
@@ -356,7 +356,7 @@ export function show_message_edit_spinner($row: JQuery): void {
     // Always show the white spinner like we
     // do for send button in compose box.
     loading.show_button_spinner($row.find(".loader"), true);
-    $row.find(".message_edit_save span").hide();
+    $row.find(".message_edit_save span").addClass("showing-button-spinner");
     $row.find(".message_edit_save").addClass("message-edit-button-disabled");
     $row.find(".message_edit_cancel").addClass("message-edit-button-disabled");
 }
@@ -452,6 +452,38 @@ function handle_inline_topic_edit_keydown(this: HTMLElement, e: JQuery.KeyDownEv
 
 function handle_inline_topic_edit_change(this: HTMLInputElement): void {
     const $inline_topic_edit_input = $(this);
+
+    // We use a hidden span element, which we update with the value
+    // of the input field on every input change to calculate the
+    // width of the topic value. This allows us to dynamically adjust
+    // the max-width of the input field.
+    const $topic_value_mirror = $inline_topic_edit_input
+        .closest(".topic_edit_form")
+        .find(".topic_value_mirror");
+    $topic_value_mirror.text(this.value);
+    const topic_width = $topic_value_mirror.width();
+    if (this.value.length > 0) {
+        // When the user starts typing in the inline topic edit input field,
+        // we dynamically adjust the max-width of the input field to match
+        // width of the text in the input field + 1ch width for some cushion.
+        $inline_topic_edit_input.css("max-width", `calc(${topic_width}px + 1ch)`);
+    } else {
+        // When the user deletes all the text in the inline topic edit input field,
+        // we check if the input field has a placeholder and if it does, we set the
+        // max-width of the input field to the length of the placeholder + 1ch
+        // width for some cushion.
+        const $placeholder = $inline_topic_edit_input
+            .closest(".topic_edit_form")
+            .find(".inline-topic-edit-placeholder");
+        if ($placeholder.length > 0) {
+            const placeholder_width = $placeholder.width();
+            $inline_topic_edit_input.css("max-width", `calc(${placeholder_width}px + 1ch)`);
+        } else {
+            // Otherwise, we set the max-width to a reasonable 20ch width.
+            $inline_topic_edit_input.css("max-width", "20ch");
+        }
+    }
+
     if ($inline_topic_edit_input.hasClass("invalid-input")) {
         // If invalid-input class is present on the inline topic edit
         // input field, remove it as soon as the user starts typing
@@ -476,6 +508,15 @@ function handle_inline_topic_edit_change(this: HTMLInputElement): void {
         // and the user has started typing in the input field, probably to fix
         // the error. So, we re-enable the save button and remove the tooltip.
         ui_util.enable_element_and_remove_tooltip($topic_edit_save_button);
+    }
+
+    if (!realm.realm_mandatory_topics) {
+        const $topic_not_mandatory_placeholder = $(".inline-topic-edit-placeholder");
+        if ($inline_topic_edit_input.val() === "") {
+            $topic_not_mandatory_placeholder.addClass("inline-topic-edit-placeholder-visible");
+        } else {
+            $topic_not_mandatory_placeholder.removeClass("inline-topic-edit-placeholder-visible");
+        }
     }
 }
 
@@ -579,7 +620,7 @@ function edit_message($row: JQuery, raw_content: string): void {
         }
     });
 
-    $form.on("input propertychange", () => {
+    $form.on("input", () => {
         compose_validate.check_overflow_text($row);
     });
 
@@ -935,7 +976,7 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     const $form = $(
         render_topic_edit_form({
             max_topic_length: realm.max_topic_length,
-            realm_mandatory_topics: realm.realm_mandatory_topics,
+            is_mandatory_topics: realm.realm_mandatory_topics,
             empty_string_topic_display_name: util.get_final_topic_display_name(""),
         }),
     );
@@ -947,6 +988,11 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     const topic = message.topic;
     const $inline_topic_edit_input = $form.find<HTMLInputElement>("input.inline_topic_edit");
     $inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
+    const $stream_topic = $recipient_row.find(".stream_topic");
+    const topic_width = $stream_topic.width();
+    // Set the width of the inline topic edit input to the
+    // width of the topic name + 1ch width for some cushion.
+    $inline_topic_edit_input.css("max-width", `calc(${topic_width}px + 1ch)`);
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
     composebox_typeahead.initialize_topic_edit_typeahead(
         $inline_topic_edit_input,
@@ -957,6 +1003,32 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     $form.on("keydown", handle_inline_topic_edit_keydown);
 
     $inline_topic_edit_input.on("input", handle_inline_topic_edit_change);
+
+    if (!realm.realm_mandatory_topics) {
+        const $topic_not_mandatory_placeholder = $(".inline-topic-edit-placeholder");
+
+        if (topic === "") {
+            $topic_not_mandatory_placeholder.addClass("inline-topic-edit-placeholder-visible");
+        }
+
+        $inline_topic_edit_input.on("blur", () => {
+            if ($inline_topic_edit_input.val() === "") {
+                $topic_not_mandatory_placeholder.removeClass(
+                    "inline-topic-edit-placeholder-visible",
+                );
+                $inline_topic_edit_input.attr("placeholder", util.get_final_topic_display_name(""));
+                $inline_topic_edit_input.addClass("empty-topic-display");
+            }
+        });
+
+        $inline_topic_edit_input.on("focus", () => {
+            if ($inline_topic_edit_input.val() === "") {
+                $inline_topic_edit_input.attr("placeholder", "");
+                $inline_topic_edit_input.removeClass("empty-topic-display");
+                $topic_not_mandatory_placeholder.addClass("inline-topic-edit-placeholder-visible");
+            }
+        });
+    }
 }
 
 export function end_inline_topic_edit($row: JQuery): void {

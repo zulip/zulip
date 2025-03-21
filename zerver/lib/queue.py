@@ -446,13 +446,20 @@ def queue_json_publish_rollback_unsafe(
     if settings.USING_RABBITMQ:
         get_queue_client().json_publish(queue_name, event)
     elif processor:
-        processor(event)
+        # Round-trip through orjson to simulate what RabbitMQ does.
+        processor(orjson.loads(orjson.dumps(event)))
     else:
         # The else branch is only hit during tests, where rabbitmq is not enabled.
         # Must be imported here: A top section import leads to circular imports
         from zerver.worker.queue_processors import get_worker
 
-        get_worker(queue_name, disable_timeout=True).consume_single_event(event)
+        # As above, we round-trip the event through orjson to emulate
+        # what happens with RabbitMQ enqueueing and dequeueing the
+        # event.  This ensures that we don't rely on non-JSON'able
+        # datatypes in the events.
+        get_worker(queue_name, disable_timeout=True).consume_single_event(
+            orjson.loads(orjson.dumps(event))
+        )
 
 
 def queue_event_on_commit(queue_name: str, event: dict[str, Any]) -> None:

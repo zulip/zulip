@@ -29,7 +29,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as util from "./util.ts";
 
-const response_schema = z.object({
+export const response_schema = z.object({
     anchor: z.number(),
     found_newest: z.boolean(),
     found_oldest: z.boolean(),
@@ -341,7 +341,9 @@ export function get_narrow_for_message_fetch(filter: Filter): string {
     return narrow_param_string;
 }
 
-function get_parameters_for_message_fetch_api(opts: MessageFetchOptions): MessageFetchAPIParams {
+export function get_parameters_for_message_fetch_api(
+    opts: MessageFetchOptions,
+): MessageFetchAPIParams {
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
         // floating point temporary IDs, which is intended to be a.
@@ -369,6 +371,11 @@ function get_parameters_for_message_fetch_api(opts: MessageFetchOptions): Messag
     return data;
 }
 
+// We keep track of the load messages timeout at a module level
+// to prevent multiple load messages requests from the error codepath
+// from stacking up by cancelling the previous timeout.
+let load_messages_timeout: ReturnType<typeof setTimeout> | undefined;
+
 export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
     const data = get_parameters_for_message_fetch_api(opts);
     let update_loading_indicator =
@@ -387,20 +394,23 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         });
     }
 
+    if (load_messages_timeout !== undefined) {
+        clearTimeout(load_messages_timeout);
+    }
+
     void channel.get({
         url: "/json/messages",
         data,
         success(raw_data) {
-            popup_banners.close_connection_error_popup_banner(true);
+            popup_banners.close_connection_error_popup_banner("message_fetch");
             const data = response_schema.parse(raw_data);
             get_messages_success(data, opts);
         },
         error(xhr) {
             if (xhr.status === 400) {
-                // We successfully reached the server, so hide the
-                // connection error notice, even if the request failed
-                // for other reasons.
-                popup_banners.close_connection_error_popup_banner(true);
+                // Even though the request failed, we did reach the
+                // server, and can hide the connection error notice.
+                popup_banners.close_connection_error_popup_banner("message_fetch");
             }
 
             if (
@@ -440,14 +450,16 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 return;
             }
 
+            const delay_secs = util.get_retry_backoff_seconds(xhr, attempt, true);
             popup_banners.open_connection_error_popup_banner({
+                caller: "message_fetch",
+                retry_delay_secs: delay_secs,
                 on_retry_callback() {
                     load_messages(opts, attempt + 1);
                 },
             });
 
-            const delay_secs = util.get_retry_backoff_seconds(xhr, attempt, true);
-            setTimeout(() => {
+            load_messages_timeout = setTimeout(() => {
                 load_messages(opts, attempt + 1);
             }, delay_secs * 1000);
         },

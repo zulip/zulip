@@ -86,12 +86,17 @@ function get_group_members(user_group: UserGroup): number[] {
 export function append_user_group(
     group: UserGroup,
     pill_widget: CombinedPillContainer | GroupSettingPillContainer | UserGroupPillWidget,
+    execute_oncreate_callback = true,
 ): void {
-    pill_widget.appendValidatedData({
-        type: "user_group",
-        group_id: group.id,
-        group_name: group.name,
-    });
+    pill_widget.appendValidatedData(
+        {
+            type: "user_group",
+            group_id: group.id,
+            group_name: group.name,
+        },
+        false,
+        !execute_oncreate_callback,
+    );
     pill_widget.clear_text();
 }
 

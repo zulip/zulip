@@ -62,8 +62,10 @@ for queue_name, count in consumers.items():
         target_count = int(
             get_config(config_file, "application_server", "mobile_notification_shards", "1")
         )
-    elif queue_name == "thumbnail":
-        target_count = int(get_config(config_file, "application_server", "thumbnail_workers", "1"))
+    else:
+        target_count = int(
+            get_config(config_file, "application_server", f"{queue_name}_workers", "1")
+        )
 
     atomic_nagios_write(
         "check-rabbitmq-consumers-" + queue_name,

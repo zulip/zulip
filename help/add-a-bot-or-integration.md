@@ -45,7 +45,7 @@ Depending on the type of bot you're creating, you may need to download its
 
 * [Bots overview](/help/bots-overview)
 * [Integrations overview](/help/integrations-overview)
-* [Edit a bot](/help/edit-a-bot)
+* [Manage a bot](/help/manage-a-bot)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Restrict bot creation](/help/restrict-bot-creation)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)

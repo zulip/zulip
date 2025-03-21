@@ -58,6 +58,10 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     color_picker_popover: null,
 };
 
+// Font size in em for popover derived from popover font size being
+// 15px at base font size of 14px.
+export const POPOVER_FONT_SIZE_IN_EM = 1.0714;
+
 /* Keyboard UI functions */
 export function popover_items_handle_keyboard(key: string, $items?: JQuery): void {
     if (!$items) {
@@ -210,8 +214,10 @@ export const default_popover_props: Partial<tippy.Props> = {
                 phase: "beforeWrite",
                 requires: ["$$tippy"],
                 fn({state}) {
+                    // Since the reference element can be removed from DOM, we rely on popper
+                    // here to access the tippy instance which is reliable.
                     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                    const instance = (state.elements.reference as tippy.ReferenceElement)._tippy!;
+                    const instance = (state.elements.popper as tippy.PopperElement)._tippy!;
                     const $popover = $(state.elements.popper);
                     const $tippy_box = $popover.find(".tippy-box");
                     // $tippy_box[0].hasAttribute("data-reference-hidden"); is the real check

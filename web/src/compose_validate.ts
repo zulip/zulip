@@ -1,8 +1,10 @@
 import $ from "jquery";
-import _ from "lodash";
+import _, {isNumber} from "lodash";
+import type {ReferenceElement} from "tippy.js";
 
 import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
+import render_compose_mention_group_warning from "../templates/compose_banner/compose_mention_group_warning.hbs";
 import render_guest_in_dm_recipient_warning from "../templates/compose_banner/guest_in_dm_recipient_warning.hbs";
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
@@ -10,6 +12,7 @@ import render_stream_wildcard_warning from "../templates/compose_banner/stream_w
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_compose_limit_indicator from "../templates/compose_limit_indicator.hbs";
 
+import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
@@ -28,7 +31,9 @@ import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import type {UserOrMention} from "./typeahead_helper.ts";
+import {toggle_user_group_info_popover} from "./user_group_popover.ts";
 import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
 import * as util from "./util.ts";
 
 let user_acknowledged_stream_wildcard = false;
@@ -38,7 +43,6 @@ let missing_topic = false;
 let no_private_recipient = true;
 let no_message_content = false;
 let message_too_long = false;
-let recipient_disallowed = false;
 
 export const NO_PRIVATE_RECIPIENT_ERROR_MESSAGE = $t({
     defaultMessage: "Please add a valid recipient.",
@@ -64,7 +68,7 @@ export let wildcard_mention_threshold = 15;
 
 export function set_upload_in_progress(status: boolean): void {
     upload_in_progress = status;
-    update_send_button_status();
+    validate_and_update_send_button_status();
 }
 
 function set_no_channel_selected(status: boolean): void {
@@ -98,25 +102,31 @@ function set_message_too_long_for_edit(status: boolean, $container: JQuery): voi
     $message_edit_save_container.toggleClass("disabled-message-edit-save", save_is_disabled);
 }
 
-export function set_recipient_disallowed(status: boolean): void {
-    recipient_disallowed = status;
-}
+export function get_posting_policy_error_message(): string {
+    if (compose_state.selected_recipient_id === "direct") {
+        const recipients = compose_pm_pill.get_user_ids_string();
+        return check_dm_permissions_and_get_error_string(recipients);
+    }
 
-export function update_send_button_status(): void {
-    const recipient_type = compose_state.get_message_type();
-    $(".message-send-controls").toggleClass(
-        "disabled-message-send-controls",
-        upload_in_progress ||
-            no_channel_selected ||
-            (missing_topic && recipient_type === "stream") ||
-            (no_private_recipient && recipient_type === "private") ||
-            message_too_long ||
-            recipient_disallowed ||
-            no_message_content,
-    );
+    if (!isNumber(compose_state.selected_recipient_id)) {
+        return "";
+    }
+
+    const stream = sub_store.get(compose_state.selected_recipient_id);
+    if (stream && !stream_data.can_post_messages_in_stream(stream)) {
+        return $t({
+            defaultMessage: "You do not have permission to post in this channel.",
+        });
+    }
+    return "";
 }
 
 export function get_disabled_send_tooltip(): string {
+    const posting_policy_error = get_posting_policy_error_message();
+    if (posting_policy_error !== "") {
+        return posting_policy_error;
+    }
+
     const recipient_type = compose_state.get_message_type();
     if (no_channel_selected && recipient_type === "stream") {
         return NO_CHANNEL_SELECTED_ERROR_MESSAGE;
@@ -341,7 +351,59 @@ export function warn_if_mentioning_unsubscribed_user(
         }
     }
 }
+export function warn_if_mentioning_unsubscribed_group(
+    mentioned_group: UserGroup,
+    $textarea: JQuery<HTMLTextAreaElement>,
+    is_silent: boolean,
+): void {
+    if (is_silent) {
+        return;
+    }
 
+    const stream_id = get_stream_id_for_textarea($textarea);
+    if (!stream_id) {
+        // One could imagine doing something with DMs here, but given
+        // all DMs are given the same notification prevalence as
+        // mentions, it doesn't seem useful.
+        return;
+    }
+
+    const group_members = user_groups.get_recursive_group_members(mentioned_group);
+    let any_member_subscribed = false;
+    for (const user_id of group_members) {
+        if (
+            stream_data.is_user_subscribed(stream_id, user_id) &&
+            people.is_person_active(user_id)
+        ) {
+            any_member_subscribed = true;
+            break;
+        }
+    }
+    if (any_member_subscribed) {
+        return;
+    }
+
+    const $banner_container = compose_banner.get_compose_banner_container($textarea);
+    if (
+        $banner_container.find(
+            `.${CSS.escape(compose_banner.CLASSNAMES.group_entirely_not_subscribed)}`,
+        ).length > 0
+    ) {
+        // Don't add a second banner if one is already present.
+        // TODO: This should work like warn_if_mentioning_unsubscribed_user,
+        // where we actually check if it's the same group.
+        return;
+    }
+
+    const context = {
+        group_id: mentioned_group.id,
+        group_name: mentioned_group.name,
+        banner_type: compose_banner.WARNING,
+        classname: compose_banner.CLASSNAMES.group_entirely_not_subscribed,
+    };
+    const new_row_html = render_compose_mention_group_warning(context);
+    compose_banner.append_compose_banner_to_banner_list($(new_row_html), $banner_container);
+}
 // Called when clearing the compose box and similar contexts to clear
 // the warning for composing to a resolved topic, if present. Also clears
 // the state for whether this warning has already been shown in the
@@ -701,7 +763,7 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
 
     if (realm.realm_mandatory_topics) {
         const topic = compose_state.topic();
-        const missing_topic = topic === "";
+        const missing_topic = util.is_topic_name_considered_empty(topic);
         set_missing_topic(missing_topic);
         if (missing_topic) {
             report_validation_error(
@@ -832,6 +894,9 @@ export function check_overflow_text($container: JQuery): number {
     const $indicator = $container.find(".message-limit-indicator");
     const is_edit_container = $textarea.closest(".message_row").length > 0;
 
+    const old_no_message_content = no_message_content;
+    const old_message_too_long = message_too_long;
+
     if (text.length > max_length) {
         $indicator.removeClass("textarea-approaching-limit");
         $textarea.removeClass("textarea-approaching-limit");
@@ -874,9 +939,42 @@ export function check_overflow_text($container: JQuery): number {
         }
     }
 
+    if (!is_edit_container) {
+        // Update the state for whether the message is empty.
+        set_no_message_content(text.length === 0);
+        if (
+            message_too_long !== old_message_too_long ||
+            old_no_message_content !== no_message_content
+        ) {
+            // If this keystroke changed the truth status for whether
+            // the message is empty or too long, then we need to
+            // refresh the send button status from scratch. This is
+            // expensive, but naturally debounced by the fact this
+            // changes rarely.
+            validate_and_update_send_button_status();
+        }
+    }
     return text.length;
 }
 
+export let validate_and_update_send_button_status = function (): void {
+    const is_valid = validate(false, false);
+    const $send_button = $("#compose-send-button");
+    $send_button.toggleClass("disabled-message-send-controls", !is_valid);
+    const send_button_element: ReferenceElement = util.the($send_button);
+    if (send_button_element._tippy?.state.isVisible) {
+        // If the tooltip is displayed, we update tooltip content
+        // and other properties by hiding and showing the tooltip again.
+        send_button_element._tippy.hide();
+        send_button_element._tippy.show();
+    }
+};
+
+export function rewire_validate_and_update_send_button_status(
+    value: typeof validate_and_update_send_button_status,
+): void {
+    validate_and_update_send_button_status = value;
+}
 export function validate_message_length($container: JQuery, trigger_flash = true): boolean {
     const $textarea = $container.find<HTMLTextAreaElement>(".message-textarea");
     // Match the behavior of compose_state.message_content of trimming trailing whitespace
@@ -913,7 +1011,8 @@ function report_validation_error(
         compose_banner.show_error_message(message, classname, $container, $bad_input);
     }
 }
-export function validate(scheduling_message: boolean, show_banner = true): boolean {
+
+export let validate = (scheduling_message: boolean, show_banner = true): boolean => {
     const message_content = compose_state.message_content();
     // The validation checks in this function are in a specific priority order. Don't
     // change their order unless you want to change which priority they're shown in.
@@ -922,10 +1021,12 @@ export function validate(scheduling_message: boolean, show_banner = true): boole
         compose_state.get_message_type() !== "private" &&
         !validate_stream_message(scheduling_message, show_banner)
     ) {
+        blueslip.debug("Invalid compose state: Stream message validation failed");
         return false;
     }
 
     if (compose_state.get_message_type() === "private" && !validate_private_message(show_banner)) {
+        blueslip.debug("Invalid compose state: Private message validation failed");
         return false;
     }
 
@@ -933,10 +1034,16 @@ export function validate(scheduling_message: boolean, show_banner = true): boole
     set_no_message_content(no_message_content);
     if (no_message_content) {
         if (show_banner) {
+            // If you tried actually sending a message with empty
+            // compose, flash the textarea as invalid.
             $("textarea#compose-textarea").toggleClass("invalid", true);
             $("textarea#compose-textarea").trigger("focus");
         }
+        blueslip.debug("Invalid compose state: Empty message");
         return false;
+    } else if ($("textarea#compose-textarea").hasClass("invalid")) {
+        // Hide the invalid indicator now that it's non-empty.
+        $("textarea#compose-textarea").toggleClass("invalid", false);
     }
 
     if ($("#zephyr-mirror-error").is(":visible")) {
@@ -948,15 +1055,26 @@ export function validate(scheduling_message: boolean, show_banner = true): boole
             compose_banner.CLASSNAMES.zephyr_not_running,
             $("#compose_banners"),
         );
+        blueslip.debug("Invalid compose state: Zephyr mirroring not running");
         return false;
     }
     // TODO: This doesn't actually show a banner, it triggers a flash
     const trigger_flash = show_banner;
     if (!validate_message_length($("#send_message_form"), trigger_flash)) {
+        blueslip.debug("Invalid compose state: Message too long");
+        return false;
+    }
+
+    if (upload_in_progress) {
+        blueslip.debug("Invalid compose state: Upload in progress");
         return false;
     }
 
     return true;
+};
+
+export function rewire_validate(value: typeof validate): void {
+    validate = value;
 }
 
 export function convert_mentions_to_silent_in_direct_messages(
@@ -982,4 +1100,16 @@ export function convert_mentions_to_silent_in_direct_messages(
 
     const silent_mention_text = people.get_mention_syntax(full_name, user_id, true);
     return silent_mention_text;
+}
+
+export function initialize(): void {
+    $("body").on(
+        "click",
+        ".view_user_group_mention",
+        function (this: HTMLElement, e: JQuery.ClickEvent) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggle_user_group_info_popover(this, undefined);
+        },
+    );
 }

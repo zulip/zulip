@@ -579,11 +579,15 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
 
     if (msgs_to_rerender_or_add_to_narrow.length > 0) {
         for (const msg_list of message_lists.all_rendered_message_lists()) {
+            // Since we already have this message locally echoed, it is ok to
+            // not scroll when this message is added to the view as user has
+            // already seen this message. Hence, we are not passing the
+            // `message_are_new` boolean as `true` here.
             if (!msg_list.data.filter.can_apply_locally()) {
                 // If this message list is a search filter that we
                 // cannot apply locally, we will not have locally
                 // echoed echoed the message at all originally, and
-                // must the server now whether to add it to the view.
+                // must request the server now whether to add it to the view.
                 message_events_util.maybe_add_narrowed_messages(
                     msgs_to_rerender_or_add_to_narrow,
                     msg_list,

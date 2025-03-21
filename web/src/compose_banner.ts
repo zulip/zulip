@@ -42,6 +42,7 @@ export const CLASSNAMES = {
     // warnings
     topic_resolved: "topic_resolved",
     recipient_not_subscribed: "recipient_not_subscribed",
+    group_entirely_not_subscribed: "group_entirely_not_subscribed",
     wildcard_warning: "wildcard_warning",
     private_stream_warning: "private_stream_warning",
     guest_in_dm_recipient_warning: "guest_in_dm_recipient_warning",

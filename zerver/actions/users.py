@@ -33,15 +33,18 @@ from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.soft_deactivation import queue_soft_reactivation
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
-    get_group_setting_value_dict_for_streams,
+    get_anonymous_group_membership_dict_for_streams,
     get_streams_for_user,
     send_stream_deletion_event,
     stream_to_dict,
 )
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info
-from zerver.lib.types import UserGroupMembersDict
+from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_counts import realm_user_count_by_role
-from zerver.lib.user_groups import get_system_user_group_for_user
+from zerver.lib.user_groups import (
+    convert_to_user_group_members_dict,
+    get_system_user_group_for_user,
+)
 from zerver.lib.users import (
     get_active_bots_owned_by_user,
     get_user_ids_who_can_access_user,
@@ -287,7 +290,7 @@ def send_group_update_event_for_anonymous_group_setting(
     realm = setting_group.realm
     for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
         if getattr(named_group, setting_name + "_id") == setting_group.id:
-            new_setting_value = UserGroupMembersDict(
+            new_setting_value = UserGroupMembersData(
                 direct_members=group_members_dict[setting_group.id],
                 direct_subgroups=group_subgroups_dict[setting_group.id],
             )
@@ -295,7 +298,7 @@ def send_group_update_event_for_anonymous_group_setting(
                 type="user_group",
                 op="update",
                 group_id=named_group.id,
-                data={setting_name: new_setting_value},
+                data={setting_name: convert_to_user_group_members_dict(new_setting_value)},
             )
             send_event_on_commit(realm, event, notify_user_ids)
             return
@@ -310,7 +313,7 @@ def send_realm_update_event_for_anonymous_group_setting(
     realm = setting_group.realm
     for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
         if getattr(realm, setting_name + "_id") == setting_group.id:
-            new_setting_value = UserGroupMembersDict(
+            new_setting_value = UserGroupMembersData(
                 direct_members=group_members_dict[setting_group.id],
                 direct_subgroups=group_subgroups_dict[setting_group.id],
             )
@@ -318,7 +321,7 @@ def send_realm_update_event_for_anonymous_group_setting(
                 type="realm",
                 op="update_dict",
                 property="default",
-                data={setting_name: new_setting_value},
+                data={setting_name: convert_to_user_group_members_dict(new_setting_value)},
             )
             send_event_on_commit(realm, event, notify_user_ids)
             return
@@ -549,7 +552,7 @@ def send_stream_events_for_role_update(
 ) -> None:
     current_accessible_streams = get_streams_for_user(
         user_profile,
-        include_all=user_profile.is_realm_admin,
+        include_all=True,
         include_web_public=True,
     )
 
@@ -566,13 +569,15 @@ def send_stream_events_for_role_update(
             if stream.id in now_accessible_stream_ids
         ]
 
-        setting_groups_dict = get_group_setting_value_dict_for_streams(now_accessible_streams)
+        anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(
+            now_accessible_streams
+        )
 
         event = dict(
             type="stream",
             op="create",
             streams=[
-                stream_to_dict(stream, recent_traffic, setting_groups_dict)
+                stream_to_dict(stream, recent_traffic, anonymous_group_membership)
                 for stream in now_accessible_streams
             ],
         )
@@ -621,7 +626,7 @@ def do_change_user_role(
     previously_accessible_streams = get_streams_for_user(
         user_profile,
         include_web_public=True,
-        include_all=user_profile.is_realm_admin,
+        include_all=True,
     )
 
     user_profile.role = value

@@ -381,7 +381,7 @@ function handle_keydown(
                     e.preventDefault();
                     if (
                         compose_validate.validate_message_length($("#send_message_form")) &&
-                        !$(".message-send-controls").hasClass("disabled-message-send-controls")
+                        !$("#compose-send-button").hasClass("disabled-message-send-controls")
                     ) {
                         on_enter_send();
                     }
@@ -607,7 +607,7 @@ export function get_pm_people(query: string): (UserGroupPillData | UserPillData)
         topic: compose_state.topic(),
         filter_groups_for_dm: true,
     };
-    const suggestions = get_person_suggestions(query, opts);
+    const suggestions = get_person_suggestions(query, opts, true);
     const current_user_ids = compose_pm_pill.get_user_ids();
     const my_user_id = people.my_current_user_id();
     // We know these aren't mentions because `want_broadcast` was `false`.
@@ -642,6 +642,7 @@ type PersonSuggestionOpts = {
 export function get_person_suggestions(
     query: string,
     opts: PersonSuggestionOpts,
+    exclude_non_welcome_bots = false,
 ): (UserOrMentionPillData | UserGroupPillData)[] {
     query = typeahead.clean_query_lowercase(query);
 
@@ -744,7 +745,11 @@ export function get_person_suggestions(
     if (filtered_message_persons.length >= cutoff_length) {
         filtered_persons = filtered_message_persons;
     } else {
-        filtered_persons = filter_persons(people.get_realm_users());
+        if (exclude_non_welcome_bots) {
+            filtered_persons = filter_persons(people.get_realm_users_and_welcome_bot());
+        } else {
+            filtered_persons = filter_persons(people.get_realm_users_and_system_bots());
+        }
     }
 
     return typeahead_helper.sort_recipients({
@@ -1176,6 +1181,11 @@ export function content_typeahead_selected(
                 let user_group_mention_text = is_silent ? "@_*" : "@*";
                 user_group_mention_text += item.name + "* ";
                 beginning += user_group_mention_text;
+                compose_validate.warn_if_mentioning_unsubscribed_group(
+                    item,
+                    $textbox,
+                    is_silent ?? false,
+                );
                 // We could theoretically warn folks if they are
                 // mentioning a user group that literally has zero
                 // members where we are posting to, but we don't have

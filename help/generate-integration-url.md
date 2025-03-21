@@ -31,8 +31,9 @@ integration URL.
 
 !!! tip ""
 
-    You can also click the **pencil** (<i class="fa fa-pencil"></i>) icon,
-    scroll down to the bottom, and click **Generate URL for an integration**.
+    You can also click the **manage bot** (<i class="zulip-icon
+    zulip-icon-user-cog"></i>) icon, scroll down to the bottom, and click
+    **Generate URL for an integration**.
 
 {tab|via-organization-settings}
 
@@ -40,8 +41,8 @@ integration URL.
 
 {settings_tab|bot-list-admin}
 
-1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
-   icon for an **Incoming webhook** bot.
+1. In the **Actions** column, click the **manage bot** (<i class="zulip-icon
+   zulip-icon-user-cog"></i>) icon for an **Incoming webhook** bot.
 
 1. Scroll down to the bottom, and click **Generate URL for an integration**.
 

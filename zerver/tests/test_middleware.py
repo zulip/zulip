@@ -85,20 +85,20 @@ class OpenGraphTest(ZulipTestCase):
             self.assertNotIn(substring, open_graph_description)
 
     def test_admonition_and_link(self) -> None:
-        # disable-message-edit-history starts with an {!admin-only.md!}, and has a link
-        # in the first paragraph.
+        # restrict-wildcard-mentions starts with an {!admin-only.md!},
+        # and has a link in the first paragraph.
         self.check_title_and_description(
-            "/help/disable-message-edit-history",
-            "Disable message edit history | Zulip help center",
+            "/help/restrict-wildcard-mentions",
+            "Restrict wildcard mentions | Zulip help center",
             [
-                "In Zulip, users can view the edit history of a message. | To remove the",
-                "best to delete the message entirely. ",
+                "Organization administrators can configure who is allowed to use wildcard mentions ",
+                "more than 15 participants. | This permission can be granted to any combination of roles, ",
             ],
             [
-                "Disable message edit history",
+                "Restrict wildcard mentions",
                 "feature is only available",
                 "Related articles",
-                "Restrict message editing",
+                "DMs, mentions, and alerts",
             ],
         )
 

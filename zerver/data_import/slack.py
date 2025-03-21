@@ -12,7 +12,7 @@ from collections import defaultdict
 from collections.abc import Iterator
 from datetime import datetime, timezone
 from email.headerregistry import Address
-from typing import Any, TypeAlias, TypeVar
+from typing import Any, TypeAlias
 from urllib.parse import SplitResult, urlsplit
 
 import orjson
@@ -68,8 +68,6 @@ AddedChannelsT: TypeAlias = dict[str, tuple[str, int]]
 AddedMPIMsT: TypeAlias = dict[str, tuple[str, int]]
 DMMembersT: TypeAlias = dict[str, tuple[str, str]]
 SlackToZulipRecipientT: TypeAlias = dict[str, int]
-# Generic type for SlackBotEmail class
-SlackBotEmailT = TypeVar("SlackBotEmailT", bound="SlackBotEmail")
 
 # We can look up unicode codepoints for Slack emoji using iamcal emoji
 # data. https://emojipedia.org/slack/, documents Slack's emoji names
@@ -106,7 +104,7 @@ class SlackBotEmail:
     assigned_email: dict[str, str] = {}
 
     @classmethod
-    def get_email(cls: type[SlackBotEmailT], user_profile: ZerverFieldsT, domain_name: str) -> str:
+    def get_email(cls, user_profile: ZerverFieldsT, domain_name: str) -> str:
         slack_bot_id = user_profile["bot_id"]
         if slack_bot_id in cls.assigned_email:
             return cls.assigned_email[slack_bot_id]
@@ -1030,6 +1028,7 @@ def channel_message_to_zerver_message(
             user_id=slack_user_id_to_zulip_user_id[slack_user_id],
             recipient_id=recipient_id,
             realm_id=realm_id,
+            is_channel_message=not is_private,
             has_image=has_image,
             has_link=has_link,
             has_attachment=has_attachment,

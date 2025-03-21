@@ -60,6 +60,7 @@ from zerver.lib.thumbnail import THUMBNAIL_OUTPUT_FORMATS
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME, maybe_rename_general_chat_to_empty_topic
+from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_groups import (
     get_group_setting_value_for_register_api,
     get_recursive_membership_groups,
@@ -225,12 +226,12 @@ def fetch_initial_state_data(
             get_recursive_membership_groups(settings_user).values_list("id", flat=True)
         )
 
-    if want("realm_user_groups") or want("realm"):
-        realm_setting_group_ids = {
-            getattr(realm, setting_name + "_id")
-            for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
-        }
-
+    if (
+        want("realm_user_groups")
+        or want("realm")
+        or (want("stream") and include_streams)
+        or want("subscription")
+    ):
         # Optimizing opportunity: This fetches more data than
         # we strictly need when "realm_user_groups" is not in
         # fetch_event_types; we need the membership of the
@@ -240,8 +241,14 @@ def fetch_initial_state_data(
         realm_groups_data = user_groups_in_realm_serialized(
             realm,
             include_deactivated_groups=include_deactivated_groups,
-            realm_setting_group_ids=realm_setting_group_ids,
+            fetch_anonymous_group_membership=True,
         )
+        anonymous_group_membership_data_dict: dict[int, UserGroupMembersData] = {}
+        for key, value in realm_groups_data.anonymous_group_membership.items():
+            anonymous_group_membership_data_dict[key] = UserGroupMembersData(
+                direct_members=value["direct_members"],
+                direct_subgroups=value["direct_subgroups"],
+            )
 
     if want("alert_words"):
         state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)
@@ -273,6 +280,7 @@ def fetch_initial_state_data(
         state["onboarding_steps"] = (
             [] if user_profile is None else get_next_onboarding_steps(user_profile)
         )
+        state["navigation_tour_video_url"] = settings.NAVIGATION_TOUR_VIDEO_URL
 
     if want("message"):
         # Since the introduction of `anchor="latest"` in the API,
@@ -372,7 +380,7 @@ def fetch_initial_state_data(
         for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             setting_group_id = getattr(realm, setting_name + "_id")
             state["realm_" + setting_name] = get_group_setting_value_for_register_api(
-                setting_group_id, realm_groups_data.realm_setting_anonymous_group_membership
+                setting_group_id, anonymous_group_membership_data_dict
             )
 
         state["realm_create_public_stream_policy"] = (
@@ -740,9 +748,10 @@ def fetch_initial_state_data(
                 user_profile,
                 include_subscribers=include_subscribers,
                 include_archived_channels=archived_channels,
+                anonymous_group_membership=anonymous_group_membership_data_dict,
             )
         else:
-            sub_info = get_web_public_subs(realm)
+            sub_info = get_web_public_subs(realm, anonymous_group_membership_data_dict)
 
         state["subscriptions"] = sub_info.subscriptions
         state["unsubscribed"] = sub_info.unsubscribed
@@ -775,14 +784,17 @@ def fetch_initial_state_data(
             state["streams"] = do_get_streams(
                 user_profile,
                 include_web_public=True,
-                include_all=user_profile.is_realm_admin,
+                include_all=True,
+                anonymous_group_membership=anonymous_group_membership_data_dict,
             )
         else:
             # TODO: This line isn't used by the web app because it
             # gets these data via the `subscriptions` key; it will
             # be used when the mobile apps support logged-out
             # access.
-            state["streams"] = get_web_public_streams(realm)  # nocoverage
+            state["streams"] = get_web_public_streams(
+                realm, anonymous_group_membership_data_dict
+            )  # nocoverage
     if want("default_streams"):
         if settings_user.is_guest:
             # Guest users and logged-out users don't have access to
@@ -968,6 +980,11 @@ def apply_event(
             for idx, saved_snippet in enumerate(state["saved_snippets"]):
                 if saved_snippet["id"] == event["saved_snippet_id"]:
                     del state["saved_snippets"][idx]
+                    break
+        elif event["op"] == "update":
+            for idx, saved_snippet in enumerate(state["saved_snippets"]):
+                if saved_snippet["id"] == event["saved_snippet"]["id"]:
+                    state["saved_snippets"][idx] = event["saved_snippet"]
                     break
 
     elif event["type"] == "drafts":
@@ -1194,17 +1211,17 @@ def apply_event(
 
                     for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
                         if not isinstance(state["realm_" + setting_name], int):
-                            state["realm_" + setting_name].direct_members = [
+                            state["realm_" + setting_name]["direct_members"] = [
                                 user_id
-                                for user_id in state["realm_" + setting_name].direct_members
+                                for user_id in state["realm_" + setting_name]["direct_members"]
                                 if user_id != person_user_id
                             ]
                     for group in state["realm_user_groups"]:
                         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
                             if not isinstance(group[setting_name], int):
-                                group[setting_name].direct_members = [
+                                group[setting_name]["direct_members"] = [
                                     user_id
-                                    for user_id in group[setting_name].direct_members
+                                    for user_id in group[setting_name]["direct_members"]
                                     if user_id != person_user_id
                                 ]
         elif event["op"] == "remove":

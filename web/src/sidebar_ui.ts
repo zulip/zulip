@@ -27,7 +27,12 @@ import {user_settings} from "./user_settings.ts";
 function save_sidebar_toggle_status(): void {
     const ls = localstorage();
     ls.set("left-sidebar", $("body").hasClass("hide-left-sidebar"));
-    ls.set("right-sidebar", $("body").hasClass("hide-right-sidebar"));
+
+    if (!page_params.is_spectator) {
+        // The right sidebar is never shown in the spectator mode;
+        // avoid interacting with local storage state for it.
+        ls.set("right-sidebar", $("body").hasClass("hide-right-sidebar"));
+    }
 }
 
 export function restore_sidebar_toggle_status(): void {
@@ -35,7 +40,11 @@ export function restore_sidebar_toggle_status(): void {
     if (ls.get("left-sidebar")) {
         $("body").addClass("hide-left-sidebar");
     }
-    if (ls.get("right-sidebar")) {
+
+    if (!page_params.is_spectator && ls.get("right-sidebar")) {
+        // The right sidebar is never shown in the spectator mode;
+        // avoid processing local storage state for hiding the right
+        // sidebar.
         $("body").addClass("hide-right-sidebar");
     }
 }

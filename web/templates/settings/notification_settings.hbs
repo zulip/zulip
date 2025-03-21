@@ -60,14 +60,14 @@
                 {{> ../help_link_widget link="/help/topic-notifications" }}
             </h3>
             {{> settings_save_discard_widget section_name="topic-notifications-settings" show_only_indicator=(not for_realm_settings) }}
-            <p>
-                {{#tr}}
-                    You will automatically follow topics that you have configured to both <z-follow>follow</z-follow> and <z-unmute>unmute</z-unmute>.
-                    {{#*inline "z-follow"}}<a href="/help/follow-a-topic" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-                    {{#*inline "z-unmute"}}<a href="/help/mute-a-topic" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-                {{/tr}}
-            </p>
         </div>
+        <p>
+            {{#tr}}
+                You will automatically follow topics that you have configured to both <z-follow>follow</z-follow> and <z-unmute>unmute</z-unmute>.
+                {{#*inline "z-follow"}}<a href="/help/follow-a-topic" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                {{#*inline "z-unmute"}}<a href="/help/mute-a-topic" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
+        </p>
 
         <div class="input-group">
             <label for="{{prefix}}automatically_follow_topics_policy" class="settings-field-label">

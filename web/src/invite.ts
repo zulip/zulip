@@ -4,7 +4,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
 
-import copy_invite_link from "../templates/copy_invite_link.hbs";
+import render_copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_guest_visible_users_message from "../templates/guest_visible_users_message.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_invite_user_modal from "../templates/invite_user_modal.hbs";
@@ -237,7 +237,7 @@ function generate_multiuse_invite(): void {
         data,
         beforeSend,
         success(data) {
-            const copy_link_html = copy_invite_link(data);
+            const copy_link_html = render_copy_invite_link(data);
             ui_report.success(copy_link_html, $invite_status);
             const clipboard = new ClipboardJS("#copy_generated_invite_link");
 

@@ -183,7 +183,7 @@ export function dispatch_normal_event(event) {
         case "web_reload_client": {
             const reload_options = {
                 save_compose: true,
-                message_html: "The application has been updated; reloading!",
+                reason: "update",
             };
             if (event.immediate) {
                 reload_options.immediate = true;
@@ -215,19 +215,24 @@ export function dispatch_normal_event(event) {
             const realm_settings = {
                 allow_message_editing: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
+                can_access_all_users_group: noop,
                 can_add_custom_emoji_group: noop,
                 can_add_subscribers_group: noop,
                 can_create_bots_group: noop,
                 can_create_groups: noop,
                 can_create_private_channel_group: noop,
                 can_create_public_channel_group: noop,
+                can_create_web_public_channel_group: noop,
                 can_create_write_only_bots_group: noop,
                 can_delete_any_message_group: noop,
                 can_delete_own_message_group: noop,
+                can_invite_users_group: noop,
                 can_manage_all_groups: noop,
+                can_manage_billing_group: noop,
                 can_mention_many_users_group: noop,
                 can_move_messages_between_channels_group: noop,
                 can_move_messages_between_topics_group: noop,
+                can_resolve_topics_group: noop,
                 can_summarize_topics_group: noop,
                 create_multiuse_invite_group: noop,
                 default_code_block_language: noop,
@@ -282,12 +287,13 @@ export function dispatch_normal_event(event) {
                         }
 
                         if (event.property === "enable_spectator_access") {
-                            stream_settings_ui.update_stream_privacy_choices(
+                            stream_ui_updates.update_stream_privacy_choices(
                                 "can_create_web_public_channel_group",
                             );
                         }
 
                         if (event.property === "mandatory_topics") {
+                            compose_recipient.update_topic_inputbox_on_mandatory_topics_change();
                             compose_recipient.update_compose_area_placeholder_text();
                         }
                     }
@@ -342,7 +348,7 @@ export function dispatch_normal_event(event) {
                                     key === "can_create_private_channel_group" ||
                                     key === "can_create_web_public_channel_group"
                                 ) {
-                                    stream_settings_ui.update_stream_privacy_choices(key);
+                                    stream_ui_updates.update_stream_privacy_choices(key);
                                 }
 
                                 if (
@@ -354,7 +360,14 @@ export function dispatch_normal_event(event) {
                                     compose_recipient.check_posting_policy_for_compose_box();
                                 }
 
-                                if (key === "can_move_messages_between_topics_group") {
+                                if (
+                                    key === "can_move_messages_between_topics_group" ||
+                                    key === "can_resolve_topics_group"
+                                ) {
+                                    // Technically we just need to rerender the message recipient
+                                    // bars to update the buttons for editing or resolving a topic,
+                                    // but because these policies are changed rarely, it's fine to
+                                    // rerender the entire message feed.
                                     message_live_update.rerender_messages_view();
                                 }
 
@@ -565,11 +578,15 @@ export function dispatch_normal_event(event) {
         case "saved_snippets":
             switch (event.op) {
                 case "add":
-                    saved_snippets.add_saved_snippet(event.saved_snippet);
+                    saved_snippets.update_saved_snippet_dict(event.saved_snippet);
                     saved_snippets_ui.rerender_dropdown_widget();
                     break;
                 case "remove":
                     saved_snippets.remove_saved_snippet(event.saved_snippet_id);
+                    saved_snippets_ui.rerender_dropdown_widget();
+                    break;
+                case "update":
+                    saved_snippets.update_saved_snippet_dict(event.saved_snippet);
                     saved_snippets_ui.rerender_dropdown_widget();
                     break;
             }
@@ -629,12 +646,13 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream_id of event.stream_ids) {
-                        const was_subscribed = sub_store.get(stream_id).subscribed;
+                        const sub = sub_store.get(stream_id);
+                        const is_subscribed = sub.subscribed;
                         const is_narrowed_to_stream = narrow_state.narrowed_to_stream_id(stream_id);
                         stream_data.delete_sub(stream_id);
-                        stream_settings_ui.remove_stream(stream_id);
+                        stream_settings_ui.update_settings_for_archived(sub);
                         message_view_header.maybe_rerender_title_area_for_stream(stream_id);
-                        if (was_subscribed) {
+                        if (is_subscribed) {
                             stream_list.remove_sidebar_row(stream_id);
                             if (stream_id === compose_state.selected_recipient_id) {
                                 compose_state.set_selected_recipient_id("");

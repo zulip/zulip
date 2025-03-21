@@ -355,22 +355,22 @@ export function get_tooltip_context_for_info_density_buttons(
         if (is_default_button) {
             if (is_current_value_default) {
                 tooltip_first_line = $t(
-                    {defaultMessage: "Already at default font size ({default_value}pt)"},
+                    {defaultMessage: "Already at default font size ({default_value})"},
                     {default_value},
                 );
             } else {
                 tooltip_first_line = $t(
-                    {defaultMessage: "Reset to default font size ({default_value}pt)"},
+                    {defaultMessage: "Reset to default font size ({default_value})"},
                     {default_value},
                 );
                 tooltip_second_line = $t(
-                    {defaultMessage: "Current font size: {current_value}pt"},
+                    {defaultMessage: "Current font size: {current_value}"},
                     {current_value},
                 );
             }
         } else if (!$elem.prop("disabled")) {
             tooltip_first_line = $t(
-                {defaultMessage: "Change to {new_value}pt font size"},
+                {defaultMessage: "Change to font size {new_value}"},
                 {new_value},
             );
         } else {
@@ -378,14 +378,14 @@ export function get_tooltip_context_for_info_density_buttons(
                 const maximum_value = INFO_DENSITY_VALUES_DICT[property].maximum;
                 if (current_value === maximum_value) {
                     tooltip_first_line = $t(
-                        {defaultMessage: "Already at maximum font size ({maximum_value}pt)"},
+                        {defaultMessage: "Already at maximum font size ({maximum_value})"},
                         {maximum_value},
                     );
                 } else {
                     tooltip_first_line = $t(
                         {
                             defaultMessage:
-                                "Already above recommended maximum font size ({maximum_value}pt)",
+                                "Already above recommended maximum font size ({maximum_value})",
                         },
                         {maximum_value},
                     );
@@ -394,14 +394,14 @@ export function get_tooltip_context_for_info_density_buttons(
                 const minimum_value = INFO_DENSITY_VALUES_DICT[property].minimum;
                 if (current_value === minimum_value) {
                     tooltip_first_line = $t(
-                        {defaultMessage: "Already at minimum font size ({minimum_value}pt)"},
+                        {defaultMessage: "Already at minimum font size ({minimum_value})"},
                         {minimum_value},
                     );
                 } else {
                     tooltip_first_line = $t(
                         {
                             defaultMessage:
-                                "Already below recommended minimum font size ({minimum_value}pt)",
+                                "Already below recommended minimum font size ({minimum_value})",
                         },
                         {minimum_value},
                     );

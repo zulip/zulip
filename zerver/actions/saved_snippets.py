@@ -42,6 +42,35 @@ def do_create_saved_snippet(
     return saved_snippet
 
 
+def do_edit_saved_snippet(
+    saved_snippet_id: int,
+    title: str | None,
+    content: str | None,
+    user_profile: UserProfile,
+) -> SavedSnippet:
+    try:
+        saved_snippet = SavedSnippet.objects.get(id=saved_snippet_id, user_profile=user_profile)
+    except SavedSnippet.DoesNotExist:
+        raise ResourceNotFoundError(_("Saved snippet does not exist."))
+
+    if title is not None:
+        saved_snippet.title = title
+    if content is not None:
+        saved_snippet.content = content
+
+    with transaction.atomic(durable=True):
+        saved_snippet.save()
+
+        event = {
+            "type": "saved_snippets",
+            "op": "update",
+            "saved_snippet": saved_snippet.to_api_dict(),
+        }
+        send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+    return saved_snippet
+
+
 def do_get_saved_snippets(user_profile: UserProfile) -> list[dict[str, Any]]:
     saved_snippets = SavedSnippet.objects.filter(user_profile=user_profile)
 

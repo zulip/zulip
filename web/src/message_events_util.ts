@@ -24,6 +24,7 @@ const msg_match_narrow_api_response_schema = z.object({
 export function maybe_add_narrowed_messages(
     messages: Message[],
     msg_list: MessageList,
+    messages_are_new = false,
     attempt = 1,
 ): void {
     const ids: number[] = [];
@@ -82,7 +83,7 @@ export function maybe_add_narrowed_messages(
             // Remove the elsewhere_messages from the message list since
             // they don't match the filter as per data from server.
             msg_list.remove_and_rerender(elsewhere_messages.map((msg) => msg.id));
-            msg_list.add_messages(new_messages);
+            msg_list.add_messages(new_messages, {messages_are_new});
             unread_ops.process_visible();
             compose_notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
@@ -111,7 +112,7 @@ export function maybe_add_narrowed_messages(
                 if (msg_list === message_lists.current) {
                     // Don't actually try again if we un-narrowed
                     // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list, attempt + 1);
+                    maybe_add_narrowed_messages(messages, msg_list, messages_are_new, attempt + 1);
                 }
             }, delay);
         },

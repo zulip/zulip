@@ -81,6 +81,13 @@
 
         #searchbox-input-container {
             width: var(--search-box-width);
+
+            @media (width < $md_min) {
+                grid-template:
+                    "search-icon search-pills" var(--search-box-height)
+                    / var(--search-box-height) 0;
+                column-gap: 0;
+            }
         }
 
         .search-input {
@@ -267,7 +274,7 @@
                 /* Replaced by the 5px gap. */
                 margin-right: 0;
                 /* Don't inherit large line-height for user pill labels. */
-                line-height: 1;
+                line-height: 1.1;
             }
 
             .pill {
@@ -280,21 +287,24 @@
                 /* Match border radius to image */
                 border-radius: 4px;
                 max-width: none;
+                /* Set the minimum width on the pill container;
+                   this accommodates the avatar, a minimum
+                   two-character username, and the closing X.
+                   90px at 20px/1em */
+                min-width: 4.5em;
                 display: grid;
-                grid-template-columns: auto 1fr auto;
+                grid-template-columns:
+                    var(--length-input-pill-image) minmax(0, 1fr)
+                    var(--length-input-pill-exit);
 
                 /* Don't inherit large line-height for user pills themselves, either. */
-                line-height: 1;
+                line-height: 1.1;
 
                 &:not(.deactivated-pill) {
                     background-color: var(--color-background-user-pill);
                 }
             }
         }
-    }
-
-    .pill-label {
-        min-width: 30px;
     }
 
     @media (width >= $md_min) {
