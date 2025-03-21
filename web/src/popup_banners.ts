@@ -21,9 +21,9 @@ function fade_out_popup_banner($banner: JQuery): void {
 const get_connection_error_label = (retry_delay_secs: number): string => {
     if (original_retry_delay_secs < 5) {
         // When the retry delay is less than 5 seconds, we don't show the retry
-        // delay time in the banner, and instead just show "Retrying soon…" to
-        // constant flickering of the banner label for very short times.
-        return $t({defaultMessage: "Unable to connect to Zulip. Retrying soon…"});
+        // delay time in the banner, and instead just show "Trying to reconnect!"
+        // to avoid constant flickering of the banner label for very short times.
+        return $t({defaultMessage: "Unable to connect to Zulip. Trying to reconnect!"});
     }
     return $t(
         {
@@ -138,7 +138,7 @@ function retry_connection_click_handler(e: JQuery.ClickEvent, on_retry_callback:
     const $banner = $(e.currentTarget).closest(".banner");
     $banner
         .find(".banner-label")
-        .text($t({defaultMessage: "Unable to connect to Zulip. Retrying now…"}));
+        .text($t({defaultMessage: "Unable to connect to Zulip. Trying to reconnect!"}));
 
     const $button = $(e.currentTarget).closest(".retry-connection");
 
