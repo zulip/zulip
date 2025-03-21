@@ -1667,6 +1667,8 @@ export class MessageListView {
             ),
         );
 
+        this.set_edited_notice_locations(message_container);
+
         const $rendered_msg = $(this._get_message_template(message_container));
         if (message_content_edited) {
             $rendered_msg.addClass("fade-in-message");
