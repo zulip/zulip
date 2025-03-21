@@ -155,7 +155,6 @@ function stub_message_row($textarea) {
 function initialize_pm_pill(mock_template) {
     $.clear_all_elements();
 
-    $("#compose-send-button").prop("disabled", false);
     $("#compose-send-button").trigger("focus");
     $("#compose-send-button .loader").hide();
 
@@ -303,7 +302,6 @@ test_ui("validate", ({mock_template, override}) => {
     };
     assert.ok(!compose_validate.validate());
     assert.ok(!$("#compose-send-button .loader").visible());
-    assert.equal($("#compose-send-button").prop("disabled"), false);
     compose_validate.validate();
 
     // Now add content to compose, and expect to see the banner.
@@ -455,7 +453,6 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
     override(realm, "realm_can_mention_many_users_group", everyone.id);
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
-    assert.equal($("#compose-send-button").prop("disabled"), false);
     assert.ok(stream_wildcard_warning_rendered);
 
     let wildcards_not_allowed_rendered = false;

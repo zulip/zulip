@@ -40,7 +40,6 @@ import * as user_topics from "./user_topics.ts";
 import * as widget_modal from "./widget_modal.ts";
 
 export function abort_xhr() {
-    $("#compose-send-button").prop("disabled", false);
     upload.compose_upload_cancel();
 }
 

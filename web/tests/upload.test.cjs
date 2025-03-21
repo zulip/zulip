@@ -152,8 +152,6 @@ test("show_error_message", ({mock_template}) => {
         return "<banner-stub>";
     });
 
-    $("#compose-send-button").prop("disabled", true);
-
     upload.show_error_message(upload.compose_config, "Error message");
     assert.ok(!$("#compose-send-button").hasClass("disabled-message-send-controls"));
     assert.ok(banner_shown);
