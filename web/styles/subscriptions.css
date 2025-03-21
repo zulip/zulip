@@ -121,7 +121,7 @@ h3.user_group_setting_subsection_title {
     font-size: 1.5em;
     font-weight: normal;
     line-height: 1.5;
-    margin: 4px 15px 4px 0;
+    margin: 4px 0;
 }
 
 h4.stream_setting_subsection_title {
@@ -134,8 +134,6 @@ h4.user_group_setting_subsection_title {
     font-size: 1.35em;
     font-weight: normal;
     line-height: 1.5;
-    /* Matches right margin on h3 subsection titles */
-    margin-right: 15px;
 }
 
 .member-list-box,
@@ -307,8 +305,6 @@ h4.user_group_setting_subsection_title {
 
 .group-assigned-permissions {
     .subsection-header {
-        display: inline;
-
         h3 {
             font-size: 1.5em;
             font-weight: normal;
@@ -1520,15 +1516,6 @@ div.settings-radio-input-parent {
             display: block;
             max-width: max-content;
             white-space: nowrap;
-        }
-
-        .save-button-controls {
-            display: block;
-            margin: 0 0 10px;
-
-            &.hide {
-                display: none;
-            }
         }
     }
 }
