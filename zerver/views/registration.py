@@ -57,6 +57,7 @@ from zerver.lib.email_validation import email_allowed_for_realm, validate_email_
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.i18n import (
     get_browser_language_code,
+    get_default_language_for_anonymous_user,
     get_default_language_for_new_user,
     get_language_name,
 )
@@ -1241,6 +1242,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
                     ),
                     from_address=FromAddress.SUPPORT,
                     request=request,
+                    language=get_default_language_for_anonymous_user(request),
                 )
     return render(
         request,
