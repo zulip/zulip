@@ -32,7 +32,7 @@
 
 .banner-label {
     grid-area: banner-label;
-    padding: 0.3333em 0 0.2667em;
+    padding: 0.3376em 0 0.271em;
     line-height: 1.2667;
 }
 
@@ -46,7 +46,7 @@
 .banner-close-button {
     display: flex;
     grid-area: banner-close-button;
-    padding: 0.6875em;
+    padding: 0.75em; /* 12px at 16px/1em */
     margin-left: 0.3125em; /* 5px at 16px/1em */
 
     &:focus-visible {
