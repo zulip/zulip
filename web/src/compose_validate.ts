@@ -715,8 +715,6 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
 
         if (!user_acknowledged_stream_wildcard) {
             show_stream_wildcard_warnings(opts);
-
-            $("#compose-send-button").prop("disabled", false);
             compose_ui.hide_compose_spinner();
             return false;
         }
