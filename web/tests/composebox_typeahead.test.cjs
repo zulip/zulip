@@ -2153,7 +2153,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
 
     // topic_list
     // includes "more ice"
-    function typed_topics(stream, topics) {
+    function typed_topics(stream, topics, is_new_topic = false) {
         const matches_list = topics.map((topic, index) => ({
             is_channel_link: topic === stream && index === 0,
             stream_data: {
@@ -2165,6 +2165,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
             topic_display_name: get_final_topic_display_name(topic),
             type: "topic_list",
             used_syntax_prefix: "#**",
+            is_new_topic,
         }));
         return matches_list;
     }
@@ -2176,9 +2177,10 @@ test("begins_typeahead", ({override, override_rewire}) => {
         "#**Sweden>",
         typed_topics("Sweden", ["Sweden", ...sweden_topics_to_show]),
     );
+    const is_new_topic = true;
     assert_typeahead_equals(
         "#**Sweden>totally new topic",
-        typed_topics("Sweden", ["totally new topic"]),
+        typed_topics("Sweden", ["totally new topic"], is_new_topic),
     );
     assert_typeahead_equals("#**Sweden>\n\nmore ice", typed_topics("Sweden", []));
 
