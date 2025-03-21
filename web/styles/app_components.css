@@ -869,22 +869,18 @@ input.settings_text_input {
     }
 }
 
-#stream_settings,
-#settings_page,
-#user_group_settings {
-    .subsection-header {
-        display: flex;
-        flex-wrap: wrap;
-    }
+.subsection-header {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0.2857em 0;
+    gap: 0 0.625em; /* 10px at 16px em */
+    align-items: center;
 }
 
-#stream_settings .save-button-controls,
-#settings_page .save-button-controls,
-#user_group_settings .save-button-controls {
+.save-button-controls {
     display: flex;
-    margin: 0.2857em 0.5714em; /* 4px 8px at 14px/em */
     align-items: center;
-    gap: 5px;
+    gap: 0.3125em; /* 5px at 16px em */
 
     &.hide {
         display: none;
