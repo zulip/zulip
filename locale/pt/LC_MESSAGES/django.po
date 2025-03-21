@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Alex Schneider Zis <alexszis@gmail.com>, 2018
 # Andrei Bernardo Simoni <andrei_simoni@hotmail.com>, 2021
@@ -2395,8 +2395,8 @@ msgstr "\n    Não responda a este e-mail. Este servidor Zulip não está config
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-msgid "Group DMs with %(huddle_display_name)s"
-msgstr "DMs de grupo com %(huddle_display_name)s"
+msgid "Group DMs with %(direct_message_group_display_name)s"
+msgstr "DMs de grupo com %(direct_message_group_display_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
