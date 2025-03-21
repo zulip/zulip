@@ -22,6 +22,7 @@ server {
     }
 
     include /etc/nginx/zulip-include/certbot;
+    include /etc/nginx/zulip-include/localhost.d/*.conf;
 }
 <% end -%>
 
