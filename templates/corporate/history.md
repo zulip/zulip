@@ -203,6 +203,17 @@ badge](https://www.capterra.com/p/197945/Zulip/).
 
 ## Major server releases and product announcements
 
+- March 2025: [Zulip Server 10.0
+  released](https://blog.zulip.com/2025/03/20/zulip-10-0-released/), with over
+  5200 new commits. 121 people contributed commits to Zulip since the 9.0
+  release.
+
+- March 2025: Zulip
+  [announces](https://blog.zulip.com/2025/03/20/flexible-permissions-management/)
+  a new flexible system for permissions management. Zulip users can now grant
+  permissions across the app to any combination of roles, groups, and individual
+  users.
+
 - July 2024: [Zulip Server 9.0
   released](https://blog.zulip.com/2024/07/25/zulip-9-0-released/), with over
   5300 new commits. 124 people contributed commits to Zulip since the 8.0
