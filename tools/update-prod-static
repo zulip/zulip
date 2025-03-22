@@ -33,8 +33,8 @@ setup_node_modules(production=True)
 # Build emoji
 run(["./tools/setup/emoji/build_emoji"])
 
-# Copy over static files from the zulip_bots package
-run(["./tools/setup/generate_zulip_bots_static_files.py"])
+# Copy over static files from the zulip_bots and integrations packages
+run(["./tools/setup/generate_bots_integrations_static_files.py"])
 
 # Build pygments data
 run(["./tools/setup/build_pygments_data"])
