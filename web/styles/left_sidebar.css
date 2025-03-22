@@ -649,10 +649,6 @@ li.active-sub-filter {
     > .bottom_left_row {
         background-color: var(--color-background-active-narrow-filter);
         border-radius: 4px;
-
-        &:hover {
-            background-color: var(--color-background-hover-narrow-filter);
-        }
     }
 }
 
