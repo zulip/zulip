@@ -771,6 +771,16 @@ export async function build_move_topic_to_stream_popover(
         }
     }
 
+    function update_clear_move_topic_button_state(): void {
+        const $clear_topic_name_button = $("#clear_move_topic_new_topic_name");
+        const topic_input_value = $("input#move-topic-new-topic-name").val();
+        if (topic_input_value === "") {
+            $clear_topic_name_button.css("visibility", "hidden");
+        } else {
+            $clear_topic_name_button.css("visibility", "visible");
+        }
+    }
+
     function move_topic_post_render(): void {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
         $("#move_topic_modal .move_topic_warning_container").hide();
@@ -811,6 +821,18 @@ export async function build_move_topic_to_stream_popover(
                 });
             });
         }
+        update_clear_move_topic_button_state();
+
+        $("#clear_move_topic_new_topic_name").on("click", (e) => {
+            e.stopPropagation();
+            const $topic_input = $("#move-topic-new-topic-name").expectOne();
+            $topic_input.val("");
+            $topic_input.trigger("input").trigger("focus");
+            move_topic_to_stream_topic_typeahead?.hide();
+            if (!realm.realm_mandatory_topics) {
+                $topic_input.trigger("blur");
+            }
+        });
 
         if (only_topic_edit) {
             // Set select_stream_id to current_stream_id since we user is not allowed
@@ -822,6 +844,7 @@ export async function build_move_topic_to_stream_popover(
                 const topic_input_value = $topic_input.val();
                 assert(topic_input_value !== undefined);
                 update_topic_input_placeholder_visibility(topic_input_value);
+                update_clear_move_topic_button_state();
             });
             return;
         }
@@ -854,6 +877,7 @@ export async function build_move_topic_to_stream_popover(
             const topic_input_value = $topic_input.val();
             assert(topic_input_value !== undefined);
             update_topic_input_placeholder_visibility(topic_input_value);
+            update_clear_move_topic_button_state();
         });
 
         // Update position of topic typeahead because showing/hiding the

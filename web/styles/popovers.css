@@ -880,19 +880,24 @@ ul.popover-group-menu-member-list {
         }
     }
 
-    .move_messages_edit_topic {
-        margin-bottom: unset;
-        box-sizing: border-box;
-        width: 100%;
-        height: auto;
-
-        &.empty-topic-display::placeholder {
-            color: inherit;
-        }
-    }
-
     #move-topic-new-topic-input-wrapper {
         position: relative;
+        display: grid;
+        grid-template: "move-topic-input clear-topic" auto / minmax(0, 1fr) 30px;
+
+        & input.move_messages_edit_topic {
+            grid-column: move-topic-input-start / clear-topic-end;
+            grid-row: move-topic-input;
+            padding-right: 30px;
+            margin-bottom: unset;
+            box-sizing: border-box;
+            width: 100%;
+            height: auto;
+
+            &.empty-topic-display::placeholder {
+                color: inherit;
+            }
+        }
     }
 
     .move-topic-new-topic-placeholder {
