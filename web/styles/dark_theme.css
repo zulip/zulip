@@ -369,8 +369,7 @@
         }
     }
 
-    .create_user_group_plus_button,
-    .create_stream_plus_button {
+    .two-pane-settings-plus-button {
         color: hsl(0deg 0% 100%);
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
