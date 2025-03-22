@@ -1,4 +1,5 @@
 import $ from "jquery";
+import type * as tippy from "tippy.js";
 
 import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
@@ -6,9 +7,11 @@ import render_stream_does_not_exist_error from "../templates/compose_banner/stre
 import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
 
 import {$t} from "./i18n.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import {the} from "./util.ts";
 
 export let scroll_to_message_banner_message_id: number | null = null;
 export function set_scroll_to_message_banner_message_id(val: number | null): void {
@@ -82,6 +85,13 @@ export function append_compose_banner_to_banner_list(
 ): boolean {
     if ($banner.hasClass("warning") && has_error()) {
         return false;
+    }
+    if (
+        onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_go_to_conversation_button_tooltip")
+    ) {
+        const element: tippy.ReferenceElement = the($(".conversation-arrow"));
+        const instance = element._tippy;
+        instance?.disable();
     }
     scroll_util.get_content_element($list_container).append($banner);
     return true;

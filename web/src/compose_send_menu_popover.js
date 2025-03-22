@@ -14,6 +14,7 @@ import * as drafts from "./drafts.ts";
 import * as flatpickr from "./flatpickr.ts";
 import * as modals from "./modals.ts";
 import * as popover_menus from "./popover_menus.ts";
+import * as popovers from "./popovers.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
@@ -111,6 +112,7 @@ export function open_send_later_menu() {
             // When shown, we should give the modal focus to correctly handle keyboard events.
             const $send_later_modal_overlay = $("#send_later_modal .modal__overlay");
             $send_later_modal_overlay.trigger("focus");
+            popovers.hide_all();
         },
         on_hide() {
             clearInterval(interval);
