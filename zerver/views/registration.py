@@ -1241,6 +1241,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
                     ),
                     from_address=FromAddress.SUPPORT,
                     request=request,
+                    language=settings.LANGUAGE_CODE,
                 )
     return render(
         request,
