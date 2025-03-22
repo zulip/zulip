@@ -337,7 +337,7 @@ class RealmExportTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         aaron = self.example_user("aaron")
         for user in [hamlet, aaron]:
-            do_change_user_setting(user, "allow_private_data_export", True, acting_user=None)
+            do_change_user_setting([user], "allow_private_data_export", True, acting_user=None)
 
         # Verify export consents of users.
         result = self.client_get("/json/export/realm/consents")

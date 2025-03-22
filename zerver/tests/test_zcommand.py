@@ -28,9 +28,10 @@ class ZcommandTest(ZulipTestCase):
         user.save()
 
         payload = dict(command="/dark")
-        result = self.client_post("/json/zcommand", payload)
-        response_dict = self.assert_json_success(result)
-        self.assertIn("Changed to dark theme", response_dict["msg"])
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_post("/json/zcommand", payload)
+            response_dict = self.assert_json_success(result)
+            self.assertIn("Changed to dark theme", response_dict["msg"])
 
         result = self.client_post("/json/zcommand", payload)
         response_dict = self.assert_json_success(result)
@@ -43,9 +44,10 @@ class ZcommandTest(ZulipTestCase):
         user.save()
 
         payload = dict(command="/light")
-        result = self.client_post("/json/zcommand", payload)
-        response_dict = self.assert_json_success(result)
-        self.assertIn("Changed to light theme", response_dict["msg"])
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_post("/json/zcommand", payload)
+            response_dict = self.assert_json_success(result)
+            self.assertIn("Changed to light theme", response_dict["msg"])
 
         result = self.client_post("/json/zcommand", payload)
         response_dict = self.assert_json_success(result)
@@ -58,9 +60,10 @@ class ZcommandTest(ZulipTestCase):
         user.save()
 
         payload = dict(command="/fluid-width")
-        result = self.client_post("/json/zcommand", payload)
-        self.assert_json_success(result)
-        self.assert_in_response("Changed to fluid-width mode!", result)
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_post("/json/zcommand", payload)
+            self.assert_json_success(result)
+            self.assert_in_response("Changed to fluid-width mode!", result)
 
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
@@ -73,9 +76,10 @@ class ZcommandTest(ZulipTestCase):
         user.save()
 
         payload = dict(command="/fixed-width")
-        result = self.client_post("/json/zcommand", payload)
-        self.assert_json_success(result)
-        self.assert_in_response("Changed to fixed-width mode!", result)
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_post("/json/zcommand", payload)
+            self.assert_json_success(result)
+            self.assert_in_response("Changed to fixed-width mode!", result)
 
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
