@@ -139,6 +139,9 @@ test("basics", () => {
         is_muted: true,
         invite_only: true,
         history_public_to_subscribers: true,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     const social = {
         subscribed: true,
@@ -148,6 +151,9 @@ test("basics", () => {
         is_muted: false,
         invite_only: true,
         history_public_to_subscribers: false,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     const test = {
         subscribed: true,
@@ -156,6 +162,9 @@ test("basics", () => {
         stream_id: 3,
         is_muted: true,
         invite_only: false,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     const web_public_stream = {
         subscribed: false,
@@ -166,6 +175,9 @@ test("basics", () => {
         invite_only: false,
         history_public_to_subscribers: true,
         is_web_public: true,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     stream_data.add_sub(denmark);
     stream_data.add_sub(social);
@@ -249,6 +261,9 @@ test("basics", () => {
     const stream_starting_with_25 = {
         name: "25-or-6-to-4",
         stream_id: 400,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     stream_data.add_sub(stream_starting_with_25);
     assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), 400);
@@ -263,6 +278,9 @@ test("basics", () => {
     const stream_99 = {
         name: "99",
         stream_id: 401,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     stream_data.add_sub(stream_99);
     assert.equal(stream_data.slug_to_stream_id("99"), 401);
@@ -272,6 +290,9 @@ test("basics", () => {
     const stream_id_99 = {
         name: "Some Stream",
         stream_id: 99,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
     };
     stream_data.add_sub(stream_id_99);
     assert.equal(stream_data.slug_to_stream_id("99"), 99);
@@ -293,6 +314,9 @@ test("basics", () => {
                 name: "social",
                 stream_id: 2,
                 subscribed: true,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
             },
             unique_id: 2,
         },
@@ -305,8 +329,62 @@ test("basics", () => {
                 name: "test",
                 stream_id: 3,
                 subscribed: true,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
             },
             unique_id: 3,
+        },
+        {
+            name: "web_public_stream",
+            stream: {
+                color: "yellow",
+                history_public_to_subscribers: true,
+                invite_only: false,
+                is_muted: false,
+                is_web_public: true,
+                name: "web_public_stream",
+                stream_id: 4,
+                subscribed: false,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 4,
+        },
+
+        {
+            name: "25-or-6-to-4",
+            stream: {
+                name: "25-or-6-to-4",
+                stream_id: 400,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 400,
+        },
+        {
+            name: "99",
+            stream: {
+                name: "99",
+                stream_id: 401,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 401,
+        },
+        {
+            name: "Some Stream",
+            stream: {
+                name: "Some Stream",
+                stream_id: 99,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 99,
         },
     ]);
 
@@ -322,8 +400,61 @@ test("basics", () => {
                 name: "social",
                 stream_id: 2,
                 subscribed: true,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
             },
             unique_id: 2,
+        },
+        {
+            name: "web_public_stream",
+            stream: {
+                color: "yellow",
+                history_public_to_subscribers: true,
+                invite_only: false,
+                is_muted: false,
+                is_web_public: true,
+                name: "web_public_stream",
+                stream_id: 4,
+                subscribed: false,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 4,
+        },
+        {
+            name: "25-or-6-to-4",
+            stream: {
+                name: "25-or-6-to-4",
+                stream_id: 400,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 400,
+        },
+        {
+            name: "99",
+            stream: {
+                name: "99",
+                stream_id: 401,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 401,
+        },
+        {
+            name: "Some Stream",
+            stream: {
+                name: "Some Stream",
+                stream_id: 99,
+                can_add_subscribers_group: admins_group.id,
+                can_administer_channel_group: admins_group.id,
+                can_subscribe_group: admins_group.id,
+            },
+            unique_id: 99,
         },
     ]);
 });
