@@ -387,6 +387,14 @@ export function initialize(): void {
         },
     );
 
+    $("body").on("input", ".message_edit_form textarea", function (this: HTMLElement) {
+        const $row = $(this).closest(".message_row");
+
+        if ($row.hasClass("preview_mode")) {
+            message_edit.render_preview_area($row);
+        }
+    });
+
     // RESOLVED TOPICS
     $("body").on("click", ".message_header .on_hover_topic_resolve", (e) => {
         e.stopPropagation();
