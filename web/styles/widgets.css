@@ -228,11 +228,15 @@ button {
         }
 
         &:active {
-            border-color: hsl(156deg 30% 40%);
-            color: hsl(156deg 44% 43%);
-            background-color: hsl(154deg 33% 96%);
             transition: 0.2s ease;
             transition-property: background-color, border-color, color;
+        }
+
+        &:disabled {
+            position: relative;
+            z-index: -1;
+            filter: saturate(0);
+            cursor: not-allowed;
         }
     }
 }
@@ -304,4 +308,14 @@ input {
 
 .current-user-vote {
     background-color: hsl(156deg 10% 90% / 90%);
+}
+
+.add-task-wrapper {
+    display: inline;
+    position: relative;
+    z-index: 1;
+
+    &:hover {
+        cursor: not-allowed;
+    }
 }
