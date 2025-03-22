@@ -790,6 +790,15 @@ def get_recursive_subgroups_union_for_groups(user_group_ids: list[int]) -> Query
     return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
 
 
+def get_recursive_supergroups_union_for_groups(user_group_ids: list[int]) -> QuerySet[UserGroup]:
+    cte = With.recursive(
+        lambda cte: UserGroup.objects.filter(id__in=user_group_ids)
+        .values(group_id=F("id"))
+        .union(cte.join(UserGroup, direct_subgroups=cte.col.group_id).values(group_id=F("id")))
+    )
+    return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
+
+
 def get_recursive_subgroups(user_group_id: int) -> QuerySet[UserGroup]:
     return get_recursive_subgroups_union_for_groups([user_group_id])
 

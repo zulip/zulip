@@ -141,16 +141,14 @@ def num_subscribers_for_stream_id(stream_id: int) -> int:
     ).count()
 
 
-def get_user_ids_for_streams(stream_ids: set[int]) -> dict[int, set[int]]:
-    all_subs = (
-        get_active_subscriptions_for_stream_ids(stream_ids)
-        .values(
-            "recipient__type_id",
-            "user_profile_id",
-        )
-        .order_by(
-            "recipient__type_id",
-        )
+def get_user_ids_for_stream_query(
+    query: QuerySet[Subscription, Subscription],
+) -> dict[int, set[int]]:
+    all_subs = query.values(
+        "recipient__type_id",
+        "user_profile_id",
+    ).order_by(
+        "recipient__type_id",
     )
 
     get_stream_id = itemgetter("recipient__type_id")
@@ -161,6 +159,18 @@ def get_user_ids_for_streams(stream_ids: set[int]) -> dict[int, set[int]]:
         result[stream_id] = user_ids
 
     return result
+
+
+def get_user_ids_for_streams(stream_ids: set[int]) -> dict[int, set[int]]:
+    return get_user_ids_for_stream_query(get_active_subscriptions_for_stream_ids(stream_ids))
+
+
+def get_guest_user_ids_for_streams(stream_ids: set[int]) -> dict[int, set[int]]:
+    return get_user_ids_for_stream_query(
+        get_active_subscriptions_for_stream_ids(stream_ids).filter(
+            user_profile__role=UserProfile.ROLE_GUEST
+        )
+    )
 
 
 def get_users_for_streams(stream_ids: set[int]) -> dict[int, set[UserProfile]]:

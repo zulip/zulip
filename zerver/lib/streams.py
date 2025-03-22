@@ -18,7 +18,9 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
+    get_guest_user_ids_for_streams,
     get_subscribed_stream_ids_for_user,
+    get_user_ids_for_streams,
 )
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.string_validation import check_stream_name
@@ -993,6 +995,45 @@ def can_access_stream_metadata_user_ids(stream: Stream) -> set[int]:
         )
 
 
+def bulk_can_access_stream_metadata_user_ids(streams: list[Stream]) -> dict[int, set[int]]:
+    # return user ids of users who can access the attributes of a
+    # stream, such as its name/description.  Useful for sending events
+    # to all users with access to a stream's attributes.
+    result: dict[int, set[int]] = {}
+    public_streams = []
+    private_streams = []
+    for stream in streams:
+        if stream.is_public():
+            public_streams.append(stream)
+        else:
+            private_streams.append(stream)
+
+    guest_subscriptions = get_guest_user_ids_for_streams({stream.id for stream in public_streams})
+    if len(public_streams) > 0:
+        active_non_guest_user_id_set = set(active_non_guest_user_ids(public_streams[0].realm_id))
+        for stream in public_streams:
+            result[stream.id] = set(active_non_guest_user_id_set | guest_subscriptions[stream.id])
+
+    if len(private_streams) > 0:
+        private_stream_user_ids = get_user_ids_for_streams(
+            {stream.id for stream in private_streams}
+        )
+        admin_users_and_bots = {user.id for user in stream.realm.get_admin_users_and_bots()}
+        users_dict_with_metadata_access_to_streams_via_permission_groups = (
+            get_users_dict_with_metadata_access_to_streams_via_permission_groups(
+                private_streams, private_streams[0].realm_id
+            )
+        )
+        for stream in private_streams:
+            result[stream.id] = (
+                private_stream_user_ids[stream.id]
+                | admin_users_and_bots
+                | users_dict_with_metadata_access_to_streams_via_permission_groups[stream.id]
+            )
+
+    return result
+
+
 def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool:
     """Determine whether the provided user is allowed to access the
     history of the target stream.
@@ -1755,3 +1796,14 @@ def send_stream_deletion_event(
         stream_ids=[stream.id for stream in streams],
     )
     send_event_on_commit(realm, stream_deletion_event, user_ids)
+
+
+def get_streams_affected_by_metadata_access_group_ids(
+    group_ids: list[int], realm: Realm
+) -> QuerySet[Stream]:
+    return Stream.objects.filter(
+        Q(can_add_subscribers_group_id__in=group_ids)
+        | Q(can_administer_channel_group_id__in=group_ids)
+        | Q(can_subscribe_group_id__in=group_ids),
+        realm_id=realm.id,
+    )
