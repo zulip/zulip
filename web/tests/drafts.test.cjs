@@ -6,12 +6,13 @@ const {mock_banners} = require("./lib/compose_banner.cjs");
 const {mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
-
 const user_pill = mock_esm("../src/user_pill");
 const messages_overlay_ui = mock_esm("../src/messages_overlay_ui");
 
 const compose_pm_pill = zrequire("compose_pm_pill");
 const people = zrequire("people");
+const message_view = zrequire("message_view");
+const compose_actions = zrequire("compose_actions");
 const compose_state = zrequire("compose_state");
 const compose_recipient = zrequire("compose_recipient");
 const sub_store = zrequire("sub_store");
@@ -47,6 +48,20 @@ mock_esm("../src/markdown", {
 });
 mock_esm("../src/overlays", {
     open_overlay: noop,
+    close_overlay: noop,
+});
+
+mock_esm("../src/components", {
+    toggle(_opts) {
+        return {
+            get() {
+                return {
+                    prependTo: noop,
+                };
+            },
+            // value: () => "Drafts",
+        };
+    },
 });
 
 const tippy_sel = ".top_left_drafts .unread_count";
@@ -272,7 +287,10 @@ test("initialize", ({override_rewire}) => {
 
     drafts.initialize();
     drafts.initialize_ui();
-    drafts_overlay_ui.initialize();
+    drafts_overlay_ui.initialize({
+        on_send_message_success(_request, _data) {},
+        send_message(_request, _on_success, _error) {},
+    });
 });
 
 test("update_draft", ({override, override_rewire}) => {
@@ -609,6 +627,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         // Tests formatting and time-sorting of drafts
         assert.deepEqual(data.narrow_drafts, []);
         assert.deepEqual(data.other_drafts, expected);
+        assert.deepEqual(data.outbox_message, []);
         return "<draft table stub>";
     });
 
@@ -618,7 +637,16 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     $.create("#drafts_table .overlay-message-row", {children: []});
+    $(".outbox-selection-checkbox").filter = () => [];
     $(".draft-selection-checkbox").filter = () => [];
+
+    const $drafts_table = $.create("drafts_table");
+    const $child = $(".message_content.rendered_markdown.restore-overlay-message");
+    $drafts_table.set_find_results(
+        ".message_content.rendered_markdown.restore-overlay-message",
+        $child,
+    );
+
     drafts_overlay_ui.launch();
 
     $.clear_all_elements();
@@ -637,7 +665,14 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
 
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
+    $(".outbox-selection-checkbox").filter = () => [];
     $(".draft-selection-checkbox").filter = () => [];
+
+    $drafts_table.set_find_results(
+        ".message_content.rendered_markdown.restore-overlay-message",
+        $child,
+    );
+
     drafts_overlay_ui.launch();
 });
 
@@ -797,6 +832,89 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     compose_state.private_message_recipient(aaron.email);
 
     $.create("#drafts_table .overlay-message-row", {children: []});
+    $(".outbox-selection-checkbox").filter = () => [];
     $(".draft-selection-checkbox").filter = () => [];
     drafts_overlay_ui.launch();
+});
+
+test("restore_draft", ({ override, override_rewire }) => {
+    function feb12() {
+        return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
+    }
+
+    const draft_id = "id1";
+
+    const stream_draft = {
+        topic: "topic",
+        type: "stream",
+        content: "Test stream message",
+        stream_id: 30,
+        updatedAt: feb12().getTime(),
+        is_sending_saving: false,
+        drafts_version: 1,
+    };
+
+    override(drafts.draft_model, "getDraft", (id) => {
+        assert.equal(id, draft_id);
+        return stream_draft;
+    });
+
+    override_rewire(drafts, "restore_message", (draft) => {
+        if (draft.type === "stream") {
+            return {
+                type: "stream",
+                stream_id: draft.stream_id,
+                topic: draft.topic,
+                content: draft.content,
+            };
+        }
+    });
+
+    override_rewire(message_view, "show", (filters, options) => {
+        assert.deepEqual(filters, [
+            { operator: "channel", operand: "30" },
+            { operator: "topic", operand: "topic" },
+        ], "message_view.show should be called with the correct filters");
+        assert.deepEqual(options, { trigger: "restore draft" });
+    });
+
+    override_rewire(compose_actions, "start", (args) => {
+        assert.deepEqual(args, {
+            type: "stream",
+            stream_id: 30,
+            topic: "topic",
+            content: "Test stream message",
+            message_type: "stream",
+            draft_id: "id1", 
+        });
+    });
+
+    drafts_overlay_ui.restore_draft(draft_id);
+});
+
+test("remove draft", ({ override, override_rewire }) => {
+    const draft_id = "id1";
+    const $draft_row = $.create(".overlay-message-row");
+    $draft_row.attr("data-draft-id", draft_id);
+
+    override(drafts.draft_model, "deleteDraft", noop);
+
+    $draft_row.remove = noop;
+
+    const $drafts_table = $.create("#drafts_table");
+    const $no_drafts = $.create(".no-drafts");
+    const $message_row = $.create(".draft-message-row.overlay-message-row");
+    $no_drafts.show = noop;
+
+    $drafts_table.set_find_results(".draft-message-row.overlay-message-row", $message_row);
+    $drafts_table.set_find_results(".no-drafts", $no_drafts);
+
+    let update_rendered_drafts_called = false;
+    override_rewire(drafts_overlay_ui, "update_rendered_drafts", () => {
+        update_rendered_drafts_called = true;
+    });
+
+    drafts_overlay_ui.remove_draft($draft_row);
+    assert.ok(update_rendered_drafts_called);
+    assert.equal(drafts.draft_model.getDraft(draft_id), false);
 });

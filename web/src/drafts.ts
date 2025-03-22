@@ -20,6 +20,7 @@ import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_util from "./ui_util.ts";
+import type {Message} from "./message_store.ts";
 import * as util from "./util.ts";
 
 export let set_count = (count: number): void => {
@@ -46,6 +47,7 @@ const draft_schema = z.intersection(
         // and 1 for drafts created since that change, to avoid a flood
         // of old drafts showing up when this feature was introduced.
         drafts_version: z.number().default(0),
+        message: z.custom<Message>().optional(),
     }),
     z.discriminatedUnion("type", [
         z.object({
@@ -73,6 +75,7 @@ const possibly_buggy_draft_schema = z.intersection(
         updatedAt: z.number(),
         is_sending_saving: z.boolean().default(false),
         drafts_version: z.number().default(0),
+        message: z.custom<Message>().optional(),
     }),
     z.discriminatedUnion("type", [
         z.object({
@@ -337,6 +340,10 @@ export function snapshot_message(): LocalStorageDraft | undefined {
     };
 }
 
+export function rewire_restore_message(value: typeof restore_message): void { 
+    restore_message = value;
+}
+
 type ComposeArguments =
     | {
           type: "stream";
@@ -350,7 +357,7 @@ type ComposeArguments =
           content: string;
       };
 
-export function restore_message(draft: LocalStorageDraft): ComposeArguments {
+export let restore_message = (draft: LocalStorageDraft): ComposeArguments => {
     // This is kinda the inverse of snapshot_message, and
     // we are essentially making a deep copy of the draft,
     // being explicit about which fields we send to the compose
