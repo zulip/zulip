@@ -4,20 +4,20 @@
         <div class="image-disabled {{#if is_editable_by_current_user}}hide{{/if}}">
             <div class="image-hover-background"></div>
             <span class="image-disabled-text flex" aria-label="{{ disabled_text }}" role="button" tabindex="0">
-            {{ disabled_text }}
+                {{ disabled_text }}
             </span>
         </div>
         {{/if}}
         <div class="image_upload_button {{#unless is_editable_by_current_user}}hide{{/unless}}">
             <div class="image-hover-background"></div>
             <button class="image-delete-button" aria-label="{{ delete_text }}" role="button" tabindex="0">
-            &times;
+                &times;
             </button>
             <span class="image-delete-text" aria-label="{{ delete_text }}" tabindex="0">
                 {{ delete_text }}
             </span>
             <span class="image-upload-text" aria-label="{{ upload_text }}" role="button" tabindex="0">
-            {{ upload_text }}
+                {{ upload_text }}
             </span>
             <span class="upload-spinner-background">
                 <img class="image_upload_spinner" src="../../images/loading/tail-spin.svg" alt="" />
