@@ -95,7 +95,7 @@ function set_message_too_long_for_compose(status: boolean): void {
 }
 
 function set_message_too_long_for_edit(status: boolean, $container: JQuery): void {
-    message_too_long = status;
+    const message_too_long = status;
     const $message_edit_save_container = $container.find(".message_edit_save_container");
     const save_is_disabled =
         message_too_long ||
@@ -157,6 +157,7 @@ export function get_disabled_save_tooltip($container: JQuery): string {
     }
     return "";
 }
+
 export function needs_subscribe_warning(user_id: number, stream_id: number): boolean {
     // This returns true if all of these conditions are met:
     //  * the user is valid
