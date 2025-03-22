@@ -73,6 +73,11 @@ Options:
       This skips the Terms of Service prompt, allowing for running the installer
       with --push-notifications in scripts without requiring user input.
 
+  --yes-i-know-this-will-destroy-my-system
+      Zulip expects to be the only thing running on a server.  This installer
+      will ask for confirmation, this will bypass that confirmation.
+      Read the server requirement docs for details:
+      <https://zulip.readthedocs.io/en/stable/production/requirements.html>
 
 EOF
 }
@@ -91,7 +96,7 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,puppet-classes:,no-overwrite-settings,no-dist-upgrade,push-notifications,no-push-notifications,no-submit-usage-statistics,agree-to-terms-of-service -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,puppet-classes:,no-overwrite-settings,no-dist-upgrade,push-notifications,no-push-notifications,no-submit-usage-statistics,agree-to-terms-of-service,yes-i-know-this-will-destroy-my-system -n "$0" -- "$@")"
 
 eval "set -- $args"
 while true; do
@@ -182,6 +187,10 @@ while true; do
             AGREE_TO_TERMS_OF_SERVICE_FLAG=1
             shift
             ;;
+        --yes-i-know-this-will-destroy-my-system)
+            DESTROY_CONFIRMATION=1
+            shift
+            ;;
         --)
             shift
             break
@@ -192,6 +201,16 @@ done
 if [ "$#" -gt 0 ]; then
     usage >&2
     exit 1
+fi
+
+if [ -z "$DESTROY_CONFIRMATION" ]; then
+    echo "Are you sure you are okay with the installer destroying any existing system config?"
+
+    read -p "yes/(no): " yn
+    case $yn in
+        [Yy]*) ;; # continue onwards
+        *) echo "Aborted"; exit 1;;
+    esac
 fi
 
 ## Options from environment variables.
