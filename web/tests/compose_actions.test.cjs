@@ -28,7 +28,23 @@ user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
 set_global("document", {
     to_$: () => $("document-stub"),
+    querySelector() {
+        return {
+            style: noop,
+        };
+    },
 });
+
+global.MutationObserver = class {
+    constructor(callback) {
+        this.callback = callback;
+    }
+    observe(target, options) {
+        this.target = target;
+        this.options = options;
+    }
+    disconnect() {}
+};
 
 const autosize = noop;
 autosize.update = noop;
@@ -91,6 +107,7 @@ const compose_reply = zrequire("compose_reply");
 const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
+const compose_validate = zrequire("compose_validate");
 const {set_realm} = zrequire("state_data");
 
 const realm = {realm_mandatory_topics: true};
@@ -159,6 +176,17 @@ test("start", ({override, override_rewire, mock_template}) => {
     stub_message_row($textarea);
     $elem.set_find_results(".message-textarea", $textarea);
     $elem.set_find_results(".message-limit-indicator", $indicator);
+    const $wildcard_warning_container = $("#compose_banners");
+    const $wildcard_warning_child = $.create("wildcard_warning_child_stub");
+    $wildcard_warning_container.set_find_results(".wildcard_warning", $wildcard_warning_child);
+    $wildcard_warning_container.find = () => $wildcard_warning_child;
+
+    let stub_removed;
+    $wildcard_warning_child.remove = () => {
+        stub_removed = true;
+    };
+    compose_validate.clear_stream_wildcard_warnings($wildcard_warning_container);
+    assert.ok(stub_removed);
 
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
@@ -434,6 +462,17 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     stub_message_row($textarea);
     $elem.set_find_results(".message-textarea", $textarea);
     $elem.set_find_results(".message-limit-indicator", $indicator);
+    const $wildcard_warning_container = $("#compose_banners");
+    const $wildcard_warning_child = $.create("wildcard_warning_child_stub");
+    $wildcard_warning_container.set_find_results(".wildcard_warning", $wildcard_warning_child);
+    $wildcard_warning_container.find = () => $wildcard_warning_child;
+
+    let stub_removed;
+    $wildcard_warning_child.remove = () => {
+        stub_removed = true;
+    };
+    compose_validate.clear_stream_wildcard_warnings($wildcard_warning_container);
+    assert.ok(stub_removed);
 
     override(realm, "realm_direct_message_permission_group", nobody.id);
     override(realm, "realm_direct_message_initiator_group", everyone.id);

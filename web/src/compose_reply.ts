@@ -11,6 +11,7 @@ import * as compose_paste from "./compose_paste.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as compose_validate from "./compose_validate.ts";
 import * as copy_messages from "./copy_messages.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -266,6 +267,24 @@ export function quote_message(opts: {
             private_message_recipient: people.pm_reply_to(message) ?? "",
         });
         compose_recipient.toggle_compose_recipient_dropdown();
+        // We want to show the banner only if the topic is resolved
+        // as soon as #compose_select_recipient_widget is closed.
+        const observer = new MutationObserver((mutations_list, observer) => {
+            for (const mutation of mutations_list) {
+                if (mutation.type === "attributes" && mutation.attributeName === "style") {
+                    const display = $(mutation.target).css("display");
+                    if (display === "none") {
+                        compose_validate.warn_if_topic_resolved(true);
+                        observer.disconnect();
+                    }
+                }
+            }
+        });
+        const target_node = document.querySelector("#compose_select_recipient_widget");
+        const config = {attributes: true};
+        if (target_node) {
+            observer.observe(target_node, config);
+        }
     } else {
         if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
             // The user has not started typing a message,
