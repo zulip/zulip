@@ -22709,7 +22709,7 @@ components:
   # Security definitions
   #######################
   securitySchemes:
-    BasicAuth:
+    basicAuth:
       type: http
       scheme: basic
       description: |
