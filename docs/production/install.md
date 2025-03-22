@@ -56,6 +56,14 @@ tarballs](https://download.zulip.com/server/SHA256SUMS.txt).
 
 ## Step 2: Install Zulip
 
+:::{important}
+Zulip expects to be installed on a standalone server, and will overwrite
+existing configs if they exist.  See the [requirements](requirements.md)
+for more info. If you are experimenting with Zulip on
+an existing server, we recommend [using the docker container](deployment.md#zulip-in-docker)
+instead.
+:::
+
 To set up Zulip with the most common configuration, run the installer as
 follows:
 
