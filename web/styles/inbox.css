@@ -213,13 +213,13 @@
                 margin-right: 3px;
             }
 
-            .zulip-icon-user,
+            .zulip-icon-send-dm,
             .stream-privacy.filter-icon {
                 margin: 0;
                 margin-right: 1px;
             }
 
-            .zulip-icon-user {
+            .zulip-icon-send-dm {
                 position: relative;
                 top: -1px;
                 margin-right: 4px;
