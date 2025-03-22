@@ -149,6 +149,7 @@ import * as topic_popover from "./topic_popover.ts";
 import * as transmit from "./transmit.js";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as typing from "./typing.ts";
+import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
@@ -686,6 +687,10 @@ export function initialize_everything(state_data) {
             }
 
             message_view.show(narrow, {trigger: "sidebar"});
+
+            if (ui_util.matches_viewport_state("lt_md_min")) {
+                sidebar_ui.hide_streamlist_sidebar();
+            }
         },
     });
     drafts.initialize_ui();
