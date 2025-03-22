@@ -206,10 +206,13 @@ fi
 if [ -z "$DESTROY_CONFIRMATION" ]; then
     echo "Are you sure you are okay with the installer destroying any existing system config?"
 
-    read -p "yes/(no): " yn
+    read -r -p "yes/(no): " yn
     case $yn in
         [Yy]*) ;; # continue onwards
-        *) echo "Aborted"; exit 1;;
+        *)
+            echo "Aborted"
+            exit 1
+        ;;
     esac
 fi
 
