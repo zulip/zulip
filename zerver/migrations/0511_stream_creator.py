@@ -5,6 +5,7 @@ from django.conf import settings
 from django.db import migrations, models
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+from django.db.models import F, OuterRef, Subquery
 
 
 def backfill_creator_id_from_realm_audit_log(
@@ -14,17 +15,25 @@ def backfill_creator_id_from_realm_audit_log(
     RealmAuditLog.STREAM_CREATED = 601
     Stream = apps.get_model("zerver", "Stream")
 
-    stream_updates = []
-    for audit_log_entry in RealmAuditLog.objects.select_related("modified_stream").filter(
-        event_type=RealmAuditLog.STREAM_CREATED,
-        acting_user_id__isnull=False,
-    ):
-        assert audit_log_entry.modified_stream is not None
-        stream = audit_log_entry.modified_stream
-        stream.creator_id = audit_log_entry.acting_user_id
-        stream_updates.append(stream)
-
-    Stream.objects.bulk_update(stream_updates, ["creator_id"], batch_size=1000)
+    batch_size = 10000
+    try:
+        for id_start in range(
+            RealmAuditLog.objects.earliest("id").id,
+            RealmAuditLog.objects.latest("id").id + 1,
+            batch_size,
+        ):
+            Stream.objects.annotate(
+                new_creator=Subquery(
+                    RealmAuditLog.objects.filter(
+                        id__range=(id_start, id_start + batch_size - 1),
+                        event_type=RealmAuditLog.STREAM_CREATED,
+                        acting_user__isnull=False,
+                        modified_stream=OuterRef("pk"),
+                    ).values("acting_user")
+                )
+            ).filter(creator=None, new_creator__isnull=False).update(creator=F("new_creator"))
+    except RealmAuditLog.DoesNotExist:
+        pass
 
 
 class Migration(migrations.Migration):
