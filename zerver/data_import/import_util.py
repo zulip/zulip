@@ -487,7 +487,7 @@ def build_direct_message_group(direct_message_group_id: int, group_size: int) ->
 
 def build_message(
     *,
-    topic_name: str,
+    topic_name: str = "",
     date_sent: float,
     message_id: int,
     content: str,
@@ -499,6 +499,7 @@ def build_message(
     has_image: bool = False,
     has_link: bool = False,
     has_attachment: bool = True,
+    is_direct_message_type: bool,
 ) -> ZerverFieldsT:
     # check and remove NULL Bytes if any.
     content = normalize_body_for_import(content)
@@ -512,6 +513,8 @@ def build_message(
         has_attachment=has_attachment,
         has_link=has_link,
     )
+    if is_direct_message_type:
+        topic_name = ""
     zulip_message.set_topic_name(topic_name)
     zulip_message_dict = model_to_dict(
         zulip_message, exclude=["recipient", "sender", "sending_client"]
