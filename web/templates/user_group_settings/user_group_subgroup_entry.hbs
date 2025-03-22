@@ -5,13 +5,7 @@
     <td class="empty-email-col-for-user-group"></td>
     {{#if can_remove_members}}
     <td class="remove">
-        <div class="subgroup_list_remove">
-            <form class="remove-subgroup-form">
-                <button type="submit" name="remove" class="remove-subgroup-button button small rounded button-danger">
-                    {{t 'Remove'}}
-                </button>
-            </form>
-        </div>
+        {{> ../components/action_button custom_classes="remove-subgroup-button" label=(t "Remove") attention="quiet" intent="danger" aria-label=(t "Remove") }}
     </td>
     {{/if}}
 </tr>

@@ -178,12 +178,6 @@ h4.user_group_setting_subsection_title {
                 }
             }
 
-            .subscriber_list_remove,
-            .subgroup-list-remove {
-                padding-right: 16px;
-                display: inline-block;
-            }
-
             & thead th {
                 &:first-of-type {
                     border-top-left-radius: 4px;
@@ -272,11 +266,6 @@ h4.user_group_setting_subsection_title {
 
 .choose-subscribers-label {
     display: inline;
-}
-
-.remove-subscriber-form,
-.remove-subgroup-form {
-    margin: 0;
 }
 
 .subscriptions-container .subscriptions-header .fa-chevron-left,
