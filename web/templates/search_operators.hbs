@@ -71,6 +71,16 @@
                         </td>
                     </tr>
                     <tr>
+                        <td class="operator">channels:archived</td>
+                        <td class="definition">
+                            {{#if can_access_all_public_channels }}
+                            {{t 'Search all archived channels.'}}
+                            {{else}}
+                            {{t 'Search all archived channels that you can view.'}}
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="operator">sender:<span class="operator_value">user</span></td>
                         <td class="definition">
                             {{#tr}}
