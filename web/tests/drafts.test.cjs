@@ -520,6 +520,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         {
             draft_id: "id2",
             is_stream: false,
+            no_recipients: false,
             recipients: "Aaron",
             raw_content: "Test direct message",
             time_stamp: "Jan 30",
@@ -527,6 +528,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         {
             draft_id: "id5",
             is_stream: false,
+            no_recipients: false,
             recipients: "Aaron",
             raw_content: "Test direct message 3",
             time_stamp: "Jan 29",
@@ -534,6 +536,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         {
             draft_id: "id4",
             is_stream: false,
+            no_recipients: false,
             recipients: "Aaron",
             raw_content: "Test direct message 2",
             time_stamp: "Jan 26",
@@ -701,6 +704,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         {
             draft_id: "id2",
             is_stream: false,
+            no_recipients: false,
             recipients: "Aaron",
             raw_content: "Test direct message",
             time_stamp: "Jan 30",
@@ -708,6 +712,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         {
             draft_id: "id5",
             is_stream: false,
+            no_recipients: false,
             recipients: "Aaron",
             raw_content: "Test direct message 3",
             time_stamp: "Jan 29",
@@ -715,6 +720,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         {
             draft_id: "id4",
             is_stream: false,
+            no_recipients: false,
             recipients: "Aaron",
             raw_content: "Test direct message 2",
             time_stamp: "Jan 26",
