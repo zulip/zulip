@@ -76,6 +76,7 @@ from zerver.lib.streams import (
     access_stream_by_name,
     can_access_stream_history,
     can_access_stream_metadata_user_ids,
+    can_access_streams_user_ids,
     create_stream_if_needed,
     create_streams_if_needed,
     do_get_streams,
@@ -8776,6 +8777,65 @@ class AccessStreamTest(ZulipTestCase):
             ),
             True,
         )
+
+    def test_can_access_streams_user_ids(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+        cordelia = self.example_user("cordelia")
+        shiva = self.example_user("shiva")
+        realm = iago.realm
+
+        public_stream1 = self.make_stream("public_stream1", realm, invite_only=False)
+        public_stream2 = self.make_stream("public_stream2", realm, invite_only=False)
+
+        private_stream1 = self.make_stream("private_stream1", realm, invite_only=True)
+        private_stream2 = self.make_stream("private_stream2", realm, invite_only=True)
+
+        self.subscribe(polonius, "public_stream1")
+        self.subscribe(hamlet, "public_stream2")
+
+        self.subscribe(hamlet, "private_stream1")
+        self.subscribe(polonius, "private_stream2")
+
+        do_change_stream_group_based_setting(
+            private_stream1,
+            "can_add_subscribers_group",
+            UserGroupMembersData(direct_members=[shiva.id], direct_subgroups=[]),
+            acting_user=iago,
+        )
+        do_change_stream_group_based_setting(
+            private_stream2,
+            "can_administer_channel_group",
+            UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+            acting_user=iago,
+        )
+
+        stream_access_dict = can_access_streams_user_ids(
+            [public_stream1, public_stream2, private_stream1, private_stream2], realm
+        )
+
+        # All non guest users have access to all public streams and guests
+        # have access to public streams.
+        self.assertIn(polonius.id, stream_access_dict[public_stream1.id])
+        self.assertNotIn(polonius.id, stream_access_dict[public_stream2.id])
+        self.assertIn(hamlet.id, stream_access_dict[public_stream1.id])
+        self.assertIn(hamlet.id, stream_access_dict[public_stream2.id])
+
+        self.assertIn(hamlet.id, stream_access_dict[private_stream1.id])
+        self.assertNotIn(hamlet.id, stream_access_dict[private_stream2.id])
+
+        self.assertIn(iago.id, stream_access_dict[private_stream1.id])
+        self.assertIn(iago.id, stream_access_dict[private_stream2.id])
+
+        self.assertIn(shiva.id, stream_access_dict[private_stream1.id])
+        self.assertNotIn(shiva.id, stream_access_dict[private_stream2.id])
+
+        self.assertNotIn(cordelia.id, stream_access_dict[private_stream1.id])
+        self.assertIn(cordelia.id, stream_access_dict[private_stream2.id])
+
+        self.assertNotIn(polonius.id, stream_access_dict[private_stream1.id])
+        self.assertIn(polonius.id, stream_access_dict[private_stream2.id])
 
 
 class StreamTrafficTest(ZulipTestCase):
