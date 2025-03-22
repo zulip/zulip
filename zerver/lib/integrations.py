@@ -378,7 +378,13 @@ EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
 ]
 
 WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
-    WebhookIntegration("airbrake", ["monitoring"]),
+    WebhookIntegration(
+        "airbrake",
+        ["monitoring"],
+        config_options=[
+            WebhookConfigOption(name="mapping", description="", validator=check_string)
+        ],
+    ),
     WebhookIntegration("airbyte", ["monitoring"]),
     WebhookIntegration(
         "alertmanager",

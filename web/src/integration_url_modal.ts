@@ -55,6 +55,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
         let stream_input_dropdown_widget: DropdownWidget;
         let integration_input_dropdown_widget: DropdownWidget;
         let previous_selected_integration = "";
+        const map_channels_option: Option = {
+            name: $t_html({defaultMessage: `Map to Zulip channels`}),
+            unique_id: -2,
+        };
 
         const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
         const $topic_input = $<HTMLInputElement>("input#integration-url-topic-input");
@@ -84,7 +88,9 @@ export function show_generate_integration_url_modal(api_key: string): void {
             for (const option of validated_config) {
                 let $config_element: JQuery;
 
-                if (option.key === "branches") {
+                if (option.key === "mapping") {
+                    continue;
+                } else if (option.key === "branches") {
                     const filter_branches_html =
                         render_generate_integration_url_filter_branches_modal();
                     $config_element = $(filter_branches_html);
@@ -130,6 +136,9 @@ export function show_generate_integration_url_modal(api_key: string): void {
         $override_topic.on("change", function () {
             const checked = this.checked;
             $topic_input.parent().toggleClass("hide", !checked);
+            if (!$topic_input.parent().hasClass("hide")) {
+                $topic_input.trigger("focus");
+            }
         });
 
         $show_integration_events.on("change", () => {
@@ -202,7 +211,11 @@ export function show_generate_integration_url_modal(api_key: string): void {
 
             const params = new URLSearchParams({api_key});
             if (stream_id !== -1) {
-                params.set("stream", stream_id!.toString());
+                if (stream_id === map_channels_option?.unique_id) {
+                    params.set("mapping", "channels");
+                } else {
+                    params.set("stream", stream_id!.toString());
+                }
                 if ($override_topic.prop("checked") && topic_name !== "") {
                     params.set("topic", topic_name);
                 }
@@ -227,7 +240,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
                             (option.key !== "branches" ||
                                 $<HTMLInputElement>("#integration-url-all-branches").prop(
                                     "checked",
-                                ) === false)
+                                ) === false) &&
+                            option.key !== "mapping"
                         ) {
                             params.set(option.key, value.toString());
                         }
@@ -282,9 +296,15 @@ export function show_generate_integration_url_modal(api_key: string): void {
             const selected_integration_data = realm.realm_incoming_webhook_bots.find(
                 (bot) => bot.name === selected_integration,
             );
+            const config_options = selected_integration_data?.config_options;
 
-            if (selected_integration_data?.config_options) {
-                render_config(selected_integration_data.config_options);
+            if (config_options) {
+                const mapping_option = config_options.find((option) => option.key === "mapping");
+                if (mapping_option) {
+                    stream_input_dropdown_widget.get_options = () =>
+                        get_options_for_stream_dropdown_widget(true);
+                }
+                render_config(config_options);
             }
 
             dropdown.hide();
@@ -294,7 +314,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
 
         stream_input_dropdown_widget = new dropdown_widget.DropdownWidget({
             widget_name: "integration-url-stream",
-            get_options: get_options_for_stream_dropdown_widget,
+            get_options: () => get_options_for_stream_dropdown_widget(false),
             item_click_callback: stream_item_click_callback,
             $events_container: $("#generate-integration-url-modal"),
             default_id: direct_messages_option.unique_id,
@@ -302,9 +322,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
         });
         stream_input_dropdown_widget.setup();
 
-        function get_options_for_stream_dropdown_widget(): Option[] {
+        function get_options_for_stream_dropdown_widget(include_mapping_option = false): Option[] {
             const options = [
                 direct_messages_option,
+                ...(include_mapping_option ? [map_channels_option] : []),
                 ...streams
                     .filter((stream) => stream_data.can_post_messages_in_stream(stream))
                     .map((stream) => ({
@@ -322,18 +343,22 @@ export function show_generate_integration_url_modal(api_key: string): void {
         ): void {
             stream_input_dropdown_widget.render();
             $(".integration-url-stream-wrapper").trigger("input");
+            dropdown.hide();
             const user_selected_option = stream_input_dropdown_widget.value();
             if (user_selected_option === direct_messages_option.unique_id) {
                 $override_topic.prop("checked", false).prop("disabled", true);
                 $override_topic.closest(".input-group").addClass("control-label-disabled");
                 $topic_input.val("");
+            } else if (user_selected_option === map_channels_option.unique_id) {
+                $override_topic.prop("checked", true).prop("disabled", true);
+                $override_topic.closest(".input-group").addClass("control-label-disabled");
+                $topic_input.val("");
+                $topic_input.parent().removeClass("hide");
             } else {
                 $override_topic.prop("disabled", false);
                 $override_topic.closest(".input-group").removeClass("control-label-disabled");
             }
             $override_topic.trigger("change");
-
-            dropdown.hide();
             event.preventDefault();
             event.stopPropagation();
         }
