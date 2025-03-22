@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 371  # Last bumped for Zulip 10.0 release.
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (321, 0)  # bumped 2025-03-14 to upgrade JavaScript dependencies
+PROVISION_VERSION = (322, 0)  # bumped 2025-03-22 to remove python-twitter
