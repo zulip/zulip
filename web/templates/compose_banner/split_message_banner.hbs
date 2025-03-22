@@ -1,0 +1,13 @@
+<div class="above_compose_banner main-view-banner {{banner_type}} {{classname}}">
+    <p class="banner_content">
+        {{#tr}}
+        The text in your compose box will be split at <b>two consecutive blank lines</b> into <b>{message_count}</b>
+        messages.
+        {{/tr}}
+    </p>
+    <button class="main-view-banner-action-button{{#if hide_close_button}} right_edge{{/if}}" {{#if
+      scheduling_message}}data-validation-trigger="schedule" {{/if}}>
+        {{t "Cancel"}}
+    </button>
+    <a role="button" class="zulip-icon zulip-icon-close main-view-banner-close-button"></a>
+</div>

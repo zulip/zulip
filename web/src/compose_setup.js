@@ -14,6 +14,7 @@ import * as compose_fade from "./compose_fade.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -71,6 +72,11 @@ export function initialize() {
         compose_ui.handle_keyup(event, $("textarea#compose-textarea").expectOne());
     });
 
+    const debounced_update_split_message_banner = _.debounce(
+        () => compose_banner.update_split_messages_info_banner(),
+        300,
+    );
+
     $("textarea#compose-textarea").on("input", () => {
         if ($("#compose").hasClass("preview_mode")) {
             compose.render_preview_area();
@@ -98,6 +104,11 @@ export function initialize() {
 
         if (compose_state.get_is_content_unedited_restored_draft()) {
             compose_state.set_is_content_unedited_restored_draft(false);
+        }
+
+        // update banner if splitting messages is enabled
+        if (compose_split_messages.is_split_messages_enabled()) {
+            debounced_update_split_message_banner();
         }
     });
 
@@ -212,6 +223,15 @@ export function initialize() {
                 }
                 compose_validate.clear_topic_resolved_warning(true);
             });
+        },
+    );
+
+    $("body").on(
+        "click",
+        `.${CSS.escape(compose_banner.CLASSNAMES.split_messages)} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            compose.toggle_split_messages();
         },
     );
 
