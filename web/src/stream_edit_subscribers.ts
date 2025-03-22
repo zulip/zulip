@@ -466,8 +466,8 @@ export function initialize(): void {
     });
 
     $("#channels_overlay_container").on(
-        "submit",
-        ".edit_subscribers_for_stream .subscriber_list_remove form",
+        "click",
+        ".edit_subscribers_for_stream .remove-subscriber-button",
         function (this: HTMLElement, e): void {
             e.preventDefault();
 
