@@ -11,6 +11,12 @@ const GENERIC_BOT_TYPE = "1";
 const zuliprc_regex =
     /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
+async function get_decoded_url_in_hidden_selector(page: Page, selector: string): Promise<string> {
+    const span = await page.$(selector);
+    const a = await span?.$("a");
+    return decodeURIComponent(await (await a!.getProperty("href")).jsonValue());
+}
+
 async function get_decoded_url_in_selector(page: Page, selector: string): Promise<string> {
     const a = await page.$(`a:is(${selector})`);
     return decodeURIComponent(await (await a!.getProperty("href")).jsonValue());
@@ -128,16 +134,18 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     await common.wait_for_micromodal_to_close(page);
 
     const bot_email = "1-bot@zulip.testserver";
-    const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
-        bot_email,
-    )}"]`;
     const outgoing_webhook_zuliprc_regex =
         /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
 
+    const zuliprc_span_selector = `span:has(a.hidden-zuliprc-download[data-email="${CSS.escape(bot_email)}"])`;
+    const download_zuliprc_selector = `${zuliprc_span_selector} .download_bot_zuliprc`;
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
     await page.click(download_zuliprc_selector);
 
-    const zuliprc_decoded_url = await get_decoded_url_in_selector(page, download_zuliprc_selector);
+    const zuliprc_decoded_url = await get_decoded_url_in_hidden_selector(
+        page,
+        zuliprc_span_selector,
+    );
     assert.match(
         zuliprc_decoded_url,
         outgoing_webhook_zuliprc_regex,
@@ -167,22 +175,24 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
     await common.wait_for_micromodal_to_close(page);
 
     const bot_email = "2-bot@zulip.testserver";
-    const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
-        bot_email,
-    )}"]`;
+    const zuliprc_span_selector = `span:has(a.hidden-zuliprc-download[data-email="${CSS.escape(bot_email)}"])`;
+    const download_zuliprc_selector = `${zuliprc_span_selector} .download_bot_zuliprc`;
 
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
     await page.click(download_zuliprc_selector);
-    const zuliprc_decoded_url = await get_decoded_url_in_selector(page, download_zuliprc_selector);
+    const zuliprc_decoded_url = await get_decoded_url_in_hidden_selector(
+        page,
+        zuliprc_span_selector,
+    );
     assert.match(zuliprc_decoded_url, zuliprc_regex, "Incorrect zuliprc format for bot.");
 }
 
 async function test_botserverrc(page: Page): Promise<void> {
     await page.click("#download_botserverrc");
-    await page.waitForSelector('#download_botserverrc[href^="data:application"]', {visible: true});
+    await page.waitForSelector('#hidden-botserverrc-download[href^="data:application"]');
     const botserverrc_decoded_url = await get_decoded_url_in_selector(
         page,
-        "#download_botserverrc",
+        "#hidden-botserverrc-download",
     );
     const botserverrc_regex =
         /^data:application\/octet-stream;charset=utf-8,\[]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
