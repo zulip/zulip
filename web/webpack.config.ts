@@ -1,5 +1,6 @@
 /// <reference types="webpack-dev-server" />
 
+import * as fs from "node:fs";
 import path from "node:path";
 import * as url from "node:url";
 
@@ -33,6 +34,10 @@ const config = (
         },
     };
 
+    const custom_5xx_path = production
+        ? "/etc/zulip/5xx.html"
+        : path.join(import.meta.dirname, "../var/5xx.html");
+
     const plugins: webpack.WebpackPluginInstance[] = [
         new webpack.DefinePlugin({
             DEVELOPMENT: JSON.stringify(!production),
@@ -50,7 +55,7 @@ const config = (
         }),
         new HtmlWebpackPlugin({
             filename: "5xx.html",
-            template: "html/5xx.html",
+            template: fs.existsSync(custom_5xx_path) ? custom_5xx_path : "html/5xx.html",
             chunks: ["error-styles"],
             publicPath: production ? "/static/webpack-bundles/" : "/webpack/",
         }),
