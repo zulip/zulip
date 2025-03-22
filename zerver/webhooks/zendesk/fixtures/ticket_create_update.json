@@ -1,0 +1,15 @@
+{
+    "ticket_id": "7",
+    "ticket_title": "Hello world",
+    "ticket_description": "----------------------------------------------\n\nApoorva Pendse, Feb 3, 2025, 19:59\n\nI am writing this to create a ticket.",
+    "ticket_url": "asdf1640.zendesk.com/agent/tickets/7",
+    "ticket_status": "Open",
+    "ticket_priority": "Normal",
+    "requester_full_name": "testerzulip",
+    "assignee_full_name": "Apoorva Pendse",
+    "created_at": "February 3, 2025",
+    "updated_at": "February 3, 2025",
+    "ticket_type": "Incident",
+    "tags": "change_address help order",
+    "link": "https://asdf1640.zendesk.com/agent/tickets/7"
+}
