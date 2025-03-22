@@ -93,6 +93,7 @@ export type TopicSuggestion = {
     is_channel_link: boolean;
     used_syntax_prefix: string;
     stream_data: StreamPillData;
+    is_new_topic: boolean;
 };
 
 type TimeJumpSuggestion = {
@@ -998,7 +999,9 @@ export function get_candidates(
                 // or adding a topic.
                 const topic_list = topics_seen_for(sub.stream_id);
 
-                if (should_show_custom_query(token, topic_list)) {
+                // Topic name doesn't match any of the existing topics.
+                const is_new_topic = should_show_custom_query(token, topic_list);
+                if (is_new_topic) {
                     topic_list.push(token);
                 }
                 const matcher = get_topic_matcher(token);
@@ -1017,6 +1020,7 @@ export function get_candidates(
                         // itself, not topic rows, so we leave this blank.
                         rendered_description: "",
                     },
+                    is_new_topic: topic === token && is_new_topic,
                 }));
                 const topic_suggestion_candidates = typeahead_helper.sorter(
                     token,
@@ -1038,6 +1042,7 @@ export function get_candidates(
                             type: "stream",
                             rendered_description: "",
                         },
+                        is_new_topic: false,
                     });
                 }
                 return topic_suggestion_candidates;
@@ -1452,8 +1457,14 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
             select_on_escape_condition: () => completing === "topic_list",
             automated: compose_automated_selection,
             option_label(_matching_items, item): string | false {
-                if (item.type === "topic_list" && item.is_channel_link) {
-                    return `<em>${$t({defaultMessage: "(link to channel)"})}</em>`;
+                if (item.type === "topic_list") {
+                    if (item.is_channel_link) {
+                        return `<em>${$t({defaultMessage: "(link to channel)"})}</em>`;
+                    }
+
+                    if (item.is_new_topic) {
+                        return `<em>${$t({defaultMessage: "New"})}</em>`;
+                    }
                 }
                 return false;
             },
