@@ -38,6 +38,17 @@
     <b>First human user</b>:
     <br />
     {% endif %}
+    {% set billing_admins = realm.get_billing_admins_delivery_email() %}
+    {% if billing_admins %}
+    <b>Billing admins</b>: {{ billing_admins  }}
+    <a title="Copy emails" class="copy-button" data-clipboard-text="{{ billing_admins }}">
+        <i class="fa fa-copy"></i>
+    </a>
+    <br />
+    {% else %}
+    <b>Billing admins</b>:
+    <br />
+    {% endif %}
     <br />
     {% with %}
         {% set realm = realm %}
