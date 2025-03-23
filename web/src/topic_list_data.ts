@@ -160,8 +160,10 @@ export function get_list_info(
     stream_id: number,
     zoomed: boolean,
     search_term: string,
+    topics_state = "",
 ): TopicListInfo {
     const narrowed_topic = narrow_state.topic();
+    const is_topic_state_resolved = topics_state === "is: resolved";
     const topic_choice_state: TopicChoiceState = {
         items: [],
         topics_selected: 0,
@@ -196,6 +198,11 @@ export function get_list_info(
             (topic) => (topic === "" ? empty_string_topic_display_name : topic),
             word_separator_regex,
         );
+        if (topics_state !== "") {
+            topic_names = topic_names.filter(
+                (name) => resolved_topic.is_resolved(name) === is_topic_state_resolved,
+            );
+        }
     }
 
     if (stream_muted && !zoomed) {
