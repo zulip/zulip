@@ -786,7 +786,7 @@ function setup_page(callback: () => void): void {
             values: [
                 {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
                 {label: $t({defaultMessage: "Not subscribed"}), key: "not-subscribed"},
-                {label: $t({defaultMessage: "All channels"}), key: "all-streams"},
+                {label: $t({defaultMessage: "All"}), key: "all-streams"},
             ],
             callback(_value, key) {
                 switch_stream_tab(key);
