@@ -895,7 +895,7 @@ export function dispatch_normal_event(event) {
                 }
             }
             if (event.property === "high_contrast_mode") {
-                $("body").toggleClass("high-contrast");
+                $("body").toggleClass("high-contrast", event.value);
             }
             if (event.property === "demote_inactive_streams") {
                 stream_list_sort.set_filter_out_inactives();
