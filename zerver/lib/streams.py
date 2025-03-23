@@ -1290,7 +1290,7 @@ def list_to_streams(
     streams_raw: Collection[StreamDict],
     user_profile: UserProfile,
     autocreate: bool = False,
-    unsubscribing_others: bool = False,
+    unsubscribing_others: bool | None = None,
     is_default_stream: bool = False,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
 ) -> tuple[list[Stream], list[Stream]]:
