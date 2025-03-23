@@ -710,6 +710,9 @@ class AbstractAttachment(models.Model):
     # Size of the uploaded file, in bytes
     size = models.IntegerField()
 
+    # indicates whether we attempted to delete (from db and storage) this attachment
+    deleted = models.BooleanField(default=False)
+
     content_type = models.TextField(null=True)
 
     # The two fields below serve as caches to let us avoid looking up
@@ -758,6 +761,15 @@ class ArchivedAttachment(AbstractAttachment):
         ArchivedMessage, related_name="attachment_set", related_query_name="attachment"
     )
 
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=["deleted"],
+                name="zerver_archivedattachment_deleted_idx",
+                condition=Q(deleted=True),
+            )
+        ]
+
 
 class Attachment(AbstractAttachment):
     messages = models.ManyToManyField(Message)
@@ -772,6 +784,11 @@ class Attachment(AbstractAttachment):
                 "realm",
                 "create_time",
                 name="zerver_attachment_realm_create_time",
+            ),
+            models.Index(
+                fields=["deleted"],
+                name="zerver_attachment_deleted_idx",
+                condition=Q(deleted=True),
             ),
         ]
 
