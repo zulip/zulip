@@ -1,4 +1,4 @@
-<a {{#if preview_url}}class="tippy-zulip-delayed-tooltip" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="top" href="{{preview_url}}{{/if}}">
+<a {{#if preview_url}}class="tippy-zulip-delayed-tooltip selected-stream-title" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="top" href="{{preview_url}}{{/if}}">
 {{#unless preview_url}}{{t "Add subscribers to "}}{{/unless}}
 {{> stream_privacy_icon
   invite_only=sub.invite_only
