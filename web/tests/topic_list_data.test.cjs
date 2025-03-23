@@ -48,11 +48,11 @@ const general = {
 
 stream_data.add_sub(general);
 
-function get_list_info(zoom, search) {
+function get_list_info(zoom, filter, search) {
     const stream_id = general.stream_id;
     const zoomed = zoom === undefined ? false : zoom;
     const search_term = search === undefined ? "" : search;
-    return topic_list_data.get_list_info(stream_id, zoomed, search_term);
+    return topic_list_data.get_list_info(stream_id, zoomed, search_term, filter);
 }
 
 function test(label, f) {
@@ -187,11 +187,19 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     // If we zoom in, our results are based on topic filter.
     // If topic search input is empty, we show all 10 topics.
     const zoomed = true;
-    list_info = get_list_info(zoomed);
+    list_info = get_list_info(zoomed, "");
     assert.equal(list_info.items.length, 11);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 11);
+
+    list_info = get_list_info(zoomed, "is: resolved");
+    assert.equal(list_info.items.length, 5);
+    assert.equal(list_info.num_possible_topics, 5);
+
+    list_info = get_list_info(zoomed, "-is: resolved");
+    assert.equal(list_info.items.length, 6);
+    assert.equal(list_info.num_possible_topics, 6);
 
     add_topic_message("After Brooklyn", 1008);
     add_topic_message("Delhi", 1009);
@@ -199,15 +207,26 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     // When topic search input is not empty, we show topics
     // based on the search term.
     let search_term = "b,d";
-    list_info = get_list_info(zoomed, search_term);
+    list_info = get_list_info(zoomed, "", search_term);
     assert.equal(list_info.items.length, 2);
+    add_topic_message("✔ Catering1", 1010);
+    // when topic search is open then we list topics based on search term.
+    list_info = get_list_info(zoomed, "", "b,c");
+    assert.equal(list_info.items.length, 3);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
-    assert.equal(list_info.num_possible_topics, 2);
+    assert.equal(list_info.num_possible_topics, 3);
+
+    // search term + resolved/unresolved
+    list_info = get_list_info(zoomed, "is: resolved", "b,c");
+    assert.equal(list_info.items.length, 1);
+
+    list_info = get_list_info(zoomed, "-is: resolved", "b,c");
+    assert.equal(list_info.items.length, 2);
 
     // Verify empty string topic shows up for "general" search term.
     search_term = "general";
-    list_info = get_list_info(zoomed, search_term);
+    list_info = get_list_info(zoomed, "", search_term);
     assert.equal(list_info.items.length, 1);
     assert.equal(list_info.items[0].topic_name, "");
     assert.equal(list_info.items[0].topic_display_name, REALM_EMPTY_TOPIC_DISPLAY_NAME);
@@ -462,26 +481,26 @@ test("get_list_info with specific topics and searches", () => {
     add_topic_message("BF-2924 zulip", 1001);
     add_topic_message("tech_support/escalation", 1002);
 
-    list_info = get_list_info(true, "2924");
+    list_info = get_list_info(true, "", "2924");
     assert.equal(list_info.items.length, 1);
     assert.equal(list_info.items[0].topic_name, "BF-2924 zulip");
 
-    list_info = get_list_info(true, "support/escalation");
+    list_info = get_list_info(true, "", "support/escalation");
     assert.equal(list_info.items.length, 1);
     assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
 
-    list_info = get_list_info(true, "support");
+    list_info = get_list_info(true, "", "support");
     assert.equal(list_info.items.length, 1);
     assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
 
-    list_info = get_list_info(true, "zulip");
+    list_info = get_list_info(true, "", "zulip");
     assert.equal(list_info.items.length, 1);
     assert.equal(list_info.items[0].topic_name, "BF-2924 zulip");
 
-    list_info = get_list_info(true, "SUPPORT");
+    list_info = get_list_info(true, "", "SUPPORT");
     assert.equal(list_info.items.length, 1);
     assert.equal(list_info.items[0].topic_name, "tech_support/escalation");
 
-    list_info = get_list_info(true, "nonexistent");
+    list_info = get_list_info(true, "", "nonexistent");
     assert.equal(list_info.items.length, 0);
 });
