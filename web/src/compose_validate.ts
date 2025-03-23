@@ -60,6 +60,10 @@ export const get_message_too_long_for_compose_error = (): string =>
         {max_length: realm.max_message_length},
     );
 export const NO_MESSAGE_CONTENT_ERROR_MESSAGE = $t({defaultMessage: "Compose a message."});
+export const UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE = $t({
+    defaultMessage:
+        "You're not subscribed to this channel. You will not be notified if other users reply to your message.",
+});
 type StreamWildcardOptions = {
     stream_id: number;
     $banner_container: JQuery;
@@ -738,7 +742,7 @@ export function validate_stream_message_address_info(sub: StreamSubscription): b
     if (sub.subscribed) {
         return true;
     }
-    compose_banner.show_stream_not_subscribed_error(sub);
+    compose_banner.show_stream_not_subscribed_error(sub, UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE);
     return false;
 }
 
