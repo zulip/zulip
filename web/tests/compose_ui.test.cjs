@@ -629,17 +629,15 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
 });
 
 const $textarea = $("textarea#compose-textarea");
-$textarea.get = () => ({
-    setSelectionRange(start, end) {
-        $textarea.range = () => ({
-            start,
-            end,
-            text: $textarea.val().slice(start, end),
-            length: end - start,
-        });
-    },
-    click() {},
-});
+$textarea[0].setSelectionRange = (start, end) => {
+    $textarea.range = () => ({
+        start,
+        end,
+        text: $textarea.val().slice(start, end),
+        length: end - start,
+    });
+};
+$textarea[0].click = () => {};
 
 // The argument `text_representation` is a string representing the text
 // in the compose box, where `<` and `>` denote the start and end of any

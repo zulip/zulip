@@ -121,6 +121,9 @@ exports.FakeJQuery = function (selector, opts) {
 
                 `);
         },
+        get(index) {
+            return index === undefined ? [...this] : this[index];
+        },
         get_on_handler(name, child_selector) {
             return event_store.get_on_handler(name, child_selector);
         },
