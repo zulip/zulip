@@ -340,24 +340,20 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
         }
     }
 
-    // TODO: This fake "message" object is designed to allow using the
-    // get_recipient_label helper inside compose_closed_ui. Surely
-    // there's a more readable way to write this code.
-    // Similar code is present in Inbox.
-    let message;
+    let reply_recipient_information: compose_closed_ui.ReplyRecipientInformation;
     if (type === "private") {
-        message = {
+        reply_recipient_information = {
             display_reply_to: $topic_row.find(".recent_topic_name a").text(),
         };
     } else {
         const stream_name = $topic_row.find(".recent_topic_stream a").text();
         const stream = stream_data.get_sub_by_name(stream_name);
-        message = {
+        reply_recipient_information = {
             stream_id: stream?.stream_id,
             topic: $topic_row.find(".recent_topic_name a").text(),
         };
     }
-    compose_closed_ui.update_recipient_text_for_reply_button(message);
+    compose_closed_ui.update_recipient_text_for_reply_button(reply_recipient_information);
     return true;
 }
 

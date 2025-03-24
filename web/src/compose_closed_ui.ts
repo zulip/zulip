@@ -33,13 +33,15 @@ function get_stream_recipient_label(stream_id: number, topic: string): Recipient
     return undefined;
 }
 
-type ComposeClosedMessage = {
+export type ReplyRecipientInformation = {
     stream_id?: number | undefined;
-    topic?: string;
+    topic?: string | undefined;
     display_reply_to?: string | undefined;
 };
 
-export function get_recipient_label(message?: ComposeClosedMessage): RecipientLabel | undefined {
+export function get_recipient_label(
+    recipient_information?: ReplyRecipientInformation,
+): RecipientLabel | undefined {
     // TODO: This code path is bit of a type-checking disaster; we mix
     // actual message objects with fake objects containing just a
     // couple fields, both those constructed here and potentially
@@ -48,7 +50,7 @@ export function get_recipient_label(message?: ComposeClosedMessage): RecipientLa
         return undefined;
     }
 
-    if (message === undefined) {
+    if (recipient_information === undefined) {
         if (message_lists.current.visibly_empty()) {
             // For empty narrows where there's a clear reply target,
             // i.e. stream+topic or a single direct message conversation,
@@ -62,15 +64,21 @@ export function get_recipient_label(message?: ComposeClosedMessage): RecipientLa
                 return {label_text: message_store.get_pm_full_names(user_ids)};
             }
         } else {
-            message = message_lists.current.selected_message();
+            recipient_information = message_lists.current.selected_message();
         }
     }
 
-    if (message) {
-        if (message.stream_id !== undefined && message.topic !== undefined) {
-            return get_stream_recipient_label(message.stream_id, message.topic);
-        } else if (message.display_reply_to) {
-            return {label_text: message.display_reply_to};
+    if (recipient_information) {
+        if (
+            recipient_information.stream_id !== undefined &&
+            recipient_information.topic !== undefined
+        ) {
+            return get_stream_recipient_label(
+                recipient_information.stream_id,
+                recipient_information.topic,
+            );
+        } else if (recipient_information.display_reply_to) {
+            return {label_text: recipient_information.display_reply_to};
         }
     }
     return undefined;
@@ -171,8 +179,10 @@ export function set_standard_text_for_reply_button(): void {
     set_reply_button_label($t({defaultMessage: "Compose message"}));
 }
 
-export function update_recipient_text_for_reply_button(message?: ComposeClosedMessage): void {
-    const recipient_label = get_recipient_label(message);
+export function update_recipient_text_for_reply_button(
+    recipient_information?: ReplyRecipientInformation,
+): void {
+    const recipient_label = get_recipient_label(recipient_information);
     if (recipient_label !== undefined) {
         const empty_string_topic_display_name = util.get_final_topic_display_name("");
         const rendered_recipient_label = render_reply_recipient_label({
