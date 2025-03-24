@@ -15,6 +15,7 @@ from zerver.lib.streams import (
     get_anonymous_group_membership_dict_for_streams,
     get_metadata_access_streams_via_group_ids,
     send_stream_creation_event,
+    send_stream_deletion_event,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
@@ -387,6 +388,18 @@ def bulk_remove_members_from_user_groups(
     # a single group; but it's easy enough for the implementation to
     # support both.
 
+    if len(user_groups) == 0 or len(user_profile_ids) == 0:
+        return
+
+    realm = user_groups[0].realm
+    supergroups = get_recursive_supergroups_union_for_groups(
+        [user_group.id for user_group in user_groups]
+    )
+    streams = list(
+        get_metadata_access_streams_via_group_ids([group.id for group in supergroups], realm)
+    )
+    old_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
+
     UserGroupMembership.objects.filter(
         user_group__in=user_groups, user_profile_id__in=user_profile_ids
     ).delete()
@@ -406,6 +419,17 @@ def bulk_remove_members_from_user_groups(
 
     for user_group in user_groups:
         do_send_user_group_members_update_event("remove_members", user_group, user_profile_ids)
+
+    new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
+    for stream in streams:
+        user_ids_losing_metadata_access = (
+            old_stream_metadata_user_ids[stream.id] - new_stream_metadata_user_ids[stream.id]
+        )
+        send_stream_deletion_event(
+            realm,
+            list(user_ids_losing_metadata_access),
+            [stream],
+        )
 
 
 def do_send_subgroups_update_event(
