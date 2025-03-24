@@ -2232,7 +2232,11 @@ class NormalActionsTest(BaseAction):
         check_user_group_update("events[0]", events[0], {"name"})
 
     def do_test_user_group_events_on_stream_metadata_access_change(
-        self, setting_name: str, stream: Stream, user_group: NamedUserGroup
+        self,
+        setting_name: str,
+        stream: Stream,
+        user_group: NamedUserGroup,
+        hamlet_group: NamedUserGroup,
     ) -> None:
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
@@ -2249,6 +2253,15 @@ class NormalActionsTest(BaseAction):
                 bulk_remove_members_from_user_groups([user_group], [hamlet.id], acting_user=None)
             check_user_group_remove_members("events[0]", events[0])
             check_stream_delete("events[1]", events[1])
+
+            with self.verify_action(num_events=3) as events:
+                add_subgroups_to_user_group(user_group, [hamlet_group], acting_user=None)
+            check_user_group_add_subgroups("events[0]", events[0])
+            check_stream_create("events[1]", events[1])
+            check_subscription_peer_add("events[2]", events[2])
+
+            # Remove subgroup for next test.
+            remove_subgroups_from_user_group(user_group, [hamlet_group], acting_user=None)
         else:
             with self.verify_action() as events:
                 bulk_add_members_to_user_groups([user_group], [hamlet.id], acting_user=None)
@@ -2257,6 +2270,13 @@ class NormalActionsTest(BaseAction):
             with self.verify_action() as events:
                 bulk_remove_members_from_user_groups([user_group], [hamlet.id], acting_user=None)
             check_user_group_remove_members("events[0]", events[0])
+
+            with self.verify_action() as events:
+                add_subgroups_to_user_group(user_group, [hamlet_group], acting_user=None)
+            check_user_group_add_subgroups("events[0]", events[0])
+
+            # Remove subgroup for next test.
+            remove_subgroups_from_user_group(user_group, [hamlet_group], acting_user=None)
 
         nobody_group = NamedUserGroup.objects.get(
             name=SystemGroups.NOBODY, realm=othello.realm, is_system_group=True
@@ -2273,10 +2293,17 @@ class NormalActionsTest(BaseAction):
             "Test group",
             acting_user=self.example_user("othello"),
         )
+        hamlet_group = check_add_user_group(
+            self.user_profile.realm,
+            "hamlet_group",
+            [self.example_user("hamlet")],
+            "Hamlet group",
+            acting_user=self.example_user("othello"),
+        )
         private_stream = self.make_stream("private_stream", invite_only=True)
         for setting_name in Stream.stream_permission_group_settings:
             self.do_test_user_group_events_on_stream_metadata_access_change(
-                setting_name, private_stream, test_group
+                setting_name, private_stream, test_group, hamlet_group
             )
 
     def test_default_stream_groups_events(self) -> None:
