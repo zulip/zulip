@@ -46,11 +46,13 @@ export function get_recipient_label(
     // actual message objects with fake objects containing just a
     // couple fields, both those constructed here and potentially
     // passed in.
-    if (message_lists.current === undefined) {
-        return undefined;
-    }
 
     if (recipient_information === undefined) {
+        // We check the current message list for information about the
+        // reply recipient for the closed compose box button label.
+        if (message_lists.current === undefined) {
+            return undefined;
+        }
         if (message_lists.current.visibly_empty()) {
             // For empty narrows where there's a clear reply target,
             // i.e. stream+topic or a single direct message conversation,
