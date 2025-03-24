@@ -7,6 +7,7 @@ from pydantic import Json
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
@@ -16,6 +17,7 @@ from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_http_headers_from_filename,
     get_setup_webhook_message,
+    get_user_by_external_account,
     validate_extract_webhook_http_header,
 )
 from zerver.lib.webhooks.git import (
@@ -279,12 +281,25 @@ def get_push_tags_body(helper: Helper) -> str:
 
 def get_push_commits_body(helper: Helper) -> str:
     payload = helper.payload
+
+    user = helper.request.user
+    realm = user.realm if isinstance(user, UserProfile) else None
+
     commits_data = []
     for commit in payload["commits"]:
-        if commit["author"].get("username"):
-            name = commit["author"]["username"].tame(check_string)
-        else:
-            name = commit["author"]["name"].tame(check_string)
+        author = commit.get("author", {})
+        github_username = author.get("username", "").tame(check_string) or None
+        author_name = "Anonymous"
+
+        if "name" in author:
+            author_name = author["name"].tame(check_string)
+
+        name = github_username or author_name
+
+        if github_username and realm is not None:
+            user_profile = get_user_by_external_account(realm, "GitHub", github_username)
+            if user_profile:
+                name = silent_mention_syntax_for_user(user_profile)
         commits_data.append(
             {
                 "name": name,
