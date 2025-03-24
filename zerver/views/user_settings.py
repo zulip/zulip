@@ -61,7 +61,6 @@ AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in thi
 
 def validate_email_change_request(user_profile: UserProfile, new_email: str) -> None:
     if not user_profile.is_active:
-        # TODO: Make this into a user-facing error, not JSON
         raise UserDeactivatedError
 
     if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
@@ -110,8 +109,16 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
         if user_profile.realm.deactivated:
             return redirect_to_deactivation_notice()
-
-        validate_email_change_request(user_profile, new_email)
+        try:
+            validate_email_change_request(user_profile, new_email)
+        except UserDeactivatedError:
+            context = {"realm_url": user_profile.realm.url}
+            return render(
+                request,
+                "zerver/portico_error_pages/user_deactivated.html",
+                context=context,
+                status=401,
+            )
         do_change_user_delivery_email(user_profile, new_email, acting_user=user_profile)
 
     user_profile = UserProfile.objects.get(id=email_change_object.user_profile_id)

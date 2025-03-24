@@ -155,6 +155,12 @@ class EmailChangeTestCase(ZulipTestCase):
         do_deactivate_user(user_profile, acting_user=None)
         response = self.client_get(activation_url)
         self.assertEqual(response.status_code, 401)
+        realm_url = user_profile.realm.url
+        user_deactivated_error_html = f"""
+            Your Zulip account on <a href="{realm_url}">{realm_url}</a>
+            has been deactivated, and you will no longer be able to log in.
+        """.strip()
+        self.assert_in_response(user_deactivated_error_html, response)
 
         do_reactivate_user(user_profile, acting_user=None)
         self.login_user(user_profile)
