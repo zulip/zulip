@@ -2244,13 +2244,19 @@ class NormalActionsTest(BaseAction):
             check_user_group_add_members("events[0]", events[0])
             check_stream_create("events[1]", events[1])
             check_subscription_peer_add("events[2]", events[2])
+
+            with self.verify_action(num_events=2) as events:
+                bulk_remove_members_from_user_groups([user_group], [hamlet.id], acting_user=None)
+            check_user_group_remove_members("events[0]", events[0])
+            check_stream_delete("events[1]", events[1])
         else:
             with self.verify_action() as events:
                 bulk_add_members_to_user_groups([user_group], [hamlet.id], acting_user=None)
             check_user_group_add_members("events[0]", events[0])
 
-        # Remove group member for the next test
-        bulk_remove_members_from_user_groups([user_group], [hamlet.id], acting_user=None)
+            with self.verify_action() as events:
+                bulk_remove_members_from_user_groups([user_group], [hamlet.id], acting_user=None)
+            check_user_group_remove_members("events[0]", events[0])
 
         nobody_group = NamedUserGroup.objects.get(
             name=SystemGroups.NOBODY, realm=othello.realm, is_system_group=True
