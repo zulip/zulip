@@ -571,6 +571,7 @@ class UserGroupTestCase(ZulipTestCase):
             bulk_add_members_to_user_groups([test_group], [], acting_user=None)
             bulk_remove_members_from_user_groups([], [hamlet.id], acting_user=None)
             bulk_remove_members_from_user_groups([test_group], [], acting_user=None)
+            add_subgroups_to_user_group(test_group, [], acting_user=None)
 
 
 class UserGroupAPITestCase(UserGroupTestCase):
