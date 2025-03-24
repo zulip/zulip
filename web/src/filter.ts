@@ -1487,7 +1487,7 @@ export class Filter {
                 // formatted in the message view header. They are used in narrow.js to
                 // update the browser title.
                 case "is-alerted":
-                    return $t({defaultMessage: "Alerted Messages"});
+                    return $t({defaultMessage: "Alerted messages"});
                 case "is-unread":
                     return $t({defaultMessage: "Unread messages"});
             }

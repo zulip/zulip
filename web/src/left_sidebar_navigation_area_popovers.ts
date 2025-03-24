@@ -158,7 +158,7 @@ export function initialize(): void {
         },
     });
 
-    // Alert Words Settings popover
+    // Alert words settings popover
     popover_menus.register_popover_menu(".alert-words-sidebar-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
         onMount(instance) {
