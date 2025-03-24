@@ -234,6 +234,7 @@ Unattended-Upgrade::Package-Blacklist {
     "memcached$";
     "nginx-full$";
     "postgresql-\d+$";
+    "postgresql-\d+-pgdg-pgroonga$";
     "rabbitmq-server$";
     "redis-server$";
     "supervisor$";
