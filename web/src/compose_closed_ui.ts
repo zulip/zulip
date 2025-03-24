@@ -171,7 +171,7 @@ export function set_standard_text_for_reply_button(): void {
     set_reply_button_label($t({defaultMessage: "Compose message"}));
 }
 
-export function update_reply_recipient_label(message?: ComposeClosedMessage): void {
+export function update_recipient_text_for_reply_button(message?: ComposeClosedMessage): void {
     const recipient_label = get_recipient_label(message);
     if (recipient_label !== undefined) {
         const empty_string_topic_display_name = util.get_final_topic_display_name("");
@@ -194,7 +194,7 @@ export function initialize(): void {
             // message_selected events can occur with Recent Conversations
             // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
-            update_reply_recipient_label();
+            update_recipient_text_for_reply_button();
 
             // Disable compose reply button if the selected message is a stream
             // message and the user is not allowed to post in the stream the message

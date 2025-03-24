@@ -150,7 +150,7 @@ run_test("test_custom_message_input", () => {
         stream_id: 10,
     };
     stream_data.add_sub(stream);
-    compose_closed_ui.update_reply_recipient_label({
+    compose_closed_ui.update_recipient_text_for_reply_button({
         stream_id: stream.stream_id,
         topic: "topic test",
     });
@@ -159,7 +159,7 @@ run_test("test_custom_message_input", () => {
 
 run_test("empty_narrow", () => {
     message_lists.current.visibly_empty = () => true;
-    compose_closed_ui.update_reply_recipient_label();
+    compose_closed_ui.update_recipient_text_for_reply_button();
     const label = $("#left_bar_compose_reply_button_big").text();
     assert.equal(label, "translated: Compose message");
 });
