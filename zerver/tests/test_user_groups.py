@@ -569,6 +569,8 @@ class UserGroupTestCase(ZulipTestCase):
         with self.capture_send_event_calls(expected_num_events=0):
             bulk_add_members_to_user_groups([], [hamlet.id], acting_user=None)
             bulk_add_members_to_user_groups([test_group], [], acting_user=None)
+            bulk_remove_members_from_user_groups([], [hamlet.id], acting_user=None)
+            bulk_remove_members_from_user_groups([test_group], [], acting_user=None)
 
 
 class UserGroupAPITestCase(UserGroupTestCase):
