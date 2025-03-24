@@ -125,8 +125,23 @@ h3.user_group_setting_subsection_title {
     margin: 4px 15px 4px 0;
 }
 
-h4.stream_setting_subsection_title {
-    margin-bottom: 5px;
+#stream_settings,
+#settings_page,
+#user_group_settings {
+    .subsection-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 24px;
+        margin-bottom: 4px;
+        gap: 5px 10px;
+    }
+
+    .stream_change_property_status,
+    .stream_setting_mute_help_text,
+    .stream_setting_subsection_title {
+        margin: 0;
+    }
 }
 
 h4.stream_setting_subsection_title,
@@ -1200,12 +1215,6 @@ h4.user_group_setting_subsection_title {
 
         &.show {
             display: block;
-        }
-    }
-
-    #personal-stream-settings {
-        .stream_change_property_status {
-            margin: 9px auto 3px 3px;
         }
     }
 

@@ -870,15 +870,6 @@ input.settings_text_input {
     }
 }
 
-#stream_settings,
-#settings_page,
-#user_group_settings {
-    .subsection-header {
-        display: flex;
-        flex-wrap: wrap;
-    }
-}
-
 #stream_settings .save-button-controls,
 #settings_page .save-button-controls,
 #user_group_settings .save-button-controls {
