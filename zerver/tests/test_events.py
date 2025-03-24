@@ -2260,8 +2260,10 @@ class NormalActionsTest(BaseAction):
             check_stream_create("events[1]", events[1])
             check_subscription_peer_add("events[2]", events[2])
 
-            # Remove subgroup for next test.
-            remove_subgroups_from_user_group(user_group, [hamlet_group], acting_user=None)
+            with self.verify_action(num_events=2) as events:
+                remove_subgroups_from_user_group(user_group, [hamlet_group], acting_user=None)
+            check_user_group_remove_subgroups("events[0]", events[0])
+            check_stream_delete("events[1]", events[1])
         else:
             with self.verify_action() as events:
                 bulk_add_members_to_user_groups([user_group], [hamlet.id], acting_user=None)
@@ -2275,8 +2277,9 @@ class NormalActionsTest(BaseAction):
                 add_subgroups_to_user_group(user_group, [hamlet_group], acting_user=None)
             check_user_group_add_subgroups("events[0]", events[0])
 
-            # Remove subgroup for next test.
-            remove_subgroups_from_user_group(user_group, [hamlet_group], acting_user=None)
+            with self.verify_action() as events:
+                remove_subgroups_from_user_group(user_group, [hamlet_group], acting_user=None)
+            check_user_group_remove_subgroups("events[0]", events[0])
 
         nobody_group = NamedUserGroup.objects.get(
             name=SystemGroups.NOBODY, realm=othello.realm, is_system_group=True
