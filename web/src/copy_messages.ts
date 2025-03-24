@@ -129,42 +129,84 @@ function get_nearest_html_element(node: Node | null): Element | null {
     within a math block, we adjust the selection so that it
     selects the katex span which is parenting that expression.
     This converts the selection into an inline expression as
-    per the turndown rules below.
+    per the turndown rules in compose_paste.
 
-    We want to avoid this behavior if the selection
-    spreads across multiple katex displays i.e. the
-    focus and anchor are not part of the same katex span.
+    We expand the selection range only in the following cases:
+    1. The anchor and focus are part of the same expression.
+    2. Either the anchor, focus, or both are within a math block.
+
+    In the first case, we simply select the common parent `.katex` span.
+    In the second case, we adjust the start of the range to include the annotation by:
+    - Determining whether the focus or anchor appears first in the DOM.
+    - Setting the range start to the closest `.katex` span relative to the first node in the selection.
+
+    We only modify the start of the selection range for the second case because the
+    end of the range (i.e., the second expression selected) always contains the
+    annotation element. This ensures that pasting functions as expected.
+
+    The primary objective of this expansion is to include the `<annotation>` tag within
+    the selection range so that it can be properly utilized by `paste_handler_converter`
+    as `paste_html`.
 */
 function improve_katex_selection_range(selection: Selection): void {
     const anchor_element = get_nearest_html_element(selection.anchorNode);
     const focus_element = get_nearest_html_element(selection.focusNode);
-    // If the anchor and focus end up in different katex spans, this selection
-    // isn't meant to be an inline expression, so we perform an early return.
+
     if (
         focus_element &&
         anchor_element &&
-        focus_element?.closest(".katex") !== anchor_element?.closest(".katex")
+        focus_element?.closest(".katex") !== anchor_element?.closest(".katex") &&
+        anchor_element?.closest(".katex-display") === null &&
+        focus_element?.closest(".katex-display") === null
     ) {
         return;
     }
 
-    if (anchor_element) {
-        const parent = anchor_element.closest(".katex");
-        const is_math_block = parent !== null && parent !== selection.anchorNode;
-        if (is_math_block) {
-            const range = document.createRange();
-            range.selectNodeContents(parent);
-            selection.removeAllRanges();
-            selection.addRange(range);
+    const is_single_expression =
+        focus_element?.closest(".katex") === anchor_element?.closest(".katex");
+    if (is_single_expression) {
+        if (anchor_element) {
+            const parent = anchor_element.closest(".katex");
+            const is_expression = parent !== null && parent !== selection.anchorNode;
+            if (is_expression) {
+                const range = document.createRange();
+                range.selectNodeContents(parent);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        } else if (focus_element) {
+            const parent = focus_element.closest(".katex");
+            const is_expression = parent !== null && parent !== selection.focusNode;
+            if (is_expression) {
+                const range = document.createRange();
+                range.selectNodeContents(parent);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
         }
-    } else if (focus_element) {
-        const parent = focus_element.closest(".katex");
-        const is_math_block = parent !== null && parent !== selection.focusNode;
-        if (is_math_block) {
-            const range = document.createRange();
-            range.selectNodeContents(parent);
-            selection.removeAllRanges();
-            selection.addRange(range);
+    } else {
+        const range = selection.getRangeAt(0);
+        assert(anchor_element !== null && focus_element !== null);
+        if (
+            anchor_element.compareDocumentPosition(focus_element) ===
+            Node.DOCUMENT_POSITION_FOLLOWING
+        ) {
+            // anchor is before focus
+            const parent = anchor_element.closest(".katex-display");
+            const is_within_math_block = parent !== null && parent !== selection.anchorNode;
+            if (is_within_math_block) {
+                range.setStart(anchor_element.closest(".katex")!, 0);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        } else {
+            const parent = focus_element.closest(".katex-display");
+            const is_within_math_block = parent !== null && parent !== selection.focusNode;
+            if (is_within_math_block) {
+                range.setStart(focus_element.closest(".katex")!, 0);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
         }
     }
 }
@@ -187,7 +229,6 @@ export function copy_handler(ev: ClipboardEvent): boolean {
 
     const selection = window.getSelection();
     assert(selection !== null);
-    improve_katex_selection_range(selection);
 
     const analysis = analyze_selection(selection);
     const start_id = analysis.start_id;
@@ -215,6 +256,15 @@ export function copy_handler(ev: ClipboardEvent): boolean {
     if (!skip_same_td_check && start_id === end_id) {
         // Check whether the selection both starts and ends in the
         // same message and let the browser handle the copying.
+
+        // We only want to mutate the selection range for a *single*
+        // message that contains partially selected math expressions.
+        // Firefox uses multiple ranges when selecting multiple messages.
+        // https://github.com/zulip/zulip/pull/34137#discussion_r2017530929
+        // Hence, we check the rangeCount just to be extra certain.
+        if (selection.rangeCount === 1) {
+            improve_katex_selection_range(selection);
+        }
         return false;
     }
 
