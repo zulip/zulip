@@ -112,6 +112,7 @@ export let render_typeahead_item = (args: {
     topic_object?: TopicSuggestion;
     is_stream_topic?: boolean;
     is_empty_string_topic?: boolean;
+    is_default_language?: boolean;
 }): string => {
     const has_image = args.img_src !== undefined;
     const has_status = args.status_emoji_info !== undefined;
@@ -433,12 +434,43 @@ function retain_unique_language_aliases(matches: string[]): string[] {
 
 export function sort_languages(matches: LanguageSuggestion[], query: string): LanguageSuggestion[] {
     const languages = matches.map((object) => object.language);
+    const default_language = realm.realm_default_code_block_language;
+    let priority_languages;
+    if (default_language) {
+        priority_languages = [default_language, "text", "quote", "spoiler", "math"];
+    } else {
+        priority_languages = ["text", "quote", "spoiler", "math"];
+    }
+    const priority_results = typeahead.triage(
+        query,
+        priority_languages,
+        (x) => x,
+        compare_language,
+    );
     const results = typeahead.triage(query, languages, (x) => x, compare_language);
-    const unique_languages = retain_unique_language_aliases([...results.matches, ...results.rest]);
-    return unique_languages.map((language) => ({
-        language,
-        type: "syntax",
-    }));
+    let unique_languages;
+    if (priority_results.matches[0]) {
+        unique_languages = retain_unique_language_aliases([
+            priority_results.matches[0],
+            ...results.matches,
+            ...results.rest,
+        ]);
+    } else {
+        unique_languages = retain_unique_language_aliases([...results.matches, ...results.rest]);
+    }
+    return unique_languages.map((language) => {
+        if (language !== default_language) {
+            return {
+                language,
+                type: "syntax",
+            };
+        }
+        return {
+            language,
+            is_default_language: true,
+            type: "syntax",
+        };
+    });
 }
 
 const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | UserPillData>(
