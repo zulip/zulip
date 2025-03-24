@@ -357,7 +357,7 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
             topic: $topic_row.find(".recent_topic_name a").text(),
         };
     }
-    compose_closed_ui.update_reply_recipient_label(message);
+    compose_closed_ui.update_recipient_text_for_reply_button(message);
     return true;
 }
 
