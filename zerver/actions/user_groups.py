@@ -448,6 +448,16 @@ def add_subgroups_to_user_group(
     *,
     acting_user: UserProfile | None,
 ) -> None:
+    if len(subgroups) == 0:
+        return
+
+    realm = user_group.realm
+    supergroups = get_recursive_supergroups_union_for_groups([user_group.id])
+    streams = list(
+        get_metadata_access_streams_via_group_ids([group.id for group in supergroups], realm)
+    )
+    old_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
+
     group_memberships = [
         GroupGroupMembership(supergroup=user_group, subgroup=subgroup) for subgroup in subgroups
     ]
@@ -478,7 +488,35 @@ def add_subgroups_to_user_group(
     ]
     RealmAuditLog.objects.bulk_create(audit_log_entries)
 
+    subscriber_ids_for_streams = get_user_ids_for_streams({stream.id for stream in streams})
+    new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
+    recent_traffic = get_streams_traffic({stream.id for stream in streams}, realm)
+    anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(streams)
+
     do_send_subgroups_update_event("add_subgroups", user_group, subgroup_ids)
+
+    for stream in streams:
+        user_ids_gaining_metadata_access = (
+            new_stream_metadata_user_ids[stream.id] - old_stream_metadata_user_ids[stream.id]
+        )
+        send_stream_creation_event(
+            realm,
+            stream,
+            list(user_ids_gaining_metadata_access),
+            recent_traffic,
+            anonymous_group_membership,
+        )
+        peer_add_event = dict(
+            type="subscription",
+            op="peer_add",
+            stream_ids=[stream.id],
+            user_ids=sorted(subscriber_ids_for_streams[stream.id]),
+        )
+        send_event_on_commit(
+            realm,
+            peer_add_event,
+            user_ids_gaining_metadata_access,
+        )
 
 
 @transaction.atomic(savepoint=False)
