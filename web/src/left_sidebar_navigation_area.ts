@@ -116,12 +116,20 @@ export function handle_narrow_activated(filter: Filter): void {
     ops = filter.operands("is");
     if (ops[0] !== undefined) {
         filter_name = ops[0];
-        if (filter_name === "starred") {
-            select_top_left_corner_item(".top_left_starred_messages");
-            return;
-        } else if (filter_name === "mentioned") {
-            select_top_left_corner_item(".top_left_mentions");
-            return;
+        switch (filter_name) {
+            case "starred": {
+                select_top_left_corner_item(".top_left_starred_messages");
+                return;
+            }
+            case "mentioned": {
+                select_top_left_corner_item(".top_left_mentions");
+                return;
+            }
+            case "alerted": {
+                select_top_left_corner_item(".top_left_alerts");
+                return;
+            }
+            // No default
         }
     }
     const term_types = filter.sorted_term_types();
