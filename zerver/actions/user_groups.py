@@ -526,6 +526,16 @@ def remove_subgroups_from_user_group(
     *,
     acting_user: UserProfile | None,
 ) -> None:
+    if len(subgroups) == 0:
+        return
+
+    realm = user_group.realm
+    supergroups = get_recursive_supergroups_union_for_groups([user_group.id])
+    streams = list(
+        get_metadata_access_streams_via_group_ids([group.id for group in supergroups], realm)
+    )
+    old_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
+
     GroupGroupMembership.objects.filter(supergroup=user_group, subgroup__in=subgroups).delete()
 
     subgroup_ids = [subgroup.id for subgroup in subgroups]
@@ -554,6 +564,17 @@ def remove_subgroups_from_user_group(
     RealmAuditLog.objects.bulk_create(audit_log_entries)
 
     do_send_subgroups_update_event("remove_subgroups", user_group, subgroup_ids)
+
+    new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
+    for stream in streams:
+        user_ids_losing_metadata_access = (
+            old_stream_metadata_user_ids[stream.id] - new_stream_metadata_user_ids[stream.id]
+        )
+        send_stream_deletion_event(
+            realm,
+            list(user_ids_losing_metadata_access),
+            [stream],
+        )
 
 
 @transaction.atomic(savepoint=False)
