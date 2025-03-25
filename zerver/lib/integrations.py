@@ -510,7 +510,8 @@ WEBHOOK_INTEGRATIONS: list[WebhookIntegration] = [
     ),
     WebhookIntegration("insping", ["monitoring"]),
     WebhookIntegration("intercom", ["customer-support"]),
-    WebhookIntegration("jira", ["project-management"]),
+    # Avoid collision with jira-plugin's doc "jira/doc.md".
+    WebhookIntegration("jira", ["project-management"], doc="jira/jira-doc.md"),
     WebhookIntegration("jotform", ["misc"]),
     WebhookIntegration("json", ["misc"], display_name="JSON formatter"),
     WebhookIntegration("librato", ["monitoring"]),
