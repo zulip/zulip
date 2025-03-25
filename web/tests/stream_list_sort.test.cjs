@@ -201,18 +201,6 @@ test("basics", () => {
     assert.deepEqual(sorted.dormant_streams, []);
 });
 
-test("has_recent_activity_but_muted", () => {
-    const sub = {
-        name: "cats",
-        subscribed: true,
-        stream_id: 111,
-        is_muted: true,
-        is_recently_active: true,
-    };
-    stream_data.add_sub(sub);
-    assert.ok(stream_list_sort.has_recent_activity_but_muted(sub));
-});
-
 test("filter inactives", ({override}) => {
     override(
         user_settings,
