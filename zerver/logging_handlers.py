@@ -1,8 +1,10 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 import os
 import subprocess
+import functools
 
 
+@functools.lru_cache(maxsize=1)  # Cache result to avoid redundant subprocess calls
 def try_git_describe() -> str | None:
     try:  # nocoverage
         return subprocess.check_output(
@@ -13,3 +15,4 @@ def try_git_describe() -> str | None:
         ).strip()
     except (FileNotFoundError, subprocess.CalledProcessError):  # nocoverage
         return None
+# made changes
