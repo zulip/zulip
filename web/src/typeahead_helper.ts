@@ -23,6 +23,7 @@ import * as recent_senders from "./recent_senders.ts";
 import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_list_sort from "./stream_list_sort.ts";
 import type {StreamPill, StreamPillData} from "./stream_pill.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import type {UserGroupPill, UserGroupPillData} from "./user_group_pill.ts";
@@ -847,7 +848,7 @@ function activity_score(sub: StreamSubscription): number {
     if (sub.pin_to_top) {
         stream_score += 2;
     }
-    if (sub.is_recently_active) {
+    if (stream_list_sort.has_recent_activity(sub)) {
         stream_score += 1;
     }
     return stream_score;
