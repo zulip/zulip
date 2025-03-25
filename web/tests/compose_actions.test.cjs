@@ -163,10 +163,7 @@ function test(label, f) {
 
 function stub_message_row($textarea) {
     const $stub = $.set_results("message_row_stub", []);
-    $textarea.closest = (selector) => {
-        assert.equal(selector, ".message_row");
-        return $stub;
-    };
+    $textarea.set_closest_results(".message_row", $stub);
 }
 
 test("initial_state", () => {

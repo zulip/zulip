@@ -113,22 +113,13 @@ const $array = (array) => {
 function set_message_for_message_content($content, value) {
     // no message row found
     if (value === undefined) {
-        $content.closest = (closest_opts) => {
-            assert.equal(closest_opts, ".message_row");
-            return [];
-        };
+        $content.set_closest_results(".message_row", []);
         return;
     }
     // message row found
     const $message_row = $.create(".message-row");
-    $content.closest = (closest_opts) => {
-        assert.equal(closest_opts, ".message_row");
-        return $message_row;
-    };
-    $message_row.closest = (closest_opts) => {
-        assert.equal(closest_opts, ".overlay-message-row");
-        return [];
-    };
+    $content.set_closest_results(".message_row", $message_row);
+    $message_row.set_closest_results(".overlay-message-row", []);
     const message_id = 100;
     rows.id = (message_row) => {
         assert.equal(message_row, $message_row);

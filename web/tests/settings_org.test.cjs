@@ -79,7 +79,7 @@ function createSaveButtons(subsection) {
         ".subsection-failed-status p",
         $("<failed-status-stub>"),
     );
-    $stub_save_button.closest = () => $stub_save_button_header;
+    $stub_save_button.set_closest_results(".settings-subsection-parent", $stub_save_button_header);
     $save_button_controls.set_parent($stub_save_button_header);
     $save_button_controls.set_find_results(".save-button", $stub_save_button);
     $stub_save_button.set_find_results(".action-button-label", $stub_save_button_text);
@@ -97,7 +97,10 @@ function createSaveButtons(subsection) {
         props.hidden = true;
     };
 
-    $save_button_controls.closest = () => $stub_save_button_header;
+    $save_button_controls.set_closest_results(
+        ".settings-subsection-parent",
+        $stub_save_button_header,
+    );
     $stub_save_button_header.set_find_results(".time-limit-setting", []);
     $stub_save_button_header.set_find_results(".pill-container.prop-element", []);
     $stub_save_button_header.set_find_results(".subsection-changes-save button", $stub_save_button);
@@ -183,7 +186,7 @@ function test_change_save_button_state() {
         props,
     } = createSaveButtons("msg-editing");
     $save_button_header.attr("id", "org-msg-editing");
-    $("#org-msg-editing").closest = () => ({});
+    $("#org-msg-editing").set_closest_results(".channel-permissions", {});
 
     {
         settings_components.change_save_button_state($save_button_controls, "unsaved");
@@ -273,7 +276,10 @@ function test_sync_realm_settings({override}) {
         const $property_dropdown_elem = $("#id_realm_message_content_edit_limit_seconds");
         $property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
         $property_dropdown_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
-        $property_dropdown_elem.closest = () => $subsection_stub;
+        $property_dropdown_elem.set_closest_results(
+            ".settings-subsection-parent",
+            $subsection_stub,
+        );
 
         override(realm, "realm_message_content_edit_limit_seconds", 120);
 
@@ -296,7 +302,7 @@ function test_sync_realm_settings({override}) {
         /* Test organization joining restrictions settings sync */
         const $property_elem = $("#id_realm_org_join_restrictions");
         $property_elem.attr("id", "id_realm_org_join_restrictions");
-        $property_elem.closest = () => $subsection_stub;
+        $property_elem.set_closest_results(".settings-subsection-parent", $subsection_stub);
 
         override(realm, "realm_emails_restricted_to_domains", true);
         override(realm, "realm_disallow_disposable_email_addresses", false);
@@ -401,10 +407,7 @@ function test_discard_changes_button({override}, discard_changes) {
     ]);
 
     const {$discard_button, $save_button_controls, props} = createSaveButtons("msg-editing");
-    $discard_button.closest = (selector) => {
-        assert.equal(selector, ".settings-subsection-parent");
-        return $discard_button_parent;
-    };
+    $discard_button.set_closest_results(".settings-subsection-parent", $discard_button_parent);
 
     $discard_button_parent.set_find_results(".save-button-controls", $save_button_controls);
 

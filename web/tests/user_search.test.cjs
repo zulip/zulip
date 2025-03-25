@@ -195,10 +195,10 @@ test("blur search right", ({override}) => {
     override(sidebar_ui, "show_userlist_sidebar", noop);
     override(popovers, "hide_all", noop);
 
-    $("input.user-list-filter").closest = (selector) => {
-        assert.equal(selector, ".app-main [class^='column-']");
-        return $.create("right-sidebar").addClass("column-right");
-    };
+    $("input.user-list-filter").set_closest_results(
+        ".app-main [class^='column-']",
+        $.create("right-sidebar").addClass("column-right"),
+    );
 
     $("input.user-list-filter").trigger("blur");
     assert.equal($("input.user-list-filter").is_focused(), false);
@@ -211,10 +211,10 @@ test("blur search left", ({override}) => {
     override(sidebar_ui, "show_streamlist_sidebar", noop);
     override(popovers, "hide_all", noop);
 
-    $("input.user-list-filter").closest = (selector) => {
-        assert.equal(selector, ".app-main [class^='column-']");
-        return $.create("right-sidebar").addClass("column-left");
-    };
+    $("input.user-list-filter").set_closest_results(
+        ".app-main [class^='column-']",
+        $.create("right-sidebar").addClass("column-left"),
+    );
 
     $("input.user-list-filter").trigger("blur");
     assert.equal($("input.user-list-filter").is_focused(), false);

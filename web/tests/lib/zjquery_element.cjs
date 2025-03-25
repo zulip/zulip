@@ -63,6 +63,7 @@ class FakeElementState {
     event_handlers = new Map();
     delegated_event_handlers = new Map();
     is_focused = false;
+    jquery_closest_results = new Map();
     jquery_data = new Map();
     jquery_find_results = new Map();
     $jquery_parent = undefined;
@@ -196,6 +197,16 @@ exports.FakeJQuery = function (selector, opts) {
                 element.setAttribute(name, value);
             }
             return this;
+        },
+        closest(closest_selector) {
+            assert.equal(this.length, 1);
+            const state = fake_element_state.get(this[0]);
+            if (!state.jquery_closest_results.has(closest_selector)) {
+                throw new Error(
+                    `You need to call $(${JSON.stringify(state.selector)}).set_closest_results(${JSON.stringify(closest_selector)}, ...)`,
+                );
+            }
+            return state.jquery_closest_results.get(closest_selector);
         },
         data(key, ...args) {
             if (args.length === 0) {
@@ -478,6 +489,17 @@ exports.FakeJQuery = function (selector, opts) {
                 }
             }
             return this;
+        },
+        set_closest_results(closest_selector, $jquery_object) {
+            assert.equal(this.length, 1);
+            assert.notEqual(
+                $jquery_object,
+                undefined,
+                "Please make the 'find result' be something like $.create('unused')",
+            );
+            fake_element_state
+                .get(this[0])
+                .jquery_closest_results.set(closest_selector, $jquery_object);
         },
         set_find_results(find_selector, $jquery_object) {
             assert.equal(this.length, 1);

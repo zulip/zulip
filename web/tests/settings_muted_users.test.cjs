@@ -72,10 +72,7 @@ run_test("settings", ({override}) => {
 
     const $unmute_button = $.create("settings-unmute-user");
     const $fake_row = $('tr[data-user-id="5"]');
-    $unmute_button.closest = (opts) => {
-        assert.equal(opts, "tr");
-        return $fake_row;
-    };
+    $unmute_button.set_closest_results("tr", $fake_row);
 
     $fake_row.attr("data-user-id", "5");
 
