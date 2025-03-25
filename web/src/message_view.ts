@@ -780,7 +780,10 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
             select_opts,
             then_select_offset,
         );
-        if (id_info.first_unread_msg_id_pending_server_verification) {
+        if (
+            id_info.first_unread_msg_id_pending_server_verification &&
+            filter.is_conversation_view()
+        ) {
             const params = message_fetch.get_parameters_for_message_fetch_api({
                 anchor: "first_unread",
                 num_before: 0,
