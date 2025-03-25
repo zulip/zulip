@@ -2569,6 +2569,18 @@ class UserSignUpTest(ZulipTestCase):
         # User should now be logged in.
         self.assert_logged_in_user_id(user_profile.id)
 
+    def test_signup_very_long_password(self) -> None:
+        """
+        Check if signing up without a password works properly when
+        password_auth_enabled is False.
+        """
+        email = self.nonreg_email("newuser")
+        user_profile = self.verify_signup(email=email, password="a" * 80)
+
+        assert isinstance(user_profile, UserProfile)
+        # User should now be logged in.
+        self.assert_logged_in_user_id(user_profile.id)
+
     def test_signup_without_full_name(self) -> None:
         """
         Check if signing up without a full name redirects to a registration
