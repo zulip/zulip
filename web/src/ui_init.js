@@ -542,6 +542,7 @@ export function initialize_everything(state_data) {
     muted_users.initialize(state_data.muted_users);
     stream_settings_ui.initialize();
     left_sidebar_navigation_area.initialize();
+    stream_list_sort.initialize();
     stream_list.initialize({
         on_stream_click(stream_id, trigger) {
             const sub = sub_store.get(stream_id);
@@ -558,7 +559,6 @@ export function initialize_everything(state_data) {
             );
         },
     });
-    stream_list_sort.initialize();
     condense.initialize();
     spoilers.initialize();
     lightbox.initialize();
