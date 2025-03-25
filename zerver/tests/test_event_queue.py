@@ -25,7 +25,6 @@ from zerver.tornado.event_queue import (
     maybe_enqueue_notifications,
     missedmessage_hook,
     persistent_queue_filename,
-    process_notification,
 )
 from zerver.tornado.views import cleanup_event_queue, get_events
 
@@ -1505,67 +1504,3 @@ class EventQueueTest(ZulipTestCase):
 
         queue.prune(1)
         self.verify_to_dict_end_to_end(client)
-
-
-class SchemaMigrationsTests(ZulipTestCase):
-    def test_reformat_legacy_send_message_event(self) -> None:
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-        othello = self.example_user("othello")
-        old_format_event = dict(
-            type="message",
-            message=1,
-            message_dict={},
-            presence_idle_user_ids=[hamlet.id, othello.id],
-        )
-        old_format_users = [
-            dict(
-                id=hamlet.id,
-                flags=["mentioned"],
-                mentioned=True,
-                online_push_enabled=True,
-                stream_push_notify=False,
-                stream_email_notify=True,
-                wildcard_mention_notify=False,
-                sender_is_muted=False,
-            ),
-            dict(
-                id=cordelia.id,
-                flags=["stream_wildcard_mentioned"],
-                mentioned=False,
-                online_push_enabled=True,
-                stream_push_notify=True,
-                stream_email_notify=False,
-                wildcard_mention_notify=True,
-                sender_is_muted=False,
-            ),
-        ]
-        notice = dict(event=old_format_event, users=old_format_users)
-
-        expected_current_format_users = [
-            dict(
-                id=hamlet.id,
-                flags=["mentioned"],
-            ),
-            dict(
-                id=cordelia.id,
-                flags=["stream_wildcard_mentioned"],
-            ),
-        ]
-
-        expected_current_format_event = dict(
-            type="message",
-            message=1,
-            message_dict={},
-            presence_idle_user_ids=[hamlet.id, othello.id],
-            online_push_user_ids=[hamlet.id, cordelia.id],
-            stream_push_user_ids=[cordelia.id],
-            stream_email_user_ids=[hamlet.id],
-            stream_wildcard_mention_user_ids=[cordelia.id],
-            muted_sender_user_ids=[],
-        )
-        with mock.patch("zerver.tornado.event_queue.process_message_event") as m:
-            process_notification(notice)
-            m.assert_called_once()
-            self.assertDictEqual(m.call_args[0][0], expected_current_format_event)
-            self.assertEqual(m.call_args[0][1], expected_current_format_users)
