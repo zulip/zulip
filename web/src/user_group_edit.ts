@@ -1827,7 +1827,7 @@ export function setup_page(callback: () => void): void {
         user_group_create.set_up_handlers();
 
         // show the "User group settings" header by default.
-        $(".display-type #user_group_settings_title").show();
+        $(".display-type #user_group_settings_title").addClass("showing-info-title");
 
         if (callback) {
             callback();
