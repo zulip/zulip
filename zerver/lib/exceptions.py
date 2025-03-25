@@ -59,6 +59,7 @@ class ErrorCode(Enum):
     CANNOT_ADMINISTER_CHANNEL = auto()
     REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED = auto()
     HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR = auto()
+    CANNOT_DEACTIVATE_LAST_USER_WITH_PERMISSION = auto()
 
 
 class JsonableError(Exception):
@@ -723,6 +724,22 @@ class CannotDeactivateGroupInUseError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Cannot deactivate user group in use.")
+
+
+class CannotDeactivateLastUserWithPermissionError(JsonableError):
+    code = ErrorCode.CANNOT_DEACTIVATE_LAST_USER_WITH_PERMISSION
+    data_fields = ["objections"]
+
+    def __init__(
+        self,
+        objections: list[dict[str, Any]],
+    ) -> None:
+        self.objections = objections
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Cannot deactivate last user with permission.")
 
 
 class CannotAdministerChannelError(JsonableError):
