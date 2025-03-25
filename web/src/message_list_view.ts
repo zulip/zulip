@@ -742,6 +742,10 @@ export class MessageListView {
 
         let prev_message_container: MessageContainer | undefined;
 
+        let topic_name: string | undefined;
+        if (messages[0]?.type === "stream" && messages[0].rendered_subject !== undefined) {
+            topic_name = messages[0].rendered_subject;
+        }
         const add_message_container_to_group = (message_container: MessageContainer): void => {
             current_group_message_containers.push(message_container);
         };
@@ -763,9 +767,9 @@ export class MessageListView {
                 current_group.message_containers = current_group_message_containers;
                 new_message_groups.push(current_group);
             }
-            if (current_group?.is_stream && current_group_message_containers[0]?.msg.type === "stream" && current_group_message_containers[0].msg.rendered_subject !== undefined) {
-                current_group.topic_display_name = current_group_message_containers[0].msg.rendered_subject;
-                current_group.match_topic = current_group_message_containers[0].msg.rendered_subject;
+            if (current_group?.is_stream && topic_name !== undefined) {
+                current_group.topic_display_name = topic_name;
+                current_group.match_topic = topic_name;
             }
             current_group_message_containers = [];
         };

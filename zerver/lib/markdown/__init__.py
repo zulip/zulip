@@ -2811,7 +2811,9 @@ def do_convert(
         # infinite-loop).
         rendering_result.rendered_content = unsafe_timeout(5, lambda: _md_engine.convert(content))
         if message is not None:
-            rendering_result.rendered_topic = unsafe_timeout(5, lambda: _md_engine.convert(message.topic_name()))
+            rendering_result.rendered_topic = unsafe_timeout(
+                5, lambda: _md_engine.convert(message.topic_name())
+            )
 
         # Post-process the result with the rendered image previews:
         if user_upload_previews is not None:
