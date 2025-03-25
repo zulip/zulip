@@ -8815,7 +8815,7 @@ class AccessStreamTest(ZulipTestCase):
             bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
         )
 
-        test_bot = self.create_test_bot("foo", desdemona)        
+        test_bot = self.create_test_bot("foo", desdemona)
         expected_public_user_ids.add(test_bot.id)
         private_stream = self.make_stream("private_stream", realm, invite_only=True)
         # Nobody is subscribed yet for the private stream, only admin
@@ -8879,9 +8879,11 @@ class AccessStreamTest(ZulipTestCase):
                 UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
                 acting_user=cordelia,
             )
-            self.assertCountEqual(
-                can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids
-            )
+            with self.assert_database_query_count(4):
+                private_stream_metadata_user_ids = can_access_stream_metadata_user_ids(
+                    private_stream
+                )
+            self.assertCountEqual(private_stream_metadata_user_ids, expected_private_user_ids)
             with self.assert_database_query_count(6):
                 bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
                     [public_stream, private_stream]
@@ -8901,9 +8903,11 @@ class AccessStreamTest(ZulipTestCase):
                 acting_user=cordelia,
             )
             expected_private_user_ids.add(cordelia.id)
-            self.assertCountEqual(
-                can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids
-            )
+            with self.assert_database_query_count(4):
+                private_stream_metadata_user_ids = can_access_stream_metadata_user_ids(
+                    private_stream
+                )
+            self.assertCountEqual(private_stream_metadata_user_ids, expected_private_user_ids)
             with self.assert_database_query_count(6):
                 bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
                     [public_stream, private_stream]
