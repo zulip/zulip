@@ -35,14 +35,14 @@ REMAPPED_EMOJIS = {
 # Emoticons and which emoji they should become. Duplicate emoji are allowed.
 # Changes here should be mimicked in `help/configure-emoticon-translations.md`.
 EMOTICON_CONVERSIONS = {
-    ":)": ":smile:",
-    "(:": ":smile:",
+    ":)": ":slight_smile:",
+    "(:": ":slight_smile:",
     ":(": ":frown:",
     "<3": ":heart:",
     ":|": ":neutral:",
     ":/": ":confused:",
     ";)": ":wink:",
-    ":D": ":grinning:",
+    ":D": ":smile:",
     ":o": ":open_mouth:",
     ":O": ":open_mouth:",
     ":p": ":stuck_out_tongue:",
