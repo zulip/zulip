@@ -490,7 +490,10 @@ def check_password_strength(password: str) -> bool:
         # we need a special case for the empty string password here.
         return False
 
-    if int(zxcvbn(password)["guesses"]) < settings.PASSWORD_MIN_GUESSES:
+    if (
+        int(zxcvbn(password, max_length=settings.PASSWORD_MAX_LENGTH)["guesses"])
+        < settings.PASSWORD_MIN_GUESSES
+    ):
         return False
 
     return True
