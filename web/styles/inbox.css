@@ -575,7 +575,14 @@
 
 .recent-view-filter-dropdown-list-container .dropdown-list-wrapper,
 .inbox-filter-dropdown-list-container .dropdown-list-wrapper {
-    width: 15.7142em; /* 220px at 14px em */
+    /* We want these dropdowns to open to fit their
+       contents, which differ based on the language
+       in use. */
+    width: 100%;
+    /* We also don't want to set a min-width, again
+       so that the content is in charge. This pushes
+       back against more generic styles. */
+    min-width: unset;
 }
 
 .recent-view-filter-dropdown-list-container
@@ -584,6 +591,13 @@
 .inbox-filter-dropdown-list-container
     .dropdown-list
     .dropdown-list-item-common-styles {
+    /* Parallel to the `width: 100%` set on
+       .dropdown-list-wrapper above, we set
+       min-width here to max-content so that
+       the box opens to accommodate different
+       lengths of text--and to ensure that
+       hovered/selectable areas look correct. */
+    min-width: max-content;
     padding: 5px 10px;
     display: flex;
     flex-direction: column;
