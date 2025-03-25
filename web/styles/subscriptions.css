@@ -376,10 +376,6 @@ h4.user_group_setting_subsection_title {
             }
         }
 
-        .right .display-type {
-            height: 5em;
-        }
-
         .streams-list {
             /* Calculated from several heights and padding/margin measurements
             in .list-toggler-container and .stream_filter, with some added
@@ -536,7 +532,6 @@ h4.user_group_setting_subsection_title {
         }
 
         .display-type {
-            height: var(--settings-overlay-subheader-height);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -571,7 +566,7 @@ h4.user_group_setting_subsection_title {
                 -webkit-line-clamp: 2;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
-                margin: 20px 10px 0;
+                margin: 10px;
 
                 &.showing-info-title {
                     display: -webkit-box;
