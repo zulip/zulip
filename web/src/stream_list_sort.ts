@@ -57,6 +57,20 @@ export function is_filtering_inactives(): boolean {
     return filter_out_inactives;
 }
 
+export function has_recent_activity(sub: StreamSubscription): boolean {
+    if (!filter_out_inactives || sub.pin_to_top) {
+        // If users don't want to filter inactive streams
+        // to the bottom, we respect that setting and don't
+        // treat any streams as dormant.
+        //
+        // Currently this setting is automatically determined
+        // by the number of streams.  See the callers
+        // to set_filter_out_inactives.
+        return true;
+    }
+    return sub.is_recently_active || sub.newly_subscribed;
+}
+
 type StreamListSortResult = {
     same_as_before: boolean;
     pinned_streams: number[];
@@ -78,7 +92,7 @@ export function sort_groups(stream_ids: number[], search_term: string): StreamLi
     );
 
     function is_normal(sub: StreamSubscription): boolean {
-        return sub.is_recently_active;
+        return has_recent_activity(sub);
     }
 
     const pinned_streams = [];
