@@ -17,7 +17,6 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequiredError,
 )
 from zerver.lib.stream_subscription import (
-    get_active_subscriptions_for_stream_id,
     get_guest_user_ids_for_streams,
     get_subscribed_stream_ids_for_user,
     get_user_ids_for_streams,
@@ -959,40 +958,11 @@ def access_stream_to_remove_visibility_policy_by_id(
     return stream
 
 
-def private_stream_user_ids(stream_id: int) -> set[int]:
-    subscriptions = get_active_subscriptions_for_stream_id(
-        stream_id, include_deactivated_users=False
-    )
-    return {sub["user_profile_id"] for sub in subscriptions.values("user_profile_id")}
-
-
-def public_stream_user_ids(stream: Stream) -> set[int]:
-    guest_subscriptions = get_active_subscriptions_for_stream_id(
-        stream.id, include_deactivated_users=False
-    ).filter(user_profile__role=UserProfile.ROLE_GUEST)
-    guest_subscriptions_ids = {
-        sub["user_profile_id"] for sub in guest_subscriptions.values("user_profile_id")
-    }
-    return set(active_non_guest_user_ids(stream.realm_id)) | guest_subscriptions_ids
-
-
 def can_access_stream_metadata_user_ids(stream: Stream) -> set[int]:
     # return user ids of users who can access the attributes of a
     # stream, such as its name/description.  Useful for sending events
     # to all users with access to a stream's attributes.
-    if stream.is_public():
-        # For a public stream, this is everyone in the realm
-        # except unsubscribed guest users
-        return public_stream_user_ids(stream)
-    else:
-        # for a private stream, it's subscribers plus channel admins
-        # and users belonging to `can_add_subscribers_group` or
-        # `can_subscribe_group`.
-        return (
-            private_stream_user_ids(stream.id)
-            | {user.id for user in stream.realm.get_admin_users_and_bots()}
-            | get_user_ids_with_metadata_access_via_permission_groups(stream)
-        )
+    return bulk_can_access_stream_metadata_user_ids([stream])[stream.id]
 
 
 def bulk_can_access_stream_metadata_user_ids(streams: list[Stream]) -> dict[int, set[int]]:
