@@ -57,10 +57,6 @@ export function is_filtering_inactives(): boolean {
     return filter_out_inactives;
 }
 
-export function has_recent_activity_but_muted(sub: StreamSubscription): boolean {
-    return sub.is_recently_active && sub.is_muted;
-}
-
 type StreamListSortResult = {
     same_as_before: boolean;
     pinned_streams: number[];
