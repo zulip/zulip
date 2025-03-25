@@ -1559,7 +1559,6 @@ div.settings-radio-input-parent {
 }
 
 .selected-stream-title {
-    max-width: 75%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
