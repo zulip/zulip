@@ -441,7 +441,7 @@ instructions for other supported platforms.
    RabbitMQ which we removed earlier.
 
    ```bash
-   rm -rf /srv/zulip-venv-cache/*
+   rm -rf /srv/zulip-venv-cache/* /home/zulip/deployments/current/.venv /root/.cache/uv
    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
        /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
    ```
