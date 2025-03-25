@@ -724,7 +724,7 @@
     );
     --color-background-hover-narrow-filter: light-dark(
         hsl(0deg 0% 97%),
-        hsl(0deg 0% 97% / 8%)
+        color-mix(in srgb, hsl(0deg 0% 97%) 8%, hsl(0deg 0% 11%))
     );
     /* We mix an opaque version with the background for
        replicating the color on .sidebar-topic-check, which
