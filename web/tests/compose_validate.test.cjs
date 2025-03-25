@@ -153,10 +153,7 @@ function test_ui(label, f) {
 
 function stub_message_row($textarea) {
     const $stub = $.set_results("message_row_stub", []);
-    $textarea.closest = (selector) => {
-        assert.equal(selector, ".message_row");
-        return $stub;
-    };
+    $textarea.set_closest_results(".message_row", $stub);
 }
 
 function initialize_pm_pill(mock_template) {

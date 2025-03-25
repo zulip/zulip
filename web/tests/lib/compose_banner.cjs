@@ -25,7 +25,7 @@ exports.mock_banners = () => {
 
     $stub.remove = noop;
 
-    $cb.closest = () => [];
+    $cb.set_closest_results(".edit_form_banners", $.create("edit-form-banners-stub"));
     $cb.set_find_results(".no_post_permissions", $stub);
     $cb.set_find_results(".message_too_long", $stub);
     $cb.set_find_results(".wildcards_not_allowed", $stub);
