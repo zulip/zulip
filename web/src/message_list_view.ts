@@ -763,6 +763,10 @@ export class MessageListView {
                 current_group.message_containers = current_group_message_containers;
                 new_message_groups.push(current_group);
             }
+            if (current_group?.is_stream && current_group_message_containers[0]?.msg.type === "stream" && current_group_message_containers[0].msg.rendered_subject !== undefined) {
+                current_group.topic_display_name = current_group_message_containers[0].msg.rendered_subject;
+                current_group.match_topic = current_group_message_containers[0].msg.rendered_subject;
+            }
             current_group_message_containers = [];
         };
 

@@ -112,6 +112,7 @@ class LinkInfo(TypedDict):
 @dataclass
 class MessageRenderingResult:
     rendered_content: str
+    rendered_topic: str
     mentions_topic_wildcard: bool
     mentions_stream_wildcard: bool
     mentions_user_ids: set[int]
@@ -2734,6 +2735,7 @@ def do_convert(
     # Filters such as UserMentionPattern need a message.
     rendering_result: MessageRenderingResult = MessageRenderingResult(
         rendered_content="",
+        rendered_topic="",
         mentions_topic_wildcard=False,
         mentions_stream_wildcard=False,
         mentions_user_ids=set(),
@@ -2808,6 +2810,8 @@ def do_convert(
         # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
         rendering_result.rendered_content = unsafe_timeout(5, lambda: _md_engine.convert(content))
+        if message is not None:
+            rendering_result.rendered_topic = unsafe_timeout(5, lambda: _md_engine.convert(message.topic_name()))
 
         # Post-process the result with the rendered image previews:
         if user_upload_previews is not None:

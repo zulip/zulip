@@ -307,6 +307,7 @@ def messages_for_ids(
     for message_id in message_ids:
         msg_dict = message_dicts[message_id]
         flags = user_message_flags[message_id]
+        message = Message.objects.get(id=message_id)
         # TODO/compatibility: The `wildcard_mentioned` flag was deprecated in favor of
         # the `stream_wildcard_mentioned` and `topic_wildcard_mentioned` flags.  The
         # `wildcard_mentioned` flag exists for backwards-compatibility with older
@@ -351,6 +352,8 @@ def messages_for_ids(
                     message_edit_history_visibility_policy, msg_dict["edit_history"]
                 )
                 msg_dict["edit_history"] = visible_edit_history
+        if "subject" in msg_dict and hasattr(message, "rendered_topic") and message.rendered_topic:
+            msg_dict["rendered_subject"] = message.rendered_topic
 
         msg_dict["can_access_sender"] = msg_dict["sender_id"] not in inaccessible_sender_ids
         message_list.append(msg_dict)

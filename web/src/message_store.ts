@@ -97,6 +97,7 @@ export const raw_message_schema = z.intersection(
                 // Messages that come from `send_message` use `topic`.
                 subject: z.optional(z.string()),
                 topic: z.optional(z.string()),
+                rendered_subject: z.optional(z.string()),
                 topic_links: z.array(topic_link_schema),
             }),
         ]),
