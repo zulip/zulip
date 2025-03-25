@@ -686,6 +686,15 @@ export function initialize_everything(state_data) {
             }
 
             message_view.show(narrow, {trigger: "sidebar"});
+
+            if (sidebar_ui.left_sidebar_expanded_as_overlay) {
+                // If the left sidebar is drawn over the center pane,
+                // hide it so that the user can actually see the
+                // topic. We don't need to also hide the user list
+                // sidebar, since its own click-outside handler will
+                // hide it.
+                sidebar_ui.hide_streamlist_sidebar();
+            }
         },
     });
     drafts.initialize_ui();
