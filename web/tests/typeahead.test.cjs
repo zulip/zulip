@@ -9,8 +9,8 @@ const typeahead = zrequire("../shared/src/typeahead");
 
 const unicode_emojis = [
     ["1f43c", "panda_face"],
-    ["1f642", "smile"],
-    ["1f604", "big_smile"],
+    ["1f642", "slight_smile"],
+    ["1f604", "smile"],
     ["1f368", "ice_cream"],
     ["1f366", "soft_ice_cream"],
     ["1f6a5", "horizontal_traffic_light"],
@@ -46,8 +46,8 @@ run_test("get_emoji_matcher: nonmatches", () => {
 
 run_test("get_emoji_matcher: misc matches", () => {
     assert_emoji_matches("da", ["panda_face", "tada"]);
-    assert_emoji_matches("smil", ["big_smile", "smile"]);
-    assert_emoji_matches("mile", ["big_smile", "smile"]);
+    assert_emoji_matches("smil", ["slight_smile", "smile"]);
+    assert_emoji_matches("mile", ["slight_smile", "smile"]);
     assert_emoji_matches("japanese_post_", ["japanese_post_office"]);
 });
 
@@ -191,28 +191,20 @@ run_test("sort_emojis: th", () => {
 
 run_test("sort_emojis: sm", () => {
     const emoji_list = [
-        {emoji_name: "big_smile", is_realm_emoji: true},
+        {emoji_name: "smile", is_realm_emoji: true},
         {emoji_name: "slight_smile", is_realm_emoji: false, emoji_code: "1f642"},
         {emoji_name: "small_airplane", is_realm_emoji: true},
     ];
-    assert.deepEqual(sort_emojis(emoji_list, "sm"), [
-        "slight_smile",
-        "small_airplane",
-        "big_smile",
-    ]);
+    assert.deepEqual(sort_emojis(emoji_list, "sm"), ["slight_smile", "smile", "small_airplane"]);
 });
 
 run_test("sort_emojis: SM", () => {
     const emoji_list = [
-        {emoji_name: "big_smile", is_realm_emoji: true},
+        {emoji_name: "smile", is_realm_emoji: true},
         {emoji_name: "slight_smile", is_realm_emoji: false, emoji_code: "1f642"},
         {emoji_name: "small_airplane", is_realm_emoji: true},
     ];
-    assert.deepEqual(sort_emojis(emoji_list, "SM"), [
-        "slight_smile",
-        "small_airplane",
-        "big_smile",
-    ]);
+    assert.deepEqual(sort_emojis(emoji_list, "SM"), ["slight_smile", "smile", "small_airplane"]);
 });
 
 run_test("sort_emojis: prefix before midphrase, with underscore (traffic_li)", () => {
