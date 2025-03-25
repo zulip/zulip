@@ -83,7 +83,6 @@ from zerver.lib.streams import (
     ensure_stream,
     filter_stream_authorization_for_adding_subscribers,
     list_to_streams,
-    public_stream_user_ids,
     user_has_content_access,
 )
 from zerver.lib.subscription_info import (
@@ -1975,9 +1974,9 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "new_stream")
         self.assertEqual(events[0]["event"]["streams"][0]["stream_id"], stream.id)
         notified_user_ids = set(events[0]["users"])
-        self.assertEqual(
+        self.assertCountEqual(
             notified_user_ids,
-            public_stream_user_ids(stream),
+            set(active_non_guest_user_ids(stream.realm_id)),
         )
         # Guest user should not be notified.
         self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
@@ -2123,7 +2122,7 @@ class StreamAdminTest(ZulipTestCase):
 
         stream_name_1 = get_stream("stream_name1", user_profile.realm)
         notified_user_ids = get_notified_user_ids()
-        self.assertEqual(notified_user_ids, set(public_stream_user_ids(stream_name_1)))
+        self.assertEqual(notified_user_ids, set(active_non_guest_user_ids(realm.id)))
         self.assertIn(user_profile.id, notified_user_ids)
         self.assertIn(self.example_user("prospero").id, notified_user_ids)
         self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
@@ -2142,7 +2141,7 @@ class StreamAdminTest(ZulipTestCase):
             acting_user=self.example_user("polonius"),
         )
         notified_user_ids = get_notified_user_ids()
-        self.assertEqual(notified_user_ids, set(public_stream_user_ids(stream_name_1)))
+        self.assertEqual(notified_user_ids, set(active_non_guest_user_ids(realm.id)))
         self.assertIn(user_profile.id, notified_user_ids)
         self.assertIn(self.example_user("prospero").id, notified_user_ids)
         self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
@@ -2159,7 +2158,9 @@ class StreamAdminTest(ZulipTestCase):
         # Subscribed guest user should be notified.
         self.subscribe(self.example_user("polonius"), stream_name_1.name)
         notified_user_ids = get_notified_user_ids()
-        self.assertEqual(notified_user_ids, set(public_stream_user_ids(stream_name_1)))
+        expected_notified_user_ids = set(active_non_guest_user_ids(realm.id))
+        expected_notified_user_ids.add(self.example_user("polonius").id)
+        self.assertEqual(notified_user_ids, expected_notified_user_ids)
         self.assertIn(user_profile.id, notified_user_ids)
         self.assertIn(self.example_user("prospero").id, notified_user_ids)
         self.assertIn(self.example_user("polonius").id, notified_user_ids)
