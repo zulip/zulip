@@ -49,4 +49,4 @@ API_FEATURE_LEVEL = 377  # Last bumped to sending peer_remove on user deactivati
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (322, 0)  # bumped 2025-03-26 for updated build_timezone_values.
+PROVISION_VERSION = (323, 0)  # bumped 2025-04-07 for smile emoji changes.
