@@ -7626,7 +7626,8 @@ class GetSubscribersTest(ZulipTestCase):
         def non_ws(s: str) -> str:
             return s.replace("\n", "").replace(" ", "")
 
-        self.assertEqual(non_ws(msg.content), non_ws(expected_msg))
+        assert msg.rendered_content is not None
+        self.assertEqual(non_ws(msg.rendered_content), non_ws(expected_msg))
 
     def check_well_formed_result(
         self, result: dict[str, Any], stream_name: str, realm: Realm
@@ -7677,10 +7678,10 @@ class GetSubscribersTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         polonius = self.example_user("polonius")
+        realm = hamlet.realm
 
-        streams = [f"stream_{i}" for i in range(10)]
-        for stream_name in streams:
-            self.make_stream(stream_name)
+        stream_names = [f"stream_{i}" for i in range(10)]
+        streams: list[Stream] = [self.make_stream(stream_name) for stream_name in stream_names]
 
         users_to_subscribe = [
             self.user_profile.id,
@@ -7692,23 +7693,21 @@ class GetSubscribersTest(ZulipTestCase):
         with self.assert_database_query_count(50):
             self.subscribe_via_post(
                 self.user_profile,
-                streams,
+                stream_names,
                 dict(principals=orjson.dumps(users_to_subscribe).decode()),
             )
 
+        rendered_stream_list = ""
+        for stream in streams:
+            rendered_stream_list = (
+                rendered_stream_list
+                + f"""<li><a class="stream" data-stream-id="{stream.id}" href="/#narrow/channel/{stream.id}-{stream.name}">#{stream.name}</a></li>\n"""
+            )
         msg = f"""
-            @**King Hamlet|{hamlet.id}** subscribed you to the following channels:
-
-            * #**stream_0**
-            * #**stream_1**
-            * #**stream_2**
-            * #**stream_3**
-            * #**stream_4**
-            * #**stream_5**
-            * #**stream_6**
-            * #**stream_7**
-            * #**stream_8**
-            * #**stream_9**
+            <p><span class="user-mention" data-user-id="{hamlet.id}">@King Hamlet</span> subscribed you to the following channels:</p>
+            <ul>
+            {rendered_stream_list}
+            </ul>
             """
 
         for user in [cordelia, othello, polonius]:
@@ -7731,8 +7730,9 @@ class GetSubscribersTest(ZulipTestCase):
             invite_only=True,
         )
 
+        stream_invite_only_1 = get_stream("stream_invite_only_1", realm)
         msg = f"""
-            @**King Hamlet|{hamlet.id}** subscribed you to the channel #**stream_invite_only_1**.
+            <p><span class="user-mention" data-user-id="{hamlet.id}">@King Hamlet</span> subscribed you to the channel <a class="stream" data-stream-id="{stream_invite_only_1.id}" href="/#narrow/channel/{stream_invite_only_1.id}-{stream_invite_only_1.name}">#{stream_invite_only_1.name}</a>.</p>
             """
         for user in [cordelia, othello, polonius]:
             self.assert_user_got_subscription_notification(user, msg)
@@ -7748,7 +7748,6 @@ class GetSubscribersTest(ZulipTestCase):
             self.assert_length(sub["subscribers"], len(users_to_subscribe))
 
         # Test query count when setting is set to anonymous group.
-        realm = hamlet.realm
         stream = get_stream("stream_1", realm)
         admins_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
