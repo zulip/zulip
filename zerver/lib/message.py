@@ -353,12 +353,8 @@ def messages_for_ids(
                     message_edit_history_visibility_policy, msg_dict["edit_history"]
                 )
                 msg_dict["edit_history"] = visible_edit_history
-        if (
-            msg_dict["subject"] != ""
-            and message.rendered_topic is not None
-            and message.rendered_topic != ""
-        ):
-            msg_dict["rendered_subject"] = message.rendered_topic
+        if message.rendered_topic is not None and message.rendered_topic != "":
+            msg_dict["rendered_topic"] = message.rendered_topic
 
         msg_dict["can_access_sender"] = msg_dict["sender_id"] not in inaccessible_sender_ids
         message_list.append(msg_dict)

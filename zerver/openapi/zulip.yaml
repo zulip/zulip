@@ -7336,6 +7336,9 @@ paths:
                                 timestamp: {}
                                 topic_links: {}
                                 type: {}
+                                rendered_topic:
+                                  type: string
+                                  description: The rendered HTML version of the subject/topic.
                                 flags:
                                   type: array
                                   description: |
@@ -7426,7 +7429,6 @@ paths:
                               "type": "stream",
                               "content": "<p>Wait, is this from the frontend js code or backend python code</p>",
                               "flags": ["read"],
-                              "rendered_subject": "<p>Verona3</p>",
                               "id": 21,
                               "display_recipient": "Verona",
                               "content_type": "text/html",
