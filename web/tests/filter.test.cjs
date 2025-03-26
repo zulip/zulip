@@ -685,7 +685,14 @@ function assert_not_mark_read_with_is_operands(additional_terms_to_test) {
     if (additional_terms_to_test.length === 0) {
         assert.ok(filter.can_mark_messages_read());
     } else {
-        assert.ok(!filter.can_mark_messages_read());
+        // the is-resolved term type can be combined with other
+        // valid term types
+        const additional_filter = new Filter([...additional_terms_to_test]);
+        if (additional_filter.can_mark_messages_read()) {
+            assert.ok(filter.can_mark_messages_read());
+        } else {
+            assert.ok(!filter.can_mark_messages_read());
+        }
     }
 
     is_operator = [{operator: "is", operand: "resolved", negated: true}];
@@ -739,6 +746,10 @@ test("can_mark_messages_read", () => {
         {operator: "topic", operand: "bar", negated: true},
     ];
     filter = new Filter(channel_negated_topic_terms);
+    assert.ok(!filter.can_mark_messages_read());
+
+    const topic_only_term = [{operator: "topic", operand: "bar", negated: true}];
+    filter = new Filter(topic_only_term);
     assert.ok(!filter.can_mark_messages_read());
 
     const dm = [{operator: "dm", operand: "joe@example.com,"}];
