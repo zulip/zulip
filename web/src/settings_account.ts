@@ -202,7 +202,11 @@ function settings_change_error(message_html: string, xhr?: JQuery.jqXHR): void {
     dialog_widget.hide_dialog_spinner();
 }
 
-function update_custom_profile_field(
+function is_valid_date_format(value: string): boolean {
+    return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+export function update_custom_profile_field(
     field: CustomProfileFieldData,
     method: channel.AjaxRequestHandler,
 ): void {
@@ -210,6 +214,13 @@ function update_custom_profile_field(
     if (method === channel.del) {
         data = JSON.stringify([field.id]);
     } else {
+        if (
+            field.id === 5 &&
+            typeof field.value === "string" &&
+            !is_valid_date_format(field.value)
+        ) {
+            return;
+        }
         data = JSON.stringify([field]);
     }
 
