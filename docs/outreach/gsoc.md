@@ -319,7 +319,12 @@ Experts: Neil Pilgrim, Aman Agrawal
 
 - **Contribute to Zulip Terminal, our terminal user interface (TUI) client**.
   Zulip Terminal is out in beta, but there's still a lot to do for it to
-  approach parity with the web app.
+  approach parity with the web app - and Zulip keeps coming out with new features too!
+
+  Previous contributors have themed their projects according to a **cluster of
+  features** or **completing unfinished projects**, or some combination, much
+  like the first two bullets in the Full-stack project list.
+
   We would be happy to accept multiple strong students to work on this project.
   175 or 350 hours; medium difficulty.
   **Skills required**: Python 3 development skills, good communication and
