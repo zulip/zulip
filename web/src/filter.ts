@@ -1179,6 +1179,10 @@ export class Filter {
             "is-resolved",
             "in-home",
             "in-all",
+            "not-is-dm",
+            "channel,not-is-dm",
+            "topic,not-is-dm",
+            "channel,topic,not-is-dm",
             "",
         ]);
 
