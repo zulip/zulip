@@ -312,21 +312,23 @@ Django, TypeScript/JavaScript, and CSS.
 
 ### Terminal app
 
-Code: [Zulip Terminal](https://github.com/zulip/zulip-terminal)
+Code: [The official multi-platform terminal app, written in
+Python](https://github.com/zulip/zulip-terminal).
 
 Experts: Neil Pilgrim, Aman Agrawal
 
-- Work on Zulip Terminal, the official terminal client for Zulip. zulip-terminal
-  is out in beta, but there's still a lot to do for it to approach parity with
-  the web app. We would be happy to accept multiple strong students to work on
-  this project. 175 or 350 hours; medium difficulty. **Skills required**: Python
-  3 development skills, good communication and project management skills, good
-  at reading code and testing.
+- **Contribute to Zulip Terminal, our terminal user interface (TUI) client**.
+  Zulip Terminal is out in beta, but there's still a lot to do for it to
+  approach parity with the web app.
+  We would be happy to accept multiple strong students to work on this project.
+  175 or 350 hours; medium difficulty.
+  **Skills required**: Python 3 development skills, good communication and
+  project management skills, good at reading code and testing.
 
 ### Desktop app
 
 Code:
-[Our cross-platform desktop app written in JavaScript on
+[Our cross-platform desktop app, written in JavaScript on
 Electron](https://github.com/zulip/zulip-desktop).
 
 Expert: Anders Kaseorg
