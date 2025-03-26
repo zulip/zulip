@@ -462,6 +462,7 @@ input[type="checkbox"] {
 .information-density-settings {
     display: flex;
     gap: 2em;
+    margin: 0 0 20px;
 
     &.disabled-setting .display-value {
         opacity: 0.4;
