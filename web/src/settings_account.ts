@@ -202,7 +202,20 @@ function settings_change_error(message_html: string, xhr?: JQuery.jqXHR): void {
     dialog_widget.hide_dialog_spinner();
 }
 
-function update_custom_profile_field(
+export function parse_to_iso_date_format(dateStr: string): string {
+    const parsed = new Date(dateStr);
+    if (Number.isNaN(parsed.getTime())) {
+        return dateStr;
+    }
+
+    // Format as YYYY-MM-DD
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const day = String(parsed.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+export function update_custom_profile_field(
     field: CustomProfileFieldData,
     method: channel.AjaxRequestHandler,
 ): void {
@@ -751,15 +764,29 @@ export function set_up(): void {
 
     $("#profile-settings").on("change", ".custom_user_field_value", function (this: HTMLElement) {
         const fields: CustomProfileFieldData[] = [];
-        const value = $(this).val()!;
+        let value = $(this).val()!;
         assert(typeof value === "string");
+
         const field_id = Number.parseInt(
             $(this).closest(".custom_user_field").attr("data-field-id")!,
             10,
         );
+        const isDateField = $(this).hasClass("date-field");
+        if (isDateField) {
+            value = parse_to_iso_date_format(value);
+        }
+
+        const wasReset = this.dataset.wasReset === "true";
+
         if (value) {
-            fields.push({id: field_id, value});
-            update_user_custom_profile_fields(fields, channel.patch);
+            if (wasReset) {
+                fields.push({id: field_id, value: "failure"});
+                update_user_custom_profile_fields(fields, channel.patch);
+                this.dataset.wasReset = "false";
+            } else {
+                fields.push({id: field_id, value});
+                update_user_custom_profile_fields(fields, channel.patch);
+            }
         } else {
             fields.push({id: field_id});
             update_user_custom_profile_fields(fields, channel.del);
