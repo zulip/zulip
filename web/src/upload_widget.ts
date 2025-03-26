@@ -25,6 +25,7 @@ const supported_types = [
     "image/png",
     "image/tiff",
     "image/webp",
+    "image/svg+xml",
 ];
 
 function is_image_format(file: File): boolean {

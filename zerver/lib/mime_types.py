@@ -36,6 +36,7 @@ INLINE_MIME_TYPES = [
     "image/jpeg",
     "image/png",
     "image/webp",
+    "image/svg+xml",
     "text/plain",
     "video/mp4",
     "video/webm",
