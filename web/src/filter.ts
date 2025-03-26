@@ -1145,7 +1145,7 @@ export class Filter {
         // Arguably this should match supports_collapsing_recipients.
         // We may want to standardize on that in the future.  (At
         // present, this function does not allow combining valid filters).
-        if (this.all_term_type_returns_all_messages_of_conversation()) {
+        if (this.returns_all_messages_of_conversation()) {
             return true;
         }
         return false;
@@ -1156,7 +1156,7 @@ export class Filter {
         return this._can_mark_messages_read;
     }
 
-    all_term_type_returns_all_messages_of_conversation(): boolean {
+    returns_all_messages_of_conversation(): boolean {
         const term_types = this.sorted_term_types();
 
         // "topic" alone cannot guarantee all messages of a conversation because
@@ -1165,21 +1165,34 @@ export class Filter {
         // messages of a conversation.
         // Operators that ensure returning all messages in a conversation
 
-        const validCombinations = new Set([
-            "channel,topic,with",
-            "channel,topic",
-            "dm,with",
-            "dm",
+        if (term_types.length === 0) {
+            return true;
+        }
+
+        if (term_types.includes("topic") && !term_types.includes("channel")) {
+            return false;
+        }
+
+        const allowed_terms = new Set([
             "channel",
+            "topic",
+            "with",
+            "dm",
             "is-dm",
+            "not-is-dm",
             "is-resolved",
             "in-home",
             "not-is-muted",
             "in-all",
-            "",
         ]);
 
-        return validCombinations.has(term_types.join(","));
+        for (const term of term_types) {
+            if (!allowed_terms.has(term)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // This is used to control the behaviour for "exiting search",
@@ -1189,7 +1202,7 @@ export class Filter {
     // common narrows show a narrow description and allow the user to
     // close search bar UI and show the narrow description UI.
     is_common_narrow(): boolean {
-        if (this.all_term_type_returns_all_messages_of_conversation()) {
+        if (this.returns_all_messages_of_conversation()) {
             return true;
         }
         const term_types = this.sorted_term_types();
