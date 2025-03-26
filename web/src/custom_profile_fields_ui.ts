@@ -173,6 +173,8 @@ export function initialize_custom_date_type_fields(element_id: string): void {
         return;
     }
 
+    $date_picker_elements.addClass("date-field");
+
     flatpickr($date_picker_elements, {
         altInput: true,
         altFormat: "F j, Y",
