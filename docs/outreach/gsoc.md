@@ -324,6 +324,11 @@ Experts: Neil Pilgrim, Aman Agrawal
   Previous contributors have themed their projects according to a **cluster of
   features** or **completing unfinished projects**, or some combination, much
   like the first two bullets in the Full-stack project list.
+  Project complexity and potential scope can vary substantially, since the
+  required changes can involve touching different parts of the application
+  stack. For example, these may be purely improving multiple elements of the UI,
+  platform/terminal, or client-side model of the data available to a user - or
+  multiple of these in a full-stack style.
 
   We would be happy to accept multiple strong students to work on this project.
   175 or 350 hours; medium difficulty.
