@@ -323,7 +323,9 @@ Experts: Neil Pilgrim, Aman Agrawal
   We would be happy to accept multiple strong students to work on this project.
   175 or 350 hours; medium difficulty.
   **Skills required**: Python 3 development skills, good communication and
-  project management skills, good at reading code and testing.
+  project management skills. Reading and understanding complex code and tests,
+  and taking the initiative to propose clean refactoring and other solutions,
+  will be highly valuable.
 
 ### Desktop app
 
