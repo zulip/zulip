@@ -1145,7 +1145,7 @@ export class Filter {
         // Arguably this should match supports_collapsing_recipients.
         // We may want to standardize on that in the future.  (At
         // present, this function does not allow combining valid filters).
-        if (this.single_term_type_returns_all_messages_of_conversation()) {
+        if (this.all_term_type_returns_all_messages_of_conversation()) {
             return true;
         }
         return false;
@@ -1156,59 +1156,30 @@ export class Filter {
         return this._can_mark_messages_read;
     }
 
-    single_term_type_returns_all_messages_of_conversation(): boolean {
+    all_term_type_returns_all_messages_of_conversation(): boolean {
         const term_types = this.sorted_term_types();
 
         // "topic" alone cannot guarantee all messages of a conversation because
         // it is limited by the user's message history. Therefore, we check "channel"
         // and "topic" together to ensure that the current filter will return all the
         // messages of a conversation.
-        if (_.isEqual(term_types, ["channel", "topic", "with"])) {
-            return true;
-        }
+        // Operators that ensure returning all messages in a conversation
 
-        if (_.isEqual(term_types, ["channel", "topic"])) {
-            return true;
-        }
+        const validCombinations = new Set([
+            "channel,topic,with",
+            "channel,topic",
+            "dm,with",
+            "dm",
+            "channel",
+            "is-dm",
+            "is-resolved",
+            "in-home",
+            "not-is-muted",
+            "in-all",
+            "",
+        ]);
 
-        if (_.isEqual(term_types, ["dm", "with"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["dm"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["channel"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["is-dm"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["is-resolved"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["in-home"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["not-is-muted"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["in-all"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, [])) {
-            // Empty filters means we are displaying all possible messages.
-            return true;
-        }
-
-        return false;
+        return validCombinations.has(term_types.join(","));
     }
 
     // This is used to control the behaviour for "exiting search",
@@ -1218,7 +1189,7 @@ export class Filter {
     // common narrows show a narrow description and allow the user to
     // close search bar UI and show the narrow description UI.
     is_common_narrow(): boolean {
-        if (this.single_term_type_returns_all_messages_of_conversation()) {
+        if (this.all_term_type_returns_all_messages_of_conversation()) {
             return true;
         }
         const term_types = this.sorted_term_types();
