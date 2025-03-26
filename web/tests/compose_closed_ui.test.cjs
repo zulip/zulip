@@ -10,6 +10,7 @@ const $ = require("./lib/zjquery.cjs");
 // Mocking and stubbing things
 set_global("document", "document-stub");
 const message_lists = mock_esm("../src/message_lists");
+const recent_view_util = mock_esm("../src/recent_view_util");
 function MessageListView() {
     return {
         maybe_rerender: noop,
@@ -163,23 +164,40 @@ run_test("reply_label", () => {
     );
 });
 
-run_test("test_custom_message_input", () => {
+run_test("empty_narrow", () => {
+    message_lists.current.visibly_empty = () => true;
+    compose_closed_ui.update_recipient_text_for_reply_button();
+    const label = $("#left_bar_compose_reply_button_big").text();
+    assert.equal(label, "translated: Compose message");
+});
+
+run_test("test_non_message_list_input", () => {
+    message_lists.current = undefined;
+    recent_view_util.is_visible = () => true;
     const stream = {
         subscribed: true,
         name: "stream test",
         stream_id: 10,
     };
     stream_data.add_sub(stream);
+
+    // Channel and topic row.
     compose_closed_ui.update_recipient_text_for_reply_button({
         stream_id: stream.stream_id,
         topic: "topic test",
     });
     test_reply_label("#stream test &gt; topic test");
-});
 
-run_test("empty_narrow", () => {
-    message_lists.current.visibly_empty = () => true;
-    compose_closed_ui.update_recipient_text_for_reply_button();
+    // Direct message row.
+    compose_closed_ui.update_recipient_text_for_reply_button({
+        display_reply_to: "some user",
+    });
+    test_reply_label("some user");
+
+    // Invalid data for a the reply button text.
+    compose_closed_ui.update_recipient_text_for_reply_button({
+        invalid_field: "something unexpected",
+    });
     const label = $("#left_bar_compose_reply_button_big").text();
     assert.equal(label, "translated: Compose message");
 });
