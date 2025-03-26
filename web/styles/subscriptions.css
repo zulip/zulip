@@ -135,6 +135,8 @@ h4.user_group_setting_subsection_title {
     font-size: 1.35em;
     font-weight: normal;
     line-height: 1.5;
+    /* Matches right margin on h3 subsection titles */
+    margin-right: 15px;
 }
 
 .member-list-box,
