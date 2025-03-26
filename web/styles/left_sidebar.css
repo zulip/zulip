@@ -1311,7 +1311,7 @@ li.top_left_scheduled_messages {
     /* Extra margin for unreads. */
     margin-right: var(--left-sidebar-unread-offset);
 
-    &:has(.unread_count:empty) {
+    &:has(.unread_count.hide) {
         margin-right: 0;
     }
 
