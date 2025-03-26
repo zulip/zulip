@@ -1,0 +1,263 @@
+global:
+  # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  scrape_interval: 15s
+  # Evaluate rules every 15 seconds. The default is every 1 minute.
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "grafana"
+    static_configs:
+      - targets: ["localhost:3000"]
+
+  - job_name: "node"
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9100
+        refresh_interval: 1m
+        filters:
+          - name: instance-state-name
+            values: ["running"]
+    static_configs:
+      - targets: ["<%= @czo %>:9100"]
+        labels:
+          role: prod
+          instance: <%= @czo %>
+<% if @other_hosts -%>
+      - targets:
+<%   @other_hosts.each do |host| -%>
+        - <%= host %>:9100
+<%   end -%>
+<% end -%>
+    relabel_configs:
+      - source_labels: ["__address__"]
+        regex: "([^.]+).*"
+        target_label: "instance"
+      - source_labels: ["__address__"]
+        regex: "([^.-]+).*"
+        target_label: "role"
+
+      - source_labels: ["__meta_ec2_tag_Name"]
+        regex: "(.+)"
+        target_label: "instance"
+      - source_labels: ["__meta_ec2_tag_role"]
+        regex: "(.+)"
+        target_label: "role"
+
+  - job_name: "camo"
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9292
+        filters:
+          - name: "tag:role"
+            values: ["smokescreen"]
+          - name: instance-state-name
+            values: ["running"]
+    static_configs:
+      - targets: ["<%= @czo %>:9292"]
+        labels:
+          deploy: prod
+          instance: <%= @czo %>
+    relabel_configs:
+      - source_labels: ["__meta_ec2_tag_Name"]
+        regex: "(.+)"
+        target_label: "instance"
+
+  - job_name: "smokescreen"
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9810
+        filters:
+          - name: "tag:role"
+            values: ["smokescreen"]
+          - name: instance-state-name
+            values: ["running"]
+    static_configs:
+      - targets: ["<%= @czo %>:9810"]
+        labels:
+          deploy: prod
+          instance: <%= @czo %>
+    relabel_configs:
+      - source_labels: ["__meta_ec2_tag_Name"]
+        regex: "(.+)"
+        target_label: "instance"
+
+  - job_name: "uwsgi"
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9238
+        filters:
+          - name: "tag:role"
+            values: ["prod_app_frontend", "staging_app_frontend"]
+          - name: instance-state-name
+            values: ["running"]
+    static_configs:
+      - targets: ["<%= @czo %>:9238"]
+        labels:
+          deploy: prod
+          instance: <%= @czo %>
+    relabel_configs:
+      - source_labels: ["__meta_ec2_tag_Name"]
+        regex: "(.+)"
+        target_label: "instance"
+      - source_labels: ["__meta_ec2_tag_role"]
+        regex: "(prod|staging)_app_frontend"
+        replacement: "${1}"
+        target_label: "deploy"
+
+  - job_name: "rabbitmq"
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 15692
+        filters:
+          - name: "tag:role"
+            values: ["prod_app_frontend", "staging_app_frontend"]
+          - name: instance-state-name
+            values: ["running"]
+    static_configs:
+      - targets: ["<%= @czo %>:15692"]
+        labels:
+          deploy: prod
+          instance: <%= @czo %>
+    relabel_configs:
+      - target_label: __metrics_path__
+        replacement: "/metrics/per-object"
+      - source_labels: ["__meta_ec2_tag_Name"]
+        regex: "(.+)"
+        target_label: "instance"
+      - source_labels: ["__meta_ec2_tag_role"]
+        regex: "(prod|staging)_app_frontend"
+        replacement: "${1}"
+        target_label: "deploy"
+
+  - job_name: "tornado"
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9256
+        filters:
+          - name: "tag:role"
+            values: ["prod_app_frontend", "staging_app_frontend"]
+          - name: instance-state-name
+            values: ["running"]
+    static_configs:
+      - targets: ["<%= @czo %>:9256"]
+        labels:
+          deploy: prod
+          instance: <%= @czo %>
+    relabel_configs:
+      - source_labels: ["__meta_ec2_tag_Name"]
+        regex: "(.+)"
+        target_label: "instance"
+      - source_labels: ["__meta_ec2_tag_role"]
+        regex: "(prod|staging)_app_frontend"
+        replacement: "${1}"
+        target_label: "deploy"
+
+  - job_name: "redis"
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9121
+        filters:
+          - name: "tag:role"
+            values: ["redis"]
+          - name: instance-state-name
+            values: ["running"]
+    static_configs:
+      - targets: ["<%= @czo %>:9121"]
+        labels:
+          deploy: prod
+          instance: <%= @czo %>
+    relabel_configs:
+      - source_labels: ["__meta_ec2_tag_Name"]
+        regex: "(.+)"
+        target_label: "instance"
+
+  - job_name: "postgres"
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9187
+        filters:
+          - name: "tag:role"
+            values: ["postgresql"]
+          - name: instance-state-name
+            values: ["running"]
+    static_configs:
+      - targets: ["<%= @czo %>:9187"]
+        labels:
+          deploy: prod
+          instance: <%= @czo %>
+    relabel_configs:
+      - source_labels: ["__meta_ec2_tag_Name"]
+        regex: "(.+)"
+        target_label: "instance"
+
+  - job_name: "memcached"
+    static_configs:
+      - targets: ["<%= @czo %>:11212"]
+        labels:
+          deploy: prod
+          instance: <%= @czo %>
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 11212
+        filters:
+          - name: "tag:role"
+            values: ["prod_app_frontend", "staging_app_frontend"]
+          - name: instance-state-name
+            values: ["running"]
+    relabel_configs:
+      - source_labels: ["__meta_ec2_tag_Name"]
+        regex: "(.+)"
+        target_label: "instance"
+      - source_labels: ["__meta_ec2_tag_role"]
+        regex: "(prod|staging)_app_frontend"
+        replacement: "${1}"
+        target_label: "deploy"
+
+  - job_name: "tusd"
+    static_configs:
+      - targets: ["<%= @czo %>:9900"]
+        labels:
+          deploy: prod
+          instance: <%= @czo %>
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9900
+        filters:
+          - name: "tag:role"
+            values: ["prod_app_frontend", "staging_app_frontend"]
+          - name: instance-state-name
+            values: ["running"]
+    relabel_configs:
+      - source_labels: ["__meta_ec2_tag_Name"]
+        regex: "(.+)"
+        target_label: "instance"
+      - source_labels: ["__meta_ec2_tag_role"]
+        regex: "(prod|staging)_app_frontend"
+        replacement: "${1}"
+        target_label: "deploy"
+
+  - job_name: "wal-g"
+    scrape_interval: 5m
+    scrape_timeout: 20s
+    static_configs:
+      - targets:
+<% @backup_buckets.each do |bucket| -%>
+        - <%= bucket %>
+<% end -%>
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_bucket
+      - source_labels: [__param_bucket]
+        target_label: bucket
+      - target_label: __address__
+        replacement: localhost:9188
+
+  - job_name: "vector"
+    scrape_interval: 30s
+    scrape_timeout: 3s
+    static_configs:
+      - targets: ["localhost:9081"]

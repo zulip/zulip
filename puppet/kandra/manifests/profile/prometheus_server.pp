@@ -49,13 +49,17 @@ class kandra::profile::prometheus_server inherits kandra::profile::base {
     group  => 'root',
     mode   => '0755',
   }
+
+  $czo = zulipconf('prometheus', 'czo', '')
+  $other_hosts = split(zulipconf('prometheus', 'other_hosts', ''), ',')
+  $backup_buckets = split(zulipconf('prometheus', 'walg_buckets', ''), ',')
   file { '/etc/prometheus/prometheus.yaml':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/kandra/prometheus/prometheus.yaml',
-    notify => Service[supervisor],
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('kandra/prometheus/prometheus.yaml.template.erb'),
+    notify  => Service[supervisor],
   }
 
   file { "${zulip::common::supervisor_conf_dir}/prometheus.conf":
