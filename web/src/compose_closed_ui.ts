@@ -1,15 +1,18 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_reply_recipient_label from "../templates/reply_recipient_label.hbs";
 
 import * as compose_actions from "./compose_actions.ts";
 import {$t} from "./i18n.ts";
+import * as inbox_util from "./inbox_util.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as recent_view_util from "./recent_view_util.ts";
 import * as stream_data from "./stream_data.ts";
 import * as util from "./util.ts";
 
@@ -43,7 +46,8 @@ export function get_recipient_label(
     recipient_information?: ReplyRecipientInformation,
 ): RecipientLabel | undefined {
     if (recipient_information !== undefined) {
-        // If we're in either the Inbox or Recent Conversations view,
+        assert(recent_view_util.is_visible() || inbox_util.is_visible());
+        // When we're in either the Inbox or Recent Conversations view,
         // we try to update the closed compose box button label with
         // information about the reply target from the focused row in
         // the view.
