@@ -2,10 +2,13 @@
 
 const assert = require("node:assert/strict");
 
+const {process_keydown} = require("../src/hotkey.js");
+
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
+const {page_params} = require("./lib/zpage_params.cjs");
 
 // Important note on these tests:
 
@@ -91,6 +94,10 @@ const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 
 mock_esm("../src/recent_view_ui", {
     is_in_focus: () => false,
+});
+
+const spectators = mock_esm("../src/spectators", {
+    login_to_access() {},
 });
 
 message_lists.current = {
@@ -560,4 +567,18 @@ run_test("test new user input hook called", () => {
 
     hotkey.process_keydown({which: "S".codePointAt(0)});
     assert.ok(hook_called);
+});
+
+run_test("e shortcut works for anonymous users", () => {
+    page_params.is_spectator = true;
+
+    const stub = make_stub();
+    spectators.login_to_access = stub.f;
+
+    const e = {
+        which: "e".codePointAt(0),
+    };
+
+    process_keydown(e);
+    assert.equal(stub.num_calls, 0, "login_to_access should not be called for 'e' shortcut");
 });
