@@ -450,9 +450,9 @@ function handle_inline_topic_edit_keydown(this: HTMLElement, e: JQuery.KeyDownEv
     }
 }
 
-function handle_inline_topic_edit_change(this: HTMLInputElement): void {
-    const $inline_topic_edit_input = $(this);
-
+function update_inline_topic_edit_input_max_width(
+    $inline_topic_edit_input: JQuery<HTMLInputElement>,
+): void {
     // We use a hidden span element, which we update with the value
     // of the input field on every input change to calculate the
     // width of the topic value. This allows us to dynamically adjust
@@ -460,9 +460,10 @@ function handle_inline_topic_edit_change(this: HTMLInputElement): void {
     const $topic_value_mirror = $inline_topic_edit_input
         .closest(".topic_edit_form")
         .find(".topic_value_mirror");
-    $topic_value_mirror.text(this.value);
+    const input_value = $inline_topic_edit_input.val()!;
+    $topic_value_mirror.text(input_value);
     const topic_width = $topic_value_mirror.width();
-    if (this.value.length > 0) {
+    if (input_value.length > 0) {
         // When the user starts typing in the inline topic edit input field,
         // we dynamically adjust the max-width of the input field to match
         // width of the text in the input field + 1ch width for some cushion.
@@ -483,6 +484,12 @@ function handle_inline_topic_edit_change(this: HTMLInputElement): void {
             $inline_topic_edit_input.css("max-width", "20ch");
         }
     }
+}
+
+function handle_inline_topic_edit_change(this: HTMLInputElement): void {
+    const $inline_topic_edit_input = $(this);
+
+    update_inline_topic_edit_input_max_width($inline_topic_edit_input);
 
     if ($inline_topic_edit_input.hasClass("invalid-input")) {
         // If invalid-input class is present on the inline topic edit
@@ -988,11 +995,7 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     const topic = message.topic;
     const $inline_topic_edit_input = $form.find<HTMLInputElement>("input.inline_topic_edit");
     $inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
-    const $stream_topic = $recipient_row.find(".stream_topic");
-    const topic_width = $stream_topic.width();
-    // Set the width of the inline topic edit input to the
-    // width of the topic name + 1ch width for some cushion.
-    $inline_topic_edit_input.css("max-width", `calc(${topic_width}px + 1ch)`);
+    update_inline_topic_edit_input_max_width($inline_topic_edit_input);
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
     composebox_typeahead.initialize_topic_edit_typeahead(
         $inline_topic_edit_input,
