@@ -433,6 +433,7 @@ export function handle_subgroup_edit_event(group_id: number, direct_subgroup_ids
         update_your_groups_list_if_needed();
         update_display_checkmark_on_group_edit(group);
     }
+    update_permissions_panel_on_subgroup_update(direct_subgroup_ids);
 }
 
 function update_status_text_on_member_update(updated_group: UserGroup): void {
@@ -1150,6 +1151,32 @@ export function setup_group_list_tab_hash(tab_key_value: string): void {
     } else {
         blueslip.debug(`Unknown tab_key_value: ${tab_key_value} for groups overlay.`);
     }
+}
+
+export function update_permissions_panel_on_subgroup_update(subgroup_ids: number[]): void {
+    const active_group_id = get_active_data().id;
+    if (active_group_id === undefined) {
+        return;
+    }
+
+    for (const subgroup_id of subgroup_ids) {
+        if (
+            active_group_id === subgroup_id ||
+            // If one of the supergroup of the currently opened group
+            // is added/removed from it's supergroup, we need to update
+            // the permissions panel.
+            user_groups.is_subgroup_of_target_group(subgroup_id, active_group_id)
+        ) {
+            const group = user_groups.get_user_group_from_id(active_group_id);
+            // We can probably write some logic where we don't need to
+            // calculate everything again on such change, but this
+            // change should not be too frequent in nature and this
+            // approach keeps things simple.
+            show_settings_for(group);
+            return;
+        }
+    }
+    return;
 }
 
 function display_membership_toggle_spinner($group_row: JQuery): void {
