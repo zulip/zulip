@@ -8,7 +8,18 @@ integrations involves writing Markdown files, either at
 `templates/zerver/integrations/{integration_name}.md` (for other
 integrations).
 
-Usually, this involves a few steps:
+The [integrations][api-integrations] in
+[zulip/python-zulip-api][api-repo] have their corresponding Markdown files
+at `zulip/integrations/{integration_name}/doc.md`, which are imported into
+[zulip/zulip][zulip-repo] at
+`static/generated/integrations/{integration_name}/doc.md` using the
+`tools/setup/generate_bots_integrations_static_files.py` script.
+
+[api-repo]: https://github.com/zulip/python-zulip-api/
+[api-integrations]: https://github.com/zulip/python-zulip-api/tree/main/zulip/integrations
+[zulip-repo]: https://github.com/zulip/zulip
+
+Typically, the documentation process involves the following steps:
 
 - Add text explaining all of the steps required to set up the
   integration, including what URLs to use, etc. See
