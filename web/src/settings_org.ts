@@ -1516,7 +1516,7 @@ export function build_page(): void {
         const $error_field = $(`${widget}  .image_file_input_error`).expectOne();
         realm_icon_logo_upload_start($spinner, $upload_text, $delete_button);
         $error_field.hide();
-        
+
         channel.post({
             url,
             data: form_data,

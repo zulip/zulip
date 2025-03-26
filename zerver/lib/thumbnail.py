@@ -134,7 +134,7 @@ pyvips.operation_block_set("VipsForeignLoadJpeg", False)  # image/jpeg
 pyvips.operation_block_set("VipsForeignLoadPng", False)  # image/png
 pyvips.operation_block_set("VipsForeignLoadTiff", False)  # image/tiff
 pyvips.operation_block_set("VipsForeignLoadWebp", False)  # image/webp
-pyvips.operation_block_set("VipsForiegnLoadSvg", False) # image/svg+xml
+pyvips.operation_block_set("VipsForiegnLoadSvg", False)  # image/svg+xml
 pyvips.block_untrusted_set(True)
 
 # Disable the operations cache; our only use here is thumbnail_buffer,
