@@ -894,10 +894,10 @@ def send_messages_for_new_subscribers(
     if new_subscriptions:
         for id, subscribed_stream_names in new_subscriptions.items():
             if id == str(user_profile.id):
-                # Don't send a Zulip if you invited yourself.
+                # Don't send a notification DM if you subscribed yourself.
                 continue
             if bots[id]:
-                # Don't send invitation Zulips to bots
+                # Don't send notification DMs to bots.
                 continue
 
             # For each user, we notify them about newly subscribed streams, except for
