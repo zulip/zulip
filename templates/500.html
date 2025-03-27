@@ -18,33 +18,28 @@
             <!-- Keep in sync with web/html/5xx-cloud.html -->
             <p>
                 {% trans %}
-                Zulip Cloud is currently experiencing some technical difficulties. Sorry about that!
+                There was a problem connecting to your Zulip organization. Sorry about that!
+                The Zulip app will load automatically once the connection is restored.
                 {% endtrans %}
             </p>
             <p>
                 {% trans status_url="https://status.zulip.com/" %}
-                You can check our <a href="{{status_url}}">status page</a> for more information.
+                Please check <a href="{{status_url}}">Zulip Cloud status</a> for
+                more information, and <a href="mailto:{{support_email}}">contact
+                Zulip support</a> with any questions.
                 {% endtrans %}
-                {% trans %}
-                In the meantime, you can <a href="mailto:{{support_email}}">contact Zulip support</a>.
-                {% endtrans %}
-            </p>
-            <p>
-                {% trans %}The page will reload automatically soon after service is restored.{% endtrans %}
             </p>
         {% else %}
             <!-- Keep in sync with web/html/5xx.html -->
             <p>
                 {% trans %}
-                This Zulip server is currently experiencing some technical difficulties. Sorry about that!
+                There was a problem connecting to your Zulip organization. Sorry about that!
+                The Zulip app will load automatically once the connection is restored.
                 {% endtrans %}
             </p>
             <p>
-                {% trans %}The page will reload automatically soon after service is restored.{% endtrans %}
-            </p>
-            <p>
                 {% trans %}
-                In the meantime, you can <a href="mailto:{{support_email}}">contact this server's administrators</a> for support.
+                <a href="mailto:{{support_email}}">Contact this server's administrators</a> for support.
                 {% endtrans %}
             </p>
             <p>
