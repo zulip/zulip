@@ -500,7 +500,9 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
             now + timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 1),
             tick=False,
         ):
-            result = self.client_get(final_url, subdomain="selfhosting")
+            result = self.client_get(
+                final_url, subdomain="selfhosting", HTTP_ACCEPT="text/html, */*;q=0.8"
+            )
 
             self.assertEqual(result.status_code, 302)
             self.assertEqual(
@@ -1510,7 +1512,11 @@ class LegacyServerLoginTest(RemoteServerTestCase):
         hamlet = self.example_user("hamlet")
         now = timezone_now()
         # Try to open a page with no auth at all.
-        result = self.client_get(f"/server/{self.uuid}/billing/", subdomain="selfhosting")
+        result = self.client_get(
+            f"/server/{self.uuid}/billing/",
+            subdomain="selfhosting",
+            HTTP_ACCEPT="text/html, */*;q=0.8",
+        )
         self.assertEqual(result.status_code, 302)
         # Redirects to the login form with appropriate next_page value.
         self.assertEqual(result["Location"], "/serverlogin/?next_page=billing")
@@ -1534,7 +1540,11 @@ class LegacyServerLoginTest(RemoteServerTestCase):
                 next_page="upgrade",
                 return_without_clicking_confirmation_link=True,
             )
-        result = self.client_get(f"/server/{self.uuid}/billing/", subdomain="selfhosting")
+        result = self.client_get(
+            f"/server/{self.uuid}/billing/",
+            subdomain="selfhosting",
+            HTTP_ACCEPT="text/html, */*;q=0.8",
+        )
         self.assertEqual(result.status_code, 302)
         # Redirects to the login form with appropriate next_page value.
         self.assertEqual(result["Location"], "/serverlogin/?next_page=billing")
@@ -1561,7 +1571,11 @@ class LegacyServerLoginTest(RemoteServerTestCase):
             now + timedelta(seconds=REMOTE_BILLING_SESSION_VALIDITY_SECONDS + 30),
             tick=False,
         ):
-            result = self.client_get(f"/server/{self.uuid}/upgrade/", subdomain="selfhosting")
+            result = self.client_get(
+                f"/server/{self.uuid}/upgrade/",
+                subdomain="selfhosting",
+                HTTP_ACCEPT="text/html, */*;q=0.8",
+            )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/serverlogin/?next_page=upgrade")
 
