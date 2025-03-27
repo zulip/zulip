@@ -310,20 +310,15 @@ export class BuddyList extends BuddyListConf {
                 "#buddy-list-users-matching-view-container",
                 this.users_matching_view_is_collapsed,
             );
+            // Ensure the "other" section is visible when headers are collapsed,
+            // because we're hiding its header so there's no way to collapse or
+            // uncollapse the list in this view. Ensure we're showing/hiding as
+            // the user specified otherwise.
             this.set_section_collapse(
                 "#buddy-list-other-users-container",
-                this.other_users_is_collapsed,
+                this.render_data.hide_headers ? false : this.other_users_is_collapsed,
             );
         }
-
-        // Ensure the "other" section is visible when headers are collapsed,
-        // because we're hiding its header so there's no way to collapse or
-        // uncollapse the list in this view. Ensure we're showing/hiding as
-        // the user specified otherwise.
-        this.set_section_collapse(
-            "#buddy-list-other-users-container",
-            this.render_data.hide_headers ? false : this.other_users_is_collapsed,
-        );
 
         this.fill_screen_with_content();
 
