@@ -255,21 +255,10 @@ h3,
         font-size: 0.8571em; /* 12px at 14px/em */
         font-weight: 400;
         vertical-align: middle;
-        line-height: 1.6667em; /* 20px at 12px/em */
+        line-height: inherit;
         display: inline-block;
         float: none;
         margin-top: 9px;
-    }
-
-    /* Don't apply these styling to the loading indicator inside the
-       action buttons, as the required CSS for them is already defined
-       in buttons.css */
-    .loading_indicator_spinner:not(.action-button .loading_indicator_spinner) {
-        width: 30%;
-        height: 1.4286em; /* 20px at 14px/em */
-        margin-top: 7px;
-        vertical-align: middle;
-        display: inline-block;
     }
 
     .inline {
@@ -601,8 +590,6 @@ input[type="checkbox"] {
     overflow-wrap: anywhere;
     background-color: transparent;
     border-radius: 4px;
-    margin-top: 14px;
-    margin-left: 10px;
     color: hsl(156deg 30% 50%);
     padding: 3px 10px;
 
@@ -639,8 +626,6 @@ input[type="checkbox"] {
 
     & img {
         margin-right: 6px;
-        vertical-align: middle;
-        margin-top: -2px;
     }
 
     .settings-save-checkmark {
@@ -2132,8 +2117,7 @@ label.preferences-radio-choice-label {
     }
 
     .alert-notification {
-        margin-top: auto;
-        margin-bottom: 12px;
+        margin-left: 10px;
         margin-right: auto;
     }
 
