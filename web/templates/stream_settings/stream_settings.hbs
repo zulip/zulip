@@ -26,6 +26,12 @@
                 <i class="zulip-icon zulip-icon-archive" aria-hidden="true"></i>
             </span>
         </button>
+        {{else if can_unarchive_stream}}
+        <button class="button small rounded button-danger reactivate tippy-zulip-delayed-tooltip" type="button" data-tippy-content="{{t 'Unarchive channel'}}">
+            <span class="icon-container">
+                <i class="zulip-icon zulip-icon-unarchive" aria-hidden="true"></i>
+            </span>
+        </button>
         {{/if}}
     </div>
     {{/with}}
