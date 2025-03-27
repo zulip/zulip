@@ -339,6 +339,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         compose_recipient.on_compose_select_recipient_update();
     } else if (opts.stream_id && opts.topic) {
         compose_state.set_stream_id(opts.stream_id);
+        compose_state.topic(opts.topic);
         compose_recipient.on_compose_select_recipient_update();
     } else if (opts.stream_id) {
         const stream = stream_data.get_sub_by_id(opts.stream_id);
