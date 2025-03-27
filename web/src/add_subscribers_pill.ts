@@ -202,7 +202,7 @@ export function append_user_group_from_name(
     user_group_pill.append_user_group(user_group, pill_widget);
 }
 
-function get_pill_user_ids(pill_widget: CombinedPillContainer): number[] {
+export function get_pill_user_ids(pill_widget: CombinedPillContainer): number[] {
     const user_ids = user_pill.get_user_ids(pill_widget);
     const stream_user_ids = stream_pill.get_user_ids(pill_widget);
     const group_user_ids = user_group_pill.get_user_ids(pill_widget);
