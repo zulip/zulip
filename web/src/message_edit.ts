@@ -1593,7 +1593,8 @@ type ToastParams = {
 
 function show_message_moved_toast(toast_params: ToastParams): void {
     const new_stream_name = sub_store.maybe_get_stream_name(toast_params.new_stream_id);
-    const stream_topic = `#${new_stream_name} > ${toast_params.new_topic_name}`;
+    const new_topic_display_name = util.get_final_topic_display_name(toast_params.new_topic_name);
+    const is_empty_string_topic = toast_params.new_topic_name === "";
     const new_location_url = hash_util.by_stream_topic_url(
         toast_params.new_stream_id,
         toast_params.new_topic_name,
@@ -1601,8 +1602,10 @@ function show_message_moved_toast(toast_params: ToastParams): void {
     feedback_widget.show({
         populate($container) {
             const widget_body_html = render_message_moved_widget_body({
-                stream_topic,
+                new_stream_name,
+                new_topic_display_name,
                 new_location_url,
+                is_empty_string_topic,
             });
             $container.html(widget_body_html);
         },
