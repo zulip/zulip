@@ -98,3 +98,22 @@ class RequestVariableConversionError(JsonableError):
 
 
 arguments_map: dict[str, list[str]] = defaultdict(list)
+
+
+# Equivalent to request.get_preferred_type() in Django 5.2.
+def get_preferred_type(request: HttpRequest, media_types: list[str]) -> str | None:
+    best_type = None
+    best_score = 0.0, True, True
+    for accepted_type in request.accepted_types:
+        score = (
+            float(accepted_type.params.get("q", "1")),
+            accepted_type.main_type != "*",
+            accepted_type.sub_type != "*",
+        )
+        if best_score < score:
+            for media_type in media_types:
+                if accepted_type.match(media_type):
+                    best_type = media_type
+                    best_score = score
+                    break
+    return best_type
