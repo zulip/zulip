@@ -33,7 +33,7 @@ from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticatio
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitResult
-from zerver.lib.request import RequestNotes
+from zerver.lib.request import RequestNotes, get_preferred_type
 from zerver.lib.response import (
     AsynchronousResponse,
     json_response,
@@ -377,7 +377,7 @@ class LogRequests(MiddlewareMixin):
 class JsonErrorHandler(MiddlewareMixin):
     def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse | None:
         if isinstance(exception, MissingAuthenticationError):
-            if "text/html" in request.headers.get("Accept", ""):
+            if get_preferred_type(request, ["application/json", "text/html"]) == "text/html":
                 # If this looks like a request from a top-level page in a
                 # browser, send the user to the login page.
                 #
