@@ -1328,6 +1328,11 @@ li.top_left_scheduled_messages {
     }
 }
 
+.dm-markers-and-unreads,
+.conversation-partners {
+    align-self: baseline;
+}
+
 .channel-new-topic-button {
     /* display: flex; is set on visible channels and
        channel-row hovers. */
@@ -1356,12 +1361,25 @@ li.top_left_scheduled_messages {
     grid-area: ending-anchor-element;
 }
 
-.conversation-partners-list,
 .stream-name {
     white-space: nowrap;
     overflow-x: hidden;
     overflow-x: clip;
     text-overflow: ellipsis;
+    padding: 0 var(--left-sidebar-before-unread-count-padding) 0 0;
+}
+
+.conversation-partners-list {
+    /* Clamp multi-line DMs to two lines. */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    /* Break overflowing usernames as necessary. */
+    overflow-wrap: break-word;
+
+    line-height: var(--line-height-sidebar-topic-inner);
+    margin: var(--spacing-top-bottom-sidebar-topic-inner) 0;
     padding: 0 var(--left-sidebar-before-unread-count-padding) 0 0;
 }
 
@@ -1512,6 +1530,10 @@ li.topic-list-item {
     .conversation-partners-icon {
         grid-area: starting-anchor-element;
         place-self: center;
+
+        &:not(.user-circle) {
+            place-self: start center;
+        }
     }
 
     .dm-name {
@@ -1519,10 +1541,9 @@ li.topic-list-item {
     }
 
     .user-circle {
-        /* Tighten the line-height to match the icon's size... */
-        line-height: 1;
-        /* ...which is approximately 8px at 15px/1em. */
+        /* User circles are approximately 8px at 15px/1em. */
         font-size: 0.5333em;
+        align-self: start;
     }
 
     .unread_count {
