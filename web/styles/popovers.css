@@ -609,12 +609,6 @@ ul.popover-group-menu-member-list {
         margin-bottom: 5px;
         -webkit-overflow-scrolling: touch;
 
-        .remove-subscription-button,
-        .remove-member-button {
-            padding-top: 2px;
-            padding-bottom: 2px;
-        }
-
         .user-stream-list,
         .user-group-list {
             width: 100%;
@@ -637,7 +631,7 @@ ul.popover-group-menu-member-list {
 
                     &.remove_subscription,
                     &.remove_member {
-                        text-align: right;
+                        float: right;
                         padding-right: 10px;
                     }
 
