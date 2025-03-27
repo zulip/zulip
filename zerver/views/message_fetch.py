@@ -317,7 +317,6 @@ def get_messages_backend(
             result="success",
             msg="",
             history_limited=query_info.history_limited,
-            found_anchor=False,
             found_oldest=False,
             found_newest=False,
         )
@@ -326,7 +325,6 @@ def get_messages_backend(
             messages=message_list,
             result="success",
             msg="",
-            found_anchor=query_info.found_anchor,
             found_oldest=query_info.found_oldest,
             found_newest=query_info.found_newest,
             history_limited=query_info.history_limited,

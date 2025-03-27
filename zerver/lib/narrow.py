@@ -1373,7 +1373,6 @@ MessageRowT = TypeVar("MessageRowT", bound=Sequence[Any])
 @dataclass
 class LimitedMessages(Generic[MessageRowT]):
     rows: list[MessageRowT]
-    found_anchor: bool
     found_newest: bool
     found_oldest: bool
     history_limited: bool
@@ -1421,7 +1420,6 @@ def post_process_limited_query(
 
     limited_rows = [*before_rows, *anchor_rows, *after_rows]
 
-    found_anchor = len(anchor_rows) == 1
     found_oldest = anchored_to_left or (len(before_rows) < num_before)
     found_newest = anchored_to_right or (len(after_rows) < num_after)
     # BUG: history_limited is incorrect False in the event that we had
@@ -1439,7 +1437,6 @@ def post_process_limited_query(
 
     return LimitedMessages(
         rows=limited_rows,
-        found_anchor=found_anchor,
         found_newest=found_newest,
         found_oldest=found_oldest,
         history_limited=history_limited,
@@ -1564,7 +1561,6 @@ def fetch_messages(
             visible_rows = rows
         return FetchedMessages(
             rows=visible_rows,
-            found_anchor=False,
             found_newest=False,
             found_oldest=False,
             history_limited=False,
@@ -1586,7 +1582,6 @@ def fetch_messages(
 
     return FetchedMessages(
         rows=query_info.rows,
-        found_anchor=query_info.found_anchor,
         found_newest=query_info.found_newest,
         found_oldest=query_info.found_oldest,
         history_limited=query_info.history_limited,
