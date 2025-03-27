@@ -21,7 +21,7 @@ type VersionInfo = {
     | {
           alt: "macOS";
           download_link: string;
-          mac_arm64_link: string;
+          mac_intel_link: string;
           install_guide: string;
       }
     | {
@@ -71,8 +71,8 @@ const apps_events = function (): void {
             alt: "macOS",
             description:
                 "The Zulip desktop app comes with native <a class='apps-page-link' href='/help/desktop-notifications'>desktop notifications</a>, support for multiple Zulip accounts, and a dedicated tray icon.",
-            download_link: "/apps/download/mac",
-            mac_arm64_link: "/apps/download/mac-arm64",
+            download_link: "/apps/download/mac-arm64",
+            mac_intel_link: "/apps/download/mac-intel",
             show_instructions: true,
             install_guide: "/help/desktop-app-install-guide",
             app_type: "desktop",
@@ -132,7 +132,7 @@ const apps_events = function (): void {
         const $download_from_google_play_store = $(".download-from-google-play-store");
         const $download_from_apple_app_store = $(".download-from-apple-app-store");
         const $download_from_microsoft_store = $("#download-from-microsoft-store");
-        const $download_mac_arm64 = $("#download-mac-arm64");
+        const $download_mac_intel = $("#download-mac-intel");
         const $desktop_download_link = $(".desktop-download-link");
         const version_info = info[version];
 
@@ -147,7 +147,7 @@ const apps_events = function (): void {
         } else {
             $desktop_download_link.attr("href", version_info.download_link);
             if (version_info.alt === "macOS") {
-                $download_mac_arm64.find("a").attr("href", version_info.mac_arm64_link);
+                $download_mac_intel.find("a").attr("href", version_info.mac_intel_link);
             }
             assert(version_info.download_instructions);
             $download_instructions.html(version_info.download_instructions);
@@ -161,7 +161,7 @@ const apps_events = function (): void {
         $download_from_google_play_store.toggle(version === "android");
         $download_from_apple_app_store.toggle(version === "ios");
         $download_from_microsoft_store.toggle(version === "windows");
-        $download_mac_arm64.toggle(version === "mac");
+        $download_mac_intel.toggle(version === "mac");
     };
 
     // init

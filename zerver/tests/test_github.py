@@ -43,11 +43,31 @@ class GitHubTestCase(ZulipTestCase):
 
         responses.add(
             responses.HEAD,
-            "https://desktop-download.zulip.com/v5.4.3/Zulip-5.4.3-x64.dmg",
+            "https://desktop-download.zulip.com/v5.4.3/Zulip-5.4.3-arm64.dmg",
             status=302,
         )
         self.assertEqual(
             get_latest_github_release_download_link_for_platform("mac"),
+            "https://desktop-download.zulip.com/v5.4.3/Zulip-5.4.3-arm64.dmg",
+        )
+
+        responses.add(
+            responses.HEAD,
+            "https://desktop-download.zulip.com/v5.4.3/Zulip-5.4.3-arm64.dmg",
+            status=302,
+        )
+        self.assertEqual(
+            get_latest_github_release_download_link_for_platform("mac-arm64"),
+            "https://desktop-download.zulip.com/v5.4.3/Zulip-5.4.3-arm64.dmg",
+        )
+
+        responses.add(
+            responses.HEAD,
+            "https://desktop-download.zulip.com/v5.4.3/Zulip-5.4.3-x64.dmg",
+            status=302,
+        )
+        self.assertEqual(
+            get_latest_github_release_download_link_for_platform("mac-intel"),
             "https://desktop-download.zulip.com/v5.4.3/Zulip-5.4.3-x64.dmg",
         )
 

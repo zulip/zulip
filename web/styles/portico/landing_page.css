@@ -2112,7 +2112,7 @@ button {
 
 #download-from-microsoft-store,
 #download-android-apk,
-#download-mac-arm64 {
+#download-mac-intel {
     display: block;
     color: hsl(0deg 0% 100%);
     font-size: 13px;
@@ -2124,7 +2124,7 @@ button {
 }
 
 #download-from-microsoft-store,
-#download-mac-arm64 {
+#download-mac-intel {
     margin-top: 10px;
 }
 
