@@ -2305,7 +2305,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertNotIn(
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result.content.decode()
         )
-        self.assert_in_response("server is experiencing technical difficulties", result)
+        self.assert_in_response("Something went wrong. Sorry about that!", result)
         self.assertTrue(
             "ERROR:root:Failed to deliver email during user registration" in m.output[0]
         )
@@ -2354,7 +2354,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertNotIn(
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result.content.decode()
         )
-        self.assert_in_response("server is experiencing technical difficulties", result)
+        self.assert_in_response("Something went wrong. Sorry about that!", result)
         self.assertTrue("ERROR:root:Failed to deliver email during realm creation" in m.output[0])
 
     def test_user_default_language_and_timezone(self) -> None:
