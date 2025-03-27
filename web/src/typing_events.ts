@@ -76,10 +76,10 @@ type TypingMessageEditEvent = z.output<typeof typing_edit_message_event_schema>;
 
 function get_users_typing_for_narrow(): number[] {
     if (narrow_state.narrowed_by_topic_reply()) {
-        const current_stream_id = narrow_state.stream_id();
+        const current_stream_id = narrow_state.stream_id(narrow_state.filter(), true);
         const current_topic = narrow_state.topic();
         if (current_stream_id === undefined) {
-            // narrowed to a stream which doesn't exist.
+            // Narrowed to a channel which doesn't exist.
             return [];
         }
         assert(current_topic !== undefined);
