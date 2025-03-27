@@ -113,7 +113,7 @@ def get_realm_exports(request: HttpRequest, user: UserProfile) -> HttpResponse:
 @require_realm_admin
 def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int) -> HttpResponse:
     try:
-        export_row = RealmExport.objects.get(id=export_id)
+        export_row = RealmExport.objects.get(realm_id=user.realm_id, id=export_id)
     except RealmExport.DoesNotExist:
         raise JsonableError(_("Invalid data export ID"))
 
