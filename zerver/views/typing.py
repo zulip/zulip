@@ -15,7 +15,10 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id_for_message, access_stream_for_send_message
-from zerver.lib.topic import maybe_rename_general_chat_to_empty_topic
+from zerver.lib.topic import (
+    maybe_rename_general_chat_to_empty_topic,
+    maybe_rename_no_topic_to_empty_topic,
+)
 from zerver.lib.typed_endpoint import ApiParamConfig, OptionalTopic, PathOnly, typed_endpoint
 from zerver.models import Recipient, UserProfile
 from zerver.models.recipients import get_direct_message_group_user_ids
@@ -54,6 +57,7 @@ def send_notification_backend(
         stream = access_stream_by_id_for_message(user_profile, stream_id)[0]
         access_stream_for_send_message(user_profile, stream, forwarder_user_profile=None)
         topic = maybe_rename_general_chat_to_empty_topic(topic)
+        topic = maybe_rename_no_topic_to_empty_topic(topic)
         do_send_stream_typing_notification(user_profile, operator, stream, topic)
     else:
         if notification_to is None:

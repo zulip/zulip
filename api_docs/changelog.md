@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 10.0
 
+**Feature level 372**
+
+* [`POST /typing`](/api/set-typing-status): The `"(no topic)"` value
+  when used for `topic` parameter is now interpreted as an empty string.
+
 **Feature level 371**
 
 No changes; feature level used for Zulip 10.0 release.
