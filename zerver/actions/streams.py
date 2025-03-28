@@ -39,7 +39,7 @@ from zerver.lib.streams import (
     can_access_stream_metadata_user_ids,
     check_basic_stream_access,
     get_anonymous_group_membership_dict_for_streams,
-    get_stream_permission_policy_name,
+    get_stream_permission_policy_key,
     get_stream_post_policy_value_based_on_group_setting,
     get_user_ids_with_metadata_access_via_permission_groups,
     get_users_dict_with_metadata_access_to_streams_via_permission_groups,
@@ -1339,16 +1339,18 @@ def do_change_stream_permission(
     )
     send_event_on_commit(stream.realm, event, notify_stream_update_ids)
 
-    old_policy_name = get_stream_permission_policy_name(
+    old_policy_key = get_stream_permission_policy_key(
         invite_only=old_invite_only_value,
         history_public_to_subscribers=old_history_public_to_subscribers_value,
         is_web_public=old_is_web_public_value,
     )
-    new_policy_name = get_stream_permission_policy_name(
+    old_policy_name = Stream.PERMISSION_POLICIES[old_policy_key]["policy_name"]
+    new_policy_key = get_stream_permission_policy_key(
         invite_only=stream.invite_only,
         history_public_to_subscribers=stream.history_public_to_subscribers,
         is_web_public=stream.is_web_public,
     )
+    new_policy_name = Stream.PERMISSION_POLICIES[new_policy_key]["policy_name"]
     send_change_stream_permission_notification(
         stream,
         old_policy_name=old_policy_name,

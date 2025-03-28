@@ -72,7 +72,7 @@ from zerver.lib.streams import (
     filter_stream_authorization_for_adding_subscribers,
     get_anonymous_group_membership_dict_for_streams,
     get_stream_permission_default_group,
-    get_stream_permission_policy_name,
+    get_stream_permission_policy_key,
     list_to_streams,
     stream_to_dict,
     user_has_content_access,
@@ -879,6 +879,12 @@ def send_messages_for_new_subscribers(
                     stream_description = "*" + _("No description.") + "*"
                 else:
                     stream_description = stream.description
+
+                policy_key = get_stream_permission_policy_key(
+                    invite_only=stream.invite_only,
+                    history_public_to_subscribers=stream.history_public_to_subscribers,
+                    is_web_public=stream.is_web_public,
+                )
                 notifications.append(
                     internal_prep_stream_message(
                         sender=sender,
@@ -888,11 +894,7 @@ def send_messages_for_new_subscribers(
                             "**{policy}** channel created by {user_name}. **Description:**"
                         ).format(
                             user_name=silent_mention_syntax_for_user(user_profile),
-                            policy=get_stream_permission_policy_name(
-                                invite_only=stream.invite_only,
-                                history_public_to_subscribers=stream.history_public_to_subscribers,
-                                is_web_public=stream.is_web_public,
-                            ),
+                            policy=Stream.PERMISSION_POLICIES[policy_key]["policy_name"],
                         )
                         + f"\n```` quote\n{stream_description}\n````",
                     ),
