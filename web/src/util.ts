@@ -1,5 +1,6 @@
 import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
@@ -600,4 +601,14 @@ export function get_retry_backoff_seconds(
         rate_limit_delay_secs = parsed.data["retry-after"] + Math.random() * 0.5;
     }
     return Math.max(backoff_delay_secs, rate_limit_delay_secs);
+}
+
+export async function sha256_hash(text: string): Promise<string> {
+    const msgUint8 = new TextEncoder().encode(text);
+    assert(crypto.subtle !== undefined, "crypto.subtle is not defined" + crypto);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+    const hash = Array.from(new Uint8Array(hashBuffer), (byte) =>
+        byte.toString(16).padStart(2, "0"),
+    ).join("");
+    return hash;
 }
