@@ -76,12 +76,13 @@ const update_connection_error_banner = ($banner: JQuery, retry_delay_secs: numbe
 const FOUND_MISSING_UNREADS_IN_CURRENT_NARROW: Banner = {
     intent: "warning",
     label: $t({
-        defaultMessage: "This conversation also has older unread messages.",
+        defaultMessage:
+            "This conversation also has older unread messages. Jump to first unread message?",
     }),
     buttons: [
         {
             attention: "quiet",
-            label: $t({defaultMessage: "Jump to first unread"}),
+            label: $t({defaultMessage: "Jump"}),
             custom_classes: "found-missing-unreads-jump-to-first-unread",
         },
     ],
