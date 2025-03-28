@@ -894,6 +894,54 @@ class TestCreateStreams(ZulipTestCase):
         created_stream = new_streams[0]
         self.assertEqual(created_stream.creator_id, hamlet.id)
 
+    def test_channel_create_message_exists_for_all_policy_types(self) -> None:
+        """
+        Create a channel for each policy type to ensure they all have a "new channel" message.
+        """
+        # this is to check if the appropriate channel name is present in the "new channel" message
+        policy_key_map: dict[str, str] = {
+            "web_public": "**Web-public**",
+            "public": "**Public**",
+            "private_shared_history": "**Private, shared history**",
+            "private_protected_history": "**Private, protected history**",
+        }
+        for policy_key, policy_dict in Stream.PERMISSION_POLICIES.items():
+            channel_creator = self.example_user("desdemona")
+            subdomain = "zulip"
+
+            if policy_key == "public_protected_history":
+                # This is a special channel policy only available in Zephyr realms.
+                channel_creator = self.mit_user("starnine")
+                subdomain = "zephyr"
+
+            self.login_user(channel_creator)
+            new_channel_name = f"New {policy_key} channel"
+            result = self.api_post(
+                channel_creator,
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([{"name": new_channel_name}]).decode(),
+                    "is_web_public": orjson.dumps(policy_dict["is_web_public"]).decode(),
+                    "invite_only": orjson.dumps(policy_dict["invite_only"]).decode(),
+                    "history_public_to_subscribers": orjson.dumps(
+                        policy_dict["history_public_to_subscribers"]
+                    ).decode(),
+                },
+                subdomain=subdomain,
+            )
+            self.assert_json_success(result)
+            new_channel = get_stream(new_channel_name, channel_creator.realm)
+            channel_events_messages = get_topic_messages(
+                channel_creator, new_channel, "channel events"
+            )
+            if policy_key == "public_protected_history":
+                # These do not get channel creation notification.
+                self.assert_length(channel_events_messages, 0)
+                continue
+
+            self.assert_length(channel_events_messages, 1)
+            self.assertIn(policy_key_map[policy_key], channel_events_messages[0].content)
+
 
 class RecipientTest(ZulipTestCase):
     def test_recipient(self) -> None:
