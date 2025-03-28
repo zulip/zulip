@@ -9571,15 +9571,15 @@ paths:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
 
-  /users/{user_id}/status_from_admin:
+  /users/{user_id}/status:
     post:
-      operationId: update-status-from-admin
+      operationId: update-status-for-user
       summary: Update user status if you are an admin
       tags: ["users"]
       parameters:
         - $ref: "#/components/parameters/UserId"
       description: |
-        Change your [status](/help/status-and-availability).
+        This allow administrator to change another user [status](/help/status-and-availability).
 
         A request to this endpoint will only change the parameters passed.
         For example, passing just `status_text` requests a change in the status
@@ -9588,8 +9588,8 @@ paths:
         Clients that wish to set the user's status to a specific value should
         pass all supported parameters.
 
-        **Changes**: In Zulip 5.0 (feature level 86), added support for
-        `emoji_name`, `emoji_code`, and `reaction_type` parameters.
+        It's new at the current feature level.
+      x-requires-administrator: true
       requestBody:
         required: false
         content:
@@ -9737,7 +9737,6 @@ paths:
                           }
                         description: |
                           An example JSON error response when the custom emoji is invalid:
-  /users/{user_id}/status:
     get:
       operationId: get-user-status
       summary: Get a user's status

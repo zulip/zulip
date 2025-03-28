@@ -162,52 +162,16 @@ def update_user_status_admin(
     emoji_code: str | None = None,
     emoji_type: Annotated[str | None, ApiParamConfig("reaction_type")] = None,
 ) -> HttpResponse:
-    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
-
-    if not user_profile.can_admin_user(target_user):
-        raise JsonableError(_("Insufficient permission to update other user status"))
-
-    if status_text is not None:
-        status_text = status_text.strip()
-
-    if (away is None) and (status_text is None) and (emoji_name is None):
-        raise JsonableError(_("Client did not pass any new values."))
-
-    if emoji_name == "":
-        emoji_code = ""
-        emoji_type = UserStatus.UNICODE_EMOJI
-    elif emoji_name is not None:
-        if emoji_code is None or emoji_type is None:
-            emoji_data = get_emoji_data(target_user.realm_id, emoji_name)
-            if emoji_code is None:
-                emoji_code = emoji_data.emoji_code
-            if emoji_type is None:
-                emoji_type = emoji_data.reaction_type
-    elif emoji_type or emoji_code:
-        raise JsonableError(
-            _("Client must pass emoji_name if they pass either emoji_code or reaction_type.")
-        )
-
-    if emoji_name not in ["", None]:
-        assert emoji_name is not None
-        assert emoji_code is not None
-        assert emoji_type is not None
-        check_emoji_request(target_user.realm, emoji_name, emoji_code, emoji_type)
-
-    client = RequestNotes.get_notes(request).client
-    assert client is not None
-
-    do_update_user_status(
+    target_user = access_user_by_id(user_profile, user_id, for_admin=True)
+    return update_user_status_backend(
+        request,
         user_profile=target_user,
         away=away,
         status_text=status_text,
-        client_id=client.id,
         emoji_name=emoji_name,
         emoji_code=emoji_code,
-        reaction_type=emoji_type,
+        emoji_type=emoji_type,
     )
-
-    return json_success(request)
 
 
 @human_users_only

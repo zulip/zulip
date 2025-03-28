@@ -263,7 +263,6 @@ class UserStatusTest(ZulipTestCase):
             user_status_info(hamlet),
             dict(away=True, status_text="on vacation"),
         )
-
         result = self.client_get(f"/json/users/{hamlet.id}/status")
         result_dict = self.assert_json_success(result)
         self.assertEqual(
@@ -301,7 +300,6 @@ class UserStatusTest(ZulipTestCase):
                 reaction_type=UserStatus.UNICODE_EMOJI,
             ),
         )
-
         result = self.client_get(f"/json/users/{hamlet.id}/status")
         result_dict = self.assert_json_success(result)
         self.assertEqual(
@@ -440,9 +438,8 @@ class UserStatusTest(ZulipTestCase):
             result_dict["status"],
             {},
         )
-        # Test url users/<int:user_id>/status_from_admin
         #  No such user
-        result = self.client_post("/json/users/12345/status_from_admin")
+        result = self.client_post("/json/users/12345/status")
         self.assert_json_error(result, "No such user")
         payload = {
             "status_text": "In a meeting",
@@ -453,10 +450,10 @@ class UserStatusTest(ZulipTestCase):
         # User does not have permission to set status for other users
         self.login_user(hamlet)
 
-        result = self.client_post(f"/json/users/{iago.id}/status_from_admin", payload)
-        self.assert_json_error(result, "Insufficient permission to update other user status")
+        result = self.client_post(f"/json/users/{iago.id}/status", payload)
+        self.assert_json_error(result, "Insufficient permission")
 
-        update_status_url = f"/json/users/{hamlet.id}/status_from_admin"
+        update_status_url = f"/json/users/{hamlet.id}/status"
 
         # Login as admin Iago
         self.login_user(iago)
