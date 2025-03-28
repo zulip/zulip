@@ -494,6 +494,8 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         name: "copenhagen.png",
     };
     let response = {
+        status: 200,
+        uploadURL: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
         body: {
             xhr: {
                 responseText: JSON.stringify({
