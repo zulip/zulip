@@ -8,11 +8,12 @@
         {{/if}}
 
         <a href="{{url}}" class="conversation-partners">
-            <span class="conversation-partners-list">{{recipients}}</span>
-            {{> status_emoji status_emoji_info}}
-            {{#if is_bot}}
-                <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
-            {{/if}}
+            <span class="conversation-partners-list">{{recipients}} {{> status_emoji status_emoji_info}}
+                {{#if is_bot}}
+                    <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+                {{/if}}
+            </span>
+
         </a>
         <div class="dm-markers-and-unreads">
             {{#if has_unread_mention}}
