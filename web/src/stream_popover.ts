@@ -616,7 +616,12 @@ export async function build_move_topic_to_stream_popover(
         if ($("#move_topic_modal select.message_edit_topic_propagate").val() === "change_one") {
             return false;
         }
-        const {new_topic_name} = get_params_from_form();
+        let {new_topic_name} = get_params_from_form();
+        if (!settings_data.user_can_move_messages_to_another_topic()) {
+            // new_topic_name is undefined since the new topic input is disabled when
+            // user does not have permission to edit topic.
+            new_topic_name = args.topic_name;
+        }
         assert(new_topic_name !== undefined);
         // Don't show warning for empty topic as the user is probably
         // about to type a new topic name. Note that if topics are
