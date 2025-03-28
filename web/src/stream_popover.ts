@@ -860,7 +860,8 @@ export async function build_move_topic_to_stream_popover(
         render_selected_stream();
         $("#move_topic_to_stream_widget").prop("disabled", disable_stream_input);
         $topic_input.on("input", () => {
-            update_submit_button_disabled_state(current_stream_id);
+            assert(stream_widget_value !== undefined);
+            update_submit_button_disabled_state(stream_widget_value);
             maybe_show_topic_already_exists_warning();
             const topic_input_value = $topic_input.val();
             assert(topic_input_value !== undefined);
