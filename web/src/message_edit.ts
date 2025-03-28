@@ -519,11 +519,10 @@ function handle_inline_topic_edit_change(this: HTMLInputElement): void {
 
     if (!realm.realm_mandatory_topics) {
         const $topic_not_mandatory_placeholder = $(".inline-topic-edit-placeholder");
-        if ($inline_topic_edit_input.val() === "") {
-            $topic_not_mandatory_placeholder.addClass("inline-topic-edit-placeholder-visible");
-        } else {
-            $topic_not_mandatory_placeholder.removeClass("inline-topic-edit-placeholder-visible");
-        }
+        $topic_not_mandatory_placeholder.toggleClass(
+            "inline-topic-edit-placeholder-visible",
+            $inline_topic_edit_input.val() === "",
+        );
     }
 }
 

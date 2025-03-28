@@ -373,11 +373,7 @@ export function update_topic_displayed_text(
     $topic_not_mandatory_placeholder.hide();
 
     function update_placeholder_visibility(): void {
-        if ($input.val() === "") {
-            $topic_not_mandatory_placeholder.addClass("visible");
-        } else {
-            $topic_not_mandatory_placeholder.removeClass("visible");
-        }
+        $topic_not_mandatory_placeholder.toggleClass("visible", $input.val() === "");
     }
 
     if (is_empty_string_topic && !has_topic_focus && recipient_widget_hidden) {

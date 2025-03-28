@@ -759,15 +759,10 @@ export async function build_move_topic_to_stream_popover(
     function update_topic_input_placeholder_visibility(topic_input_value: string): void {
         if (!realm.realm_mandatory_topics) {
             const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
-            if (topic_input_value === "") {
-                $topic_not_mandatory_placeholder.addClass(
-                    "move-topic-new-topic-placeholder-visible",
-                );
-            } else {
-                $topic_not_mandatory_placeholder.removeClass(
-                    "move-topic-new-topic-placeholder-visible",
-                );
-            }
+            $topic_not_mandatory_placeholder.toggleClass(
+                "move-topic-new-topic-placeholder-visible",
+                topic_input_value === "",
+            );
         }
     }
 
