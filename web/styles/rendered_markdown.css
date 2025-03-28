@@ -262,6 +262,7 @@
             display: inline-flex;
             align-items: baseline;
             gap: 3px;
+            margin-top: 5px;
         }
 
         .markdown-timestamp-icon {

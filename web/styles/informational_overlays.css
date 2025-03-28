@@ -77,6 +77,10 @@
         padding: 0 0.2em 0.2em;
     }
 
+    .emoji {
+        vertical-align: sub;
+    }
+
     & th {
         width: 245px;
         text-align: center;
