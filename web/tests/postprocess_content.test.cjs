@@ -10,7 +10,7 @@ const thumbnail = mock_esm("../src/thumbnail");
 const {postprocess_content} = zrequire("postprocess_content");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const user_settings = {};
+const user_settings = {web_font_size_px: 16};
 initialize_user_settings({user_settings});
 
 run_test("postprocess_content", () => {
@@ -135,6 +135,22 @@ run_test("message_inline_animated_image_still", ({override}) => {
         '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
             '<img data-original-dimensions="100x200" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element portrait-thumbnail" width="100" height="200" loading="lazy">' +
+            "</a>" +
+            "</div>",
+    );
+
+    // Test for dinky thumbnails
+    assert.equal(
+        postprocess_content(
+            '<div class="message_inline_image">' +
+                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
+                '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">' +
+                "</a>" +
+                "</div>",
+        ),
+        '<div class="message_inline_image">' +
+            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
+            '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element dinky-thumbnail portrait-thumbnail" width="1" height="10" loading="lazy">' +
             "</a>" +
             "</div>",
     );
