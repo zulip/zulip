@@ -244,7 +244,11 @@ class Message(AbstractMessage):
                 name="zerver_message_realm_id",
             ),
             models.Index(
-                # Used by 0680_rename_general_chat_to_empty_string_topic
+                # Potentially useful for migrations that rewrite
+                # message edit history. Originally added for
+                # 0680_rename_general_chat_to_empty_string_topic,
+                # though that migration was adjusted in a way that no
+                # longer uses this.
                 fields=["id"],
                 condition=Q(edit_history__isnull=False),
                 name="zerver_message_edit_history_id",
