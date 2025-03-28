@@ -438,6 +438,7 @@
 
         img {
             display: block;
+            object-fit: scale-down;
 
             /* Ensure a reasonable clickable area on
                extremely tall or extremely wide images. */
@@ -456,10 +457,21 @@
                orientation. */
             &.landscape-thumbnail {
                 width: 10em;
+
+                /* For dinky thumbnails (those whose dimensions are
+                   less than 10em on both sides), we set a 4em
+                   thumbnail. */
+                &.dinky-thumbnail {
+                    width: 4em;
+                }
             }
 
             &.portrait-thumbnail {
                 height: 10em;
+
+                &.dinky-thumbnail {
+                    height: 4em;
+                }
             }
         }
 
