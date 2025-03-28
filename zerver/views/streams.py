@@ -885,16 +885,35 @@ def send_messages_for_new_subscribers(
                     history_public_to_subscribers=stream.history_public_to_subscribers,
                     is_web_public=stream.is_web_public,
                 )
+                new_channel_message = None
+
+                # Policy `public_protected_history` is missing here as those channels don't get
+                # channel creation notification.
+                if policy_key == "web_public":
+                    new_channel_message = _(
+                        "**Web-public** channel created by {user_name}. **Description:**"
+                    )
+                elif policy_key == "public":
+                    new_channel_message = _(
+                        "**Public** channel created by {user_name}. **Description:**"
+                    )
+                elif policy_key == "private_shared_history":
+                    new_channel_message = _(
+                        "**Private, shared history** channel created by {user_name}. **Description:**"
+                    )
+                elif policy_key == "private_protected_history":
+                    new_channel_message = _(
+                        "**Private, protected history** channel created by {user_name}. **Description:**"
+                    )
+
+                assert new_channel_message is not None
                 notifications.append(
                     internal_prep_stream_message(
                         sender=sender,
                         stream=stream,
                         topic_name=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
-                        content=_(
-                            "**{policy}** channel created by {user_name}. **Description:**"
-                        ).format(
+                        content=new_channel_message.format(
                             user_name=silent_mention_syntax_for_user(user_profile),
-                            policy=Stream.PERMISSION_POLICIES[policy_key]["policy_name"],
                         )
                         + f"\n```` quote\n{stream_description}\n````",
                     ),
