@@ -855,10 +855,6 @@ export let is_user_subscribed = (stream_id: number, user_id: number): boolean =>
         );
         return false;
     }
-    if (user_id === undefined) {
-        blueslip.warn("Undefined user_id passed to function is_user_subscribed");
-        return false;
-    }
 
     return peer_data.is_user_subscribed(stream_id, user_id);
 };
