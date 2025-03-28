@@ -771,6 +771,20 @@ export async function build_move_topic_to_stream_popover(
         }
     }
 
+    function setup_resize_observer($topic_input: JQuery<HTMLInputElement>): void {
+        // Update position of topic typeahead because showing/hiding the
+        // "topic already exists" warning changes the size of the modal.
+        const update_topic_typeahead_position = new ResizeObserver((_entries) => {
+            requestAnimationFrame(() => {
+                $topic_input.trigger(new $.Event("typeahead.refreshPosition"));
+            });
+        });
+        const move_topic_form = document.querySelector("#move_topic_form");
+        if (move_topic_form) {
+            update_topic_typeahead_position.observe(move_topic_form);
+        }
+    }
+
     function move_topic_post_render(): void {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
         $("#move_topic_modal .move_topic_warning_container").hide();
@@ -811,6 +825,8 @@ export async function build_move_topic_to_stream_popover(
                 });
             });
         }
+
+        setup_resize_observer($topic_input);
 
         if (only_topic_edit) {
             // Set select_stream_id to current_stream_id since we user is not allowed
@@ -855,18 +871,6 @@ export async function build_move_topic_to_stream_popover(
             assert(topic_input_value !== undefined);
             update_topic_input_placeholder_visibility(topic_input_value);
         });
-
-        // Update position of topic typeahead because showing/hiding the
-        // "topic already exists" warning changes the size of the modal.
-        const update_topic_typeahead_position = new ResizeObserver((_entries) => {
-            requestAnimationFrame(() => {
-                $topic_input.trigger(new $.Event("typeahead.refreshPosition"));
-            });
-        });
-        const move_topic_form = document.querySelector("#move_topic_form");
-        if (move_topic_form) {
-            update_topic_typeahead_position.observe(move_topic_form);
-        }
 
         if (!args.from_message_actions_popover) {
             update_move_messages_count_text("change_all");
