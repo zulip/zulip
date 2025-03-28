@@ -630,6 +630,10 @@
     .message_inline_video,
     .message_inline_animated_image_still,
     .youtube-video .media-anchor-element {
+        /* We require a relative positioning context
+           for the sake of play buttons. */
+        position: relative;
+
         &:hover {
             &::after {
                 transform: scale(1);
@@ -647,7 +651,7 @@
             /* Match the width to the background size. */
             width: 2.2857em;
             height: 2.2857em;
-            /* Center according to those widths; at present,
+            /* Center according to those widths; media
                thumbnails are 8em tall and 12em wide. So,
                2.2857em / 2 = 1.1429em as the center of the
                play button. We subtract that value from half
@@ -664,8 +668,12 @@
         & .media-video-element {
             display: block;
             object-fit: contain;
-            height: 100%;
-            width: 100%;
+            /* Since we do not yet read height and width
+               values for media thumbnails, we carry forward
+               reasonable dimensions for a landscape thumbnail
+               here. */
+            height: 8em;
+            width: 12em;
         }
     }
 
