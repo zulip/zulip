@@ -684,16 +684,29 @@ class TopicWildcardMentionNotAllowedError(JsonableError):
         return _("You do not have permission to use topic wildcard mentions in this topic.")
 
 
-class PreviousSettingValueMismatchedError(JsonableError):
+class ExpectationMismatchError(JsonableError):
     code: ErrorCode = ErrorCode.EXPECTATION_MISMATCH
+    data_fields = ["field_name"]
 
     def __init__(self) -> None:
-        pass
+        self.field_name = "field"
 
     @staticmethod
     @override
     def msg_format() -> str:
-        return _("'old' value does not match the expected value.")
+        return _("'{field_name}' value does not match the expected value.")
+
+
+class PreviousSettingValueMismatchedError(ExpectationMismatchError):
+    def __init__(self) -> None:
+        super().__init__()
+        self.field_name = "old"
+
+
+class PreviousMessageContentMismatchedError(ExpectationMismatchError):
+    def __init__(self) -> None:
+        super().__init__()
+        self.field_name = "prev_content_sha256"
 
 
 class SystemGroupRequiredError(JsonableError):
