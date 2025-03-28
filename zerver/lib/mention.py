@@ -14,11 +14,13 @@ from zerver.lib.topic import get_first_message_for_user_in_topic
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
     get_root_id_annotated_recursive_subgroups_for_groups,
+    user_has_permission_for_group_setting,
 )
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.streams import Stream
+from zerver.models.users import is_cross_realm_bot_email
 
 BEFORE_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\[\/<])"
 
@@ -381,35 +383,37 @@ class MentionData:
         if user_group_names_mentions:
             named_user_groups = NamedUserGroup.objects.filter(
                 realm_id=realm_id, name__in=user_group_names_mentions
-            )
+            ).select_related("can_mention_group", "can_mention_group__named_user_group")
 
             # No filter here as we need user_group_name_info for all groups mentions.
             self.user_group_name_info = {group.name.lower(): group for group in named_user_groups}
 
-            # We are interested only in fetching group membersship for
-            # non-deactivated groups and non-silent mentioned groups.
+            # Here we filter the groups so that we ONLY fetch group membership for:
+            # 1- non-deactivated, as deactivated group mentions
+            # are non-operative, so we don't need to waste resources
+            # collecting membership data for them.
+            # 2- non-silent mentioned groups.
+            # 3- Groups the current user has permission to mention,
+            # the fact that any group exists in user_group_names_mentions means the user had
+            # the permission initially to mention that group, but that permission may change
+            # while the message is being sent (not common, though), in this case we shouldn't fetch that group membership.
             filtered_group_ids = [
                 group.id
                 for group in named_user_groups
                 if not group.deactivated
                 and user_group_names_mentions.get(group.name) == "non-silent"
+                and sender_can_mention_group(self.message_sender, group)
             ]
 
-            # If no filtered_group_ids exist,
+            # If filtered_group_ids doesn't exist,
             # then no need to execute the relatively expensive recursive CTE query
-            # triggered by get_root_id_annotated_recursive_subgroups_for_groups.
-            # Also the base case for the recursive CTE requires non-empty matching rows.
+            # triggered by get_root_id_annotated_recursive_subgroups_for_groups,
+            # also the base case for the recursive CTE requires non-empty matching rows.
             if len(filtered_group_ids) == 0:
                 return
 
-            # Here we fetch membership for non-deactivated groups in a
-            # single, efficient bulk query. Deactivated group mentions
-            # are non-operative, so we don't need to waste resources
-            # collecting membership data for them. Further possible optimization:
-            #
-            # - Filtering groups the current user doesn't have permission to mention
-            #   from what we fetch membership for. This requires care to avoid race bugs
-            #   if the user's permissions change while the message is being sent.
+            # Here we fetch membership for the groups filtered above in a
+            # single, efficient bulk query, mapping each group to its direct and indirect members.
             for group_root_id, member_id in (
                 get_root_id_annotated_recursive_subgroups_for_groups(filtered_group_ids, realm_id)
                 .filter(direct_members__is_active=True)
@@ -465,3 +469,25 @@ def get_user_group_mention_display_name(user_group: NamedUserGroup) -> StrPromis
         return SystemGroups.GROUP_DISPLAY_NAME_MAP[user_group.name]
 
     return user_group.name
+
+
+def sender_can_mention_group(sender: UserProfile | None, named_group: NamedUserGroup) -> bool:
+    can_mention_group = named_group.can_mention_group
+
+    if (
+        hasattr(can_mention_group, "named_user_group")
+        and can_mention_group.named_user_group.name == SystemGroups.EVERYONE
+    ):
+        return True
+
+    assert sender is not None
+
+    if is_cross_realm_bot_email(sender.delivery_email):
+        return False
+
+    return user_has_permission_for_group_setting(
+        can_mention_group,
+        sender,
+        NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_mention_group"],
+        direct_member_only=False,
+    )
