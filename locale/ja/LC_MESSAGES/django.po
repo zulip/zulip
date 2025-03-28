@@ -3860,7 +3860,7 @@ msgstr "パスワードをリセット"
 msgid ""
 "Forgot your password? No problem, we'll send a link to reset your password "
 "to the email you signed up with."
-msgstr ""
+msgstr "パスワードをお忘れですか？ ご安心ください。登録したメールアドレスにパスワードリセット用のリンクをお送りします。"
 
 #: templates/zerver/reset.html:34
 msgid "Send reset link"
