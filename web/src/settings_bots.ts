@@ -28,7 +28,7 @@ import type {UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_profile from "./user_profile.ts";
 
-const INCOMING_WEBHOOK_BOT_TYPE = 2;
+const INCOMING_WEBHOOK_BOT_TYPE_INT = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
 const EMBEDDED_BOT_TYPE = "4";
@@ -82,7 +82,7 @@ export function render_bots(): void {
             avatar_url: elem.avatar_url,
             api_key: elem.api_key,
             is_active: elem.is_active,
-            is_incoming_webhook_bot: elem.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+            is_incoming_webhook_bot: elem.bot_type === INCOMING_WEBHOOK_BOT_TYPE_INT,
             zuliprc: "zuliprc", // Most browsers do not allow filename starting with `.`
         });
         user_owns_an_active_outgoing_webhook_bot =
@@ -305,7 +305,7 @@ export function add_a_new_bot(): void {
     }
 
     function set_up_form_fields(): void {
-        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE);
+        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE_INT);
         $("#payload_url_inputbox").hide();
         $("#create_payload_url").val("");
         $("#service_name_list").hide();
