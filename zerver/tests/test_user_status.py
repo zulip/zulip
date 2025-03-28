@@ -534,7 +534,7 @@ class UserStatusTest(ZulipTestCase):
             expected_event=dict(
                 type="user_status", user_id=hamlet.id, away=True, status_text="on vacation"
             ),
-            num_events=4,
+            num_events=3,
         )
         self.assertEqual(
             user_status_info(hamlet),

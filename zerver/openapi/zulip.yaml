@@ -9574,7 +9574,7 @@ paths:
   /users/{user_id}/status:
     post:
       operationId: update-status-for-user
-      summary: Update user status if you are an admin
+      summary: Update user status
       tags: ["users"]
       parameters:
         - $ref: "#/components/parameters/UserId"
