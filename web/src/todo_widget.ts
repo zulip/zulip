@@ -524,39 +524,38 @@ export function activate({
             };
 
             const mouseUpHandler = (event: JQuery.MouseUpEvent): void => {
-                // Get all the items in the list which are not being dragged
-                const $items = $item.closest("ul").children(".todo-item:not(.dragging)");
+                const $draggingItem = $(".dragging");
+                const $ul = $draggingItem.closest("ul");
+                const $items = $ul.children(".todo-item:not(.dragging)");
 
-                // Get the index of item being dragged
+                // Get current index
                 let currentIndex = -1;
-                $items
-                    .closest("ul")
-                    .children("li")
-                    .each((index, element) => {
-                        if ($(element).hasClass("dragging")) {
-                            currentIndex = index;
-                        }
-                    });
-
-                // We'll start from the first item and iterate through all the items
-                // until we get an item below current mouse position. So, the new position
-                // will be the position just above the item below the mouse pointer.
-                const mouseY = event.clientY;
-                let finalIndex = 0;
-
-                $items.each(function (index) {
-                    const $element = $(this);
-                    const box = $element.get(0)?.getBoundingClientRect();
-                    if (!box) {
-                        return;
-                    }
-                    const boxCenterY = box.top + box.height / 2;
-
-                    if (mouseY > boxCenterY) {
-                        finalIndex = index + 1;
+                $ul.children("li").each((index, element) => {
+                    if ($(element).hasClass("dragging")) {
+                        currentIndex = index;
                     }
                 });
-                $item.css("transform", "").removeClass("dragging");
+
+                // Use elementsFromPoint to find the element under the mouse
+                const elements = document.elementsFromPoint(event.clientX, event.clientY);
+                let finalIndex = 0;
+
+                // Find the todo-item in the elements stack
+                for (const element of elements) {
+                    const $element = $(element);
+                    if ($element.hasClass("todo-item") && !$element.hasClass("dragging")) {
+                        const index = $items.index(element);
+                        if (index !== -1) {
+                            // If mouse is in top half of element, insert before; otherwise after
+                            const rect = element.getBoundingClientRect();
+                            const isTopHalf = event.clientY < rect.top + rect.height / 2;
+                            finalIndex = isTopHalf ? index : index + 1;
+                            break;
+                        }
+                    }
+                }
+
+                $draggingItem.css("transform", "").removeClass("dragging");
 
                 if (currentIndex === finalIndex) {
                     return;
