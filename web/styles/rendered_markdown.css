@@ -1,23 +1,29 @@
 .rendered_markdown {
     & p {
         margin: 0 0 var(--markdown-interelement-space-px);
+        padding-top: var(--message-box-link-focus-ring-block-padding);
     }
 
     /* The spacing between two paragraphs is double the usual value.
        We coordinate this spacing matches so that it matches the
        spacing between paragraphs in two consecutive 1-line messages. */
     & p + p {
-        margin-top: var(--markdown-interelement-doubled-space-px);
+        margin-top: calc(
+            var(--markdown-interelement-doubled-space-px) -
+                var(--message-box-link-focus-ring-block-padding)
+        );
     }
 
     & ul {
         margin: 0 0 var(--markdown-interelement-space-px) 0;
         margin-inline-start: 3.5ch;
+        padding-top: var(--message-box-link-focus-ring-block-padding);
     }
 
     & ol {
         margin: 0 0 var(--markdown-interelement-space-px) 0;
         margin-inline-start: 3.5ch;
+        padding-top: var(--message-box-link-focus-ring-block-padding);
     }
 
     /* We set margin according to the length of the longest list counter. */
