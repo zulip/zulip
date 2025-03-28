@@ -1,6 +1,7 @@
 import type {Meta, UppyFile} from "@uppy/core";
 import {Uppy} from "@uppy/core";
 import Tus, {type TusBody} from "@uppy/tus";
+import {getSafeFileId} from "@uppy/utils/lib/generateFileID";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import {z} from "zod";
@@ -351,7 +352,22 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
             },
             pluralize: (_n) => 0,
         },
-        onBeforeFileAdded: () => true, // Allow duplicate file uploads
+        onBeforeFileAdded(file, files) {
+            const file_id = getSafeFileId(file, uppy.getID());
+
+            for (const [key, value] of Object.entries(files)) {
+                if (key === file_id) {
+                    // We have a duplicate file upload on our hands.
+                    // Server could have modified our file name, which
+                    // we store in the Uppy file object. This ensures
+                    // that we copy that modified file name into our
+                    // file object.
+                    file.name = value.name!;
+                }
+            }
+
+            return file;
+        }, // Allow duplicate file uploads
     });
     uppy.use(Tus, {
         // https://uppy.io/docs/tus/#options
@@ -460,19 +476,31 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
 
     uppy.on("upload-success", (file, response) => {
         assert(file !== undefined);
-        let upload_response;
-        try {
-            upload_response = zulip_upload_response_schema.parse(
-                JSON.parse(response.body!.xhr.responseText),
-            );
-        } catch {
-            blueslip.warn("Invalid JSON response from tus server", {
-                body: response.body!.xhr.responseText,
+        if (response.status !== 200) {
+            blueslip.warn("Invalid response status from tus server", {
+                response,
             });
             return;
         }
-        const filename = upload_response.filename;
-        const url = upload_response.url;
+
+        const filename = file.name!;
+        const url = response.uploadURL!;
+        try {
+            const upload_response = zulip_upload_response_schema.parse(
+                JSON.parse(response.body!.xhr.responseText),
+            );
+            // Change filename to the one provided by the server.
+            uppy.setFileState(file.id, {
+                name: upload_response.filename,
+            });
+            file = uppy.getFile(file.id);
+        } catch {
+            // We do not receive a response body if the file has already
+            // been uploaded. Instead a HEAD request is sent and we
+            // get the uploadURL back. In case of an already uploaded
+            // file, we would have updated the filename accordingly
+            // in onBeforeFileAdded and don't need to do anything extra.
+        }
 
         const filtered_filename = filename.replaceAll("[", "").replaceAll("]", "");
         const syntax_to_insert = "[" + filtered_filename + "](" + url + ")";
