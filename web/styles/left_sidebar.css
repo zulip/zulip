@@ -425,7 +425,8 @@
 #direct-messages-list .bottom_left_row {
     a.stream-name:focus,
     a.sidebar-topic-name:focus,
-    a.conversation-partners:focus {
+    a.conversation-partners:focus,
+    a.sidebar-topic-action-heading:focus {
         outline: none;
         text-decoration: none;
     }
@@ -519,6 +520,12 @@ ul.filters {
 
         &:focus {
             text-decoration: none;
+        }
+    }
+
+    .sidebar-topic-action-heading {
+        &:focus {
+            color: var(--color-text-sidebar-action-heading);
         }
     }
 
@@ -1496,6 +1503,15 @@ ul.topic-list:has(.show-more-topics)::after {
     /* When the show all topics control is displayed,
        extend the bottom bracket. */
     width: 18px;
+}
+
+#stream_filters
+    .narrow-filter
+    .topic-list
+    .bottom_left_row:has(a.sidebar-topic-action-heading:focus-visible) {
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: -2px;
+    background-color: var(--color-background-hover-narrow-filter);
 }
 
 /* The grouping border should not be shown
