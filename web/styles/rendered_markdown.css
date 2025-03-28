@@ -443,6 +443,7 @@
 
         & .media-image-element {
             display: block;
+            object-fit: scale-down;
 
             /* Sizing CSS for inline images requires care, because images load
                asynchronously, and browsers will unfortunately jump your
@@ -481,10 +482,21 @@
                orientation. */
             &.landscape-thumbnail {
                 width: 10em;
+
+                /* For dinky thumbnails (those whose dimensions are
+                   less than 10em on both sides), we set a 4em
+                   thumbnail. */
+                &.dinky-thumbnail {
+                    width: 4em;
+                }
             }
 
             &.portrait-thumbnail {
                 height: 10em;
+
+                &.dinky-thumbnail {
+                    height: 4em;
+                }
             }
         }
 

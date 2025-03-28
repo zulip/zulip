@@ -114,10 +114,21 @@ export function postprocess_content(html: string): string {
 
                 const original_width = Number(original_dimensions[0]);
                 const original_height = Number(original_dimensions[1]);
+                const font_size_in_use = user_settings.web_font_size_px;
+                // "Dinky" images are those that are smaller than the
+                // 10em box reserved for thumbnails
+                const image_box_em = 10;
+                const is_dinky_image =
+                    original_width / font_size_in_use <= image_box_em &&
+                    original_height / font_size_in_use <= image_box_em;
                 const is_portrait_image = original_width <= original_height;
 
                 inline_image.setAttribute("width", `${original_width}`);
                 inline_image.setAttribute("height", `${original_height}`);
+
+                if (is_dinky_image) {
+                    inline_image.classList.add("dinky-thumbnail");
+                }
 
                 if (is_portrait_image) {
                     inline_image.classList.add("portrait-thumbnail");
