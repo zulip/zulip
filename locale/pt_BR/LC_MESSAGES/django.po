@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-20 17:08+0000\n"
+"POT-Creation-Date: 2025-03-27 23:43+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Luiz François <dev.luizfrancois@gmail.com>, 2021\n"
 "Language-Team: Portuguese (Brazil) (http://app.transifex.com/zulip/zulip/"
@@ -6191,7 +6191,7 @@ msgstr ""
 msgid "No such command: {command}"
 msgstr ""
 
-#: zerver/lib/zulip_update_announcements.py:542
+#: zerver/lib/zulip_update_announcements.py:561
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 
