@@ -271,6 +271,7 @@
 
             .zulip-icon:not(.user-circle) {
                 color: var(--color-left-sidebar-dm-partners-icon);
+                vertical-align: -0.2em;
             }
         }
 
@@ -914,24 +915,17 @@ li.top_left_scheduled_messages {
     grid-area: row-content;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Use an inline grid to provide a modern layout
-       for status emoji in DM rows, while preserving
-       the expected ellipsis behavior on long usernames
-       or large DM groups.
-       The 16px-tall emoji will also align well
-       vertically with the 18px line-height here. */
-    display: inline-grid;
-    /* Provide a two-column grid, sized to accommodate
-       the content of the conversation list and status
-       emoji, if any. */
-    grid-template-columns: repeat(2, minmax(0, max-content));
-    align-items: center;
 }
 
 .conversation-partners .status-emoji {
     /* Prevent status emoji from colliding
        with unread counts. */
     margin-right: 3px;
+    /* To make status emoji look good with
+       multiline usernames, we need to fall
+       back to inline-block display here. */
+    display: inline-block;
+    vertical-align: -0.25em;
 }
 
 /* New grid definitions here. */
