@@ -207,6 +207,17 @@ function message_matches_search_term(message: Message, operator: string, operand
             return message.stream_id.toString() === operand;
         }
 
+        case "channels":
+            if (message.type !== "stream") {
+                return false;
+            }
+            switch (operand) {
+                case "archived":
+                    return stream_data.is_stream_archived(message.stream_id);
+                default:
+                    return false;
+            }
+
         case "topic":
             if (message.type !== "stream") {
                 return false;
@@ -1576,10 +1587,14 @@ export class Filter {
             // processor.
             return false;
         }
-
-        // TODO: It's not clear why `channels:` filters would not be
-        // applicable locally.
-        if (this.has_operator("channels") || this.has_negated_operand("channels", "public")) {
+        // The channels:public operator cannot be applied locally.
+        // as it is only possible to check if a stream/channel is
+        // public or not on the server side. but 'archived' operand can
+        // be checked locally.
+        if (
+            this.has_operand("channels", "public") ||
+            this.has_negated_operand("channels", "public")
+        ) {
             return false;
         }
 
