@@ -142,6 +142,13 @@
         .private_message_header_name {
             overflow: hidden;
             text-overflow: ellipsis;
+
+            i.zulip-icon-bot {
+                vertical-align: middle;
+                position: relative;
+                top: -1px;
+                padding-left: 0.3em;
+            }
         }
     }
 }
