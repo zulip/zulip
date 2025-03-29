@@ -357,6 +357,13 @@ function disable_create_user_groups_if_on_limited_plan(): void {
     }
 }
 
+function set_welcome_bot_custom_message_visibility(): void {
+    settings_components.change_element_block_display_property(
+        "id_realm_default_welcome_bot_custom_message",
+        realm.realm_send_invite_welcome_bot_custom_message,
+    );
+}
+
 export function check_disable_direct_message_initiator_group_widget(): void {
     const direct_message_permission_group_widget = settings_components.get_group_setting_widget(
         "realm_direct_message_permission_group",
@@ -487,6 +494,9 @@ function update_dependent_subsettings(property_name: string): void {
             break;
         case "realm_direct_message_permission_group":
             check_disable_direct_message_initiator_group_widget();
+            break;
+        case "realm_send_invite_welcome_bot_custom_message":
+            set_welcome_bot_custom_message_visibility();
             break;
     }
 }
@@ -1354,6 +1364,7 @@ export function build_page(): void {
     set_digest_emails_weekday_visibility();
     set_create_web_public_stream_dropdown_visibility();
     disable_create_user_groups_if_on_limited_plan();
+    set_welcome_bot_custom_message_visibility();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
 
@@ -1460,6 +1471,58 @@ export function build_page(): void {
     $("#show_realm_domains_modal").on("click", (e) => {
         e.stopPropagation();
         settings_realm_domains.show_realm_domains_modal();
+    });
+
+    $<HTMLInputElement>("input#id_realm_send_invite_welcome_bot_custom_message").on(
+        "change",
+        function () {
+            $("#welcome_bot_custom_message_status").hide();
+            const send_invite_welcome_bot_custom_message_enabled = $(this).is(":checked");
+            settings_components.change_element_block_display_property(
+                "id_realm_default_welcome_bot_custom_message",
+                send_invite_welcome_bot_custom_message_enabled,
+            );
+        },
+    );
+
+    $("#send_test_welcome_bot_custom_message").on("click", (e) => {
+        e.preventDefault();
+        $("#welcome_bot_custom_message_status").hide();
+        const welcome_bot_custom_message = $<HTMLTextAreaElement>(
+            "#id_realm_default_welcome_bot_custom_message",
+        )
+            .val()!
+            .trim();
+
+        if (welcome_bot_custom_message === "") {
+            ui_report.client_error(
+                $t_html({
+                    defaultMessage: "Failed: Welcome Bot custom message is required!",
+                }),
+                $("#welcome_bot_custom_message_status"),
+            );
+            return;
+        }
+
+        channel.post({
+            url: "/json/realm/test_welcome_bot_custom_message",
+            data: {
+                welcome_bot_custom_message,
+            },
+            success() {
+                ui_report.success(
+                    $t_html({defaultMessage: "Welcome Bot custom message sent successfully!"}),
+                    $("#welcome_bot_custom_message_status"),
+                );
+            },
+            error(xhr) {
+                ui_report.error(
+                    $t_html({defaultMessage: "Error sending custom welcome message!"}),
+                    xhr,
+                    $("#welcome_bot_custom_message_status"),
+                );
+            },
+        });
     });
 
     function realm_icon_logo_upload_complete(
