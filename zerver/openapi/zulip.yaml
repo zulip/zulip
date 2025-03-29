@@ -7285,14 +7285,6 @@ paths:
                           Whether the server promises that the `messages` list includes the very
                           oldest messages matching the narrow (used by clients that paginate their
                           requests to decide whether there may be more messages to fetch).
-                      found_anchor:
-                        type: boolean
-                        description: |
-                          Whether the anchor message is included in the
-                          response. If the message with the ID specified
-                          in the request does not exist, did not match
-                          the narrow, or was excluded via
-                          `"include_anchor": false`, this will be false.
                       history_limited:
                         type: boolean
                         description: |
@@ -7373,7 +7365,6 @@ paths:
                       {
                         "anchor": 21,
                         "found_newest": true,
-                        "found_anchor": true,
                         "result": "success",
                         "msg": "",
                         "messages":

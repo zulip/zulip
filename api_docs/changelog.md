@@ -25,6 +25,11 @@ releases.
 
 ## Changes in Zulip 10.0
 
+**Feature level 373**
+
+* [`GET /messages`](/api/get-messages): Removed `found_anchor` property from response as
+  it hasn't been used since it was introduced in a4a8527ec5de32a91bcda45eefdd9e4770d381ec.
+
 **Feature level 372**
 
 * [`POST /typing`](/api/set-typing-status): The `"(no topic)"` value

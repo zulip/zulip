@@ -1298,7 +1298,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left: bool,
             anchored_to_right: bool,
             out_ids: list[int],
-            found_anchor: bool,
             found_oldest: bool,
             found_newest: bool,
             history_limited: bool,
@@ -1317,7 +1316,6 @@ class PostProcessTest(ZulipTestCase):
             )
 
             self.assertEqual(info.rows, out_rows)
-            self.assertEqual(info.found_anchor, found_anchor)
             self.assertEqual(info.found_newest, found_newest)
             self.assertEqual(info.found_oldest, found_oldest)
             self.assertEqual(info.history_limited, history_limited)
@@ -1334,7 +1332,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[8, 9, 10, 11, 12],
-            found_anchor=True,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -1348,7 +1345,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[8, 9, 10, 11, 12],
-            found_anchor=True,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -1362,7 +1358,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[9, 10, 11, 12],
-            found_anchor=True,
             found_oldest=True,
             found_newest=False,
             history_limited=True,
@@ -1376,7 +1371,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[10, 11, 12],
-            found_anchor=True,
             found_oldest=True,
             found_newest=False,
             history_limited=True,
@@ -1390,7 +1384,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[11, 12],
-            found_anchor=False,
             found_oldest=True,
             found_newest=False,
             history_limited=True,
@@ -1404,7 +1397,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[12],
-            found_anchor=False,
             found_oldest=True,
             found_newest=True,
             history_limited=True,
@@ -1418,7 +1410,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[],
-            found_anchor=False,
             found_oldest=True,
             found_newest=True,
             history_limited=True,
@@ -1435,7 +1426,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_right=False,
             first_visible_message_id=0,
             out_ids=[7, 9, 11, 13],
-            found_anchor=False,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -1449,7 +1439,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[11, 13],
-            found_anchor=False,
             found_oldest=True,
             found_newest=False,
             history_limited=True,
@@ -1463,7 +1452,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[9, 11, 13],
-            found_anchor=False,
             found_oldest=True,
             found_newest=False,
             history_limited=True,
@@ -1480,7 +1468,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[50, 100, 150, 200],
-            found_anchor=True,
             found_oldest=True,
             found_newest=False,
             history_limited=False,
@@ -1494,7 +1481,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[100, 150, 200],
-            found_anchor=True,
             found_oldest=True,
             found_newest=False,
             history_limited=True,
@@ -1511,7 +1497,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[700, 800, 900, 1000],
-            found_anchor=True,
             found_oldest=False,
             found_newest=True,
             history_limited=False,
@@ -1525,7 +1510,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[900, 1000],
-            found_anchor=True,
             found_oldest=True,
             found_newest=True,
             history_limited=True,
@@ -1542,7 +1526,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[50, 100],
-            found_anchor=True,
             found_oldest=True,
             found_newest=False,
             history_limited=False,
@@ -1556,7 +1539,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[100],
-            found_anchor=True,
             found_oldest=True,
             found_newest=False,
             history_limited=True,
@@ -1573,7 +1555,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[700, 800, 900],
-            found_anchor=True,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -1587,7 +1568,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[900],
-            found_anchor=True,
             found_oldest=True,
             found_newest=False,
             history_limited=True,
@@ -1604,7 +1584,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[700, 800, 900],
-            found_anchor=True,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -1618,7 +1597,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[900],
-            found_anchor=True,
             found_oldest=True,
             found_newest=False,
             history_limited=True,
@@ -1635,7 +1613,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=True,
             out_ids=[900, 1000],
-            found_anchor=False,
             found_oldest=False,
             found_newest=True,
             history_limited=False,
@@ -1649,7 +1626,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=True,
             out_ids=[1000],
-            found_anchor=False,
             found_oldest=True,
             found_newest=True,
             history_limited=True,
@@ -1663,7 +1639,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=True,
             out_ids=[],
-            found_anchor=False,
             found_oldest=True,
             found_newest=True,
             history_limited=True,
@@ -1680,7 +1655,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[100, 200, 300],
-            found_anchor=True,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -1694,7 +1668,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[100, 200, 300],
-            found_anchor=True,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -1708,7 +1681,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[300, 400],
-            found_anchor=False,
             found_oldest=False,
             # BUG: history_limited should be False here.
             found_newest=False,
@@ -1726,7 +1698,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[900, 1000],
-            found_anchor=True,
             found_oldest=False,
             found_newest=True,
             history_limited=False,
@@ -1740,7 +1711,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[900, 1000],
-            found_anchor=True,
             found_oldest=False,
             found_newest=True,
             history_limited=False,
@@ -1757,7 +1727,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[1000, 1100],
-            found_anchor=False,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -1771,7 +1740,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[1000, 1100],
-            found_anchor=False,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -1785,7 +1753,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[1000, 1100],
-            found_anchor=False,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -1799,7 +1766,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[1100, 1200],
-            found_anchor=False,
             found_oldest=False,
             # BUG: history_limited should be False here.
             found_newest=False,
@@ -1817,7 +1783,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[1000],
-            found_anchor=True,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -1831,7 +1796,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[1000],
-            found_anchor=True,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -1845,7 +1809,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[],
-            found_anchor=False,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -1862,7 +1825,6 @@ class PostProcessTest(ZulipTestCase):
             anchored_to_left=False,
             anchored_to_right=False,
             out_ids=[],
-            found_anchor=False,
             found_oldest=False,
             found_newest=False,
             history_limited=False,
@@ -3682,7 +3644,6 @@ class GetOldMessagesTest(ZulipTestCase):
         data = self.get_messages_response(anchor=message_ids[9], num_before=9, num_after=0)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], True)
         self.assertEqual(data["found_oldest"], False)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], False)
@@ -3692,7 +3653,6 @@ class GetOldMessagesTest(ZulipTestCase):
             data = self.get_messages_response(anchor=message_ids[9], num_before=9, num_after=0)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], True)
         self.assertEqual(data["found_oldest"], True)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], True)
@@ -3702,7 +3662,6 @@ class GetOldMessagesTest(ZulipTestCase):
             data = self.get_messages_response(anchor=message_ids[6], num_before=9, num_after=0)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], True)
         self.assertEqual(data["found_oldest"], True)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], True)
@@ -3713,7 +3672,6 @@ class GetOldMessagesTest(ZulipTestCase):
 
         messages = data["messages"]
         self.assert_length(messages, 0)
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], True)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], True)
@@ -3721,7 +3679,6 @@ class GetOldMessagesTest(ZulipTestCase):
         data = self.get_messages_response(anchor=message_ids[5], num_before=0, num_after=5)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], True)
         self.assertEqual(data["found_oldest"], False)
         self.assertEqual(data["found_newest"], True)
         self.assertEqual(data["history_limited"], False)
@@ -3731,7 +3688,6 @@ class GetOldMessagesTest(ZulipTestCase):
             data = self.get_messages_response(anchor=message_ids[5], num_before=0, num_after=5)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], False)
         self.assertEqual(data["found_newest"], True)
         self.assertEqual(data["history_limited"], False)
@@ -3741,7 +3697,6 @@ class GetOldMessagesTest(ZulipTestCase):
             data = self.get_messages_response(anchor=message_ids[0], num_before=0, num_after=5)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], False)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], False)
@@ -3751,7 +3706,6 @@ class GetOldMessagesTest(ZulipTestCase):
             data = self.get_messages_response(anchor=message_ids[0], num_before=0, num_after=5)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], False)
         self.assertEqual(data["found_newest"], True)
         self.assertEqual(data["history_limited"], False)
@@ -3763,7 +3717,6 @@ class GetOldMessagesTest(ZulipTestCase):
 
         messages = data["messages"]
         messages_matches_ids(messages, message_ids[0:5])
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], True)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], False)
@@ -3775,7 +3728,6 @@ class GetOldMessagesTest(ZulipTestCase):
 
         messages = data["messages"]
         messages_matches_ids(messages, message_ids[0:5])
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], True)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], False)
@@ -3786,7 +3738,6 @@ class GetOldMessagesTest(ZulipTestCase):
 
         messages = data["messages"]
         messages_matches_ids(messages, message_ids[0:5])
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], True)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], False)
@@ -3794,7 +3745,6 @@ class GetOldMessagesTest(ZulipTestCase):
         data = self.get_messages_response(anchor=message_ids[5], num_before=5, num_after=4)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], True)
         self.assertEqual(data["found_oldest"], False)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], False)
@@ -3802,7 +3752,6 @@ class GetOldMessagesTest(ZulipTestCase):
 
         data = self.get_messages_response(anchor=message_ids[5], num_before=10, num_after=10)
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], True)
         self.assertEqual(data["found_oldest"], True)
         self.assertEqual(data["found_newest"], True)
         self.assertEqual(data["history_limited"], False)
@@ -3812,7 +3761,6 @@ class GetOldMessagesTest(ZulipTestCase):
             data = self.get_messages_response(anchor=message_ids[5], num_before=5, num_after=4)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], True)
         self.assertEqual(data["found_oldest"], True)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], True)
@@ -3822,7 +3770,6 @@ class GetOldMessagesTest(ZulipTestCase):
             data = self.get_messages_response(anchor=message_ids[2], num_before=5, num_after=3)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], True)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], True)
@@ -3832,7 +3779,6 @@ class GetOldMessagesTest(ZulipTestCase):
             data = self.get_messages_response(anchor=message_ids[2], num_before=10, num_after=10)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], True)
         self.assertEqual(data["found_newest"], True)
         messages_matches_ids(messages, message_ids[5:])
@@ -3841,7 +3787,6 @@ class GetOldMessagesTest(ZulipTestCase):
             data = self.get_messages_response(anchor=message_ids[5], num_before=5, num_after=4)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], True)
         self.assertEqual(data["found_newest"], True)
         self.assertEqual(data["history_limited"], True)
@@ -3851,7 +3796,6 @@ class GetOldMessagesTest(ZulipTestCase):
             data = self.get_messages_response(anchor=message_ids[5], num_before=0, num_after=0)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], True)
         self.assertEqual(data["found_oldest"], False)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], False)
@@ -3861,7 +3805,6 @@ class GetOldMessagesTest(ZulipTestCase):
             data = self.get_messages_response(anchor=message_ids[2], num_before=0, num_after=0)
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], False)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], False)
@@ -3875,7 +3818,6 @@ class GetOldMessagesTest(ZulipTestCase):
 
         messages = data["messages"]
         self.assert_length(messages, 5)
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], False)
         self.assertEqual(data["found_newest"], True)
         self.assertEqual(data["history_limited"], False)
@@ -3886,7 +3828,6 @@ class GetOldMessagesTest(ZulipTestCase):
 
         messages = data["messages"]
         self.assert_length(messages, 5)
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], False)
         self.assertEqual(data["found_newest"], True)
         self.assertEqual(data["history_limited"], False)
@@ -3898,7 +3839,6 @@ class GetOldMessagesTest(ZulipTestCase):
 
         messages = data["messages"]
         self.assert_length(messages, 5)
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], False)
         self.assertEqual(data["found_newest"], True)
         self.assertEqual(data["history_limited"], False)
@@ -3910,7 +3850,6 @@ class GetOldMessagesTest(ZulipTestCase):
 
         messages = data["messages"]
         self.assert_length(messages, 10)
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], True)
         self.assertEqual(data["found_newest"], True)
         self.assertEqual(data["history_limited"], False)
@@ -3920,7 +3859,6 @@ class GetOldMessagesTest(ZulipTestCase):
         )
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], False)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], False)
@@ -3931,7 +3869,6 @@ class GetOldMessagesTest(ZulipTestCase):
         )
 
         messages = data["messages"]
-        self.assertEqual(data["found_anchor"], False)
         self.assertEqual(data["found_oldest"], False)
         self.assertEqual(data["found_newest"], False)
         self.assertEqual(data["history_limited"], False)
