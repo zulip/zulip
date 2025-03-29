@@ -6,9 +6,12 @@
     </td>
     {{#if ../can_modify}}
     <td class="actions">
-        <button class="button rounded remove-default-stream button-danger">
-            {{t "Remove from default" }}
-        </button>
+        {{> ../components/action_button
+          attention="quiet"
+          intent="danger"
+          label=(t "Remove from default")
+          custom_classes="remove-default-stream"
+          }}
     </td>
     {{/if}}
 </tr>
