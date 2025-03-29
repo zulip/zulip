@@ -1,5 +1,5 @@
 {{#with emoji}}
-<tr class="emoji_row" id="emoji_{{name}}">
+<tr class="emoji_row" id="emoji_{{name}}" data-emoji-name="{{name}}">
     <td>
         <span class="emoji_name">{{display_name}}</span>
     </td>
@@ -20,9 +20,13 @@
         {{/if}}
     </td>
     <td>
-        <button class="button rounded small delete button-danger tippy-zulip-delayed-tooltip" {{#unless can_delete_emoji}}disabled="disabled"{{/unless}} data-tippy-content="{{t 'Delete' }}" data-emoji-name="{{name}}">
-            <i class="fa fa-trash-o" aria-hidden="true"></i>
-        </button>
+        {{> ../components/icon_button
+          icon="trash"
+          intent="danger"
+          custom_classes="tippy-zulip-delayed-tooltip delete"
+          disabled=(not can_delete_emoji)
+          data-tippy-content=(t "Deactivate")
+          }}
     </td>
 </tr>
 {{/with}}

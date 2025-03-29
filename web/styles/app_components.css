@@ -811,6 +811,12 @@ input.settings_text_input {
     .actions {
         width: 1%;
         white-space: nowrap;
+
+        .icon-button {
+            display: inline-flex;
+            align-items: center;
+            min-height: 2.1875em; /* 35px at 16px/1em */
+        }
     }
 
     th.actions {

@@ -426,7 +426,9 @@ export function set_up(): void {
         e.preventDefault();
         e.stopPropagation();
         const $button = $(this);
-        const url = "/json/export/realm/" + encodeURIComponent($button.attr("data-export-id")!);
+        const url =
+            "/json/export/realm/" +
+            encodeURIComponent($button.closest("tr").attr("data-export-id")!);
         const html_body = render_confirm_delete_data_export();
 
         confirm_dialog.launch({
