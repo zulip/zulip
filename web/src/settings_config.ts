@@ -558,7 +558,7 @@ export const preferences_settings_labels = {
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     translate_emoticons: new Handlebars.SafeString(
         $t_html({
-            defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",
+            defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 🙂)",
         }),
     ),
     web_suggest_update_timezone: $t({
