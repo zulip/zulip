@@ -555,21 +555,6 @@ input[type="checkbox"] {
 .edit-attachment-buttons {
     display: inline-block;
     vertical-align: middle;
-    height: 32px;
-}
-
-.edit-attachment-buttons .remove-attachment {
-    margin-left: 5px;
-}
-
-.edit-attachment-buttons .download-attachment {
-    display: block;
-    padding: 6px 9px;
-    text-decoration: none;
-
-    &:hover {
-        color: hsl(156deg 41% 40%);
-    }
 }
 
 .remove-alert-word {
