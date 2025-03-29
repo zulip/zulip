@@ -87,7 +87,10 @@ function delete_profile_field(this: HTMLElement, e: JQuery.ClickEvent): void {
     e.preventDefault();
     e.stopPropagation();
 
-    const profile_field_id = Number.parseInt($(this).attr("data-profile-field-id")!, 10);
+    const profile_field_id = Number.parseInt(
+        $(this).closest("tr").attr("data-profile-field-id")!,
+        10,
+    );
     const profile_field = get_profile_field(profile_field_id);
     const active_user_ids = people.get_active_user_ids();
     let users_using_deleting_profile_field = 0;
@@ -443,7 +446,7 @@ function set_up_select_field_edit_form(
 function open_edit_form_modal(this: HTMLElement): void {
     const field_types = realm.custom_profile_field_types;
 
-    const field_id = Number.parseInt($(this).attr("data-profile-field-id")!, 10);
+    const field_id = Number.parseInt($(this).closest("tr").attr("data-profile-field-id")!, 10);
     const field = get_profile_field(field_id)!;
 
     let field_data: unknown = {};
