@@ -18,19 +18,19 @@
                         <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                     {{/if}}
                     <span class="user-profile-name">{{> user_full_name name=full_name}}</span>
-                    <a class="copy-link-to-user-profile user-profile-manage-own-copy-link-button" tabindex="0" data-user-id="{{user_id}}">
-                        <i class="zulip-icon zulip-icon-link tippy-zulip-tooltip " data-tippy-content="{{t 'Copy link to profile' }}" aria-hidden="true"></i>
-                    </a>
-                    {{#if is_me}}
-                        <a class="user-profile-manage-own-edit-button" href="/#settings/profile">
-                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{t 'Edit profile' }}" aria-hidden="true"></i>
-                        </a>
-                    {{/if}}
-                    {{#if can_manage_profile}}
-                        <div class="user-profile-manage-others-edit-button">
-                            <i class="zulip-icon zulip-icon-edit tippy-zulip-tooltip" data-tippy-content="{{#if is_bot}}{{t 'Manage bot'}}{{else}}{{t 'Manage user' }}{{/if}}" aria-hidden="true"></i>
-                        </div>
-                    {{/if}}
+                    <span class="user-profile-header-actions">
+                        {{> components/icon_button custom_classes="copy-link-to-user-profile tippy-zulip-delayed-tooltip" icon="link-alt" intent="neutral" data-tippy-content=(t "Copy link to profile") aria-label=(t "Copy link to profile") }}
+                        {{#if is_me}}
+                            {{> components/icon_button custom_classes="user-profile-manage-own-edit-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Edit profile") aria-label=(t "Edit profile") }}
+                        {{/if}}
+                        {{#if can_manage_profile}}
+                            {{#if is_bot}}
+                                {{> components/icon_button custom_classes="user-profile-manage-others-edit-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage bot") aria-label=(t "Manage bot") }}
+                            {{else}}
+                                {{> components/icon_button custom_classes="user-profile-manage-others-edit-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage user") aria-label=(t 'Manage user') }}
+                            {{/if}}
+                        {{/if}}
+                    </span>
                 </h1>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
             </div>

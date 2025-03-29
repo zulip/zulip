@@ -1449,12 +1449,14 @@ export function initialize(): void {
         },
     );
 
+    $("body").on("click", "#user-profile-modal #name .user-profile-manage-own-edit-button", () => {
+        browser_history.go_to_location("#settings/profile");
+        hide_user_profile();
+    });
+
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
-    $("body").on("click", "#user-profile-modal #name .user-profile-manage-own-edit-button", () => {
-        hide_user_profile();
-    });
 
     $("body").on("click", "#user-profile-modal .user-profile-channel-list-item", () => {
         hide_user_profile();
@@ -1484,7 +1486,7 @@ export function initialize(): void {
 
     new ClipboardJS(".copy-link-to-user-profile", {
         text(trigger) {
-            const user_id = $(trigger).attr("data-user-id");
+            const user_id = $(trigger).closest("#user-profile-modal").attr("data-user-id");
             const user_profile_link = window.location.origin + "/#user/" + user_id;
 
             return user_profile_link;
