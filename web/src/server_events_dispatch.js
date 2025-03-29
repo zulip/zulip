@@ -247,7 +247,6 @@ export function dispatch_normal_event(event) {
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
                 invite_required: noop,
-                mandatory_topics: noop,
                 message_content_edit_limit_seconds: noop,
                 message_content_delete_limit_seconds: noop,
                 message_edit_history_visibility_policy: noop,
@@ -261,6 +260,7 @@ export function dispatch_normal_event(event) {
                 push_notifications_enabled: noop,
                 require_unique_names: noop,
                 send_welcome_emails: noop,
+                topics_policy: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
                 signup_announcements_stream_id: noop,
@@ -292,8 +292,8 @@ export function dispatch_normal_event(event) {
                             );
                         }
 
-                        if (event.property === "mandatory_topics") {
-                            compose_recipient.update_topic_inputbox_on_mandatory_topics_change();
+                        if (event.property === "topics_policy") {
+                            compose_recipient.update_topic_inputbox_on_topics_policy_change();
                             compose_recipient.update_compose_area_placeholder_text();
                         }
                     }
