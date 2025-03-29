@@ -25,7 +25,7 @@ export const todo_widget_extra_data_schema = z
 
 const todo_widget_inbound_data = z.intersection(
     z.object({
-        type: z.enum(["new_task", "new_task_list_title", "strike"]),
+        type: z.enum(["new_task", "new_task_list_title", "strike", "reorder"]),
     }),
     z.record(z.string(), z.unknown()),
 );
@@ -54,6 +54,12 @@ type TaskStrikeOutboundData = {
     key: string;
 };
 
+type TaskReorderOutboundData = {
+    type: "reorder";
+    from: number;
+    to: number;
+};
+
 type TodoTask = {
     task: string;
     desc: string;
@@ -70,7 +76,8 @@ type Task = {
 export type TodoWidgetOutboundData =
     | NewTaskTitleOutboundData
     | NewTaskOutboundData
-    | TaskStrikeOutboundData;
+    | TaskStrikeOutboundData
+    | TaskReorderOutboundData;
 
 export class TaskData {
     message_sender_id: number;
@@ -213,6 +220,41 @@ export class TaskData {
                 item.completed = !item.completed;
             },
         },
+
+        reorder: {
+            outbound(from: number, to: number): TaskReorderOutboundData {
+                const event = {
+                    type: "reorder" as const,
+                    from,
+                    to,
+                };
+
+                return event;
+            },
+
+            inbound: (_sender_id: number, raw_data: unknown): void => {
+                const task_reorder_inbound_data_schema = z.object({
+                    type: z.literal("reorder"),
+                    from: z.number(),
+                    to: z.number(),
+                });
+                const parsed = task_reorder_inbound_data_schema.safeParse(raw_data);
+                if (!parsed.success) {
+                    blueslip.warn("todo widget: bad type for inbound reorder data", {
+                        error: parsed.error,
+                    });
+                    return;
+                }
+
+                const tasks = [...this.task_map.entries()];
+                const [movedTask] = tasks.splice(parsed.data.from, 1);
+                if (!movedTask) {
+                    return;
+                }
+                tasks.splice(parsed.data.to, 0, movedTask);
+                this.task_map = new Map(tasks);
+            },
+        },
     };
 
     constructor({
@@ -281,6 +323,7 @@ export class TaskData {
 
         const widget_data = {
             all_tasks,
+            showDrag: all_tasks.length > 1,
         };
 
         return widget_data;
@@ -459,6 +502,74 @@ export function activate({
 
             const data = task_data.handle.new_task.outbound(task, desc);
             callback(data);
+        });
+
+        $elem.on("mousedown", ".todo-item div.todo-draggable", (e) => {
+            const $item = $(e.target).closest("li.todo-item");
+            const startY = e.pageY;
+            $item.addClass("dragging");
+
+            const mouseMoveHandler = (event: JQuery.MouseMoveEvent): void => {
+                const $parent = $(".dragging").closest("ul");
+                if (!$parent?.offset() || !$parent.height()) {
+                    return;
+                }
+                const parentYtop = $parent.offset()!.top;
+                const parentYbottom = parentYtop + $parent.height()!;
+                if (event.pageY < parentYtop || event.pageY > parentYbottom) {
+                    return; // Don't move the item outside the parent ul element
+                }
+                const offsetY = event.pageY - startY;
+                $item.css("transform", `translateY(${offsetY}px)`);
+            };
+
+            const mouseUpHandler = (event: JQuery.MouseUpEvent): void => {
+                const $draggingItem = $(".dragging");
+                const $ul = $draggingItem.closest("ul");
+                const $items = $ul.children(".todo-item:not(.dragging)");
+
+                // Get current index
+                let currentIndex = -1;
+                $ul.children("li").each((index, element) => {
+                    if ($(element).hasClass("dragging")) {
+                        currentIndex = index;
+                    }
+                });
+
+                // Use elementsFromPoint to find the element under the mouse
+                const elements = document.elementsFromPoint(event.clientX, event.clientY);
+                let finalIndex = 0;
+
+                // Find the todo-item in the elements stack
+                for (const element of elements) {
+                    const $element = $(element);
+                    if ($element.hasClass("todo-item") && !$element.hasClass("dragging")) {
+                        const index = $items.index(element);
+                        if (index !== -1) {
+                            // If mouse is in top half of element, insert before; otherwise after
+                            const rect = element.getBoundingClientRect();
+                            const isTopHalf = event.clientY < rect.top + rect.height / 2;
+                            finalIndex = isTopHalf ? index : index + 1;
+                            break;
+                        }
+                    }
+                }
+
+                $draggingItem.css("transform", "").removeClass("dragging");
+
+                if (currentIndex === finalIndex) {
+                    return;
+                }
+
+                const data = task_data.handle.reorder.outbound(currentIndex, finalIndex);
+                callback(data);
+
+                $(document).off("mousemove", mouseMoveHandler);
+                $(document).off("mouseup", mouseUpHandler);
+            };
+
+            $(document).on("mousemove", mouseMoveHandler);
+            $(document).on("mouseup", mouseUpHandler);
         });
     }
 
