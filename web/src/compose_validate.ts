@@ -54,7 +54,7 @@ export const NO_PRIVATE_RECIPIENT_ERROR_MESSAGE = $t({
 });
 export const NO_CHANNEL_SELECTED_ERROR_MESSAGE = $t({defaultMessage: "Please select a channel."});
 export const TOPICS_REQUIRED_ERROR_MESSAGE = $t({
-    defaultMessage: "Topics are required in this organization.",
+    defaultMessage: "Sending messages to the empty topic is not allowed in this channel.",
 });
 export const get_message_too_long_for_compose_error = (): string =>
     $t(
@@ -757,7 +757,7 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
         return false;
     }
 
-    if (realm.realm_mandatory_topics) {
+    if (!stream_data.can_use_general_chat(compose_state.stream_id())) {
         const topic = compose_state.topic();
         const missing_topic = util.is_topic_name_considered_empty(topic);
         if (missing_topic) {

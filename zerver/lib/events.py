@@ -100,6 +100,7 @@ from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
 from zerver.models.realms import (
     MessageEditHistoryVisibilityPolicyEnum,
+    RealmTopicsPolicyEnum,
     get_corresponding_policy_value_for_group_setting,
     get_realm_domains,
 )
@@ -578,6 +579,12 @@ def fetch_initial_state_data(
             MessageEditHistoryVisibilityPolicyEnum(
                 realm.message_edit_history_visibility_policy
             ).name
+        )
+
+        state["realm_topics_policy"] = RealmTopicsPolicyEnum(realm.topics_policy).name
+
+        state["realm_mandatory_topics"] = (
+            realm.topics_policy == RealmTopicsPolicyEnum.disable_empty_topic.value
         )
 
     if want("realm_user_settings_defaults"):
@@ -1403,6 +1410,11 @@ def apply_event(
             if field == "realm_message_edit_history_visibility_policy":
                 state["realm_allow_edit_history"] = (
                     event["value"] != MessageEditHistoryVisibilityPolicyEnum.none.name
+                )
+
+            if field == "realm_topics_policy":
+                state["realm_mandatory_topics"] = (
+                    event["value"] == RealmTopicsPolicyEnum.disable_empty_topic.name
                 )
 
         elif event["op"] == "update_dict":

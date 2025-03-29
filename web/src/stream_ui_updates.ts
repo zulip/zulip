@@ -340,6 +340,10 @@ export function enable_or_disable_permission_settings_in_edit_panel(
             settings_components.disable_opening_typeahead_on_clicking_label($setting_element);
         }
     }
+
+    if (!settings_data.user_can_set_topics_policy() && !current_user.is_admin) {
+        $stream_settings.find("#id_topics_policy").prop("disabled", true);
+    }
 }
 
 export function update_announce_stream_option(): void {
