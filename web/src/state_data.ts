@@ -257,6 +257,9 @@ export const realm_linkifier_schema = z.object({
     id: z.number(),
 });
 
+export const realm_topics_policy_schema = z.enum(["allow_empty_topic", "disable_empty_topic"]);
+export type RealmTopicsPolicy = z.infer<typeof realm_topics_policy_schema>;
+
 // Sync this with zerver.lib.events.do_events_register.
 export const realm_schema = z.object({
     custom_profile_fields: z.array(custom_profile_field_schema),
@@ -374,7 +377,6 @@ export const realm_schema = z.object({
     realm_linkifiers: z.array(realm_linkifier_schema),
     realm_logo_source: z.string(),
     realm_logo_url: z.string(),
-    realm_mandatory_topics: z.boolean(),
     realm_message_content_allowed_in_email_notifications: z.boolean(),
     realm_message_content_edit_limit_seconds: z.number().nullable(),
     realm_message_content_delete_limit_seconds: z.number().nullable(),
@@ -397,6 +399,7 @@ export const realm_schema = z.object({
     realm_require_unique_names: z.boolean(),
     realm_send_welcome_emails: z.boolean(),
     realm_signup_announcements_stream_id: z.number(),
+    realm_topics_policy: realm_topics_policy_schema,
     realm_upload_quota_mib: z.nullable(z.number()),
     realm_url: z.string(),
     realm_video_chat_provider: z.number(),

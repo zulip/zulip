@@ -12,7 +12,7 @@ import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import type {CurrentUser, GroupSettingValue, StateData} from "./state_data.ts";
+import type {CurrentUser, GroupSettingValue, RealmTopicsPolicy, StateData} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import type {StreamPermissionGroupSetting} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
@@ -951,6 +951,22 @@ export function get_streams_for_admin(): StreamSubscription[] {
     subs.sort(by_name);
 
     return subs;
+}
+
+export function get_stream_topics_policy(
+    stream_id: number | undefined,
+): RealmTopicsPolicy | undefined {
+    if (stream_id === undefined) {
+        return undefined;
+    }
+    return realm.realm_topics_policy;
+}
+
+export function can_use_general_chat(stream_id: number | undefined): boolean {
+    return (
+        get_stream_topics_policy(stream_id) ===
+        settings_config.realm_topics_policy_values.allow_empty_topic.code
+    );
 }
 
 /*

@@ -347,13 +347,6 @@ exports.fixtures = {
         value: false,
     },
 
-    realm__update__mandatory_topics: {
-        type: "realm",
-        op: "update",
-        property: "mandatory_topics",
-        value: false,
-    },
-
     realm__update__name: {
         type: "realm",
         op: "update",
@@ -380,6 +373,13 @@ exports.fixtures = {
         op: "update",
         property: "signup_announcements_stream_id",
         value: 41,
+    },
+
+    realm__update__topics_policy: {
+        type: "realm",
+        op: "update",
+        property: "topics_policy",
+        value: "disable_empty_topic",
     },
 
     realm__update__want_advertise_in_communities_directory: {
