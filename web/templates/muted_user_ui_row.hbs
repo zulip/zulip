@@ -4,7 +4,12 @@
     <td>{{date_muted_str}}</td>
     <td class="actions">
         {{#if can_unmute}}
-        <span><a class="settings-unmute-user">{{t "Unmute" }}</a></span>
+        {{> ./components/action_button
+          label=(t "Unmute")
+          attention="quiet"
+          intent="danger"
+          custom_classes="settings-unmute-user"
+          }}
         {{/if}}
     </td>
 </tr>
