@@ -14,6 +14,13 @@ export function filter(): Filter | undefined {
     return message_lists.current?.data.filter;
 }
 
+export function rewire_has_message_in_muted_topic(value: typeof has_message_in_muted_topic): void {
+    has_message_in_muted_topic = value;
+}
+
+export let has_message_in_muted_topic = (): boolean | undefined =>
+    message_lists.current?.show_muted_placeholder();
+
 export function search_terms(current_filter: Filter | undefined = filter()): NarrowTerm[] {
     if (current_filter === undefined) {
         if (page_params.narrow !== undefined) {
