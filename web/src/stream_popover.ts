@@ -485,7 +485,7 @@ export async function build_move_topic_to_stream_popover(
         // not changed.
         let is_disabled = false;
         if (
-            !stream_data.can_use_general_chat(current_stream_id) &&
+            !stream_data.can_use_general_chat(select_stream_id) &&
             (new_topic_name === "" || new_topic_name === "(no topic)")
         ) {
             is_disabled = true;
@@ -674,11 +674,15 @@ export async function build_move_topic_to_stream_popover(
 
     function move_topic_on_update(event: JQuery.ClickEvent, dropdown: {hide: () => void}): void {
         stream_widget_value = Number.parseInt($(event.currentTarget).attr("data-unique-id")!, 10);
+        const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
+        const topic_input_value = $topic_input.val();
+        assert(topic_input_value !== undefined);
 
         update_submit_button_disabled_state(stream_widget_value);
         set_stream_topic_typeahead();
         render_selected_stream();
         maybe_show_topic_already_exists_warning();
+        update_topic_input_placeholder_visibility(topic_input_value);
 
         dropdown.hide();
         event.preventDefault();
@@ -757,11 +761,15 @@ export async function build_move_topic_to_stream_popover(
     }
 
     function update_topic_input_placeholder_visibility(topic_input_value: string): void {
-        if (stream_data.can_use_general_chat(current_stream_id)) {
-            const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
+        const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
+        if (stream_data.can_use_general_chat(stream_widget_value)) {
             $topic_not_mandatory_placeholder.toggleClass(
                 "move-topic-new-topic-placeholder-visible",
                 topic_input_value === "",
+            );
+        } else {
+            $topic_not_mandatory_placeholder.removeClass(
+                "move-topic-new-topic-placeholder-visible",
             );
         }
     }
@@ -777,35 +785,36 @@ export async function build_move_topic_to_stream_popover(
             false,
         );
 
-        if (stream_data.can_use_general_chat(current_stream_id)) {
-            const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
+        const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
+        if (stream_data.can_use_general_chat(current_stream_id) && topic_name === "") {
+            $topic_not_mandatory_placeholder.addClass("move-topic-new-topic-placeholder-visible");
+        }
 
-            if (topic_name === "") {
+        $topic_input.on("focus", () => {
+            $topic_input.removeClass("empty-topic-display");
+            $topic_input.attr("placeholder", "");
+            if (
+                $topic_input.val() === "" &&
+                stream_data.can_use_general_chat(stream_widget_value)
+            ) {
                 $topic_not_mandatory_placeholder.addClass(
                     "move-topic-new-topic-placeholder-visible",
                 );
             }
 
-            $topic_input.on("focus", () => {
-                if ($topic_input.val() === "") {
-                    $topic_input.attr("placeholder", "");
-                    $topic_input.removeClass("empty-topic-display");
-                    $topic_not_mandatory_placeholder.addClass(
-                        "move-topic-new-topic-placeholder-visible",
-                    );
+            $topic_input.one("blur", () => {
+                $topic_not_mandatory_placeholder.removeClass(
+                    "move-topic-new-topic-placeholder-visible",
+                );
+                if (
+                    $topic_input.val() === "" &&
+                    stream_data.can_use_general_chat(stream_widget_value)
+                ) {
+                    $topic_input.attr("placeholder", empty_string_topic_display_name);
+                    $topic_input.addClass("empty-topic-display");
                 }
-
-                $topic_input.one("blur", () => {
-                    if ($topic_input.val() === "") {
-                        $topic_not_mandatory_placeholder.removeClass(
-                            "move-topic-new-topic-placeholder-visible",
-                        );
-                        $topic_input.attr("placeholder", empty_string_topic_display_name);
-                        $topic_input.addClass("empty-topic-display");
-                    }
-                });
             });
-        }
+        });
 
         if (only_topic_edit) {
             // Set select_stream_id to current_stream_id since we user is not allowed
@@ -844,12 +853,17 @@ export async function build_move_topic_to_stream_popover(
         render_selected_stream();
         $("#move_topic_to_stream_widget").prop("disabled", disable_stream_input);
         $topic_input.on("input", () => {
-            update_submit_button_disabled_state(current_stream_id);
+            assert(stream_widget_value !== undefined);
+            update_submit_button_disabled_state(stream_widget_value);
             maybe_show_topic_already_exists_warning();
             const topic_input_value = $topic_input.val();
             assert(topic_input_value !== undefined);
             update_topic_input_placeholder_visibility(topic_input_value);
         });
+
+        const topic_input_value = $topic_input.val();
+        assert(topic_input_value !== undefined);
+        update_topic_input_placeholder_visibility(topic_input_value);
 
         // Update position of topic typeahead because showing/hiding the
         // "topic already exists" warning changes the size of the modal.

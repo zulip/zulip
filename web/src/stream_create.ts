@@ -13,6 +13,7 @@ import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_create_subscribers from "./stream_create_subscribers.ts";
@@ -382,6 +383,8 @@ function create_stream(): void {
         text: $t({defaultMessage: "Creating channel..."}),
     });
 
+    const topics_policy = $("#id_new_topics_policy").val();
+
     const data = {
         subscriptions,
         is_web_public: JSON.stringify(is_web_public),
@@ -390,6 +393,7 @@ function create_stream(): void {
         is_default_stream: JSON.stringify(default_stream),
         message_retention_days: JSON.stringify(message_retention_selection),
         announce: JSON.stringify(announce),
+        topics_policy: JSON.stringify(topics_policy),
         principals,
         ...group_setting_values,
     };
@@ -508,6 +512,11 @@ export function show_new_stream_modal(): void {
         true,
         true,
     );
+
+    $("#id_new_topics_policy").val(settings_config.stream_topics_policy_values.inherit.code);
+    if (!settings_data.user_can_set_topics_policy() && !current_user.is_admin) {
+        $("#id_new_topics_policy").prop("disabled", true);
+    }
 
     // set default state for "announce stream" and "default stream" option.
     $("#stream_creation_form .default-stream input").prop("checked", false);

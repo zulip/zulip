@@ -149,7 +149,9 @@ class MessageMoveTopicTest(ZulipTestCase):
                     "topic": topic_name,
                 },
             )
-            self.assert_json_error(result, "Topics are required in this organization.")
+            self.assert_json_error(
+                result, "Sending messages to the empty topic is not allowed in this channel."
+            )
             self.check_topic(message_id, topic_name=original_topic_name)
 
         new_topic_name = "new valid topic"

@@ -641,6 +641,7 @@ test("stream_settings", ({override}) => {
         history_public_to_subscribers: false,
     });
     stream_data.update_message_retention_setting(sub, -1);
+    stream_data.update_topics_policy_setting(sub, "allow_topics_policy");
     stream_data.update_stream_permission_group_setting(
         "can_remove_subscribers_group",
         sub,
@@ -654,6 +655,7 @@ test("stream_settings", ({override}) => {
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.message_retention_days, -1);
+    assert.equal(sub.topics_policy, "allow_topics_policy");
     assert.equal(sub.can_remove_subscribers_group, moderators_group.id);
     assert.equal(sub.can_administer_channel_group, moderators_group.id);
 

@@ -77,6 +77,7 @@ from zerver.models import (
 from zerver.models.groups import NamedUserGroup, SystemGroups, UserGroup
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm_by_id
+from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -441,6 +442,7 @@ def send_subscription_add_events(
                 rendered_description=stream_dict["rendered_description"],
                 stream_id=stream_dict["stream_id"],
                 stream_post_policy=stream_dict["stream_post_policy"],
+                topics_policy=stream_dict["topics_policy"],
                 # Computed fields not present in Stream.API_FIELDS
                 is_announcement_only=stream_dict["is_announcement_only"],
             )
@@ -1623,6 +1625,52 @@ def do_change_stream_message_retention_days(
         old_value=old_message_retention_days_value,
         new_value=message_retention_days,
     )
+
+
+@transaction.atomic(durable=True)
+def do_change_stream_topics_policy(
+    stream: Stream, acting_user: UserProfile, topics_policy: int
+) -> None:
+    old_topics_policy_value = stream.topics_policy
+    stream.topics_policy = topics_policy
+    stream.save(update_fields=["topics_policy"])
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_topics_policy_value,
+            RealmAuditLog.NEW_VALUE: topics_policy,
+            "property": "topics_policy",
+        },
+    )
+
+    event = dict(
+        op="update",
+        type="stream",
+        property="topics_policy",
+        value=StreamTopicsPolicyEnum(topics_policy).name,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+    send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
+
+    sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
+    with override_language(stream.realm.default_language):
+        internal_send_stream_message(
+            sender,
+            stream,
+            str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME),
+            _(
+                "{user_name} changed the empty topic policy from {old_topics_policy} to {new_topics_policy}."
+            ).format(
+                user_name=silent_mention_syntax_for_user(acting_user),
+                old_topics_policy=f"**{Stream.TOPICS_POLICY_DISPLAY_NAME_MAP[old_topics_policy_value]}**",
+                new_topics_policy=f"**{Stream.TOPICS_POLICY_DISPLAY_NAME_MAP[topics_policy]}**",
+            ),
+        )
 
 
 def do_change_stream_group_based_setting(
