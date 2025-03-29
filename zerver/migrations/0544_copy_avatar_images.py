@@ -80,6 +80,7 @@ INLINE_IMAGE_MIME_TYPES = [
     "image/jpeg",
     "image/png",
     "image/webp",
+    "image/svg+xml",
     # To avoid cross-site scripting attacks, DO NOT add types such
     # as image/svg+xml.
 ]
