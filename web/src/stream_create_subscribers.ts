@@ -78,19 +78,23 @@ export function create_handlers($container: JQuery): void {
         $(".add-user-list-filter").trigger("focus");
     });
 
-    $container.on("click", ".remove_potential_subscriber", (e) => {
+    $container.on("click", ".remove_potential_subscriber", function (this: HTMLElement, e) {
         e.preventDefault();
-        const $elem = $(e.target);
-        const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
+        const $subscriber_row = $(this).closest(".settings-subscriber-row");
+        const user_id = Number.parseInt($subscriber_row.attr("data-user-id")!, 10);
         soft_remove_user_id(user_id);
     });
 
-    $container.on("click", ".undo_soft_removed_potential_subscriber", (e) => {
-        e.preventDefault();
-        const $elem = $(e.target);
-        const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
-        undo_soft_remove_user_id(user_id);
-    });
+    $container.on(
+        "click",
+        ".undo_soft_removed_potential_subscriber",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            const $subscriber_row = $(this).closest(".settings-subscriber-row");
+            const user_id = Number.parseInt($subscriber_row.attr("data-user-id")!, 10);
+            undo_soft_remove_user_id(user_id);
+        },
+    );
 }
 
 export function build_widgets(): void {
