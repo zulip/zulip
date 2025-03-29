@@ -502,6 +502,10 @@ input[type="checkbox"] {
     }
 }
 
+#customizable_stream_notifications_table .dropdown-widget-button {
+    width: 225px;
+}
+
 .advanced-configurations-container {
     .advance-config-title-container {
         display: flex;
