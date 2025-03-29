@@ -9,7 +9,7 @@ import "jquery-validation";
 import "../setup.ts";
 import "../reload.ts";
 import "../templates.ts";
-import "../zulip_test.ts";
+import "../zulip_test_expose.ts";
 
 // Import styles
 import "tippy.js/dist/tippy.css";
