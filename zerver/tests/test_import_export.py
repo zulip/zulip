@@ -792,7 +792,7 @@ class RealmImportExportTest(ExportFile):
         # This Client will be used in a message sent between non-consented users
         # and therefore should not be exported an export with consent.
         c_message_id = self.send_personal_message(iago, cordelia)
-        non_consented_user_client = Client.objects.create(name="Non-consented uesr client")
+        non_consented_user_client = Client.objects.create(name="Non-consented user client")
         c_message = Message.objects.get(id=c_message_id)
         c_message.sending_client = non_consented_user_client
         c_message.save()
@@ -1388,9 +1388,10 @@ class RealmImportExportTest(ExportFile):
             exported_non_consented_user["email_address_visibility"],
             UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
         )
-        # Sanity check that this doesn't match the realm default - since with a matching realm default, the
-        # above asserion would be moot and not testing the preservation of the email_address_visibility
-        # setting.
+        # Sanity check that this doesn't match the realm default -
+        # since with a matching realm default, the above assertion
+        # would be moot and not testing the preservation of the
+        # email_address_visibility setting.
         self.assertNotEqual(
             realm_user_default.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
         )
