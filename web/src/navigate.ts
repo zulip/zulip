@@ -25,8 +25,8 @@ export function up(): void {
     message_viewport.set_last_movement_direction(-1);
 
     const $selected_message = message_lists.current.selected_row();
+    const viewport_info = message_viewport.message_viewport_info();
     if ($selected_message.length > 0) {
-        const viewport_info = message_viewport.message_viewport_info();
         const message_props = $selected_message.get_offset_to_window();
         // We scroll up to show the hidden top of long messages.
         if (
@@ -38,11 +38,24 @@ export function up(): void {
         }
     }
 
-    const msg_id = message_lists.current.prev();
-    if (msg_id === undefined) {
+    const prev_msg_id = message_lists.current.prev();
+    if (prev_msg_id === undefined) {
         return;
     }
-    go_to_row(msg_id);
+
+    const $prev_message = message_lists.current.get_row(prev_msg_id);
+    assert($prev_message.length > 0);
+    const prev_message_props = $prev_message.get_offset_to_window();
+
+    if (
+        is_long_message(prev_message_props.height) &&
+        prev_message_props.top < viewport_info.visible_top
+    ) {
+        page_up();
+        return;
+    }
+
+    go_to_row(prev_msg_id);
 }
 
 export function down(with_centering = false): void {
