@@ -134,149 +134,146 @@ export function handle_keyboard_events(event_key: string): void {
     messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
 }
 
-export function launch(): void {
-    function format_drafts(data: Record<string, LocalStorageDraft>): FormattedDraft[] {
-        const unsorted_raw_drafts = Object.entries(data).map(([id, draft]) => ({...draft, id}));
+function format_drafts(data: Record<string, LocalStorageDraft>): FormattedDraft[] {
+    const unsorted_raw_drafts = Object.entries(data).map(([id, draft]) => ({...draft, id}));
 
-        const sorted_raw_drafts = unsorted_raw_drafts.sort(
-            (draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt,
+    const sorted_raw_drafts = unsorted_raw_drafts.sort(
+        (draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt,
+    );
+
+    const sorted_formatted_drafts = sorted_raw_drafts
+        .map((draft_row) => drafts.format_draft(draft_row))
+        .filter((formatted_draft) => formatted_draft !== undefined);
+
+    return sorted_formatted_drafts;
+}
+
+function get_header_for_narrow_drafts(): string {
+    const {stream_name, topic, private_recipient_ids} = drafts.current_recipient_data();
+    if (private_recipient_ids && private_recipient_ids.length > 0) {
+        if (private_recipient_ids.length === 1) {
+            const user = people.get_by_user_id(private_recipient_ids[0]!);
+            if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
+                return $t({defaultMessage: "Drafts from conversation with yourself"});
+            }
+        }
+        return $t(
+            {defaultMessage: "Drafts from conversation with {recipient}"},
+            {
+                recipient: people.user_ids_to_full_names_string(private_recipient_ids),
+            },
         );
-
-        const sorted_formatted_drafts = sorted_raw_drafts
-            .map((draft_row) => drafts.format_draft(draft_row))
-            .filter((formatted_draft) => formatted_draft !== undefined);
-
-        return sorted_formatted_drafts;
     }
+    const recipient = topic ? `#${stream_name} > ${topic}` : `#${stream_name}`;
+    return $t({defaultMessage: "Drafts from {recipient}"}, {recipient});
+}
 
-    function get_header_for_narrow_drafts(): string {
-        const {stream_name, topic, private_recipient_ids} = drafts.current_recipient_data();
-        if (private_recipient_ids && private_recipient_ids.length > 0) {
-            if (private_recipient_ids.length === 1) {
-                const user = people.get_by_user_id(private_recipient_ids[0]!);
-                if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
-                    return $t({defaultMessage: "Drafts from conversation with yourself"});
-                }
-            }
-            return $t(
-                {defaultMessage: "Drafts from conversation with {recipient}"},
-                {
-                    recipient: people.user_ids_to_full_names_string(private_recipient_ids),
-                },
-            );
-        }
-        const recipient = topic ? `#${stream_name} > ${topic}` : `#${stream_name}`;
-        return $t({defaultMessage: "Drafts from {recipient}"}, {recipient});
-    }
+function render_widgets(narrow_drafts: FormattedDraft[], other_drafts: FormattedDraft[]): void {
+    $("#drafts_table").empty();
 
-    function render_widgets(narrow_drafts: FormattedDraft[], other_drafts: FormattedDraft[]): void {
-        $("#drafts_table").empty();
+    const narrow_drafts_header = get_header_for_narrow_drafts();
 
-        const narrow_drafts_header = get_header_for_narrow_drafts();
-
-        const rendered = render_draft_table_body({
-            narrow_drafts_header,
-            narrow_drafts,
-            other_drafts,
+    const rendered = render_draft_table_body({
+        narrow_drafts_header,
+        narrow_drafts,
+        other_drafts,
+    });
+    const $drafts_table = $("#drafts_table");
+    $drafts_table.append($(rendered));
+    if ($("#drafts_table .overlay-message-row").length > 0) {
+        $("#drafts_table .no-drafts").hide();
+        // Update possible dynamic elements.
+        const $rendered_drafts = $drafts_table.find(
+            ".message_content.rendered_markdown.restore-overlay-message",
+        );
+        $rendered_drafts.each(function () {
+            rendered_markdown.update_elements($(this));
         });
-        const $drafts_table = $("#drafts_table");
-        $drafts_table.append($(rendered));
-        if ($("#drafts_table .overlay-message-row").length > 0) {
-            $("#drafts_table .no-drafts").hide();
-            // Update possible dynamic elements.
-            const $rendered_drafts = $drafts_table.find(
-                ".message_content.rendered_markdown.restore-overlay-message",
-            );
-            $rendered_drafts.each(function () {
-                rendered_markdown.update_elements($(this));
-            });
-        }
-        update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
-        update_bulk_delete_ui();
     }
+    update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
+    update_bulk_delete_ui();
+}
 
-    function setup_event_handlers(): void {
-        $("#drafts_table .restore-overlay-message").on("click", function (e) {
-            if (document.getSelection()?.type === "Range") {
-                return;
-            }
+function setup_event_handlers(): void {
+    $("#drafts_table .restore-overlay-message").on("click", function (e) {
+        if (document.getSelection()?.type === "Range") {
+            return;
+        }
 
+        e.stopPropagation();
+
+        const $draft_row = $(this).closest(".overlay-message-row");
+        const draft_id = $draft_row.attr("data-draft-id")!;
+        restore_draft(draft_id);
+    });
+
+    $("#drafts_table .restore-overlay-message").on(
+        "click",
+        ".user-mention",
+        user_card_popover.unsaved_message_user_mention_event_handler,
+    );
+
+    $("#drafts_table .restore-overlay-message").on(
+        "click",
+        ".user-group-mention",
+        function (this: HTMLElement, e) {
+            user_group_popover.toggle_user_group_info_popover(this, undefined);
             e.stopPropagation();
+        },
+    );
 
-            const $draft_row = $(this).closest(".overlay-message-row");
-            const draft_id = $draft_row.attr("data-draft-id")!;
-            restore_draft(draft_id);
+    $("#drafts_table .overlay_message_controls .delete-overlay-message").on("click", function () {
+        const $draft_row = $(this).closest(".overlay-message-row");
+
+        remove_draft($draft_row);
+        update_bulk_delete_ui();
+    });
+
+    $("#drafts_table .overlay_message_controls .draft-selection-checkbox").on("click", (e) => {
+        const is_checked = is_checkbox_icon_checked($(e.target));
+        toggle_checkbox_icon_state($(e.target), !is_checked);
+        update_bulk_delete_ui();
+    });
+
+    new ClipboardJS("#drafts_table .overlay_message_controls .copy-overlay-message", {
+        text(trigger): string {
+            const draft_id = $(trigger).attr("data-draft-id")!;
+            const draft = drafts.draft_model.getDraft(draft_id);
+            if (!draft) {
+                return "";
+            }
+            return draft.content ?? "";
+        },
+    }).on("success", (e) => {
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
         });
+    });
 
-        $("#drafts_table .restore-overlay-message").on(
-            "click",
-            ".user-mention",
-            user_card_popover.unsaved_message_user_mention_event_handler,
-        );
-
-        $("#drafts_table .restore-overlay-message").on(
-            "click",
-            ".user-group-mention",
-            function (this: HTMLElement, e) {
-                user_group_popover.toggle_user_group_info_popover(this, undefined);
-                e.stopPropagation();
-            },
-        );
-
-        $("#drafts_table .overlay_message_controls .delete-overlay-message").on(
-            "click",
-            function () {
-                const $draft_row = $(this).closest(".overlay-message-row");
-
-                remove_draft($draft_row);
-                update_bulk_delete_ui();
-            },
-        );
-
-        $("#drafts_table .overlay_message_controls .draft-selection-checkbox").on("click", (e) => {
-            const is_checked = is_checkbox_icon_checked($(e.target));
-            toggle_checkbox_icon_state($(e.target), !is_checked);
-            update_bulk_delete_ui();
+    $(".select-drafts-button").on("click", (e) => {
+        e.preventDefault();
+        const $unchecked_checkboxes = $(".draft-selection-checkbox").filter(function () {
+            return !is_checkbox_icon_checked($(this));
         });
+        const check_boxes = $unchecked_checkboxes.length > 0;
+        $(".draft-selection-checkbox").each(function () {
+            toggle_checkbox_icon_state($(this), check_boxes);
+        });
+        update_bulk_delete_ui();
+    });
 
-        new ClipboardJS("#drafts_table .overlay_message_controls .copy-overlay-message", {
-            text(trigger): string {
-                const draft_id = $(trigger).attr("data-draft-id")!;
-                const draft = drafts.draft_model.getDraft(draft_id);
-                if (!draft) {
-                    return "";
-                }
-                return draft.content ?? "";
-            },
-        }).on("success", (e) => {
-            show_copied_confirmation(e.trigger, {
-                show_check_icon: true,
+    $(".delete-selected-drafts-button").on("click", () => {
+        $(".drafts-list")
+            .find(".draft-selection-checkbox.fa-check-square")
+            .closest(".overlay-message-row")
+            .each(function () {
+                remove_draft($(this));
             });
-        });
+        update_bulk_delete_ui();
+    });
+}
 
-        $(".select-drafts-button").on("click", (e) => {
-            e.preventDefault();
-            const $unchecked_checkboxes = $(".draft-selection-checkbox").filter(function () {
-                return !is_checkbox_icon_checked($(this));
-            });
-            const check_boxes = $unchecked_checkboxes.length > 0;
-            $(".draft-selection-checkbox").each(function () {
-                toggle_checkbox_icon_state($(this), check_boxes);
-            });
-            update_bulk_delete_ui();
-        });
-
-        $(".delete-selected-drafts-button").on("click", () => {
-            $(".drafts-list")
-                .find(".draft-selection-checkbox.fa-check-square")
-                .closest(".overlay-message-row")
-                .each(function () {
-                    remove_draft($(this));
-                });
-            update_bulk_delete_ui();
-        });
-    }
-
+export function launch(): void {
     const all_drafts = drafts.draft_model.get();
     const narrow_drafts = drafts.filter_drafts_by_compose_box_and_recipient(all_drafts);
     const other_drafts = _.pick(
