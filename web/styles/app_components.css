@@ -812,6 +812,10 @@ input.settings_text_input {
     .actions {
         width: 1%;
         white-space: nowrap;
+
+        .check:disabled {
+            opacity: 1;
+        }
     }
 
     th.actions {
@@ -867,6 +871,14 @@ input.settings_text_input {
 
     tbody:last-child tr:last-child > td:last-child {
         border-bottom-right-radius: 4px;
+    }
+}
+
+/* The font-family was `zulip-icon`, causing misalignment in this section.
+    Changing it to `sans-serif` aligns the icon properly. */
+#admin_invites_table .actions {
+    i.zulip-icon {
+        font-family: sans-serif !important;
     }
 }
 
