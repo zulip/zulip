@@ -4,6 +4,7 @@ from typing import Any
 
 TOPIC_WITH_BRANCH_TEMPLATE = "{repo} / {branch}"
 TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE = "{repo} / {type} #{id} {title}"
+TOPIC_WITH_DESIGN_INFO_TEMPLATE = "{repo} / {type} {design_name}"
 TOPIC_WITH_RELEASE_TEMPLATE = "{repo} / {tag} {title}"
 
 EMPTY_SHA = "0000000000000000000000000000000000000000"
@@ -66,6 +67,7 @@ PULL_REQUEST_BRANCH_INFO_TEMPLATE = "from `{target}` to `{base}`"
 CONTENT_MESSAGE_TEMPLATE = "\n~~~ quote\n{message}\n~~~"
 
 COMMITS_COMMENT_MESSAGE_TEMPLATE = "{user_name} {action} on [{sha}]({url})"
+DESIGN_COMMENT_MESSAGE_TEMPLATE = "{user_name} {action} on design [{design_name}]({design_url})"
 
 PUSH_TAGS_MESSAGE_TEMPLATE = """{user_name} {action} tag {tag}"""
 TAG_WITH_URL_TEMPLATE = "[{tag_name}]({tag_url})"
@@ -255,6 +257,25 @@ def get_pull_request_event_message(
     ):
         main_message = f"{main_message}{punctuation}"
 
+    if message:
+        main_message += "\n" + CONTENT_MESSAGE_TEMPLATE.format(message=message)
+    return main_message.rstrip()
+
+
+def get_design_comment_event_message(
+    *, user_name: str, action: str, design_name: str, design_url: str, message: str
+) -> str:
+    kwargs = {
+        "user_name": user_name,
+        "action": action,
+        "design_name": design_name,
+        "design_url": design_url,
+    }
+
+    main_message = DESIGN_COMMENT_MESSAGE_TEMPLATE.format(**kwargs)
+
+    punctuation = ":" if message else "."
+    main_message += punctuation
     if message:
         main_message += "\n" + CONTENT_MESSAGE_TEMPLATE.format(message=message)
     return main_message.rstrip()

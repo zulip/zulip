@@ -20,8 +20,10 @@ from zerver.lib.webhooks.git import (
     EMPTY_SHA,
     RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME,
     RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME_WITHOUT_URL,
+    TOPIC_WITH_DESIGN_INFO_TEMPLATE,
     TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE,
     get_commits_comment_action_message,
+    get_design_comment_event_message,
     get_issue_event_message,
     get_pull_request_event_message,
     get_push_commits_event_message,
@@ -253,6 +255,33 @@ def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> s
     )
 
 
+def get_commented_design_event_body(payload: WildValue, include_title: bool) -> str:
+    comment = payload["object_attributes"]
+    repository_url = payload["repository"]["homepage"].tame(check_string)
+    note_id = comment["id"].tame(check_int)
+
+    # As there is no issue field in the payload, we need to
+    # parse the issue number from the new_path field.
+    design_new_path = comment["position"]["new_path"].tame(check_string)
+
+    # Sample design_new_path: "designs/issue-1/Screenshot_20250302_230445.png"
+    new_path_parts = design_new_path.split("/")
+
+    issue_number = new_path_parts[1].split("-")[-1]
+    design_name = new_path_parts[-1]
+    design_url = f"{repository_url}/-/issues/{issue_number}/designs/{design_name}"
+    comment_url = f"{design_url}#note_{note_id}"
+    action = f"[commented]({comment_url})"
+
+    return get_design_comment_event_message(
+        user_name=get_issue_user_name(payload),
+        action=action,
+        design_name=design_name,
+        design_url=design_url,
+        message=comment["note"].tame(check_string),
+    )
+
+
 def get_commented_snippet_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
     action = "[commented]({}) on".format(comment["url"].tame(check_string))
@@ -425,6 +454,8 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Note Hook MergeRequest": get_commented_merge_request_event_body,
     "Note Hook Issue": get_commented_issue_event_body,
     "Confidential Note Hook Issue": get_commented_issue_event_body,
+    "Note Hook DesignManagement::Design": get_commented_design_event_body,
+    "Confidential Note Hook DesignManagement::Design": get_commented_design_event_body,
     "Note Hook Snippet": get_commented_snippet_event_body,
     "Merge Request Hook approved": partial(get_merge_request_event_body, "approved"),
     "Merge Request Hook unapproved": partial(get_merge_request_event_body, "unapproved"),
@@ -513,6 +544,18 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             type="issue",
             id=payload["issue"]["iid"].tame(check_int),
             title=payload["issue"]["title"].tame(check_string),
+        )
+    elif event in (
+        "Note Hook DesignManagement::Design",
+        "Confidential Note Hook DesignManagement::Design",
+    ):
+        design_new_path = payload["object_attributes"]["position"]["new_path"].tame(check_string)
+        design_name = design_new_path.split("/")[-1]
+
+        return TOPIC_WITH_DESIGN_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type="design",
+            design_name=design_name,
         )
     elif event == "Note Hook MergeRequest":
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
