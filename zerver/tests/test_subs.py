@@ -317,6 +317,7 @@ class TestCreateStreams(ZulipTestCase):
                 can_administer_channel_group=aaron_group,
                 can_add_subscribers_group=prospero_group,
                 can_subscribe_group=cordelia_group,
+                can_unsubscribe_group=cordelia_group,
             )
 
         self.assertEqual(events[0]["event"]["type"], "stream")
@@ -860,6 +861,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(stream.can_remove_subscribers_group_id, admins_group.id)
         self.assertEqual(stream.can_send_message_group_id, everyone_group.id)
         self.assertEqual(stream.can_subscribe_group_id, nobody_group.id)
+        self.assertEqual(stream.can_unsubscribe_group_id, everyone_group.id)
 
         # Check setting values sent in stream creation events.
         event_stream = events[0]["event"]["streams"][0]
@@ -872,6 +874,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(event_stream["can_remove_subscribers_group"], admins_group.id)
         self.assertEqual(event_stream["can_send_message_group"], everyone_group.id)
         self.assertEqual(event_stream["can_subscribe_group"], nobody_group.id)
+        self.assertEqual(event_stream["can_unsubscribe_group"], everyone_group.id)
 
     def test_acting_user_is_creator(self) -> None:
         """
@@ -3563,7 +3566,7 @@ class StreamAdminTest(ZulipTestCase):
         webhook_bot = self.example_user("webhook_bot")
         do_change_bot_owner(webhook_bot, bot_owner=user_profile, acting_user=user_profile)
         result = self.attempt_unsubscribe_of_principal(
-            query_count=13,
+            query_count=14,
             target_users=[webhook_bot],
             is_realm_admin=False,
             is_subbed=True,
@@ -3807,15 +3810,27 @@ class StreamAdminTest(ZulipTestCase):
         principals has the id of the acting_user performing the
         unsubscribe action.
         """
+        realm = get_realm("zulip")
         admin = self.example_user("iago")
-        self.login_user(admin)
-        self.assertTrue(admin.is_realm_admin)
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
 
         stream_name = "hümbüǵ"
-        self.make_stream(stream_name)
-        self.subscribe(admin, stream_name)
+        stream = self.make_stream(stream_name)
 
-        # unsubscribing when subscribed.
+        unsubscribe_group = check_add_user_group(
+            realm, "can_unsubscribe", [hamlet], acting_user=admin
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_unsubscribe_group", unsubscribe_group, acting_user=admin
+        )
+
+        self.subscribe(admin, stream_name)
+        self.subscribe(hamlet, stream_name)
+        self.subscribe(cordelia, stream_name)
+
+        # Test that an admin can always unsubscribe themselves.
+        self.login_user(admin)
         result = self.client_delete(
             "/json/users/me/subscriptions",
             {
@@ -3826,7 +3841,7 @@ class StreamAdminTest(ZulipTestCase):
         json = self.assert_json_success(result)
         self.assert_length(json["removed"], 1)
 
-        # unsubscribing after already being unsubscribed.
+        # Test that an admin cannot unsubscribe themselves from a channel when they're already unsubscribed.
         result = self.client_delete(
             "/json/users/me/subscriptions",
             {
@@ -3837,6 +3852,29 @@ class StreamAdminTest(ZulipTestCase):
 
         json = self.assert_json_success(result)
         self.assert_length(json["not_removed"], 1)
+
+        # Test that hamlet (non-admin, in group) can unsubscribe themselves.
+        self.login_user(hamlet)
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps([stream_name]).decode(),
+                "principals": orjson.dumps([hamlet.id]).decode(),
+            },
+        )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 1)
+
+        # Test that cordelia (not in group) cannot unsubscribe themselves.
+        self.login_user(cordelia)
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps([stream_name]).decode(),
+                "principals": orjson.dumps([cordelia.id]).decode(),
+            },
+        )
+        self.assert_json_error(result, "Insufficient permission")
 
     def test_removing_last_user_from_private_stream(self) -> None:
         stream_name = "private_stream"
