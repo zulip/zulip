@@ -24,7 +24,7 @@ def do_update_user_status(
     if away is not None:
         user_setting = "presence_enabled"
         value = not away
-        do_change_user_setting(user_profile, user_setting, value, acting_user=user_profile)
+        do_change_user_setting([user_profile], user_setting, value, acting_user=user_profile)
 
     realm = user_profile.realm
 
