@@ -10,6 +10,7 @@ const {
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
+const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -17,16 +18,22 @@ const {page_params} = require("./lib/zpage_params.cjs");
 
 const $window_stub = $.create("window-stub");
 set_global("to_$", () => $window_stub);
-$(window).idle = noop;
+const idle_handler_cancel_stub = make_stub();
+const idle_handler = {cancel: idle_handler_cancel_stub.f};
+$(window).idle = () => idle_handler;
 
 const _document = {
     hasFocus() {
         return true;
     },
+    to_$() {
+        return $("document-stub");
+    },
 };
 
 const channel = mock_esm("../src/channel");
 const electron_bridge = mock_esm("../src/electron_bridge");
+const chrome_idle_detection = mock_esm("../src/chrome_idle_detection");
 const keydown_util = mock_esm("../src/keydown_util", {handle() {}});
 const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
@@ -814,6 +821,26 @@ test("initialize", ({override, override_rewire}) => {
     });
 
     activity.initialize();
+
+    override(chrome_idle_detection, "init_idle_detector_chromium", () => ({
+        // eslint-disable-next-line unicorn/no-thenable
+        then(cb) {
+            cb(false);
+        },
+    }));
+    $(document).trigger("keydown mousedown");
+    assert.equal(idle_handler_cancel_stub.num_calls, 0);
+
+    activity.setup_idle_detector(idle_handler);
+    override(chrome_idle_detection, "init_idle_detector_chromium", () => ({
+        // eslint-disable-next-line unicorn/no-thenable
+        then(cb) {
+            cb(true);
+        },
+    }));
+    $(document).trigger("keydown mousedown");
+    assert.equal(idle_handler_cancel_stub.num_calls, 1);
+
     activity_ui.initialize({narrow_by_email() {}});
     payload.success({
         zephyr_mirror_active: true,
