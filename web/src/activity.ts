@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import {z} from "zod";
 
 import * as channel from "./channel.ts";
+import {init_idle_detector_chromium as init_idle_detector} from "./chrome_idle_detection.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import {page_params} from "./page_params.ts";
 import * as presence from "./presence.ts";
@@ -197,10 +198,23 @@ export function initialize(): void {
     });
 
     $(window).on("focus", mark_client_active);
-    $(window).idle({
+    const idle_handler = $(window).idle({
         idle: DEFAULT_IDLE_TIMEOUT_MS,
         onIdle: mark_client_idle,
         onActive: mark_client_active,
         keepTracking: true,
+    });
+
+    $(document.body).one("keydown mousedown", () => {
+        void init_idle_detector({
+            idle_timeout: DEFAULT_IDLE_TIMEOUT_MS,
+            on_idle: mark_client_idle,
+            on_active: mark_client_active,
+        }).then((started) => {
+            if (!started) {
+                // We no longer need to track idle state with jQuery
+                idle_handler.cancel();
+            }
+        });
     });
 }
