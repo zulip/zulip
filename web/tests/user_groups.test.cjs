@@ -850,7 +850,7 @@ run_test("group_has_permission", () => {
     assert.ok(user_groups.group_has_permission(setting_value, group_id));
 });
 
-run_test("get_assigned_group_permission_object", () => {
+run_test("get_assigned_group_permission_object", ({override}) => {
     const admins = {
         name: "Administrators",
         id: 1,
@@ -883,6 +883,11 @@ run_test("get_assigned_group_permission_object", () => {
     user_groups.initialize({
         realm_user_groups: [admins, moderators, all, students],
     });
+    override(
+        realm,
+        "server_supported_permission_settings",
+        example_settings.server_supported_permission_settings,
+    );
 
     const setting_name = "can_manage_group";
     let setting_value = moderators.id;
@@ -894,6 +899,7 @@ run_test("get_assigned_group_permission_object", () => {
             setting_name,
             group_id,
             can_edit_settings,
+            "group",
         ),
         undefined,
     );
@@ -905,6 +911,7 @@ run_test("get_assigned_group_permission_object", () => {
             setting_name,
             group_id,
             can_edit_settings,
+            "group",
         ),
         undefined,
     );
@@ -928,6 +935,7 @@ run_test("get_assigned_group_permission_object", () => {
         setting_name,
         group_id,
         can_edit_settings,
+        "group",
     );
     assert.deepEqual(permission_obj, {
         setting_name,
@@ -946,6 +954,7 @@ run_test("get_assigned_group_permission_object", () => {
             setting_name,
             group_id,
             can_edit_settings,
+            "group",
         ),
         undefined,
     );
@@ -956,6 +965,7 @@ run_test("get_assigned_group_permission_object", () => {
         setting_name,
         group_id,
         can_edit_settings,
+        "group",
     );
     assert.deepEqual(permission_obj, {
         setting_name,
@@ -969,6 +979,7 @@ run_test("get_assigned_group_permission_object", () => {
         setting_name,
         group_id,
         can_edit_settings,
+        "group",
     );
     assert.deepEqual(permission_obj, {
         setting_name,
@@ -982,6 +993,7 @@ run_test("get_assigned_group_permission_object", () => {
         setting_name,
         group_id,
         can_edit_settings,
+        "group",
     );
     assert.deepEqual(permission_obj, {
         setting_name,
@@ -999,6 +1011,7 @@ run_test("get_assigned_group_permission_object", () => {
             setting_name,
             group_id,
             can_edit_settings,
+            "group",
         ),
         undefined,
     );
@@ -1010,6 +1023,7 @@ run_test("get_assigned_group_permission_object", () => {
             setting_name,
             group_id,
             can_edit_settings,
+            "group",
         ),
         undefined,
     );
@@ -1020,6 +1034,7 @@ run_test("get_assigned_group_permission_object", () => {
         setting_name,
         group_id,
         can_edit_settings,
+        "group",
     );
     assert.deepEqual(permission_obj, {
         setting_name,
@@ -1032,6 +1047,7 @@ run_test("get_assigned_group_permission_object", () => {
         setting_name,
         group_id,
         can_edit_settings,
+        "group",
     );
     assert.deepEqual(permission_obj, {
         setting_name,
@@ -1051,6 +1067,7 @@ run_test("get_assigned_group_permission_object", () => {
             setting_name,
             group_id,
             can_edit_settings,
+            "group",
         ),
         undefined,
     );
@@ -1061,6 +1078,7 @@ run_test("get_assigned_group_permission_object", () => {
         setting_name,
         group_id,
         can_edit_settings,
+        "group",
     );
     assert.deepEqual(permission_obj, {
         setting_name,
@@ -1073,6 +1091,7 @@ run_test("get_assigned_group_permission_object", () => {
         setting_name,
         group_id,
         can_edit_settings,
+        "group",
     );
     assert.deepEqual(permission_obj, {
         setting_name,
@@ -1085,6 +1104,7 @@ run_test("get_assigned_group_permission_object", () => {
         setting_name,
         group_id,
         can_edit_settings,
+        "group",
     );
     assert.deepEqual(permission_obj, {
         setting_name,
@@ -1103,6 +1123,7 @@ run_test("get_assigned_group_permission_object", () => {
         setting_name,
         group_id,
         can_edit_settings,
+        "group",
     );
     assert.deepEqual(permission_obj, {
         setting_name,
@@ -1117,6 +1138,7 @@ run_test("get_assigned_group_permission_object", () => {
         setting_name,
         group_id,
         can_edit_settings,
+        "group",
     );
     assert.deepEqual(permission_obj, {
         setting_name,
@@ -1131,6 +1153,7 @@ run_test("get_assigned_group_permission_object", () => {
         setting_name,
         group_id,
         can_edit_settings,
+        "group",
     );
     assert.deepEqual(permission_obj, {
         setting_name,
@@ -1145,6 +1168,7 @@ run_test("get_assigned_group_permission_object", () => {
         setting_name,
         group_id,
         can_edit_settings,
+        "group",
     );
     assert.deepEqual(permission_obj, {
         setting_name,
