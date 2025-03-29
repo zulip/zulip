@@ -2386,8 +2386,8 @@ msgstr "\nઆ ઇમેઇલને જવાબ આપતા ન રહેવ�
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-msgid "Group DMs with %(huddle_display_name)s"
-msgstr "સાથે %(huddle_display_name)s સાથે સમૂહ DMs"
+msgid "Group DMs with %(direct_message_group_display_name)s"
+msgstr "સાથે %(direct_message_group_display_name)s સાથે સમૂહ DMs"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
