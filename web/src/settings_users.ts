@@ -123,14 +123,14 @@ export function update_view_on_deactivate(user_id: number, is_bot: boolean): voi
     const $button = $row.find("button.deactivate");
     $button.prop("disabled", false);
     $row.find("i.deactivated-user-icon").show();
-    $button.addClass("button-warning reactivate");
-    $button.removeClass("button-danger deactivate");
+    $button.addClass("icon-button-success reactivate");
+    $button.removeClass("icon-button-danger deactivate");
     if (is_bot) {
-        $button.addClass("reactivate-bot-tooltip");
-        $button.removeClass("deactivate-bot-tooltip");
+        $button.closest("span").addClass("reactivate-bot-tooltip");
+        $button.closest("span").removeClass("deactivate-bot-tooltip");
     } else {
-        $button.addClass("reactivate-user-tooltip");
-        $button.removeClass("deactivate-user-tooltip");
+        $button.closest("span").addClass("reactivate-user-tooltip");
+        $button.closest("span").removeClass("deactivate-user-tooltip");
     }
     $button
         .empty()
@@ -160,14 +160,14 @@ export function update_view_on_reactivate(user_id: number, is_bot: boolean): voi
 
     const $button = $row.find("button.reactivate");
     $row.find("i.deactivated-user-icon").hide();
-    $button.addClass("button-danger deactivate");
-    $button.removeClass("button-warning reactivate");
+    $button.addClass("icon-button-danger deactivate");
+    $button.removeClass("icon-button-success reactivate");
     if (is_bot) {
-        $button.addClass("deactivate-bot-tooltip");
-        $button.removeClass("reactivate-bot-tooltip");
+        $button.closest("span").addClass("deactivate-bot-tooltip");
+        $button.closest("span").removeClass("reactivate-bot-tooltip");
     } else {
-        $button.addClass("deactivate-user-tooltip");
-        $button.removeClass("reactivate-user-tooltip");
+        $button.closest("span").addClass("deactivate-user-tooltip");
+        $button.closest("span").removeClass("reactivate-user-tooltip");
     }
     $button
         .empty()
@@ -749,7 +749,7 @@ function handle_edit_form($tbody: JQuery): void {
         e.stopPropagation();
         e.preventDefault();
 
-        const user_id = Number.parseInt($(this).attr("data-user-id")!, 10);
+        const user_id = Number.parseInt($(this).closest("tr").attr("data-user-id")!, 10);
         if (people.is_my_user_id(user_id)) {
             browser_history.go_to_location("#settings/profile");
             return;
