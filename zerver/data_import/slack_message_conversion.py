@@ -1,5 +1,6 @@
 import re
 from itertools import zip_longest
+from re import Match
 from typing import Any, Literal, TypeAlias, TypedDict, cast
 
 from zerver.lib.types import Validator
@@ -50,23 +51,23 @@ SLACK_USERMENTION_REGEX = r"""
 SLACK_STRIKETHROUGH_REGEX = r"""
                              (^|[ -(]|[+-/]|\*|\_|[:-?]|\{|\[|\||\^)     # Start after specified characters
                              (\~)                                  # followed by an asterisk
-                                 ([ -)+-}—]*)([ -}]+)              # any character except asterisk
+                                 ([^~]+)              # any character except asterisk
                              (\~)                                  # followed by an asterisk
-                             ($|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
+                             (?=$|[ -']|[+-/]|[:-?]|\*|\_|\}|\)|\]|\||\^)  # ends with specified characters
                              """
 SLACK_ITALIC_REGEX = r"""
                       (^|[ -*]|[+-/]|[:-?]|\{|\[|\||\^|~)
                       (\_)
-                          ([ -^`~—]*)([ -^`-~]+)                  # any character
+                          ([^_]+)                # any character except _
                       (\_)
-                      ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
+                      (?=$|[ -']|[+-/]|[:-?]|\}|\)|\]|\*|\||\^|~)
                       """
 SLACK_BOLD_REGEX = r"""
                     (^|[ -(]|[+-/]|[:-?]|\{|\[|\_|\||\^|~)
                     (\*)
-                        ([ -)+-~—]*)([ -)+-~]+)                   # any character
+                        ([^*]+)                 # any character except *
                     (\*)
-                    ($|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
+                    (?=$|[ -']|[+-/]|[:-?]|\}|\)|\]|\_|\||\^|~)
                     """
 
 
@@ -138,17 +139,11 @@ def convert_markdown_syntax(text: str, regex: str, zulip_keyword: str) -> str:
     2. For bold formatting: This maps Slack's '*bold*' to Zulip's '**bold**'
     3. For italic formatting: This maps Slack's '_italic_' to Zulip's '*italic*'
     """
-    for match in re.finditer(regex, text, re.VERBOSE):
-        converted_token = (
-            match.group(1)
-            + zulip_keyword
-            + match.group(3)
-            + match.group(4)
-            + zulip_keyword
-            + match.group(6)
-        )
-        text = text.replace(match.group(0), converted_token)
-    return text
+
+    def replace_slack_format(match: Match[str]) -> str:
+        return match.group(1) + zulip_keyword + match.group(3) + zulip_keyword
+
+    return re.sub(regex, replace_slack_format, text, flags=re.VERBOSE | re.MULTILINE)
 
 
 def convert_slack_workspace_mentions(text: str) -> str:
@@ -355,3 +350,9 @@ def render_attachment(attachment: WildValue) -> str:
         pieces.append(f"<time:{time}>")
 
     return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
+
+
+def replace_links(text: str) -> str:
+    text, _ = convert_link_format(text)
+    text, _ = convert_mailto_format(text)
+    return text
