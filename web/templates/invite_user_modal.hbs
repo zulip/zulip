@@ -101,4 +101,18 @@
             </div>
         </div>
     {{/if}}
+    {{#if is_admin}}
+    <div class="input-group">
+        <label class="checkbox display-block modal-field-label">
+            <input type="checkbox" id="should_send_welcome_bot_custom_message" {{#if should_send_welcome_bot_custom_message}} checked="checked"{{/if}}/>
+            <span class="rendered-checkbox"></span>
+            {{t 'Send a custom Welcome Bot message'}}
+        </label>
+        <div id="invite_welcome_bot_custom_message_container">
+            <textarea id="welcome_bot_custom_message" name="welcome_bot_custom_message" class="settings_textarea" maxlength="1000" rows="4">
+                {{~default_welcome_bot_custom_message~}}
+            </textarea>
+        </div>
+    </div>
+    {{/if}}
 </form>
