@@ -749,7 +749,7 @@ function handle_edit_form($tbody: JQuery): void {
         e.stopPropagation();
         e.preventDefault();
 
-        const user_id = Number.parseInt($(this).attr("data-user-id")!, 10);
+        const user_id = Number.parseInt($(this).closest("span").attr("data-user-id")!, 10);
         if (people.is_my_user_id(user_id)) {
             browser_history.go_to_location("#settings/profile");
             return;
