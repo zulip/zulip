@@ -509,8 +509,8 @@ export function initialize(): void {
     });
 
     $("#groups_overlay_container").on(
-        "submit",
-        ".edit_members_for_user_group .subscriber_list_remove form",
+        "click",
+        ".edit_members_for_user_group .remove-subscriber-button",
         function (this: HTMLElement, e): void {
             e.preventDefault();
 
@@ -523,8 +523,8 @@ export function initialize(): void {
     );
 
     $("#groups_overlay_container").on(
-        "submit",
-        ".edit_members_for_user_group .subgroup_list_remove form",
+        "click",
+        ".edit_members_for_user_group .remove-subgroup-button",
         function (this: HTMLElement, e): void {
             e.preventDefault();
 
