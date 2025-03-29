@@ -381,6 +381,16 @@
             grid-area: message;
         }
 
+        /* For the sake of paragraphs and lists that include
+           links, we adjust the vertical space here to keep
+           it uniform. */
+        .message_content:has(p:first-child, ol:first-child, ul:first-child) {
+            padding-top: calc(
+                var(--message-box-markdown-aligned-vertical-space) -
+                    var(--message-box-link-focus-ring-block-padding)
+            );
+        }
+
         .slow-send-spinner {
             align-self: center;
             position: unset;
