@@ -139,7 +139,7 @@ export function resize_stream_subscribers_list(): void {
         return;
     }
 
-    const $subscriptions_info = $("#subscription_overlay .subscriptions-container .right");
+    const $subscriptions_info = $("#subscription_overlay .two-pane-settings-container .right");
     const classes_above_subscribers_list = [
         ".display-type", // = stream_settings_title
         ".subscriber_list_settings_container .stream_settings_header",
