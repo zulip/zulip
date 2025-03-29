@@ -114,6 +114,8 @@ def do_change_user_delivery_email(
 ) -> None:
     delete_user_profile_caches([user_profile], user_profile.realm_id)
 
+    original_email = user_profile.delivery_email
+
     user_profile.delivery_email = new_email
     if user_profile.email_address_is_realm_public():
         user_profile.email = new_email
@@ -146,6 +148,7 @@ def do_change_user_delivery_email(
         modified_user=user_profile,
         event_type=AuditLogEventType.USER_EMAIL_CHANGED,
         event_time=event_time,
+        extra_data={RealmAuditLog.OLD_VALUE: original_email, RealmAuditLog.NEW_VALUE: new_email},
     )
 
 
