@@ -461,6 +461,10 @@ input[type="checkbox"] {
     }
 }
 
+.privacy_settings {
+    margin-top: 20px;
+}
+
 .preferences-settings-form {
     .tab-picker {
         width: 325px;
@@ -470,6 +474,7 @@ input[type="checkbox"] {
 .information-density-settings {
     display: flex;
     gap: 2em;
+    margin: 0 0 20px;
 
     &.disabled-setting .display-value {
         opacity: 0.4;

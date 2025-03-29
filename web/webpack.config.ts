@@ -183,6 +183,7 @@ const config = (
                             "numberFormat",
                             "tooltip_hotkey_hints",
                             "popover_hotkey_hints",
+                            "ternary",
                         ],
                         precompileOptions: {
                             knownHelpersOnly: true,
