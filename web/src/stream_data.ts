@@ -332,6 +332,17 @@ export function get_unsorted_subs_with_content_access(): StreamSubscription[] {
     return [...stream_info.values()].filter((sub) => has_content_access(sub));
 }
 
+export function get_sorted_stream_with_content_access(): StreamSubscription[] {
+    return [...stream_info.values()]
+        .filter((sub) => has_content_access(sub))
+        .sort((a, b) => {
+            if (a.subscribed !== b.subscribed) {
+                return a.subscribed ? -1 : 1;
+            }
+            return util.strcmp(a.name.toLowerCase(), b.name.toLowerCase());
+        });
+}
+
 export function num_subscribed_subs(): number {
     return stream_info.num_true_items();
 }
@@ -1023,12 +1034,11 @@ export function remove_default_stream(stream_id: number): void {
 export function get_options_for_dropdown_widget(): (dropdown_widget.Option & {
     stream: StreamSubscription;
 })[] {
-    return subscribed_subs()
+    return get_sorted_stream_with_content_access()
         .filter((stream) => !stream.is_archived)
         .map((stream) => ({
             name: stream.name,
             unique_id: stream.stream_id,
             stream,
-        }))
-        .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
+        }));
 }
