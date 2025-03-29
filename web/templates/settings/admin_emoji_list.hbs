@@ -19,10 +19,14 @@
         <span class="emoji_author">{{t "Unknown author" }}</span>
         {{/if}}
     </td>
-    <td>
-        <button class="button rounded small delete button-danger tippy-zulip-delayed-tooltip" {{#unless can_delete_emoji}}disabled="disabled"{{/unless}} data-tippy-content="{{t 'Delete' }}" data-emoji-name="{{name}}">
-            <i class="fa fa-trash-o" aria-hidden="true"></i>
-        </button>
+    <td data-emoji-name="{{name}}">
+        {{> ../components/icon_button
+          icon="trash"
+          intent="danger"
+          custom_classes="tippy-zulip-delayed-tooltip delete"
+          disabled=(not can_delete_emoji)
+          data-tippy-content=(t "Delete")
+          }}
     </td>
 </tr>
 {{/with}}
