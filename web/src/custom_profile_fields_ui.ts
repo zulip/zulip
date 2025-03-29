@@ -173,11 +173,63 @@ export function initialize_custom_date_type_fields(element_id: string): void {
         return;
     }
 
-    flatpickr($date_picker_elements, {
-        altInput: true,
-        altFormat: "F j, Y",
-        allowInput: true,
-        static: true,
+    $date_picker_elements.each((_, element) => {
+        const $element = $(element);
+        const storedDate: unknown = $element.data("lastValidDate");
+        let lastValidDate: Date | undefined;
+        if (storedDate instanceof Date) {
+            lastValidDate = storedDate;
+        }
+        flatpickr(element, {
+            altInput: true,
+            altFormat: "F j, Y",
+            allowInput: true,
+            static: true,
+            onReady(_, __, instance) {
+                const rawValue = $element.val();
+                const initialValue = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+                // Parse and set initial date if a valid string is provided
+                if (typeof initialValue === "string" && initialValue.trim()) {
+                    const parsedDate = instance.parseDate(initialValue, instance.config.dateFormat);
+                    if (parsedDate) {
+                        lastValidDate = parsedDate;
+                        instance.setDate(parsedDate, true);
+                    }
+                }
+            },
+            onChange(selectedDates, _, instance) {
+                if (selectedDates.length > 0) {
+                    lastValidDate = selectedDates[0];
+                    if (lastValidDate !== undefined) {
+                        // Save the date as the lastValidDate
+                        $element.data("lastValidDate", lastValidDate);
+                        $element
+                            .val(instance.formatDate(lastValidDate, instance.config.dateFormat))
+                            .trigger("change");
+                    }
+                }
+            },
+            onClose(_, dateStr, instance) {
+                const parsedDate = instance.parseDate(dateStr, instance.config.dateFormat);
+                if (!parsedDate) {
+                    if (lastValidDate) {
+                        // Restore last valid date if available
+                        instance.setDate(lastValidDate, true);
+                        $element
+                            .val(instance.formatDate(lastValidDate, instance.config.dateFormat))
+                            .trigger("change");
+                    } else {
+                        // Otherwise, clear the field
+                        instance.clear();
+                        $element.val("").trigger("change");
+                    }
+                }
+            },
+        });
+        // Store lastValidDate so it remains after reopening settings
+        if (lastValidDate && Number.isNaN(lastValidDate.getTime())) {
+            $element.data("lastValidDate", lastValidDate);
+        }
     });
 
     // Enable the label associated to this field to open the datepicker when clicked.
