@@ -1,5 +1,5 @@
 {% if show_message_content %}
-    {% if group_pm %} {% trans %}Group DMs with {{ huddle_display_name }}{% endtrans %}
+    {% if group_pm %} {% trans %}Group DMs with {{ direct_message_group_display_name }}{% endtrans %}
     {% elif private_message %} {% trans %}DMs with {{ sender_str }}{% endtrans %}
     {% elif stream_email_notify or mention or followed_topic_email_notify %}
         {#
