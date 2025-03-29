@@ -1319,26 +1319,6 @@ label.preferences-radio-choice-label {
     align-items: center;
 }
 
-.invite-user-link {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    width: fit-content;
-    align-items: center;
-    text-decoration: none;
-
-    &:hover {
-        text-decoration: none;
-    }
-
-    .zulip-icon-user-plus {
-        margin-right: 5px;
-    }
-
-    &:hover .user-settings-invite-user-label {
-        text-decoration: underline;
-    }
-}
-
 /* -- new settings overlay -- */
 #settings_page {
     height: 95vh;
@@ -2273,6 +2253,22 @@ label.preferences-radio-choice-label {
     width: 110px;
 }
 
+#admin-user-list .tab-switcher {
+    margin-left: 0;
+}
+
 #data-exports .tab-switcher .ind-tab {
     width: 160px;
+}
+
+#admin_invites_table {
+    .check:disabled {
+        opacity: 1;
+    }
+
+    .check {
+        &.hide {
+            display: none;
+        }
+    }
 }
