@@ -19,6 +19,47 @@ _Unreleased_
 
 ## Zulip Server 10.x series
 
+### Zulip Server 10.1
+
+_Released 2025-03-28_
+
+- CVE-2025-27149: "Public data" administrative data exports can leak
+  metadata for non-exported messages and client user agent strings.
+- CVE-2025-30368: Organization exports can be deleted by
+  administrators of a different organization.
+- CVE-2025-30369: Custom profile fields can be deleted by
+  administrators of a different organization.
+- Fixed typing notifications not being displayed in topic permalink views.
+- Fixed a bug that could cause the compose box send button to be
+  improperly disabled.
+- Fixed multiple display bugs involving the general chat topic.
+- Fixed multiple UI live-update issues with new groups-based permissions.
+- Fixed exceptions using `tusd` with optional `AWS_*` settings not set.
+- Fixed Python virtual environments being incorrectly created
+  referencing `/root/`, which could cause the upgrade tool or
+  installer to fail.
+- Fixed instructions for upgrading to Ubuntu 24.04 on Zulip 10.x.
+- Fixed an exception upgrading to 10.x on servers that had previously
+  hand-deleted users or realms from the database (not using the
+  official management commands) in a way that leaked
+  `DirectMessageGroup` objects associated with them.
+- Fixed the setting to never de-emphasize inactive channels, which
+  broke in 10.0.
+- Fixed several visual glitches with non-default font sizes.
+- Fixed minor inbox and recent conversations glitches.
+- Fixed a dark theme visual glitch with the to-do widget.
+- Fixed an exception when setting a password longer than 72 characters.
+- Fixed the “find organization” emails not being properly translated.
+- Fixed left sidebar unread counts being misaligned on Safari.
+- Fixed reply button text in inbox and recent conversations views.
+- Optimized the main database query to fetch unread message counts.
+- Tweaked notification banner for older unreads to be shown only in
+  conversation views.
+- Tweaked warning banner for mentioning a group none of whose
+  recipients are subscribed to avoid generating duplicate banners.
+- Extended `nginx` configuration override support.
+- Updated translations.
+
 ### Zulip Server 10.0
 
 _Released 2025-03-20_
