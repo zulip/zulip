@@ -1,0 +1,5 @@
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `mark_resolved_topic_notifications_as_read_policy` setting, which
+  controls how resolved topic notifications are marked as read for a user.

@@ -78,7 +78,6 @@ from zerver.models import (
     ArchivedAttachment,
     Attachment,
     Message,
-    Reaction,
     Recipient,
     Stream,
     Subscription,
@@ -87,7 +86,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.streams import get_stream_by_id_in_realm
-from zerver.models.users import get_system_bot
+from zerver.models.users import MarkResolvedTopicNotificationsAsReadPolicyEnum, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -162,11 +161,50 @@ def validate_user_can_edit_message(
             raise JsonableError(_("The time limit for editing this message has passed"))
 
 
+def get_unread_user_ids_for_resolved_topic_notifications(
+    stream: Stream,
+    topic_name: str,
+) -> set[int]:
+    all_stream_user_profiles = UserProfile.objects.filter(
+        id__in=Subscription.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=stream.id,
+            active=True,
+        ).values_list("user_profile_id", flat=True)
+    )
+    all_stream_user_ids = {user.id for user in all_stream_user_profiles}
+
+    user_ids_following_topic = set(
+        UserTopic.objects.filter(
+            stream=stream,
+            topic_name__iexact=topic_name,
+            user_profile_id__in=all_stream_user_ids,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        ).values_list("user_profile_id", flat=True)
+    )
+
+    unread_user_ids: set[int] = set()
+
+    for user_profile in all_stream_user_profiles:
+        if (
+            user_profile.mark_resolved_topic_notifications_as_read_policy
+            == MarkResolvedTopicNotificationsAsReadPolicyEnum.never.value
+        ):
+            unread_user_ids.add(user_profile.id)
+        elif (
+            user_profile.mark_resolved_topic_notifications_as_read_policy
+            == MarkResolvedTopicNotificationsAsReadPolicyEnum.unfollowed_topics.value
+            and user_profile.id in user_ids_following_topic
+        ):
+            unread_user_ids.add(user_profile.id)
+
+    return unread_user_ids
+
+
 def maybe_send_resolve_topic_notifications(
     *,
     user_profile: UserProfile,
     message_edit_request: StreamMessageEditRequest,
-    changed_messages: QuerySet[Message],
 ) -> tuple[int | None, bool]:
     """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
     # Note that topics will have already been stripped in check_update_message.
@@ -200,16 +238,14 @@ def maybe_send_resolve_topic_notifications(
     ):
         return None, True
 
-    # Compute the users who either sent or reacted to messages that
-    # were moved via the "resolve topic' action. Only those users
-    # should be eligible for this message being managed as unread.
-    affected_participant_ids = set(
-        changed_messages.values_list("sender_id", flat=True).union(
-            Reaction.objects.filter(message__in=changed_messages).values_list(
-                "user_profile_id", flat=True
-            )
-        )
+    # Compute the users for whom this message should be marked as unread
+    # based on the mark_resolved_topic_notifications_as_read_policy setting.
+    topic_name = message_edit_request.target_topic_name
+    unread_user_ids = get_unread_user_ids_for_resolved_topic_notifications(
+        stream=stream,
+        topic_name=topic_name,
     )
+
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
     user_mention = silent_mention_syntax_for_user(user_profile)
     with override_language(stream.realm.default_language):
@@ -221,12 +257,12 @@ def maybe_send_resolve_topic_notifications(
         resolved_topic_message_id = internal_send_stream_message(
             sender,
             stream,
-            message_edit_request.target_topic_name,
+            topic_name,
             notification_string.format(
                 user=user_mention,
             ),
             message_type=Message.MessageType.RESOLVE_TOPIC_NOTIFICATION,
-            limit_unread_user_ids=affected_participant_ids,
+            limit_unread_user_ids=unread_user_ids,
             acting_user=user_profile,
         )
 
@@ -1109,7 +1145,6 @@ def do_update_message(
             maybe_send_resolve_topic_notifications(
                 user_profile=user_profile,
                 message_edit_request=message_edit_request,
-                changed_messages=changed_messages,
             )
         )
 

@@ -12825,6 +12825,21 @@ paths:
                     **Changes**: New in Zulip 8.0 (feature level 235).
                   type: boolean
                   example: true
+                mark_resolved_topic_notifications_as_read_policy:
+                  description: |
+                    Controls whether the resolved topic notification is marked as read.
+
+                    - "always" - Always mark resolved topic notifications as read.
+                    - "unfollowed_topics" - Mark resolved topic notifications as read in topics not followed by the user.
+                    - "never" - Never mark resolved topic notifications as read.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-e0d354).
+                  type: string
+                  enum:
+                    - always
+                    - unfollowed_topics
+                    - never
+                  example: unfollowed_topics
                 presence_enabled:
                   description: |
                     Display the presence status to other users when online.
@@ -16185,6 +16200,17 @@ paths:
                               topics where the user is mentioned.
 
                               **Changes**: New in Zulip 8.0 (feature level 235).
+                          mark_resolved_topic_notifications_as_read_policy:
+                            type: string
+                            description: |
+                              Controls whether the resolved topic notification is marked as read.
+
+                              - "always" - Always mark resolved topic notifications as read.
+                              - "unfollowed_topics" - Mark resolved topic notifications as read in
+                                topics not followed by the user.
+                              - "never" - Never mark resolved topic notifications as read.
+
+                              **Changes**: New in Zulip 11.0 (feature level ZF-e0d354).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -18865,6 +18891,17 @@ paths:
                               topics where the user is mentioned.
 
                               **Changes**: New in Zulip 8.0 (feature level 235).
+                          mark_resolved_topic_notifications_as_read_policy:
+                            type: string
+                            description: |
+                              Controls whether the resolved topic notification is marked as read.
+
+                              - "always" - Always mark resolved topic notifications as read.
+                              - "unfollowed_topics" - Mark resolved topic notifications as read in
+                                topics not followed by the user.
+                              - "never" - Never mark resolved topic notifications as read.
+
+                              **Changes**: New in Zulip 11.0 (feature level ZF-e0d354).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -20220,6 +20257,21 @@ paths:
                     **Changes**: New in Zulip 8.0 (feature level 235).
                   type: boolean
                   example: true
+                mark_resolved_topic_notifications_as_read_policy:
+                  description: |
+                    Controls whether the resolved topic notification is marked as read.
+
+                    - "always" - Always mark resolved topic notifications as read.
+                    - "unfollowed_topics" - Mark resolved topic notifications as read in topics not followed by the user.
+                    - "never" - Never mark resolved topic notifications as read.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-e0d354).
+                  type: string
+                  enum:
+                    - always
+                    - unfollowed_topics
+                    - never
+                  example: unfollowed_topics
                 presence_enabled:
                   description: |
                     Display the presence status to other users when online.

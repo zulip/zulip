@@ -1,4 +1,5 @@
 from email.headerregistry import Address
+from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import uuid4
 
@@ -33,6 +34,13 @@ from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
 
 if TYPE_CHECKING:
     from zerver.models import Realm
+
+
+class MarkResolvedTopicNotificationsAsReadPolicyEnum(Enum):
+    # The case is used by Pydantic in the API
+    always = 1
+    unfollowed_topics = 2
+    never = 3
 
 
 class UserBaseSettings(models.Model):
@@ -261,6 +269,13 @@ class UserBaseSettings(models.Model):
     )
     automatically_follow_topics_where_mentioned = models.BooleanField(default=True)
 
+    mark_resolved_topic_notifications_as_read_policy = models.PositiveSmallIntegerField(
+        default=MarkResolvedTopicNotificationsAsReadPolicyEnum.unfollowed_topics.value
+    )
+    MARK_RESOLVED_TOPIC_NOTIFICATIONS_AS_READ_POLICY_TYPES = list(
+        MarkResolvedTopicNotificationsAsReadPolicyEnum
+    )
+
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
 
@@ -362,6 +377,7 @@ class UserBaseSettings(models.Model):
         web_navigate_to_sent_message=bool,
         web_suggest_update_timezone=bool,
         hide_ai_features=bool,
+        mark_resolved_topic_notifications_as_read_policy=MarkResolvedTopicNotificationsAsReadPolicyEnum,
     )
 
     modern_notification_settings = dict(

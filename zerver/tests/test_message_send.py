@@ -1621,7 +1621,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_change_user_setting(
             user_profile=sender,
             setting_name="automatically_follow_topics_policy",
-            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+            raw_setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
             acting_user=None,
         )
         with self.assert_database_query_count(13):
@@ -1636,7 +1636,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_change_user_setting(
             user_profile=sender,
             setting_name="automatically_follow_topics_policy",
-            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+            raw_setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
             acting_user=None,
         )
         # There will be an increase in the query count of 5 while sending
@@ -1656,7 +1656,7 @@ class StreamMessagesTest(ZulipTestCase):
         do_change_user_setting(
             user_profile=sender,
             setting_name="automatically_follow_topics_policy",
-            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
+            raw_setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
             acting_user=None,
         )
         self.send_stream_message(self.example_user("iago"), stream_name, "Hello", "topic 2")
@@ -1691,7 +1691,7 @@ class StreamMessagesTest(ZulipTestCase):
             do_change_user_setting(
                 user_profile=user,
                 setting_name="automatically_follow_topics_where_mentioned",
-                setting_value=True,
+                raw_setting_value=True,
                 acting_user=None,
             )
         # There will be an increase in the query count of 5 while sending

@@ -845,6 +845,7 @@ export function dispatch_normal_event(event) {
                 "fluid_layout_width",
                 "hide_ai_features",
                 "high_contrast_mode",
+                "mark_resolved_topic_notifications_as_read_policy",
                 "receives_typing_notifications",
                 "starred_message_counts",
                 "timezone",
