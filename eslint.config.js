@@ -239,14 +239,6 @@ export default tseslint.config(
         },
     },
     {
-        files: ["web/debug-require.cjs"],
-        rules: {
-            "no-var": "off",
-            "object-shorthand": "off",
-            "prefer-arrow-callback": "off",
-        },
-    },
-    {
         files: ["web/shared/**", "web/src/**"],
         settings: {
             "import/resolver": {
