@@ -193,7 +193,7 @@ miss.
 - Blueslip keeps a log of all the notices it has received during a browser
   session, so that one can see cases where exceptions chained together. You can
   print this log from the browser console using
-  `blueslip = require("./src/blueslip"); blueslip.get_log()`.
+  `zulip_test.get_blueslip_log()`.
 
 Blueslip supports several error levels:
 

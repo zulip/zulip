@@ -315,14 +315,6 @@ export default defineConfig(
         },
     },
     {
-        files: ["web/debug-require.cjs"],
-        rules: {
-            "no-var": "off",
-            "object-shorthand": "off",
-            "prefer-arrow-callback": "off",
-        },
-    },
-    {
         files: ["web/src/**"],
         settings: {
             "import-x/resolver": {
