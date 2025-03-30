@@ -203,6 +203,29 @@ def validate_extract_webhook_http_header(
     return extracted_header
 
 
+def validate_extract_webhook_http_header_type(
+    request: HttpRequest, header: str, integration_name: str
+) -> str:
+    assert request.user.is_authenticated
+
+    extracted_header = request.headers.get(header)
+    if extracted_header is None:
+        message_body = MISSING_EVENT_HEADER_MESSAGE.format(
+            bot_name=request.user.full_name,
+            request_path=request.path,
+            header_name=header,
+            integration_name=integration_name,
+            support_email=FromAddress.SUPPORT,
+        )
+        send_rate_limited_pm_notification_to_bot_owner(
+            request.user, request.user.realm, message_body
+        )
+
+        raise MissingHTTPEventHeaderError(header)
+
+    return extracted_header
+
+
 def get_fixture_http_headers(integration_name: str, fixture_name: str) -> dict["str", "str"]:
     """For integrations that require custom HTTP headers for some (or all)
     of their test fixtures, this method will call a specially named

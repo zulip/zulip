@@ -78,6 +78,8 @@ RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME = (
 RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME_WITHOUT_URL = (
     "Release {release_name} for tag {tagname} was {action}."
 )
+REMOVE_BRANCH_MESSAGE_TEMPLATE = "{user_name} deleted branch {branch_name}."
+REMOVE_TAG_MESSAGE_TEMPLATE = "{user_name} deleted tag {tag_name}."
 
 
 def get_assignee_string(assignees: list[dict[str, Any]]) -> str:

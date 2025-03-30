@@ -1,4 +1,3 @@
-# vim:fenc=utf-8
 from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
@@ -9,12 +8,16 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_string
 from zerver.lib.webhooks.common import (
+    MissingHTTPEventHeaderError,
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
     get_http_headers_from_filename,
     validate_extract_webhook_http_header,
+    validate_extract_webhook_http_header_type,
 )
 from zerver.lib.webhooks.git import (
+    REMOVE_BRANCH_MESSAGE_TEMPLATE,
+    REMOVE_TAG_MESSAGE_TEMPLATE,
     TOPIC_WITH_BRANCH_TEMPLATE,
     TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE,
     TOPIC_WITH_RELEASE_TEMPLATE,
@@ -157,7 +160,24 @@ def format_release_event(payload: WildValue, include_title: bool = False) -> str
     return get_release_event_message(**data)
 
 
-ALL_EVENT_TYPES = ["issue_comment", "issues", "create", "pull_request", "push", "release"]
+def get_remove_branch_event_message(user_name: str, branch_name: str) -> str:
+    return REMOVE_BRANCH_MESSAGE_TEMPLATE.format(
+        user_name=user_name,
+        branch_name=f"`{branch_name}`",
+    )
+
+
+def get_remove_tag_event_message(user_name: str, tag_name: str) -> str:
+    """
+    Constructs the message content for a tag deletion event.
+    """
+    return REMOVE_TAG_MESSAGE_TEMPLATE.format(
+        user_name=user_name,
+        tag_name=f"`{tag_name}`",
+    )
+
+
+ALL_EVENT_TYPES = ["issue_comment", "issues", "create", "pull_request", "push", "release", "delete"]
 
 
 @webhook_view("Gogs", all_event_types=ALL_EVENT_TYPES)
@@ -198,6 +218,14 @@ def gogs_webhook_main(
 ) -> HttpResponse:
     repo = payload["repository"]["name"].tame(check_string)
     event = validate_extract_webhook_http_header(request, http_header_name, integration_name)
+    try:
+        event_type = validate_extract_webhook_http_header_type(
+            request, "x-gitea-event-type", integration_name
+        )
+    except (
+        MissingHTTPEventHeaderError
+    ):  # Raised when header is not present(mostly in test case). Set it to a default value
+        event_type = "default_event_type"
     if event == "push":
         branch = payload["ref"].tame(check_string).replace("refs/heads/", "")
         if not is_branch_name_notifiable(branch, branches):
@@ -236,15 +264,40 @@ def gogs_webhook_main(
             title=payload["issue"]["title"].tame(check_string),
         )
     elif event == "issue_comment":
-        body = format_issue_comment_event(
-            payload,
-            include_title=user_specified_topic is not None,
-        )
+        issue_number = payload["issue"]["number"].tame(check_int)
+        issue_title = payload["issue"]["title"].tame(check_string)
+        repo_name = payload["repository"]["name"].tame(check_string)
+
+        if event_type == "pull_request_comment":
+            action = payload["action"].tame(check_string)
+            if action == "created":
+                action_text = "[commented]"
+            else:
+                action_text = f"{action} a [comment]"
+            action_text += "({}) on".format(payload["comment"]["html_url"].tame(check_string))
+
+            body = get_pull_request_event_message(
+                user_name=payload["sender"]["login"].tame(check_string),
+                action=action_text,
+                url=payload["issue"]["html_url"].tame(check_string),
+                number=issue_number,
+                message=payload["comment"]["body"].tame(check_string),
+                type="PR",
+                title=issue_title,
+            )
+            topic_type = "PR"
+        else:
+            body = format_issue_comment_event(
+                payload,
+                include_title=user_specified_topic is not None,
+            )
+            topic_type = "issue"
+
         topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
-            repo=repo,
-            type="issue",
-            id=payload["issue"]["number"].tame(check_int),
-            title=payload["issue"]["title"].tame(check_string),
+            repo=repo_name,
+            type=topic_type,
+            id=issue_number,
+            title=issue_title,
         )
     elif event == "release":
         body = format_release_event(
@@ -256,6 +309,25 @@ def gogs_webhook_main(
             tag=payload["release"]["tag_name"].tame(check_string),
             title=payload["release"]["name"].tame(check_string),
         )
+    elif event == "delete":
+        if payload["ref_type"].tame(check_string) == "branch":
+            body = get_remove_branch_event_message(
+                user_name=payload["sender"]["login"].tame(check_string),
+                branch_name=payload["ref"].tame(check_string),
+            )
+            topic_name = REMOVE_BRANCH_MESSAGE_TEMPLATE.format(
+                user_name=payload["sender"]["login"].tame(check_string),
+                branch_name=payload["ref"].tame(check_string),
+            )
+        elif payload["ref_type"] == "tag":
+            body = get_remove_tag_event_message(
+                user_name=payload["sender"]["login"].tame(check_string),
+                tag_name=payload["ref"].tame(check_string),
+            )
+            topic_name = REMOVE_TAG_MESSAGE_TEMPLATE.format(
+                user_name=payload["sender"]["login"].tame(check_string),
+                tag_name=payload["ref"].tame(check_string),
+            )
 
     else:
         raise UnsupportedWebhookEventTypeError(event)
