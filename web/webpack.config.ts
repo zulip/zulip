@@ -12,7 +12,6 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import webpack from "webpack";
 import BundleTracker from "webpack-bundle-tracker";
 
-import DebugRequirePlugin from "./debug-require-webpack-plugin.ts";
 import assets from "./webpack.assets.json" with {type: "json"};
 import dev_assets from "./webpack.dev-assets.json" with {type: "json"};
 
@@ -43,7 +42,6 @@ const config = (
             DEVELOPMENT: JSON.stringify(!production),
             ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION ?? "development"),
         }),
-        new DebugRequirePlugin(),
         new BundleTracker({
             path: path.join(import.meta.dirname, production ? ".." : "../var"),
             filename: production ? "webpack-stats-production.json" : "webpack-stats-dev.json",
@@ -87,11 +85,6 @@ const config = (
                     test: path.resolve(import.meta.dirname, "src/zulip_test.ts"),
                     loader: "expose-loader",
                     options: {exposes: "zulip_test"},
-                },
-                {
-                    test: path.resolve(import.meta.dirname, "debug-require.cjs"),
-                    loader: "expose-loader",
-                    options: {exposes: "require"},
                 },
                 {
                     test: url.fileURLToPath(import.meta.resolve("jquery")),
