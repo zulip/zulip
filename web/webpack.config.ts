@@ -17,6 +17,7 @@ import dev_assets from "./webpack.dev-assets.json" with {type: "json"};
 
 const config = (
     env: {
+        allowed_hosts?: string;
         minimize?: true;
         puppeteer_tests?: true;
         ZULIP_VERSION?: string;
@@ -229,6 +230,7 @@ const config = (
         },
         plugins,
         devServer: {
+            allowedHosts: env.allowed_hosts !== undefined ? env.allowed_hosts.split(",") : "auto",
             client: {
                 overlay: {
                     runtimeErrors: false,
