@@ -1,0 +1,3 @@
+* [`POST /register`](/api/register-queue): The `streams` data
+  structure now includes archived channels for clients that
+  declared the `archived_channels` client capability.

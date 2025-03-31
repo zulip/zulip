@@ -15743,8 +15743,12 @@ paths:
                           For organization administrators, this will include all private channels
                           in the organization.
 
-                          **Changes**: As of Zulip 8.0 (feature level 205), this will include all
-                          web-public channels in the organization as well.
+                          **Changes**: Before Zulip 11.0 (feature level ZF-5769ba), archived channels
+                          did not appear in this list, even if the `archived_channels` [client
+                          capability][client-capabilities] was declared by the client.
+
+                          As of Zulip 8.0 (feature level 205), this will include all web-public
+                          channels in the organization as well.
                       realm_default_streams:
                         type: array
                         items:

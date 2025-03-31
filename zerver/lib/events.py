@@ -784,6 +784,7 @@ def fetch_initial_state_data(
             state["streams"] = do_get_streams(
                 user_profile,
                 include_web_public=True,
+                exclude_archived=not archived_channels,
                 include_all=True,
                 anonymous_group_membership=anonymous_group_membership_data_dict,
             )
@@ -1307,11 +1308,8 @@ def apply_event(
 
         if event["op"] == "delete":
             deleted_stream_ids = {stream["stream_id"] for stream in event["streams"]}
-            if "streams" in state:
-                state["streams"] = [
-                    s for s in state["streams"] if s["stream_id"] not in deleted_stream_ids
-                ]
 
+            updated_first_message_ids: dict[int, int] = dict()
             if archived_channels:
                 for stream in state["subscriptions"]:
                     if stream["stream_id"] in deleted_stream_ids:
@@ -1321,17 +1319,32 @@ def apply_event(
                     if stream["stream_id"] in deleted_stream_ids:
                         stream["is_archived"] = True
                         if stream["first_message_id"] is None:
-                            stream["first_message_id"] = Stream.objects.get(
+                            new_first_message_id = Stream.objects.get(
                                 id=stream["stream_id"]
                             ).first_message_id
+                            assert new_first_message_id is not None
+                            stream["first_message_id"] = new_first_message_id
+                            updated_first_message_ids[stream["stream_id"]] = new_first_message_id
 
                 for stream in state["never_subscribed"]:
                     if stream["stream_id"] in deleted_stream_ids:
                         stream["is_archived"] = True
                         if stream["first_message_id"] is None:
-                            stream["first_message_id"] = Stream.objects.get(
+                            new_first_message_id = Stream.objects.get(
                                 id=stream["stream_id"]
                             ).first_message_id
+                            assert new_first_message_id is not None
+                            stream["first_message_id"] = new_first_message_id
+                            updated_first_message_ids[stream["stream_id"]] = new_first_message_id
+
+                if "streams" in state:
+                    for stream in state["streams"]:
+                        if stream["stream_id"] in deleted_stream_ids:
+                            stream["is_archived"] = True
+                            if stream["stream_id"] in updated_first_message_ids:
+                                stream["first_message_id"] = updated_first_message_ids[
+                                    stream["stream_id"]
+                                ]
             else:
                 state["subscriptions"] = [
                     stream
@@ -1350,6 +1363,11 @@ def apply_event(
                     for stream in state["never_subscribed"]
                     if stream["stream_id"] not in deleted_stream_ids
                 ]
+
+                if "streams" in state:
+                    state["streams"] = [
+                        s for s in state["streams"] if s["stream_id"] not in deleted_stream_ids
+                    ]
 
         if event["op"] == "update":
             # For legacy reasons, we call stream data 'subscriptions' in
