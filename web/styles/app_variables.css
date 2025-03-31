@@ -414,6 +414,14 @@
     /*
     Message box elements and values.
     */
+    /* At very tight line-heights, the focus ring on
+       links can get cut off on paragraphs and list
+       items that open the senderless message area.
+       This padding fixes the cut-off problem, and
+       can be used to adjust padding elsewhere in the
+       message area as needed.
+       2px at 20px/1em */
+    --message-box-link-focus-ring-block-padding: 0.1em;
     /* 35px at 14px/1em */
     --message-box-avatar-width: 2.5em;
     --message-box-avatar-height: var(--message-box-avatar-width);
