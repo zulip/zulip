@@ -1320,16 +1320,18 @@ def apply_event(
                 for stream in state["unsubscribed"]:
                     if stream["stream_id"] in deleted_stream_ids:
                         stream["is_archived"] = True
-                        stream["first_message_id"] = Stream.objects.get(
-                            id=stream["stream_id"]
-                        ).first_message_id
+                        if stream["first_message_id"] is None:
+                            stream["first_message_id"] = Stream.objects.get(
+                                id=stream["stream_id"]
+                            ).first_message_id
 
                 for stream in state["never_subscribed"]:
                     if stream["stream_id"] in deleted_stream_ids:
                         stream["is_archived"] = True
-                        stream["first_message_id"] = Stream.objects.get(
-                            id=stream["stream_id"]
-                        ).first_message_id
+                        if stream["first_message_id"] is None:
+                            stream["first_message_id"] = Stream.objects.get(
+                                id=stream["stream_id"]
+                            ).first_message_id
             else:
                 state["subscriptions"] = [
                     stream
