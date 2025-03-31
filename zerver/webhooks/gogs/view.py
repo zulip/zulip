@@ -1,4 +1,4 @@
-# vim:fenc=utf-8
+from collections.abc import Callable
 from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
@@ -28,6 +28,22 @@ from zerver.lib.webhooks.git import (
 from zerver.models import UserProfile
 
 fixture_to_headers = default_fixture_to_headers("HTTP_X_GOGS_EVENT")
+
+
+class Helper:
+    def __init__(
+        self,
+        payload: WildValue,
+        branches: str | None,
+        user_specified_topic: str | None,
+        repo: str,
+        format_pull_request_event: "FormatPullRequestEvent",
+    ) -> None:
+        self.payload = payload
+        self.branches = branches
+        self.user_specified_topic = user_specified_topic
+        self.repo = repo
+        self.format_pull_request_event = format_pull_request_event
 
 
 def get_issue_url(repo_url: str, issue_nr: int) -> str:
@@ -157,7 +173,92 @@ def format_release_event(payload: WildValue, include_title: bool = False) -> str
     return get_release_event_message(**data)
 
 
-ALL_EVENT_TYPES = ["issue_comment", "issues", "create", "pull_request", "push", "release"]
+def handle_push_event(helper: Helper) -> tuple[str | None, str | None]:
+    branch = helper.payload["ref"].tame(check_string).replace("refs/heads/", "")
+    if not is_branch_name_notifiable(branch, helper.branches):
+        return None, None
+    body = format_push_event(helper.payload)
+    topic_name = TOPIC_WITH_BRANCH_TEMPLATE.format(
+        repo=helper.repo,
+        branch=branch,
+    )
+    return topic_name, body
+
+
+def handle_create_event(helper: Helper) -> tuple[str | None, str | None]:
+    body = format_new_branch_event(helper.payload)
+    topic_name = TOPIC_WITH_BRANCH_TEMPLATE.format(
+        repo=helper.repo,
+        branch=helper.payload["ref"].tame(check_string),
+    )
+    return topic_name, body
+
+
+def handle_pull_request_event(helper: Helper) -> tuple[str | None, str | None]:
+    body = helper.format_pull_request_event(
+        helper.payload,
+        include_title=helper.user_specified_topic is not None,
+    )
+    topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        repo=helper.repo,
+        type="PR",
+        id=helper.payload["pull_request"]["id"].tame(check_int),
+        title=helper.payload["pull_request"]["title"].tame(check_string),
+    )
+    return topic_name, body
+
+
+def handle_issues_event(helper: Helper) -> tuple[str | None, str | None]:
+    body = format_issues_event(
+        helper.payload,
+        include_title=helper.user_specified_topic is not None,
+    )
+    topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        repo=helper.repo,
+        type="issue",
+        id=helper.payload["issue"]["number"].tame(check_int),
+        title=helper.payload["issue"]["title"].tame(check_string),
+    )
+    return topic_name, body
+
+
+def handle_issue_comment_event(helper: Helper) -> tuple[str | None, str | None]:
+    body = format_issue_comment_event(
+        helper.payload,
+        include_title=helper.user_specified_topic is not None,
+    )
+    topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        repo=helper.payload["repository"]["name"].tame(check_string),
+        type="issue",
+        id=helper.payload["issue"]["number"].tame(check_int),
+        title=helper.payload["issue"]["title"].tame(check_string),
+    )
+    return topic_name, body
+
+
+def handle_release_event(helper: Helper) -> tuple[str | None, str | None]:
+    body = format_release_event(
+        helper.payload,
+        include_title=helper.user_specified_topic is not None,
+    )
+    topic_name = TOPIC_WITH_RELEASE_TEMPLATE.format(
+        repo=helper.repo,
+        tag=helper.payload["release"]["tag_name"].tame(check_string),
+        title=helper.payload["release"]["name"].tame(check_string),
+    )
+    return topic_name, body
+
+
+GOGS_EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], tuple[str | None, str | None]]] = {
+    "push": handle_push_event,
+    "create": handle_create_event,
+    "pull_request": handle_pull_request_event,
+    "issues": handle_issues_event,
+    "issue_comment": handle_issue_comment_event,
+    "release": handle_release_event,
+}
+
+ALL_EVENT_TYPES = list(GOGS_EVENT_FUNCTION_MAPPER.keys())
 
 
 @webhook_view("Gogs", all_event_types=ALL_EVENT_TYPES)
@@ -198,67 +299,24 @@ def gogs_webhook_main(
 ) -> HttpResponse:
     repo = payload["repository"]["name"].tame(check_string)
     event = get_event_header(request, http_header_name, integration_name)
-    if event == "push":
-        branch = payload["ref"].tame(check_string).replace("refs/heads/", "")
-        if not is_branch_name_notifiable(branch, branches):
-            return json_success(request)
-        body = format_push_event(payload)
-        topic_name = TOPIC_WITH_BRANCH_TEMPLATE.format(
-            repo=repo,
-            branch=branch,
-        )
-    elif event == "create":
-        body = format_new_branch_event(payload)
-        topic_name = TOPIC_WITH_BRANCH_TEMPLATE.format(
-            repo=repo,
-            branch=payload["ref"].tame(check_string),
-        )
-    elif event == "pull_request":
-        body = format_pull_request_event(
-            payload,
-            include_title=user_specified_topic is not None,
-        )
-        topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
-            repo=repo,
-            type="PR",
-            id=payload["pull_request"]["id"].tame(check_int),
-            title=payload["pull_request"]["title"].tame(check_string),
-        )
-    elif event == "issues":
-        body = format_issues_event(
-            payload,
-            include_title=user_specified_topic is not None,
-        )
-        topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
-            repo=repo,
-            type="issue",
-            id=payload["issue"]["number"].tame(check_int),
-            title=payload["issue"]["title"].tame(check_string),
-        )
-    elif event == "issue_comment":
-        body = format_issue_comment_event(
-            payload,
-            include_title=user_specified_topic is not None,
-        )
-        topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
-            repo=repo,
-            type="issue",
-            id=payload["issue"]["number"].tame(check_int),
-            title=payload["issue"]["title"].tame(check_string),
-        )
-    elif event == "release":
-        body = format_release_event(
-            payload,
-            include_title=user_specified_topic is not None,
-        )
-        topic_name = TOPIC_WITH_RELEASE_TEMPLATE.format(
-            repo=repo,
-            tag=payload["release"]["tag_name"].tame(check_string),
-            title=payload["release"]["name"].tame(check_string),
-        )
+    helper = Helper(
+        payload=payload,
+        branches=branches,
+        user_specified_topic=user_specified_topic,
+        repo=repo,
+        format_pull_request_event=format_pull_request_event,
+    )
 
+    handler = GOGS_EVENT_FUNCTION_MAPPER.get(event)
+    if handler:
+        topic_name, body = handler(helper)
+        if topic_name and body:
+            check_send_webhook_message(request, user_profile, topic_name, body, event)
+            return json_success(request)
+        elif event == "push":
+            # Specific handling for push with ignored branch
+            return json_success(request)
+        else:
+            raise UnsupportedWebhookEventTypeError(event)
     else:
         raise UnsupportedWebhookEventTypeError(event)
-
-    check_send_webhook_message(request, user_profile, topic_name, body, event)
-    return json_success(request)
