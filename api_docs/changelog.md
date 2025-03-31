@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 376**
+
+* [`POST /register`](/api/register-queue): The `streams` data
+  structure now includes archived channels for clients that
+  declared the `archived_channels` client capability.
+
 Feature levels 372-375 reserved for future use in 10.x maintenance
 releases.
 
