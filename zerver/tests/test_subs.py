@@ -2052,34 +2052,47 @@ class StreamAdminTest(ZulipTestCase):
             acting_user=zoe,
         )
         self.subscribe(self.example_user("cordelia"), "stream_private_name1")
-        with self.capture_send_event_calls(expected_num_events=2) as events:
+        with self.capture_send_event_calls(expected_num_events=3) as events:
             do_unarchive_stream(stream, new_name="private", acting_user=None)
 
         stream = Stream.objects.get(id=stream.id)
         self.assertFalse(stream.is_web_public)
 
+        # Clients will get this event only if they support
+        # archived_channels client capability.
+        self.assertEqual(events[0]["event"]["op"], "update")
+        self.assertEqual(events[0]["event"]["stream_id"], stream.id)
+        self.assertEqual(events[0]["event"]["property"], "is_archived")
+        self.assertEqual(events[0]["event"]["value"], False)
+
         # Tell all users with metadata access that the stream exists.
-        self.assertEqual(events[0]["event"]["op"], "create")
-        self.assertEqual(events[0]["event"]["streams"][0]["name"], "private")
-        self.assertEqual(events[0]["event"]["streams"][0]["stream_id"], stream.id)
-        notified_user_ids = set(events[0]["users"])
-        self.assertEqual(
-            notified_user_ids,
-            can_access_stream_metadata_user_ids(stream),
-        )
-        self.assertIn(self.example_user("cordelia").id, notified_user_ids)
-        # An important corner case is that all organization admins are notified.
-        self.assertIn(self.example_user("iago").id, notified_user_ids)
-        # The current user, Hamlet was made an admin and thus should be notified too.
-        self.assertIn(aaron.id, notified_user_ids)
-        # Channel admin should be notified.
-        self.assertIn(self.example_user("aaron").id, notified_user_ids)
-        # User belonging to `can_add_subscribers_group` should be notified.
-        self.assertIn(prospero.id, notified_user_ids)
-        # User belonging to `can_subscribe_group` should be notified.
-        self.assertIn(zoe.id, notified_user_ids)
-        # Guest user should not be notified.
-        self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
+        # This event will only be sent to clients that do not support
+        # archived_channels client capability, as clients supporting
+        # archived_channels client capability will already know that
+        # the stream exists.
+        self.assertEqual(events[1]["event"]["op"], "create")
+        self.assertEqual(events[1]["event"]["streams"][0]["name"], "private")
+        self.assertEqual(events[1]["event"]["streams"][0]["stream_id"], stream.id)
+
+        for event in [events[0], events[1]]:
+            notified_user_ids = set(event["users"])
+            self.assertEqual(
+                notified_user_ids,
+                can_access_stream_metadata_user_ids(stream),
+            )
+            self.assertIn(self.example_user("cordelia").id, notified_user_ids)
+            # An important corner case is that all organization admins are notified.
+            self.assertIn(self.example_user("iago").id, notified_user_ids)
+            # The current user, Hamlet was made an admin and thus should be notified too.
+            self.assertIn(aaron.id, notified_user_ids)
+            # Channel admin should be notified.
+            self.assertIn(self.example_user("aaron").id, notified_user_ids)
+            # User belonging to `can_add_subscribers_group` should be notified.
+            self.assertIn(prospero.id, notified_user_ids)
+            # User belonging to `can_subscribe_group` should be notified.
+            self.assertIn(zoe.id, notified_user_ids)
+            # Guest user should not be notified.
+            self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
 
     def test_unarchive_stream(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -2093,20 +2106,33 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(hamlet, stream.name)
         self.subscribe(cordelia, stream.name)
         do_deactivate_stream(stream, acting_user=None)
-        with self.capture_send_event_calls(expected_num_events=2) as events:
+        with self.capture_send_event_calls(expected_num_events=3) as events:
             do_unarchive_stream(stream, new_name="new_stream", acting_user=None)
 
+        # Clients will get this event only if they support
+        # archived_channels client capability.
+        self.assertEqual(events[0]["event"]["op"], "update")
+        self.assertEqual(events[0]["event"]["stream_id"], stream.id)
+        self.assertEqual(events[0]["event"]["property"], "is_archived")
+        self.assertEqual(events[0]["event"]["value"], False)
+
         # Tell all users with metadata access that the stream exists.
-        self.assertEqual(events[0]["event"]["op"], "create")
-        self.assertEqual(events[0]["event"]["streams"][0]["name"], "new_stream")
-        self.assertEqual(events[0]["event"]["streams"][0]["stream_id"], stream.id)
-        notified_user_ids = set(events[0]["users"])
-        self.assertCountEqual(
-            notified_user_ids,
-            set(active_non_guest_user_ids(stream.realm_id)),
-        )
-        # Guest user should not be notified.
-        self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
+        # This event will only be sent to clients that do not support
+        # archived_channels client capability, as clients supporting
+        # archived_channels client capability will already know that
+        # the stream exists.
+        self.assertEqual(events[1]["event"]["op"], "create")
+        self.assertEqual(events[1]["event"]["streams"][0]["name"], "new_stream")
+        self.assertEqual(events[1]["event"]["streams"][0]["stream_id"], stream.id)
+
+        for event in [events[0], events[1]]:
+            notified_user_ids = set(event["users"])
+            self.assertCountEqual(
+                notified_user_ids,
+                set(active_non_guest_user_ids(stream.realm_id)),
+            )
+            # Guest user should not be notified.
+            self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
 
         stream = Stream.objects.get(id=stream.id)
         self.assertFalse(stream.deactivated)
@@ -3333,7 +3359,7 @@ class StreamAdminTest(ZulipTestCase):
         realm = stream.realm
         stream_id = stream.id
 
-        with self.capture_send_event_calls(expected_num_events=2) as events:
+        with self.capture_send_event_calls(expected_num_events=3) as events:
             result = self.client_delete("/json/streams/" + str(stream_id))
         self.assert_json_success(result)
 
@@ -3344,10 +3370,21 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(sub_events, [])
 
         stream_events = [e for e in events if e["event"]["type"] == "stream"]
-        self.assert_length(stream_events, 1)
-        event = stream_events[0]["event"]
-        self.assertEqual(event["op"], "delete")
-        self.assertEqual(event["streams"][0]["stream_id"], stream.id)
+        self.assert_length(stream_events, 2)
+
+        # Clients will get this event only if they support
+        # archived_channels client capability.
+        update_event = stream_events[0]["event"]
+        self.assertEqual(update_event["op"], "update")
+        self.assertEqual(update_event["stream_id"], stream.id)
+        self.assertEqual(update_event["property"], "is_archived")
+        self.assertEqual(update_event["value"], True)
+
+        # This event will only be sent to clients that do not support
+        # archived_channels client capability.
+        delete_event = stream_events[1]["event"]
+        self.assertEqual(delete_event["op"], "delete")
+        self.assertEqual(delete_event["streams"][0]["stream_id"], stream.id)
 
         hashed_stream_id = hashlib.sha512(str(stream_id).encode()).hexdigest()[0:7]
         old_deactivated_stream_name = hashed_stream_id + "!DEACTIVATED:" + active_name
