@@ -1551,6 +1551,14 @@
         var(--color-text-generic-link-interactive)
     );
     --color-markdown-code-link-hover: var(--color-markdown-link-hover);
+    --color-background-image-thumbnail: light-dark(
+        hsl(0deg 0% 0% / 3%),
+        hsl(0deg 0% 100% / 3%)
+    );
+    --color-background-image-thumbnail-hover: light-dark(
+        hsl(0deg 0% 0% / 15%),
+        hsl(0deg 0% 100% / 15%)
+    );
 
     /* Icon colors */
     --color-icon-bot: light-dark(
@@ -2020,6 +2028,9 @@
     );
     /* The SVG must be adjusted when changing the border color above. */
     --svg-url-rendered-checkbox: url("../images/checkbox.svg");
+
+    /* Theme-dependent SVGs */
+    --svg-url-thumbnail-loader: url("../images/loading/loader-black.svg");
 
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: light-dark(
@@ -2805,6 +2816,9 @@
     /* Zulip-style checkbox values. */
     /* The SVG must be adjusted when changing the border color above. */
     --svg-url-rendered-checkbox: url("../images/checkbox-dark-mode.svg");
+
+    /* Theme-dependent SVGs */
+    --svg-url-thumbnail-loader: url("../images/loading/loader-white.svg");
 }
 
 @media screen {
