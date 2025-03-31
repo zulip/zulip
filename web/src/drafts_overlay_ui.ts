@@ -249,7 +249,9 @@ function setup_event_handlers(): void {
             show_check_icon: true,
         });
     });
+}
 
+function setup_bulk_actions_handlers(): void {
     $(".select-drafts-button").on("click", (e) => {
         e.preventDefault();
         const $unchecked_checkboxes = $(".draft-selection-checkbox").filter(function () {
@@ -293,6 +295,7 @@ export function launch(): void {
     const first_element_id = [...formatted_narrow_drafts, ...formatted_other_drafts][0]?.draft_id;
     messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
     setup_event_handlers();
+    setup_bulk_actions_handlers();
     messages_overlay_ui.initialize_restore_overlay_message_tooltip();
 }
 
