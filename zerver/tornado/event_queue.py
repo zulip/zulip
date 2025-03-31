@@ -258,6 +258,15 @@ class ClientDescriptor:
                 # clients who can filter out deactivated groups by themselves.
                 # Other clients receive 'remove' event.
                 return self.include_deactivated_groups
+        if (
+            event["type"] == "stream"
+            and event["op"] == "update"
+            and event["property"] == "is_archived"
+        ):
+            # 'update' events for archiving and unarchiving streams are
+            # only sent to clients that can process archived channels.
+            # Other clients receive "create" and "delete" events.
+            return self.archived_channels
         return True
 
     # TODO: Refactor so we don't need this function
@@ -1624,6 +1633,28 @@ def process_user_group_name_update_event(event: Mapping[str, Any], users: Iterab
                 client.add_event(user_group_event)
 
 
+def process_stream_creation_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    stream_create_event = dict(event)
+    event_for_unarchiving_stream = stream_create_event.pop("for_unarchiving", False)
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(stream_create_event):
+                if event_for_unarchiving_stream and client.archived_channels:
+                    continue
+                client.add_event(stream_create_event)
+
+
+def process_stream_deletion_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    stream_delete_event = dict(event)
+    event_for_archiving_stream = stream_delete_event.pop("for_archiving", False)
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(stream_delete_event):
+                if event_for_archiving_stream and client.archived_channels:
+                    continue
+                client.add_event(stream_delete_event)
+
+
 def process_user_topic_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
     empty_topic_name_fallback_event: Mapping[str, Any] | dict[str, Any]
     if event.get("topic_name") == "":
@@ -1721,6 +1752,10 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         and event["flag"] == "read"
     ):
         process_mark_message_unread_event(event, cast(list[int], users))
+    elif event["type"] == "stream" and event["op"] == "create":
+        process_stream_creation_event(event, cast(list[int], users))
+    elif event["type"] == "stream" and event["op"] == "delete":
+        process_stream_deletion_event(event, cast(list[int], users))
     elif event["type"] == "cleanup_queue":
         # cleanup_event_queue may generate this event to forward cleanup
         # requests to the right shard.

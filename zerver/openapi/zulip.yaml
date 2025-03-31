@@ -1286,11 +1286,19 @@ paths:
                                 private channel is made public, or a guest user is subscribed
                                 to a public (or private) channel.
 
+                                This event is also sent when a channel is unarchived but only
+                                to clients that did not declare the `archived_channels` [client
+                                capability][client-capabilities].
+
                                 Note that organization administrators who are not subscribed will
                                 not be able to see content on the channel; just that it exists.
 
-                                **Changes**: Prior to Zulip 8.0 (feature level 220), this event was
-                                incorrectly not sent to guest users a web-public channel was created.
+                                **Changes**: Prior to Zulip 11.0 (feature level ZF-960986), this
+                                event was sent to all the users who could see the channel when it
+                                was unarchived.
+
+                                Prior to Zulip 8.0 (feature level 220), this event was incorrectly
+                                not sent to guest users a web-public channel was created.
 
                                 Prior to Zulip 8.0 (feature level 205), this event was not sent
                                 when a user gained access to a channel due to their role changing.
@@ -1353,16 +1361,23 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to all users who can see a channel when it is deactivated.
-
-                                This event is also sent when a user loses access to a channel they
-                                previously [could access](/help/channel-permissions) because they
-                                are unsubscribed from a private channel or their [role](/help/user-roles)
+                                Event sent when a user loses access to a channel they previously
+                                [could access](/help/channel-permissions) because they are
+                                unsubscribed from a private channel or their [role](/help/user-roles)
                                 has changed.
 
-                                **Changes**: Prior to Zulip 8.0 (feature level 205), this event was
-                                not sent when a user lost access to a channel due to their role
-                                changing.
+                                This event is also sent when a channel is archived but only
+                                to clients that did not declare the `archived_channels` [client
+                                capability][client-capabilities].
+
+                                **Changes**: Prior to Zulip 11.0 (feature level ZF-960986), this
+                                event was sent to all the users who could see the channel when it
+                                was archived.
+
+                                Prior to Zulip 8.0 (feature level 205), this event was not sent
+                                when a user lost access to a channel due to their role changing.
+
+                                [client-capabilities]: /api/register-queue#parameter-client_capabilities
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1419,10 +1434,21 @@ paths:
                                 [GET /streams](/api/get-streams#response) response
                                 for details on the various properties of a channel.
 
-                                **Changes**: Before Zulip 9.0 (feature level 256), this event
-                                was never sent when the `first_message_id` property of a channel
-                                was updated because the oldest message that had been sent to it
+                                This event is also sent when archiving or unarchiving a
+                                channel to all the users who can see that channel exists
+                                but only to the clients that declared the `archived_channels`
+                                [client capability][client-capabilities].
+
+                                **Changes**: Prior to Zulip 11.0 (feature level ZF-960986),
+                                this event was never sent when archiving or unarchiving
+                                a channel.
+
+                                Before Zulip 9.0 (feature level 256), this event was never
+                                sent when the `first_message_id` property of a channel was
+                                updated because the oldest message that had been sent to it
                                 changed.
+
+                                [client-capabilities]: /api/register-queue#parameter-client_capabilities
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
