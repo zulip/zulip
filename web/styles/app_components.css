@@ -363,7 +363,7 @@ div.overlay {
     visibility: hidden;
 
     transition: 0.2s ease-in;
-    transition-property: opacity, visibility;
+    transition-property: opacity;
     overflow: hidden;
 
     .overlay-content {
