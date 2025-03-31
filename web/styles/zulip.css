@@ -2091,9 +2091,7 @@ body:not(.spectator-view) {
     right: 0;
     visibility: hidden;
     opacity: 0;
-    transition:
-        visibility 500ms,
-        opacity 500ms ease-in-out;
+    transition: opacity 500ms ease-in-out;
 
     &.show {
         visibility: visible;

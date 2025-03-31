@@ -509,7 +509,7 @@
         opacity: 0;
         visibility: hidden;
         transition: 0.2s ease;
-        transition-property: opacity, visibility;
+        transition-property: opacity;
         /* Allow buttons to grow to fill the available space,
            in concord with the column calculated for the
            .messagebox-content grid. */
