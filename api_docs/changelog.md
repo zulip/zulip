@@ -26,6 +26,12 @@ format used by the Zulip server that they are interacting with.
   structure now includes archived channels for clients that
   declared the `archived_channels` client capability.
 
+* [`GET /events`](/api/get-events): Archiving and unarchiving
+  streams now send `update` events to clients that declared
+  the `archived_channels` client capability. `delete` and `create`
+  events are still sent to clients that did not declare
+  `archived_channels` client capability.
+
 Feature levels 372-375 reserved for future use in 10.x maintenance
 releases.
 

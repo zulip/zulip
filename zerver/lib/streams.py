@@ -148,11 +148,13 @@ def send_stream_creation_event(
     user_ids: list[int],
     recent_traffic: dict[int, int] | None = None,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
+    for_unarchiving: bool = False,
 ) -> None:
     event = dict(
         type="stream",
         op="create",
         streams=[stream_to_dict(stream, recent_traffic, anonymous_group_membership)],
+        for_unarchiving=for_unarchiving,
     )
     send_event_on_commit(realm, event, user_ids)
 
@@ -1758,7 +1760,7 @@ def check_update_all_streams_active_status(
 
 
 def send_stream_deletion_event(
-    realm: Realm, user_ids: Iterable[int], streams: list[Stream]
+    realm: Realm, user_ids: Iterable[int], streams: list[Stream], for_archiving: bool = False
 ) -> None:
     stream_deletion_event = dict(
         type="stream",
@@ -1766,6 +1768,7 @@ def send_stream_deletion_event(
         # "streams" is deprecated, kept only for compatibility.
         streams=[dict(stream_id=stream.id) for stream in streams],
         stream_ids=[stream.id for stream in streams],
+        for_archiving=for_archiving,
     )
     send_event_on_commit(realm, stream_deletion_event, user_ids)
 

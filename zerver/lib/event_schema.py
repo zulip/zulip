@@ -529,6 +529,7 @@ def check_stream_update(
         "name",
         "stream_id",
         "first_message_id",
+        "is_archived",
     }
 
     if prop == "description":
@@ -563,6 +564,9 @@ def check_stream_update(
         assert extra_keys == set()
         assert isinstance(value, bool)
     elif prop == "is_announcement_only":
+        assert extra_keys == set()
+        assert isinstance(value, bool)
+    elif prop == "is_archived":
         assert extra_keys == set()
         assert isinstance(value, bool)
     else:
