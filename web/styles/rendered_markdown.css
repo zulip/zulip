@@ -431,10 +431,10 @@
            container. */
         border: solid 1px transparent;
         transition: background 0.3s ease;
-        background: hsl(0deg 0% 0% / 3%);
+        background: var(--color-background-image-thumbnail);
 
         &:hover {
-            background: hsl(0deg 0% 0% / 15%);
+            background: var(--color-background-image-thumbnail-hover);
         }
 
         & .media-anchor-element {
@@ -501,7 +501,7 @@
         }
 
         img.image-loading-placeholder {
-            content: url("../images/loading/loader-black.svg");
+            content: var(--svg-url-thumbnail-loader);
         }
     }
 
