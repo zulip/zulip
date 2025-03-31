@@ -295,6 +295,11 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.equal(draft_id, 100);
         return {};
     });
+    override(
+        onboarding_steps,
+        "ONE_TIME_NOTICES_TO_DISPLAY",
+        new Set(["intro_go_to_conversation_button_tooltip"]),
+    );
 
     // Tests start here.
     (function test_message_send_success_codepath() {
@@ -625,6 +630,11 @@ test_ui("update_fade", ({override, override_rewire}) => {
     let set_focused_recipient_checked = false;
     let update_all_called = false;
     let update_narrow_to_recipient_visibility_called = false;
+    override(
+        onboarding_steps,
+        "ONE_TIME_NOTICES_TO_DISPLAY",
+        new Set(["intro_go_to_conversation_button_tooltip"]),
+    );
 
     override(compose_fade, "set_focused_recipient", (msg_type) => {
         assert.equal(msg_type, "private");
@@ -681,6 +691,11 @@ test_ui("on_events", ({override, override_rewire}) => {
     initialize_handlers({override});
 
     override(rendered_markdown, "update_elements", noop);
+    override(
+        onboarding_steps,
+        "ONE_TIME_NOTICES_TO_DISPLAY",
+        new Set(["intro_go_to_conversation_button_tooltip"]),
+    );
 
     const fake_compose_box = new FakeComposeBox();
 

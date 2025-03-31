@@ -582,6 +582,9 @@ export function initialize() {
         } else {
             compose_notifications.maybe_show_one_time_interleaved_view_messages_fading_banner();
         }
+        setTimeout(() => {
+            compose_recipient.maybe_show_go_to_conversation_button_intro_tooltip();
+        }, 0);
     });
 
     $(".compose-scrollable-buttons").on(
