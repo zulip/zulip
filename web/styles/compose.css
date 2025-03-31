@@ -1496,7 +1496,9 @@ textarea.new_message_textarea {
     /* Allow the contents wrapped here to
        expand the available space... */
     white-space: nowrap;
-    flex: 0 1 fit-content;
+    /* And follow the fitted content on the
+       flexbox. */
+    flex: 0 0 fit-content;
     /* But force an ellipsis here, rather than
        just on an inner element. */
     overflow: hidden;
