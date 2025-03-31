@@ -1198,6 +1198,43 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         toggle_submit_button($("#edit-user-form"));
     });
 
+    $("#user-profile-modal").on("click", "#subscribe-to-default-streams", () => {
+        const user_id = Number.parseInt($("#user-profile-modal").attr("data-user-id")!, 10);
+        const stream_ids = stream_data.get_default_stream_ids();
+        const default_streams = [];
+
+        for (const stream_id of stream_ids) {
+            const stream_name = stream_data.get_stream_name_from_id(stream_id);
+            default_streams.push({name: stream_name});
+        }
+
+        const url = "/json/users/me/subscriptions";
+        const data = {
+            subscriptions: JSON.stringify(default_streams),
+            principals: JSON.stringify([user_id]),
+        };
+
+        const $subscribe_button = $("#user-profile-modal #subscribe-to-default-streams");
+        show_button_spinner($subscribe_button);
+
+        channel.post({
+            url,
+            data,
+            success() {
+                $("#edit-user-form-error").hide();
+                hide_button_spinner($subscribe_button);
+                ui_report.success($t_html({defaultMessage: "Subscribed"}), $subscribe_button, 1000);
+            },
+            error(xhr) {
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $subscribe_button);
+                $("#edit-user-form")
+                    .closest(".simplebar-content-wrapper")
+                    .animate({scrollTop: 0}, "fast");
+                hide_button_spinner($subscribe_button);
+            },
+        });
+    });
+
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt(
             $<HTMLSelectOneElement>("select:not([multiple])#user-role-select").val()!.trim(),
