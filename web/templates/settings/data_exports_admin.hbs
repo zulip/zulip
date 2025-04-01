@@ -43,9 +43,13 @@
         <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
             <table class="table table-striped wrapped-table admin_exports_table">
                 <thead class="table-sticky-headers">
-                    <th class="active" data-sort="user">{{t "Requesting user" }}</th>
+                    <th class="active" data-sort="user">{{t "Requesting user" }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
                     <th>{{t "Type"}}</th>
-                    <th data-sort="numeric" data-sort-prop="export_time">{{t "Time" }}</th>
+                    <th data-sort="numeric" data-sort-prop="export_time">{{t "Time" }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
                     <th>{{t "Status" }}</th>
                     <th class="actions">{{t "Actions" }}</th>
                 </thead>

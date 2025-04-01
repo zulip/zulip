@@ -2,8 +2,12 @@
     <div class="subscriber_list_loading_indicator"></div>
     <table id="stream_members_list" class="subscriber-list table table-striped">
         <thead class="table-sticky-headers">
-            <th data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
-            <th class="settings-email-column" data-sort="email">{{t "Email" }}</th>
+            <th data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}
+                <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+            </th>
+            <th class="settings-email-column" data-sort="email">{{t "Email" }}
+                <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+            </th>
             {{#if can_remove_subscribers}}
             <th>{{t "Actions" }}</th>
             {{/if}}
