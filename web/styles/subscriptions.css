@@ -982,12 +982,6 @@ h4.user_group_setting_subsection_title {
             margin-left: 10px;
         }
 
-        .add_all_users_to_stream {
-            margin-left: 10px;
-            /* same bottom margin as h4.stream_setting_subsection_title */
-            margin-bottom: 5px;
-        }
-
         .create_user_group_member_list_header,
         .create_stream_subscriber_list_header {
             margin-top: 10px;
