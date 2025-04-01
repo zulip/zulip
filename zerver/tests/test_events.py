@@ -1464,7 +1464,7 @@ class NormalActionsTest(BaseAction):
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
 
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=3) as events:
             do_deactivate_user(user_profile, acting_user=None)
         check_invites_changed("events[0]", events[0])
 
@@ -3484,9 +3484,10 @@ class NormalActionsTest(BaseAction):
             hamletcharacters_group, "can_mention_group", setting_group, acting_user=None
         )
 
-        with self.verify_action(num_events=1) as events:
+        with self.verify_action(num_events=2) as events:
             do_deactivate_user(user_profile, acting_user=None)
-        check_realm_user_update("events[0]", events[0], "is_active")
+        check_subscription_peer_remove("events[0]", events[0])
+        check_realm_user_update("events[1]", events[1], "is_active")
 
         do_reactivate_user(user_profile, acting_user=None)
         self.set_up_db_for_testing_user_access()
@@ -3495,9 +3496,10 @@ class NormalActionsTest(BaseAction):
         # Test that users who can access the deactivated user
         # do not receive the 'user_group/remove_members' event.
         user_profile = self.example_user("cordelia")
-        with self.verify_action(num_events=1) as events:
+        with self.verify_action(num_events=2) as events:
             do_deactivate_user(user_profile, acting_user=None)
-        check_realm_user_update("events[0]", events[0], "is_active")
+        check_subscription_peer_remove("events[0]", events[0])
+        check_realm_user_update("events[1]", events[1], "is_active")
 
         do_reactivate_user(user_profile, acting_user=None)
 
@@ -3567,15 +3569,16 @@ class NormalActionsTest(BaseAction):
         # Guest loses access to deactivated user if the user
         # was not involved in DMs.
         user_profile = self.example_user("hamlet")
-        with self.verify_action(num_events=5) as events:
+        with self.verify_action(num_events=6) as events:
             do_deactivate_user(user_profile, acting_user=None)
-        check_user_group_remove_members("events[0]", events[0])
+        check_subscription_peer_remove("events[0]", events[0])
         check_user_group_remove_members("events[1]", events[1])
         check_user_group_remove_members("events[2]", events[2])
-        check_user_group_update("events[3]", events[3], {"can_mention_group"})
-        check_realm_user_remove("events[4]]", events[4])
+        check_user_group_remove_members("events[3]", events[3])
+        check_user_group_update("events[4]", events[4], {"can_mention_group"})
+        check_realm_user_remove("events[5]]", events[5])
         self.assertEqual(
-            events[3]["data"]["can_mention_group"],
+            events[4]["data"]["can_mention_group"],
             UserGroupMembersDict(direct_members=[], direct_subgroups=[members_group.id]),
         )
 

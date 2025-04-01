@@ -916,6 +916,16 @@ paths:
                                     The IDs of the channels from which the users have been
                                     unsubscribed from.
 
+                                    When a user is deactivated, the server will send this event
+                                    removing the user's subscriptions before the `realm_user` event
+                                    for the user's deactivation.
+
+                                    **Changes**: Before Zulip 10.0 (feature level 377), this event
+                                    was not sent on user deactivation. Clients supporting older
+                                    server versions and maintaining peer subscriber data need to
+                                    remove all channel subscriptions for a user when processing the
+                                    `realm_user` event with `op="remove"`.
+
                                     **Changes**: New in Zulip 4.0 (feature level 35), replacing
                                     the `stream_id` integer.
                                   items:

@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
+**Feature level 377**
+
+* [`GET /events`](/api/get-events): When a user is deactivate, send
+  `peer_remove` event to all the subscribers of the streams that the
+  user was subscribed to.
+
 Feature levels 373-376 reserved for future use in 10.x maintenance
 releases.
 
