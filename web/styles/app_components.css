@@ -885,6 +885,10 @@ input.settings_text_input {
     &.hide {
         display: none;
     }
+
+    .save-button[data-status="saved"] {
+        pointer-events: none;
+    }
 }
 
 .stream-privacy-type-icon {
