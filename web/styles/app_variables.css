@@ -1552,10 +1552,18 @@
     );
     --color-markdown-code-link-hover: var(--color-markdown-link-hover);
     --color-background-image-thumbnail: light-dark(
+        hsl(0deg 0% 0% / 8%),
+        hsl(0deg 0% 100% / 13%)
+    );
+    --color-background-image-thumbnail-hover: light-dark(
+        hsl(0deg 0% 0% / 20%),
+        hsl(0deg 0% 100% / 25%)
+    );
+    --color-background-image-thumbnail-dinky: light-dark(
         hsl(0deg 0% 0% / 3%),
         hsl(0deg 0% 100% / 3%)
     );
-    --color-background-image-thumbnail-hover: light-dark(
+    --color-background-image-thumbnail-dinky-hover: light-dark(
         hsl(0deg 0% 0% / 15%),
         hsl(0deg 0% 100% / 15%)
     );

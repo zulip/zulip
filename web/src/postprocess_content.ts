@@ -115,12 +115,21 @@ export function postprocess_content(html: string): string {
                 const original_width = Number(original_dimensions[0]);
                 const original_height = Number(original_dimensions[1]);
                 const font_size_in_use = user_settings.web_font_size_px;
+                // At 20px/1em, image boxes are 200px by 80px in either
+                // horizontal or vertical orientation; 80 / 200 = 0.4
+                // We need to show more of the background color behind
+                // these extremely tall or extremely wide images, and
+                // use a subtler background color than on other images
+                const image_min_aspect_ratio = 0.4;
                 // "Dinky" images are those that are smaller than the
                 // 10em box reserved for thumbnails
                 const image_box_em = 10;
                 const is_dinky_image =
                     original_width / font_size_in_use <= image_box_em &&
                     original_height / font_size_in_use <= image_box_em;
+                const has_extreme_aspect_ratio =
+                    original_width / original_height <= image_min_aspect_ratio ||
+                    original_height / original_width <= image_min_aspect_ratio;
                 const is_portrait_image = original_width <= original_height;
 
                 inline_image.setAttribute("width", `${original_width}`);
@@ -128,6 +137,10 @@ export function postprocess_content(html: string): string {
 
                 if (is_dinky_image) {
                     inline_image.classList.add("dinky-thumbnail");
+                }
+
+                if (has_extreme_aspect_ratio) {
+                    inline_image.classList.add("extreme-aspect-ratio");
                 }
 
                 if (is_portrait_image) {
