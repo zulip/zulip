@@ -968,10 +968,6 @@ h4.user_group_setting_subsection_title {
             }
         }
 
-        .add_all_users_to_user_group {
-            margin-left: 10px;
-        }
-
         .create_user_group_member_list_header,
         .create_stream_subscriber_list_header {
             margin-top: 10px;
