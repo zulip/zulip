@@ -270,7 +270,8 @@ h4.user_group_setting_subsection_title {
     padding-left: 5px;
 }
 
-.add-subscribers-subtitle {
+.add-subscribers-subtitle,
+.add-members-subtitle {
     opacity: 0.7;
 }
 
