@@ -7678,6 +7678,7 @@ class GetSubscribersTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         polonius = self.example_user("polonius")
+        bot = self.create_test_bot("bot", cordelia, "Foo Bot")
         realm = hamlet.realm
 
         stream_names = [f"stream_{i}" for i in range(10)]
@@ -7688,6 +7689,7 @@ class GetSubscribersTest(ZulipTestCase):
             othello.id,
             cordelia.id,
             polonius.id,
+            bot.id,
         ]
 
         with self.assert_database_query_count(50):
@@ -7771,6 +7773,17 @@ class GetSubscribersTest(ZulipTestCase):
             setting_group_members_dict,
             acting_user=hamlet,
         )
+
+        # Test partial subscribers
+        with self.assert_database_query_count(10):
+            sub_data = gather_subscriptions_helper(self.user_profile, include_subscribers="partial")
+            subscribed_streams = sub_data.subscriptions
+        self.assertGreaterEqual(len(subscribed_streams), 11)
+        for sub in subscribed_streams:
+            if not sub["name"].startswith("stream_"):
+                continue
+            # Just the bot
+            self.assert_length(sub["subscribers"], 1)
 
         with self.assert_database_query_count(9):
             subscribed_streams, _ = gather_subscriptions(

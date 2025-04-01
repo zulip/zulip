@@ -1,7 +1,7 @@
 import itertools
 from collections.abc import Callable, Collection, Iterable, Mapping
 from operator import itemgetter
-from typing import Any
+from typing import Any, Literal
 
 from django.core.exceptions import ValidationError
 from django.db import connection
@@ -466,6 +466,7 @@ def bulk_get_subscriber_user_ids(
     stream_dicts: Collection[Mapping[str, Any]],
     user_profile: UserProfile,
     subscribed_stream_ids: set[int],
+    partial_subscribers: bool = False,
 ) -> dict[int, list[int]]:
     """sub_dict maps stream_id => whether the user is subscribed to that stream."""
     target_stream_dicts = []
@@ -533,6 +534,20 @@ def bulk_get_subscriber_user_ids(
         stream_id = recip_to_stream_id[recip_id]
         result[stream_id] = list(user_profile_ids)
 
+    # Eventually this will return (at minimum):
+    # (1) if we’re in a channel view, which users are subscribed to the
+    # current channel
+    # (2) subscriptions for all bots
+    #
+    # For now, we're only doing (2).
+    if partial_subscribers:
+        bot_users = set(
+            UserProfile.objects.filter(
+                is_bot=True, realm=user_profile.realm, is_active=True
+            ).values_list("id", flat=True)
+        )
+        for stream_id, users in result.items():
+            result[stream_id] = [user_id for user_id in users if user_id in bot_users]
     return result
 
 
@@ -647,7 +662,7 @@ def has_metadata_access_to_previously_subscribed_stream(
 # subscriptions, so it's worth optimizing.
 def gather_subscriptions_helper(
     user_profile: UserProfile,
-    include_subscribers: bool = True,
+    include_subscribers: bool | Literal["partial"] = True,
     include_archived_channels: bool = False,
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
 ) -> SubscriptionInfo:
@@ -809,6 +824,7 @@ def gather_subscriptions_helper(
             all_stream_dicts,
             user_profile,
             subscribed_stream_ids,
+            include_subscribers == "partial",
         )
 
         for lst in [subscribed, unsubscribed]:

@@ -4,7 +4,7 @@ import copy
 import logging
 import time
 from collections.abc import Callable, Collection, Iterable, Sequence
-from typing import Any
+from typing import Any, Literal
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -157,7 +157,7 @@ def fetch_initial_state_data(
     slim_presence: bool = False,
     presence_last_update_id_fetched_by_client: int | None = None,
     presence_history_limit_days: int | None = None,
-    include_subscribers: bool = True,
+    include_subscribers: bool | Literal["partial"] = True,
     include_streams: bool = True,
     spectator_requested_language: str | None = None,
     pronouns_field_type_supported: bool = True,
@@ -1894,7 +1894,7 @@ def do_events_register(
     event_types: Sequence[str] | None = None,
     queue_lifespan_secs: int = 0,
     all_public_streams: bool = False,
-    include_subscribers: bool = True,
+    include_subscribers: bool | Literal["partial"] = True,
     include_streams: bool = True,
     client_capabilities: ClientCapabilities = DEFAULT_CLIENT_CAPABILITIES,
     narrow: Collection[NeverNegatedNarrowTerm] = [],
@@ -2024,7 +2024,7 @@ def do_events_register(
         fetch_event_types=fetch_event_types,
         client_gravatar=client_gravatar,
         slim_presence=slim_presence,
-        include_subscribers=include_subscribers,
+        include_subscribers=True if include_subscribers == "partial" else include_subscribers,
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
