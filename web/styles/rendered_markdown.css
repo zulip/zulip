@@ -426,10 +426,9 @@
         margin-bottom: var(--markdown-interelement-space-px);
         margin-right: 5px;
 
-        /* Set a background for the image; the background will be visible for
-           messages whose aspect ratio is different from that of this
-           container. */
-        border: solid 1px transparent;
+        /* Set a background for the image; the background will be visible
+           behind the width of the transparent border. */
+        border: solid 3px transparent;
         transition: background 0.3s ease;
         background: var(--color-background-image-thumbnail);
 
