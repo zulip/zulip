@@ -418,6 +418,12 @@ export function toggle_popover_menu(
 ): tippy.Instance {
     const instance = target._tippy;
     if (instance) {
+        // Ideally, we'd check that the _tippy object is a
+        // popover. For elements that host both a Tippy tooltip and a
+        // popover, this can incorrectly return early after hiding the
+        // Tippy tooltip.
+        //
+        // If we fix this, we can remove a few popovers.hide_all calls.
         hide_current_popover_if_visible(instance);
         return instance;
     }
