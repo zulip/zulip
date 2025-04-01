@@ -55,6 +55,10 @@
         }
     }
 
+    #drafts_list_container {
+        overflow-y: auto;
+    }
+
     .drafts-list {
         & h2 {
             font-size: 1.1em;

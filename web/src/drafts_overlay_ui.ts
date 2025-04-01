@@ -4,6 +4,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import render_draft_table_body from "../templates/draft_table_body.hbs";
+import render_drafts_list from "../templates/drafts_list.hbs";
 
 import * as browser_history from "./browser_history.ts";
 import * as compose_actions from "./compose_actions.ts";
@@ -182,24 +183,26 @@ function render_widgets(
     other_drafts: FormattedDraft[],
     narrow_drafts_header: string,
 ): void {
-    $("#drafts_table").empty();
+    $("#drafts_list_container").empty();
 
-    const rendered = render_draft_table_body({
+    const rendered = render_drafts_list({
         narrow_drafts_header,
         narrow_drafts,
         other_drafts,
     });
-    const $drafts_table = $("#drafts_table");
-    $drafts_table.append($(rendered));
+    const $drafts_list_container = $("#drafts_list_container");
+    $drafts_list_container.append($(rendered));
     if ($("#drafts_table .overlay-message-row").length > 0) {
         $("#drafts_table .no-drafts").hide();
         // Update possible dynamic elements.
-        const $rendered_drafts = $drafts_table.find(
+        const $rendered_drafts = $drafts_list_container.find(
             ".message_content.rendered_markdown.restore-overlay-message",
         );
         $rendered_drafts.each(function () {
             rendered_markdown.update_elements($(this));
         });
+        $(".select-drafts-button").show();
+        $(".delete-selected-drafts-button").show();
     }
     update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
     update_bulk_delete_ui();
@@ -289,6 +292,16 @@ function setup_bulk_actions_handlers(): void {
 export function launch(): void {
     const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
 
+    const $drafts_table = $("#drafts_table");
+    $drafts_table.empty();
+    const rendered = render_draft_table_body({
+        context: {
+            narrow_drafts_header,
+            narrow_drafts,
+            other_drafts,
+        },
+    });
+    $drafts_table.append($(rendered));
     render_widgets(narrow_drafts, other_drafts, narrow_drafts_header);
 
     // We need to force a style calculation on the newly created
