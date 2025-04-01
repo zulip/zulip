@@ -21,6 +21,8 @@ import {realm} from "./state_data.ts";
 import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 
+let current_narrow_drafts_header: string | undefined;
+
 function restore_draft(draft_id: string): void {
     const draft = drafts.draft_model.getDraft(draft_id);
     if (!draft) {
@@ -174,8 +176,15 @@ function get_formatted_drafts_data(): {
     );
     const narrow_drafts = format_drafts(narrow_drafts_raw);
     const other_drafts = format_drafts(other_drafts_raw);
-    const narrow_drafts_header = get_header_for_narrow_drafts();
-    return {narrow_drafts, other_drafts, narrow_drafts_header};
+    if (current_narrow_drafts_header === undefined) {
+        const narrow_drafts_header = get_header_for_narrow_drafts();
+        current_narrow_drafts_header = narrow_drafts_header;
+    }
+    return {
+        narrow_drafts,
+        other_drafts,
+        narrow_drafts_header: current_narrow_drafts_header,
+    };
 }
 
 function render_widgets(
@@ -352,6 +361,7 @@ export function open_overlay(): void {
         on_close() {
             browser_history.exit_overlay();
             drafts.sync_count();
+            current_narrow_drafts_header = undefined;
         },
     });
 }
