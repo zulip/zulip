@@ -4,6 +4,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import render_draft_table_body from "../templates/draft_table_body.hbs";
+import render_drafts_list from "../templates/drafts_list.hbs";
 
 import * as browser_history from "./browser_history.ts";
 import * as compose_actions from "./compose_actions.ts";
@@ -190,15 +191,24 @@ function render_widgets(
     other_drafts: FormattedDraft[],
     narrow_drafts_header: string,
 ): void {
-    $("#drafts_table").empty();
-
-    const rendered = render_draft_table_body({
-        narrow_drafts_header,
-        narrow_drafts,
-        other_drafts,
-    });
     const $drafts_table = $("#drafts_table");
-    $drafts_table.append($(rendered));
+    if ($(".drafts-list").length === 0) {
+        const rendered = render_draft_table_body({
+            context: {
+                narrow_drafts_header,
+                narrow_drafts,
+                other_drafts,
+            },
+        });
+        $drafts_table.append($(rendered));
+    } else {
+        const rendered = render_drafts_list({
+            narrow_drafts_header,
+            narrow_drafts,
+            other_drafts,
+        });
+        $(".drafts-list").replaceWith($(rendered));
+    }
     if ($("#drafts_table .overlay-message-row").length > 0) {
         $("#drafts_table .no-drafts").hide();
         // Update possible dynamic elements.
@@ -297,6 +307,7 @@ function setup_bulk_actions_handlers(): void {
 export function launch(): void {
     const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
 
+    $("#drafts_table").empty();
     render_widgets(narrow_drafts, other_drafts, narrow_drafts_header);
 
     // We need to force a style calculation on the newly created
