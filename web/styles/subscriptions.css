@@ -264,6 +264,10 @@ h4.user_group_setting_subsection_title {
     padding-left: 5px;
 }
 
+.add-subscribers-subtitle {
+    opacity: 0.7;
+}
+
 .choose-subscribers-label {
     display: inline;
 }
