@@ -6,6 +6,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from typing_extensions import override
 
+from scripts.lib.zulip_tools import get_config, get_config_file
+
 
 class Command(BaseCommand):
     help = """Starts the tusd server"""
@@ -15,10 +17,16 @@ class Command(BaseCommand):
         parser.add_argument(
             "listen", help="[Port, or address:port, to bind HTTP server to]", type=str
         )
+        local_port = 80
+        config_file = get_config_file()
+        if get_config(config_file, "application_server", "http_only", False):
+            local_port = int(
+                get_config(config_file, "application_server", "nginx_listen_port", "80")
+            )
         parser.add_argument(
             "hooks_http",
             help="[An HTTP endpoint to which hook events will be sent to]",
-            default="http://127.0.0.1/api/internal/tusd",
+            default=f"http://127.0.0.1:{local_port}/api/internal/tusd",
             nargs="?",
         )
 
