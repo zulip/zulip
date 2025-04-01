@@ -1794,6 +1794,13 @@ export function is_my_user_id(user_id: number): boolean {
     return user_id === my_user_id;
 }
 
+export function is_direct_message_conversation_with_self(user_ids: number[]): boolean {
+    if (user_ids.length === 1) {
+        return is_my_user_id(user_ids[0]!);
+    }
+    return false;
+}
+
 export function compare_by_name(a: User, b: User): number {
     return util.strcmp(a.full_name, b.full_name);
 }
