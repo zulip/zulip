@@ -646,8 +646,8 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
 
     mock_template("draft_table_body.hbs", false, (data) => {
         // Tests formatting and time-sorting of drafts
-        assert.deepEqual(data.narrow_drafts, []);
-        assert.deepEqual(data.other_drafts, expected);
+        assert.deepEqual(data.context.narrow_drafts, []);
+        assert.deepEqual(data.context.other_drafts, expected);
         assert.ok(data);
         return "<draft table stub>";
     });
@@ -657,6 +657,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
+    $.create(".drafts-list", {children: []});
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
     drafts_overlay_ui.launch();
@@ -800,8 +801,8 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
 
     mock_template("draft_table_body.hbs", false, (data) => {
         // Tests splitting up drafts by current narrow.
-        assert.deepEqual(data.narrow_drafts, expected_pm_drafts);
-        assert.deepEqual(data.other_drafts, expected_other_drafts);
+        assert.deepEqual(data.context.narrow_drafts, expected_pm_drafts);
+        assert.deepEqual(data.context.other_drafts, expected_other_drafts);
         return "<draft table stub>";
     });
 
@@ -813,6 +814,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     compose_state.set_message_type("private");
 
+    $.create(".drafts-list", {children: []});
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
     drafts_overlay_ui.launch();
