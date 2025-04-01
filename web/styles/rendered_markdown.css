@@ -432,6 +432,14 @@
         transition: background 0.3s ease;
         background: var(--color-background-image-thumbnail);
 
+        &:has(.dinky-thumbnail, .extreme-aspect-ratio) {
+            background: var(--color-background-image-thumbnail-dinky);
+
+            &:hover {
+                background: var(--color-background-image-thumbnail-dinky-hover);
+            }
+        }
+
         &:first-child {
             margin-top: var(--markdown-interelement-space-px);
         }
