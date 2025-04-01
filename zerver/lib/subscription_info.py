@@ -466,7 +466,6 @@ def bulk_get_subscriber_user_ids(
     stream_dicts: Collection[Mapping[str, Any]],
     user_profile: UserProfile,
     subscribed_stream_ids: set[int],
-    partial_subscribers: bool = False,
 ) -> dict[int, list[int]]:
     """sub_dict maps stream_id => whether the user is subscribed to that stream."""
     target_stream_dicts = []
@@ -534,20 +533,6 @@ def bulk_get_subscriber_user_ids(
         stream_id = recip_to_stream_id[recip_id]
         result[stream_id] = list(user_profile_ids)
 
-    # Eventually this will return (at minimum):
-    # (1) if we’re in a channel view, which users are subscribed to the
-    # current channel
-    # (2) subscriptions for all bots
-    #
-    # For now, we're only doing (2).
-    if partial_subscribers:
-        bot_users = set(
-            UserProfile.objects.filter(
-                is_bot=True, realm=user_profile.realm, is_active=True
-            ).values_list("id", flat=True)
-        )
-        for stream_id, users in result.items():
-            result[stream_id] = [user_id for user_id in users if user_id in bot_users]
     return result
 
 
@@ -824,19 +809,42 @@ def gather_subscriptions_helper(
             all_stream_dicts,
             user_profile,
             subscribed_stream_ids,
-            include_subscribers == "partial",
         )
+
+        # Eventually "partial subscribers" will return (at minimum):
+        # (1) all subscriptions for recently active users (for the buddy list)
+        # (2) subscriptions for all bots
+        #
+        # For now, we're only doing (2).
+        send_partial_subscribers = include_subscribers == "partial"
+        partial_subscriber_map: dict[int, list[int]] = dict()
+        if send_partial_subscribers:
+            bot_users = set(
+                UserProfile.objects.filter(
+                    is_bot=True, realm=user_profile.realm, is_active=True
+                ).values_list("id", flat=True)
+            )
+            for stream_id, users in subscriber_map.items():
+                partial_subscribers = [user_id for user_id in users if user_id in bot_users]
+                if len(partial_subscribers) != len(subscriber_map[stream_id]):
+                    partial_subscriber_map[stream_id] = partial_subscribers
 
         for lst in [subscribed, unsubscribed]:
             for stream_dict in lst:
                 assert isinstance(stream_dict["stream_id"], int)
                 stream_id = stream_dict["stream_id"]
-                stream_dict["subscribers"] = subscriber_map[stream_id]
+                if send_partial_subscribers and partial_subscriber_map.get(stream_id) is not None:
+                    stream_dict["partial_subscribers"] = partial_subscriber_map[stream_id]
+                else:
+                    stream_dict["subscribers"] = subscriber_map[stream_id]
 
         for slim_stream_dict in never_subscribed:
             assert isinstance(slim_stream_dict["stream_id"], int)
             stream_id = slim_stream_dict["stream_id"]
-            slim_stream_dict["subscribers"] = subscriber_map[stream_id]
+            if send_partial_subscribers and partial_subscriber_map.get(stream_id) is not None:
+                slim_stream_dict["partial_subscribers"] = partial_subscriber_map[stream_id]
+            else:
+                slim_stream_dict["subscribers"] = subscriber_map[stream_id]
 
     subscribed.sort(key=lambda x: x["name"])
     unsubscribed.sort(key=lambda x: x["name"])
