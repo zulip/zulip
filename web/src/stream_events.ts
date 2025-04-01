@@ -9,10 +9,12 @@ import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as color_data from "./color_data.ts";
 import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_state from "./compose_state.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_live_update from "./message_live_update.ts";
 import * as message_view from "./message_view.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -21,6 +23,7 @@ import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as settings_notifications from "./settings_notifications.ts";
+import * as settings_streams from "./settings_streams.ts";
 import {realm} from "./state_data.ts";
 import * as stream_color_events from "./stream_color_events.ts";
 import * as stream_create from "./stream_create.ts";
@@ -176,6 +179,31 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         is_recently_active(value) {
             update_stream_setting(sub, value, "is_recently_active");
             stream_list.update_streams_sidebar();
+        },
+        is_archived(value) {
+            if (!value) {
+                // We currently do not live-update when unarchiving stream.
+                return;
+            }
+            const is_subscribed = sub.subscribed;
+            const is_narrowed_to_stream = narrow_state.narrowed_to_stream_id(stream_id);
+            stream_data.mark_archived(stream_id);
+            stream_settings_ui.update_settings_for_archived(sub);
+            message_view_header.maybe_rerender_title_area_for_stream(stream_id);
+            if (is_subscribed) {
+                stream_list.remove_sidebar_row(stream_id);
+                if (stream_id === compose_state.selected_recipient_id) {
+                    compose_state.set_selected_recipient_id("");
+                    compose_recipient.on_compose_select_recipient_update();
+                }
+            }
+            settings_streams.update_default_streams_table();
+            stream_data.remove_default_stream(stream_id);
+            if (is_narrowed_to_stream) {
+                assert(message_lists.current !== undefined);
+                message_lists.current.update_trailing_bookend(true);
+            }
+            message_live_update.rerender_messages_view();
         },
     };
 
