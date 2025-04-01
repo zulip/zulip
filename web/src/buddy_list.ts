@@ -18,6 +18,7 @@ import {$t} from "./i18n.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as padded_widget from "./padded_widget.ts";
+import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -993,6 +994,10 @@ export class BuddyList extends BuddyListConf {
     }
 
     rerender_participants(): void {
+        if (page_params.is_spectator) {
+            return;
+        }
+
         const all_participant_ids = this.render_data.get_all_participant_ids();
         const users_to_remove = this.participant_user_ids.filter(
             (user_id) => !all_participant_ids.has(user_id),
