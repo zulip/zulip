@@ -475,6 +475,58 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "**eeshangarg** requested [showell](https://github.com/showell) for a review on [PR #1 This is just a test commit](https://github.com/eeshangarg/Scheduler/pull/1)."
         self.check_webhook("pull_request__review_requested", expected_topic_name, expected_message)
 
+    def test_pull_request_labeled_msg(self) -> None:
+        expected_message = "**soheil-star01** labeled the label `documentation` on [PR #1](https://github.com/soheil-star01/soheil-star01/pull/1)."
+        self.check_webhook(
+            "pull_request__labeled", "soheil-star01 / PR #1 test webhook", expected_message
+        )
+
+    def test_pull_request_unlabeled_msg(self) -> None:
+        expected_message = "**soheil-star01** unlabeled the label `documentation` on [PR #1](https://github.com/soheil-star01/soheil-star01/pull/1)."
+        self.check_webhook(
+            "pull_request__unlabeled", "soheil-star01 / PR #1 test webhook", expected_message
+        )
+
+    def test_pull_request_review_request_removed_msg(self) -> None:
+        expected_message = "**soheil-star01** removed [redolat](https://github.com/redolat) from reviewers on [PR #1](https://github.com/techpillars-oy/test1/pull/1)."
+        self.check_webhook(
+            "pull_request__review_request_removed", "test1 / PR #1 Feat/webhook", expected_message
+        )
+
+    def test_pull_request_milestoned_msg(self) -> None:
+        expected_message = "**soheil-star01** milestoned on [PR #1](https://github.com/soheil-star01/soheil-star01/pull/1)."
+        self.check_webhook(
+            "pull_request__milestoned", "soheil-star01 / PR #1 test webhook", expected_message
+        )
+
+    def test_pull_request_demilestoned_msg(self) -> None:
+        expected_message = "**soheil-star01** demilestoned on [PR #1](https://github.com/soheil-star01/soheil-star01/pull/1)."
+        self.check_webhook(
+            "pull_request__demilestoned", "soheil-star01 / PR #1 test webhook", expected_message
+        )
+
+    def test_pull_request_enqueued_msg(self) -> None:
+        expected_message = "**soheil-star01** enqueued [PR #1 Feat/webhook](https://github.com/techpillars-oy/test1/pull/1) in the merge queue."
+        self.check_webhook("pull_request__enqueued", "test1 / PR #1 Feat/webhook", expected_message)
+
+    def test_pull_request_dequeued_msg(self) -> None:
+        expected_message = "**soheil-star01** dequeued [PR #1 Feat/webhook](https://github.com/techpillars-oy/test1/pull/1) in the merge queue."
+        self.check_webhook("pull_request__dequeued", "test1 / PR #1 Feat/webhook", expected_message)
+
+    def test_pull_request_reopened_msg(self) -> None:
+        expected_message = "**soheil-star01** reopened [PR #7 Feat/webhook](https://github.com/soheil-star01/soheil-star01/pull/7)."
+        self.check_webhook(
+            "pull_request__reopened", "soheil-star01 / PR #7 Feat/webhook", expected_message
+        )
+
+    def test_pull_request_converted_to_draft_msg(self) -> None:
+        expected_message = "**soheil-star01** has converted [PR #1 test webhook](https://github.com/soheil-star01/soheil-star01/pull/1) to draft."
+        self.check_webhook(
+            "pull_request__converted_to_draft",
+            "soheil-star01 / PR #1 test webhook",
+            expected_message,
+        )
+
     def test_check_run(self) -> None:
         expected_topic_name = "hello-world / checks"
         expected_message = """
@@ -515,19 +567,6 @@ A temporary team so that I can get some webhook fixtures!
     def test_check_run_in_progress_ignore(self) -> None:
         payload = self.get_body("check_run__in_progress")
         self.verify_post_is_ignored(payload, "check_run")
-
-    def test_ignored_pull_request_actions(self) -> None:
-        ignored_actions = [
-            "approved",
-            "converted_to_draft",
-            "labeled",
-            "review_request_removed",
-            "unlabeled",
-        ]
-        for action in ignored_actions:
-            data = dict(action=action)
-            payload = orjson.dumps(data).decode()
-            self.verify_post_is_ignored(payload, "pull_request")
 
     def test_pull_request_review_edited_empty_changes_ignore(self) -> None:
         payload = self.get_body("pull_request_review__edited_empty_changes")
