@@ -3,6 +3,7 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import render_banner from "../templates/components/banner.hbs";
 import render_draft_table_body from "../templates/draft_table_body.hbs";
 import render_drafts_list from "../templates/drafts_list.hbs";
 
@@ -20,6 +21,55 @@ import * as rendered_markdown from "./rendered_markdown.ts";
 import {realm} from "./state_data.ts";
 import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
+
+let draft_undo_delete_list: LocalStorageDraft[] = [];
+
+function clear_undo_list(): void {
+    draft_undo_delete_list = [];
+    $("#draft_overlay_banner_container").empty();
+}
+
+function undo_draft_deletion(): void {
+    if (draft_undo_delete_list.length === 0) {
+        return;
+    }
+
+    for (const draft of draft_undo_delete_list) {
+        drafts.draft_model.addDraft(draft);
+    }
+
+    clear_undo_list();
+    rerender_drafts();
+
+    $(".select-drafts-button").show();
+    $(".delete-selected-drafts-button").show();
+}
+
+function show_delete_banner(): void {
+    const $banner_container = $("#draft_overlay_banner_container");
+    $banner_container.empty();
+    const banner_html = render_banner({
+        intent: "success",
+        label: $t(
+            {
+                defaultMessage:
+                    "{N, plural, one {# draft was deleted.} other {# drafts were deleted.}}",
+            },
+            {N: draft_undo_delete_list.length},
+        ),
+        buttons: [
+            {
+                attention: "quiet",
+                intent: "success",
+                label: $t({defaultMessage: "Undo"}),
+                custom_classes: "draft-delete-banner-undo-button",
+            },
+        ],
+        close_button: true,
+    });
+
+    $banner_container.html(banner_html);
+}
 
 function restore_draft(draft_id: string): void {
     const draft = drafts.draft_model.getDraft(draft_id);
@@ -66,7 +116,13 @@ function remove_draft($draft_row: JQuery): void {
     // Deletes the draft and removes it from the list
     const draft_id = $draft_row.attr("data-draft-id")!;
 
+    const draft = drafts.draft_model.getDraft(draft_id);
     drafts.draft_model.deleteDraft(draft_id);
+
+    if (draft) {
+        draft_undo_delete_list.push(draft);
+        show_delete_banner();
+    }
 
     $draft_row.remove();
 
@@ -304,6 +360,12 @@ function setup_bulk_actions_handlers(): void {
     });
 }
 
+function rerender_drafts(): void {
+    const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
+    render_widgets(narrow_drafts, other_drafts, narrow_drafts_header);
+    setup_event_handlers();
+}
+
 export function launch(): void {
     const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
 
@@ -359,6 +421,7 @@ export function open_overlay(): void {
         on_close() {
             browser_history.exit_overlay();
             drafts.sync_count();
+            draft_undo_delete_list = [];
         },
     });
 }
@@ -380,4 +443,10 @@ export function initialize(): void {
     $("body").on("focus", "#drafts_table .overlay-message-info-box", function (this: HTMLElement) {
         messages_overlay_ui.activate_element(this, keyboard_handling_context);
     });
+    $("body").on(
+        "click",
+        "#draft_overlay_banner_container .draft-delete-banner-undo-button",
+        undo_draft_deletion,
+    );
+    $("body").on("click", "#draft_overlay_banner_container .banner-close-button", clear_undo_list);
 }
