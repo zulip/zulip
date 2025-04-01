@@ -1,4 +1,8 @@
 .drafts-container {
+    .banner-container {
+        margin: 0 25px 5px;
+    }
+
     .header-body {
         display: flex;
         align-items: center;
