@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as loading from "./loading.ts";
+import {COMPONENT_INTENT_VALUES} from "./types.ts";
 import type {ComponentIntent} from "./types.ts";
 
 export const ACTION_BUTTON_ATTENTION_VALUES = ["primary", "quiet", "borderless"] as const;
@@ -49,4 +50,33 @@ export function hide_button_loading_indicator($button: JQuery): void {
     $button.prop("disabled", false);
     $button.find(".zulip-icon").css("visibility", "visible");
     $button.find(".action-button-label").css("visibility", "visible");
+}
+
+export function modify_action_button_style(
+    $button: JQuery,
+    opts: {
+        attention?: ActionButtonAttention;
+        intent?: ComponentIntent;
+    },
+): void {
+    if (opts.attention === undefined && opts.intent === undefined) {
+        // If neither attention nor intent is provided, do nothing.
+        return;
+    }
+    const action_button_attention_pattern = ACTION_BUTTON_ATTENTION_VALUES.join("|");
+    const component_intent_pattern = COMPONENT_INTENT_VALUES.join("|");
+    const action_button_style_regex = new RegExp(
+        `action-button-(${action_button_attention_pattern})-(${component_intent_pattern})`,
+    );
+    const action_button_style_regex_match = $button.attr("class")?.match(action_button_style_regex);
+    if (!action_button_style_regex_match) {
+        // If the button doesn't have the expected class, do nothing.
+        return;
+    }
+    const [action_button_style_class, old_attention, old_intent] = action_button_style_regex_match;
+    // Replace the old attention and intent values with the new ones, if provided.
+    $button.removeClass(action_button_style_class);
+    $button.addClass(
+        `action-button-${opts.attention ?? old_attention}-${opts.intent ?? old_intent}`,
+    );
 }
