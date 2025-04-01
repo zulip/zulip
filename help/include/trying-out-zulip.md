@@ -9,7 +9,7 @@ It's also easy to try out Zulip for yourself.
 
 1. **Check out the Zulip app**. You can:
 
-    - [View the Zulip development community](https://zulip.com/try-zulip/),
+    - [View the Zulip development community](https://chat.zulip.org/?show_try_zulip_modal),
       where hundreds of participants collaborate to improve Zulip. Many parts of
       the community are open for [public access](/help/public-access-option), so
       you can start exploring without creating an account.

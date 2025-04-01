@@ -43,7 +43,7 @@
                     <img alt="" width="1095" height="496" class='appshot-1__img' src="{{ static('images/landing-page/hello/generated/screen-1-2x.jpg') }}"/>
                 </picture>
                 <div class="cta-buttons">
-                    <a href="/try-zulip/">
+                    <a href="{{ 'https://chat.zulip.org' if not development_environment}}/?show_try_zulip_modal">
                         See it in use
                         <div class="cta-desc">in an open organization</div>
                     </a>
