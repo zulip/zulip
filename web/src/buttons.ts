@@ -1,6 +1,19 @@
 import $ from "jquery";
 
 import * as loading from "./loading.ts";
+import type {ComponentIntent} from "./types.ts";
+
+export const ACTION_BUTTON_ATTENTION_VALUES = ["primary", "quiet", "borderless"] as const;
+
+export type ActionButtonAttention = (typeof ACTION_BUTTON_ATTENTION_VALUES)[number];
+
+export type ActionButton = {
+    attention: ActionButtonAttention;
+    intent?: ComponentIntent;
+    label: string;
+    icon?: string;
+    custom_classes?: string;
+};
 
 let loading_indicator_count = 0;
 export function show_button_loading_indicator($button: JQuery): void {
