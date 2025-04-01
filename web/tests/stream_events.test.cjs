@@ -13,6 +13,8 @@ const browser_history = mock_esm("../src/browser_history");
 const color_data = mock_esm("../src/color_data");
 const compose_recipient = mock_esm("../src/compose_recipient");
 const dialog_widget = mock_esm("../src/dialog_widget");
+const message_live_update = mock_esm("../src/message_live_update");
+const settings_streams = mock_esm("../src/settings_streams");
 const stream_color_events = mock_esm("../src/stream_color_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_muting = mock_esm("../src/stream_muting");
@@ -49,6 +51,7 @@ const user_profile = mock_esm("../src/user_profile");
 const {Filter} = zrequire("../src/filter");
 const activity_ui = zrequire("activity_ui");
 const {buddy_list} = zrequire("buddy_list");
+const compose_state = zrequire("compose_state");
 const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -314,6 +317,45 @@ test("update_property", ({override}) => {
         assert.equal(args.val, 3);
         args = update_subscription_elements_stub.get_args("sub");
         assert.equal(args.sub, sub);
+    }
+
+    // Test archiving stream
+    {
+        stream_data.subscribe_myself(sub);
+
+        const stub = make_stub();
+        override(stream_settings_ui, "update_settings_for_archived", stub.f);
+        override(settings_streams, "update_default_streams_table", noop);
+        override(message_live_update, "rerender_messages_view", noop);
+
+        narrow_to_frontend();
+        let bookend_updates = 0;
+        override(message_lists.current, "update_trailing_bookend", () => {
+            bookend_updates += 1;
+        });
+
+        let removed_sidebar_rows = 0;
+        override(stream_list, "remove_sidebar_row", () => {
+            removed_sidebar_rows += 1;
+        });
+
+        compose_state.set_stream_id(stream_id);
+
+        stream_events.update_property(stream_id, "is_archived", true);
+
+        assert.ok(stream_data.is_stream_archived(stream_id));
+        assert.ok(stream_data.is_subscribed(stream_id));
+
+        const args = stub.get_args("sub");
+        assert.equal(args.sub.stream_id, stream_id);
+
+        assert.equal(bookend_updates, 1);
+        assert.equal(removed_sidebar_rows, 1);
+    }
+
+    // We do not live update unarchiving stream, but we test this for coverage.
+    {
+        stream_events.update_property(stream_id, "is_archived", false);
     }
 
     // Test deprecated properties for coverage.
