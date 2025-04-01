@@ -45,6 +45,7 @@ import * as narrow_history from "./narrow_history.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as narrow_title from "./narrow_title.ts";
 import {page_params} from "./page_params.ts";
+import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popup_banners from "./popup_banners.ts";
@@ -282,7 +283,14 @@ function handle_post_message_list_change(
         });
     }
 
-    handle_post_view_change(msg_list, opts);
+    const current_sub = narrow_state.stream_sub();
+    if (current_sub) {
+        void peer_data.maybe_fetch_stream_subscribers(current_sub.stream_id).then(() => {
+            handle_post_view_change(msg_list, opts);
+        });
+    } else {
+        handle_post_view_change(msg_list, opts);
+    }
 
     unread_ui.update_unread_banner();
 
