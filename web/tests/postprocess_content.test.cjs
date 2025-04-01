@@ -150,7 +150,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
         ),
         '<div class="message_inline_image">' +
             '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element dinky-thumbnail portrait-thumbnail" width="1" height="10" loading="lazy">' +
+            '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element dinky-thumbnail extreme-aspect-ratio portrait-thumbnail" width="1" height="10" loading="lazy">' +
             "</a>" +
             "</div>",
     );
