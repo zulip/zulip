@@ -85,7 +85,7 @@ testcases in `markdown_test_cases.json` that you want to ignore. This
 is a workaround due to lack of comments support in JSON. Revert your
 "ignore" changes before committing. After this, you can run the frontend
 tests with `tools/test-js-with-node markdown` and backend tests with
-`tools/test-backend zerver.tests.test_markdown.MarkdownTest.test_markdown_fixtures`.
+`tools/test-backend zerver.tests.test_markdown.MarkdownFixtureTest.test_markdown_fixtures`.
 
 ## Changing Zulip's Markdown processor
 
