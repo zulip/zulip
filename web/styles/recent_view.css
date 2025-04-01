@@ -402,22 +402,30 @@
         border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
         z-index: 1;
 
-        &.active::after,
-        &[data-sort]:hover::after {
-            content: " \f0d8";
-            white-space: pre;
-            padding-top: 3px;
-            font: normal normal normal 12px/1 FontAwesome;
-            font-size: inherit;
+        .table-sortable-arrow {
+            /* Sub alignment works perfectly in this context,
+               where the table header is a text node. */
+            vertical-align: sub;
+            transform: rotate(180deg);
+            opacity: 0;
+            transition: opacity 100ms ease-out;
+        }
+
+        &.descend .table-sortable-arrow {
+            transform: rotate(0deg);
+        }
+
+        &:not(.active)[data-sort]:hover .table-sortable-arrow {
+            opacity: 0.3;
+        }
+
+        &.active .table-sortable-arrow {
+            opacity: 1;
         }
 
         &.active {
             opacity: 1;
             transition: opacity 100ms ease-out;
-
-            &.descend::after {
-                content: " \f0d7";
-            }
         }
 
         &[data-sort]:hover {
@@ -426,10 +434,6 @@
                 --color-background-recent-view-table-thead-sort-header
             );
             transition: background-color 100ms ease-in-out;
-
-            &:not(.active)::after {
-                opacity: 0.3;
-            }
         }
     }
 

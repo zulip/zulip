@@ -14,13 +14,20 @@
         <table class="table table-responsive">
             <thead id="recent-view-table-headers">
                 <tr>
-                    <th class="recent-view-stream-header" data-sort="stream_sort">{{t 'Channel' }}</th>
-                    <th class="recent-view-topic-header" data-sort="topic_sort">{{t 'Topic' }}</th>
+                    <th class="recent-view-stream-header" data-sort="stream_sort">{{t 'Channel' }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
+                    <th class="recent-view-topic-header" data-sort="topic_sort">{{t 'Topic' }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
                     <th data-sort="unread_sort" data-tippy-content="{{t 'Sort by unread message count' }}" class="recent-view-unread-header unread_sort tippy-zulip-delayed-tooltip hidden-for-spectators">
                         <i class="zulip-icon zulip-icon-unread"></i>
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
                     </th>
                     <th class='recent-view-participants-header participants_header'>{{t 'Participants' }}</th>
-                    <th data-sort="numeric" data-sort-prop="last_msg_id" class="recent-view-last-msg-time-header last_msg_time_header active descend">{{t 'Time' }}</th>
+                    <th data-sort="numeric" data-sort-prop="last_msg_id" class="recent-view-last-msg-time-header last_msg_time_header active descend">{{t 'Time' }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
                 </tr>
             </thead>
         </table>
