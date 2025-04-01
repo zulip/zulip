@@ -74,9 +74,15 @@
         <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
             <table class="table table-striped wrapped-table admin_playgrounds_table">
                 <thead class="table-sticky-headers">
-                    <th class="active" data-sort="alphabetic" data-sort-prop="pygments_language">{{t "Language" }}</th>
-                    <th data-sort="alphabetic" data-sort-prop="name">{{t "Name" }}</th>
-                    <th data-sort="alphabetic" data-sort-prop="url_template">{{t "URL template" }}</th>
+                    <th class="active" data-sort="alphabetic" data-sort-prop="pygments_language">{{t "Language" }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
+                    <th data-sort="alphabetic" data-sort-prop="name">{{t "Name" }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
+                    <th data-sort="alphabetic" data-sort-prop="url_template">{{t "URL template" }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
                     {{#if is_admin}}
                     <th class="actions">{{t "Actions" }}</th>
                     {{/if}}
