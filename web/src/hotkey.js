@@ -1016,6 +1016,9 @@ export function process_hotkey(e, hotkey) {
             }
             return true;
         case "query_users":
+            if (page_params.is_spectator) {
+                return false;
+            }
             activity_ui.initiate_search();
             return true;
         case "search":
