@@ -19,9 +19,12 @@ mock_esm("../src/loading", {
 mock_esm("../src/buttons", {
     show_button_loading_indicator: noop,
     hide_button_loading_indicator: noop,
+    modify_action_button_style: noop,
 });
 mock_esm("../src/scroll_util", {scroll_element_into_container: noop});
 set_global("document", "document-stub");
+
+set_global("requestAnimationFrame", (func) => func());
 
 const settings_account = zrequire("settings_account");
 const settings_components = zrequire("settings_components");

@@ -557,19 +557,17 @@ export function change_save_button_state($element: JQuery, state: string): void 
         return;
     }
 
-    let button_text;
+    let button_text = $t({defaultMessage: "Save changes"});
     let data_status;
     let is_show;
     switch (state) {
         case "unsaved":
-            button_text = $t({defaultMessage: "Save changes"});
             data_status = "unsaved";
             is_show = true;
 
             $element.find(".discard-button").show();
             break;
         case "saved":
-            button_text = $t({defaultMessage: "Save changes"});
             data_status = "";
             is_show = false;
             break;
@@ -584,7 +582,6 @@ export function change_save_button_state($element: JQuery, state: string): void 
             buttons.show_button_loading_indicator($save_button);
             break;
         case "failed":
-            button_text = $t({defaultMessage: "Save changes"});
             data_status = "failed";
             is_show = true;
             break;
@@ -595,9 +592,23 @@ export function change_save_button_state($element: JQuery, state: string): void 
             break;
     }
 
-    if (button_text !== undefined) {
+    requestAnimationFrame(() => {
+        // We need to use requestAnimationFrame to ensure that the
+        // button text and style are updated in the same frame.
         $textEl.text(button_text);
-    }
+        if (state === "succeeded") {
+            buttons.modify_action_button_style($save_button, {
+                attention: "borderless",
+                intent: "success",
+            });
+        } else {
+            buttons.modify_action_button_style($save_button, {
+                attention: "primary",
+                intent: "brand",
+            });
+        }
+    });
+
     assert(data_status !== undefined);
     $save_button.attr("data-status", data_status);
     if (state === "unsaved") {
