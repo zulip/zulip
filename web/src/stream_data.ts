@@ -925,7 +925,11 @@ export function create_sub_from_server_data(
         ...attrs,
     };
 
-    peer_data.set_subscribers(sub.stream_id, subscriber_user_ids ?? []);
+    if (attrs.partial_subscribers !== undefined) {
+        peer_data.set_subscribers(sub.stream_id, attrs.partial_subscribers, false);
+    } else {
+        peer_data.set_subscribers(sub.stream_id, subscriber_user_ids ?? []);
+    }
 
     clean_up_description(sub);
 

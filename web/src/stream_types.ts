@@ -57,6 +57,7 @@ export const api_stream_schema = stream_schema.extend({
 
 export const never_subscribed_stream_schema = api_stream_schema.extend({
     subscribers: z.array(z.number()).optional(),
+    partial_subscribers: z.array(z.number()).optional(),
 });
 
 export const stream_properties_schema = stream_specific_notification_settings_schema.extend({
@@ -70,6 +71,7 @@ export const api_stream_subscription_schema = api_stream_schema
     .merge(stream_properties_schema)
     .extend({
         subscribers: z.array(z.number()).optional(),
+        partial_subscribers: z.array(z.number()).optional(),
     });
 
 export const updatable_stream_properties_schema = api_stream_subscription_schema.extend({

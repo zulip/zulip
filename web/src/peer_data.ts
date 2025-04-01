@@ -6,6 +6,7 @@ import * as sub_store from "./sub_store.ts";
 
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 const stream_subscribers = new Map<number, LazySet>();
+const fetched_stream_ids = new Set<number>();
 
 export function clear_for_testing(): void {
     stream_subscribers.clear();
@@ -95,9 +96,12 @@ export function get_subscribers(stream_id: number): number[] {
     return [...subscribers.keys()];
 }
 
-export function set_subscribers(stream_id: number, user_ids: number[]): void {
+export function set_subscribers(stream_id: number, user_ids: number[], full_data = true): void {
     const subscribers = new LazySet(user_ids);
     stream_subscribers.set(stream_id, subscribers);
+    if (full_data) {
+        fetched_stream_ids.add(stream_id);
+    }
 }
 
 export function add_subscriber(stream_id: number, user_id: number): void {
