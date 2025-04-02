@@ -101,6 +101,7 @@ def check_send_webhook_message(
     only_events: Json[list[str]] | None = None,
     exclude_events: Json[list[str]] | None = None,
     unquote_url_parameters: bool = False,
+    no_previews: bool = False,
 ) -> None:
     if complete_event_type is not None and (
         # Here, we implement Zulip's generic support for filtering
@@ -128,7 +129,9 @@ def check_send_webhook_message(
     assert client is not None
     if stream is None:
         assert user_profile.bot_owner is not None
-        check_send_private_message(user_profile, client, user_profile.bot_owner, body)
+        check_send_private_message(
+            user_profile, client, user_profile.bot_owner, body, no_previews=no_previews
+        )
     else:
         # Some third-party websites (such as Atlassian's Jira), tend to
         # double escape their URLs in a manner that escaped space characters
@@ -144,9 +147,13 @@ def check_send_webhook_message(
 
         try:
             if stream.isdecimal():
-                check_send_stream_message_by_id(user_profile, client, int(stream), topic, body)
+                check_send_stream_message_by_id(
+                    user_profile, client, int(stream), topic, body, no_previews=no_previews
+                )
             else:
-                check_send_stream_message(user_profile, client, stream, topic, body)
+                check_send_stream_message(
+                    user_profile, client, stream, topic, body, no_previews=no_previews
+                )
         except StreamDoesNotExistError:
             # A direct message will be sent to the bot_owner by check_message,
             # notifying that the webhook bot just tried to send a message to a

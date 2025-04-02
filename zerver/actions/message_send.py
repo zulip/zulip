@@ -157,6 +157,7 @@ def render_incoming_message(
     url_embed_data: dict[str, UrlEmbedData | None] | None = None,
     email_gateway: bool = False,
     acting_user: UserProfile | None = None,
+    no_previews: bool = False,
 ) -> MessageRenderingResult:
     realm_alert_words_automaton = get_alert_word_automaton(realm)
     try:
@@ -168,6 +169,7 @@ def render_incoming_message(
             mention_data=mention_data,
             url_embed_data=url_embed_data,
             email_gateway=email_gateway,
+            no_previews=no_previews,
             acting_user=acting_user,
         )
     except MarkdownRenderingError:
@@ -579,6 +581,7 @@ def build_message_send_dict(
     disable_external_notifications: bool = False,
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None,
     acting_user: UserProfile | None = None,
+    no_previews: bool = False,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -624,6 +627,7 @@ def build_message_send_dict(
         mention_data=mention_data,
         email_gateway=email_gateway,
         acting_user=acting_user,
+        no_previews=no_previews,
     )
     message.rendered_content = rendering_result.rendered_content
     message.rendered_content_version = markdown_version
@@ -1365,9 +1369,10 @@ def check_send_stream_message(
     *,
     realm: Realm | None = None,
     read_by_sender: bool = False,
+    no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_stream_name(stream_name, topic_name)
-    message = check_message(sender, client, addressee, body, realm)
+    message = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
     sent_message_result = do_send_messages(
         [message], mark_as_read=[sender.id] if read_by_sender else []
     )[0]
@@ -1381,18 +1386,23 @@ def check_send_stream_message_by_id(
     topic_name: str,
     body: str,
     realm: Realm | None = None,
+    no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_stream_id(stream_id, topic_name)
-    message = check_message(sender, client, addressee, body, realm)
+    message = check_message(sender, client, addressee, body, realm, no_previews=no_previews)
     sent_message_result = do_send_messages([message])[0]
     return sent_message_result.message_id
 
 
 def check_send_private_message(
-    sender: UserProfile, client: Client, receiving_user: UserProfile, body: str
+    sender: UserProfile,
+    client: Client,
+    receiving_user: UserProfile,
+    body: str,
+    no_previews: bool = False,
 ) -> int:
     addressee = Addressee.for_user_profile(receiving_user)
-    message = check_message(sender, client, addressee, body)
+    message = check_message(sender, client, addressee, body, no_previews=no_previews)
     sent_message_result = do_send_messages([message])[0]
     return sent_message_result.message_id
 
@@ -1704,6 +1714,7 @@ def check_message(
     limit_unread_user_ids: set[int] | None = None,
     disable_external_notifications: bool = False,
     archived_channel_notice: bool = False,
+    no_previews: bool = False,
     acting_user: UserProfile | None = None,
 ) -> SendMessageRequest:
     """See
@@ -1852,6 +1863,7 @@ def check_message(
         disable_external_notifications=disable_external_notifications,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
         acting_user=acting_user,
+        no_previews=no_previews,
     )
 
     if (
