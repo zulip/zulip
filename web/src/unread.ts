@@ -1,3 +1,4 @@
+import _ from "lodash";
 import type {z} from "zod";
 
 import * as blueslip from "./blueslip.ts";
@@ -642,7 +643,101 @@ function remove_message_from_unread_mentions(message_id: number): void {
     }
 }
 
+let unreadMessagesPrevStateSize = unread_messages.size;
+let stableStateTimeout: NodeJS.Timeout | null = null;
+const processedMessages = new Set<number>(); // Track processed messages
+let stableUnreadCount = 0;
+let alert_word_count = 0;
+let latestAlertWordCount = 0;
+
+// Function to monitor unread messages and trigger updates
+function monitorUnreadMessages(): void {
+    setInterval(() => {
+        const currentUnreadMessagesSize = unread_messages.size;
+
+        if (currentUnreadMessagesSize !== unreadMessagesPrevStateSize) {
+            // Clear existing timeout
+            if (stableStateTimeout) {
+                clearTimeout(stableStateTimeout);
+            }
+
+            unreadMessagesPrevStateSize = currentUnreadMessagesSize;
+
+            // Set a new timeout to declare the state stable
+            stableStateTimeout = setTimeout(() => {
+                stableUnreadCount = alert_word_count;
+            }, 2000);
+
+            // Fetch unread messages and update count dynamically
+            updateAlertWordCount();
+        }
+    }, 1000);
+}
+monitorUnreadMessages();
+
+// Function to update alert word count dynamically
+function updateAlertWordCount(): void {
+    try{
+    const response = JSON.parse(fetchSync("/json/messages?anchor=first_unread&num_before=0&num_after=2000&narrow=[{\"operator\":\"is\",\"operand\":\"unread\"}]")) as { messages: any[] };
+
+    const unreadMessages = response.messages || [];
+    const unreadMessageIds = new Set(unreadMessages.map(msg => msg.id));
+
+    // Fetch alert words synchronously
+    const alert_words_response = JSON.parse(fetchSync("/json/users/me/alert_words")) as { alert_words: string[] };
+    const my_alert_words: string[] = alert_words_response.alert_words ?? [];
+
+    if (my_alert_words.length === 0) {
+        alert_word_count = 0;
+        latestAlertWordCount = 0;
+        return;
+    }
+
+    // Remove messages that are no longer unread
+    for (const messageId of processedMessages) {
+        if (!unreadMessageIds.has(messageId)) {
+            processedMessages.delete(messageId);
+        }
+    }
+
+    // Iterate through messages and count new alert words
+    let count = 0;
+    for (const message of unreadMessages) {
+        if (!processedMessages.has(message.id) && message.flags.includes("has_alert_word")) {
+            count += 1;
+            processedMessages.add(message.id);
+        }
+    }
+
+    alert_word_count = count;
+    latestAlertWordCount = count;
+} catch (error) {
+    console.error("Error fetching alert words:", error);
+    alert_word_count = 0;
+    latestAlertWordCount = 0;
+}
+}
+
+// Synchronous alternative for fetch
+function fetchSync(url: string): string {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", url, false); // `false` makes it synchronous
+    xhr.send(null);
+    return xhr.responseText;
+}
+
+// Get stable alert word count (returns function for dynamic updates)
+function getStableAlertWordCount(): () => number {
+    return () => {
+        updateAlertWordCount();
+        return alert_word_count;
+    };
+}
+
+
 export function clear_and_populate_unread_mentions(): void {
+
+
     // The unread_mention_topics is an important data structure for
     // efficiently querying whether a given stream/topic pair and
     // dm contain unread mentions.
@@ -909,6 +1004,7 @@ export type FullUnreadCountsData = {
     direct_message_count: number;
     mentioned_message_count: number;
     direct_message_with_mention_count: number;
+    alert_word_count: number;
     stream_unread_messages: number;
     followed_topic_unread_messages_count: number;
     followed_topic_unread_messages_with_mention_count: number;
@@ -933,6 +1029,7 @@ export function get_counts(): FullUnreadCountsData {
     return {
         direct_message_count: pm_res.total_count,
         mentioned_message_count: unread_mentions_counter.size,
+        alert_word_count: getStableAlertWordCount()(), // Use stable alert word count
         direct_message_with_mention_count: direct_message_with_mention_count.size,
         stream_unread_messages: topic_res.stream_unread_messages,
         followed_topic_unread_messages_count: topic_res.followed_topic_unread_messages,
