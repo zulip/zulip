@@ -420,34 +420,11 @@
 
     .twitter-image,
     .message_inline_image {
-        position: relative;
+        display: inline-block;
+        vertical-align: middle;
+
         margin-bottom: var(--markdown-interelement-space-px);
         margin-right: 5px;
-
-        /* Sizing CSS for inline images requires care, because images load
-           asynchronously, and browsers will unfortunately jump your
-           scroll position when elements load above the current
-           position in the message feed in a way that changes the
-           height of elements. (As of March 2022, both Firefox and
-           Chrome exhibit this problem, though in Chrome it is pretty
-           subtle).
-
-           We prevent this by setting a fixed height for inline
-           previews. 8em is chosen because we don't want images to
-           overwhelm conversation in message feeds, as it does in chat
-           tools that show images at half-screen height or larger.
-
-           If there are several images next to each other, we display
-           them in a grid format; the same considerations requires
-           that either use a scrollable region or set a fixed width
-           for images so that the browser statically knows whether
-           it'll need to overflow. We choose fixed width here. */
-        height: 8em;
-        width: 12em;
-
-        /* Inline image containers also need an inline-block display in order
-           to implement the desired grid layout. */
-        display: inline-block;
 
         /* Set a background for the image; the background will be visible for
            messages whose aspect ratio is different from that of this
@@ -462,8 +439,53 @@
 
         & .media-anchor-element {
             display: block;
-            height: 100%;
-            width: 100%;
+        }
+
+        & .media-image-element {
+            display: block;
+
+            /* Sizing CSS for inline images requires care, because images load
+               asynchronously, and browsers will unfortunately jump your
+               scroll position when elements load above the current
+               position in the message feed in a way that changes the
+               height of elements. (As of March 2022, both Firefox and
+               Chrome exhibit this problem, though in Chrome it is pretty
+               subtle).
+
+               We prevent this by utilizing dimensions on the `<img>` elements,
+               but further care is needed because different layout mechanisms,
+               including inline-block, can ignore those dimensions. For that
+               reason, we enforce a minimum 4em square for "dinky" images,
+               and a maximum 10em square for all others.
+
+               If there are several images next to each other, we display
+               them in a grid format; the same considerations require
+               use to either use a scrollable region or set a predictable
+               size for images so that the browser statically knows whether
+               it'll need to overflow. We choose predictable sizes here. */
+
+            /* Ensure a reasonable clickable area on
+               extremely tall or extremely wide images. */
+            min-width: 4em;
+            min-height: 4em;
+
+            /* Constrain height and width to a 10em box. */
+            max-width: 10em;
+            max-height: 10em;
+
+            /* Allow height and width to grow as needed... */
+            width: auto;
+            height: auto;
+
+            /* But set specific widths based on the image's
+               orientation. */
+            &.landscape-thumbnail {
+                width: 10em;
+            }
+
+            &.portrait-thumbnail {
+                height: 10em;
+            }
         }
 
         img.image-loading-placeholder {
@@ -573,26 +595,6 @@
     &.rtl .message_inline_ref {
         margin-left: unset;
         margin-right: 5px;
-    }
-
-    .twitter-image .media-image-element,
-    .message_inline_image .media-image-element,
-    .message_inline_ref .media-image-element {
-        /* We use `scale-down` so that images smaller than the container are
-           neither scaled up nor cropped to fit. This preserves
-           their aspect ratio, which is often helpful. */
-        object-fit: scale-down;
-
-        /* We need to explicitly specify the image dimensions to have
-           object-fit work; likely because internally object-fit needs
-           to know the frame it is targeting, and images don't default
-           to container dimensions. */
-        height: 100%;
-        width: 100%;
-
-        float: left;
-        margin-right: 10px;
-        border-radius: inherit;
     }
 
     .message_inline_image .media-image-element {
