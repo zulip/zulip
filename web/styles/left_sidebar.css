@@ -910,6 +910,58 @@ li.top_left_scheduled_messages {
     }
 }
 
+
+.top_left_alerted_messages {
+    &.hide_alerted_message_count {
+        .masked_unread_count {
+            display: flex;
+            grid-area: markers-and-unreads;
+            /* Extra margin for unreads. */
+            margin-right: var(--left-sidebar-unread-offset);
+        }
+
+        .unread_count {
+            display: none;
+        }
+        /* When starred message count is 0, we dont want to show unread_count or masked_unread_count. */
+        .unread_count.hide + .masked_unread_count {
+            display: none;
+        }
+    }
+}
+
+.top_left_alerted_messages:hover {
+    &.hide_alerted_message_count {
+        .masked_unread_count {
+            display: none;
+        }
+
+        .unread_count {
+            display: inline;
+        }
+
+        .unread_count.hide {
+            display: none;
+        }
+    }
+}
+
+.top_left_alerted_messages.top-left-active-filter {
+    &.hide_alerted_message_count {
+        .masked_unread_count {
+            display: none;
+        }
+
+        .unread_count {
+            display: inline;
+        }
+
+        .unread_count.hide {
+            display: none;
+        }
+    }
+}
+
 .conversation-partners {
     grid-area: row-content;
     overflow: hidden;
