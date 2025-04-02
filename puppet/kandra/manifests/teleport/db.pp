@@ -6,6 +6,7 @@ class kandra::teleport::db {
   include kandra::teleport::base
 
   $fqdn = $facts['networking']['fqdn']
+  $hostname = $facts['networking']['hostname']
   $is_ec2 = zulipconf('machine', 'hosting_provider', 'ec2') == 'ec2'
   $join_token = zulipsecret('secrets', 'teleport_join_token', '')
   file { '/etc/teleport_db.yaml':
