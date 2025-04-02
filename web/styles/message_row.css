@@ -780,6 +780,10 @@
     }
 
     .message-edit-textbox {
+        /* Setting `position:relative` on this container ensures that .copy-button
+           (a possible immediate child with `position: absolute`) is positioned
+           relative to this container instead of <html>. */
+        position: relative;
         grid-area: message-edit-content;
 
         .textarea-over-limit {
