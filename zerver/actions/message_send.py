@@ -1577,7 +1577,7 @@ def check_can_send_direct_message(
         or direct_message_permission_group.named_user_group.name != SystemGroups.EVERYONE
     ):
         user_ids = [recipient_user.id for recipient_user in recipient_users] + [sender.id]
-        if not is_any_user_in_group(direct_message_permission_group, user_ids):
+        if not is_any_user_in_group(direct_message_permission_group.id, user_ids):
             is_nobody_group = (
                 hasattr(direct_message_permission_group, "named_user_group")
                 and direct_message_permission_group.named_user_group.name == SystemGroups.NOBODY
@@ -1589,7 +1589,7 @@ def check_can_send_direct_message(
         not hasattr(direct_message_initiator_group, "named_user_group")
         or direct_message_initiator_group.named_user_group.name != SystemGroups.EVERYONE
     ):
-        if is_user_in_group(direct_message_initiator_group, sender):
+        if is_user_in_group(direct_message_initiator_group.id, sender):
             return
 
         # TODO: This check is inefficient; we should in the future be able to cache

@@ -481,19 +481,19 @@ class UserGroupTestCase(ZulipTestCase):
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
 
-        self.assertTrue(is_user_in_group(moderators_group, shiva))
+        self.assertTrue(is_user_in_group(moderators_group.id, shiva))
 
         # Iago is member of a subgroup of moderators group.
-        self.assertTrue(is_user_in_group(moderators_group, iago))
-        self.assertFalse(is_user_in_group(moderators_group, iago, direct_member_only=True))
-        self.assertTrue(is_user_in_group(administrators_group, iago, direct_member_only=True))
+        self.assertTrue(is_user_in_group(moderators_group.id, iago))
+        self.assertFalse(is_user_in_group(moderators_group.id, iago, direct_member_only=True))
+        self.assertTrue(is_user_in_group(administrators_group.id, iago, direct_member_only=True))
 
-        self.assertFalse(is_user_in_group(moderators_group, hamlet))
-        self.assertFalse(is_user_in_group(moderators_group, hamlet, direct_member_only=True))
+        self.assertFalse(is_user_in_group(moderators_group.id, hamlet))
+        self.assertFalse(is_user_in_group(moderators_group.id, hamlet, direct_member_only=True))
 
         do_deactivate_user(iago, acting_user=None)
-        self.assertFalse(is_user_in_group(moderators_group, iago))
-        self.assertFalse(is_user_in_group(administrators_group, iago, direct_member_only=True))
+        self.assertFalse(is_user_in_group(moderators_group.id, iago))
+        self.assertFalse(is_user_in_group(administrators_group.id, iago, direct_member_only=True))
 
     def test_is_any_user_in_group(self) -> None:
         realm = get_realm("zulip")
@@ -509,23 +509,25 @@ class UserGroupTestCase(ZulipTestCase):
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
         )
 
-        self.assertTrue(is_any_user_in_group(moderators_group, [shiva, hamlet, polonius]))
+        self.assertTrue(is_any_user_in_group(moderators_group.id, [shiva, hamlet, polonius]))
 
         # Iago is member of a subgroup of moderators group.
-        self.assertTrue(is_any_user_in_group(moderators_group, [iago, hamlet, polonius]))
+        self.assertTrue(is_any_user_in_group(moderators_group.id, [iago, hamlet, polonius]))
         self.assertFalse(
             is_any_user_in_group(
-                moderators_group, [iago, hamlet, polonius], direct_member_only=True
+                moderators_group.id, [iago, hamlet, polonius], direct_member_only=True
             )
         )
         self.assertTrue(
             is_any_user_in_group(
-                administrators_group, [iago, shiva, hamlet], direct_member_only=True
+                administrators_group.id, [iago, shiva, hamlet], direct_member_only=True
             )
         )
 
-        self.assertFalse(is_any_user_in_group(moderators_group, [hamlet, polonius]))
-        self.assertFalse(is_any_user_in_group(moderators_group, [hamlet], direct_member_only=True))
+        self.assertFalse(is_any_user_in_group(moderators_group.id, [hamlet, polonius]))
+        self.assertFalse(
+            is_any_user_in_group(moderators_group.id, [hamlet], direct_member_only=True)
+        )
 
     def test_has_user_group_access_for_subgroup(self) -> None:
         iago = self.example_user("iago")
