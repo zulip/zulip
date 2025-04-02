@@ -1556,8 +1556,8 @@
         hsl(0deg 0% 100% / 13%)
     );
     --color-background-image-thumbnail-hover: light-dark(
-        hsl(0deg 0% 0% / 20%),
-        hsl(0deg 0% 100% / 25%)
+        hsl(0deg 0% 0% / 30%),
+        hsl(0deg 0% 100% / 45%)
     );
     --color-background-image-thumbnail-dinky: light-dark(
         hsl(0deg 0% 0% / 3%),
