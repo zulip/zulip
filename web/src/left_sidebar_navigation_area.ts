@@ -70,11 +70,13 @@ export function update_dom_with_unread_counts(
     const $home_view_li = $(".selected-home-view");
     const $streams_header = $("#streams_header");
     const $back_to_streams = $("#topics_header");
+    const $alerted_li = $(".top_left_alerts");
 
     ui_util.update_unread_count_in_dom($mentioned_li, counts.mentioned_message_count);
     ui_util.update_unread_count_in_dom($home_view_li, counts.home_unread_messages);
     ui_util.update_unread_count_in_dom($streams_header, counts.stream_unread_messages);
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
+    ui_util.update_unread_count_in_dom($alerted_li, counts.alert_word_count);
 
     if (counts.home_unread_messages === 0) {
         $home_view_li.find(".sidebar-menu-icon").addClass("hide");
