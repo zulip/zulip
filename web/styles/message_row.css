@@ -105,7 +105,7 @@
         ensures the timestamp will always have enough space
         in the column. */
     grid-template:
-        var(--message-box-sender-line-height) repeat(3, auto) /
+        minmax(var(--message-box-sender-line-height), auto) repeat(3, auto) /
         var(--message-box-avatar-column-width) minmax(0, 1fr) max-content
         8px minmax(var(--message-box-timestamp-column-width), max-content);
     /* Named grid areas provide flexibility for positioning grid items
@@ -470,13 +470,11 @@
        of the row; inner flexboxes handle the
        centering of the icons. */
     align-self: stretch;
-    /* But to better set the height to the typical
-       sender-row line height for better centering
-       in all contexts. */
-    height: var(--message-box-sender-line-height);
+    /* Controls flex to the height of the top
+       row of the message box, and center
+       themselves within it. */
     display: flex;
-    /* The flexbox here matches the height set above. */
-    align-items: stretch;
+    align-items: center;
     /* Ensure square icons for better centering. */
     line-height: 1;
 
