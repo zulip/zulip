@@ -41,7 +41,12 @@ from zerver.models.realms import (
     get_realm,
 )
 from zerver.models.users import get_user_by_delivery_email, is_cross_realm_bot_email
-from zproject.backends import check_password_strength, email_auth_enabled, email_belongs_to_ldap
+from zproject.backends import (
+    check_password_strength,
+    email_auth_enabled,
+    email_belongs_to_ldap,
+    password_auth_enabled,
+)
 
 # We don't mark this error for translation, because it's displayed
 # only to MIT users.
@@ -248,6 +253,7 @@ class HomepageForm(forms.Form):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.realm = kwargs.pop("realm", None)
         self.from_multiuse_invite = kwargs.pop("from_multiuse_invite", False)
+        self.require_password_backend = kwargs.pop("require_password_backend", False)
         self.invited_as = kwargs.pop("invited_as", None)
         super().__init__(*args, **kwargs)
 
@@ -267,12 +273,17 @@ class HomepageForm(forms.Form):
                 )
             )
 
-        if not from_multiuse_invite and realm.invite_required:
-            raise ValidationError(
-                _(
-                    "Please request an invite for {email} from the organization administrator."
-                ).format(email=email)
-            )
+        if not from_multiuse_invite:
+            if realm.invite_required:
+                raise ValidationError(
+                    _(
+                        "Please request an invite for {email} from the organization administrator."
+                    ).format(email=email)
+                )
+            if self.require_password_backend and not password_auth_enabled(realm):
+                raise ValidationError(
+                    _("Can't join the organization: password authentication is not enabled.")
+                )
 
         try:
             email_allowed_for_realm(email, realm)
