@@ -4,6 +4,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext_lazy
 from django_cte import CTEManager
 
+from zerver.lib.cache import cache_with_key, get_realm_system_groups_cache_key
 from zerver.lib.types import GroupPermissionSetting
 from zerver.models.users import UserProfile
 
@@ -186,3 +187,11 @@ class GroupGroupMembership(models.Model):
                 fields=["supergroup", "subgroup"], name="zerver_groupgroupmembership_uniq"
             )
         ]
+
+
+@cache_with_key(get_realm_system_groups_cache_key, timeout=3600 * 24 * 7)
+def get_realm_system_groups_name_dict(realm_id: int) -> dict[int, str]:
+    system_groups = NamedUserGroup.objects.filter(
+        realm_id=realm_id, is_system_group=True
+    ).values_list("id", "name")
+    return dict(system_groups)

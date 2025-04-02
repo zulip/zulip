@@ -39,6 +39,7 @@ from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
 from zerver.lib.user_groups import (
+    check_user_has_permission_by_role,
     get_direct_user_groups,
     get_recursive_group_members,
     get_recursive_group_members_union_for_groups,
@@ -65,7 +66,7 @@ from zerver.models import (
     UserGroupMembership,
     UserProfile,
 )
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.realms import get_realm
 
 
@@ -575,6 +576,111 @@ class UserGroupTestCase(ZulipTestCase):
             bulk_remove_members_from_user_groups([test_group], [], acting_user=None)
             add_subgroups_to_user_group(test_group, [], acting_user=None)
             remove_subgroups_from_user_group(test_group, [], acting_user=None)
+
+    def test_check_user_has_permission_by_role(self) -> None:
+        realm = get_realm("zulip")
+        system_groups_name_dict = get_realm_system_groups_name_dict(realm.id)
+
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        shiva = self.example_user("shiva")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        polonius = self.example_user("polonius")
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        self.assertFalse(
+            check_user_has_permission_by_role(desdemona, nobody_group.id, system_groups_name_dict)
+        )
+
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+        )
+        self.assertFalse(
+            check_user_has_permission_by_role(iago, owners_group.id, system_groups_name_dict)
+        )
+        self.assertTrue(
+            check_user_has_permission_by_role(desdemona, owners_group.id, system_groups_name_dict)
+        )
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+        )
+        self.assertFalse(
+            check_user_has_permission_by_role(shiva, admins_group.id, system_groups_name_dict)
+        )
+        self.assertTrue(
+            check_user_has_permission_by_role(iago, admins_group.id, system_groups_name_dict)
+        )
+
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        self.assertFalse(
+            check_user_has_permission_by_role(hamlet, moderators_group.id, system_groups_name_dict)
+        )
+        self.assertTrue(
+            check_user_has_permission_by_role(shiva, moderators_group.id, system_groups_name_dict)
+        )
+
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm=realm, is_system_group=True
+        )
+        self.assertFalse(
+            check_user_has_permission_by_role(polonius, members_group.id, system_groups_name_dict)
+        )
+        self.assertTrue(
+            check_user_has_permission_by_role(hamlet, members_group.id, system_groups_name_dict)
+        )
+
+        full_members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.FULL_MEMBERS, realm=realm, is_system_group=True
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+        hamlet.refresh_from_db()
+        shiva.refresh_from_db()
+        othello.refresh_from_db()
+        polonius.refresh_from_db()
+
+        hamlet.date_joined = timezone_now() - timedelta(days=9)
+        hamlet.save()
+
+        shiva.date_joined = timezone_now() - timedelta(days=9)
+        shiva.save()
+
+        othello.date_joined = timezone_now() - timedelta(days=11)
+        othello.save()
+
+        polonius.date_joined = timezone_now() - timedelta(days=11)
+        polonius.save()
+
+        self.assertFalse(
+            check_user_has_permission_by_role(
+                polonius, full_members_group.id, system_groups_name_dict
+            )
+        )
+        self.assertFalse(
+            check_user_has_permission_by_role(
+                hamlet, full_members_group.id, system_groups_name_dict
+            )
+        )
+        self.assertTrue(
+            check_user_has_permission_by_role(
+                othello, full_members_group.id, system_groups_name_dict
+            )
+        )
+        self.assertTrue(
+            check_user_has_permission_by_role(shiva, full_members_group.id, system_groups_name_dict)
+        )
+
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        self.assertTrue(
+            check_user_has_permission_by_role(polonius, everyone_group.id, system_groups_name_dict)
+        )
 
 
 class UserGroupAPITestCase(UserGroupTestCase):

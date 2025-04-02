@@ -1209,3 +1209,43 @@ def get_group_setting_value_for_audit_log_data(
         return setting_value
 
     return asdict(setting_value)
+
+
+def check_user_has_permission_by_role(
+    user: UserProfile, setting_group_id: int, system_groups_name_dict: dict[int, str]
+) -> bool:
+    system_group_name = system_groups_name_dict[setting_group_id]
+
+    if system_group_name == SystemGroups.NOBODY:
+        return False
+
+    if system_group_name == SystemGroups.EVERYONE:
+        return True
+
+    if user.is_guest:
+        return False
+
+    if system_group_name == SystemGroups.MEMBERS:
+        return True
+
+    if system_group_name == SystemGroups.OWNERS:
+        return user.is_realm_owner
+
+    if system_group_name == SystemGroups.ADMINISTRATORS:
+        return user.is_realm_admin
+
+    if system_group_name == SystemGroups.MODERATORS:
+        return user.is_moderator
+
+    # Handle full members case.
+    return user.role != UserProfile.ROLE_MEMBER or not user.is_provisional_member
+
+
+def check_any_user_has_permission_by_role(
+    users: list[UserProfile], setting_group_id: int, system_groups_name_dict: dict[int, str]
+) -> bool:
+    for user in users:
+        if check_user_has_permission_by_role(user, setting_group_id, system_groups_name_dict):
+            return True
+
+    return False

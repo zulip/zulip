@@ -76,7 +76,12 @@ from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_i
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import participants_for_topic
 from zerver.lib.url_preview.types import UrlEmbedData
-from zerver.lib.user_groups import is_any_user_in_group, is_user_in_group
+from zerver.lib.user_groups import (
+    check_any_user_has_permission_by_role,
+    check_user_has_permission_by_role,
+    is_any_user_in_group,
+    is_user_in_group,
+)
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.users import (
     check_can_access_user,
@@ -100,7 +105,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.clients import get_client
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import (
@@ -1570,53 +1575,56 @@ def check_can_send_direct_message(
     if all(user_profile.is_bot or user_profile.id == sender.id for user_profile in recipient_users):
         return
 
-    direct_message_permission_group = realm.direct_message_permission_group
-
-    if (
-        not hasattr(direct_message_permission_group, "named_user_group")
-        or direct_message_permission_group.named_user_group.name != SystemGroups.EVERYONE
-    ):
-        user_ids = [recipient_user.id for recipient_user in recipient_users] + [sender.id]
-        if not is_any_user_in_group(direct_message_permission_group.id, user_ids):
+    system_groups_name_dict = get_realm_system_groups_name_dict(realm.id)
+    if realm.direct_message_permission_group_id in system_groups_name_dict:
+        users = [*recipient_users, sender]
+        if not check_any_user_has_permission_by_role(
+            users, realm.direct_message_permission_group_id, system_groups_name_dict
+        ):
             is_nobody_group = (
-                hasattr(direct_message_permission_group, "named_user_group")
-                and direct_message_permission_group.named_user_group.name == SystemGroups.NOBODY
+                system_groups_name_dict[realm.direct_message_permission_group_id]
+                == SystemGroups.NOBODY
             )
             raise DirectMessagePermissionError(is_nobody_group)
+    else:
+        user_ids = [recipient_user.id for recipient_user in recipient_users] + [sender.id]
+        if not is_any_user_in_group(realm.direct_message_permission_group_id, user_ids):
+            raise DirectMessagePermissionError(is_nobody_group=False)
 
-    direct_message_initiator_group = realm.direct_message_initiator_group
-    if (
-        not hasattr(direct_message_initiator_group, "named_user_group")
-        or direct_message_initiator_group.named_user_group.name != SystemGroups.EVERYONE
-    ):
-        if is_user_in_group(direct_message_initiator_group.id, sender):
+    if realm.direct_message_initiator_group_id in system_groups_name_dict:
+        if check_user_has_permission_by_role(
+            sender, realm.direct_message_initiator_group_id, system_groups_name_dict
+        ):
+            return
+    else:
+        if is_user_in_group(realm.direct_message_initiator_group_id, sender):
             return
 
-        # TODO: This check is inefficient; we should in the future be able to cache
-        # on the Huddle object whether the conversation already exists, likely in the
-        # form of a `first_message_id` field, and be able to save doing this check in the
-        # common case that this is not the first message in a conversation.
-        if recipient.type == Recipient.PERSONAL:
-            recipient_user_profile = recipient_users[0]
-            previous_messages_exist = (
-                Message.objects.filter(
-                    realm=realm,
-                    recipient__type=Recipient.PERSONAL,
-                )
-                .filter(
-                    Q(sender=sender, recipient=recipient)
-                    | Q(sender=recipient_user_profile, recipient_id=sender.recipient_id)
-                )
-                .exists()
-            )
-        else:
-            assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
-            previous_messages_exist = Message.objects.filter(
+    # TODO: This check is inefficient; we should in the future be able to cache
+    # on the Huddle object whether the conversation already exists, likely in the
+    # form of a `first_message_id` field, and be able to save doing this check in the
+    # common case that this is not the first message in a conversation.
+    if recipient.type == Recipient.PERSONAL:
+        recipient_user_profile = recipient_users[0]
+        previous_messages_exist = (
+            Message.objects.filter(
                 realm=realm,
-                recipient=recipient,
-            ).exists()
-        if not previous_messages_exist:
-            raise DirectMessageInitiationError
+                recipient__type=Recipient.PERSONAL,
+            )
+            .filter(
+                Q(sender=sender, recipient=recipient)
+                | Q(sender=recipient_user_profile, recipient_id=sender.recipient_id)
+            )
+            .exists()
+        )
+    else:
+        assert recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+        previous_messages_exist = Message.objects.filter(
+            realm=realm,
+            recipient=recipient,
+        ).exists()
+    if not previous_messages_exist:
+        raise DirectMessageInitiationError
 
 
 def check_sender_can_access_recipients(
