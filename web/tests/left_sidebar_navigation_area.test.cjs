@@ -24,6 +24,7 @@ run_test("narrowing", ({override_rewire}) => {
         (narrow_to_activate) => {
             const targets = [
                 ".top_left_mentions",
+                ".top_left_alerts",
                 ".top_left_starred_messages",
                 ".top_left_all_messages",
                 ".top_left_recent_view",
@@ -53,12 +54,17 @@ run_test("narrowing", ({override_rewire}) => {
     left_sidebar_navigation_area.handle_narrow_activated(filter);
     assert.ok($(".top_left_all_messages").hasClass("top-left-active-filter"));
 
+    filter = new Filter([{operator: "is", operand: "alerted"}]);
+    left_sidebar_navigation_area.handle_narrow_activated(filter);
+    assert.ok($(".top_left_alerts").hasClass("top-left-active-filter"));
+
     // deactivating narrow
 
     left_sidebar_navigation_area.handle_narrow_activated(new Filter([]));
 
     assert.ok(!$(".top_left_all_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_mentions").hasClass("top-left-active-filter"));
+    assert.ok(!$(".top_left_alerts").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_recent_view").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_inbox").hasClass("top-left-active-filter"));
@@ -69,6 +75,7 @@ run_test("narrowing", ({override_rewire}) => {
     left_sidebar_navigation_area.highlight_recent_view();
     assert.ok(!$(".top_left_all_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_mentions").hasClass("top-left-active-filter"));
+    assert.ok(!$(".top_left_alerts").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_inbox").hasClass("top-left-active-filter"));
     assert.ok($(".top_left_recent_view").hasClass("top-left-active-filter"));
@@ -77,12 +84,14 @@ run_test("narrowing", ({override_rewire}) => {
     left_sidebar_navigation_area.highlight_inbox_view();
     assert.ok(!$(".top_left_all_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_mentions").hasClass("top-left-active-filter"));
+    assert.ok(!$(".top_left_alerts").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_recent_view").hasClass("top-left-active-filter"));
     assert.ok($(".top_left_inbox").hasClass("top-left-active-filter"));
 
     left_sidebar_navigation_area.highlight_all_messages_view();
     assert.ok(!$(".top_left_mentions").hasClass("top-left-active-filter"));
+    assert.ok(!$(".top_left_alerts").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_recent_view").hasClass("top-left-active-filter"));
     assert.ok(!$(".top_left_inbox").hasClass("top-left-active-filter"));
@@ -102,11 +111,14 @@ run_test("update_count_in_dom", () => {
         mentioned_message_count: 222,
         home_unread_messages: 333,
         stream_unread_messages: 666,
+        alert_word_count: 333,
     };
 
     $(".selected-home-view").set_find_results(".sidebar-menu-icon", $("<menu-icon>"));
 
     make_elem($(".top_left_mentions"), "<mentioned-count>");
+
+    make_elem($(".top_left_alerts"), "<alerts-count>");
 
     make_elem($(".top_left_inbox"), "<home-count>");
 
@@ -126,6 +138,7 @@ run_test("update_count_in_dom", () => {
     left_sidebar_navigation_area.initialize();
 
     assert.equal($("<mentioned-count>").text(), "222");
+    assert.equal($("<alerts-count>").text(), "333");
     assert.equal($("<home-count>").text(), "333");
     assert.equal($("<starred-count>").text(), "444");
     assert.equal($("<scheduled-count>").text(), "555");
@@ -140,7 +153,7 @@ run_test("update_count_in_dom", () => {
     left_sidebar_navigation_area.update_scheduled_messages_row();
 
     assert.ok(!$("<mentioned-count>").visible());
-    assert.equal($("<mentioned-count>").text(), "");
+    assert.equal($("<mentioned-count>").text(), "")
     assert.equal($("<starred-count>").text(), "444");
     assert.ok(!$(".top_left_scheduled_messages").visible());
 });

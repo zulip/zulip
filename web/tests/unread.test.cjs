@@ -47,6 +47,7 @@ function assert_zero_counts(counts) {
     assert.equal(counts.direct_message_count, 0);
     assert.equal(counts.home_unread_messages, 0);
     assert.equal(counts.mentioned_message_count, 0);
+    assert.equal(counts.alert_word_count, 0);
     assert.equal(counts.stream_count.size, 0);
     assert.equal(counts.pm_count.size, 0);
 }
