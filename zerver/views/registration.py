@@ -1069,6 +1069,7 @@ def accounts_home(
         form = HomepageForm(
             request.POST,
             realm=realm,
+            require_password_backend=True,
             from_multiuse_invite=from_multiuse_invite,
             invited_as=invited_as,
         )
