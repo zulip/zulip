@@ -755,10 +755,6 @@ def get_user_group_direct_member_ids(
     ).values_list("user_profile_id", flat=True)
 
 
-def get_user_group_direct_members(user_group: UserGroup) -> QuerySet[UserProfile]:
-    return user_group.direct_members.filter(is_active=True)
-
-
 def get_direct_memberships_of_users(user_group: UserGroup, members: list[UserProfile]) -> list[int]:
     # Returns the subset of the provided members list who are direct subscribers of the group.
     # If a deactivated user is passed, it will be returned if the user was a member of the
@@ -849,25 +845,31 @@ def user_has_permission_for_group_setting(
     if not setting_config.allow_everyone_group and user.is_guest:
         return False
 
-    return is_user_in_group(user_group, user, direct_member_only=direct_member_only)
+    return is_user_in_group(user_group.id, user, direct_member_only=direct_member_only)
+
+
+def is_any_user_direct_member(user_group_id: int, user_ids: Iterable[int]) -> bool:
+    return UserGroupMembership.objects.filter(
+        user_group_id=user_group_id, user_profile__is_active=True, user_profile_id__in=user_ids
+    ).exists()
 
 
 def is_user_in_group(
-    user_group: UserGroup, user: UserProfile, *, direct_member_only: bool = False
+    user_group_id: int, user: UserProfile, *, direct_member_only: bool = False
 ) -> bool:
     if direct_member_only:
-        return get_user_group_direct_members(user_group=user_group).filter(id=user.id).exists()
+        return is_any_user_direct_member(user_group_id, [user.id])
 
-    return get_recursive_group_members(user_group_id=user_group.id).filter(id=user.id).exists()
+    return get_recursive_group_members(user_group_id=user_group_id).filter(id=user.id).exists()
 
 
 def is_any_user_in_group(
-    user_group: UserGroup, user_ids: Iterable[int], *, direct_member_only: bool = False
+    user_group_id: int, user_ids: Iterable[int], *, direct_member_only: bool = False
 ) -> bool:
     if direct_member_only:
-        return get_user_group_direct_members(user_group=user_group).filter(id__in=user_ids).exists()
+        return is_any_user_direct_member(user_group_id, user_ids)
 
-    return get_recursive_group_members(user_group_id=user_group.id).filter(id__in=user_ids).exists()
+    return get_recursive_group_members(user_group_id=user_group_id).filter(id__in=user_ids).exists()
 
 
 def get_user_group_member_ids(
