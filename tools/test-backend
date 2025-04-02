@@ -211,10 +211,10 @@ def main() -> None:
     test-backend zerver.tests.test_markdown # run all tests in a test module
     test-backend zerver/tests/test_markdown.py # run all tests in a test module
     test-backend test_markdown # run all tests in a test module
-    test-backend zerver.tests.test_markdown.MarkdownTest # run all tests in a test class
-    test-backend MarkdownTest # run all tests in a test class
-    test-backend zerver.tests.test_markdown.MarkdownTest.test_inline_youtube # run a single test
-    test-backend MarkdownTest.test_inline_youtube # run a single test"""
+    test-backend zerver.tests.test_markdown.MarkdownEmbedsTest # run all tests in a test class
+    test-backend MarkdownEmbedsTest # run all tests in a test class
+    test-backend zerver.tests.test_markdown.MarkdownEmbedsTest.test_inline_youtube # run a single test
+    test-backend MarkdownEmbedsTest.test_inline_youtube # run a single test"""
 
     parser = argparse.ArgumentParser(
         description=usage, formatter_class=argparse.RawTextHelpFormatter
