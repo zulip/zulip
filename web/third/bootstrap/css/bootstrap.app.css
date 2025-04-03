@@ -173,6 +173,3 @@ button.close {
   border: 0;
   -webkit-appearance: none;
 }
-@-ms-viewport {
-  width: device-width;
-}
