@@ -139,7 +139,11 @@ export let hide_upload_banner = (
         config.upload_banner(file_id).remove();
     }
 
-    if (uppy.getFiles().every((e) => e.progress.uploadComplete)) {
+    // Allow sending the message if all uploads are complete or cancelled.
+    if (
+        uppy.getFiles().every((e) => e.progress.uploadComplete) ||
+        Object.keys(uppy.getState().currentUploads).length === 0
+    ) {
         if (config.mode === "compose") {
             compose_validate.set_upload_in_progress(false);
         } else {
@@ -547,6 +551,12 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
         assert(file !== undefined);
         compose_ui.replace_syntax(get_translated_status(file), "", config.textarea());
         compose_ui.autosize_textarea(config.textarea());
+    });
+
+    uppy.on("cancel-all", () => {
+        if (config.mode === "compose") {
+            compose_validate.set_upload_in_progress(false);
+        }
     });
 
     return uppy;
