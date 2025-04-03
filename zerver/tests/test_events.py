@@ -127,6 +127,7 @@ from zerver.actions.user_groups import (
     check_add_user_group,
     do_change_user_group_permission_setting,
     do_deactivate_user_group,
+    do_reactivate_user_group,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_subgroups_from_user_group,
@@ -2215,14 +2216,26 @@ class NormalActionsTest(BaseAction):
             remove_subgroups_from_user_group(backend, [api_design], acting_user=None)
         check_user_group_remove_subgroups("events[0]", events[0])
 
-        # Test deactivate event
+        # Test deactivate and reactivate events
         with self.verify_action() as events:
             do_deactivate_user_group(backend, acting_user=None)
         check_user_group_remove("events[0]", events[0])
 
+        with self.verify_action() as events:
+            do_reactivate_user_group(backend, acting_user=None)
+        check_user_group_add("events[0]", events[0])
+
         with self.verify_action(include_deactivated_groups=True) as events:
             do_deactivate_user_group(api_design, acting_user=None)
         check_user_group_update("events[0]", events[0], {"deactivated"})
+        self.assertTrue(events[0]["data"]["deactivated"])
+
+        with self.verify_action(include_deactivated_groups=True) as events:
+            do_reactivate_user_group(api_design, acting_user=None)
+        check_user_group_update("events[0]", events[0], {"deactivated"})
+        self.assertFalse(events[0]["data"]["deactivated"])
+
+        do_deactivate_user_group(api_design, acting_user=None)
 
         with self.verify_action(num_events=0, state_change_expected=False):
             do_update_user_group_name(api_design, "api-deisgn-team", acting_user=None)
