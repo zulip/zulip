@@ -770,9 +770,12 @@ input.settings_text_input {
         }
     }
 
+    & thead {
+        background-color: var(--color-background-table-header);
+    }
+
     & thead th {
         color: inherit;
-        background-color: var(--color-background-table-header);
         word-break: normal;
 
         .table-sortable-arrow {
@@ -805,7 +808,7 @@ input.settings_text_input {
             cursor: pointer;
             background-color: var(
                 --color-background-table-header-sortable-hover
-            ) !important;
+            );
             transition: background-color 100ms ease-in-out;
         }
     }
