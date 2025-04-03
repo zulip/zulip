@@ -8,7 +8,6 @@ import argparse
 import hashlib
 import logging
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -181,34 +180,6 @@ subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node
 subprocess.check_call(
     [os.path.join(deploy_path, "scripts", "setup", "generate_secrets.py"), "--production"]
 )
-
-# Adjust Puppet class names for the manifest renames in the 4.0 release
-class_renames = {
-    "zulip::app_frontend": "zulip::profile::app_frontend",
-    "zulip::dockervoyager": "zulip::profile::docker",
-    "zulip::memcached": "zulip::profile::memcached",
-    "zulip::postgres_appdb_tuned": "zulip::profile::postgresql",
-    "zulip::postgres_backups": "zulip::postgresql_backups",
-    "zulip::rabbit": "zulip::profile::rabbitmq",
-    "zulip::voyager": "zulip::profile::standalone",
-}
-classes = re.split(r"\s*,\s*", get_config(config_file, "machine", "puppet_classes", ""))
-new_classes = [class_renames.get(c, c) for c in classes if c != "zulip::base"]
-if classes != new_classes:
-    if args.skip_restart:
-        logging.error("Would need to adjust puppet classes -- aborting!")
-        sys.exit(1)
-    logging.info("Adjusting Puppet classes for renames...")
-    subprocess.check_call(
-        [
-            "crudini",
-            "--set",
-            "/etc/zulip/zulip.conf",
-            "machine",
-            "puppet_classes",
-            ", ".join(new_classes),
-        ]
-    )
 
 # Unpleasant migration: Remove any legacy deployed copies of
 # images-google-64 from before we renamed that emojiset to
