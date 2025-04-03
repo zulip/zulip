@@ -120,6 +120,75 @@ def get_closed_pull_request_body(helper: Helper) -> str:
     )
 
 
+def get_pull_request_milestoned_body(helper: Helper) -> str:
+    payload = helper.payload
+    pull_request = payload["pull_request"]
+    return get_issue_milestoned_or_demilestoned_event_message(
+        user_name=f"**{get_sender_name(payload)}**",
+        action="added" if payload["action"] == "milestoned" else "removed",
+        url=pull_request["html_url"].tame(check_string),
+        number=pull_request["number"].tame(check_string),
+        milestone_name=payload["milestone"]["title"].tame(check_string),
+        milestone_url=payload["milestone"]["html_url"].tame(check_string),
+        user_url=get_sender_url(payload).tame(check_string),
+        title=pull_request["title"].tame(check_string) if helper.include_title else None,
+    )
+
+
+def get_pull_request_approved_body(helper: Helper) -> str:
+    payload = helper.payload
+    pull_request = payload["pull_request"]
+    return get_pull_request_event_message(
+        user_name=f"**{get_sender_name(payload)}**",
+        action="approved".tame(check_string),
+        url=pull_request["html_url"].tame(check_string),
+        number=pull_request["number"].tame(check_string),
+        title=pull_request["title"].tame(check_string) if helper.include_title else None,
+    )
+
+
+def get_pull_request_converted_to_draft_body(helper: Helper) -> str:
+    payload = helper.payload
+    pull_request = payload["pull_request"]
+    return get_pull_request_event_message(
+        user_name=f"**{get_sender_name(payload)}**",
+        action="converted to draft".tame(check_string),
+        url=pull_request["html_url"].tame(check_string),
+        number=pull_request["number"].tame(check_string),
+        title=pull_request["title"].tame(check_string) if helper.include_title else None,
+    )
+
+
+def get_pull_request_labeled_body(helper: Helper) -> str:
+    payload = helper.payload
+    pull_request = payload["pull_request"]
+    label_name = payload["label"]["name"].tame(check_string)
+    return get_issue_labeled_or_unlabeled_event_message(
+        user_name=f"**{get_sender_name(payload)}**",
+        action="added" if payload["action"] == "labeled" else "removed",
+        url=pull_request["html_url"].tame(check_string),
+        number=pull_request["number"].tame(check_string),
+        label_name=label_name,
+        user_url=get_sender_url(payload).tame(check_string),
+        title=pull_request["title"].tame(check_string) if helper.include_title else None,
+    )
+
+
+def get_pull_request_review_request_removed_body(helper: Helper) -> str:
+    payload = helper.payload
+    pull_request = payload["pull_request"]
+    if "requested_reviewer" in payload:
+        reviewer = payload["requested_reviewer"]
+        reviewers = (
+            f"[{reviewer['login'].tame(check_string)}]({reviewer['html_url'].tame(check_string)})"
+        )
+    else:
+        team_reviewer = payload["requested_team"]
+        reviewers = f"[{team_reviewer['name'].tame(check_string)}]({team_reviewer['html_url'].tame(check_string)})"
+    message = f"**{get_sender_name(payload)}** removed {reviewers} as a reviewer from [PR #{pull_request['number'].tame(check_string)}]({pull_request['html_url'].tame(check_string)})"
+    return message
+
+
 def get_membership_body(helper: Helper) -> str:
     payload = helper.payload
     action = payload["action"].tame(check_string)
@@ -876,6 +945,11 @@ EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str]] = {
     "pending_cancellation": get_pending_cancellation_body,
     "pending_tier_change": get_pending_tier_change_body,
     "tier_changed": get_tier_changed_body,
+    "approved_pull_request": get_pull_request_approved_body,
+    "converted_to_draft_body": get_pull_request_converted_to_draft_body,
+    "labeled_body": get_pull_request_labeled_body,
+    "review_request_removed_pull_request": get_pull_request_review_request_removed_body,
+    "pull_request_milestoned": get_pull_request_milestoned_body,
 }
 
 SPONSORS_EVENT_TYPES = [
@@ -891,19 +965,10 @@ IGNORED_EVENTS = [
     "check_suite",
     "label",
     "meta",
-    "milestone",
     "organization",
     "project_card",
     "push__merge_queue",
     "repository_vulnerability_alert",
-]
-
-IGNORED_PULL_REQUEST_ACTIONS = [
-    "approved",
-    "converted_to_draft",
-    "labeled",
-    "review_request_removed",
-    "unlabeled",
 ]
 
 IGNORED_TEAM_ACTIONS = [
@@ -1015,8 +1080,16 @@ def get_zulip_event_name(
             return "locked_or_unlocked_pull_request"
         if action in ("auto_merge_enabled", "auto_merge_disabled"):
             return "pull_request_auto_merge"
-        if action in IGNORED_PULL_REQUEST_ACTIONS:
-            return None
+        if action == "approved":
+            return "approved_pull_request"
+        if action == "converted_to_draft":
+            return "converted_to_draft_body"
+        if action in ("labeled", "unlabeled"):
+            return "labeled_body"
+        if action == "review_request_removed":
+            return "review_request_removed_pull_request"
+        if action in ("milestoned", "demilestoned"):
+            return "pull_request_milestoned"
     elif header_event == "pull_request_review":
         if is_empty_pull_request_review_event(payload):
             # When submitting a review, GitHub has a bug where it'll
@@ -1067,7 +1140,6 @@ def get_zulip_event_name(
         return header_event
     elif header_event in IGNORED_EVENTS:
         return None
-
     complete_event = "{}:{}".format(
         header_event, payload.get("action", "???").tame(check_string)
     )  # nocoverage

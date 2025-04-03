@@ -523,6 +523,8 @@ A temporary team so that I can get some webhook fixtures!
             "labeled",
             "review_request_removed",
             "unlabeled",
+            "milestoned",
+            "demilestoned",
         ]
         for action in ignored_actions:
             data = dict(action=action)
@@ -655,12 +657,6 @@ A temporary team so that I can get some webhook fixtures!
             expect_noop=True,
         )
 
-
-class GitHubSponsorsHookTests(WebhookTestCase):
-    CHANNEL_NAME = "github"
-    URL_TEMPLATE = "/api/v1/external/githubsponsors?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "github"
-
     def test_cancelled_message(self) -> None:
         expected_message = "monalisa cancelled their $5 a month subscription."
         self.check_webhook(
@@ -710,3 +706,30 @@ class GitHubSponsorsHookTests(WebhookTestCase):
             TOPIC_SPONSORS,
             expected_message,
         )
+
+    def test_pull_request_approved(self) -> None:
+        expected_message = "**username** approved [PR #123](https://github.com/org/repo/pull/123)"
+        expected_topic = "repo / PR #123 Test PR"
+        self.check_webhook("pull_request__approved", expected_topic, expected_message)
+
+    def test_pull_request_converted_to_draft(self) -> None:
+        expected_message = (
+            "**username** converted [PR #123](https://github.com/org/repo/pull/123) to draft"
+        )
+        expected_topic = "repo / PR #123 Test PR"
+        self.check_webhook("pull_request__converted_to_draft", expected_topic, expected_message)
+
+    def test_pull_request_labeled(self) -> None:
+        expected_message = "[username](https://github.com/username) added the bug label to [PR #123](https://github.com/org/repo/pull/123)"
+        expected_topic = "repo / PR #123 Test PR"
+        self.check_webhook("pull_request__labeled", expected_topic, expected_message)
+
+    def test_pull_request_review_request_removed(self) -> None:
+        expected_message = "**username** removed [reviewer](https://github.com/reviewer) as a reviewer from [PR #123](https://github.com/org/repo/pull/123)"
+        expected_topic = "repo / PR #123 Test PR"
+        self.check_webhook("pull_request__review_request_removed", expected_topic, expected_message)
+
+    def test_pull_request_milestoned(self) -> None:
+        expected_message = "[username](https://github.com/username) added milestone [v1.0](https://github.com/org/repo/milestone/1) to [PR #123](https://github.com/org/repo/pull/123)"
+        expected_topic = "repo / PR #123 Test PR"
+        self.check_webhook("pull_request__milestoned", expected_topic, expected_message)
