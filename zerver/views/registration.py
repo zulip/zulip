@@ -946,6 +946,10 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
             except EmailNotDeliveredError:
                 logging.exception("Failed to deliver email during realm creation")
                 if settings.CORPORATE_ENABLED:
+                    # BUG: Because Django's server_error doesn't
+                    # support context, this doesn't render the
+                    # template properly for the corporate case.
+                    # https://docs.djangoproject.com/en/5.1/ref/views/#the-500-server-error-view
                     return server_error(request)
                 return config_error(request, "smtp")
 
