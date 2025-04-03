@@ -47,6 +47,7 @@ from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_invite_users
 from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
@@ -105,6 +106,7 @@ from zerver.models import (
     Stream,
     UserProfile,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.users import PasswordTooWeakError, get_user_by_delivery_email
 from zerver.signals import JUST_CREATED_THRESHOLD
@@ -6932,6 +6934,33 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_deactivate_reactivate_user_with_deactivated_attr(self) -> None:
         self.change_ldap_user_attr("hamlet", "someCustomAttr", "TRUE")
 
+        hamlet = self.example_user("hamlet")
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_realm_permission_group_setting(
+            hamlet.realm, "can_manage_all_groups", setting_group, acting_user=None
+        )
+
+        with (
+            self.settings(
+                AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "deactivated": "someCustomAttr"}
+            ),
+            self.assertLogs("zulip.ldap") as info_logs,
+            self.assertRaises(
+                PopulateUserLDAPError, msg="populate_user unexpectedly returned None"
+            ),
+        ):
+            self.perform_ldap_sync(self.example_user("hamlet"))
+
+        hamlet = self.example_user("hamlet")
+        self.assertTrue(hamlet.is_active)
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm=hamlet.realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            hamlet.realm, "can_manage_all_groups", admins_group, acting_user=None
+        )
+
         with (
             self.settings(
                 AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "deactivated": "someCustomAttr"}
@@ -6939,6 +6968,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             self.assertLogs("zulip.ldap") as info_logs,
         ):
             self.perform_ldap_sync(self.example_user("hamlet"))
+
         hamlet = self.example_user("hamlet")
         self.assertFalse(hamlet.is_active)
         self.assertEqual(
@@ -7139,8 +7169,25 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_deactivate_non_matching_users(self) -> None:
         with self.settings(LDAP_APPEND_DOMAIN="zulip.com", LDAP_DEACTIVATE_NON_MATCHING_USERS=True):
             # othello isn't in our test directory
-            result = sync_user_from_ldap(self.example_user("othello"), mock.Mock())
+            othello = self.example_user("othello")
+            setting_group = self.create_or_update_anonymous_group_for_setting([othello], [])
+            do_change_realm_permission_group_setting(
+                othello.realm, "can_manage_all_groups", setting_group, acting_user=None
+            )
 
+            with self.assertRaisesRegex(
+                ZulipLDAPError, "Cannot deactivate last user with permission."
+            ):
+                result = sync_user_from_ldap(othello, mock.Mock())
+
+            admins_group = NamedUserGroup.objects.get(
+                name=SystemGroups.ADMINISTRATORS, realm=othello.realm, is_system_group=True
+            )
+            do_change_realm_permission_group_setting(
+                othello.realm, "can_manage_all_groups", admins_group, acting_user=None
+            )
+
+            result = sync_user_from_ldap(othello, mock.Mock())
             self.assertTrue(result)
             othello = self.example_user("othello")
             self.assertFalse(othello.is_active)

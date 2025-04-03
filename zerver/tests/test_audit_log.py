@@ -44,6 +44,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_stream_group_based_setting,
     do_change_subscription_property,
     do_deactivate_stream,
     do_rename_stream,
@@ -74,8 +75,9 @@ from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
-from zerver.lib.types import LinkifierDict, RealmPlaygroundDict
+from zerver.lib.types import LinkifierDict, RealmPlaygroundDict, UserGroupMembersData
 from zerver.lib.user_groups import get_group_setting_value_for_api
+from zerver.lib.users import check_group_permission_updates_for_deactivating_user
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
@@ -1515,3 +1517,214 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assert_length(audit_log_entries, 1)
         self.assertIsNone(audit_log_entries[0].modified_user)
         self.assertEqual(audit_log_entries[0].modified_user_group, user_group)
+
+    def test_updating_group_permissions_on_user_deactivation(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        realm = hamlet.realm
+        stream_name = "whatever"
+        stream = self.make_stream(stream_name, realm)
+
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet], [moderators_group]
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_groups",
+            setting_group,
+            acting_user=None,
+        )
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_public_channel_group",
+            setting_group,
+            acting_user=None,
+        )
+
+        setting_group_member_dict = UserGroupMembersData(
+            direct_members=[hamlet.id, othello.id], direct_subgroups=[]
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_remove_subscribers_group",
+            setting_group_member_dict,
+            acting_user=iago,
+        )
+
+        setting_group_member_dict = UserGroupMembersData(
+            direct_members=[hamlet.id], direct_subgroups=[]
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_add_subscribers_group",
+            setting_group_member_dict,
+            acting_user=iago,
+        )
+
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet, othello], [moderators_group]
+        )
+        do_change_user_group_permission_setting(
+            hamletcharacters_group,
+            "can_mention_group",
+            setting_group,
+            acting_user=None,
+        )
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_user_group_permission_setting(
+            hamletcharacters_group,
+            "can_manage_group",
+            setting_group,
+            acting_user=None,
+        )
+
+        group_setting_updates = check_group_permission_updates_for_deactivating_user(hamlet)
+
+        now = timezone_now()
+        do_deactivate_user(hamlet, acting_user=iago, group_setting_updates=group_setting_updates)
+
+        audit_log_entry = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.USER_DEACTIVATED,
+        )[0]
+        self.assertCountEqual(
+            audit_log_entry.extra_data["removed_permissions"],
+            [
+                {"type": "realm", "setting_name": "can_create_groups"},
+                {"type": "realm", "setting_name": "can_create_public_channel_group"},
+                {
+                    "type": "stream",
+                    "stream_id": stream.id,
+                    "setting_name": "can_remove_subscribers_group",
+                },
+                {
+                    "type": "stream",
+                    "stream_id": stream.id,
+                    "setting_name": "can_add_subscribers_group",
+                },
+                {
+                    "type": "group",
+                    "group_id": hamletcharacters_group.id,
+                    "setting_name": "can_mention_group",
+                },
+                {
+                    "type": "group",
+                    "group_id": hamletcharacters_group.id,
+                    "setting_name": "can_manage_group",
+                },
+            ],
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
+        )
+        self.assert_length(audit_log_entries, 2)
+
+        expected_extra_data = [audit_log_entries[0].extra_data, audit_log_entries[1].extra_data]
+        self.assertCountEqual(
+            expected_extra_data,
+            [
+                {
+                    RealmAuditLog.OLD_VALUE: {
+                        "direct_members": [hamlet.id],
+                        "direct_subgroups": [moderators_group.id],
+                    },
+                    RealmAuditLog.NEW_VALUE: moderators_group.id,
+                    "property": "can_create_groups",
+                },
+                {
+                    RealmAuditLog.OLD_VALUE: {
+                        "direct_members": [hamlet.id],
+                        "direct_subgroups": [],
+                    },
+                    RealmAuditLog.NEW_VALUE: nobody_group.id,
+                    "property": "can_create_public_channel_group",
+                },
+            ],
+        )
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.CHANNEL_GROUP_BASED_SETTING_CHANGED,
+        )
+        self.assert_length(audit_log_entries, 2)
+        self.assertEqual(audit_log_entries[0].modified_stream, stream)
+        self.assertEqual(audit_log_entries[1].modified_stream, stream)
+
+        expected_extra_data = [audit_log_entries[0].extra_data, audit_log_entries[1].extra_data]
+        self.assertCountEqual(
+            expected_extra_data,
+            [
+                {
+                    RealmAuditLog.OLD_VALUE: {
+                        "direct_members": [hamlet.id, othello.id],
+                        "direct_subgroups": [],
+                    },
+                    RealmAuditLog.NEW_VALUE: {
+                        "direct_members": [othello.id],
+                        "direct_subgroups": [],
+                    },
+                    "property": "can_remove_subscribers_group",
+                },
+                {
+                    RealmAuditLog.OLD_VALUE: {
+                        "direct_members": [hamlet.id],
+                        "direct_subgroups": [],
+                    },
+                    RealmAuditLog.NEW_VALUE: nobody_group.id,
+                    "property": "can_add_subscribers_group",
+                },
+            ],
+        )
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+        )
+        self.assert_length(audit_log_entries, 2)
+        self.assertEqual(audit_log_entries[0].modified_user_group, hamletcharacters_group)
+        self.assertEqual(audit_log_entries[1].modified_user_group, hamletcharacters_group)
+
+        expected_extra_data = [audit_log_entries[0].extra_data, audit_log_entries[1].extra_data]
+        self.assertCountEqual(
+            expected_extra_data,
+            [
+                {
+                    RealmAuditLog.OLD_VALUE: {
+                        "direct_members": [hamlet.id, othello.id],
+                        "direct_subgroups": [moderators_group.id],
+                    },
+                    RealmAuditLog.NEW_VALUE: {
+                        "direct_members": [othello.id],
+                        "direct_subgroups": [moderators_group.id],
+                    },
+                    "property": "can_mention_group",
+                },
+                {
+                    RealmAuditLog.OLD_VALUE: {
+                        "direct_members": [hamlet.id],
+                        "direct_subgroups": [],
+                    },
+                    RealmAuditLog.NEW_VALUE: nobody_group.id,
+                    "property": "can_manage_group",
+                },
+            ],
+        )
