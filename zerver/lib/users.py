@@ -50,6 +50,27 @@ from zerver.models.users import (
 )
 
 
+class UserConsentInfo(TypedDict):
+    id: int
+    full_name: str
+    email: str
+    role: int
+
+
+def get_missing_consent_users(realm: Realm, consented_ids: set[int]) -> list[UserConsentInfo]:
+    return list(
+        UserProfile.objects.filter(
+            realm=realm,
+            is_active=True,
+        )
+        .exclude(
+            Q(id__in=consented_ids)
+            & Q(email_address_visibility__lte=UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        )
+        .values("id", "full_name", "email", "role")
+    )
+
+
 def check_full_name(
     full_name_raw: str, *, user_profile: UserProfile | None, realm: Realm | None
 ) -> str:
