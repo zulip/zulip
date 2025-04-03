@@ -51,14 +51,6 @@
         }
     }
 
-    & table.table-striped thead.table-sticky-headers th {
-        background-color: hsl(0deg 0% 0%);
-
-        &[data-sort]:hover {
-            background-color: hsl(211deg 29% 14%) !important;
-        }
-    }
-
     /* Extend the 'light-border' TippyJS theme, which is intended for
        popovers/menus that should use default background colors, to use
        our dark theme colors in Zulip's dark theme.
@@ -363,11 +355,6 @@
         color: hsl(0deg 0% 100%);
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
-    }
-
-    .table-striped thead th {
-        background-color: hsl(0deg 0% 0% / 50%);
-        border-color: hsl(0deg 0% 0% / 90%);
     }
 
     & input[type="text"]:focus,

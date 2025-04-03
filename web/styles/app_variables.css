@@ -1462,6 +1462,14 @@
     );
 
     /* Settings table colors */
+    --color-background-table-header: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0%)
+    );
+    --color-background-table-header-sortable-hover: light-dark(
+        hsl(0deg 0% 95%),
+        hsl(211deg 29% 14%)
+    );
     --color-border-table-striped: light-dark(
         hsl(0deg 0% 87%),
         hsl(0deg 0% 0% / 20%)

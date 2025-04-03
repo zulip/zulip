@@ -772,7 +772,7 @@ input.settings_text_input {
 
     & thead th {
         color: inherit;
-        background-color: hsl(0deg 0% 100%);
+        background-color: var(--color-background-table-header);
         word-break: normal;
 
         .table-sortable-arrow {
@@ -803,7 +803,9 @@ input.settings_text_input {
 
         &[data-sort]:hover {
             cursor: pointer;
-            background-color: hsl(0deg 0% 95%) !important;
+            background-color: var(
+                --color-background-table-header-sortable-hover
+            ) !important;
             transition: background-color 100ms ease-in-out;
         }
     }
