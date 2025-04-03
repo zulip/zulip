@@ -910,7 +910,6 @@ li.top_left_scheduled_messages {
     }
 }
 
-
 .top_left_alerted_messages {
     &.hide_alerted_message_count {
         .masked_unread_count {

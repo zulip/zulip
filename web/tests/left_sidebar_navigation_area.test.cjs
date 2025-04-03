@@ -153,7 +153,7 @@ run_test("update_count_in_dom", () => {
     left_sidebar_navigation_area.update_scheduled_messages_row();
 
     assert.ok(!$("<mentioned-count>").visible());
-    assert.equal($("<mentioned-count>").text(), "")
+    assert.equal($("<mentioned-count>").text(), "");
     assert.equal($("<starred-count>").text(), "444");
     assert.ok(!$(".top_left_scheduled_messages").visible());
 });

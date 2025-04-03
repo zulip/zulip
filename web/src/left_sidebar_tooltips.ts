@@ -88,7 +88,7 @@ export function initialize(): void {
                     );
                     break;
                 case "alert_words":
-                    display_count = unread.get_counts().alert_word_count; 
+                    display_count = unread.get_counts().alert_word_count;
                     $container.find(".views-message-count").text(
                         $t(
                             {
