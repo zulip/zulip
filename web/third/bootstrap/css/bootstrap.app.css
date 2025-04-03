@@ -86,15 +86,6 @@ label {
   display: block;
   margin-bottom: 5px;
 }
-input:-moz-placeholder {
-  color: #999999;
-}
-input:-ms-input-placeholder {
-  color: #999999;
-}
-input::-webkit-input-placeholder {
-  color: #999999;
-}
 input[disabled],
 input[readonly] {
   cursor: not-allowed;
