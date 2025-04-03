@@ -276,6 +276,7 @@ export function initialize(): void {
             "#personal-menu-dropdown .status-circle",
             ".popover-group-menu-member-list .popover-group-menu-user-presence",
             "#copy_generated_invite_link",
+            ".delete-code-playground",
         ].join(","),
         appendTo: () => document.body,
     });
