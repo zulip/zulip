@@ -110,6 +110,27 @@ body {
 }
 
 input,
+button {
+    /* Browsers default to inline-block,
+       so preserve this value. */
+    vertical-align: middle;
+    /* Preserve normal font-weight, though
+       it appears UA stylesheets do not set
+       the weight to other values. */
+    font-weight: normal;
+    /* Likewise with zeroed margin. */
+    margin: 0;
+
+    /* Reset these values from Firefox's
+       UA stylesheet (still present in
+       April 2025) */
+    &::-moz-focus-inner {
+        padding: 0;
+        border: 0;
+    }
+}
+
+input,
 button,
 select,
 textarea {

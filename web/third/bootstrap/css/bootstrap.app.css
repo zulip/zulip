@@ -28,16 +28,6 @@ img {
   vertical-align: middle;
   border: 0;
 }
-button,
-input {
-  margin: 0;
-  vertical-align: middle;
-}
-button::-moz-focus-inner,
-input::-moz-focus-inner {
-  padding: 0;
-  border: 0;
-}
 button {
   -webkit-appearance: button;
 }
@@ -92,10 +82,6 @@ hr {
 form {
   margin: 0 0 20px;
 }
-input,
-button {
-  font-weight: normal;
-}
 label {
   display: block;
   margin-bottom: 5px;
@@ -108,9 +94,6 @@ input:-ms-input-placeholder {
 }
 input::-webkit-input-placeholder {
   color: #999999;
-}
-input {
-  margin-left: 0;
 }
 input[disabled],
 input[readonly] {
