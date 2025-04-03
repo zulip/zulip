@@ -714,24 +714,6 @@ def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentPa
     return parser
 
 
-def listening_publicly(port: int) -> list[str]:
-    filter = f"sport = :{port} and not src 127.0.0.1:{port} and not src [::1]:{port}"
-    # Parse lines that look like this:
-    # tcp    LISTEN     0          128             0.0.0.0:25672        0.0.0.0:*
-    lines = (
-        subprocess.check_output(
-            ["/bin/ss", "-Hnl", filter],
-            text=True,
-            # Hosts with IPv6 disabled will get "RTNETLINK answers: Invalid
-            # argument"; eat stderr to hide that
-            stderr=subprocess.DEVNULL,
-        )
-        .strip()
-        .splitlines()
-    )
-    return [line.split()[4] for line in lines]
-
-
 def atomic_nagios_write(
     name: str,
     status: Literal["ok", "warning", "critical", "unknown"],
