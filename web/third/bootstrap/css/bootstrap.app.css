@@ -176,13 +176,3 @@ button.close {
 @-ms-viewport {
   width: device-width;
 }
-@media (min-width: 768px) and (max-width: 979px) {
-  input {
-    margin-left: 0;
-  }
-}
-@media (min-width: 1180px) {
-  input {
-    margin-left: 0;
-  }
-}
