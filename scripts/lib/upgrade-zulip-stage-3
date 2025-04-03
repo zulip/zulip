@@ -159,12 +159,6 @@ if not (args.skip_restart or args.skip_puppet):
     if get_config(config_file, "machine", "pgroonga", False):
         subprocess.check_call(["apt-mark", "unhold", "postgresql-*-pgdg-pgroonga"])
 
-# To bootstrap zulip-puppet-apply, we need to install the system yaml
-# package; new installs get this, but old installs may not have it.
-if not os.path.exists("/usr/share/doc/python3-yaml"):
-    logging.info("Installing system YAML package, for puppet...")
-    subprocess.check_call(["apt-get", "install", "python3-yaml"])
-
 if not os.path.exists(os.path.join(deploy_path, "zproject/prod_settings.py")):
     # This is normally done in unpack-zulip, but for upgrading from
     # zulip<1.4.0, we need to do it.  See discussion in commit 586b23637.
