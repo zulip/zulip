@@ -40,11 +40,6 @@ input::-moz-focus-inner {
 }
 button {
   -webkit-appearance: button;
-  cursor: pointer;
-}
-label,
-button {
-  cursor: pointer;
 }
 p {
   margin: 0 0 10px;

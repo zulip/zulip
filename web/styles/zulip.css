@@ -651,6 +651,13 @@ input {
     font-family: "Source Sans 3 VF", sans-serif;
 }
 
+/* Override browsers that use
+   `cursor: default` */
+label,
+button {
+    cursor: pointer;
+}
+
 /* Override Bootstrap's fixed sizes for various elements */
 textarea,
 label {
