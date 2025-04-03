@@ -487,7 +487,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         };
     };
     upload.setup_upload(upload.compose_config);
-    assert.equal(Object.keys(callbacks).length, 5);
+    assert.equal(Object.keys(callbacks).length, 6);
 
     const on_upload_success_callback = callbacks["upload-success"];
     const file = {
