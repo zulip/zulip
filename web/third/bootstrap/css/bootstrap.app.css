@@ -31,12 +31,7 @@ img {
 button,
 input {
   margin: 0;
-  font-size: 100%;
   vertical-align: middle;
-}
-button,
-input {
-  line-height: normal;
 }
 button::-moz-focus-inner,
 input::-moz-focus-inner {
@@ -102,12 +97,9 @@ hr {
 form {
   margin: 0 0 20px;
 }
-label,
 input,
 button {
-  font-size: 14px;
   font-weight: normal;
-  line-height: 20px;
 }
 label {
   display: block;
