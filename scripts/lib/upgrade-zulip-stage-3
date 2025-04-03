@@ -159,11 +159,6 @@ if not (args.skip_restart or args.skip_puppet):
     if get_config(config_file, "machine", "pgroonga", False):
         subprocess.check_call(["apt-mark", "unhold", "postgresql-*-pgdg-pgroonga"])
 
-if not os.path.exists(os.path.join(deploy_path, "zproject/prod_settings.py")):
-    # This is normally done in unpack-zulip, but for upgrading from
-    # zulip<1.4.0, we need to do it.  See discussion in commit 586b23637.
-    os.symlink("/etc/zulip/settings.py", os.path.join(deploy_path, "zproject/prod_settings.py"))
-
 # Now we should have an environment set up where we can run our tools;
 # first, creating the production venv.
 subprocess.check_call(
