@@ -5,7 +5,6 @@
 # always run from the new version of Zulip, so any bug fixes take
 # effect on the very next upgrade.
 import argparse
-import glob
 import hashlib
 import logging
 import os
@@ -29,7 +28,6 @@ from scripts.lib.zulip_tools import (
     get_config,
     get_config_file,
     parse_version_from,
-    run_psql_as_postgres,
     start_arg_parser,
     su_to_zulip,
 )
@@ -148,14 +146,6 @@ def shutdown_server(fill_caches: bool = True) -> None:
         subprocess.check_call(["./scripts/stop-server"], preexec_fn=su_to_zulip)
         IS_SERVER_UP = False
 
-
-if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
-    # Remove legacy tsearch_extras package references
-    run_psql_as_postgres(
-        config_file=config_file,
-        sql_query="DROP EXTENSION IF EXISTS tsearch_extras;",
-    )
-    subprocess.check_call(["apt-get", "remove", "-y", "postgresql-*-tsearch-extras"])
 
 if not (args.skip_restart or args.skip_puppet):
     # We need to temporarily hold pgroonga, if installed -- upgrading
