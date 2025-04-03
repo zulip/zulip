@@ -115,6 +115,8 @@ export function build_page(): void {
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         general_settings: settings_config.all_notifications(user_settings).general_settings,
         notification_settings: settings_config.all_notifications(user_settings).settings,
+        stream_specific_notification_settings:
+            settings_config.get_customize_stream_notifications_table_row_data(),
         email_notifications_batching_period_values:
             settings_config.email_notifications_batching_period_values,
         realm_name_in_email_notifications_policy_values:
