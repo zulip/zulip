@@ -775,8 +775,7 @@ confirm everything is working correctly.
 
 3. Follow [Debian's instructions to upgrade the OS][debian-upgrade-os].
 
-   [debian-upgrade-os]: https://www.debian.org/releases/buster/amd64/release-notes/ch-upgrading.html
-
+   [debian-upgrade-os]: https://www.debian.org/releases/buster/amd64/release-notes/
    When prompted for you how to upgrade configuration
    files for services that Zulip manages like Redis, PostgreSQL,
    nginx, and memcached, the best choice is `N` to keep the

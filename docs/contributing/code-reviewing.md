@@ -136,7 +136,7 @@ The following review steps apply to the majority of PRs.
    All the 7 jobs run in GitHub Actions. You can see what caused
    the job to fail by clicking on the failed job. This will open
    up a page in the CI that has more details on why the job failed.
-   For example [this](https://github.com/zulip/zulip/runs/2092955762)
+   For example [this](https://github.com/zulip/zulip/actions)
    is the page of the "Ubuntu 20.04 (Python 3.8, backend + frontend)" job.
    See our docs on [continuous integration](../testing/continuous-integration.md)
    to learn more.
