@@ -1684,6 +1684,9 @@ textarea.new_message_textarea {
         padding: 0.3571em 0.7143em; /* 5px 10px at 14px/em */
         display: flex;
         flex-direction: column;
+        /* Make content appear more distinct from
+           the snippet name. */
+        border-bottom: solid 1px var(--color-border-popover-menu-separator);
 
         .dropdown-list-item-name {
             line-height: 1.2em;
