@@ -185,6 +185,10 @@ function test_change_save_button_state() {
         assert.equal($discard_button.visible(), true);
     }
     {
+        settings_components.change_save_button_state($save_button_controls, "discarded");
+        assert.equal(props.hidden, true);
+    }
+    {
         settings_components.change_save_button_state($save_button_controls, "saved");
         assert.equal($save_button_text.text(), "translated: Save changes");
         assert.equal(props.hidden, true);
@@ -196,8 +200,9 @@ function test_change_save_button_state() {
         assert.equal($discard_button.visible(), false);
     }
     {
+        // The "discarded" state should not interfere during the saving stage.
         settings_components.change_save_button_state($save_button_controls, "discarded");
-        assert.equal(props.hidden, true);
+        assert.equal(props.hidden, false);
     }
     {
         settings_components.change_save_button_state($save_button_controls, "succeeded");
