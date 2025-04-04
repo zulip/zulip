@@ -784,6 +784,11 @@
         hsl(0deg 0% 87%),
         hsl(0deg 0% 100% / 20%)
     );
+    --color-modal-close-button: light-dark(inherit, hsl(236deg 33% 90%));
+    --color-background-modal-close-button-hover: light-dark(
+        hsl(0deg 0% 90%),
+        hsl(0deg 0% 91% / 10%)
+    );
     --color-background-pill-container-without-placeholder: light-dark(
         hsl(0deg 0% 100%),
         hsl(0deg 0% 0% / 20%)
