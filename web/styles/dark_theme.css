@@ -3,16 +3,6 @@
 %dark-theme {
     color-scheme: dark;
 
-    .placeholder {
-        color: hsl(0deg 0% 55%);
-        opacity: 1;
-    }
-
-    & textarea::placeholder,
-    input::placeholder {
-        @extend .placeholder;
-    }
-
     kbd {
         text-shadow: none;
     }

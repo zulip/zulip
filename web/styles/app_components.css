@@ -110,7 +110,7 @@ evidence Edge may have bugs in its handling of placeholder opacity
 CSS: https://github.com/necolas/normalize.css/issues/741
 */
 .placeholder {
-    color: hsl(0deg 0% 45%);
+    color: var(--color-text-placeholder);
     opacity: 1;
 }
 
