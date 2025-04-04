@@ -124,6 +124,10 @@ export function dispatch_normal_event(event) {
             stream_settings_ui.update_is_default_stream();
             break;
 
+        case "delete_message_image_attachment":
+            message_events.reload_images_for_deleted_attachment(event.attachment);
+            break;
+
         case "delete_message": {
             const msg_ids = event.message_ids;
             // message is passed to unread.get_unread_messages,

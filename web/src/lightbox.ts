@@ -481,6 +481,22 @@ function supports_heic(): boolean {
     return !Number.isNaN(version) && version >= 17;
 }
 
+export function is_url_in_asset_map(url: string): boolean {
+    return asset_map.keys().some((key) => key.includes(url));
+}
+
+export function set_media_preview_in_asset_map(url: string, preview: string): void {
+    const media = asset_map.get(url);
+    if (!media) {
+        return;
+    }
+
+    asset_map.set(url, {
+        ...media,
+        preview,
+    });
+}
+
 // retrieve the metadata from the DOM and store into the asset_map.
 export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Media {
     const canonical_url = canonical_url_of_media(media);

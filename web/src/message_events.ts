@@ -17,6 +17,7 @@ import * as direct_message_group_data from "./direct_message_group_data.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
 import type {Filter} from "./filter.ts";
+import * as lightbox from "./lightbox.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_events_util from "./message_events_util.ts";
@@ -902,4 +903,68 @@ export function remove_messages(message_ids: number[]): void {
     starred_messages.remove(message_ids);
     starred_messages_ui.rerender_ui();
     message_store.remove(message_ids);
+}
+
+export async function reload_images_for_deleted_attachment(attachment: {
+    id: number;
+    source_url: string;
+    thumbnail_url: string;
+    thumbnail_animated: boolean;
+    message_ids: number[];
+}): Promise<void> {
+    const non_animated_thumbnail_url = attachment.thumbnail_url.replace("-anim", "");
+    // To check the lightbox asset map, we need the full URL
+    attachment.source_url = `${window.origin}${attachment.source_url}`;
+
+    // Refetch the thumbnails.
+    if (attachment.thumbnail_animated) {
+        await fetch(non_animated_thumbnail_url, {cache: "reload"});
+    }
+    const thumbnail_response = await fetch(attachment.thumbnail_url, {cache: "reload"});
+
+    // Reset image `src` attributes in both message and message edit rows to force reload.
+    const message_rows = attachment.message_ids.map((id) =>
+        message_lists.all_rendered_row_for_message_id(id),
+    );
+    const all_message_rows = [...message_rows, ...$(".message-edit-message-row")];
+    for (const row of all_message_rows) {
+        $(row)
+            .find("img")
+            .filter(
+                (_, img) =>
+                    img.src.includes(attachment.thumbnail_url) ||
+                    img.src.includes(non_animated_thumbnail_url),
+            )
+            .each((_, img) => {
+                const $img = $(img);
+                $img.attr("src", $img.attr("src")!);
+            });
+    }
+
+    // If the attachment was previously previewed in the lightbox, refresh all related references.
+    if (lightbox.is_url_in_asset_map(attachment.source_url)) {
+        // As the source image was previously loaded, we need to refetch it as well.
+        await fetch(attachment.source_url, {cache: "reload"});
+
+        // Update the background images of the image list divs
+        const thumbnail_blob = await thumbnail_response.blob();
+        const thumbnail_blob_url = URL.createObjectURL(thumbnail_blob);
+        lightbox.set_media_preview_in_asset_map(attachment.source_url, thumbnail_blob_url);
+
+        $(".image-list div").each(function () {
+            if ($(this).css("background-image").includes(attachment.thumbnail_url)) {
+                $(this).css("background-image", `url("${thumbnail_blob_url}")`);
+            }
+        });
+
+        // If the lightbox is open and showing the deleted attachment, force refresh it.
+        const $preview_image = $(".image-preview img");
+        if (
+            $("#lightbox_overlay").hasClass("show") &&
+            $preview_image.attr("src")?.toString() === attachment.thumbnail_url
+        ) {
+            $preview_image.attr("srcset", $preview_image.attr("srcset")!);
+            $preview_image.attr("src", $preview_image.attr("src")!);
+        }
+    }
 }
