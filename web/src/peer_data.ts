@@ -1,14 +1,45 @@
+import {z} from "zod";
+
 import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
 import {LazySet} from "./lazy_set.ts";
+import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as sub_store from "./sub_store.ts";
 
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 const stream_subscribers = new Map<number, LazySet>();
+const fetched_stream_ids = new Set<number>();
+const request_pending_stream_ids = new Set<number>();
 
 export function clear_for_testing(): void {
     stream_subscribers.clear();
+}
+
+const fetch_stream_subscribers_response_schema = z.object({
+    subscribers: z.array(z.number()),
+});
+
+export async function maybe_fetch_stream_subscribers(stream_id: number): Promise<void> {
+    if (
+        page_params.is_spectator ||
+        fetched_stream_ids.has(stream_id) ||
+        request_pending_stream_ids.has(stream_id)
+    ) {
+        return;
+    }
+    request_pending_stream_ids.add(stream_id);
+    await channel.get({
+        url: "/json/streams/" + stream_id + "/members",
+        success(response) {
+            fetched_stream_ids.add(stream_id);
+            const subscribers =
+                fetch_stream_subscribers_response_schema.parse(response).subscribers;
+            stream_subscribers.set(stream_id, new LazySet(subscribers));
+            request_pending_stream_ids.delete(stream_id);
+        },
+    });
 }
 
 function get_user_set(stream_id: number): LazySet {
