@@ -282,6 +282,8 @@ export function set_up_combined(
     };
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
+        helpOnEmptyStrings: true,
+        hideOnEmptyAfterBackspace: true,
         source(query: string): TypeaheadItem[] {
             let source: TypeaheadItem[] = [];
             if (include_streams(query)) {
