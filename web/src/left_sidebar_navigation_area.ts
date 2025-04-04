@@ -70,11 +70,13 @@ export function update_dom_with_unread_counts(
     const $home_view_li = $(".selected-home-view");
     const $streams_header = $("#streams_header");
     const $back_to_streams = $("#topics_header");
+    const $alerted_li = $(".top_left_alerts");
 
     ui_util.update_unread_count_in_dom($mentioned_li, counts.mentioned_message_count);
     ui_util.update_unread_count_in_dom($home_view_li, counts.home_unread_messages);
     ui_util.update_unread_count_in_dom($streams_header, counts.stream_unread_messages);
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
+    ui_util.update_unread_count_in_dom($alerted_li, counts.alert_word_count);
 
     if (counts.home_unread_messages === 0) {
         $home_view_li.find(".sidebar-menu-icon").addClass("hide");
@@ -116,12 +118,20 @@ export function handle_narrow_activated(filter: Filter): void {
     ops = filter.operands("is");
     if (ops[0] !== undefined) {
         filter_name = ops[0];
-        if (filter_name === "starred") {
-            select_top_left_corner_item(".top_left_starred_messages");
-            return;
-        } else if (filter_name === "mentioned") {
-            select_top_left_corner_item(".top_left_mentions");
-            return;
+        switch (filter_name) {
+            case "starred": {
+                select_top_left_corner_item(".top_left_starred_messages");
+                return;
+            }
+            case "mentioned": {
+                select_top_left_corner_item(".top_left_mentions");
+                return;
+            }
+            case "alerted": {
+                select_top_left_corner_item(".top_left_alerts");
+                return;
+            }
+            // No default
         }
     }
     const term_types = filter.sorted_term_types();
