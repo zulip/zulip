@@ -9,13 +9,11 @@
 {% else %}
 {% if message_content_disabled_by_realm %}
 {% trans hide_content_url=realm_url + "/help/hide-message-content-in-emails" %}
-This email does not include message content because your organization has disabled message content appearing in email notifications.
-See {{ hide_content_url }} for more details.
+This email does not include message content because your organization hides message content in email notifications. See {{ hide_content_url }} for more details.
 {% endtrans %}
 {% elif message_content_disabled_by_user %}
-{% trans alert_notif_url=realm_url + "/help/dm-mention-alert-notifications" %}
-This email does not include message content because you have disabled message content appearing in email notifications.
-See {{ alert_notif_url }} for more details.
+{% trans help_url=realm_url + "/help/email-notifications#hide-message-content" %}
+This email does not include message content because you have chosen to hide message content in email notifications. See {{ help_url }} for more details.
 {% endtrans %}
 {% endif %}
 {% endif %}
