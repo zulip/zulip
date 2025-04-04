@@ -81,10 +81,6 @@
         }
     }
 
-    #scroll-to-bottom-button-container {
-        background: transparent;
-    }
-
     .main-view-banner {
         .above_compose_banner_action_link {
             color: hsl(200deg 100% 50%);
