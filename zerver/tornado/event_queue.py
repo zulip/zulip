@@ -254,9 +254,10 @@ class ClientDescriptor:
                 # cannot filter out deactivated groups by themselves.
                 return not self.include_deactivated_groups
             if event["op"] == "update" and "deactivated" in event["data"]:
-                # 'update' events for group deactivation are only sent to
-                # clients who can filter out deactivated groups by themselves.
-                # Other clients receive 'remove' event.
+                # 'update' events for group deactivation and reactivation
+                # are only sent to clients who can filter out deactivated
+                # groups by themselves. Other clients receive 'remove' and
+                # 'add' event.
                 return self.include_deactivated_groups
         return True
 
@@ -1381,31 +1382,10 @@ def process_message_update_event(
     muted_sender_user_ids = set(event_template.pop("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.pop("all_bot_user_ids", []))
     disable_external_notifications = event_template.pop("disable_external_notifications", False)
-
-    # TODO/compatibility: Translation code for the rename of
-    # `push_notify_user_ids` to `online_push_user_ids`.  Remove this
-    # when one can no longer directly upgrade from 4.x to main.
-    online_push_user_ids = set()
-    if "online_push_user_ids" in event_template:
-        online_push_user_ids = set(event_template.pop("online_push_user_ids"))
-    elif "push_notify_user_ids" in event_template:
-        online_push_user_ids = set(event_template.pop("push_notify_user_ids"))
-
+    online_push_user_ids = set(event_template.pop("online_push_user_ids", []))
     stream_name = event_template.get("stream_name")
     message_id = event_template["message_id"]
-
-    # TODO/compatibility: Modern `update_message` events contain the
-    # rendering_only key, which indicates whether the update is a link
-    # preview rendering update (not a human action). However, because
-    # events may be in the notify_tornado queue at the time we
-    # upgrade, we need the below logic to compute rendering_only based
-    # on the `user_id` key not being present in legacy events that
-    # would have had rendering_only set. Remove this check when one
-    # can no longer directly update from 4.x to main.
-    if "rendering_only" in event_template:
-        rendering_only_update = event_template["rendering_only"]
-    else:
-        rendering_only_update = "user_id" not in event_template
+    rendering_only_update = event_template["rendering_only"]
 
     for user_data in users:
         user_profile_id = user_data["id"]
@@ -1565,48 +1545,19 @@ def maybe_enqueue_notifications_for_message_update(
     )
 
 
-def reformat_legacy_send_message_event(
-    event: Mapping[str, Any], users: list[int] | list[Mapping[str, Any]]
-) -> tuple[MutableMapping[str, Any], Collection[MutableMapping[str, Any]]]:
-    # do_send_messages used to send events with users in dict format, with the
-    # dict containing the user_id and other data. We later trimmed down the user
-    # data to only contain the user_id and the usermessage flags, and put everything
-    # else in the event dict as lists.
-    # This block handles any old-format events still in the queue during upgrade.
-
-    modern_event = cast(MutableMapping[str, Any], event)
-    user_dicts = cast(list[MutableMapping[str, Any]], users)
-
-    # Back-calculate the older all-booleans format data in the `users` dicts into the newer
-    # all-lists format, and attach the lists to the `event` object.
-    modern_event["online_push_user_ids"] = []
-    modern_event["stream_push_user_ids"] = []
-    modern_event["stream_email_user_ids"] = []
-    modern_event["stream_wildcard_mention_user_ids"] = []
-    modern_event["muted_sender_user_ids"] = []
-
-    for user in user_dicts:
-        user_id = user["id"]
-
-        if user.pop("stream_push_notify", False):
-            modern_event["stream_push_user_ids"].append(user_id)
-        if user.pop("stream_email_notify", False):
-            modern_event["stream_email_user_ids"].append(user_id)
-        if user.pop("wildcard_mention_notify", False):
-            modern_event["stream_wildcard_mention_user_ids"].append(user_id)
-        if user.pop("sender_is_muted", False):
-            modern_event["muted_sender_user_ids"].append(user_id)
-
-        # TODO/compatibility: Another translation code block for the rename of
-        # `always_push_notify` to `online_push_enabled`.  Remove this
-        # when one can no longer directly upgrade from 4.x to 5.0-dev.
-        if user.pop("online_push_enabled", False) or user.pop("always_push_notify", False):
-            modern_event["online_push_user_ids"].append(user_id)
-
-        # We can calculate `mentioned` from the usermessage flags, so just remove it
-        user.pop("mentioned", False)
-
-    return (modern_event, user_dicts)
+def process_user_group_creation_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    group_creation_event = dict(event)
+    # 'for_reactivation' field is no longer needed and can be popped, as we now
+    # know whether this event was sent for creating the group or reactivating
+    # the group and we can avoid sending the reactivation event to client with
+    # `include_deactivated_groups` client capability set to true.
+    event_for_reactivation = group_creation_event.pop("for_reactivation", False)
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(group_creation_event):
+                if event_for_reactivation and client.include_deactivated_groups:
+                    continue
+                client.add_event(group_creation_event)
 
 
 def process_user_group_name_update_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
@@ -1689,13 +1640,7 @@ def process_notification(notice: Mapping[str, Any]) -> None:
     start_time = time.perf_counter()
 
     if event["type"] == "message":
-        if len(users) > 0 and isinstance(users[0], dict) and "stream_push_notify" in users[0]:
-            # TODO/compatibility: Remove this whole block once one can no
-            # longer directly upgrade directly from 4.x to 5.0-dev.
-            modern_event, user_dicts = reformat_legacy_send_message_event(event, users)
-            process_message_event(modern_event, user_dicts)
-        else:
-            process_message_event(event, cast(list[Mapping[str, Any]], users))
+        process_message_event(event, cast(list[Mapping[str, Any]], users))
     elif event["type"] == "update_message":
         process_message_update_event(event, cast(list[Mapping[str, Any]], users))
     elif event["type"] == "delete_message":
@@ -1711,6 +1656,8 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         # event sent for updating name separately for clients with different
         # capabilities.
         process_user_group_name_update_event(event, cast(list[int], users))
+    elif event["type"] == "user_group" and event["op"] == "add":
+        process_user_group_creation_event(event, cast(list[int], users))
     elif event["type"] == "user_topic":
         process_user_topic_event(event, cast(list[int], users))
     elif event["type"] == "typing" and event["message_type"] == "stream":

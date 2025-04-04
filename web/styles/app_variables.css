@@ -414,6 +414,14 @@
     /*
     Message box elements and values.
     */
+    /* At very tight line-heights, the focus ring on
+       links can get cut off on paragraphs and list
+       items that open the senderless message area.
+       This padding fixes the cut-off problem, and
+       can be used to adjust padding elsewhere in the
+       message area as needed.
+       2px at 20px/1em */
+    --message-box-link-focus-ring-block-padding: 0.1em;
     /* 35px at 14px/1em */
     --message-box-avatar-width: 2.5em;
     --message-box-avatar-height: var(--message-box-avatar-width);
@@ -724,7 +732,7 @@
     );
     --color-background-hover-narrow-filter: light-dark(
         hsl(0deg 0% 97%),
-        hsl(0deg 0% 97% / 8%)
+        color-mix(in srgb, hsl(0deg 0% 97%) 8%, hsl(0deg 0% 11%))
     );
     /* We mix an opaque version with the background for
        replicating the color on .sidebar-topic-check, which
@@ -772,7 +780,7 @@
         color-mix(in srgb, #c2c2c2 80%, transparent),
         color-mix(in srgb, #fff 5%, transparent)
     );
-    --color-background-invitee-emails-pill-container: light-dark(
+    --color-background-pill-container-without-placeholder: light-dark(
         hsl(0deg 0% 100%),
         hsl(0deg 0% 0% / 20%)
     );

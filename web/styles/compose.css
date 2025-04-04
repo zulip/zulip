@@ -1496,7 +1496,9 @@ textarea.new_message_textarea {
     /* Allow the contents wrapped here to
        expand the available space... */
     white-space: nowrap;
-    flex: 0 1 fit-content;
+    /* And follow the fitted content on the
+       flexbox. */
+    flex: 0 0 fit-content;
     /* But force an ellipsis here, rather than
        just on an inner element. */
     overflow: hidden;
@@ -1684,6 +1686,9 @@ textarea.new_message_textarea {
         padding: 0.3571em 0.7143em; /* 5px 10px at 14px/em */
         display: flex;
         flex-direction: column;
+        /* Make content appear more distinct from
+           the snippet name. */
+        border-bottom: solid 1px var(--color-border-popover-menu-separator);
 
         .dropdown-list-item-name {
             line-height: 1.2em;
@@ -1805,5 +1810,16 @@ textarea.new_message_textarea {
         .compose_control_button {
             pointer-events: none;
         }
+    }
+
+    .message-edit-textbox {
+        /* In preview mode, we hide the message edit
+           textbox to prevent it from appearing behind
+           the preview container. We cannot set its
+           display to none or visibility to hidden, as
+           that would prevent us from modifying the
+           textarea's value. */
+        height: 0;
+        overflow: hidden;
     }
 }

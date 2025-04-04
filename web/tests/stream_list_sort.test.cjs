@@ -12,8 +12,12 @@ const stream_list_sort = zrequire("stream_list_sort");
 const settings_config = zrequire("settings_config");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const user_settings = {};
+// Start with always filtering out inactive streams.
+const user_settings = {
+    demote_inactive_streams: settings_config.demote_inactive_streams_values.always.code,
+};
 initialize_user_settings({user_settings});
+stream_list_sort.set_filter_out_inactives();
 
 const scalene = {
     subscribed: true,
@@ -201,25 +205,16 @@ test("basics", () => {
     assert.deepEqual(sorted.dormant_streams, []);
 });
 
-test("has_recent_activity_but_muted", () => {
-    const sub = {
-        name: "cats",
-        subscribed: true,
-        stream_id: 111,
-        is_muted: true,
-        is_recently_active: true,
-    };
-    stream_data.add_sub(sub);
-    assert.ok(stream_list_sort.has_recent_activity_but_muted(sub));
-});
-
 test("filter inactives", ({override}) => {
+    // Test that we automatically switch to filtering out inactive streams
+    // once the user has more than 30 streams.
     override(
         user_settings,
         "demote_inactive_streams",
         settings_config.demote_inactive_streams_values.automatic.code,
     );
 
+    stream_list_sort.set_filter_out_inactives();
     assert.ok(!stream_list_sort.is_filtering_inactives());
 
     _.times(30, (i) => {
@@ -237,6 +232,17 @@ test("filter inactives", ({override}) => {
     stream_list_sort.set_filter_out_inactives();
 
     assert.ok(stream_list_sort.is_filtering_inactives());
+
+    override(
+        user_settings,
+        "demote_inactive_streams",
+        settings_config.demote_inactive_streams_values.never.code,
+    );
+    stream_list_sort.set_filter_out_inactives();
+    assert.ok(!stream_list_sort.is_filtering_inactives());
+    // Even inactive channels are marked active.
+    assert.ok(!pneumonia.is_recently_active);
+    assert.ok(stream_list_sort.has_recent_activity(pneumonia));
 });
 
 test("initialize", ({override}) => {

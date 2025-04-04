@@ -220,7 +220,7 @@ def delete_realm_custom_profile_field(
     request: HttpRequest, user_profile: UserProfile, field_id: int
 ) -> HttpResponse:
     try:
-        field = CustomProfileField.objects.get(id=field_id)
+        field = CustomProfileField.objects.get(realm_id=user_profile.realm_id, id=field_id)
     except CustomProfileField.DoesNotExist:
         raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 

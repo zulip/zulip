@@ -875,30 +875,25 @@ export function revive_current_focus(): void {
 }
 
 function update_closed_compose_text($row: JQuery, is_header_row: boolean): void {
-    // TODO: This fake "message" object is designed to allow using the
-    // get_recipient_label helper inside compose_closed_ui. Surely
-    // there's a more readable way to write this code.
-    // Similar code is present in recent view.
-
     if (is_header_row) {
         compose_closed_ui.set_standard_text_for_reply_button();
         return;
     }
 
-    let message;
+    let reply_recipient_information: compose_closed_ui.ReplyRecipientInformation;
     const is_dm = $row.parent("#inbox-direct-messages-container").length > 0;
     if (is_dm) {
-        message = {
+        reply_recipient_information = {
             display_reply_to: $row.find(".recipients_name").text(),
         };
     } else {
         const $stream = $row.parent(".inbox-topic-container").prev(".inbox-header");
-        message = {
+        reply_recipient_information = {
             stream_id: Number($stream.attr("data-stream-id")),
             topic: $row.find(".inbox-topic-name a").text(),
         };
     }
-    compose_closed_ui.update_reply_recipient_label(message);
+    compose_closed_ui.update_recipient_text_for_reply_button(reply_recipient_information);
 }
 
 export function get_focused_row_message(): {message?: Message | undefined} & (

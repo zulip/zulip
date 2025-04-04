@@ -37,7 +37,8 @@ def verify_release_download_link(link: str) -> bool:
 
 PLATFORM_TO_SETUP_FILE = {
     "linux": "Zulip-{version}-x86_64.AppImage",
-    "mac": "Zulip-{version}-x64.dmg",
+    "mac": "Zulip-{version}-arm64.dmg",
+    "mac-intel": "Zulip-{version}-x64.dmg",
     "mac-arm64": "Zulip-{version}-arm64.dmg",
     "windows": "Zulip-Web-Setup-{version}.exe",
 }

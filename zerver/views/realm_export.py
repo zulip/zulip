@@ -1,7 +1,6 @@
 from datetime import timedelta
 from typing import Annotated
 
-from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -12,9 +11,14 @@ from analytics.models import RealmCount
 from zerver.actions.realm_export import do_delete_realm_export, notify_realm_export
 from zerver.decorator import require_realm_admin
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.export import get_realm_exports_serialized
+from zerver.lib.export import (
+    check_export_with_consent_is_usable,
+    check_public_export_is_usable,
+    get_realm_exports_serialized,
+)
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.response import json_success
+from zerver.lib.send_email import FromAddress
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
 from zerver.models import RealmExport, UserProfile
@@ -78,8 +82,27 @@ def export_realm(
     ):
         raise JsonableError(
             _("Please request a manual export from {email}.").format(
-                email=settings.ZULIP_ADMINISTRATOR,
+                email=FromAddress.SUPPORT,
             )
+        )
+
+    if (
+        export_type == RealmExport.EXPORT_FULL_WITH_CONSENT
+        and not check_export_with_consent_is_usable(realm)
+    ):
+        raise JsonableError(
+            _(
+                "Make sure at least one Organization Owner is consenting to the export "
+                "or contact {email} for help."
+            ).format(email=FromAddress.SUPPORT)
+        )
+    elif export_type == RealmExport.EXPORT_PUBLIC and not check_public_export_is_usable(realm):
+        raise JsonableError(
+            _(
+                "Make sure at least one Organization Owner allows other "
+                "Administrators to see their email address "
+                "or contact {email} for help"
+            ).format(email=FromAddress.SUPPORT)
         )
 
     row = RealmExport.objects.create(
@@ -113,7 +136,7 @@ def get_realm_exports(request: HttpRequest, user: UserProfile) -> HttpResponse:
 @require_realm_admin
 def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int) -> HttpResponse:
     try:
-        export_row = RealmExport.objects.get(id=export_id)
+        export_row = RealmExport.objects.get(realm_id=user.realm_id, id=export_id)
     except RealmExport.DoesNotExist:
         raise JsonableError(_("Invalid data export ID"))
 

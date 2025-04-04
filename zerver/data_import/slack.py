@@ -943,13 +943,13 @@ def channel_message_to_zerver_message(
         rendered_content = None
 
         if "channel_name" in message:
-            is_private = False
+            is_direct_message_type = False
             recipient_id = slack_recipient_name_to_zulip_recipient_id[message["channel_name"]]
         elif "mpim_name" in message:
-            is_private = True
+            is_direct_message_type = True
             recipient_id = slack_recipient_name_to_zulip_recipient_id[message["mpim_name"]]
         elif "pm_name" in message:
-            is_private = True
+            is_direct_message_type = True
             sender = get_message_sending_user(message)
             members = dm_members[message["pm_name"]]
             if sender == members[0]:
@@ -1005,7 +1005,7 @@ def channel_message_to_zerver_message(
         # threads each generate a unique topic labeled by the date and
         # a counter among topics on that day.
         topic_name = "imported from Slack"
-        if convert_slack_threads and "thread_ts" in message:
+        if convert_slack_threads and not is_direct_message_type and "thread_ts" in message:
             thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
             thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
             # The topic name is "2015-08-18 Slack thread 2", where the counter at the end is to disambiguate
@@ -1019,6 +1019,9 @@ def channel_message_to_zerver_message(
                 topic_name = f"{thread_date} Slack thread {count}"
                 thread_map[thread_ts_str] = topic_name
 
+        if is_direct_message_type:
+            topic_name = ""
+
         zulip_message = build_message(
             topic_name=topic_name,
             date_sent=get_timestamp_from_message(message),
@@ -1028,10 +1031,11 @@ def channel_message_to_zerver_message(
             user_id=slack_user_id_to_zulip_user_id[slack_user_id],
             recipient_id=recipient_id,
             realm_id=realm_id,
-            is_channel_message=not is_private,
+            is_channel_message=not is_direct_message_type,
             has_image=has_image,
             has_link=has_link,
             has_attachment=has_attachment,
+            is_direct_message_type=is_direct_message_type,
         )
         zerver_message.append(zulip_message)
 
@@ -1041,7 +1045,7 @@ def channel_message_to_zerver_message(
             recipient_id=recipient_id,
             mentioned_user_ids=mentioned_user_ids,
             message_id=message_id,
-            is_private=is_private,
+            is_private=is_direct_message_type,
             long_term_idle=long_term_idle,
         )
         total_user_messages += num_created
@@ -1054,7 +1058,7 @@ def channel_message_to_zerver_message(
                 recipient_id=sender_recipient_id,
                 mentioned_user_ids=mentioned_user_ids,
                 message_id=message_id,
-                is_private=is_private,
+                is_private=is_direct_message_type,
                 long_term_idle=long_term_idle,
             )
             total_user_messages += num_created

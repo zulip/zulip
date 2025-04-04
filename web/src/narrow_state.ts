@@ -366,7 +366,7 @@ export function narrowed_by_topic_reply(current_filter: Filter | undefined = fil
     if (current_filter === undefined) {
         return false;
     }
-    const terms = current_filter.terms();
+    const terms = current_filter.terms().filter((term) => term.operator !== "with");
     return (
         terms.length === 2 &&
         current_filter.operands("channel").length === 1 &&

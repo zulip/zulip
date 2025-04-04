@@ -786,7 +786,7 @@ function setup_page(callback: () => void): void {
             values: [
                 {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
                 {label: $t({defaultMessage: "Not subscribed"}), key: "not-subscribed"},
-                {label: $t({defaultMessage: "All channels"}), key: "all-streams"},
+                {label: $t({defaultMessage: "All"}), key: "all-streams"},
             ],
             callback(_value, key) {
                 switch_stream_tab(key);
@@ -1070,26 +1070,26 @@ export function keyboard_sub(): void {
 
 export function toggle_view(event: string): void {
     const active_data = stream_settings_components.get_active_data();
-    const stream_filter_tab = active_data.$tabs.first().text();
+    const stream_filter_tab_key = active_data.$tabs.first().attr("data-tab-key");
     assert(toggler !== undefined);
 
     switch (event) {
         case "right_arrow":
-            switch (stream_filter_tab) {
-                case "Subscribed":
+            switch (stream_filter_tab_key) {
+                case "subscribed":
                     toggler.goto("not-subscribed");
                     break;
-                case "Not subscribed":
+                case "not-subscribed":
                     toggler.goto("all-streams");
                     break;
             }
             break;
         case "left_arrow":
-            switch (stream_filter_tab) {
-                case "Not subscribed":
+            switch (stream_filter_tab_key) {
+                case "not-subscribed":
                     toggler.goto("subscribed");
                     break;
-                case "All channels":
+                case "all-streams":
                     toggler.goto("not-subscribed");
                     break;
             }

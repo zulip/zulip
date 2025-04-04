@@ -152,8 +152,6 @@ test("show_error_message", ({mock_template}) => {
         return "<banner-stub>";
     });
 
-    $("#compose-send-button").prop("disabled", true);
-
     upload.show_error_message(upload.compose_config, "Error message");
     assert.ok(!$("#compose-send-button").hasClass("disabled-message-send-controls"));
     assert.ok(banner_shown);
@@ -489,7 +487,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         };
     };
     upload.setup_upload(upload.compose_config);
-    assert.equal(Object.keys(callbacks).length, 5);
+    assert.equal(Object.keys(callbacks).length, 6);
 
     const on_upload_success_callback = callbacks["upload-success"];
     const file = {

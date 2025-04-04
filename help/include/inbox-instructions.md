@@ -5,7 +5,8 @@
 {!go-to-inbox.md!}
 
 1. Click on a conversation you're interested in to view it. You can return to
-   **Inbox** when done to select the next conversation.
+   your **inbox** when done (e.g., by using the **back** button in your browser
+   or desktop app) to select the next conversation.
 
 !!! tip ""
 
@@ -23,7 +24,8 @@
    tab in the bottom left corner of the app.
 
 2. Tap on a conversation you're interested in to view it. You can return to
-   **Inbox** when done to select the next conversation.
+   **Inbox** when done (e.g., by using the **back* button) to select the next
+   conversation.
 
 !!! tip ""
 

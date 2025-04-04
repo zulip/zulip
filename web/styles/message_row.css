@@ -105,7 +105,7 @@
         ensures the timestamp will always have enough space
         in the column. */
     grid-template:
-        var(--message-box-sender-line-height) repeat(3, auto) /
+        minmax(var(--message-box-sender-line-height), auto) repeat(3, auto) /
         var(--message-box-avatar-column-width) minmax(0, 1fr) max-content
         8px minmax(var(--message-box-timestamp-column-width), max-content);
     /* Named grid areas provide flexibility for positioning grid items
@@ -146,6 +146,7 @@
 
     .message_content {
         grid-area: message;
+        padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
         color: var(--color-text-message-default);
         /* We explicitly set line-height here so that
            the message area is not beholden to the legacy
@@ -155,6 +156,16 @@
         display: block;
         position: relative;
         overflow: hidden;
+
+        /* For the sake of paragraphs and lists that include
+           links, we adjust the vertical space here to keep
+           it uniform. */
+        &:has(> p:first-child, > ol:first-child, > ul:first-child) {
+            padding-top: calc(
+                var(--message-box-markdown-aligned-vertical-space) -
+                    var(--message-box-link-focus-ring-block-padding)
+            );
+        }
 
         &:empty {
             display: none;
@@ -366,7 +377,6 @@
         }
 
         .message_content {
-            padding: var(--message-box-markdown-aligned-vertical-space) 0 0;
             /* Pull message content up closer to sender to
                let the text baseline sit adjacent the bottom
                of the avatar. We also need to account for the
@@ -460,13 +470,11 @@
        of the row; inner flexboxes handle the
        centering of the icons. */
     align-self: stretch;
-    /* But to better set the height to the typical
-       sender-row line height for better centering
-       in all contexts. */
-    height: var(--message-box-sender-line-height);
+    /* Controls flex to the height of the top
+       row of the message box, and center
+       themselves within it. */
     display: flex;
-    /* The flexbox here matches the height set above. */
-    align-items: stretch;
+    align-items: center;
     /* Ensure square icons for better centering. */
     line-height: 1;
 
@@ -764,13 +772,19 @@
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
     transition: border-color 0.2s ease;
+    display: grid;
+    grid-template-areas: "message-edit-content";
 
     &:has(.message_edit_content:focus) {
         border-color: var(--color-message-content-container-border-focus);
     }
 
     .message-edit-textbox {
+        /* Setting `position:relative` on this container ensures that .copy-button
+           (a possible immediate child with `position: absolute`) is positioned
+           relative to this container instead of <html>. */
         position: relative;
+        grid-area: message-edit-content;
 
         .textarea-over-limit {
             background-color: var(
@@ -954,6 +968,7 @@ of the base style defined for a read-only textarea in dark mode. */
 
     .preview_message_area {
         max-height: var(--max-message-edit-height);
+        grid-area: message-edit-content;
     }
 }
 

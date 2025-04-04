@@ -450,24 +450,9 @@ ul.popover-group-menu-member-list {
         }
     }
 
-    .user-profile-manage-own-edit-button,
-    .user-profile-manage-others-edit-button {
+    .user-profile-header-actions {
         display: flex;
-        text-decoration: none;
-        /* 15px at 22px/1em */
-        font-size: 0.6818em;
-    }
-
-    .user-profile-manage-own-copy-link-button {
-        display: flex;
-        /* 19px at 22px/1em */
-        font-size: 0.8638em;
-        text-decoration: none;
-    }
-
-    .zulip-icon-link,
-    .zulip-icon-edit {
-        vertical-align: middle;
+        gap: 5px;
     }
 
     .deactivated-user-icon {

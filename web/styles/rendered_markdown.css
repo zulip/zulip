@@ -20,6 +20,15 @@
         margin-inline-start: 3.5ch;
     }
 
+    /* To avoid cutting off the focus ring on links, we set
+       padding on first children most likely to take links.
+       We account for this extra space on `.message_content`. */
+    & > p:first-child,
+    & > ul:first-child,
+    & > ol:first-child {
+        padding-top: var(--message-box-link-focus-ring-block-padding);
+    }
+
     /* We set margin according to the length of the longest list counter. */
     .counter-length-1 {
         margin-inline-start: 2.5ch;

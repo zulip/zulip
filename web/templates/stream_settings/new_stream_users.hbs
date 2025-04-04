@@ -15,8 +15,12 @@
     <div class="subscriber_list_container" data-simplebar data-simplebar-tab-index="-1">
         <table class="subscriber-list table table-striped">
             <thead class="table-sticky-headers">
-                <th data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
-                <th class="settings-email-column" data-sort="email">{{t "Email" }}</th>
+                <th data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th class="settings-email-column" data-sort="email">{{t "Email" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
                 <th>{{t "Action" }}</th>
             </thead>
             <tbody id="create_stream_subscribers" class="subscriber_table" data-empty="{{t 'This channel has no subscribers.' }}" data-search-results-empty="{{t 'No channel subscribers match your current filter.'}}"></tbody>

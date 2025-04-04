@@ -450,9 +450,9 @@ function handle_inline_topic_edit_keydown(this: HTMLElement, e: JQuery.KeyDownEv
     }
 }
 
-function handle_inline_topic_edit_change(this: HTMLInputElement): void {
-    const $inline_topic_edit_input = $(this);
-
+function update_inline_topic_edit_input_max_width(
+    $inline_topic_edit_input: JQuery<HTMLInputElement>,
+): void {
     // We use a hidden span element, which we update with the value
     // of the input field on every input change to calculate the
     // width of the topic value. This allows us to dynamically adjust
@@ -460,9 +460,10 @@ function handle_inline_topic_edit_change(this: HTMLInputElement): void {
     const $topic_value_mirror = $inline_topic_edit_input
         .closest(".topic_edit_form")
         .find(".topic_value_mirror");
-    $topic_value_mirror.text(this.value);
+    const input_value = $inline_topic_edit_input.val()!;
+    $topic_value_mirror.text(input_value);
     const topic_width = $topic_value_mirror.width();
-    if (this.value.length > 0) {
+    if (input_value.length > 0) {
         // When the user starts typing in the inline topic edit input field,
         // we dynamically adjust the max-width of the input field to match
         // width of the text in the input field + 1ch width for some cushion.
@@ -483,6 +484,12 @@ function handle_inline_topic_edit_change(this: HTMLInputElement): void {
             $inline_topic_edit_input.css("max-width", "20ch");
         }
     }
+}
+
+function handle_inline_topic_edit_change(this: HTMLInputElement): void {
+    const $inline_topic_edit_input = $(this);
+
+    update_inline_topic_edit_input_max_width($inline_topic_edit_input);
 
     if ($inline_topic_edit_input.hasClass("invalid-input")) {
         // If invalid-input class is present on the inline topic edit
@@ -512,11 +519,10 @@ function handle_inline_topic_edit_change(this: HTMLInputElement): void {
 
     if (!realm.realm_mandatory_topics) {
         const $topic_not_mandatory_placeholder = $(".inline-topic-edit-placeholder");
-        if ($inline_topic_edit_input.val() === "") {
-            $topic_not_mandatory_placeholder.addClass("inline-topic-edit-placeholder-visible");
-        } else {
-            $topic_not_mandatory_placeholder.removeClass("inline-topic-edit-placeholder-visible");
-        }
+        $topic_not_mandatory_placeholder.toggleClass(
+            "inline-topic-edit-placeholder-visible",
+            $inline_topic_edit_input.val() === "",
+        );
     }
 }
 
@@ -988,11 +994,7 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     const topic = message.topic;
     const $inline_topic_edit_input = $form.find<HTMLInputElement>("input.inline_topic_edit");
     $inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
-    const $stream_topic = $recipient_row.find(".stream_topic");
-    const topic_width = $stream_topic.width();
-    // Set the width of the inline topic edit input to the
-    // width of the topic name + 1ch width for some cushion.
-    $inline_topic_edit_input.css("max-width", `calc(${topic_width}px + 1ch)`);
+    update_inline_topic_edit_input_max_width($inline_topic_edit_input);
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
     composebox_typeahead.initialize_topic_edit_typeahead(
         $inline_topic_edit_input,
@@ -1590,7 +1592,8 @@ type ToastParams = {
 
 function show_message_moved_toast(toast_params: ToastParams): void {
     const new_stream_name = sub_store.maybe_get_stream_name(toast_params.new_stream_id);
-    const stream_topic = `#${new_stream_name} > ${toast_params.new_topic_name}`;
+    const new_topic_display_name = util.get_final_topic_display_name(toast_params.new_topic_name);
+    const is_empty_string_topic = toast_params.new_topic_name === "";
     const new_location_url = hash_util.by_stream_topic_url(
         toast_params.new_stream_id,
         toast_params.new_topic_name,
@@ -1598,8 +1601,10 @@ function show_message_moved_toast(toast_params: ToastParams): void {
     feedback_widget.show({
         populate($container) {
             const widget_body_html = render_message_moved_widget_body({
-                stream_topic,
+                new_stream_name,
+                new_topic_display_name,
                 new_location_url,
+                is_empty_string_topic,
             });
             $container.html(widget_body_html);
         },
@@ -1778,18 +1783,22 @@ export function is_message_oldest_or_newest(
 
 export function show_preview_area($element: JQuery): void {
     const $row = rows.get_closest_row($element);
-    const $msg_edit_content = $row.find<HTMLTextAreaElement>("textarea.message_edit_content");
-    const content = $msg_edit_content.val();
-    assert(content !== undefined);
 
     // Disable unneeded compose_control_buttons as we don't
     // need them in preview mode.
     $row.addClass("preview_mode");
     $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", -1);
 
-    $msg_edit_content.hide();
     $row.find(".markdown_preview").hide();
     $row.find(".undo_markdown_preview").show();
+
+    render_preview_area($row);
+}
+
+export function render_preview_area($row: JQuery): void {
+    const $msg_edit_content = $row.find<HTMLTextAreaElement>("textarea.message_edit_content");
+    const content = $msg_edit_content.val();
+    assert(content !== undefined);
     const $preview_message_area = $row.find(".preview_message_area");
     compose_ui.render_and_show_preview(
         $row,
@@ -1810,7 +1819,6 @@ export function clear_preview_area($element: JQuery): void {
     $row.removeClass("preview_mode");
     $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", 0);
 
-    $row.find(".message_edit_content").show();
     $row.find(".undo_markdown_preview").hide();
     $row.find(".preview_message_area").hide();
     $row.find(".preview_content").empty();

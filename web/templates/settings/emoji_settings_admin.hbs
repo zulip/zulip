@@ -20,9 +20,13 @@
     <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
         <table class="table table-striped wrapped-table admin_emoji_table">
             <thead class="table-sticky-headers">
-                <th class="active" data-sort="alphabetic" data-sort-prop="name">{{t "Name" }}</th>
+                <th class="active" data-sort="alphabetic" data-sort-prop="name">{{t "Name" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
                 <th class="image">{{t "Image" }}</th>
-                <th class="image" data-sort="author_full_name">{{t "Author" }}</th>
+                <th class="image" data-sort="author_full_name">{{t "Author" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
                 <th class="actions">{{t "Actions" }}</th>
             </thead>
             <tbody id="admin_emoji_table" data-empty="{{t 'There are no custom emoji.' }}" data-search-results-empty="{{t 'No custom emojis match your current filter.' }}"></tbody>

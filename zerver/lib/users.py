@@ -526,7 +526,7 @@ def validate_user_custom_profile_data(
     for item in profile_data:
         field_id = item["id"]
         try:
-            field = CustomProfileField.objects.get(id=field_id)
+            field = CustomProfileField.objects.get(realm_id=realm_id, id=field_id)
         except CustomProfileField.DoesNotExist:
             raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 

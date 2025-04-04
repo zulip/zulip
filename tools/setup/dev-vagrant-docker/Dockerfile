@@ -31,8 +31,8 @@ RUN \
     # managed by systemd start within Docker, which breaks normal
     # operation of systemd.
     dpkg-divert --add --rename /bin/systemctl \
-    && curl -fLsS --retry 3 -o /bin/systemctl 'https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/v1.5.8066/files/docker/systemctl3.py' \
-    && echo 'f8736b56299374a316a958e5e949be73e657e2f7069691381664d94950c645c9  /bin/systemctl' | sha256sum -c \
+    && curl -fLsS --retry 3 -o /bin/systemctl 'https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/v1.5.9063/files/docker/systemctl3.py' \
+    && echo '1744aa7281159668d51fc97e57d834b6f116da10796f7f3352de48ad0cbba5b2  /bin/systemctl' | sha256sum -c \
     && chmod +x /bin/systemctl \
     && ln -nsf /bin/true /usr/sbin/policy-rc.d \
     && mkdir -p /run/sshd \

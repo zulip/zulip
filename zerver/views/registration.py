@@ -57,6 +57,7 @@ from zerver.lib.email_validation import email_allowed_for_realm, validate_email_
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.i18n import (
     get_browser_language_code,
+    get_default_language_for_anonymous_user,
     get_default_language_for_new_user,
     get_language_name,
 )
@@ -945,6 +946,10 @@ def create_realm(request: HttpRequest, creation_key: str | None = None) -> HttpR
             except EmailNotDeliveredError:
                 logging.exception("Failed to deliver email during realm creation")
                 if settings.CORPORATE_ENABLED:
+                    # BUG: Because Django's server_error doesn't
+                    # support context, this doesn't render the
+                    # template properly for the corporate case.
+                    # https://docs.djangoproject.com/en/5.1/ref/views/#the-500-server-error-view
                     return server_error(request)
                 return config_error(request, "smtp")
 
@@ -1241,6 +1246,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
                     ),
                     from_address=FromAddress.SUPPORT,
                     request=request,
+                    language=get_default_language_for_anonymous_user(request),
                 )
     return render(
         request,

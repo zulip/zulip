@@ -780,7 +780,10 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
             select_opts,
             then_select_offset,
         );
-        if (id_info.first_unread_msg_id_pending_server_verification) {
+        if (
+            id_info.first_unread_msg_id_pending_server_verification &&
+            filter.is_conversation_view()
+        ) {
             const params = message_fetch.get_parameters_for_message_fetch_api({
                 anchor: "first_unread",
                 num_before: 0,
@@ -1495,7 +1498,7 @@ function handle_post_view_change(
     } else {
         compose_closed_ui.update_buttons_for_non_specific_views();
     }
-    compose_closed_ui.update_reply_recipient_label();
+    compose_closed_ui.update_recipient_text_for_reply_button();
 
     message_view_header.render_title_area();
 

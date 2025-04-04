@@ -586,13 +586,21 @@ EOF
 fi
 
 if has_class "zulip::app_frontend_base"; then
-    # Create and activate a virtualenv
-    "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
+    # Frontend deploys use /home/zulip/deployments; without this, the
+    # install directory is also only readable by root.
+    mkdir -p /home/zulip/deployments
+    deploy_path=$("$ZULIP_PATH"/scripts/lib/zulip_tools.py make_deploy_path)
+    mv "$ZULIP_PATH" "$deploy_path"
+    ln -nsf /home/zulip/deployments/next "$ZULIP_PATH"
+    ln -nsf "$deploy_path" /home/zulip/deployments/next
 
-    "$ZULIP_PATH"/scripts/lib/install-node
+    # Create and activate a virtualenv
+    "$deploy_path"/scripts/lib/create-production-venv "$deploy_path"
+
+    "$deploy_path"/scripts/lib/install-node
 
     if [ -z "$NO_OVERWRITE_SETTINGS" ] || ! [ -e "/etc/zulip/settings.py" ]; then
-        cp -a "$ZULIP_PATH"/zproject/prod_settings_template.py /etc/zulip/settings.py
+        cp -a "$deploy_path"/zproject/prod_settings_template.py /etc/zulip/settings.py
         if [ -n "$EXTERNAL_HOST" ]; then
             sed -i "s/^EXTERNAL_HOST =.*/EXTERNAL_HOST = '$EXTERNAL_HOST'/" /etc/zulip/settings.py
         fi
@@ -613,11 +621,13 @@ if has_class "zulip::app_frontend_base"; then
             echo "ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = $SERVICE_SUBMIT_USAGE_STATISTICS" >>/etc/zulip/settings.py
         fi
     fi
-    ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
-    "$ZULIP_PATH"/scripts/setup/generate_secrets.py --production
+    ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/prod_settings.py
+    "$deploy_path"/scripts/setup/generate_secrets.py --production
+else
+    deploy_path="$ZULIP_PATH"
 fi
 
-"$ZULIP_PATH"/scripts/zulip-puppet-apply -f
+"$deploy_path"/scripts/zulip-puppet-apply -f
 
 if [ "$package_system" = apt ]; then
     apt-get -y --with-new-pkgs upgrade
@@ -627,7 +637,7 @@ elif [ "$package_system" = yum ]; then
 fi
 
 if [ -n "$USE_CERTBOT" ]; then
-    "$ZULIP_PATH"/scripts/setup/setup-certbot \
+    "$deploy_path"/scripts/setup/setup-certbot \
         "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
 fi
 
@@ -689,12 +699,6 @@ EOF
     exit 0
 fi
 
-# Frontend deploys use /home/zulip/deployments; without this, the
-# install directory is also only readable by root.
-deploy_path=$("$ZULIP_PATH"/scripts/lib/zulip_tools.py make_deploy_path)
-mv "$ZULIP_PATH" "$deploy_path"
-ln -nsf /home/zulip/deployments/next "$ZULIP_PATH"
-ln -nsf "$deploy_path" /home/zulip/deployments/next
 ln -nsf "$deploy_path" /home/zulip/deployments/current
 ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/prod_settings.py
 mkdir -p "$deploy_path"/prod-static/serve

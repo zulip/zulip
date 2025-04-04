@@ -2305,7 +2305,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertNotIn(
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result.content.decode()
         )
-        self.assert_in_response("server is experiencing technical difficulties", result)
+        self.assert_in_response("Something went wrong. Sorry about that!", result)
         self.assertTrue(
             "ERROR:root:Failed to deliver email during user registration" in m.output[0]
         )
@@ -2354,7 +2354,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertNotIn(
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result.content.decode()
         )
-        self.assert_in_response("server is experiencing technical difficulties", result)
+        self.assert_in_response("Something went wrong. Sorry about that!", result)
         self.assertTrue("ERROR:root:Failed to deliver email during realm creation" in m.output[0])
 
     def test_user_default_language_and_timezone(self) -> None:
@@ -2564,6 +2564,18 @@ class UserSignUpTest(ZulipTestCase):
         email = self.nonreg_email("newuser")
         with patch("zerver.views.registration.password_auth_enabled", return_value=False):
             user_profile = self.verify_signup(email=email, password=None)
+
+        assert isinstance(user_profile, UserProfile)
+        # User should now be logged in.
+        self.assert_logged_in_user_id(user_profile.id)
+
+    def test_signup_very_long_password(self) -> None:
+        """
+        Check if signing up without a password works properly when
+        password_auth_enabled is False.
+        """
+        email = self.nonreg_email("newuser")
+        user_profile = self.verify_signup(email=email, password="a" * 80)
 
         assert isinstance(user_profile, UserProfile)
         # User should now be logged in.

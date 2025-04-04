@@ -17,7 +17,12 @@ import assets from "./webpack.assets.json" with {type: "json"};
 import dev_assets from "./webpack.dev-assets.json" with {type: "json"};
 
 const config = (
-    env: {minimize?: true; puppeteer_tests?: true; ZULIP_VERSION?: string} = {},
+    env: {
+        minimize?: true;
+        puppeteer_tests?: true;
+        ZULIP_VERSION?: string;
+        custom_5xx_file?: string;
+    } = {},
     argv: {mode?: string},
 ): webpack.Configuration[] => {
     const production: boolean = argv.mode === "production";
@@ -50,7 +55,7 @@ const config = (
         }),
         new HtmlWebpackPlugin({
             filename: "5xx.html",
-            template: "html/5xx.html",
+            template: env.custom_5xx_file ? "html/" + env.custom_5xx_file : "html/5xx.html",
             chunks: ["error-styles"],
             publicPath: production ? "/static/webpack-bundles/" : "/webpack/",
         }),

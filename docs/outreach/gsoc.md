@@ -312,21 +312,35 @@ Django, TypeScript/JavaScript, and CSS.
 
 ### Terminal app
 
-Code: [Zulip Terminal](https://github.com/zulip/zulip-terminal)
+Code: [The official multi-platform terminal app, written in
+Python](https://github.com/zulip/zulip-terminal).
 
 Experts: Neil Pilgrim, Aman Agrawal
 
-- Work on Zulip Terminal, the official terminal client for Zulip. zulip-terminal
-  is out in beta, but there's still a lot to do for it to approach parity with
-  the web app. We would be happy to accept multiple strong students to work on
-  this project. 175 or 350 hours; medium difficulty. **Skills required**: Python
-  3 development skills, good communication and project management skills, good
-  at reading code and testing.
+- **Contribute to Zulip Terminal, our terminal user interface (TUI) client**.
+  Zulip Terminal is out in beta, but there's still a lot to do for it to
+  approach parity with the web app - and Zulip keeps coming out with new features too!
+
+  Previous contributors have themed their projects according to a **cluster of
+  features** or **completing unfinished projects**, or some combination, much
+  like the first two bullets in the Full-stack project list.
+  Project complexity and potential scope can vary substantially, since the
+  required changes can involve touching different parts of the application
+  stack. For example, these may be purely improving multiple elements of the UI,
+  platform/terminal, or client-side model of the data available to a user - or
+  multiple of these in a full-stack style.
+
+  We would be happy to accept multiple strong students to work on this project.
+  175 or 350 hours; medium difficulty.
+  **Skills required**: Python 3 development skills, good communication and
+  project management skills. Reading and understanding complex code and tests,
+  and taking the initiative to propose clean refactoring and other solutions,
+  will be highly valuable.
 
 ### Desktop app
 
 Code:
-[Our cross-platform desktop app written in JavaScript on
+[Our cross-platform desktop app, written in JavaScript on
 Electron](https://github.com/zulip/zulip-desktop).
 
 Expert: Anders Kaseorg

@@ -74,6 +74,7 @@ from zerver.lib.streams import (
     StreamsCategorizedByPermissionsForAddingSubscribers,
     access_stream_by_id,
     access_stream_by_name,
+    bulk_can_access_stream_metadata_user_ids,
     can_access_stream_history,
     can_access_stream_metadata_user_ids,
     create_stream_if_needed,
@@ -82,7 +83,6 @@ from zerver.lib.streams import (
     ensure_stream,
     filter_stream_authorization_for_adding_subscribers,
     list_to_streams,
-    public_stream_user_ids,
     user_has_content_access,
 )
 from zerver.lib.subscription_info import (
@@ -1974,9 +1974,9 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "new_stream")
         self.assertEqual(events[0]["event"]["streams"][0]["stream_id"], stream.id)
         notified_user_ids = set(events[0]["users"])
-        self.assertEqual(
+        self.assertCountEqual(
             notified_user_ids,
-            public_stream_user_ids(stream),
+            set(active_non_guest_user_ids(stream.realm_id)),
         )
         # Guest user should not be notified.
         self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
@@ -2122,7 +2122,7 @@ class StreamAdminTest(ZulipTestCase):
 
         stream_name_1 = get_stream("stream_name1", user_profile.realm)
         notified_user_ids = get_notified_user_ids()
-        self.assertEqual(notified_user_ids, set(public_stream_user_ids(stream_name_1)))
+        self.assertEqual(notified_user_ids, set(active_non_guest_user_ids(realm.id)))
         self.assertIn(user_profile.id, notified_user_ids)
         self.assertIn(self.example_user("prospero").id, notified_user_ids)
         self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
@@ -2141,7 +2141,7 @@ class StreamAdminTest(ZulipTestCase):
             acting_user=self.example_user("polonius"),
         )
         notified_user_ids = get_notified_user_ids()
-        self.assertEqual(notified_user_ids, set(public_stream_user_ids(stream_name_1)))
+        self.assertEqual(notified_user_ids, set(active_non_guest_user_ids(realm.id)))
         self.assertIn(user_profile.id, notified_user_ids)
         self.assertIn(self.example_user("prospero").id, notified_user_ids)
         self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
@@ -2158,7 +2158,9 @@ class StreamAdminTest(ZulipTestCase):
         # Subscribed guest user should be notified.
         self.subscribe(self.example_user("polonius"), stream_name_1.name)
         notified_user_ids = get_notified_user_ids()
-        self.assertEqual(notified_user_ids, set(public_stream_user_ids(stream_name_1)))
+        expected_notified_user_ids = set(active_non_guest_user_ids(realm.id))
+        expected_notified_user_ids.add(self.example_user("polonius").id)
+        self.assertEqual(notified_user_ids, expected_notified_user_ids)
         self.assertIn(user_profile.id, notified_user_ids)
         self.assertIn(self.example_user("prospero").id, notified_user_ids)
         self.assertIn(self.example_user("polonius").id, notified_user_ids)
@@ -7624,7 +7626,8 @@ class GetSubscribersTest(ZulipTestCase):
         def non_ws(s: str) -> str:
             return s.replace("\n", "").replace(" ", "")
 
-        self.assertEqual(non_ws(msg.content), non_ws(expected_msg))
+        assert msg.rendered_content is not None
+        self.assertEqual(non_ws(msg.rendered_content), non_ws(expected_msg))
 
     def check_well_formed_result(
         self, result: dict[str, Any], stream_name: str, realm: Realm
@@ -7664,6 +7667,80 @@ class GetSubscribersTest(ZulipTestCase):
         stream_name = gather_subscriptions(self.user_profile)[0][0]["name"]
         self.make_successful_subscriber_request(stream_name)
 
+    def test_gather_partial_subscriptions(self) -> None:
+        othello = self.example_user("othello")
+        bot = self.create_test_bot("bot", othello, "Foo Bot")
+
+        stream_names = [
+            "never_subscribed_only_bots",
+            "never_subscribed_more_than_bots",
+            "unsubscribed_only_bots",
+            "subscribed_more_than_bots",
+        ]
+        for stream_name in stream_names:
+            self.make_stream(stream_name)
+
+        self.subscribe_via_post(
+            self.user_profile,
+            ["never_subscribed_only_bots"],
+            dict(principals=orjson.dumps([bot.id]).decode()),
+        )
+        self.subscribe_via_post(
+            self.user_profile,
+            ["never_subscribed_more_than_bots"],
+            dict(principals=orjson.dumps([bot.id, othello.id]).decode()),
+        )
+        self.subscribe_via_post(
+            self.user_profile,
+            ["unsubscribed_only_bots"],
+            dict(principals=orjson.dumps([bot.id, self.user_profile.id]).decode()),
+        )
+        self.unsubscribe(
+            self.user_profile,
+            "unsubscribed_only_bots",
+        )
+        self.subscribe_via_post(
+            self.user_profile,
+            ["subscribed_more_than_bots"],
+            dict(principals=orjson.dumps([bot.id, othello.id, self.user_profile.id]).decode()),
+        )
+
+        with self.assert_database_query_count(10):
+            sub_data = gather_subscriptions_helper(self.user_profile, include_subscribers="partial")
+            never_subscribed_streams = sub_data.never_subscribed
+            unsubscribed_streams = sub_data.unsubscribed
+            subscribed_streams = sub_data.subscriptions
+        self.assertGreaterEqual(len(never_subscribed_streams), 2)
+        self.assertGreaterEqual(len(unsubscribed_streams), 1)
+        self.assertGreaterEqual(len(subscribed_streams), 1)
+
+        # Streams with only bots have sent all of their subscribers,
+        # since we always send bots. We tell the client it doesn't
+        # need to fetch more, by filling "subscribers" instead
+        # of "partial_subscribers". If there are non-bot subscribers,
+        # a partial fetch will return only partial subscribers.
+
+        for sub in never_subscribed_streams:
+            if sub["name"] == "never_subscribed_only_bots":
+                self.assert_length(sub["subscribers"], 1)
+                self.assertIsNone(sub.get("partial_subscribers"))
+                continue
+            if sub["name"] == "never_subscribed_more_than_bots":
+                self.assert_length(sub["partial_subscribers"], 1)
+                self.assertIsNone(sub.get("subscribers"))
+
+        for sub in unsubscribed_streams:
+            if sub["name"] == "unsubscribed_only_bots":
+                self.assert_length(sub["subscribers"], 1)
+                self.assertIsNone(sub.get("partial_subscribers"))
+                break
+
+        for sub in subscribed_streams:
+            if sub["name"] == "subscribed_more_than_bots":
+                self.assert_length(sub["partial_subscribers"], 1)
+                self.assertIsNone(sub.get("subscribers"))
+                break
+
     def test_gather_subscriptions(self) -> None:
         """
         gather_subscriptions returns correct results with only 3 queries
@@ -7675,10 +7752,10 @@ class GetSubscribersTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         polonius = self.example_user("polonius")
+        realm = hamlet.realm
 
-        streams = [f"stream_{i}" for i in range(10)]
-        for stream_name in streams:
-            self.make_stream(stream_name)
+        stream_names = [f"stream_{i}" for i in range(10)]
+        streams: list[Stream] = [self.make_stream(stream_name) for stream_name in stream_names]
 
         users_to_subscribe = [
             self.user_profile.id,
@@ -7690,23 +7767,21 @@ class GetSubscribersTest(ZulipTestCase):
         with self.assert_database_query_count(50):
             self.subscribe_via_post(
                 self.user_profile,
-                streams,
+                stream_names,
                 dict(principals=orjson.dumps(users_to_subscribe).decode()),
             )
 
+        rendered_stream_list = ""
+        for stream in streams:
+            rendered_stream_list = (
+                rendered_stream_list
+                + f"""<li><a class="stream" data-stream-id="{stream.id}" href="/#narrow/channel/{stream.id}-{stream.name}">#{stream.name}</a></li>\n"""
+            )
         msg = f"""
-            @**King Hamlet|{hamlet.id}** subscribed you to the following channels:
-
-            * #**stream_0**
-            * #**stream_1**
-            * #**stream_2**
-            * #**stream_3**
-            * #**stream_4**
-            * #**stream_5**
-            * #**stream_6**
-            * #**stream_7**
-            * #**stream_8**
-            * #**stream_9**
+            <p><span class="user-mention" data-user-id="{hamlet.id}">@King Hamlet</span> subscribed you to the following channels:</p>
+            <ul>
+            {rendered_stream_list}
+            </ul>
             """
 
         for user in [cordelia, othello, polonius]:
@@ -7729,8 +7804,9 @@ class GetSubscribersTest(ZulipTestCase):
             invite_only=True,
         )
 
+        stream_invite_only_1 = get_stream("stream_invite_only_1", realm)
         msg = f"""
-            @**King Hamlet|{hamlet.id}** subscribed you to the channel #**stream_invite_only_1**.
+            <p><span class="user-mention" data-user-id="{hamlet.id}">@King Hamlet</span> subscribed you to the channel <a class="stream" data-stream-id="{stream_invite_only_1.id}" href="/#narrow/channel/{stream_invite_only_1.id}-{stream_invite_only_1.name}">#{stream_invite_only_1.name}</a>.</p>
             """
         for user in [cordelia, othello, polonius]:
             self.assert_user_got_subscription_notification(user, msg)
@@ -7746,7 +7822,6 @@ class GetSubscribersTest(ZulipTestCase):
             self.assert_length(sub["subscribers"], len(users_to_subscribe))
 
         # Test query count when setting is set to anonymous group.
-        realm = hamlet.realm
         stream = get_stream("stream_1", realm)
         admins_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
@@ -8775,6 +8850,204 @@ class AccessStreamTest(ZulipTestCase):
                 is_subscribed=True,
             ),
             True,
+        )
+
+    def test_can_access_stream_metadata_user_ids(self) -> None:
+        aaron = self.example_user("aaron")
+        cordelia = self.example_user("cordelia")
+        guest_user = self.example_user("polonius")
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
+        realm = aaron.realm
+        public_stream = self.make_stream("public_stream", realm, invite_only=False)
+        nobody_system_group = NamedUserGroup.objects.get(
+            name="role:nobody", realm=realm, is_system_group=True
+        )
+
+        # Public stream with no subscribers.
+        expected_public_user_ids = set(active_non_guest_user_ids(realm.id))
+        self.assertCountEqual(
+            can_access_stream_metadata_user_ids(public_stream), expected_public_user_ids
+        )
+        bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+            [public_stream]
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+
+        # Public stream with 1 guest as a subscriber.
+        self.subscribe(guest_user, "public_stream")
+        expected_public_user_ids.add(guest_user.id)
+        self.assertCountEqual(
+            can_access_stream_metadata_user_ids(public_stream), expected_public_user_ids
+        )
+        bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+            [public_stream]
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+
+        test_bot = self.create_test_bot("foo", desdemona)
+        expected_public_user_ids.add(test_bot.id)
+        private_stream = self.make_stream("private_stream", realm, invite_only=True)
+        # Nobody is subscribed yet for the private stream, only admin
+        # users will turn up for that stream. We will continue testing
+        # the existing public stream for the bulk function here on.
+        expected_private_user_ids = {iago.id, desdemona.id}
+        self.assertCountEqual(
+            can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids
+        )
+        bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+            [public_stream, private_stream]
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+        )
+
+        # Bot with admin privileges should also be part of the result.
+        do_change_user_role(test_bot, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=desdemona)
+        expected_private_user_ids.add(test_bot.id)
+        self.assertCountEqual(
+            can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids
+        )
+        bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+            [public_stream, private_stream]
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+        )
+
+        # Subscriber should also be part of the result.
+        self.subscribe(aaron, "private_stream")
+        expected_private_user_ids.add(aaron.id)
+        self.assertCountEqual(
+            can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids
+        )
+        bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+            [public_stream, private_stream]
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+        )
+
+        stream_permission_group_settings = set(Stream.stream_permission_group_settings.keys())
+        stream_permission_group_settings_not_granting_metadata_access = (
+            stream_permission_group_settings
+            - set(Stream.stream_permission_group_settings_granting_metadata_access)
+        )
+        for setting_name in stream_permission_group_settings_not_granting_metadata_access:
+            do_change_stream_group_based_setting(
+                private_stream,
+                setting_name,
+                UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+                acting_user=cordelia,
+            )
+            with self.assert_database_query_count(4):
+                private_stream_metadata_user_ids = can_access_stream_metadata_user_ids(
+                    private_stream
+                )
+            self.assertCountEqual(private_stream_metadata_user_ids, expected_private_user_ids)
+            with self.assert_database_query_count(6):
+                bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+                    [public_stream, private_stream]
+                )
+            self.assertCountEqual(
+                bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+            )
+            self.assertCountEqual(
+                bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+            )
+
+        for setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
+            do_change_stream_group_based_setting(
+                private_stream,
+                setting_name,
+                UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+                acting_user=cordelia,
+            )
+            expected_private_user_ids.add(cordelia.id)
+            with self.assert_database_query_count(4):
+                private_stream_metadata_user_ids = can_access_stream_metadata_user_ids(
+                    private_stream
+                )
+            self.assertCountEqual(private_stream_metadata_user_ids, expected_private_user_ids)
+            with self.assert_database_query_count(6):
+                bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+                    [public_stream, private_stream]
+                )
+            self.assertCountEqual(
+                bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+            )
+            self.assertCountEqual(
+                bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+            )
+
+            do_change_stream_group_based_setting(
+                private_stream, setting_name, nobody_system_group, acting_user=cordelia
+            )
+            expected_private_user_ids.remove(cordelia.id)
+            bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+                [public_stream, private_stream]
+            )
+            self.assertCountEqual(
+                can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids
+            )
+            self.assertCountEqual(
+                bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+            )
+            self.assertCountEqual(
+                bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+            )
+
+        # Query count should not increase on fetching user ids for an
+        # additional public stream.
+        public_stream_2 = self.make_stream("public_stream_2", realm, invite_only=False)
+        with self.assert_database_query_count(6):
+            bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+                [public_stream, public_stream_2, private_stream]
+            )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream_2.id],
+            active_non_guest_user_ids(realm.id),
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+        )
+
+        # Query count should not increase on fetching user ids for an
+        # additional private stream.
+        private_stream_2 = self.make_stream("private_stream_2", realm, invite_only=True)
+        self.subscribe(aaron, "private_stream_2")
+        with self.assert_database_query_count(6):
+            bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+                [public_stream, public_stream_2, private_stream, private_stream_2]
+            )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream.id], expected_public_user_ids
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[public_stream_2.id],
+            active_non_guest_user_ids(realm.id),
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[private_stream.id], expected_private_user_ids
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[private_stream_2.id], expected_private_user_ids
         )
 
 

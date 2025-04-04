@@ -18,6 +18,7 @@ import {$t} from "./i18n.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as padded_widget from "./padded_widget.ts";
+import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -310,20 +311,15 @@ export class BuddyList extends BuddyListConf {
                 "#buddy-list-users-matching-view-container",
                 this.users_matching_view_is_collapsed,
             );
+            // Ensure the "other" section is visible when headers are collapsed,
+            // because we're hiding its header so there's no way to collapse or
+            // uncollapse the list in this view. Ensure we're showing/hiding as
+            // the user specified otherwise.
             this.set_section_collapse(
                 "#buddy-list-other-users-container",
-                this.other_users_is_collapsed,
+                this.render_data.hide_headers ? false : this.other_users_is_collapsed,
             );
         }
-
-        // Ensure the "other" section is visible when headers are collapsed,
-        // because we're hiding its header so there's no way to collapse or
-        // uncollapse the list in this view. Ensure we're showing/hiding as
-        // the user specified otherwise.
-        this.set_section_collapse(
-            "#buddy-list-other-users-container",
-            this.render_data.hide_headers ? false : this.other_users_is_collapsed,
-        );
 
         this.fill_screen_with_content();
 
@@ -998,6 +994,10 @@ export class BuddyList extends BuddyListConf {
     }
 
     rerender_participants(): void {
+        if (page_params.is_spectator) {
+            return;
+        }
+
         const all_participant_ids = this.render_data.get_all_participant_ids();
         const users_to_remove = this.participant_user_ids.filter(
             (user_id) => !all_participant_ids.has(user_id),

@@ -613,14 +613,9 @@ def handle_missedmessage_emails(
     user_profile_id: int, message_ids: dict[int, MissedMessageData]
 ) -> None:
     user_profile = get_user_profile_by_id(user_profile_id)
-    if user_profile.is_bot:  # nocoverage
-        # We don't expect to reach here for bot users. However, this code exists
-        # to find and throw away any pre-existing events in the queue while
-        # upgrading from versions before our notifiability logic was implemented.
-        # TODO/compatibility: This block can be removed when one can no longer
-        # upgrade from versions <= 4.0 to versions >= 5.0
-        logger.warning("Send-email event found for bot user %s. Skipping.", user_profile_id)
-        return
+    # Bots don't have real email addresses, and should have been
+    # filtered previously.
+    assert not user_profile.is_bot
 
     if not user_profile.enable_offline_email_notifications:
         # BUG: Investigate why it's possible to get here.

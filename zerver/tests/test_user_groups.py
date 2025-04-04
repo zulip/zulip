@@ -46,6 +46,7 @@ from zerver.lib.user_groups import (
     get_recursive_strict_subgroups,
     get_recursive_subgroups,
     get_recursive_subgroups_union_for_groups,
+    get_recursive_supergroups_union_for_groups,
     get_role_based_system_groups_dict,
     get_subgroup_ids,
     get_system_user_group_by_name,
@@ -308,6 +309,16 @@ class UserGroupTestCase(ZulipTestCase):
         GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=staff_group)
         GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=manager_group)
 
+        subgroup_for_anonymous_supergroup = check_add_user_group(
+            realm, "subgroup_for_anonymous_supergroup", [iago], acting_user=iago
+        )
+        anonymous_supergroup = check_add_user_group(
+            realm, "anonymous_supergroup", [iago], acting_user=iago
+        )
+        GroupGroupMembership.objects.create(
+            supergroup=anonymous_supergroup, subgroup=subgroup_for_anonymous_supergroup
+        )
+
         self.assertCountEqual(
             list(get_recursive_subgroups(leadership_group.id)), [leadership_group.usergroup_ptr]
         )
@@ -331,6 +342,24 @@ class UserGroupTestCase(ZulipTestCase):
                 leadership_group.usergroup_ptr,
                 staff_group.usergroup_ptr,
                 manager_group.usergroup_ptr,
+            ],
+        )
+
+        with self.assert_database_query_count(1):
+            recursive_supergroups_union_for_groups = list(
+                get_recursive_supergroups_union_for_groups(
+                    [leadership_group.id, subgroup_for_anonymous_supergroup.id]
+                )
+            )
+        self.assertCountEqual(
+            recursive_supergroups_union_for_groups,
+            [
+                leadership_group.usergroup_ptr,
+                everyone_group.usergroup_ptr,
+                staff_group.usergroup_ptr,
+                manager_group.usergroup_ptr,
+                subgroup_for_anonymous_supergroup.usergroup_ptr,
+                anonymous_supergroup.usergroup_ptr,
             ],
         )
 
@@ -525,6 +554,25 @@ class UserGroupTestCase(ZulipTestCase):
 
         with self.assertRaisesRegex(JsonableError, "Invalid system group name."):
             get_system_user_group_by_name("hamletcharacters", realm.id)
+
+    def test_update_user_group_members_noop_case(self) -> None:
+        hamlet = self.example_user("hamlet")
+        test_group = check_add_user_group(
+            hamlet.realm,
+            "test_group",
+            [self.example_user("othello")],
+            "Test group",
+            acting_user=self.example_user("othello"),
+        )
+        # These functions should not do anything if any of the list
+        # arguments is empty.
+        with self.capture_send_event_calls(expected_num_events=0):
+            bulk_add_members_to_user_groups([], [hamlet.id], acting_user=None)
+            bulk_add_members_to_user_groups([test_group], [], acting_user=None)
+            bulk_remove_members_from_user_groups([], [hamlet.id], acting_user=None)
+            bulk_remove_members_from_user_groups([test_group], [], acting_user=None)
+            add_subgroups_to_user_group(test_group, [], acting_user=None)
+            remove_subgroups_from_user_group(test_group, [], acting_user=None)
 
 
 class UserGroupAPITestCase(UserGroupTestCase):
@@ -1705,7 +1753,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         with (
             mock.patch("zerver.views.user_groups.notify_for_user_group_subscription_changes"),
-            self.assert_database_query_count(14),
+            self.assert_database_query_count(16),
         ):
             result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)

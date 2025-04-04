@@ -6,9 +6,10 @@ from typing import Any, TypedDict
 
 from django.conf import settings
 from django.db import connection
-from django.db.models import Exists, Max, OuterRef, QuerySet, Sum
+from django.db.models import Exists, F, Max, OuterRef, QuerySet, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django_cte import With
 from psycopg2.sql import SQL
 
 from analytics.lib.counts import COUNT_STATS
@@ -845,14 +846,17 @@ def get_raw_unread_data(
         .exclude(
             message__recipient_id__in=excluded_recipient_ids,
         )
+        .annotate(
+            recipient_id=F("message__recipient_id"),
+            sender_id=F("message__sender_id"),
+            topic=F(MESSAGE__TOPIC),
+        )
         .values(
             "message_id",
-            "message__sender_id",
-            MESSAGE__TOPIC,
-            "message__recipient_id",
-            "message__recipient__type",
-            "message__recipient__type_id",
+            "sender_id",
+            "topic",
             "flags",
+            "recipient_id",
         )
         .order_by("-message_id")
     )
@@ -867,11 +871,51 @@ def get_raw_unread_data(
             where=[UserMessage.where_unread()],
         )
 
-    # Limit unread messages for performance reasons.
-    user_msgs = list(user_msgs[:MAX_UNREAD_MESSAGES])
+    with connection.cursor() as cursor:
+        try:
+            # Force-disable (parallel) bitmap heap scans.  The
+            # parallel nature of this means that the LIMIT cannot be
+            # pushed down into the walk of the index, and it also
+            # requires an additional outer sort -- which is all
+            # unnecessary, as the zerver_usermessage_unread_message_id
+            # index is properly ordered already.  This is all due to
+            # statistics mis-estimations, since partial indexes do not
+            # have their own statistics.
+            cursor.execute("SET enable_bitmapscan TO off")
 
-    rows = list(reversed(user_msgs))
-    return extract_unread_data_from_um_rows(rows, user_profile)
+            # Limit unread messages for performance reasons.  We do this
+            # inside a CTE, such that the join to Recipients, below, can't be
+            # implied to remove rows, and thus allows a Nested Loop join,
+            # potentially memoized to reduce the number of Recipient lookups.
+            cte = With(user_msgs[:MAX_UNREAD_MESSAGES])
+
+            user_msgs = (
+                cte.join(Recipient, id=cte.col.recipient_id)
+                .with_cte(cte)
+                .annotate(
+                    message_id=cte.col.message_id,
+                    sender_id=cte.col.sender_id,
+                    recipient_id=cte.col.recipient_id,
+                    topic=cte.col.topic,
+                    flags=cte.col.flags,
+                    recipient__type=F("type"),
+                    recipient__type_id=F("type_id"),
+                )
+                .values(
+                    "message_id",
+                    "sender_id",
+                    "topic",
+                    "flags",
+                    "recipient_id",
+                    "recipient__type",
+                    "recipient__type_id",
+                )
+            )
+
+            rows = list(reversed(user_msgs))
+        finally:
+            cursor.execute("SET enable_bitmapscan TO on")
+        return extract_unread_data_from_um_rows(rows, user_profile)
 
 
 def extract_unread_data_from_um_rows(
@@ -938,13 +982,13 @@ def extract_unread_data_from_um_rows(
     for row in rows:
         total_unreads += 1
         message_id = row["message_id"]
-        msg_type = row["message__recipient__type"]
-        recipient_id = row["message__recipient_id"]
-        sender_id = row["message__sender_id"]
+        msg_type = row["recipient__type"]
+        recipient_id = row["recipient_id"]
+        sender_id = row["sender_id"]
 
         if msg_type == Recipient.STREAM:
-            stream_id = row["message__recipient__type_id"]
-            topic_name = row[MESSAGE__TOPIC]
+            stream_id = row["recipient__type_id"]
+            topic_name = row["topic"]
             stream_dict[message_id] = dict(
                 stream_id=stream_id,
                 topic=topic_name,
@@ -954,7 +998,7 @@ def extract_unread_data_from_um_rows(
 
         elif msg_type == Recipient.PERSONAL:
             if sender_id == user_profile.id:
-                other_user_id = row["message__recipient__type_id"]
+                other_user_id = row["recipient__type_id"]
             else:
                 other_user_id = sender_id
 
@@ -980,8 +1024,8 @@ def extract_unread_data_from_um_rows(
             mentions.add(message_id)
         if is_stream_wildcard_mentioned or is_topic_wildcard_mentioned:
             if msg_type == Recipient.STREAM:
-                stream_id = row["message__recipient__type_id"]
-                topic_name = row[MESSAGE__TOPIC]
+                stream_id = row["recipient__type_id"]
+                topic_name = row["topic"]
                 if not is_row_muted(stream_id, recipient_id, topic_name):
                     mentions.add(message_id)
             else:  # nocoverage # TODO: Test wildcard mentions in direct messages.

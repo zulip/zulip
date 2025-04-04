@@ -4974,14 +4974,14 @@ requires-dist = [{ name = "typing-extensions" }]
 [[package]]
 name = "zulip"
 version = "0.9.0"
-source = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.0.zip", subdirectory = "zulip" }
+source = { url = "https://github.com/zulip/python-zulip-api/archive/9e131ac626976b9c3da6c11b6365b4939656f7c3.zip", subdirectory = "zulip" }
 dependencies = [
     { name = "click" },
     { name = "distro" },
     { name = "requests" },
     { name = "typing-extensions" },
 ]
-sdist = { hash = "sha256:71ea94192f1a0de1c45fd177e827b65fe4970c4fc8565991fd066b4de77eaccb" }
+sdist = { hash = "sha256:4d5adc0d3a1a638138c416a426e161bf4a804c97819ffaad87fbc1320a5066de" }
 
 [package.metadata]
 requires-dist = [
@@ -5359,7 +5359,7 @@ dev = [
     { name = "virtualenv-clone" },
     { name = "werkzeug", specifier = "<3.1.2" },
     { name = "zulint", url = "https://github.com/zulip/zulint/archive/9be0a32bf75a9d8738b005f0b880567fff64e943.zip" },
-    { name = "zulip", url = "https://github.com/zulip/python-zulip-api/archive/0.9.0.zip", subdirectory = "zulip" },
+    { name = "zulip", url = "https://github.com/zulip/python-zulip-api/archive/9e131ac626976b9c3da6c11b6365b4939656f7c3.zip", subdirectory = "zulip" },
     { name = "zulip-bots", url = "https://github.com/zulip/python-zulip-api/archive/0.9.0.zip", subdirectory = "zulip_bots" },
     { name = "zxcvbn" },
 ]
@@ -5443,7 +5443,7 @@ prod = [
     { name = "uwsgi" },
     { name = "virtualenv-clone" },
     { name = "werkzeug", specifier = "<3.1.2" },
-    { name = "zulip", url = "https://github.com/zulip/python-zulip-api/archive/0.9.0.zip", subdirectory = "zulip" },
+    { name = "zulip", url = "https://github.com/zulip/python-zulip-api/archive/9e131ac626976b9c3da6c11b6365b4939656f7c3.zip", subdirectory = "zulip" },
     { name = "zulip-bots", url = "https://github.com/zulip/python-zulip-api/archive/0.9.0.zip", subdirectory = "zulip_bots" },
     { name = "zxcvbn" },
 ]

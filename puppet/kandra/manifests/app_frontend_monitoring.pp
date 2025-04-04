@@ -5,7 +5,7 @@ class kandra::app_frontend_monitoring {
   include kandra::prometheus::rabbitmq
   include kandra::prometheus::uwsgi
   include kandra::prometheus::process
-  kandra::firewall_allow { 'grok_exporter': port => '9144' }
+  include kandra::prometheus::grok
   kandra::firewall_allow { 'tusd': port => '9900' }
 
   file { '/etc/cron.d/rabbitmq-monitoring':

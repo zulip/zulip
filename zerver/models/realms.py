@@ -1006,6 +1006,23 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         """
         return UserProfile.objects.filter(realm=self, is_bot=False).order_by("id").first()
 
+    def get_billing_admins_delivery_email(self) -> str:
+        from zerver.lib.user_groups import get_recursive_group_members
+
+        can_manage_billing_group_members = get_recursive_group_members(
+            self.can_manage_billing_group_id
+        )
+
+        billing_admins = (
+            UserProfile.objects.filter(
+                id__in=can_manage_billing_group_members,
+                is_bot=False,
+            )
+            .order_by("delivery_email")
+            .values_list("delivery_email", flat=True)
+        )
+        return ", ".join(billing_admins)
+
     def get_human_owner_users(self) -> QuerySet["UserProfile"]:
         return UserProfile.objects.filter(
             realm=self, is_bot=False, role=UserProfile.ROLE_REALM_OWNER, is_active=True

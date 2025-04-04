@@ -31,6 +31,7 @@ import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
+import * as popovers from "./popovers.ts";
 import {hide_all} from "./popovers.ts";
 import * as presence from "./presence.ts";
 import * as rows from "./rows.ts";
@@ -573,6 +574,14 @@ export function toggle_sender_info(): void {
         message_user_card.hide();
         return;
     }
+
+    // The "View user card" tooltip shown when hovering the avatar can
+    // block this from opening properly, so close it first.
+    //
+    // This isn't necessary for the click handler, because the click
+    // naturally closes the Tippy tooltip.
+    popovers.hide_all();
+
     const $message = $(".selected_message");
     let $sender = $message.find(".message-avatar");
     if ($sender.length === 0) {
@@ -652,19 +661,15 @@ function toggle_sidebar_user_card_popover($target: JQuery): void {
 }
 
 function register_click_handlers(): void {
-    $("#main_div").on(
-        "click",
-        ".sender_name, .inline_profile_picture",
-        function (this: HTMLElement, e) {
-            const $row = $(this).closest(".message_row");
-            e.stopPropagation();
-            assert(message_lists.current !== undefined);
-            const message = message_lists.current.get(rows.id($row));
-            assert(message !== undefined);
-            const user = people.get_by_user_id(message.sender_id);
-            toggle_user_card_popover_for_message(this, user, message.sender_id, true);
-        },
-    );
+    $("#main_div").on("click", ".sender_name, .message-avatar", function (this: HTMLElement, e) {
+        const $row = $(this).closest(".message_row");
+        e.stopPropagation();
+        assert(message_lists.current !== undefined);
+        const message = message_lists.current.get(rows.id($row));
+        assert(message !== undefined);
+        const user = people.get_by_user_id(message.sender_id);
+        toggle_user_card_popover_for_message(this, user, message.sender_id, true);
+    });
 
     $("#main_div").on("click", ".user-mention", function (this: HTMLElement, e) {
         const id_string = $(this).attr("data-user-id");

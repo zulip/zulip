@@ -29,8 +29,8 @@ engage with the Zulip community.
 
 You can also [read conversations](https://chat.zulip.org/) in the community
 without creating an account. If you are evaluating using Zulip for your
-organization, check out these [tips](/try-zulip/) for exploring the product in
-action in the development community.
+organization, check out these [tips](https://chat.zulip.org/?show_try_zulip_modal)
+for exploring the product in action in the development community.
 
 <br/>
 # Community norms

@@ -10,6 +10,7 @@ const $ = require("./lib/zjquery.cjs");
 // Mocking and stubbing things
 set_global("document", "document-stub");
 const message_lists = mock_esm("../src/message_lists");
+const recent_view_util = mock_esm("../src/recent_view_util");
 function MessageListView() {
     return {
         maybe_rerender: noop,
@@ -24,6 +25,9 @@ mock_esm("../src/message_list_view", {
 mock_esm("../src/people.ts", {
     maybe_get_user_by_id: noop,
 });
+mock_esm("../src/settings_data", {
+    user_has_permission_for_group_setting: () => true,
+});
 
 const stream_data = zrequire("stream_data");
 // Code we're actually using/testing
@@ -31,7 +35,10 @@ const compose_closed_ui = zrequire("compose_closed_ui");
 const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
 const {MessageListData} = zrequire("message_list_data");
-const {set_realm} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
+
+const current_user = {};
+set_current_user(current_user);
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
 set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
@@ -74,34 +81,48 @@ run_test("reply_label", () => {
         [
             {
                 id: 0,
+                is_stream: true,
+                is_private: false,
                 stream_id: stream_one.stream_id,
                 topic: "first_topic",
             },
             {
                 id: 1,
+                is_stream: true,
+                is_private: false,
                 stream_id: stream_one.stream_id,
                 topic: "second_topic",
             },
             {
                 id: 2,
+                is_stream: true,
+                is_private: false,
                 stream_id: stream_two.stream_id,
                 topic: "third_topic",
             },
             {
                 id: 3,
+                is_stream: true,
+                is_private: false,
                 stream_id: stream_two.stream_id,
                 topic: "second_topic",
             },
             {
                 id: 4,
+                is_stream: false,
+                is_private: true,
                 display_reply_to: "some user",
             },
             {
                 id: 5,
+                is_stream: false,
+                is_private: true,
                 display_reply_to: "some user, other user",
             },
             {
                 id: 6,
+                is_stream: true,
+                is_private: false,
                 stream_id: stream_two.stream_id,
                 topic: "",
             },
@@ -143,23 +164,40 @@ run_test("reply_label", () => {
     );
 });
 
-run_test("test_custom_message_input", () => {
+run_test("empty_narrow", () => {
+    message_lists.current.visibly_empty = () => true;
+    compose_closed_ui.update_recipient_text_for_reply_button();
+    const label = $("#left_bar_compose_reply_button_big").text();
+    assert.equal(label, "translated: Compose message");
+});
+
+run_test("test_non_message_list_input", () => {
+    message_lists.current = undefined;
+    recent_view_util.is_visible = () => true;
     const stream = {
         subscribed: true,
         name: "stream test",
         stream_id: 10,
     };
     stream_data.add_sub(stream);
-    compose_closed_ui.update_reply_recipient_label({
+
+    // Channel and topic row.
+    compose_closed_ui.update_recipient_text_for_reply_button({
         stream_id: stream.stream_id,
         topic: "topic test",
     });
     test_reply_label("#stream test &gt; topic test");
-});
 
-run_test("empty_narrow", () => {
-    message_lists.current.visibly_empty = () => true;
-    compose_closed_ui.update_reply_recipient_label();
+    // Direct message row.
+    compose_closed_ui.update_recipient_text_for_reply_button({
+        display_reply_to: "some user",
+    });
+    test_reply_label("some user");
+
+    // Invalid data for a the reply button text.
+    compose_closed_ui.update_recipient_text_for_reply_button({
+        invalid_field: "something unexpected",
+    });
     const label = $("#left_bar_compose_reply_button_big").text();
     assert.equal(label, "translated: Compose message");
 });

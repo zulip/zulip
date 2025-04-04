@@ -7,6 +7,13 @@
 Inbox is a convenient [home view](/help/configure-home-view) if you
 regularly clear all unread messages in your subscribed channels.
 
+!!! tip ""
+
+    To find recent conversations with no unread messages, use the [recent
+    conversations](/help/recent-conversations) view instead.
+
+## Use your inbox
+
 {!inbox-instructions.md!}
 
 !!! keyboard_tip ""

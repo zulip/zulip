@@ -8,11 +8,6 @@ set -x
 
 ./manage.py makemessages --all
 tx pull -a -f --mode=translator --minimum-perc=5 "$@"
-# For readability, we prefer UTF-8, not ascii, in these JSON files.
-find ./locale \
-    -regextype sed \
-    -regex '^\./locale/.*/\(mobile\|translations\).json$' \
-    -exec ./tools/i18n/unescape-contents {} \;
 
 # Normalize to Unicode Normalization Form C.
 files="$(find locale -type f -name '*.json' -o -name '*.po')"

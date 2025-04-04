@@ -1277,18 +1277,9 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
     """
     if not push_notifications_configured():
         return
-    user_profile = get_user_profile_by_id(user_profile_id)
 
-    if user_profile.is_bot:  # nocoverage
-        # We don't expect to reach here for bot users. However, this code exists
-        # to find and throw away any pre-existing events in the queue while
-        # upgrading from versions before our notifiability logic was implemented.
-        # TODO/compatibility: This block can be removed when one can no longer
-        # upgrade from versions <= 4.0 to versions >= 5.0
-        logger.warning(
-            "Send-push-notification event found for bot user %s. Skipping.", user_profile_id
-        )
-        return
+    user_profile = get_user_profile_by_id(user_profile_id)
+    assert not user_profile.is_bot
 
     if not (
         user_profile.enable_offline_push_notifications

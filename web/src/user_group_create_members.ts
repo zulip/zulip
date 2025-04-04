@@ -97,33 +97,44 @@ export function create_handlers($container: JQuery): void {
         $(".add-user-list-filter").trigger("focus");
     });
 
-    $container.on("click", ".remove_potential_subscriber", (e) => {
+    $container.on("click", ".remove_potential_subscriber", function (this: HTMLElement, e) {
         e.preventDefault();
-        const $elem = $(e.target);
-        const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
+        const $subscriber_row = $(this).closest(".settings-subscriber-row");
+        const user_id = Number.parseInt($subscriber_row.attr("data-user-id")!, 10);
         soft_remove_user_id(user_id);
     });
 
-    $container.on("click", ".undo_soft_removed_potential_subscriber", (e) => {
-        e.preventDefault();
-        const $elem = $(e.target);
-        const user_id = Number.parseInt($elem.attr("data-user-id")!, 10);
-        undo_soft_remove_user_id(user_id);
-    });
+    $container.on(
+        "click",
+        ".undo_soft_removed_potential_subscriber",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            const $subscriber_row = $(this).closest(".settings-subscriber-row");
+            const user_id = Number.parseInt($subscriber_row.attr("data-user-id")!, 10);
+            undo_soft_remove_user_id(user_id);
+        },
+    );
 
-    $container.on("click", ".remove_potential_subgroup", (e) => {
+    $container.on("click", ".remove_potential_subgroup", function (this: HTMLElement, e) {
         e.preventDefault();
-        const $elem = $(e.target);
-        const subgroup_id = Number.parseInt($elem.attr("data-group-id")!, 10);
+        const $user_group_subgroup_row = $(this).closest(".user-group-subgroup-row");
+        const subgroup_id = Number.parseInt($user_group_subgroup_row.attr("data-group-id")!, 10);
         soft_remove_subgroup_id(subgroup_id);
     });
 
-    $container.on("click", ".undo_soft_removed_potential_subgroup", (e) => {
-        e.preventDefault();
-        const $elem = $(e.target);
-        const user_id = Number.parseInt($elem.attr("data-group-id")!, 10);
-        undo_soft_remove_subgroup_id(user_id);
-    });
+    $container.on(
+        "click",
+        ".undo_soft_removed_potential_subgroup",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            const $user_group_subgroup_row = $(this).closest(".user-group-subgroup-row");
+            const subgroup_id = Number.parseInt(
+                $user_group_subgroup_row.attr("data-group-id")!,
+                10,
+            );
+            undo_soft_remove_subgroup_id(subgroup_id);
+        },
+    );
 }
 
 export function build_widgets(): void {

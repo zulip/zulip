@@ -9,10 +9,18 @@
     <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
         <table class="table table-striped wrapped-table">
             <thead class="table-sticky-headers">
-                <th data-sort="alphabetic" data-sort-prop="name" class="upload-file-name">{{t "File" }}</th>
-                <th class="active upload-date" data-sort="numeric" data-sort-prop="create_time">{{t "Date uploaded" }}</th>
-                <th class="upload-mentioned-in" data-sort="mentioned_in">{{t "Mentioned in" }}</th>
-                <th class="upload-size" data-sort="numeric" data-sort-prop="size">{{t "Size" }}</th>
+                <th data-sort="alphabetic" data-sort-prop="name" class="upload-file-name">{{t "File" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th class="active upload-date" data-sort="numeric" data-sort-prop="create_time">{{t "Date uploaded" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th class="upload-mentioned-in" data-sort="mentioned_in">{{t "Mentioned in" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
+                <th class="upload-size" data-sort="numeric" data-sort-prop="size">{{t "Size" }}
+                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                </th>
                 <th class="upload-actions actions">{{t "Actions" }}</th>
             </thead>
             <tbody data-empty="{{t 'You have not uploaded any files.' }}" data-search-results-empty="{{t 'No uploaded files match your current filter.' }}" id="uploaded_files_table"></tbody>

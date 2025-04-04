@@ -5413,90 +5413,180 @@ def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> da
     return billing_period_end
 
 
+def maybe_send_fixed_price_plan_renewal_reminder_email(
+    plan: CustomerPlan, billing_session: BillingSession
+) -> None:
+    # We expect to have both an end date and next invoice date
+    # for this CustomerPlan.
+    assert plan.end_date is not None
+    assert plan.next_invoice_date is not None
+    # The max gap between two months is 62 days (1 Jul - 1 Sep).
+    if plan.end_date - plan.next_invoice_date <= timedelta(days=62):
+        context = {
+            "billing_entity": billing_session.billing_entity_display_name,
+            "end_date": plan.end_date.strftime("%Y-%m-%d"),
+            "support_url": billing_session.support_url(),
+            "notice_reason": "fixed_price_plan_ends_soon",
+        }
+        send_email(
+            "zerver/emails/internal_billing_notice",
+            to_emails=[BILLING_SUPPORT_EMAIL],
+            from_address=FromAddress.tokenized_no_reply_address(),
+            context=context,
+        )
+        plan.reminder_to_review_plan_email_sent = True
+        plan.save(update_fields=["reminder_to_review_plan_email_sent"])
+
+
+def maybe_send_invoice_overdue_email(
+    plan: CustomerPlan,
+    billing_session: BillingSession,
+    next_invoice_date: datetime,
+    last_audit_log_update: datetime | None,
+) -> None:
+    if last_audit_log_update is None:  # nocoverage
+        # We have no audit log data from the remote server at all,
+        # and they have a paid plan or scheduled upgrade, so email
+        # billing support.
+        context = {
+            "billing_entity": billing_session.billing_entity_display_name,
+            "support_url": billing_session.support_url(),
+            "last_audit_log_update": "Never uploaded",
+            "notice_reason": "invoice_overdue",
+        }
+        send_email(
+            "zerver/emails/internal_billing_notice",
+            to_emails=[BILLING_SUPPORT_EMAIL],
+            from_address=FromAddress.tokenized_no_reply_address(),
+            context=context,
+        )
+        plan.invoice_overdue_email_sent = True
+        plan.save(update_fields=["invoice_overdue_email_sent"])
+        return
+
+    if next_invoice_date - last_audit_log_update < timedelta(days=1):  # nocoverage
+        # If it's been less than a day since the last audit log update,
+        # then don't email billing support as the issue with the remote
+        # server could be transient.
+        return
+
+    context = {
+        "billing_entity": billing_session.billing_entity_display_name,
+        "support_url": billing_session.support_url(),
+        "last_audit_log_update": last_audit_log_update.strftime("%Y-%m-%d"),
+        "notice_reason": "invoice_overdue",
+    }
+    send_email(
+        "zerver/emails/internal_billing_notice",
+        to_emails=[BILLING_SUPPORT_EMAIL],
+        from_address=FromAddress.tokenized_no_reply_address(),
+        context=context,
+    )
+    plan.invoice_overdue_email_sent = True
+    plan.save(update_fields=["invoice_overdue_email_sent"])
+
+
+def check_remote_server_audit_log_data(
+    remote_server: RemoteZulipServer, plan: CustomerPlan, billing_session: BillingSession
+) -> bool:
+    # If this is a complimentary access plan without an upgrade scheduled,
+    # we do not need the remote server's audit log data to downgrade the plan.
+    if plan.is_complimentary_access_plan() and plan.status == CustomerPlan.ACTIVE:
+        return True
+
+    # We expect to have a next invoice date for this CustomerPlan.
+    assert plan.next_invoice_date is not None
+    next_invoice_date = plan.next_invoice_date
+    last_audit_log_update = remote_server.last_audit_log_update
+    if last_audit_log_update is None or next_invoice_date > last_audit_log_update:
+        if not plan.invoice_overdue_email_sent:
+            maybe_send_invoice_overdue_email(
+                plan, billing_session, next_invoice_date, last_audit_log_update
+            )
+
+        # We still process free trial plans so that we can directly downgrade them.
+        if plan.is_free_trial() and not plan.charge_automatically:  # nocoverage
+            return True
+
+        # We don't have current audit log data from the remote server,
+        # so we don't have enough information to invoice the plan.
+        return False
+
+    return True
+
+
+def review_and_maybe_invoice_plan(
+    plan: CustomerPlan,
+    event_time: datetime,
+) -> None:
+    remote_server: RemoteZulipServer | None = None
+    if plan.customer.realm is not None:
+        billing_session: BillingSession = RealmBillingSession(realm=plan.customer.realm)
+    elif plan.customer.remote_realm is not None:
+        remote_realm = plan.customer.remote_realm
+        remote_server = remote_realm.server
+        billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
+    elif plan.customer.remote_server is not None:
+        remote_server = plan.customer.remote_server
+        billing_session = RemoteServerBillingSession(remote_server=remote_server)
+
+    if (
+        plan.fixed_price is not None
+        and plan.end_date is not None
+        and not plan.reminder_to_review_plan_email_sent
+    ):
+        maybe_send_fixed_price_plan_renewal_reminder_email(plan, billing_session)
+
+    try_to_invoice_plan = True
+    if remote_server:
+        # We need the audit log data from the remote server to be
+        # current enough for license checks on paid plans.
+        try_to_invoice_plan = check_remote_server_audit_log_data(
+            remote_server, plan, billing_session
+        )
+
+    if try_to_invoice_plan:
+        # plan.next_invoice_date can be None after calling invoice_plan.
+        while plan.next_invoice_date is not None and plan.next_invoice_date <= event_time:
+            billing_session.invoice_plan(plan, plan.next_invoice_date)
+            plan.refresh_from_db()
+
+
 def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
+    failed_customer_ids = set()
     if event_time is None:
         event_time = timezone_now()
     # For complimentary access plans with status SWITCH_PLAN_TIER_AT_PLAN_END, we need
     # to invoice the complimentary access plan followed by the new plan on the same day,
     # hence ordering by ID.
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time).order_by("id"):
-        remote_server: RemoteZulipServer | None = None
-        if plan.customer.realm is not None:
-            billing_session: BillingSession = RealmBillingSession(realm=plan.customer.realm)
-        elif plan.customer.remote_realm is not None:
-            remote_realm = plan.customer.remote_realm
-            remote_server = remote_realm.server
-            billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
-        elif plan.customer.remote_server is not None:
-            remote_server = plan.customer.remote_server
-            billing_session = RemoteServerBillingSession(remote_server=remote_server)
+        if plan.customer.id in failed_customer_ids:  # nocoverage
+            # We've already had a failure for this customer in this
+            # invoicing attempt; skip it so we can process others,
+            # without incorrectly processing other plans on this same
+            # customer.
+            continue
 
-        assert plan.next_invoice_date is not None  # for mypy
-
-        if (
-            plan.fixed_price is not None
-            and not plan.reminder_to_review_plan_email_sent
-            and plan.end_date is not None  # for mypy
-            # The max gap between two months is 62 days. (1 Jul - 1 Sep)
-            and plan.end_date - plan.next_invoice_date <= timedelta(days=62)
-        ):
-            context = {
-                "billing_entity": billing_session.billing_entity_display_name,
-                "end_date": plan.end_date.strftime("%Y-%m-%d"),
-                "support_url": billing_session.support_url(),
-                "notice_reason": "fixed_price_plan_ends_soon",
-            }
-            send_email(
-                "zerver/emails/internal_billing_notice",
-                to_emails=[BILLING_SUPPORT_EMAIL],
-                from_address=FromAddress.tokenized_no_reply_address(),
-                context=context,
-            )
-            plan.reminder_to_review_plan_email_sent = True
-            plan.save(update_fields=["reminder_to_review_plan_email_sent"])
-
-        if remote_server:
-            free_plan_with_no_next_plan = (
-                not plan.is_a_paid_plan() and plan.status == CustomerPlan.ACTIVE
-            )
-            free_trial_pay_by_invoice_plan = plan.is_free_trial() and not plan.charge_automatically
-            last_audit_log_update = remote_server.last_audit_log_update
-            if not free_plan_with_no_next_plan and (
-                last_audit_log_update is None or plan.next_invoice_date > last_audit_log_update
-            ):
-                if (
-                    last_audit_log_update is None
-                    or plan.next_invoice_date - last_audit_log_update >= timedelta(days=1)
-                ) and not plan.invoice_overdue_email_sent:
-                    last_audit_log_update_string = "Never uploaded"
-                    if last_audit_log_update is not None:
-                        last_audit_log_update_string = last_audit_log_update.strftime("%Y-%m-%d")
-                    context = {
-                        "billing_entity": billing_session.billing_entity_display_name,
-                        "support_url": billing_session.support_url(),
-                        "last_audit_log_update": last_audit_log_update_string,
-                        "notice_reason": "invoice_overdue",
-                    }
-                    send_email(
-                        "zerver/emails/internal_billing_notice",
-                        to_emails=[BILLING_SUPPORT_EMAIL],
-                        from_address=FromAddress.tokenized_no_reply_address(),
-                        context=context,
-                    )
-                    plan.invoice_overdue_email_sent = True
-                    plan.save(update_fields=["invoice_overdue_email_sent"])
-
-                # We still process free trial plans so that we can directly downgrade them.
-                # Above emails can serve as a reminder to followup for additional feedback.
-                if not free_trial_pay_by_invoice_plan:
-                    continue
-
-        while (
-            plan.next_invoice_date is not None  # type: ignore[redundant-expr] # plan.next_invoice_date can be None after calling invoice_plan.
-            and plan.next_invoice_date <= event_time
-        ):
-            billing_session.invoice_plan(plan, plan.next_invoice_date)
-            plan.refresh_from_db()
+        try:
+            review_and_maybe_invoice_plan(plan, event_time)
+        except Exception as e:
+            failed_customer_ids.add(plan.customer.id)
+            if isinstance(e, BillingError):
+                billing_logger.exception(
+                    "Invoicing failed: Customer.id: %s, CustomerPlan.id: %s, BillingError: %s",
+                    plan.customer.id,
+                    plan.id,
+                    e.error_description,
+                )
+            elif isinstance(e, AssertionError):  # nocoverage
+                billing_logger.exception(
+                    "Invoicing failed due to AssertionError: Customer.id: %s, CustomerPlan.id: %s",
+                    plan.customer.id,
+                    plan.id,
+                    stack_info=True,
+                )
+            else:
+                billing_logger.exception(e, stack_info=True)  # nocoverage
 
 
 def is_realm_on_free_trial(realm: Realm) -> bool:

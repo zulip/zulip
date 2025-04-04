@@ -816,6 +816,7 @@ class EmptyTopicNameTest(ZulipTestCase):
                 client_capabilities=ClientCapabilities(
                     empty_topic_name=True, notification_settings_null=False
                 ),
+                fetch_event_types=["update_message_flags", "message", "user_topic"],
             )
         self.assertEqual(state_data["unread_msgs"]["streams"][0]["topic"], "")
         self.assertEqual(state_data["unread_msgs"]["streams"][1]["topic"], "")
@@ -830,6 +831,7 @@ class EmptyTopicNameTest(ZulipTestCase):
                 client_capabilities=ClientCapabilities(
                     empty_topic_name=False, notification_settings_null=False
                 ),
+                fetch_event_types=["update_message_flags", "message", "user_topic"],
             )
         self.assertEqual(
             state_data["unread_msgs"]["streams"][0]["topic"], Message.EMPTY_TOPIC_FALLBACK_NAME
