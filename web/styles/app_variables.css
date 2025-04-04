@@ -1292,6 +1292,7 @@
     );
     --color-text-search: light-dark(hsl(0deg 0% 35%), hsl(0deg 0% 100% / 75%));
     --color-text-search-hover: light-dark(hsl(0deg 0% 0%), hsl(0deg 0% 100%));
+    --color-text-placeholder: light-dark(hsl(0deg 0% 45%), hsl(0deg 0% 55%));
     --color-text-search-placeholder: light-dark(
         hsl(0deg 0% 50%),
         hsl(0deg 0% 100% / 50%)
