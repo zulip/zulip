@@ -60,7 +60,16 @@ $(() => {
 
     $("#registration, #password_reset, #create_realm").validate({
         rules: {
-            password: "password_strength",
+            password: {
+                password_strength: {
+                    depends(element: HTMLElement): boolean {
+                        // In the registration flow where the user is required to
+                        // enter their LDAP password, we don't check password strength,
+                        // and the validator method is not even set up.
+                        return element.id !== "ldap-password";
+                    },
+                },
+            },
             new_password1: "password_strength",
         },
         errorElement: "p",
