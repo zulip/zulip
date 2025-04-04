@@ -1061,6 +1061,10 @@
         hsl(50deg 75% 92%),
         hsl(50deg 75% 12%)
     );
+    --color-border-compose-content: light-dark(
+        hsl(0deg 0% 0% / 10%),
+        hsl(0deg 0% 0% / 40%)
+    );
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
     --color-compose-send-button-background: hsl(240deg 96% 68%);
     --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);

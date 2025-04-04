@@ -313,12 +313,7 @@
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    #compose-content {
-        border-color: hsl(0deg 0% 0% / 60%);
-    }
-
     /* Not that .message_row (below) needs to be more contrast on dark theme */
-    #compose-content,
     .message-feed .recipient_row,
     .message_row,
     .overlay-message-row .overlay-message-info-box,
