@@ -8,15 +8,6 @@
     }
 
     /************************* MODAL DARK THEME *******************/
-    .modal__close {
-        &::before {
-            color: hsl(236deg 33% 90%);
-        }
-
-        &:hover {
-            background: hsl(0deg 0% 91% / 10%);
-        }
-    }
 
     #message-formatting,
     #keyboard-shortcuts {
