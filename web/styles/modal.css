@@ -130,7 +130,7 @@
     max-width: calc(100% - 48px);
 
     &.simplebar-scrollable-y + .modal__footer {
-        border-top: 1px solid hsl(0deg 0% 87%);
+        border-top: 1px solid var(--color-border-modal-footer);
     }
 }
 
