@@ -355,7 +355,7 @@ div.overlay {
     height: 100%;
     -webkit-overflow-scrolling: touch;
 
-    background-color: hsl(0deg 0% 13% / 80%);
+    background-color: var(--color-background-overlay);
     z-index: 105;
 
     pointer-events: none;

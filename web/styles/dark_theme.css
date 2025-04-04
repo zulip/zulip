@@ -321,18 +321,6 @@
         border-color: hsl(0deg 0% 0% / 40%);
     }
 
-    & div.overlay,
-    #subscription_overlay
-        #stream-creation
-        #stream_creation_form
-        #stream_creating_indicator:not(:empty),
-    #groups_overlay
-        #user-group-creation
-        #user_group_creation_form
-        #user_group_creating_indicator:not(:empty) {
-        background-color: hsl(212deg 28% 8% / 75%);
-    }
-
     & div.overlay .flex.overlay-content > .overlay-container,
     #settings_page,
     .informational-overlays .overlay-content {

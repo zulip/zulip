@@ -1005,7 +1005,9 @@ h4.user_group_setting_subsection_title {
                     display: flex !important;
                     justify-content: center;
                     align-items: center;
-                    background-color: hsl(0deg 0% 100% / 90%);
+                    background-color: var(
+                        --color-background-non-empty-overlay-indicator
+                    );
                     z-index: 1;
                 }
 
