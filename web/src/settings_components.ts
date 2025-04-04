@@ -574,10 +574,6 @@ export function change_save_button_state($element: JQuery, state: string): void 
 
             $element.find(".discard-button").show();
             break;
-        case "saved":
-            data_status = "";
-            is_show = false;
-            break;
         case "saving":
             // We don't change the button text on the saving
             // state to avoid changing the button size while

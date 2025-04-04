@@ -189,12 +189,6 @@ function test_change_save_button_state() {
         assert.equal(props.hidden, true);
     }
     {
-        settings_components.change_save_button_state($save_button_controls, "saved");
-        assert.equal($save_button_text.text(), "translated: Save changes");
-        assert.equal(props.hidden, true);
-        assert.equal($save_button.attr("data-status"), "");
-    }
-    {
         settings_components.change_save_button_state($save_button_controls, "saving");
         assert.equal($save_button.attr("data-status"), "saving");
         assert.equal($discard_button.visible(), false);
