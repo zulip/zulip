@@ -16,6 +16,9 @@ mock_esm("autosize", {default: autosize});
 mock_esm("../src/message_lists", {
     current: {},
 });
+mock_esm("../src/compose_validate", {
+    clear_quoting_in_progress_warning: noop,
+});
 
 const compose_ui = zrequire("compose_ui");
 const stream_data = zrequire("stream_data");

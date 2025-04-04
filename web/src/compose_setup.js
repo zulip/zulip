@@ -102,6 +102,19 @@ export function initialize() {
 
     $("#compose form").on("submit", (e) => {
         e.preventDefault();
+
+        // Generates the banner for the first send try when message
+        // retrieval is still in progress.
+        // Removes it during the second try if still in progress.
+        compose_validate.warn_if_quoting_in_progress($("#compose_banners"));
+
+        if ($("#compose_banners").hasClass("showing-quoting-in-progress-banner")) {
+            return;
+        }
+        // The warning banner is now gone.
+        // We remove this css class flag as we've
+        // decided to send anyways with the placeholder.
+        $("#compose_banners").removeClass("message-content-quoting-in-progress");
         compose.finish();
     });
 
@@ -144,6 +157,29 @@ export function initialize() {
                 // would again show the wildcard warning banner when we actually send the message from 'send-later' modal.
                 compose_validate.set_user_acknowledged_stream_wildcard_flag(true);
             } else {
+                compose.finish();
+            }
+        },
+    );
+    $("body").on(
+        "click",
+        `.${CSS.escape(
+            compose_banner.CLASSNAMES.quoting_in_progress,
+        )} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            const $edit_banners_container = $(event.target).closest(".edit_form_banners");
+            if ($edit_banners_container.length > 0) {
+                const $row = $edit_banners_container.closest(".message_row");
+                $edit_banners_container.removeClass("message-content-quoting-in-progress");
+                message_edit.save_message_row_edit($row);
+            } else {
+                // compose-box `Send` button.
+
+                // We remove this css class flag as well the banner as we've
+                // decided to send anyways with the placeholder.
+                compose_validate.clear_quoting_in_progress_warning($edit_banners_container);
+                $("#compose_banners").removeClass("message-content-quoting-in-progress");
                 compose.finish();
             }
         },

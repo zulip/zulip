@@ -454,6 +454,55 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
     }
 }
 
+export let clear_quoting_in_progress_warning = function ($banner_container: JQuery): void {
+    $banner_container
+        .find(`.${CSS.escape(compose_banner.CLASSNAMES.quoting_in_progress)}`)
+        .remove();
+    $banner_container.removeClass("showing-quoting-in-progress-banner");
+};
+
+export function rewire_clear_quoting_in_progress_warning(
+    value: typeof clear_quoting_in_progress_warning,
+): void {
+    clear_quoting_in_progress_warning = value;
+}
+
+export function warn_if_quoting_in_progress($banner_container: JQuery): void {
+    // We only show the warning banner if it is not triggered beforehand AND quoting is in progress.
+    // In case it is displayed beforehand, we remove it.
+    if (
+        $banner_container.hasClass("message-content-quoting-in-progress") &&
+        !$banner_container.hasClass("showing-quoting-in-progress-banner")
+    ) {
+        const button_text = $t({defaultMessage: "Send now"});
+        const is_edit_container = $banner_container.closest(".edit_form_banners").length > 0;
+        const context = {
+            banner_type: compose_banner.WARNING,
+            banner_text: $t({
+                defaultMessage: `Quoting is in progress. Consider waiting until it completes before sending your message.`,
+            }),
+            button_text,
+            classname: compose_banner.CLASSNAMES.quoting_in_progress,
+        };
+        if (is_edit_container) {
+            context.banner_text = $t({
+                defaultMessage: `Quoting is in progress. Consider waiting until it completes before saving your message.`,
+            });
+            context.button_text = $t({defaultMessage: "Save now"});
+        }
+        const new_row_html = render_compose_banner(context);
+        const appended = compose_banner.append_compose_banner_to_banner_list(
+            $(new_row_html),
+            $banner_container,
+        );
+        if (appended) {
+            $banner_container.addClass("showing-quoting-in-progress-banner");
+        }
+    } else {
+        clear_quoting_in_progress_warning($banner_container);
+    }
+}
+
 export function warn_if_in_search_view(): void {
     const filter = narrow_state.filter();
     if (filter && !filter.supports_collapsing_recipients()) {

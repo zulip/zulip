@@ -87,6 +87,7 @@ const people = zrequire("people");
 const compose_state = zrequire("compose_state");
 const compose_actions = zrequire("compose_actions");
 const compose_reply = zrequire("compose_reply");
+const compose_validate = zrequire("compose_validate");
 const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
@@ -448,6 +449,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
 
     override_rewire(compose_actions, "complete_starting_tasks", noop);
     override_rewire(compose_actions, "clear_textarea", noop);
+    override_rewire(compose_validate, "clear_quoting_in_progress_warning", noop);
     override_private_message_recipient({override});
 
     let selected_message;

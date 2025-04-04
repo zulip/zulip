@@ -7,10 +7,12 @@ import * as fenced_code from "../shared/src/fenced_code.ts";
 
 import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
+import * as compose_banner from "./compose_banner.ts";
 import * as compose_paste from "./compose_paste.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as compose_validate from "./compose_validate.ts";
 import * as copy_messages from "./copy_messages.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -320,14 +322,32 @@ export function quote_message(opts: {
         return;
     }
 
+    const $banner_container = compose_banner.get_compose_banner_container($textarea);
+    $banner_container.addClass("message-content-quoting-in-progress");
+    // Remove previous quoting warning banners for this container, if any.
+    compose_validate.clear_quoting_in_progress_warning($banner_container);
     void channel.get({
         url: "/json/messages/" + message_id,
         data: {allow_empty_topic_name: true},
         success(raw_data) {
+            compose_validate.clear_quoting_in_progress_warning($banner_container);
+            $banner_container.removeClass("message-content-quoting-in-progress");
             const data = z.object({raw_content: z.string()}).parse(raw_data);
+
+            // It is useful to cache the quoted message content
+            // in interactions where user initiates an action
+            // to quote the full message and sends with the
+            // placeholder text being unreplaced because of force
+            // sending before the message is fetched from this GET request.
+            // If this is a mistake, the user will try to quote the
+            // message again which will probably be fetched
+            // and cached by then.
+            message.raw_content = data.raw_content;
             replace_content(message, data.raw_content);
         },
         error() {
+            $banner_container.removeClass("message-content-quoting-in-progress");
+            compose_validate.clear_quoting_in_progress_warning($banner_container);
             compose_ui.replace_syntax(
                 quoting_placeholder,
                 $t({defaultMessage: "[Error fetching message content.]"}),

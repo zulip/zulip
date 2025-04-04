@@ -378,6 +378,20 @@ function handle_keydown(
                 }
             } else {
                 // Enter
+
+                // Generates the banner for the first send try when message
+                // retrieval is still in progress.
+                // Removes it during the second try if still in progress.
+                compose_validate.warn_if_quoting_in_progress($("#compose_banners"));
+
+                if ($("#compose_banners").hasClass("showing-quoting-in-progress-banner")) {
+                    return;
+                }
+                // The warning banner is now gone.
+                // We remove this css class flag as we've
+                // decided to send anyways with the placeholder.
+                $("#compose_banners").removeClass("message-content-quoting-in-progress");
+
                 if (should_enter_send(e)) {
                     e.preventDefault();
                     if (

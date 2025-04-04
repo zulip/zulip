@@ -1241,6 +1241,15 @@ export function save_message_row_edit($row: JQuery): void {
         }
     }
 
+    compose_validate.warn_if_quoting_in_progress($banner_container);
+    if ($banner_container.hasClass("showing-quoting-in-progress-banner")) {
+        // We are showing the warning, so won't save at this point.
+        // The next time this function is called in the same quoting state
+        // we will force save with the quoting placeholder.
+        return;
+    }
+    $banner_container.removeClass("message-content-quoting-in-progress");
+
     show_message_edit_spinner($row);
 
     // Editing a not-yet-acked message (because the original send attempt failed)
