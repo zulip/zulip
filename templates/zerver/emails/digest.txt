@@ -8,8 +8,7 @@
 {% if new_channels.plain %}** {% trans %}New channels{% endtrans %} **
     {{ new_channels.plain|display_list(1000) }}.
 {% endif %}
-
-{% trans organization_url=realm_url %}Click here to log in to Zulip and catch up: {{ organization_url }}.{% endtrans %}
+{% trans organization_url=realm_url %}Log in to Zulip to catch up: {{ organization_url }}.{% endtrans %}
 
 --
 {% trans %}Manage email preferences:{% endtrans %}
