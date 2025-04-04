@@ -340,7 +340,6 @@
         opacity: 0.2;
     }
 
-    .narrow_to_compose_recipients,
     .close {
         color: hsl(236deg 33% 80%);
     }
