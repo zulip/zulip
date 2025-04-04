@@ -541,20 +541,27 @@ export function change_save_button_state($element: JQuery, state: string): void 
     const $save_button = $element.find(".save-button");
     const $textEl = $save_button.find(".action-button-label");
 
-    if (state !== "saving") {
-        buttons.hide_button_loading_indicator($save_button);
-    }
-
     if (state === "discarded") {
-        let hide_delay = 0;
-        if ($save_button.attr("data-status") === "saved") {
-            // Keep saved button displayed a little longer.
-            hide_delay = 500;
+        if (
+            // When the save button is in the "saving" or "saved" state,
+            // we don't want the realm sync settings logic to hide the
+            // save discard widget before the success callback could show the
+            // "saved" state in the button.  Moreover, the visibility of the
+            // save discard widget will be handled by either the "succeeded"
+            // or the "failed" state after the request is complete.
+            $save_button.attr("data-status") === "saved" ||
+            $save_button.attr("data-status") === "saving"
+        ) {
+            return;
         }
-        show_hide_element($element, false, hide_delay, () => {
+        show_hide_element($element, false, 0, () => {
             enable_or_disable_save_button($element.closest(".settings-subsection-parent"));
         });
         return;
+    }
+
+    if (state !== "saving") {
+        buttons.hide_button_loading_indicator($save_button);
     }
 
     let button_text = $t({defaultMessage: "Save changes"});
