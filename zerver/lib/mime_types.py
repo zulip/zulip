@@ -39,6 +39,9 @@ INLINE_MIME_TYPES = [
     "text/plain",
     "video/mp4",
     "video/webm",
+    "audio/mpeg",
+    "audio/aac",
+    "audio/ogg",
     # To avoid cross-site scripting attacks, DO NOT add types such
     # as application/xhtml+xml, application/x-shockwave-flash,
     # image/svg+xml, text/html, or text/xml.

@@ -472,6 +472,19 @@
       "text_content": "Google link\n"
     },
     {
+      "name": "only_inline_audio",
+      "input": "http://example.com/audio.mp3",
+      "expected_output": "<audio class=\"media_container_audio\" controls data-original-url=\"http://example.com/audio.mp3\" preload=\"metadata\" src=\"https://external-content.zulipcdn.net/external_content/57cf2db553c3f6cc2af6781c11232e70983f4762/687474703a2f2f6578616d706c652e636f6d2f617564696f2e6d7033\"></audio>",
+      "backend_only_rendering": true
+    },
+    {
+      "name": "only_named_inline_audio",
+      "input": "[Audio link](http://example.com/audio.mp3)",
+      "expected_output": "<p><a href=\"http://example.com/audio.mp3\">Audio link</a></p>\n<audio class=\"media_container_audio\" controls data-original-url=\"http://example.com/audio.mp3\" preload=\"metadata\" src=\"https://external-content.zulipcdn.net/external_content/57cf2db553c3f6cc2af6781c11232e70983f4762/687474703a2f2f6578616d706c652e636f6d2f617564696f2e6d7033\"></audio>",
+      "backend_only_rendering": true,
+      "text_content": "Audio link\n"
+    },
+    {
       "name": "link_with_text",
       "input": "[hello](https://github.com)",
       "expected_output": "<p><a href=\"https://github.com\">hello</a></p>"

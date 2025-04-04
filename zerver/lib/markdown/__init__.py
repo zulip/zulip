@@ -552,16 +552,16 @@ class InlineImageProcessor(markdown.treeprocessors.Treeprocessor):
             img.set("src", get_camo_url(url))
 
 
-class InlineVideoProcessor(markdown.treeprocessors.Treeprocessor):
+class MediaSourceTreeProcessor(markdown.treeprocessors.Treeprocessor):
     """
-    Rewrite inline video tags to serve external content via Camo.
+    Rewrite inline audio / video tags to serve external content via Camo.
 
-    This rewrites all video, except ones that are served from the current
+    This rewrites all media files, except ones that are served from the current
     realm or global STATIC_URL. This is to ensure that each realm only loads
-    videos that are hosted on that realm or by the global installation,
+    media that are hosted on that realm or by the global installation,
     avoiding information leakage to external domains or between realms. We need
-    to disable proxying of videos hosted on the same realm, because otherwise
-    we will break videos in /user_uploads/, which require authorization to
+    to disable proxying of media hosted on the same realm, because otherwise
+    we will break media in /user_uploads/, which require authorization to
     view.
     """
 
@@ -572,18 +572,25 @@ class InlineVideoProcessor(markdown.treeprocessors.Treeprocessor):
     @override
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
-        found_videos = walk_tree(root, lambda e: e if e.tag == "video" else None)
-        for video in found_videos:
-            url = video.get("src")
+        found_media = walk_tree(root, lambda e: e if e.tag in ["audio", "video"] else None)
+        for media in found_media:
+            url = media.get("src")
             assert url is not None
             if is_static_or_current_realm_url(url, self.zmd.zulip_realm):
-                # Don't rewrite videos on our own site (e.g. user uploads).
+                # Don't rewrite media on our own site (e.g. user uploads).
                 continue
-            # The href= is still set to the non-Camo'd version, which
-            # is used by clients to play the full video without
-            # imposing load on the Camo server; this src is used to
-            # load the initial thumbnail and metadata (through Camo)
-            video.set("src", get_camo_url(url))
+
+            if media.tag == "video":
+                # The href= is still set to the non-Camo'd version, which
+                # is used by clients to play the full media without
+                # imposing load on the Camo server; this src is used to
+                # load the initial thumbnail and metadata (through Camo)
+                media.set("src", get_camo_url(url))
+            elif media.tag == "audio":
+                media.set("data-original-url", url)
+                media.set("src", get_camo_url(url))
+            else:
+                raise AssertionError("Unexpected media tag!")
 
 
 class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
@@ -1244,6 +1251,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         supported_mimetypes = ["video/mp4", "video/webm"]
         return url_type in supported_mimetypes
 
+    def is_audio(self, url: str) -> bool:
+        url_type = mimetypes.guess_type(url)[0]
+        # Support only audio formats (containers) that are supported cross-browser and cross-device. As per
+        # https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Containers#index_of_media_container_formats_file_types
+        supported_mimetypes = ["audio/mpeg", "audio/aac", "audio/ogg"]
+        return url_type in supported_mimetypes
+
     def add_video(
         self,
         root: Element,
@@ -1269,13 +1283,34 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         video.set("src", url)
         video.set("preload", "metadata")
 
-    def handle_video_inlining(
+    def add_audio(
+        self,
+        root: Element,
+        url: str,
+        class_attr: str = "media_container_audio",
+        insertion_index: int | None = None,
+    ) -> None:
+        if insertion_index is not None:
+            audio = Element("audio")
+            root.insert(insertion_index, audio)
+        else:
+            audio = SubElement(root, "audio")
+
+        audio.set("class", class_attr)
+        audio.set("controls", "controls")
+        audio.set("src", url)
+        audio.set("preload", "metadata")
+
+    def handle_media_inlining(
         self, root: Element, found_url: ResultWithFamily[tuple[str, str | None]]
     ) -> None:
         info = self.get_inlining_information(root, found_url)
         url = found_url.result[0]
 
-        self.add_video(info["parent"], url, info["title"], insertion_index=info["index"])
+        if self.is_video(url):
+            self.add_video(info["parent"], url, info["title"], insertion_index=info["index"])
+        else:
+            self.add_audio(info["parent"], url, insertion_index=info["index"])
 
         if info["remove"] is not None:
             info["parent"].remove(info["remove"])
@@ -1333,8 +1368,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             else:
                 continue
 
-            if self.is_video(url):
-                self.handle_video_inlining(root, found_url)
+            if self.is_video(url) or self.is_audio(url):
+                self.handle_media_inlining(root, found_url)
                 continue
 
             dropbox_image = self.dropbox_image(url)
@@ -2469,7 +2504,7 @@ class ZulipMarkdown(markdown.Markdown):
         )
         if settings.CAMO_URI:
             treeprocessors.register(InlineImageProcessor(self), "rewrite_images_proxy", 10)
-            treeprocessors.register(InlineVideoProcessor(self), "rewrite_videos_proxy", 10)
+            treeprocessors.register(MediaSourceTreeProcessor(self), "rewrite_media_proxy", 10)
         return treeprocessors
 
     def build_postprocessors(self) -> markdown.util.Registry[markdown.postprocessors.Postprocessor]:

@@ -241,10 +241,11 @@ assume that messages sent prior to the introduction of thumbnailing
 have been re-rendered to use the new format or have thumbnails
 available.
 
-## Video previews
+## Video embeddings and previews
 
-When a Zulip message is sent linking to an uploaded video, Zulip will
+When a Zulip message is sent linking to an uploaded video, Zulip may
 generate a video preview element with the following format.
+
 
 ``` html
 <div class="message_inline_image message_inline_video">
@@ -254,6 +255,29 @@ generate a video preview element with the following format.
   </a>
 </div>
 ```
+
+## Audio previews
+
+When a Zulip message is sent linking to an uploaded audio file, Zulip
+will generate an HTML audio player element with the following format.
+
+``` html
+<audio class="media_container_audio" controls preload="metadata"
+  src="/user_uploads/path/to/audio.mp3">
+</audio>
+```
+
+If the Zulip server has rewritten the URL of the audio file, it will
+provide the URL in a `data-original-url` parameter.
+
+``` html
+<audio class="media_container_audio" controls preload="metadata"
+  data-original-url="https://example.com/path/to/original/file.mp3"
+  src="https://example.com/path/to/playable/file.mp3">
+</audio>
+```
+
+**Changes**: New in Zulip 11.0 (feature level ZF-59bb5b).
 
 ## Mentions and silent mentions
 
