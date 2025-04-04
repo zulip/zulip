@@ -720,7 +720,7 @@ A temporary team so that I can get some webhook fixtures!
         self.check_webhook("pull_request__converted_to_draft", expected_topic, expected_message)
 
     def test_pull_request_labeled(self) -> None:
-        expected_message = "[username](https://github.com/username) added the bug label to [PR #123](https://github.com/org/repo/pull/123)"
+        expected_message = "[username](https://github.com/username) added the `bug` label to [PR #123](https://github.com/org/repo/pull/123)"
         expected_topic = "repo / PR #123 Test PR"
         self.check_webhook("pull_request__labeled", expected_topic, expected_message)
 

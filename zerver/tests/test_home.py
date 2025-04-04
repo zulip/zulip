@@ -57,6 +57,7 @@ class HomeTest(ZulipTestCase):
         "presence_history_limit_days_for_web_app",
         "promote_sponsoring_zulip",
         "request_language",
+        "show_try_zulip_modal",
         "show_webathena",
         "state_data",
         "test_suite",
@@ -375,6 +376,7 @@ class HomeTest(ZulipTestCase):
             "promote_sponsoring_zulip",
             "realm_rendered_description",
             "request_language",
+            "show_try_zulip_modal",
             "show_webathena",
             "state_data",
             "test_suite",
@@ -385,6 +387,12 @@ class HomeTest(ZulipTestCase):
         ]
         self.assertCountEqual(page_params, expected_keys)
         self.assertIsNone(page_params["state_data"])
+
+        with self.settings(DEVELOPMENT=True):
+            result = self.client_get("/?show_try_zulip_modal")
+        self.assertEqual(result.status_code, 200)
+        page_params = self._get_page_params(result)
+        self.assertEqual(page_params["show_try_zulip_modal"], True)
 
     def test_realm_authentication_methods(self) -> None:
         realm = get_realm("zulip")

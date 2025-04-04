@@ -7,12 +7,6 @@
  *
  * Designed and built with all the love in the world @twitter by @mdo and @fat.
  */
-footer,
-header,
-nav,
-section {
-  display: block;
-}
 a:focus {
   outline: thin dotted #333;
   outline: 5px auto -webkit-focus-ring-color;
@@ -34,28 +28,8 @@ img {
   vertical-align: middle;
   border: 0;
 }
-button,
-input {
-  margin: 0;
-  font-size: 100%;
-  vertical-align: middle;
-}
-button,
-input {
-  line-height: normal;
-}
-button::-moz-focus-inner,
-input::-moz-focus-inner {
-  padding: 0;
-  border: 0;
-}
 button {
   -webkit-appearance: button;
-  cursor: pointer;
-}
-label,
-button {
-  cursor: pointer;
 }
 p {
   margin: 0 0 10px;
@@ -108,32 +82,9 @@ hr {
 form {
   margin: 0 0 20px;
 }
-label,
-input,
-button {
-  font-size: 14px;
-  font-weight: normal;
-  line-height: 20px;
-}
-input,
-button {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
 label {
   display: block;
   margin-bottom: 5px;
-}
-input:-moz-placeholder {
-  color: #999999;
-}
-input:-ms-input-placeholder {
-  color: #999999;
-}
-input::-webkit-input-placeholder {
-  color: #999999;
-}
-input {
-  margin-left: 0;
 }
 input[disabled],
 input[readonly] {
@@ -172,17 +123,4 @@ button.close {
   background: transparent;
   border: 0;
   -webkit-appearance: none;
-}
-@-ms-viewport {
-  width: device-width;
-}
-@media (min-width: 768px) and (max-width: 979px) {
-  input {
-    margin-left: 0;
-  }
-}
-@media (min-width: 1180px) {
-  input {
-    margin-left: 0;
-  }
 }

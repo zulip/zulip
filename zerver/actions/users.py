@@ -13,6 +13,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import get_language
 
+from zerver.actions.streams import send_peer_remove_events
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
@@ -383,6 +384,19 @@ def send_update_events_for_anonymous_group_settings(
 
 
 def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
+    subscribed_streams = get_streams_for_user(
+        user_profile,
+        include_public=False,
+        include_subscribed=True,
+    )
+    altered_user_dict: dict[int, set[int]] = defaultdict(set)
+    streams: list[Stream] = []
+    for stream in subscribed_streams:
+        altered_user_dict[stream.id].add(user_profile.id)
+        streams.append(stream)
+
+    send_peer_remove_events(user_profile.realm, streams, altered_user_dict)
+
     event_deactivate_user = dict(
         type="realm_user",
         op="update",

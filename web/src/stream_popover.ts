@@ -616,7 +616,12 @@ export async function build_move_topic_to_stream_popover(
         if ($("#move_topic_modal select.message_edit_topic_propagate").val() === "change_one") {
             return false;
         }
-        const {new_topic_name} = get_params_from_form();
+        let {new_topic_name} = get_params_from_form();
+        if (!settings_data.user_can_move_messages_to_another_topic()) {
+            // new_topic_name is undefined since the new topic input is disabled when
+            // user does not have permission to edit topic.
+            new_topic_name = args.topic_name;
+        }
         assert(new_topic_name !== undefined);
         // Don't show warning for empty topic as the user is probably
         // about to type a new topic name. Note that if topics are
@@ -766,6 +771,20 @@ export async function build_move_topic_to_stream_popover(
         }
     }
 
+    function setup_resize_observer($topic_input: JQuery<HTMLInputElement>): void {
+        // Update position of topic typeahead because showing/hiding the
+        // "topic already exists" warning changes the size of the modal.
+        const update_topic_typeahead_position = new ResizeObserver((_entries) => {
+            requestAnimationFrame(() => {
+                $topic_input.trigger(new $.Event("typeahead.refreshPosition"));
+            });
+        });
+        const move_topic_form = document.querySelector("#move_topic_form");
+        if (move_topic_form) {
+            update_topic_typeahead_position.observe(move_topic_form);
+        }
+    }
+
     function move_topic_post_render(): void {
         $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
         $("#move_topic_modal .move_topic_warning_container").hide();
@@ -807,6 +826,8 @@ export async function build_move_topic_to_stream_popover(
             });
         }
 
+        setup_resize_observer($topic_input);
+
         if (only_topic_edit) {
             // Set select_stream_id to current_stream_id since we user is not allowed
             // to edit stream in topic-edit only UI.
@@ -844,24 +865,13 @@ export async function build_move_topic_to_stream_popover(
         render_selected_stream();
         $("#move_topic_to_stream_widget").prop("disabled", disable_stream_input);
         $topic_input.on("input", () => {
-            update_submit_button_disabled_state(current_stream_id);
+            assert(stream_widget_value !== undefined);
+            update_submit_button_disabled_state(stream_widget_value);
             maybe_show_topic_already_exists_warning();
             const topic_input_value = $topic_input.val();
             assert(topic_input_value !== undefined);
             update_topic_input_placeholder_visibility(topic_input_value);
         });
-
-        // Update position of topic typeahead because showing/hiding the
-        // "topic already exists" warning changes the size of the modal.
-        const update_topic_typeahead_position = new ResizeObserver((_entries) => {
-            requestAnimationFrame(() => {
-                $topic_input.trigger(new $.Event("typeahead.refreshPosition"));
-            });
-        });
-        const move_topic_form = document.querySelector("#move_topic_form");
-        if (move_topic_form) {
-            update_topic_typeahead_position.observe(move_topic_form);
-        }
 
         if (!args.from_message_actions_popover) {
             update_move_messages_count_text("change_all");

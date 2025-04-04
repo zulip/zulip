@@ -8,6 +8,7 @@ import render_compose from "../templates/compose.hbs";
 import render_message_feed_bottom_whitespace from "../templates/message_feed_bottom_whitespace.hbs";
 import render_message_feed_errors from "../templates/message_feed_errors.hbs";
 import render_navbar from "../templates/navbar.hbs";
+import render_try_zulip_modal from "../templates/try_zulip_modal.hbs";
 
 import * as about_zulip from "./about_zulip.ts";
 import * as activity from "./activity.ts";
@@ -40,6 +41,7 @@ import * as condense from "./condense.ts";
 import * as copy_messages from "./copy_messages.ts";
 import * as desktop_integration from "./desktop_integration.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
+import * as dialog_widget from "./dialog_widget.ts";
 import * as drafts from "./drafts.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as echo from "./echo.ts";
@@ -719,8 +721,33 @@ export function initialize_everything(state_data) {
     $("#app-loading").addClass("loaded");
 }
 
+function show_try_zulip_modal() {
+    const html_body = render_try_zulip_modal();
+    dialog_widget.launch({
+        text_heading: i18n.$t({defaultMessage: "Welcome to the Zulip development community!"}),
+        html_body,
+        html_submit_button: i18n.$t({defaultMessage: "Let's go!"}),
+        on_click() {
+            // Do nothing
+        },
+        single_footer_button: true,
+        focus_submit_on_open: true,
+        close_on_submit: true,
+    });
+}
+
 $(() => {
+    // Remove '?show_try_zulip_modal', if present.
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("show_try_zulip_modal")) {
+        url.searchParams.delete("show_try_zulip_modal");
+        window.history.replaceState(window.history.state, "", url.toString());
+    }
+
     if (page_params.is_spectator) {
+        if (page_params.show_try_zulip_modal) {
+            show_try_zulip_modal();
+        }
         const data = {
             apply_markdown: true,
             client_capabilities: JSON.stringify({

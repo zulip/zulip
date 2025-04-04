@@ -18,17 +18,6 @@
     }
 
     /************************* MODAL DARK THEME *******************/
-    .user-profile-manage-own-edit-button,
-    .user-profile-manage-others-edit-button,
-    .user-profile-manage-own-copy-link-button {
-        color: hsl(200deg 100% 50%);
-        cursor: pointer;
-
-        &:hover {
-            color: hsl(200deg 79% 66%);
-        }
-    }
-
     .modal__content.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid hsl(0deg 0% 100% / 20%);
     }

@@ -1,4 +1,4 @@
-<tr>
+<tr class="settings-subscriber-row" data-user-id="{{user_id}}" >
     <td class="panel_user_list">
         {{> ../user_display_only_pill . display_value=full_name strikethrough=soft_removed is_active=true}}
     </td>
@@ -9,9 +9,9 @@
     {{/if}}
     <td>
         {{#if soft_removed}}
-            <button data-user-id="{{user_id}}" class="undo_soft_removed_potential_subscriber button small rounded white">{{t 'Add' }}</button>
+            {{> ../components/action_button custom_classes="undo_soft_removed_potential_subscriber" label=(t "Add") attention="quiet" intent="neutral" aria-label=(t "Add") }}
         {{else}}
-            <button data-user-id="{{user_id}}" class="remove_potential_subscriber button small rounded white">{{t 'Remove' }}</button>
+            {{> ../components/action_button custom_classes="remove_potential_subscriber" label=(t "Remove") attention="quiet" intent="neutral" aria-label=(t "Remove") }}
         {{/if}}
     </td>
 </tr>

@@ -127,7 +127,7 @@ def get_pull_request_milestoned_body(helper: Helper) -> str:
         user_name=f"**{get_sender_name(payload)}**",
         action="added" if payload["action"] == "milestoned" else "removed",
         url=pull_request["html_url"].tame(check_string),
-        number=pull_request["number"].tame(check_string),
+        number=str(pull_request["number"]).tame(check_int),
         milestone_name=payload["milestone"]["title"].tame(check_string),
         milestone_url=payload["milestone"]["html_url"].tame(check_string),
         user_url=get_sender_url(payload).tame(check_string),
@@ -142,7 +142,7 @@ def get_pull_request_approved_body(helper: Helper) -> str:
         user_name=f"**{get_sender_name(payload)}**",
         action="approved".tame(check_string),
         url=pull_request["html_url"].tame(check_string),
-        number=pull_request["number"].tame(check_string),
+        number=str(pull_request["number"]).tame(check_int),
         title=pull_request["title"].tame(check_string) if helper.include_title else None,
     )
 
@@ -154,7 +154,7 @@ def get_pull_request_converted_to_draft_body(helper: Helper) -> str:
         user_name=f"**{get_sender_name(payload)}**",
         action="converted to draft".tame(check_string),
         url=pull_request["html_url"].tame(check_string),
-        number=pull_request["number"].tame(check_string),
+        number=str(pull_request["number"]).tame(check_int),
         title=pull_request["title"].tame(check_string) if helper.include_title else None,
     )
 
@@ -167,7 +167,7 @@ def get_pull_request_labeled_body(helper: Helper) -> str:
         user_name=f"**{get_sender_name(payload)}**",
         action="added" if payload["action"] == "labeled" else "removed",
         url=pull_request["html_url"].tame(check_string),
-        number=pull_request["number"].tame(check_string),
+        number=str(pull_request["number"]).tame(check_int),
         label_name=label_name,
         user_url=get_sender_url(payload).tame(check_string),
         title=pull_request["title"].tame(check_string) if helper.include_title else None,
@@ -185,7 +185,7 @@ def get_pull_request_review_request_removed_body(helper: Helper) -> str:
     else:
         team_reviewer = payload["requested_team"]
         reviewers = f"[{team_reviewer['name'].tame(check_string)}]({team_reviewer['html_url'].tame(check_string)})"
-    message = f"**{get_sender_name(payload)}** removed {reviewers} as a reviewer from [PR #{pull_request['number'].tame(check_string)}]({pull_request['html_url'].tame(check_string)})"
+    message = f"**{get_sender_name(payload)}** removed {reviewers} as a reviewer from [PR #{str(pull_request['number']).tame(check_string)}]({pull_request['html_url'].tame(check_string)})"
     return message
 
 

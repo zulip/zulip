@@ -14,8 +14,8 @@ To **import data** from [Slack][slack-import], [Mattermost][mattermost-import], 
 server][zulip-server-import], follow the linked instructions.
 
 You can **try out Zulip** before setting up your own server by [checking
-it out](https://zulip.com/try-zulip/) in the Zulip development community, or
-[creating a free test organization](https://zulip.com/new/) on Zulip Cloud.
+it out](https://chat.zulip.org/?show_try_zulip_modal) in the Zulip development community,
+or [creating a free test organization](https://zulip.com/new/) on Zulip Cloud.
 
 :::{note}
 These instructions are for self-hosting Zulip. To

@@ -20,15 +20,23 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 11.0
 
-Feature levels 372-375 reserved for future use in 10.x maintenance
+**Feature level 377**
+
+* [`GET /events`](/api/get-events): When a user is deactivate, send
+  `peer_remove` event to all the subscribers of the streams that the
+  user was subscribed to.
+
+Feature levels 373-376 reserved for future use in 10.x maintenance
 releases.
 
-## Changes in Zulip 10.0
+## Changes in Zulip 10.1
 
 **Feature level 372**
 
 * [`POST /typing`](/api/set-typing-status): The `"(no topic)"` value
   when used for `topic` parameter is now interpreted as an empty string.
+
+## Changes in Zulip 10.0
 
 **Feature level 371**
 
@@ -1026,10 +1034,10 @@ deactivated groups.
   now contains the superset of the true value that best approximates the actual
   permission setting.
 
-Feature levels 278-279 are reserved for future use in 9.x maintenance
+Feature level 279 is reserved for future use in 9.x maintenance
 releases.
 
-## Changes in Zulip 9.0
+## Changes in Zulip 9.2
 
 **Feature level 278**
 
@@ -1038,6 +1046,8 @@ releases.
   `data-original-dimensions` attributes to placeholder images
   (`image-loading-placeholder`), containing the dimensions of the
   original image. Backported change from feature level 287.
+
+## Changes in Zulip 9.0
 
 **Feature level 277**
 

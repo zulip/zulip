@@ -180,8 +180,10 @@ def promote_new_full_members() -> None:
 
 def do_send_create_user_group_event(
     user_group: NamedUserGroup,
-    members: list[UserProfile],
-    direct_subgroups: Sequence[UserGroup] = [],
+    member_ids: list[int],
+    direct_subgroup_ids: Sequence[int] = [],
+    *,
+    for_reactivation: bool = False,
 ) -> None:
     creator_id = user_group.creator_id
     assert user_group.date_created is not None
@@ -200,14 +202,15 @@ def do_send_create_user_group_event(
             name=user_group.name,
             creator_id=creator_id,
             date_created=date_created,
-            members=[member.id for member in members],
+            members=member_ids,
             description=user_group.description,
             id=user_group.id,
             is_system_group=user_group.is_system_group,
-            direct_subgroup_ids=[direct_subgroup.id for direct_subgroup in direct_subgroups],
+            direct_subgroup_ids=direct_subgroup_ids,
             **setting_values,
             deactivated=False,
         ),
+        for_reactivation=for_reactivation,
     )
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
@@ -230,7 +233,7 @@ def check_add_user_group(
             group_settings_map=group_settings_map,
             acting_user=acting_user,
         )
-        do_send_create_user_group_event(user_group, initial_members)
+        do_send_create_user_group_event(user_group, [member.id for member in initial_members])
         return user_group
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '{group_name}' already exists.").format(group_name=name))
@@ -597,6 +600,31 @@ def do_deactivate_user_group(
 
     event = dict(type="user_group", op="remove", group_id=user_group.id)
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
+
+
+@transaction.atomic(savepoint=False)
+def do_reactivate_user_group(
+    user_group: NamedUserGroup, *, acting_user: UserProfile | None
+) -> None:
+    user_group.deactivated = False
+    user_group.save(update_fields=["deactivated"])
+
+    now = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_group.realm,
+        modified_user_group_id=user_group.id,
+        event_type=AuditLogEventType.USER_GROUP_REACTIVATED,
+        event_time=now,
+        acting_user=acting_user,
+    )
+
+    do_send_user_group_update_event(user_group, dict(deactivated=False))
+
+    direct_member_ids = list(user_group.direct_members.all().values_list("id", flat=True))
+    direct_subgroup_ids = list(user_group.direct_subgroups.all().values_list("id", flat=True))
+    do_send_create_user_group_event(
+        user_group, direct_member_ids, direct_subgroup_ids, for_reactivation=True
+    )
 
 
 @transaction.atomic(savepoint=False)
