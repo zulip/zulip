@@ -555,7 +555,7 @@ class TestDigestContentInBrowser(ZulipTestCase):
     def test_get_digest_content_in_browser(self) -> None:
         self.login("hamlet")
         result = self.client_get("/digest/")
-        self.assert_in_success_response(["Click here to log in to Zulip and catch up."], result)
+        self.assert_in_success_response(["Log in to Zulip to catch up"], result)
 
 
 class TestDigestTopics(ZulipTestCase):

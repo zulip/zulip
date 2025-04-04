@@ -28,10 +28,7 @@
 
     <p class="digest_paragraph">{{ new_channels.html|display_list(1000)|safe }}.</p>
     {% endif %}
-
-    <br />
-
-    <p class="digest_paragraph"><a href="{{ realm_url }}">{% trans %}Click here to log in to Zulip and catch up.{% endtrans %}</a></p>
+    <p class="digest_paragraph">{% trans %}<a href="{{ realm_url }}">Log in</a> to Zulip to catch up.{% endtrans %}</p>
 {% endblock %}
 
 {% block manage_preferences %}
