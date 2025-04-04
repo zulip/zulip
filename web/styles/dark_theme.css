@@ -293,10 +293,6 @@
         opacity: 0.5;
     }
 
-    .settings-profile-user-field {
-        border-color: hsl(3deg 73% 74%);
-    }
-
     #searchbox {
         /* Light theme shows hover mostly through box-shadow,
           and dark theme shows it mostly through changing color
