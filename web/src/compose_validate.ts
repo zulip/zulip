@@ -454,6 +454,48 @@ export function warn_if_topic_resolved(topic_changed: boolean): void {
     }
 }
 
+export let clear_quoting_in_progress_warning = function (): void {
+    $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.quoting_in_progress)}`).remove();
+    compose_state.set_displayed_quoting_in_progress_warning(false);
+};
+
+export function rewire_clear_quoting_in_progress_warning(
+    value: typeof clear_quoting_in_progress_warning,
+): void {
+    clear_quoting_in_progress_warning = value;
+}
+
+export function warn_if_quoting_in_progress(): void {
+    // We only show the warning banner if is not triggered beforehand AND quoting is in progress.
+    // In case it is displayed beforehand, we remove it.
+    if (
+        compose_state.get_quoting_in_progress() &&
+        !compose_state.is_quoting_in_progress_warning_displayed()
+    ) {
+        const button_text = $t({defaultMessage: "Send now"});
+        const context = {
+            banner_type: compose_banner.WARNING,
+            banner_text: $t({
+                defaultMessage:
+                    "Quoting is in progress. You might want to wait until it completes before sending your message.",
+            }),
+            button_text,
+            classname: compose_banner.CLASSNAMES.quoting_in_progress,
+        };
+
+        const new_row_html = render_compose_banner(context);
+        const appended = compose_banner.append_compose_banner_to_banner_list(
+            $(new_row_html),
+            $("#compose_banners"),
+        );
+        if (appended) {
+            compose_state.set_displayed_quoting_in_progress_warning(true);
+        }
+    } else {
+        clear_quoting_in_progress_warning();
+    }
+}
+
 export function warn_if_in_search_view(): void {
     const filter = narrow_state.filter();
     if (filter && !filter.supports_collapsing_recipients()) {

@@ -102,6 +102,19 @@ export function initialize() {
 
     $("#compose form").on("submit", (e) => {
         e.preventDefault();
+        // We call `warn_if_quoting_in_progress` here because
+        // the banner will be cleared the second time someone
+        // hits send while the quoted message is being fetched
+        // and the message will be sent as is with the quoting
+        // placeholder.
+        compose_validate.warn_if_quoting_in_progress();
+        if (compose_state.is_quoting_in_progress_warning_displayed()) {
+            return;
+        }
+        // We reset the banner and this flag as we have
+        // now decided to send anyways.
+        compose_state.set_quoting_in_progress(false);
+
         compose.finish();
     });
 
@@ -211,6 +224,21 @@ export function initialize() {
                 }
                 compose_validate.clear_topic_resolved_warning(true);
             });
+        },
+    );
+
+    $("body").on(
+        "click",
+        `.${CSS.escape(
+            compose_banner.CLASSNAMES.quoting_in_progress,
+        )} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            // We reset the banner and this flag as we have
+            // now decided to send anyways.
+            compose_validate.clear_quoting_in_progress_warning();
+            compose_state.set_quoting_in_progress(false);
+            compose.finish();
         },
     );
 

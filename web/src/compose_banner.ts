@@ -47,6 +47,7 @@ export const CLASSNAMES = {
     private_stream_warning: "private_stream_warning",
     guest_in_dm_recipient_warning: "guest_in_dm_recipient_warning",
     unscheduled_message: "unscheduled_message",
+    quoting_in_progress: "quoting_in_progress",
     search_view: "search_view",
     // errors
     wildcards_not_allowed: "wildcards_not_allowed",

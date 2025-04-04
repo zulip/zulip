@@ -11,6 +11,7 @@ import * as compose_paste from "./compose_paste.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as compose_validate from "./compose_validate.ts";
 import * as copy_messages from "./copy_messages.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -320,14 +321,20 @@ export function quote_message(opts: {
         return;
     }
 
+    compose_state.set_quoting_in_progress(true);
+    compose_validate.clear_quoting_in_progress_warning();
     void channel.get({
         url: "/json/messages/" + message_id,
         data: {allow_empty_topic_name: true},
         success(raw_data) {
+            compose_state.set_quoting_in_progress(false);
+            compose_validate.clear_quoting_in_progress_warning();
             const data = z.object({raw_content: z.string()}).parse(raw_data);
             replace_content(message, data.raw_content);
         },
         error() {
+            compose_state.set_quoting_in_progress(false);
+            compose_validate.clear_quoting_in_progress_warning();
             compose_ui.replace_syntax(
                 quoting_placeholder,
                 $t({defaultMessage: "[Error fetching message content.]"}),
