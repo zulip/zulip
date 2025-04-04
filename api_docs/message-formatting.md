@@ -241,6 +241,20 @@ assume that messages sent prior to the introduction of thumbnailing
 have been re-rendered to use the new format or have thumbnails
 available.
 
+## Video previews
+
+When a Zulip message is sent linking to an uploaded video, Zulip will
+generate a video preview element with the following format.
+
+``` html
+<div class="message_inline_image message_inline_video">
+  <a href="/user_uploads/path/to/video.mp4">
+    <video preload="metadata" src="/user_uploads/path/to/video.mp4">
+    </video>
+  </a>
+</div>
+```
+
 ## Mentions and silent mentions
 
 Zulip markup supports [mentioning](/help/mention-a-user-or-group)
